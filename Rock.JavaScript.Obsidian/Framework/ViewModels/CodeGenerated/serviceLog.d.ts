@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ServiceLog = IEntity & {
+    attributeValues?: Record<string, unknown>;
     input?: string | null;
     logDateTime?: string | null;
     name?: string | null;

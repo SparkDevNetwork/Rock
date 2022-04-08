@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type RegistrationTemplatePlacement = IEntity & {
     allowMultiplePlacements?: boolean;
+    attributeValues?: Record<string, unknown>;
     cost?: number | null;
     groupTypeId?: number;
     iconCssClass?: string | null;

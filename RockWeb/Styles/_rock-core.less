@@ -515,6 +515,7 @@ th[align="right"] {
   border-bottom: 1px solid #dbdbdb;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
 
   @media (min-width: @screen-sm-min) {
@@ -539,6 +540,20 @@ th[align="right"] {
       background: #e9ecee;
     }
   }
+
+  .nav-pills {
+    margin: 6px 8px;
+
+    > li {
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+  }
+}
+
+.panel-toolbar-shadow {
+  box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
+  z-index: 10;
 }
 
 .no-border {

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionRequestWorkflow = IEntity & {
+    attributeValues?: Record<string, unknown>;
     connectionRequestId?: number;
     connectionWorkflowId?: number;
     triggerQualifier?: string | null;

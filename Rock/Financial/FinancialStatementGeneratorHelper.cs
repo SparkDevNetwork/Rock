@@ -711,11 +711,13 @@ namespace Rock.Financial
 
                     if ( pledgeSettings.IncludeGiftsToChildAccounts )
                     {
-                        // If PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge (but only one level deep)
+                        // If PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge
+                        var childAccountIds = FinancialAccountCache.Get( pledgeSummary.AccountId )?.GetDescendentFinancialAccountIds() ?? new int[0];
+
                         pledgeFinancialTransactionDetailQry = pledgeFinancialTransactionDetailQry.Where( t =>
                             t.AccountId == pledgeSummary.AccountId
                             ||
-                            ( t.Account.ParentAccountId.HasValue && t.Account.ParentAccountId == pledgeSummary.AccountId ) );
+                            ( childAccountIds.Contains( t.AccountId ) ) );
                     }
                     else
                     {
@@ -852,7 +854,7 @@ namespace Rock.Financial
             else
             {
                 // NOTE: Only get the Pledges that were specifically pledged to the selected accounts
-                // If the PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge (but only one level deep)
+                // If the PledgesIncludeChildAccounts = true, we'll include transactions to those child accounts as part of the pledge
                 var selectedAccountIds = pledgeSettings.AccountIds;
                 pledgeQry = pledgeQry.Where( a => a.AccountId.HasValue && selectedAccountIds.Contains( a.AccountId.Value ) );
             }

@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type RegistrationTemplateFormField = IEntity & {
     attributeId?: number | null;
+    attributeValues?: Record<string, unknown>;
     fieldSource?: number;
     fieldVisibilityRulesJSON?: string | null;
     isGridField?: boolean;

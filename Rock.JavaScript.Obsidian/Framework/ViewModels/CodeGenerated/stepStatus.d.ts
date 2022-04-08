@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type StepStatus = IEntity & {
+    attributeValues?: Record<string, unknown>;
     isActive?: boolean;
     isCompleteStatus?: boolean;
     name?: string | null;

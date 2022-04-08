@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Tag = IEntity & {
+    attributeValues?: Record<string, unknown>;
     backgroundColor?: string | null;
     categoryId?: number | null;
     description?: string | null;

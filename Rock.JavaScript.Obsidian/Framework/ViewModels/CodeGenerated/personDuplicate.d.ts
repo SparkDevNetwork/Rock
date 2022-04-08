@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonDuplicate = IEntity & {
+    attributeValues?: Record<string, unknown>;
     capacity?: number | null;
     duplicatePersonAliasId?: number;
     ignoreUntilScoreChanges?: boolean;

@@ -52,6 +52,6 @@ namespace Rock.ViewModel.Controls
         /// to the current <see cref="ConfigurationValues"/>.
         /// </summary>
         /// <value>The default value information.</value>
-        public PublicEditableAttributeValueViewModel DefaultValue { get; set; }
+        public string DefaultValue { get; set; }
     }
 }

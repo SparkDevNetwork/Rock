@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type RegistrationSession = IEntity & {
+    attributeValues?: Record<string, unknown>;
     clientIpAddress?: string | null;
     expirationDateTime?: string;
     paymentGatewayReference?: string | null;

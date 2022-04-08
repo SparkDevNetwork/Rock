@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type NoteAttachment = IEntity & {
+    attributeValues?: Record<string, unknown>;
     binaryFileId?: number;
     noteId?: number;
     createdDateTime?: string | null;

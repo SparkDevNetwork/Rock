@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type AttributeMatrixItem = IEntity & {
     attributeMatrixId?: number;
+    attributeValues?: Record<string, unknown>;
     order?: number;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Device = IEntity & {
+    attributeValues?: Record<string, unknown>;
     cameraBarcodeConfigurationType?: number | null;
     description?: string | null;
     deviceTypeValueId?: number;

@@ -27,6 +27,7 @@ export type RegistrationTemplate = IEntity & {
     addPersonNote?: boolean;
     allowExternalRegistrationUpdates?: boolean;
     allowMultipleRegistrants?: boolean;
+    attributeValues?: Record<string, unknown>;
     batchNamePrefix?: string | null;
     categoryId?: number | null;
     confirmationEmailTemplate?: string | null;

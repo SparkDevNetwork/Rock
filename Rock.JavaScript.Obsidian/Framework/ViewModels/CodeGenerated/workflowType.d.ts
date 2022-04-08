@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type WorkflowType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     categoryId?: number | null;
     completedWorkflowRetentionPeriod?: number | null;
     description?: string | null;

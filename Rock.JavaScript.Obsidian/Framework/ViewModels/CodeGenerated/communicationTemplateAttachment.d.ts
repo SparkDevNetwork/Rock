@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type CommunicationTemplateAttachment = IEntity & {
+    attributeValues?: Record<string, unknown>;
     binaryFileId?: number;
     communicationTemplateId?: number;
     communicationType?: number;

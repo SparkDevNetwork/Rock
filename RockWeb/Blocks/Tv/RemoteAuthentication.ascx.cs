@@ -28,13 +28,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Tv
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    ///
-    /// 10/15/2021 - JME
-    /// The code from this block was taken primarily from the MobileApplicationDetail.ascx block.
-    /// 
-    /// </summary>
+    /*
+    10/15/2021 - JME
+    The code from this block was taken primarily from the MobileApplicationDetail.ascx block.
+    */
     [DisplayName( "Remote Authentication" )]
     [Category( "TV > TV Apps" )]
     [Description( "Authenticates an individual for a remote system." )]

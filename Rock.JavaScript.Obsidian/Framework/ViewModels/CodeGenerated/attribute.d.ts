@@ -28,6 +28,7 @@ export type Attribute = IEntity & {
     abbreviatedName?: string | null;
     allowSearch?: boolean;
     attributeColor?: string | null;
+    attributeValues?: Record<string, unknown>;
     categoryGuids?: (Guid)[];
     configurationValues?: Record<string, unknown>;
     defaultValue?: string | null;

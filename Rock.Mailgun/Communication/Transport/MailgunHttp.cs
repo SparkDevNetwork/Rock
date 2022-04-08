@@ -42,7 +42,7 @@ namespace Rock.Communication.Transport
     [ExportMetadata( "ComponentName", "Mailgun HTTP" )]
 
     [TextField( "Base URL", "The API URL provided by Mailgun, keep the default in most cases.", true, @"https://api.mailgun.net/v3", "", 0, "BaseURL" )]
-    [TextField( "Resource", "The URL part provided by Mailgun, keep the default in most cases.", true, @"{domian}/messages", "", 1, "Resource" )]
+    [TextField( "Resource", "The URL part provided by Mailgun, keep the default in most cases.", true, @"{domain}/messages", "", 1, "Resource" )]
     [TextField( "Domain", "The email domain (e.g. rocksolidchurchdemo.com).", true, "", "", 2, "Domain" )]
     [TextField( "API Key", "The Private API Key provided by Mailgun.", true, "", "", 3, "APIKey" )]
     [BooleanField( "Track Opens", "Allow Mailgun to track opens, clicks, and unsubscribes.", true, "", 4, "TrackOpens" )]

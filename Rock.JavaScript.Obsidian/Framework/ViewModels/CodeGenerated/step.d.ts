@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Step = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     completedDateTime?: string | null;
     endDateTime?: string | null;

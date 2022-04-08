@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonalLinkSection = IEntity & {
+    attributeValues?: Record<string, unknown>;
     iconCssClass?: string | null;
     isShared?: boolean;
     name?: string | null;

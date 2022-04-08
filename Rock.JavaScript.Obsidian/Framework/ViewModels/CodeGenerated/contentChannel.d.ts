@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ContentChannel = IEntity & {
+    attributeValues?: Record<string, unknown>;
     channelUrl?: string | null;
     childItemsManuallyOrdered?: boolean;
     contentChannelTypeId?: number;

@@ -71,7 +71,7 @@ export default defineComponent({
 
         /**
          * Event handler for when the validation state of the form has changed.
-         * 
+         *
          * @param errors Any errors that were detected on the form.
          */
         const onValidationChanged = (errors: FormError[]): void => {
@@ -96,7 +96,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
+<div class="form-builder-scroll">
     <div class="panel-body">
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
             <GeneralSettings v-model="generalSettings" :templateOverrides="templateOverrides" />

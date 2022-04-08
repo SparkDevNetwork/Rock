@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     connectionRequestDetailPageId?: number | null;
     connectionRequestDetailPageRouteId?: number | null;
     daysUntilRequestIdle?: number;

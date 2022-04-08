@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type CampusSchedule = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campusId?: number;
     order?: number;
     scheduleId?: number;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,18 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-import { PublicAttributeValue } from "./publicAttributeValue";
 
-export type PublicEditableAttributeValue = PublicAttributeValue & {
-    /** The key that identifies this attribute on the entity. */
-    key: string;
+using System;
+using System.Web.Compilation;
 
-    /** Indicates if this attribute value is required for saving. */
-    isRequired: boolean;
-
-    /** The help text that describes this attribute value. */
-    description: string;
-
-    /** Configuration values for how to display and edit this value. */
-    configurationValues?: Record<string, string> | null;
-};
+namespace Rock.Model
+{
+    public partial class ServiceJob
+    {
+        // if it can't be found in dlls, look in App_Code using BuildManager
+        private Type GetCompiledTypeFromBuildManager()
+        {
+            return BuildManager.GetType( this.Class, false );
+        }
+    }
+}

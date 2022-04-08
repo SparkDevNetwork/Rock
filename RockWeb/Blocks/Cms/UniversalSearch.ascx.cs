@@ -34,9 +34,6 @@ using Rock.Web;
 
 namespace RockWeb.Blocks.Cms
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Universal Search" )]
     [Category( "CMS" )]
     [Description( "A block to search for all indexable entity types in Rock." )]

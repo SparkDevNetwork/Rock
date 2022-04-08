@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type SignatureDocument = IEntity & {
     appliesToPersonAliasId?: number | null;
     assignedToPersonAliasId?: number | null;
+    attributeValues?: Record<string, unknown>;
     binaryFileId?: number | null;
     completionEmailSentDateTime?: string | null;
     documentKey?: string | null;

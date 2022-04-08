@@ -32,12 +32,28 @@ namespace Rock.ViewModel
     public partial class GroupMemberAssignmentViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the ConfirmationSentDateTime.
+        /// </summary>
+        /// <value>
+        /// The ConfirmationSentDateTime.
+        /// </value>
+        public DateTime? ConfirmationSentDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the GroupMemberId.
         /// </summary>
         /// <value>
         /// The GroupMemberId.
         /// </value>
         public int GroupMemberId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the LastRSVPReminderSentDateTime.
+        /// </summary>
+        /// <value>
+        /// The LastRSVPReminderSentDateTime.
+        /// </value>
+        public DateTime? LastRSVPReminderSentDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the LocationId.

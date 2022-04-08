@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type Attendance = IEntity & {
     attendanceCheckInSessionId?: number | null;
     attendanceCodeId?: number | null;
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     checkedInByPersonAliasId?: number | null;
     checkedOutByPersonAliasId?: number | null;

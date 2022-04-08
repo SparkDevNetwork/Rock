@@ -32,9 +32,6 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Reporting
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Report List" )]
     [Category( "Reporting" )]
     [Description( "Lists all reports under a specified report category." )]

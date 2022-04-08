@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PhoneNumber = IEntity & {
+    attributeValues?: Record<string, unknown>;
     countryCode?: string | null;
     description?: string | null;
     extension?: string | null;

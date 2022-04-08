@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ContentChannelType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     dateRangeType?: number;
     disableContentField?: boolean;
     disablePriority?: boolean;

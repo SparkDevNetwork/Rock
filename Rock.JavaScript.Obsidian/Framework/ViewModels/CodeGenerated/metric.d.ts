@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type Metric = IEntity & {
     adminPersonAliasId?: number | null;
+    attributeValues?: Record<string, unknown>;
     autoPartitionOnPrimaryCampus?: boolean;
     dataViewId?: number | null;
     description?: string | null;

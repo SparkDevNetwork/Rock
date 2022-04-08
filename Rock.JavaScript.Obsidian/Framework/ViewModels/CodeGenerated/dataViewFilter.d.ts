@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type DataViewFilter = IEntity & {
+    attributeValues?: Record<string, unknown>;
     dataViewId?: number | null;
     entityTypeId?: number | null;
     expressionType?: number;

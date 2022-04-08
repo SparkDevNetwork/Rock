@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type BinaryFileType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     cacheControlHeaderSettings?: string | null;
     cacheToServerFileSystem?: boolean;
     description?: string | null;

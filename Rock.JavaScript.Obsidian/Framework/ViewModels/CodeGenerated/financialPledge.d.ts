@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type FinancialPledge = IEntity & {
     accountId?: number | null;
+    attributeValues?: Record<string, unknown>;
     endDate?: string;
     groupId?: number | null;
     personAliasId?: number | null;

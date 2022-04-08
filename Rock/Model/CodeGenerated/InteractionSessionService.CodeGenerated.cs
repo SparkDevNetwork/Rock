@@ -89,9 +89,13 @@ namespace Rock.Model
                 Id = model.Id,
                 Guid = model.Guid,
                 DeviceTypeId = model.DeviceTypeId,
+                DurationLastCalculatedDateTime = model.DurationLastCalculatedDateTime,
+                DurationSeconds = model.DurationSeconds,
                 InteractionMode = model.InteractionMode,
+                InteractionSessionLocationId = model.InteractionSessionLocationId,
                 IpAddress = model.IpAddress,
                 SessionData = model.SessionData,
+                SessionStartDateKey = model.SessionStartDateKey,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -162,11 +166,15 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.DeviceTypeId = source.DeviceTypeId;
+            target.DurationLastCalculatedDateTime = source.DurationLastCalculatedDateTime;
+            target.DurationSeconds = source.DurationSeconds;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InteractionMode = source.InteractionMode;
+            target.InteractionSessionLocationId = source.InteractionSessionLocationId;
             target.IpAddress = source.IpAddress;
             target.SessionData = source.SessionData;
+            target.SessionStartDateKey = source.SessionStartDateKey;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

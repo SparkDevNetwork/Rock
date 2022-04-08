@@ -27,6 +27,7 @@ export type RegistrationInstance = IEntity & {
     accountId?: number | null;
     additionalConfirmationDetails?: string | null;
     additionalReminderDetails?: string | null;
+    attributeValues?: Record<string, unknown>;
     contactEmail?: string | null;
     contactPersonAliasId?: number | null;
     contactPhone?: string | null;

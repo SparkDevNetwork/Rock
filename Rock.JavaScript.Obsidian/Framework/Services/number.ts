@@ -19,7 +19,7 @@
 // Most of the options probably won't get used, so just add the ones you need to use to this when needed
 type NumberFormatOptions = {
     useGrouping?: boolean // MDN gives other possible values, but TS is complaining that it should only be boolean
-}
+};
 
 /**
  * Get a formatted string.

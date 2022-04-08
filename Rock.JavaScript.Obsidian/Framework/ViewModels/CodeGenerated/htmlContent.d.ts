@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type HtmlContent = IEntity & {
     approvedByPersonAliasId?: number | null;
     approvedDateTime?: string | null;
+    attributeValues?: Record<string, unknown>;
     blockId?: number;
     content?: string | null;
     entityValue?: string | null;

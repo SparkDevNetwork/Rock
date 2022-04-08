@@ -175,6 +175,7 @@ namespace RockWeb.Blocks.Event
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
         private const string DEFAULT_PAYMENT_KEY = "DefaultPayment";
         private const string AUTO_APPLIED_DISCOUNT = "AutoAppliedDiscount";
+        private const string NOT_FOUND_ERROR_MESSAGE_FORMAT = "We could not find the {0} you are looking for.";
 
         private enum PanelIndex
         {
@@ -808,7 +809,24 @@ namespace RockWeb.Blocks.Event
                         }
                         else
                         {
-                            ShowWarning( "Sorry", string.Format( "The selected {0} could not be found or is no longer active.", RegistrationTerm.ToLower() ) );
+                            var matchingRegistrationInstance = FindMatchingRegistrationInstance();
+
+                            if ( matchingRegistrationInstance == null )
+                            {
+                                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+                            }
+                            else if ( matchingRegistrationInstance.EndDateTime < RockDateTime.Now)
+                            {
+                                ShowWarning( "Sorry", string.Format( "{0} closed on {1}.", matchingRegistrationInstance.Name, matchingRegistrationInstance.EndDateTime.ToShortDateString() ) );
+                            }
+                            else if ( matchingRegistrationInstance.StartDateTime > RockDateTime.Today)
+                            {
+                                ShowWarning( "Sorry", string.Format( "{0} for {1} does not open until {2}.", RegistrationTerm, matchingRegistrationInstance.Name, matchingRegistrationInstance.StartDateTime.ToShortDateString() ) );
+                            }
+                            else
+                            {
+                                ShowWarning( "Sorry", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
+                            }
                         }
                     }
                 }
@@ -821,6 +839,40 @@ namespace RockWeb.Blocks.Event
                 // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
                 divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
             }
+        }
+
+        /// <summary>
+        /// Finds the matching registration instance if the registrationInstanceId parameter was provided.
+        /// </summary>
+        private RegistrationInstance FindMatchingRegistrationInstance()
+        {
+            /*
+                03/16/2022 - KA
+
+                If a RegistrationInstanceId parameter was provided, it is used to retrieve the
+                associated RegistrationInstance without the StartDate EndDate filter used in
+                SetRegistrationState, this is to help generate an appropriate errorMessage for
+                the user. It is only called in OnLoad after SetRegistrationState returns a null
+                RegistrationInstanceState.
+            */
+
+            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+
+            if ( !registrationInstanceId.HasValue )
+            {
+                return null;
+            }
+
+            var registrationInstance = new RegistrationInstanceService( new RockContext() )
+                .Queryable()
+                .Where( r =>
+                    r.Id == registrationInstanceId.Value &&
+                    r.IsActive &&
+                    r.RegistrationTemplate != null &&
+                    r.RegistrationTemplate.IsActive )
+                .FirstOrDefault();
+
+            return registrationInstance;
         }
 
         /// <summary>
@@ -1890,7 +1942,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( registration == null )
                 {
-                    ShowError( "Error", "Registration not found" );
+                    ShowError( "Error", string.Format( NOT_FOUND_ERROR_MESSAGE_FORMAT, RegistrationTerm.ToLower() ) );
                     return false;
                 }
 
@@ -2835,9 +2887,9 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
+                    // If a match was not found, create a new person
                     if ( person == null )
                     {
-                        // If a match was not found, create a new person
                         person = new Person();
                         person.FirstName = firstName;
                         person.LastName = lastName;
@@ -2857,12 +2909,11 @@ namespace RockWeb.Blocks.Event
                     }
 
                     int? campusId = CampusId;
+                    var updateExistingCampus = false;
                     Location location = null;
 
                     // Set any of the template's person fields
-                    foreach ( var field in RegistrationTemplate.Forms
-                        .SelectMany( f => f.Fields
-                            .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
+                    foreach ( var field in RegistrationTemplate.Forms.SelectMany( f => f.Fields.Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
                     {
                         // Find the registrant's value
                         var fieldValue = registrantInfo.FieldValues
@@ -2876,6 +2927,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 case RegistrationPersonFieldType.Campus:
                                     campusId = fieldValue.ToString().AsIntegerOrNull();
+                                    updateExistingCampus = campusId != null;
                                     break;
 
                                 case RegistrationPersonFieldType.MiddleName:
@@ -2950,7 +3002,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Save the person ( and family if needed )
-                    SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+                    SavePerson( rockContext, person, registrantInfo.FamilyGuid, campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateExistingCampus );
 
                     // Load the person's attributes
                     person.LoadAttributes();
@@ -3268,10 +3320,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="childRoleId">The child role identifier.</param>
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
-        /// <returns></returns>
-        private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
+        /// <param name="updateExistingCampus">if set to <c>true</c> updates the existing campus for the family group to the one provided in the campusId parameter.</param>
+        /// <returns>Person.</returns>
+        private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId, bool updateExistingCampus = false )
         {
-            if ( !person.PrimaryCampusId.HasValue && campusId.HasValue )
+            if ( campusId.HasValue && !person.PrimaryCampusId.HasValue )
             {
                 person.PrimaryCampusId = campusId;
                 rockContext.SaveChanges();
@@ -3336,7 +3389,7 @@ namespace RockWeb.Blocks.Event
             {
                 var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
 
-                if ( !familyGroup.CampusId.HasValue && campusId.HasValue )
+                if ( campusId.HasValue && ( updateExistingCampus || !familyGroup.CampusId.HasValue ) )
                 {
                     familyGroup.CampusId = campusId;
                     rockContext.SaveChanges();

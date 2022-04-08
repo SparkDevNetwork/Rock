@@ -27,6 +27,7 @@ import { Attribute } from "./attribute";
 export type AttributeValue = IEntity & {
     attribute?: Attribute | null;
     attributeId?: number;
+    attributeValues?: Record<string, unknown>;
     entityId?: number | null;
     isSystem?: boolean;
     value?: string | null;

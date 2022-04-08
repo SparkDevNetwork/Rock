@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type EventItem = IEntity & {
     approvedByPersonAliasId?: number | null;
     approvedOnDateTime?: string | null;
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     detailsUrl?: string | null;
     isActive?: boolean;

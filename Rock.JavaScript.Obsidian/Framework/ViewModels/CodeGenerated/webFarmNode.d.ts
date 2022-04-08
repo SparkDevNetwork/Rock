@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type WebFarmNode = IEntity & {
     addedDateTime?: string;
+    attributeValues?: Record<string, unknown>;
     configuredLeadershipPollingIntervalSeconds?: number | null;
     currentLeadershipPollingIntervalSeconds?: number;
     isActive?: boolean;

@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type UserLogin = IEntity & {
     apiKey?: string | null;
+    attributeValues?: Record<string, unknown>;
     entityTypeId?: number | null;
     failedPasswordAttemptCount?: number | null;
     failedPasswordAttemptWindowStartDateTime?: string | null;

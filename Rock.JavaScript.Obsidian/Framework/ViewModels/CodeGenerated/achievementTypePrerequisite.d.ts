@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type AchievementTypePrerequisite = IEntity & {
     achievementTypeId?: number;
+    attributeValues?: Record<string, unknown>;
     prerequisiteAchievementTypeId?: number;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

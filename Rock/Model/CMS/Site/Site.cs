@@ -446,6 +446,15 @@ namespace Rock.Model
         [DataMember]
         public bool EnableExclusiveRoutes { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable page view geo tracking].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable page view geo tracking]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnablePageViewGeoTracking { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

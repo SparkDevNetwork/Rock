@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type BenevolenceResult = IEntity & {
     amount?: number | null;
+    attributeValues?: Record<string, unknown>;
     benevolenceRequestId?: number;
     resultSummary?: string | null;
     resultTypeValueId?: number;

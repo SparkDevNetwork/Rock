@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ExceptionLog = IEntity & {
+    attributeValues?: Record<string, unknown>;
     cookies?: string | null;
     description?: string | null;
     exceptionType?: string | null;

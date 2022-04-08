@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Schedule = IEntity & {
+    attributeValues?: Record<string, unknown>;
     autoInactivateWhenComplete?: boolean;
     categoryId?: number | null;
     checkInEndOffsetMinutes?: number | null;

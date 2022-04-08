@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type GroupDemographicType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     componentEntityTypeId?: number;
     description?: string | null;
     groupTypeId?: number;

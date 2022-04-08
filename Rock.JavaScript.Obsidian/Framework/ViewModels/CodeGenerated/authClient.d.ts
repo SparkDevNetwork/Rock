@@ -27,6 +27,7 @@ export type AuthClient = IEntity & {
     allowedClaims?: string | null;
     allowedScopes?: string | null;
     allowUserApiAccess?: boolean;
+    attributeValues?: Record<string, unknown>;
     clientId?: string | null;
     clientSecretHash?: string | null;
     isActive?: boolean;

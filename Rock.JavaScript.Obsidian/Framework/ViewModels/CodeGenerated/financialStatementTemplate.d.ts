@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FinancialStatementTemplate = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     footerSettingsJson?: string | null;
     isActive?: boolean;

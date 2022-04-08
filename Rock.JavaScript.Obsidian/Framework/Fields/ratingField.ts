@@ -17,7 +17,6 @@
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType, numericComparisonTypes } from "../Reporting/comparisonType";
 import { toNumberOrNull } from "../Services/number";
-import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type StepWorkflowTrigger = IEntity & {
+    attributeValues?: Record<string, unknown>;
     isActive?: boolean;
     stepProgramId?: number | null;
     stepTypeId?: number | null;

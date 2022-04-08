@@ -38,9 +38,6 @@ using DotLiquid;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Type Map" )]
     [Category( "Groups" )]
     [Description( "Displays groups on a map." )]

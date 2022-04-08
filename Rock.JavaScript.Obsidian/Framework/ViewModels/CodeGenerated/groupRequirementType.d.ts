@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type GroupRequirementType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     canExpire?: boolean;
     checkboxLabel?: string | null;
     dataViewId?: number | null;

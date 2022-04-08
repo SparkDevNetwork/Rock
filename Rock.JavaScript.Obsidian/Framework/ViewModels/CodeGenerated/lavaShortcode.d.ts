@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type LavaShortcode = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     documentation?: string | null;
     enabledLavaCommands?: string | null;

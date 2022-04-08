@@ -105,6 +105,11 @@ namespace Rock.SystemKey
         public const string ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER = "core_AlwaysShowBusinessInPersonPicker";
 
         /// <summary>
+        /// The setting to have Rock poll itself to keep it alive during times of inactivity. Usually this can stay disabled.
+        /// </summary>
+        public const string ENABLE_KEEP_ALIVE = "core_EnableKeepAlive";
+
+        /// <summary>
         /// The PDF external render endpoint to use for the <see cref="Pdf.PdfGenerator"/> instead of the local chrome engine
         /// For example: wss://chrome.browserless.io?token=YOUR-API-TOKEN
         /// </summary>

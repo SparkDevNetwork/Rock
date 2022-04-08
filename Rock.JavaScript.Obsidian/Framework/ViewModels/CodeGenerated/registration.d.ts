@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Registration = IEntity & {
+    attributeValues?: Record<string, unknown>;
     confirmationEmail?: string | null;
     discountAmount?: number;
     discountCode?: string | null;

@@ -306,7 +306,7 @@ namespace RockWeb.Blocks.Administration
             {
                 try
                 {
-                    Rock.Attribute.Helper.UpdateAttributes( job, jobEntityTypeId, "Class", job.FullName, rockContext );
+                    ServiceJobService.UpdateAttributesIfNeeded( job );
                 }
                 catch ( Exception ex )
                 {

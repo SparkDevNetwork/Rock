@@ -5,7 +5,6 @@
     max-width: 874px;
     margin: 16px auto;
 }
-
 .mobile-preview {
     max-width: 414px;
 }
@@ -29,7 +28,7 @@
                     <div class="col-md-3 filter-options">
                         <Rock:RockLiteral ID="lNavTitle" Label="System Communication" runat="server" />
 
-                        <Rock:RockDropDownList ID="ddlMessageDate" ClientIDMode="Static" runat="server" Label="Message Date"
+                        <Rock:RockDropDownList ID="ddlMessageDate" runat="server" Label="Message Date" AutoPostBack="true"
                             Required="true" DisplayRequiredIndicator="true" Help="Date to use when previewing the message." OnSelectedIndexChanged="ddlMessageDate_SelectedIndexChanged" />
 
                         <Rock:PersonPicker ID="ppTargetPerson" runat="server" Label="Target Person" Help="Person used to customize the email preview." EnableSelfSelection="true" OnSelectPerson="ppTargetPerson_SelectPerson" />
@@ -44,26 +43,26 @@
                         <div id="messagePreview" class="card shadow card-message-preview">
                             <div class="card-header bg-white py-2 px-0">
                                 <div class="row no-gutters p-2">
-                                    <div class="col-xs-2 text-right">
+                                    <div class="col-xs-3 text-right">
                                         <span class="text-muted pr-md-4 text-nowrap">From</span>
                                     </div>
-                                    <div class="col-xs-10">
+                                    <div class="col-xs-9">
                                         <asp:Literal ID="lFrom" runat="server" />
                                     </div>
                                 </div>
                                 <div class="row no-gutters p-2">
-                                    <div class="col-xs-2  text-right">
+                                    <div class="col-xs-3  text-right">
                                         <span class="text-muted pr-md-4 text-nowrap">Subject</span>
                                     </div>
-                                    <div class="col-xs-10 ">
+                                    <div class="col-xs-9 ">
                                         <asp:Literal ID="lSubject" runat="server" />
                                     </div>
                                 </div>
                                 <div class="row no-gutters p-2">
-                                    <div class="col-xs-2 text-right">
+                                    <div class="col-xs-3 text-right">
                                         <span class="text-muted pr-md-4 text-nowrap">Date</span>
                                     </div>
-                                    <div class="col-xs-10 ">
+                                    <div class="col-xs-9 ">
                                         <asp:Literal ID="lDate" runat="server" />
                                     </div>
                                 </div>
@@ -113,16 +112,27 @@
 <script type="text/javascript">
     function rescaleIframe() {
         var $emailPreviewIframe = $('.js-emailpreview-iframe');
-            $emailPreviewIframe.height('auto');
-
+        $emailPreviewIframe.height('auto');
         var emailPreviewIframe = $emailPreviewIframe[0];
         var newHeight = $(emailPreviewIframe.contentWindow.document).height();
         if ($(emailPreviewIframe).height() != newHeight) {
             $(emailPreviewIframe).height(newHeight);
         }
+
+        $emailPreviewIframe.load(function () {
+            var emailPreviewIframe = $emailPreviewIframe[0];
+            var newHeight = $(emailPreviewIframe.contentWindow.document).height();
+            if ($(emailPreviewIframe).height() != newHeight) {
+                $(emailPreviewIframe).height(newHeight);
+            }
+        });
     }
-    $(function() {
+
+    $(document).ready(function () {
         rescaleIframe();
+        Sys.Application.add_load(function () {
+            rescaleIframe();
+        });
     });
 
     function DesktopMode() {
@@ -130,7 +140,6 @@
         $(".btn-group-view-control .btn").toggleClass("btn-default btn-info");
         rescaleIframe();
     };
-
     function MobileMode() {
         $("#messagePreview").addClass("mobile-preview");
         $(".btn-group-view-control .btn").toggleClass("btn-default btn-info");

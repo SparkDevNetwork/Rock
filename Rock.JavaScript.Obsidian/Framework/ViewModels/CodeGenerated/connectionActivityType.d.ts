@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionActivityType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     connectionTypeId?: number | null;
     isActive?: boolean;
     name?: string | null;

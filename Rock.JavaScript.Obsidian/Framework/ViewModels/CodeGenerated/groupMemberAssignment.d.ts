@@ -24,7 +24,10 @@
 import { IEntity } from "../entity";
 
 export type GroupMemberAssignment = IEntity & {
+    attributeValues?: Record<string, unknown>;
+    confirmationSentDateTime?: string | null;
     groupMemberId?: number;
+    lastRSVPReminderSentDateTime?: string | null;
     locationId?: number | null;
     scheduleId?: number | null;
     createdDateTime?: string | null;

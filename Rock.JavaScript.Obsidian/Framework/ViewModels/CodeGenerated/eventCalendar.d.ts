@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type EventCalendar = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     iconCssClass?: string | null;
     isActive?: boolean;

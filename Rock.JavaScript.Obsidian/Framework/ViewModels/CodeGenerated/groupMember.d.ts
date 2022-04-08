@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type GroupMember = IEntity & {
     archivedByPersonAliasId?: number | null;
     archivedDateTime?: string | null;
+    attributeValues?: Record<string, unknown>;
     communicationPreference?: number;
     dateTimeAdded?: string | null;
     groupId?: number;

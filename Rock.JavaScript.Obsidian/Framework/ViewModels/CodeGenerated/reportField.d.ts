@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ReportField = IEntity & {
+    attributeValues?: Record<string, unknown>;
     columnHeaderText?: string | null;
     columnOrder?: number;
     dataSelectComponentEntityTypeId?: number | null;

@@ -28,6 +28,7 @@ export type NoteType = IEntity & {
     allowsReplies?: boolean;
     allowsWatching?: boolean;
     approvalUrlTemplate?: string | null;
+    attributeValues?: Record<string, unknown>;
     autoWatchAuthors?: boolean;
     backgroundColor?: string | null;
     binaryFileTypeId?: number | null;

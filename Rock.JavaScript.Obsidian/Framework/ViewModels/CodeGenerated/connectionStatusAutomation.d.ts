@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionStatusAutomation = IEntity & {
+    attributeValues?: Record<string, unknown>;
     automationName?: string | null;
     dataViewId?: number | null;
     destinationStatusId?: number;

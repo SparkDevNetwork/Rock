@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FollowingEventType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     entityNotificationFormatLava?: string | null;
     entityTypeId?: number | null;

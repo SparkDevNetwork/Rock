@@ -207,8 +207,8 @@ export abstract class FieldTypeBase implements IFieldType {
         return `${escapeHtml(this.getTextValue(value, configurationValues))}`;
     }
 
-    public getCondensedTextValue(value: string, _configurationValues: Record<string, string>): string {
-        return truncate(value ?? "", 100);
+    public getCondensedTextValue(value: string, configurationValues: Record<string, string>): string {
+        return truncate(this.getTextValue(value, configurationValues), 100);
     }
 
     public getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string {
@@ -217,6 +217,7 @@ export abstract class FieldTypeBase implements IFieldType {
 
     public getFormattedComponent(): Component {
         return defineComponent({
+            name: "FieldType.Formatted",
             props: getFieldEditorProps(),
             setup: (props) => {
                 return {
@@ -230,6 +231,7 @@ export abstract class FieldTypeBase implements IFieldType {
 
     public getCondensedFormattedComponent(): Component {
         return defineComponent({
+            name: "FieldType.CondensedFormatted",
             props: getFieldEditorProps(),
             setup: (props) => {
                 return {

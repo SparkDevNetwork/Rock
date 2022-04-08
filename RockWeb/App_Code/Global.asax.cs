@@ -847,7 +847,8 @@ namespace RockWeb
         #region Static Methods
 
         /// <summary>
-        /// Adds the call back.
+        /// Adds the call back that is used to Drain the Transaction Queue every 60 seconds
+        /// and do KeepAlive (if Configured)
         /// </summary>
         public static void AddCallBack()
         {
@@ -925,7 +926,7 @@ namespace RockWeb
         #region Event Handlers
 
         /// <summary>
-        /// Caches the item removed.
+        /// Called every 60 seconds to Drain Transaction Queue and Keep Alive (if configured)
         /// </summary>
         /// <param name="k">The k.</param>
         /// <param name="v">The v.</param>
@@ -942,20 +943,10 @@ namespace RockWeb
                     // add cache item again
                     AddCallBack();
 
-                    var keepAliveUrl = GetKeepAliveUrl();
-
-                    // call a page on the site to keep IIS alive
-                    if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
+                    bool enableKeepAlive = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean();
+                    if ( enableKeepAlive )
                     {
-                        try
-                        {
-                            WebRequest request = WebRequest.Create( keepAliveUrl );
-                            WebResponse response = request.GetResponse();
-                        }
-                        catch ( Exception ex )
-                        {
-                            LogError( new Exception( "Error doing KeepAlive request.", ex ), null );
-                        }
+                        DoKeepAlive();
                     }
                 }
                 else
@@ -969,6 +960,37 @@ namespace RockWeb
             catch ( Exception ex )
             {
                 LogError( ex, null );
+            }
+        }
+
+        /// <summary>
+        /// Does the keep alive. Do this if Rock.SystemKey.SystemSetting.ENABLE_KEEP_ALIVE is enabled.
+        /// </summary>
+        private static void DoKeepAlive()
+        {
+            /* 04-07-2022 MDP
+
+            We call DoKeepAlive to help prevent IIS from falling asleep, but if IIS AppPool's Idle Time-out
+            is set to 0, this is not needed. The the Rock Solid Internal Hosting guide recommends that the
+            Idle Time-Out is set to 0, so we have DoKeepAlive disabled by default. If needed,
+            Rock.SystemKey.SystemSetting.ENABLE_KEEP_ALIVE can be enabled in Rock's System Settings. 
+
+            */
+            
+            var keepAliveUrl = GetKeepAliveUrl();
+
+            // call a page on the site to keep IIS alive
+            if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
+            {
+                try
+                {
+                    WebRequest request = WebRequest.Create( keepAliveUrl );
+                    WebResponse response = request.GetResponse();
+                }
+                catch ( Exception ex )
+                {
+                    LogError( new Exception( "Error doing KeepAlive request.", ex ), null );
+                }
             }
         }
 

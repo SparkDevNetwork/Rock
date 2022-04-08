@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type RestAction = IEntity & {
     apiId?: string | null;
+    attributeValues?: Record<string, unknown>;
     cacheControlHeaderSettings?: string | null;
     controllerId?: number;
     method?: string | null;

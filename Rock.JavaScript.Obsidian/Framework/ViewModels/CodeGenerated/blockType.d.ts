@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type BlockType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     category?: string | null;
     description?: string | null;
     entityTypeId?: number | null;

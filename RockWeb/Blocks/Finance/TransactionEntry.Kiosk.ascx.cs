@@ -34,9 +34,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Transaction Entry - Kiosk" )]
     [Category( "Finance" )]
     [Description( "Block used to process giving from a kiosk." )]

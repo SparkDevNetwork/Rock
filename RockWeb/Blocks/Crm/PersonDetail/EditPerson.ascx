@@ -80,7 +80,7 @@
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockRadioButtonList>
-                                <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
+                                <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birth Day" />
                                 <asp:Panel ID="pnlGradeGraduation" runat="server" CssClass="form-row">
                                     <div class="col-xs-6 col-sm-3">
                                         <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" />

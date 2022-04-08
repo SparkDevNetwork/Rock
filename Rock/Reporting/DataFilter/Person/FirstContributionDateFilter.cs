@@ -123,7 +123,7 @@ function() {
             string accountNames = string.Empty;
             if ( selectionConfig.AccountGuids != null && selectionConfig.AccountGuids.Any() )
             {
-                accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
+                accountNames = FinancialAccountCache.GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
             }
 
             string sundayDateString = selectionConfig.UseSundayDate == true ? "Sunday " : string.Empty;
@@ -189,7 +189,7 @@ function() {
 
             var accountIdList = ( controls[0] as AccountPicker ).SelectedValuesAsInt().ToList();
             string accountGuids = string.Empty;
-            var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIdList );
+            var accounts = FinancialAccountCache.GetByIds( accountIdList );
             if ( accounts != null && accounts.Any() )
             {
                 selectionConfig.AccountGuids = accounts.Select( a => a.Guid ).ToList();
@@ -218,10 +218,10 @@ function() {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
             var accountPicker = controls[0] as AccountPicker;
-            var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( selectionConfig.AccountGuids );
+            var accounts = FinancialAccountCache.GetByGuids( selectionConfig.AccountGuids );
             if ( accounts != null && accounts.Any() )
             {
-                accountPicker.SetValues( accounts );
+                accountPicker.SetValuesFromCache( accounts );
             }
 
             var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
@@ -256,7 +256,7 @@ function() {
                 .Queryable()
                 .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );
 
-            var accountIdList = new FinancialAccountService( ( RockContext ) serviceInstance.Context ).GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Id ).ToList();
+            var accountIdList = FinancialAccountCache.GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Id ).ToList();
             if ( accountIdList.Any() )
             {
                 if ( accountIdList.Count == 1 )

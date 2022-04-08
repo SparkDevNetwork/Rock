@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type FollowingSuggested = IEntity & {
+    attributeValues?: Record<string, unknown>;
     entityId?: number;
     entityTypeId?: number;
     lastPromotedDateTime?: string | null;

@@ -40,12 +40,36 @@ namespace Rock.ViewModel
         public int? DeviceTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the DurationLastCalculatedDateTime.
+        /// </summary>
+        /// <value>
+        /// The DurationLastCalculatedDateTime.
+        /// </value>
+        public DateTime DurationLastCalculatedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DurationSeconds.
+        /// </summary>
+        /// <value>
+        /// The DurationSeconds.
+        /// </value>
+        public int? DurationSeconds { get; set; }
+
+        /// <summary>
         /// Gets or sets the InteractionMode.
         /// </summary>
         /// <value>
         /// The InteractionMode.
         /// </value>
         public string InteractionMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the InteractionSessionLocationId.
+        /// </summary>
+        /// <value>
+        /// The InteractionSessionLocationId.
+        /// </value>
+        public int? InteractionSessionLocationId { get; set; }
 
         /// <summary>
         /// Gets or sets the IpAddress.
@@ -62,6 +86,14 @@ namespace Rock.ViewModel
         /// The SessionData.
         /// </value>
         public string SessionData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SessionStartDateKey.
+        /// </summary>
+        /// <value>
+        /// The SessionStartDateKey.
+        /// </value>
+        public int? SessionStartDateKey { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

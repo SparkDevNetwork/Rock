@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type DocumentType = IEntity & {
+    attributeValues?: Record<string, unknown>;
     binaryFileTypeId?: number;
     defaultDocumentNameTemplate?: string | null;
     entityTypeId?: number;

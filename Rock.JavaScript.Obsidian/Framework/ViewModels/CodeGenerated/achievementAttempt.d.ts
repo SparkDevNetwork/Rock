@@ -28,6 +28,7 @@ export type AchievementAttempt = IEntity & {
     achievementAttemptStartDateTime?: string;
     achievementTypeId?: number;
     achieverEntityId?: number;
+    attributeValues?: Record<string, unknown>;
     isClosed?: boolean;
     isSuccessful?: boolean;
     progress?: number;

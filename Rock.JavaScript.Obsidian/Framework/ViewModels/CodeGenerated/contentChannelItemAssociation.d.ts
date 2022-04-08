@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ContentChannelItemAssociation = IEntity & {
+    attributeValues?: Record<string, unknown>;
     childContentChannelItemId?: number;
     contentChannelItemId?: number;
     order?: number;

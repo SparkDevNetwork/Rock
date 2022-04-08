@@ -97,28 +97,11 @@ namespace Rock.Rest.v2.Controls
             // Get the public configuration options from the internal options (values).
             var publicConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
 
-            // Get the editable attribute value so they can render a default value
-            // control.
-            var clientEditableValue = new PublicEditableAttributeValueViewModel
-            {
-                FieldTypeGuid = updateViewModel.FieldTypeGuid,
-                AttributeGuid = Guid.Empty,
-                Name = "Default Value",
-                Categories = new List<PublicAttributeValueCategoryViewModel>(),
-                Order = 0,
-                TextValue = fieldType.GetTextValue( privateDefaultValue, configurationValues ),
-                Value = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues ),
-                Key = "DefaultValue",
-                IsRequired = false,
-                Description = string.Empty,
-                ConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, null )
-            };
-
             return Ok( new FieldTypeConfigurationPropertiesViewModel
             {
                 ConfigurationProperties = configurationProperties,
                 ConfigurationValues = publicConfigurationValues,
-                DefaultValue = clientEditableValue
+                DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
         }
     }

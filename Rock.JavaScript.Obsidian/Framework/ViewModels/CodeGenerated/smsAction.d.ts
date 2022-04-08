@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type SmsAction = IEntity & {
+    attributeValues?: Record<string, unknown>;
     continueAfterProcessing?: boolean;
     expireDate?: string | null;
     isActive?: boolean;

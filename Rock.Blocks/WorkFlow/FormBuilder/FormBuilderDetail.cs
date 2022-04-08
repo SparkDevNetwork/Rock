@@ -567,7 +567,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 {
                     Guid = f.Guid,
                     Text = f.Name,
-                    Icon = f.IconCssClass,
+                    Svg = f.IconSvg,
                     IsCommon = f.Usage.HasFlag( Field.FieldTypeUsage.Common )
                 } )
                 .ToList();
@@ -637,7 +637,10 @@ namespace Rock.Blocks.Workflow.FormBuilder
                         Text = v.Value,
                         Category = v.GetAttributeValue( "CSSClass" )
                     } )
-                    .ToList()
+                    .ToList(),
+
+                // Default section type is the "No Style" value.
+                DefaultSectionType = "85CA07EE-6888-43FD-B8BF-24E4DD35C725".AsGuid()
             };
         }
 

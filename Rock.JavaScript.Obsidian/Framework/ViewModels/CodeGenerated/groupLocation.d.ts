@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type GroupLocation = IEntity & {
+    attributeValues?: Record<string, unknown>;
     groupId?: number;
     groupLocationTypeValueId?: number | null;
     groupMemberPersonAliasId?: number | null;

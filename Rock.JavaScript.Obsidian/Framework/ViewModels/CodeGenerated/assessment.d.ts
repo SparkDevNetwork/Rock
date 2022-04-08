@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type Assessment = IEntity & {
     assessmentResultData?: string | null;
     assessmentTypeId?: number;
+    attributeValues?: Record<string, unknown>;
     completedDateTime?: string | null;
     lastReminderDate?: string | null;
     personAliasId?: number;

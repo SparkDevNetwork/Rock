@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type InteractionComponent = IEntity & {
+    attributeValues?: Record<string, unknown>;
     channelCustom1?: string | null;
     channelCustom2?: string | null;
     channelCustomIndexed1?: string | null;

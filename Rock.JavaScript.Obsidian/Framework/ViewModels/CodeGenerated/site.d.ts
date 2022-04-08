@@ -27,6 +27,7 @@ export type Site = IEntity & {
     additionalSettings?: string | null;
     allowedFrameDomains?: string | null;
     allowIndexing?: boolean;
+    attributeValues?: Record<string, unknown>;
     changePasswordPageId?: number | null;
     changePasswordPageRouteId?: number | null;
     communicationPageId?: number | null;

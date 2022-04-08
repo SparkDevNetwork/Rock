@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type NcoaHistory = IEntity & {
     addressInvalidReason?: number;
     addressStatus?: number;
+    attributeValues?: Record<string, unknown>;
     familyId?: number;
     locationId?: number | null;
     matchFlag?: number;

@@ -22,8 +22,8 @@ import DropDownList from "../Elements/dropDownList";
 import StaticFormControl from "../Elements/staticFormControl";
 import { getFieldType } from "../Fields/index";
 import { get, post } from "../Util/http";
-import { areEqual } from "../Util/guid";
-import { PublicEditableAttributeValue, ListItem } from "../ViewModels";
+import { areEqual, newGuid } from "../Util/guid";
+import { PublicAttribute, ListItem } from "../ViewModels";
 import { FieldTypeConfigurationPropertiesViewModel, FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
 import { deepEqual, updateRefValue } from "../Util/util";
 
@@ -63,7 +63,7 @@ export default defineComponent({
         let resetToDefaultsTimer: number | null = null;
 
         /** The details about the default value used for the field. */
-        const defaultValue = ref<PublicEditableAttributeValue | null>(null);
+        const defaultValue = ref("");
 
         /** The current configuration properties that describe the field type options. */
         const configurationProperties = ref<Record<string, string>>({});
@@ -121,6 +121,20 @@ export default defineComponent({
             return matches.length >= 1 ? matches[0].text : "";
         });
 
+        const defaultValueAttribute = computed((): PublicAttribute => {
+            return {
+                fieldTypeGuid: fieldTypeValue.value,
+                attributeGuid: newGuid(),
+                configurationValues: configurationValues.value,
+                name: "Default Value",
+                key: "DefaultValue",
+                description: "",
+                isRequired: false,
+                order: 0,
+                categories: []
+            };
+        });
+
         /**
          * True if an update request has been caused by an internal value change.
          * In this case, the update is not emitted to the parent.
@@ -139,7 +153,7 @@ export default defineComponent({
             const newValue: FieldTypeConfigurationViewModel = {
                 fieldTypeGuid: fieldTypeValue.value,
                 configurationValues: configurationValues.value,
-                defaultValue: defaultValue.value?.value ?? ""
+                defaultValue: defaultValue.value ?? ""
             };
 
             // This only updates if the value has actually changed, which removes
@@ -161,7 +175,7 @@ export default defineComponent({
             isInternalUpdate = true;
             configurationProperties.value = {};
             configurationValues.value = {};
-            defaultValue.value = null;
+            defaultValue.value = "";
             isInternalUpdate = false;
 
             updateModelValue();
@@ -186,7 +200,7 @@ export default defineComponent({
                     resetToDefaults();
                     console.debug("got configuration", result.data);
 
-                    if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationValues && result.data.defaultValue) {
+                    if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationValues) {
                         fieldErrorMessage.value = "";
                         isConfigurationReady.value = true;
 
@@ -205,8 +219,9 @@ export default defineComponent({
         };
 
         /** Called when the default value has been changed by the screen control. */
-        const onDefaultValueUpdate = (): void => {
+        const onDefaultValueUpdate = (value: string): void => {
             console.debug("default value updated");
+            defaultValue.value = value;
             updateModelValue();
         };
 
@@ -216,7 +231,7 @@ export default defineComponent({
          */
         const onUpdateConfiguration = (): void => {
             console.debug("onUpdateConfiguration");
-            updateFieldConfiguration(defaultValue.value?.value ?? "");
+            updateFieldConfiguration(defaultValue.value ?? "");
         };
 
         /**
@@ -226,12 +241,8 @@ export default defineComponent({
          * @param key The key of the configuration value that was changed.
          * @param value The new value of the configuration value.
          */
-        const onUpdateConfigurationValue = (key: string, value: string): void => {
-            if (defaultValue.value?.configurationValues) {
-                console.debug("update configuration value", key, value);
-                defaultValue.value.configurationValues[key] = value;
-                updateModelValue();
-            }
+        const onUpdateConfigurationValue = (_key: string, _value: string): void => {
+            updateModelValue();
         };
 
         // Called when the field type drop down value is changed.
@@ -276,6 +287,7 @@ export default defineComponent({
             configurationValues,
             configurationProperties,
             defaultValue,
+            defaultValueAttribute,
             hasDefaultValue,
             fieldErrorMessage,
             fieldTypeName,
@@ -299,7 +311,7 @@ export default defineComponent({
         {{ fieldErrorMessage }}
     </Alert>
     <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
-    <RockField v-if="hasDefaultValue" :attributeValue="defaultValue" @update:attributeValue="onDefaultValueUpdate" isEditMode />
+    <RockField v-if="hasDefaultValue" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
 </div>
 `
 });

@@ -26,6 +26,8 @@ type CollapseState = {
 // It will not work correctly if your element has padding-top, padding-bottom
 // or height values set in the style tag.
 export default defineComponent({
+    name: "TransitionVerticalCollapse",
+
     setup() {
         /**
          * Called before the element begins to enter the DOM.

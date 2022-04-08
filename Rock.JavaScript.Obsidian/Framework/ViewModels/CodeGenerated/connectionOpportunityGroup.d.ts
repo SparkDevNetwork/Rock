@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionOpportunityGroup = IEntity & {
+    attributeValues?: Record<string, unknown>;
     connectionOpportunityId?: number;
     groupId?: number;
     createdDateTime?: string | null;

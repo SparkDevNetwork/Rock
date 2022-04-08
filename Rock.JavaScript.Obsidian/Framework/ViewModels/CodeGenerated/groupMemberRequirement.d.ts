@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type GroupMemberRequirement = IEntity & {
+    attributeValues?: Record<string, unknown>;
     groupMemberId?: number;
     groupRequirementId?: number;
     lastRequirementCheckDateTime?: string | null;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type RegistrationTemplateDiscount = IEntity & {
+    attributeValues?: Record<string, unknown>;
     autoApplyDiscount?: boolean;
     code?: string | null;
     discountAmount?: number;

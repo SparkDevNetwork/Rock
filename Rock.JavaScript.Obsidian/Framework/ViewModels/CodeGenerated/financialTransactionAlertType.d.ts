@@ -28,6 +28,7 @@ export type FinancialTransactionAlertType = IEntity & {
     alertSummaryNotificationGroupId?: number | null;
     alertType?: number;
     amountSensitivityScale?: number | null;
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     connectionOpportunityId?: number | null;
     continueIfMatched?: boolean;

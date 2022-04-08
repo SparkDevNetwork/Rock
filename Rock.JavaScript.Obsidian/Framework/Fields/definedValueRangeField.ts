@@ -17,7 +17,6 @@
 import { Component, defineAsyncComponent } from "vue";
 import { asBoolean } from "../Services/boolean";
 import { List } from "../Util/linq";
-import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {

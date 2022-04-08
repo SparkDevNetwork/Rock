@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type CommunicationTemplate = IEntity & {
+    attributeValues?: Record<string, unknown>;
     bCCEmails?: string | null;
     categoryId?: number | null;
     cCEmails?: string | null;

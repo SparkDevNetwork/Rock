@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Notification = IEntity & {
+    attributeValues?: Record<string, unknown>;
     classification?: number;
     iconCssClass?: string | null;
     message?: string | null;

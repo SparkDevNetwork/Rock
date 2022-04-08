@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
-import { PublicAttributeValue } from "../ViewModels";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { PublicAttribute } from "../ViewModels";
 import RockField from "./rockField";
 import LoadingIndicator from "../Elements/loadingIndicator";
+import { List } from "../Util/linq";
 
 export default defineComponent({
     name: "AttributeValuesContainer",
@@ -26,12 +27,16 @@ export default defineComponent({
         LoadingIndicator
     },
     props: {
+        modelValue: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
         isEditMode: {
             type: Boolean as PropType<boolean>,
             default: false
         },
-        attributeValues: {
-            type: Array as PropType<PublicAttributeValue[]>,
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttribute>>,
             required: true
         },
         showEmptyValues: {
@@ -43,31 +48,49 @@ export default defineComponent({
             default: false
         }
     },
-    computed: {
-        validAttributeValues(): PublicAttributeValue[] {
-            return this.attributeValues;
-        }
-    },
 
-    methods: {
-        onUpdateValue() {
-            this.$emit("update:attributeValues", this.attributeValues);
-        }
+    setup(props, { emit }) {
+        const validAttributes = computed((): PublicAttribute[] => {
+            return new List(Object.values(props.attributes))
+                .orderBy(a => a.order)
+                .toArray();
+        });
+
+        const values = ref({ ...props.modelValue });
+
+        const onUpdateValue = (key: string, value: string): void => {
+            values.value[key] = value;
+
+            emit("update:modelValue", values.value);
+        };
+
+        watch(() => props.modelValue, () => {
+            values.value = { ...props.modelValue };
+        });
+
+        return {
+            onUpdateValue,
+            validAttributes,
+            values
+        };
     },
 
     template: `
-<suspense>
-    <template v-for="a in validAttributeValues">
-        <RockField
-            :isEditMode="isEditMode"
-            :attributeValue="a"
-            @update:attributeValue="onUpdateValue"
-            :showEmptyValue="showEmptyValues"
-            :showAbbreviatedName="showAbbreviatedName" />
+<Suspense>
+    <template #default>
+        <div v-for="a in validAttributes">
+            <RockField
+                :isEditMode="isEditMode"
+                :attribute="a"
+                :modelValue="values[a.key]"
+                @update:modelValue="onUpdateValue(a.key, $event)"
+                :showEmptyValue="showEmptyValues"
+                :showAbbreviatedName="showAbbreviatedName" />
+        </div>
     </template>
     <template #fallback>
         <LoadingIndicator />
     </template>
-</suspense>
+</Suspense>
 `
 });

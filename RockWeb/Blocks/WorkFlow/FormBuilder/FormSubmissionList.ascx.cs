@@ -376,7 +376,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var workflows = workflowService.Queryable( "Campus,InitiatorPersonAlias.Person" ).AsNoTracking().Where( w => w.WorkflowTypeId == workflowTypeId );
             workflows = ApplyFiltersAndSorting( workflows );
 
-            var qryGrid = workflows.Select( w => new FormSubmissionListViewModel
+            var submissionsList = workflows.AsEnumerable().Select( w => new FormSubmissionListViewModel
             {
                 Id = w.Id,
                 ActivatedDateTime = w.ActivatedDateTime,
@@ -385,7 +385,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 PersonId = w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.PersonId : 0
             } );
 
-            gWorkflows.SetLinqDataSource( qryGrid );
+
+            gWorkflows.DataSource =  submissionsList.ToList();
             gWorkflows.DataBind();
         }
 

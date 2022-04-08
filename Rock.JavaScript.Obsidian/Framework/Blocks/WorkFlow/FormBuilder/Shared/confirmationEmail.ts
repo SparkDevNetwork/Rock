@@ -93,7 +93,7 @@ export default defineComponent({
 
     template: `
 <SectionContainer v-model="enabled"
-    toggleText="Enabled"
+    toggleText="Enable"
     title="Confirmation Email"
     description="The following settings will be used to send an email to the individual who submitted the form.">
     <div class="row">

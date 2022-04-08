@@ -50,8 +50,8 @@ namespace Rock.ClientService.Connection.ConnectionType
         #region Methods
 
         /// <summary>
-        /// Gets the type request counts for the given connection types. The
-        /// Person that the service was initialized with is used to calculate
+        /// Gets the type request counts (TotalCount and AssignedToYouCount) for the
+        /// given connection types. The Person the service was initialized with is used to calculate
         /// <see cref="ConnectionRequestCountsViewModel.AssignedToYouCount"/>.
         /// </summary>
         /// <remarks>This method does not check security, it is assumed you have already done so.</remarks>
@@ -81,7 +81,8 @@ namespace Rock.ClientService.Connection.ConnectionType
                 .GroupBy( c => c.TypeId )
                 .ToDictionary( g => g.Key, g => new ConnectionRequestCountsViewModel
                 {
-                    AssignedToYouCount = g.Sum( c => c.Counts.AssignedToYouCount )
+                    AssignedToYouCount = g.Sum( c => c.Counts.AssignedToYouCount ),
+                    TotalCount = g.Sum( c => c.Counts.TotalCount )
                 } );
 
             // Fill in any missing types with empty counts.

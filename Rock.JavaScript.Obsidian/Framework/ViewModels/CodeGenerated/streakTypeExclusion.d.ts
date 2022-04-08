@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type StreakTypeExclusion = IEntity & {
+    attributeValues?: Record<string, unknown>;
     exclusionMap?: (number)[];
     locationId?: number | null;
     streakTypeId?: number;

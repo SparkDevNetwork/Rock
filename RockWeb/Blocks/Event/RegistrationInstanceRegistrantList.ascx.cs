@@ -115,6 +115,7 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, PhoneNumber> _mobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private Dictionary<int, PhoneNumber> _workPhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private Dictionary<int, SignatureDocument> _signatureDocuments = new Dictionary<int, SignatureDocument>();
         private List<RegistrationTemplatePlacement> _registrationTemplatePlacements = null;
         private List<PlacementGroupInfo> _placementGroupInfoList = null;
         private RockLiteralField _placementsField = null;
@@ -755,6 +756,22 @@ namespace RockWeb.Blocks.Event
                 SetPlacementFieldHtml( registrant, lPlacements );
             }
 
+            if ( registrant.Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
+            {
+                if ( _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
+                {
+                    const string textTemplate = @"
+<a href='{0}?id={1}' target='_blank' style='color: black;'>
+    <i class='fa fa-file-signature'></i>
+</a>
+";
+                    var document = _signatureDocuments[registrant.PersonId.Value];
+                    RockLiteralField lSignedDocument = gRegistrants.Columns.Cast<DataControlField>().First( c => c.HeaderText == "Signed Documents" ) as RockLiteralField;
+                    lSignedDocument.Text = string.Format( textTemplate, ResolveRockUrl( "~/GetFile.ashx" ), document.Id );
+                    lSignedDocument.Visible = true;
+                }
+            }
+
             if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
             {
                 var location = _homeAddresses[registrant.PersonId.Value];
@@ -1336,6 +1353,7 @@ namespace RockWeb.Blocks.Event
                     _mobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
                     _homePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
                     _workPhoneNumbers = GetPersonWorkPhoneLookup( rockContext, this.RegistrantFields, personIds );
+                    _signatureDocuments = GetPersonSignatureDocumentLookup( rockContext, personIds, registrationInstance );
 
                     // Filter by any selected
                     foreach ( var personFieldType in RegistrantFields
@@ -1758,6 +1776,38 @@ namespace RockWeb.Blocks.Event
 
                 gRegistrants.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Gets the person signature document lookup.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personIds">The person ids.</param>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <returns></returns>
+        private Dictionary<int, SignatureDocument> GetPersonSignatureDocumentLookup( RockContext rockContext, List<int> personIds, RegistrationInstance registrationInstance )
+        {
+            var signatureDocuments = new Dictionary<int, SignatureDocument>();
+            var documents = new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
+                        d.Status == SignatureDocumentStatus.Signed &&
+                        d.BinaryFileId.HasValue &&
+                        d.AppliesToPersonAlias != null && personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
+                    .OrderByDescending( d => d.LastStatusDate )
+                    .ToList();
+
+            foreach ( var personId in personIds )
+            {
+                var document = documents.Find( d => d.AppliesToPersonAlias.PersonId == personId );
+                if ( document != null )
+                {
+                    signatureDocuments[personId] = document;
+                }
+            }
+
+            return signatureDocuments;
         }
 
         /// <summary>

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type StepProgramCompletion = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     endDateTime?: string | null;
     personAliasId?: number;

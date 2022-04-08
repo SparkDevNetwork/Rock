@@ -192,10 +192,10 @@ export type FormFieldType = {
     text: string;
 
     /**
-     * The CSS classes that are used to provide an iconic representation of this
+     * The SVG content that is used to provide an iconic representation of this
      * field type.
      */
-    icon: string;
+    svg: string;
 
     /**
      * Determines if this field type is considered common and should be made

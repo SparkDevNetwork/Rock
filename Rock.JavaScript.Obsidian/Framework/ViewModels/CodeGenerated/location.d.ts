@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type Location = IEntity & {
     assessorParcelId?: string | null;
+    attributeValues?: Record<string, unknown>;
     barcode?: string | null;
     city?: string | null;
     country?: string | null;

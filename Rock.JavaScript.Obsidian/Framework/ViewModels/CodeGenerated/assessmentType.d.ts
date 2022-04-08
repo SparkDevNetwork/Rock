@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type AssessmentType = IEntity & {
     assessmentPath?: string | null;
     assessmentResultsPath?: string | null;
+    attributeValues?: Record<string, unknown>;
     badgeColor?: string | null;
     badgeSummaryLava?: string | null;
     description?: string | null;

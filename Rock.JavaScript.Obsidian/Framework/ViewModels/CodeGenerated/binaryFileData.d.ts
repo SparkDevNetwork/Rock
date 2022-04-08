@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type BinaryFileData = IEntity & {
+    attributeValues?: Record<string, unknown>;
     content?: (number)[];
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

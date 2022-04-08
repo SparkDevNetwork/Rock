@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ConnectionWorkflow = IEntity & {
+    attributeValues?: Record<string, unknown>;
     connectionOpportunityId?: number | null;
     connectionTypeId?: number | null;
     qualifierValue?: string | null;

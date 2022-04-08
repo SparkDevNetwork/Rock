@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type MetricValuePartition = IEntity & {
+    attributeValues?: Record<string, unknown>;
     entityId?: number | null;
     metricPartitionId?: number | null;
     metricValueId?: number | null;

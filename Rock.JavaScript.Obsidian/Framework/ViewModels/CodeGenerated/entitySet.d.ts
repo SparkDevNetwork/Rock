@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type EntitySet = IEntity & {
+    attributeValues?: Record<string, unknown>;
     entitySetPurposeValueId?: number | null;
     entityTypeId?: number | null;
     expireDateTime?: string | null;

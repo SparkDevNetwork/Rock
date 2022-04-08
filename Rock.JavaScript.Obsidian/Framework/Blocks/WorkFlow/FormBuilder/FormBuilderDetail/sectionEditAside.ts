@@ -152,7 +152,7 @@ export default defineComponent({
 
         /**
          * Gets the description of a single filter rule, including the source name.
-         * 
+         *
          * @param rule The rule that needs to be translated into description text.
          *
          * @returns A string that contains a human friendly description about the rule.
@@ -185,7 +185,7 @@ export default defineComponent({
 
         /**
          * Event handler for when the validation state of the form has changed.
-         * 
+         *
          * @param errors Any errors that were detected on the form.
          */
         const onValidationChanged = (errors: FormError[]): void => {
@@ -283,37 +283,43 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column" style="overflow-y: hidden; flex-grow: 1;">
-    <div class="d-flex">
-        <div class="d-flex clickable" style="background-color: #484848; color: #fff; align-items: center; justify-content: center; width: 40px;" @click="onBackClick">
+<div class="form-sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-back" @click="onBackClick">
             <i class="fa fa-chevron-left"></i>
         </div>
 
-        <div class="p-2 aside-header" style="flex-grow: 1;">
-            <span class="title">Section</span>
+        <div class="title">
+            Section
         </div>
     </div>
 
-    <div class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
-        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column" style="flex-grow: 1;">
+    <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="sidebar-body">
+        <div class="sidebar-panels">
+            <div></div>
             <Panel :modelValue="true" title="Section Configuration" hasCollapse>
                 <TextBox v-model="title"
                     label="Title" />
-
                 <TextBox v-model="description"
                     label="Description"
                     textMode="multiline" />
-
                 <Switch v-model="showHeadingSeparator"
                     label="Show Heading Separator" />
-
                 <DropDownList v-model="sectionType"
                     label="Type"
-                    :options="sectionTypeOptions" />
+                    :options="sectionTypeOptions"
+                    :showBlankItem="false" />
             </Panel>
-
             <Panel title="Conditionals" v-model="conditionalPanelOpen" :hasCollapse="true">
                 <LoadingIndicator v-if="isConditionalsLoading" />
+
+                <div v-else-if="conditionalSources.length < 1">
+                    <Alert :alertType="AlertType.Warning">No source fields available.</Alert>
+
+                    <div class="d-flex justify-content-end">
+                        <RockButton btnType="default" btnSize="sm" disabled><i class="fa fa-pencil"></i></RockButton>
+                    </div>
+                </div>
 
                 <div v-else>
                     <div v-if="hasConditions">
@@ -322,16 +328,13 @@ export default defineComponent({
                             <li v-for="rule in conditionalRules" :key="rule.guid">{{ getRuleDescription(rule) }}</li>
                         </ul>
                     </div>
-
-                    <div class="clearfix">
-                        <div class="pull-right">
-                            <RockButton btnType="link" @click="onConditionalEditClick"><i class="fa fa-pencil"></i></RockButton>
-                        </div>
+                    <div class="d-flex justify-content-end">
+                        <RockButton btnType="default" btnSize="sm" @click="onConditionalEditClick"><i class="fa fa-pencil"></i></RockButton>
                     </div>
                 </div>
             </Panel>
-        </RockForm>
-    </div>
+        </div>
+    </RockForm>
 
     <Modal v-model="conditionalModalOpen" title="Conditional Settings" saveText="Save" @save="onConditionalSave">
         <FieldFilterEditor v-model="conditionalModel" :title="fieldName" :sources="conditionalSources" />

@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type WorkflowActionFormAttribute = IEntity & {
     actionFormSectionId?: number | null;
     attributeId?: number;
+    attributeValues?: Record<string, unknown>;
     columnSize?: number | null;
     fieldVisibilityRulesJSON?: string | null;
     hideLabel?: boolean;

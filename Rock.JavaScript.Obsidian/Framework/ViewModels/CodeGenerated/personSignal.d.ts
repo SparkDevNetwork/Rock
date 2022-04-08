@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonSignal = IEntity & {
+    attributeValues?: Record<string, unknown>;
     expirationDate?: string | null;
     note?: string | null;
     ownerPersonAliasId?: number;

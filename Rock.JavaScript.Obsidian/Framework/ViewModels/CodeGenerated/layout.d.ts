@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type Layout = IEntity & {
+    attributeValues?: Record<string, unknown>;
     description?: string | null;
     fileName?: string | null;
     isSystem?: boolean;

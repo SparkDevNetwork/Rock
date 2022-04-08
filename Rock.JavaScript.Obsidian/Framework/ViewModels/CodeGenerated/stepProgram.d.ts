@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type StepProgram = IEntity & {
+    attributeValues?: Record<string, unknown>;
     categoryId?: number | null;
     defaultListView?: number;
     description?: string | null;

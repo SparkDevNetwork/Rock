@@ -28,6 +28,7 @@ export type ConnectionRequest = IEntity & {
     assignedGroupMemberAttributeValues?: string | null;
     assignedGroupMemberRoleId?: number | null;
     assignedGroupMemberStatus?: number | null;
+    attributeValues?: Record<string, unknown>;
     campusId?: number | null;
     comments?: string | null;
     connectionOpportunityId?: number;

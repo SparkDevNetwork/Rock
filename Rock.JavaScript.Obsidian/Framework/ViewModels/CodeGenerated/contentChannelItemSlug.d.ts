@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ContentChannelItemSlug = IEntity & {
+    attributeValues?: Record<string, unknown>;
     contentChannelItemId?: number;
     isPrimary?: boolean;
     slug?: string | null;

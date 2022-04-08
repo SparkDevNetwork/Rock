@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type DefinedValue = IEntity & {
+    attributeValues?: Record<string, unknown>;
     categoryId?: number | null;
     definedTypeId?: number;
     description?: string | null;

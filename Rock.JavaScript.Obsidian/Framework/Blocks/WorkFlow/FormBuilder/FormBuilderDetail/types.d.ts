@@ -174,6 +174,8 @@ export type FormValueSources = {
 
     /** The form templates that are available to pick from. */
     formTemplateOptions?: FormTemplateListItem[] | null;
+
+    defaultSectionType?: Guid | null;
 };
 
 /**

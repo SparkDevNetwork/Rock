@@ -31,6 +31,7 @@ export type FinancialTransactionAlert = IEntity & {
     amountCurrentIqr?: number | null;
     amountCurrentMedian?: number | null;
     amountIqrMultiplier?: number | null;
+    attributeValues?: Record<string, unknown>;
     frequencyCurrentMean?: number | null;
     frequencyCurrentStandardDeviation?: number | null;
     frequencyDifferenceFromMean?: number | null;

@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonScheduleExclusion = IEntity & {
+    attributeValues?: Record<string, unknown>;
     endDate?: string;
     groupId?: number | null;
     parentPersonScheduleExclusionId?: number | null;

@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type StepType = IEntity & {
     allowManualEditing?: boolean;
     allowMultiple?: boolean;
+    attributeValues?: Record<string, unknown>;
     audienceDataViewId?: number | null;
     autoCompleteDataViewId?: number | null;
     cardLavaTemplate?: string | null;

@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type WorkflowAction = IEntity & {
     actionTypeId?: number;
     activityId?: number;
+    attributeValues?: Record<string, unknown>;
     completedDateTime?: string | null;
     formAction?: string | null;
     lastProcessedDateTime?: string | null;

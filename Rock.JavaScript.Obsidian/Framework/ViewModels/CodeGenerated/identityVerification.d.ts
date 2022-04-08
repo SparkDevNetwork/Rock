@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type IdentityVerification = IEntity & {
+    attributeValues?: Record<string, unknown>;
     failedMatchAttemptCount?: number | null;
     identityVerificationCodeId?: number;
     issueDateTime?: string;

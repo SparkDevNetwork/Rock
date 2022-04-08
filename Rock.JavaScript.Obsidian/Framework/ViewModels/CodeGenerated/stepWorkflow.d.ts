@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type StepWorkflow = IEntity & {
+    attributeValues?: Record<string, unknown>;
     stepId?: number;
     stepWorkflowTriggerId?: number;
     workflowId?: number;

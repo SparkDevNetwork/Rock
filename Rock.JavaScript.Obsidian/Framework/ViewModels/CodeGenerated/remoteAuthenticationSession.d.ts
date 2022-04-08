@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type RemoteAuthenticationSession = IEntity & {
+    attributeValues?: Record<string, unknown>;
     authenticationIpAddress?: string | null;
     authorizedPersonAliasId?: number | null;
     clientIpAddress?: string | null;

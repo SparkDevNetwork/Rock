@@ -34,9 +34,6 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Store
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Package List Lava" )]
     [Category( "Store" )]
     [Description( "Lists Rock Store packages using a Lava template." )]

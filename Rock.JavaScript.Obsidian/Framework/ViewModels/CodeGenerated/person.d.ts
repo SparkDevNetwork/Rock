@@ -28,6 +28,7 @@ export type Person = IEntity & {
     accountProtectionProfile?: number;
     ageClassification?: number;
     anniversaryDate?: string | null;
+    attributeValues?: Record<string, unknown>;
     birthDay?: number | null;
     birthMonth?: number | null;
     birthYear?: number | null;

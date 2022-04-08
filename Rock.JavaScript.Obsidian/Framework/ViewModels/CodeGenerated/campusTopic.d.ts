@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type CampusTopic = IEntity & {
+    attributeValues?: Record<string, unknown>;
     campusId?: number;
     email?: string | null;
     isPublic?: boolean;

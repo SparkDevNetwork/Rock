@@ -34,6 +34,7 @@ export type GroupType = IEntity & {
     attendanceCountsAsWeekendService?: boolean;
     attendancePrintTo?: number;
     attendanceRule?: number;
+    attributeValues?: Record<string, unknown>;
     defaultGroupRoleId?: number | null;
     description?: string | null;
     enableGroupHistory?: boolean;

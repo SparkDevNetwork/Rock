@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type GroupSync = IEntity & {
     addUserAccountsDuringSync?: boolean;
+    attributeValues?: Record<string, unknown>;
     exitSystemCommunicationId?: number | null;
     groupId?: number;
     groupTypeRoleId?: number;

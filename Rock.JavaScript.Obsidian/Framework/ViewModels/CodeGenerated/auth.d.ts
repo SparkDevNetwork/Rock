@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type Auth = IEntity & {
     action?: string | null;
     allowOrDeny?: string | null;
+    attributeValues?: Record<string, unknown>;
     entityId?: number | null;
     entityTypeId?: number;
     groupId?: number | null;

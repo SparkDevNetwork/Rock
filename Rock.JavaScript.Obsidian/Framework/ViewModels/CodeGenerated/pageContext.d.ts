@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PageContext = IEntity & {
+    attributeValues?: Record<string, unknown>;
     entity?: string | null;
     idParameter?: string | null;
     isSystem?: boolean;

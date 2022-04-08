@@ -25,7 +25,7 @@ import JavaScriptAnchor from "../../Elements/javaScriptAnchor";
 import RockForm from "../../Controls/rockForm";
 import TextBox from "../../Elements/textBox";
 import RockButton from "../../Elements/rockButton";
-import { PublicAttributeValue, PublicEditableAttributeValue } from "../../ViewModels";
+import { PublicAttribute } from "../../ViewModels";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
 import { List } from "../../Util/linq";
 
@@ -42,10 +42,12 @@ type ConfigurationValues = {
 
     categoryGuids: Guid[];
 
-    attributes: PublicAttributeValue[];
+    attributes: Record<string, PublicAttribute>;
+
+    values: Record<string, string>;
 };
 
-function sortedAttributeValues(attributeValues: PublicAttributeValue[]): PublicAttributeValue[] {
+function sortedAttributeValues(attributeValues: PublicAttribute[]): PublicAttribute[] {
     return new List(attributeValues)
         .orderBy(v => v.order)
         .thenBy(v => v.name)
@@ -67,7 +69,8 @@ export default defineComponent({
     setup() {
         const configurationValues = useConfigurationValues<ConfigurationValues>();
         const invokeBlockAction = useInvokeBlockAction();
-        const attributeValues = ref(sortedAttributeValues(configurationValues.attributes));
+        const attributes = ref(configurationValues.attributes);
+        const attributeValues = ref(configurationValues.values);
         const personGuid = computed(() => store.personContext?.guid || null);
         const isLoading = ref(false);
         const isEditMode = ref(false);
@@ -78,9 +81,9 @@ export default defineComponent({
         };
 
         const goToEditMode = async (): Promise<void> => {
-            const result = await invokeBlockAction<PublicEditableAttributeValue[]>("GetAttributeValuesForEdit");
+            const result = await invokeBlockAction<PublicAttribute[]>("GetAttributeValuesForEdit");
             if (result.isSuccess) {
-                attributeValues.value = sortedAttributeValues(result.data ?? []);
+                //attributeValues.value = sortedAttributeValues(result.data ?? []);
                 isEditMode.value = true;
             }
         };
@@ -90,22 +93,22 @@ export default defineComponent({
 
             const keyValueMap: Record<string, string | null> = {};
 
-            for (const a of attributeValues.value) {
-                keyValueMap[(a as PublicEditableAttributeValue).key] = a.value || "";
-            }
+            //for (const a of attributeValues.value) {
+            //    keyValueMap[(a as PublicEditableAttributeValue).key] = a.value || "";
+            //}
 
-            const result = await invokeBlockAction<PublicAttributeValue[]>("SaveAttributeValues", {
-                personGuid: personGuid.value,
-                keyValueMap
-            });
+            //const result = await invokeBlockAction<PublicAttributeValue[]>("SaveAttributeValues", {
+            //    personGuid: personGuid.value,
+            //    keyValueMap
+            //});
 
-            if (result.isSuccess) {
-                attributeValues.value = sortedAttributeValues(result.data ?? []);
-                goToViewMode();
-            }
-            else {
-                errorMessage.value = "Failed to save values.";
-            }
+            //if (result.isSuccess) {
+            //    attributeValues.value = sortedAttributeValues(result.data ?? []);
+            //    goToViewMode();
+            //}
+            //else {
+            //    errorMessage.value = "Failed to save values.";
+            //}
 
             isLoading.value = false;
         };
@@ -120,6 +123,7 @@ export default defineComponent({
             goToEditMode,
             doSave,
             useAbbreviatedNames: configurationValues.useAbbreviatedNames,
+            attributes,
             attributeValues
         };
     },
@@ -144,7 +148,7 @@ export default defineComponent({
             <Alert v-if="errorMessage" alertType="warning">{{ errorMessage }}</Alert>
             <AttributeValuesContainer v-if="!isEditMode" :attributeValues="attributeValues" :showEmptyValues="false" />
             <RockForm v-else @submit="doSave">
-                <AttributeValuesContainer :attributeValues="attributeValues" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
                 <div class="actions">
                     <RockButton btnType="primary" btnSize="xs" type="submit">Save</RockButton>
                     <RockButton btnType="link" btnSize="xs" @click="goToViewMode">Cancel</RockButton>

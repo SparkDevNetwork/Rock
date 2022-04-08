@@ -2,40 +2,43 @@
 <asp:UpdatePanel ID="upRelationships" runat="server">
     <ContentTemplate>
 
-        <section class="panel panel-persondetails">
-
-            <div class="panel-heading rollover-container clearfix">
-                <h3 class="panel-title pull-left">
-                    <asp:Literal ID="lGroupTypeIcon" runat="server"></asp:Literal>
-                    <asp:Literal ID="lGroupName" runat="server"></asp:Literal></h3>
+        <div class="card card-profile overflow-hidden">
+            <div class="card-header">
+                <asp:Literal ID="lGroupName" runat="server"></asp:Literal>
                 <asp:PlaceHolder ID="phEditActions" runat="server">
                     <div class="actions rollover-item pull-right">
                         <asp:LinkButton ID="lbAdd" runat="server" CssClass="edit" Text="Add Relationship" OnClick="lbAdd_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
                     </div>
                 </asp:PlaceHolder>
             </div>
-
-            <div class="panel-body">
-                <asp:Literal ID="lAccessWarning" runat="server" />
-                <ul class="personlist">
-                    <asp:Repeater ID="rGroupMembers" runat="server">
-                        <ItemTemplate>
-                            <li>
-                                <Rock:PersonLink runat="server"
+            <div class="">
+                <asp:Repeater ID="rGroupMembers" runat="server">
+                    <ItemTemplate>
+                        <dl class="m-0 px-3 py-3 d-flex justify-content-between text-sm font-medium">
+                            <dt class="text-gray-900"><Rock:PersonLink runat="server"
                                     PersonId='<%# Eval("PersonId") %>'
-                                    PersonName='<%# Eval("Person.FullName") %>'
-                                    Role='<%# ShowRole ? Eval("GroupRole.Name") : "" %>'
-                                    PhotoId='<%# Eval("Person.PhotoId") %>' />
-                                <div class="control-actions pull-right">
+                                    PersonName='<%# Eval("Person.FullName") %>' /></dt>
+                            <dd class="text-gray-500"><%# ShowRole ? Eval("GroupRole.Name") : "" %><div class="control-actions pull-right">
                                     <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-sm btn-minimal px-1 edit" Text="Edit Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
                                         CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
                                     <asp:LinkButton ID="lbRemove" runat="server" CssClass="btn btn-sm btn-minimal px-1 edit remove-relationship" Text="Remove Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
                                         CommandName="RemoveRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
-                                </div>
-                            </li>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </ul>
+                                </div></dd>
+                        </dl>
+                    </ItemTemplate>
+                </asp:Repeater>
+
+            </div>
+        </div>
+        <section class="panel panel-persondetails">
+
+            <div class="panel-heading rollover-container clearfix">
+                <h3 class="panel-title pull-left"></h3>
+
+            </div>
+
+            <div class="panel-body">
+                <asp:Literal ID="lAccessWarning" runat="server" />
             </div>
 
             <asp:HiddenField ID="hfRoleId" runat="server" />

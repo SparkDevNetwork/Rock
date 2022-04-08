@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonalDevice = IEntity & {
+    attributeValues?: Record<string, unknown>;
     deviceRegistrationId?: string | null;
     deviceUniqueIdentifier?: string | null;
     deviceVersion?: string | null;
