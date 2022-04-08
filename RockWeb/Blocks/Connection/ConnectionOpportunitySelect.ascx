@@ -55,14 +55,12 @@
             </div>
 
             <div class="panel-body">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div class="form-horizontal label-auto pull-right">
-                            <Rock:CampusPicker ID="cpCampusFilter" runat="server" CssClass="input-width-lg" AutoPostBack="true" OnSelectedIndexChanged="cpCampusPicker_SelectedIndexChanged" />
-                        </div>
-                        <div class="small text-right">
-                            <Rock:Switch ID="tglMyActiveOpportunities" runat="server" OnCheckedChanged="tglMyActiveOpportunities_CheckedChanged" AutoPostBack="true" Text="My Active Opportunities" />
-                        </div>
+                <div class="d-flex flex-wrap justify-content-end align-items-center">
+                    <div class="small">
+                        <Rock:Switch ID="tglMyActiveOpportunities" runat="server" CssClass="small" OnCheckedChanged="tglMyActiveOpportunities_CheckedChanged" AutoPostBack="true" Text="My Active Opportunities" />
+                    </div>
+                    <div class="form-horizontal label-auto label-min-w-0 form-group-sm ml-4">
+                        <Rock:CampusPicker ID="cpCampusFilter" runat="server" CssClass="input-width-lg" FormGroupCssClass="m-0" AutoPostBack="true" OnSelectedIndexChanged="cpCampusPicker_SelectedIndexChanged" />
                     </div>
                 </div>
 
