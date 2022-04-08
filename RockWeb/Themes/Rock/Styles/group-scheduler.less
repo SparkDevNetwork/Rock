@@ -92,6 +92,7 @@
   overflow-y: scroll;
   .panel.panel-block {
     height: auto;
+    overflow: visible;
   }
 }
 
@@ -707,6 +708,10 @@
   padding: 1px 16px 130px;
   overflow-x: hidden;
   overflow-y: scroll;
+
+  .tooltip-inner {
+    max-width: 200px;
+  }
 }
 
 .styled-scroll ::-webkit-scrollbar {
