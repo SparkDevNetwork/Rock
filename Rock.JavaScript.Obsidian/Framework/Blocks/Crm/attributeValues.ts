@@ -17,7 +17,7 @@
 import { computed, defineComponent, ref } from "vue";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import Loading from "../../Controls/loading";
-import Alert from "../../Elements/alert";
+import Alert from "../../Elements/alert.vue";
 import { useStore } from "../../Store/index";
 import { Guid } from "../../Util/guid";
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";

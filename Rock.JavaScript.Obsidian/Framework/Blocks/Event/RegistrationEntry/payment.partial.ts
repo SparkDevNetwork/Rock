@@ -19,14 +19,12 @@ import { defineComponent, inject, ref } from "vue";
 import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "../../../Controls/gatewayControl";
 import RockForm from "../../../Controls/rockForm";
 import RockValidation from "../../../Controls/rockValidation";
-import Alert from "../../../Elements/alert";
+import Alert from "../../../Elements/alert.vue";
 import RockButton from "../../../Elements/rockButton";
 import { useInvokeBlockAction } from "../../../Util/block";
 import { newGuid, toGuidOrNull } from "../../../Util/guid";
 import { SavedFinancialAccountListItem } from "../../../ViewModels";
-import { RegistrationEntryState } from "../registrationEntry";
-import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
-import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from "./registrationEntryBlockViewModel";
+import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, RegistrationEntryState } from "./types";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Payment",

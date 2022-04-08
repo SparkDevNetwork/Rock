@@ -18,7 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "../../../../Controls/rockField";
 import { DragSource, IDragSourceOptions } from "../../../../Directives/dragDrop";
-import Alert from "../../../../Elements/alert";
+import Alert from "../../../../Elements/alert.vue";
 import DropDownList from "../../../../Elements/dropDownList";
 import RockLabel from "../../../../Elements/rockLabel";
 import Switch from "../../../../Elements/switch";

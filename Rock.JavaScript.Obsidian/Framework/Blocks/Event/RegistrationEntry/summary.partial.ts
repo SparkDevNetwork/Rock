@@ -19,17 +19,16 @@ import { defineComponent, inject, ref } from "vue";
 import GatewayControl from "../../../Controls/gatewayControl";
 import RockForm from "../../../Controls/rockForm";
 import RockValidation from "../../../Controls/rockValidation";
-import Alert from "../../../Elements/alert";
+import Alert from "../../../Elements/alert.vue";
 import DropDownList from "../../../Elements/dropDownList";
 import EmailBox from "../../../Elements/emailBox";
 import RockButton from "../../../Elements/rockButton";
 import { useInvokeBlockAction } from "../../../Util/block";
-import { getRegistrantBasicInfo, RegistrantBasicInfo, RegistrationEntryState } from "../registrationEntry";
-import CostSummary from "./costSummary";
-import DiscountCodeForm from "./discountCodeForm";
-import Registrar from "./registrar";
-import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
-import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from "./registrationEntryBlockViewModel";
+import { getRegistrantBasicInfo } from "./utils.partial";
+import CostSummary from "./costSummary.partial";
+import DiscountCodeForm from "./discountCodeForm.partial";
+import Registrar from "./registrar.partial";
+import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Summary",

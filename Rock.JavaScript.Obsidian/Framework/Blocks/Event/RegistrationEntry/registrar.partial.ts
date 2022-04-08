@@ -23,9 +23,8 @@ import StaticFormControl from "../../../Elements/staticFormControl";
 import TextBox from "../../../Elements/textBox";
 import { Guid } from "../../../Util/guid";
 import { ListItem, Person } from "../../../ViewModels";
-import { getRegistrantBasicInfo, RegistrantBasicInfo, RegistrationEntryState } from "../registrationEntry";
-import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from "./registrationEntryBlockViewModel";
+import { getRegistrantBasicInfo,  } from "./utils.partial";
+import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
 import { useStore } from "../../../Store/index";
 
 const store = useStore();

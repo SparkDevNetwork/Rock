@@ -18,7 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldFilterEditor from "../../../../Controls/fieldFilterEditor";
 import FieldTypeEditor from "../../../../Controls/fieldTypeEditor";
-import Alert, { AlertType } from "../../../../Elements/alert";
+import Alert/*, { AlertType }*/ from "../../../../Elements/alert.vue";
 import Modal from "../../../../Controls/modal";
 import Panel from "../../../../Controls/panel";
 import RockForm from "../../../../Controls/rockForm";
@@ -425,7 +425,7 @@ export default defineComponent({
             onValidationChanged,
             scrollableElement,
             validationErrors,
-            AlertType
+            //AlertType
         };
     },
 

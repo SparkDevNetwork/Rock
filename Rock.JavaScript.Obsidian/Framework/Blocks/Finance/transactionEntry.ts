@@ -21,7 +21,7 @@ import DatePicker from "../../Elements/datePicker";
 import RockButton from "../../Elements/rockButton";
 import { areEqual, Guid, newGuid } from "../../Util/guid";
 import { RockDateTime } from "../../Util/rockDateTime";
-import Alert from "../../Elements/alert";
+import Alert from "../../Elements/alert.vue";
 import { asFormattedString } from "../../Services/number";
 import { ConfigurationValues, InvokeBlockActionFunc, useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import Toggle from "../../Elements/toggle";

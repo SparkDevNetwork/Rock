@@ -20,7 +20,7 @@ import AttributeEditor from "../../Controls/attributeEditor";
 import Modal from "../../Controls/modal";
 import RockField from "../../Controls/rockField";
 import RockForm from "../../Controls/rockForm";
-import Alert from "../../Elements/alert";
+import Alert from "../../Elements/alert.vue";
 import DropDownList from "../../Elements/dropDownList";
 import RockButton from "../../Elements/rockButton";
 import TextBox from "../../Elements/textBox";

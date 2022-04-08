@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Alert from "../Elements/alert";
+import Alert from "../Elements/alert.vue";
 import { BinaryFiletype } from "../SystemGuids";
 import { Guid } from "../Util/guid";
 import { uploadBinaryFile } from "../Util/http";

@@ -17,12 +17,11 @@
 
 import { defineComponent, inject } from "vue";
 import { InvokeBlockActionFunc } from "../../../Util/block";
-import Alert from "../../../Elements/alert";
+import Alert from "../../../Elements/alert.vue";
 import RockButton from "../../../Elements/rockButton";
 import TextBox from "../../../Elements/textBox";
 import { asFormattedString } from "../../../Services/number";
-import { RegistrationEntryState } from "../registrationEntry";
-import {  RegistrationEntryBlockViewModel } from "./registrationEntryBlockViewModel";
+import { RegistrationEntryBlockViewModel, RegistrationEntryState } from "./types";
 
 type CheckDiscountCodeResult = {
     discountCode: string;

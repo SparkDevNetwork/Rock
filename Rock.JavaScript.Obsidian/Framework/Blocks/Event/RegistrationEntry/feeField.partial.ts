@@ -16,7 +16,7 @@
 //
 
 import { defineComponent, PropType } from "vue";
-import Alert from "../../../Elements/alert";
+import Alert from "../../../Elements/alert.vue";
 import CheckBox from "../../../Elements/checkBox";
 import DropDownList from "../../../Elements/dropDownList";
 import NumberUpDown from "../../../Elements/numberUpDown";
@@ -24,7 +24,7 @@ import NumberUpDownGroup, { NumberUpDownGroupOption } from "../../../Elements/nu
 import Number from "../../../Services/number";
 import GuidHelper, { Guid } from "../../../Util/guid";
 import { ListItem } from "../../../ViewModels";
-import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./registrationEntryBlockViewModel";
+import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.FeeField",

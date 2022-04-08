@@ -20,7 +20,7 @@ import AttributeValuesContainer from "../../../Controls/attributeValuesContainer
 import RockForm from "../../../Controls/rockForm";
 import RockButton from "../../../Elements/rockButton";
 import { PublicAttribute } from "../../../ViewModels";
-import { RegistrationEntryState } from "../registrationEntry";
+import { RegistrationEntryState } from "./types";
 
 export default defineComponent({
     name: "Event.RegistrationEntry.RegistrationStart",

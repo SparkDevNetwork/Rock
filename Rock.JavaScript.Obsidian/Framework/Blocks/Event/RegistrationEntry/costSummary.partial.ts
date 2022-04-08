@@ -22,8 +22,7 @@ import CurrencyBox from "../../../Elements/currencyBox";
 import HelpBlock from "../../../Elements/helpBlock";
 import { ValidationRule } from "../../../Rules/index";
 import { asFormattedString } from "../../../Services/number";
-import { RegistrationEntryState } from "../registrationEntry";
-import { RegistrationEntryBlockArgs } from "./registrationEntryBlockArgs";
+import { RegistrationEntryBlockArgs, RegistrationEntryState } from "./types";
 
 enum RegistrationCostSummaryType {
     Cost = 0,

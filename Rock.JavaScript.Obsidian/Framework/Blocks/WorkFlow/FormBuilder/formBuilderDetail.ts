@@ -17,7 +17,7 @@
 
 import { nextTick } from "vue";
 import { computed, defineComponent, ref, watch } from "vue";
-import Alert from "../../../Elements/alert";
+import Alert from "../../../Elements/alert.vue";
 import Panel from "../../../Controls/panel";
 import RockButton from "../../../Elements/rockButton";
 import { FieldType } from "../../../SystemGuids";

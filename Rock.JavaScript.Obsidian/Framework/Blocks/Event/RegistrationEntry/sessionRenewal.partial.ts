@@ -22,8 +22,7 @@ import LoadingIndicator from "../../../Elements/loadingIndicator";
 import RockButton from "../../../Elements/rockButton";
 import { toWord } from "../../../Services/number";
 import { pluralConditional } from "../../../Services/string";
-import { RegistrationEntryState } from "../registrationEntry";
-import { SessionRenewalResult } from "./registrationEntryBlockViewModel";
+import { SessionRenewalResult, RegistrationEntryState } from "./types";
 import { RockDateTime } from "../../../Util/rockDateTime";
 
 export default defineComponent({
