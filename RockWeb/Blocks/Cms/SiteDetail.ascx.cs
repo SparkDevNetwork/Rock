@@ -457,7 +457,7 @@ namespace RockWeb.Blocks.Cms
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
                 site.IndexStartingLocation = tbIndexStartingLocation.Text;
                 site.EnableExclusiveRoutes = cbEnableExclusiveRoutes.Checked;
-
+                site.EnablePageViewGeoTracking = cbEnablePageViewGeoTracking.Checked;
                 site.PageHeaderContent = cePageHeaderContent.Text;
 
                 avcAttributes.GetEditValues( site );
@@ -919,7 +919,7 @@ namespace RockWeb.Blocks.Cms
             cbEnableIndexing.Checked = site.IsIndexEnabled;
             tbIndexStartingLocation.Text = site.IndexStartingLocation;
             cbEnableExclusiveRoutes.Checked = site.EnableExclusiveRoutes;
-
+            cbEnablePageViewGeoTracking.Checked = site.EnablePageViewGeoTracking;
             // disable the indexing features if indexing on site is disabled
             var siteEntityType = EntityTypeCache.Get( "Rock.Model.Site" );
             if ( siteEntityType != null && !siteEntityType.IsIndexingEnabled )

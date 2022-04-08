@@ -800,9 +800,13 @@
     <Compile Include="Financial\IStatusProvidingGateway.cs" />
     <Compile Include="Follow\Event\PersonNoteAdded.cs" />
     <Compile Include="Follow\IEventComponentAdditionalMergeFields.cs" />
+    <Compile Include="IpAddress\IpAddressLookupComponent.cs" />
+    <Compile Include="IpAddress\IpAddressLookupContainer.cs" />
+    <Compile Include="IpAddress\IpRegistry.cs" />
     <Compile Include="Jobs\ConnectionRequestsAutomation.cs" />
     <Compile Include="Jobs\GivingAutomation.cs" />
     <Compile Include="Field\Types\MobileNavigationActionFieldType.cs" />
+    <Compile Include="Jobs\PopulateInteractionSessionData.cs" />
     <Compile Include="Jobs\PostV127DataMigrationsRebuildGroupSalutations.cs" />
     <Compile Include="Jobs\PostV13DataMigrationsAddInteractionComponentIndexToInteraction.cs" />
     <Compile Include="Jobs\ProcessElevatedSecurity.cs" />
