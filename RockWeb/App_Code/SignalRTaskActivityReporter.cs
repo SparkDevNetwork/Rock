@@ -531,7 +531,7 @@ namespace RockWeb
         public static void AddActivityReporterScripts( RockPage page, string taskCompletedCallbackFunctionName = null )
         {
             // Add SignalR framework scripts.
-            page.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", fingerprint: false );
+            page.AddScriptLink( "~/Scripts/jquery.signalR-2.4.3.min.js", fingerprint: false );
             page.ClientScript.RegisterStartupScript( page.GetType(), "signalr", @"<script src=""/SignalR/hubs""></script>", false );
 
             // Add task activity notification script.

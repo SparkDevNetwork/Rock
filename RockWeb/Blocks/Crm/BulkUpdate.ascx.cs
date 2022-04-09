@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.4.3.min.js", false );
 
             var personEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
