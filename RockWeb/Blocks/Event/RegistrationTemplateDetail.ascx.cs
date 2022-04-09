@@ -2324,7 +2324,7 @@ The logged-in person's information will be used to complete the registrar inform
             var selectedTemplate = GetSelectedTemplate();
             var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
 
-            cbDisplayInLine.Visible = isNonLegacySelected;
+            cbDisplayInLine.Visible = !isNonLegacySelected;
             cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
             cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
 
@@ -2615,7 +2615,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
-            cbDisplayInLine.Visible = isNonLegacySignatureSelected;
+            cbDisplayInLine.Visible = !isNonLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
