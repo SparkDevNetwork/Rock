@@ -196,7 +196,7 @@ namespace Rock.Communication.Transport
         private RestRequest GetRestRequestFromRockEmailMessage( RockEmailMessage rockEmailMessage )
         {
             var restRequest = new RestRequest( GetAttributeValue( "Resource" ), Method.POST );
-            restRequest.AddParameter( "domian", GetAttributeValue( "Domain" ), ParameterType.UrlSegment );
+            restRequest.AddParameter( "domain", GetAttributeValue( "Domain" ), ParameterType.UrlSegment );
 
             // To
             rockEmailMessage.GetRecipients().ForEach( r => restRequest.AddParameter( "to", new MailAddress( r.To, r.Name ).ToString() ) );
