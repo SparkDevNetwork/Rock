@@ -135,6 +135,25 @@ namespace RockWeb.Blocks.Steps
             gStepProgram.Actions.ShowAdd = canAddEditDelete;
             gStepProgram.IsDeleteEnabled = canAddEditDelete;
 
+            // make a custom delete confirmation dialog
+            gStepProgram.ShowConfirmDeleteDialog = false;
+
+            string deleteScript = @"
+    $('table.js-grid-stepProgram-list a.grid-delete-button').on('click', function( e ){
+        var $btn = $(this);
+        e.preventDefault();
+
+        var confirmMsg = 'Are you sure you want to delete this Step Program? All associated Step Types and Step Participants will also be deleted!';
+
+        Rock.dialogs.confirm(confirmMsg, function (result) {
+            if (result) {
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript(gStepProgram, gStepProgram.GetType(), "deleteStepProgramScript", deleteScript, true);
+
             var reorderField = gStepProgram.ColumnsOfType<ReorderField>().FirstOrDefault();
 
             if ( reorderField != null )

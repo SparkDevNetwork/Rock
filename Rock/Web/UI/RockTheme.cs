@@ -33,6 +33,7 @@ namespace Rock.Web.UI
     public class RockTheme
     {
         static private string _themeDirectory = HttpRuntime.AppDomainAppPath + "Themes";
+        static private string _rockWebStylesDirectory = HttpRuntime.AppDomainAppPath + "Styles";
 
         /// <summary>
         /// Gets or sets the name.
@@ -103,72 +104,99 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Compiles this instance.
+        /// Compiles the Theme files into CSS
         /// </summary>
         public bool Compile( out string messages )
         {
+            return Compile( false, out messages );
+        }
+
+        /// <summary>
+        /// Compiles the Theme files into CSS, with an option to only compile the files if needed
+        /// </summary>
+        public bool Compile( bool onlyCompileIfNeeded, out string messages )
+        {
             messages = string.Empty;
             bool compiledSuccessfully = true;
+            var newestRockWebStyleFileDateTimeUTC = Directory.GetFiles( _rockWebStylesDirectory, "*.*", SearchOption.AllDirectories ).Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
 
             try
             {
                 DirectoryInfo themeDirectory = new DirectoryInfo( this.AbsolutePath + @"\Styles" );
-                if ( themeDirectory.Exists )
+                if ( !themeDirectory.Exists )
                 {
-                    FileInfo[] files = themeDirectory.GetFiles();
+                    return true;
+                }
+                FileInfo[] files = themeDirectory.GetFiles();
 
-                    // Good documentation on options
-                    // https://www.codeproject.com/Articles/710676/LESS-Web-config-DotlessConfiguration-Options
-                    DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
-                    dotLessConfiguration.MinifyOutput = true;
-                    dotLessConfiguration.DisableVariableRedefines = true;
-                    dotLessConfiguration.Logger = typeof( DotlessLogger );
-                    dotLessConfiguration.LogLevel = LogLevel.Warn;
+                if ( files == null || !this.AllowsCompile )
+                {
+                    return true;
+                }
 
+                // Good documentation on options
+                // https://www.codeproject.com/Articles/710676/LESS-Web-config-DotlessConfiguration-Options
+                DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
+                dotLessConfiguration.MinifyOutput = true;
+                dotLessConfiguration.DisableVariableRedefines = true;
+                dotLessConfiguration.Logger = typeof( DotlessLogger );
+                dotLessConfiguration.LogLevel = LogLevel.Warn;
 
-                    if ( files != null )
+                // don't compile files that start with an underscore
+                var lessInputFiles = files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ).ToArray();
+                var cssOutputFileNames = lessInputFiles.Select( a => Path.ChangeExtension( a.FullName, "css" ) ).ToArray();
+
+                // Get the datetime of the most recently modified theme file (except for the css output files)
+                var newestThemeFileDateTimeUTC = Directory
+                    .GetFiles( themeDirectory.FullName, "*.*", SearchOption.AllDirectories )
+                    .Where( a => !cssOutputFileNames.Contains( a ) )
+                    .Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+
+                foreach ( var file in lessInputFiles )
+                {
+                    var cssFileName = file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" );
+                    if ( onlyCompileIfNeeded && File.Exists( cssFileName ) )
                     {
-                        if ( this.AllowsCompile )
+                        var cssFileDateTimeUTC = File.GetLastWriteTimeUtc( cssFileName );
+                        if ( cssFileDateTimeUTC > newestThemeFileDateTimeUTC && cssFileDateTimeUTC > newestRockWebStyleFileDateTimeUTC )
                         {
-                            // don't compile files that start with an underscore
-                            foreach ( var file in files.Where( f => f.Name.EndsWith( ".less" ) && !f.Name.StartsWith( "_" ) ) )
-                            {
+                            var skippedCompileMessage = $"{this.Name}: Skipped compiling {file.Name}. CSS File is already up to date.";
+                            continue;
+                        }
+                    }
 
-                                ILessEngine lessEngine = new EngineFactory( dotLessConfiguration ).GetEngine( new AspNetContainerFactory() );
+                    ILessEngine lessEngine = new EngineFactory( dotLessConfiguration ).GetEngine( new AspNetContainerFactory() );
 
-                                /*  2020-06-17 MP
-                                    Explicitly set CurrentDirectory option on lessEngine so that it doesn't have to use Directory.CurrentDirectory. See https://github.com/dotless/dotless/commit/9fe520c898e9ca29568bf31a3065e6ad228c57f2#diff-bb5d989ac1ea2e78eb439b537d0f9aabR261
+                    /*  2020-06-17 MP
+                        Explicitly set CurrentDirectory option on lessEngine so that it doesn't have to use Directory.CurrentDirectory. See https://github.com/dotless/dotless/commit/9fe520c898e9ca29568bf31a3065e6ad228c57f2#diff-bb5d989ac1ea2e78eb439b537d0f9aabR261
 
-                                    If Directory.CurrentDirectory is used, the Directory.CurrencyDirectory might get set to a different theme directory during compile if there are multiple compiles
-                                    happening at the same time. For example, if RockWeb restarts, and Themes are still compiling, the new RockWeb start starts to compile them before the previous compiles are done.
+                        If Directory.CurrentDirectory is used, the Directory.CurrencyDirectory might get set to a different theme directory during compile if there are multiple compiles
+                        happening at the same time. For example, if RockWeb restarts, and Themes are still compiling, the new RockWeb start starts to compile them before the previous compiles are done.
 
-                                    Using LessEngine.CurrentDirectory fixes the issue where a less file couldn't be found (or an incorrect less file was used) due to more than one compile happening that the same time.
-                                    Now that we create the lessEngine ourselves (see https://github.com/SparkDevNetwork/Rock/commit/9e7d1079852cb0321c55335b8b50a4374590a9e8#diff-42d846b5413bc569b1b76b5f844cca13R143),
-                                    we can take advantage of the lessEngine.CurrentDirectory feature.
-                                */
+                        Using LessEngine.CurrentDirectory fixes the issue where a less file couldn't be found (or an incorrect less file was used) due to more than one compile happening that the same time.
+                        Now that we create the lessEngine ourselves (see https://github.com/SparkDevNetwork/Rock/commit/9e7d1079852cb0321c55335b8b50a4374590a9e8#diff-42d846b5413bc569b1b76b5f844cca13R143),
+                        we can take advantage of the lessEngine.CurrentDirectory feature.
+                    */
 
-                                lessEngine.CurrentDirectory = themeDirectory.FullName;
+                    lessEngine.CurrentDirectory = themeDirectory.FullName;
 
-                                string cssSource = lessEngine.TransformToCss( File.ReadAllText( file.FullName ), null );
+                    string cssSource = lessEngine.TransformToCss( File.ReadAllText( file.FullName ), null );
 
-                                // Check for compile errors
-                                if ( lessEngine.LastTransformationSuccessful )
-                                {
-                                    File.WriteAllText( file.DirectoryName + @"\" + file.Name.Replace( ".less", ".css" ), cssSource );
-                                }
-                                else
-                                {
-                                    messages += "A compile error occurred on " + file.Name;
-                                    compiledSuccessfully = false;
+                    // Check for compile errors
+                    if ( lessEngine.LastTransformationSuccessful )
+                    {
+                        File.WriteAllText( cssFileName, cssSource );
+                    }
+                    else
+                    {
+                        messages += "A compile error occurred on " + file.Name;
+                        compiledSuccessfully = false;
 
-                                    // Try to get the logger instance fron the underlying engine
-                                    var loggerInstance = ( ( ( lessEngine as ParameterDecorator )?.Underlying as CacheDecorator )?.Underlying as LessEngine )?.Logger as DotlessLogger;
-                                    if ( loggerInstance != null )
-                                    {
-                                        messages += "\n" + string.Join( "\n", loggerInstance.LogLines ) + "\n";
-                                    }
-                                }
-                            }
+                        // Try to get the logger instance fron the underlying engine
+                        var loggerInstance = ( ( ( lessEngine as ParameterDecorator )?.Underlying as CacheDecorator )?.Underlying as LessEngine )?.Logger as DotlessLogger;
+                        if ( loggerInstance != null )
+                        {
+                            messages += "\n" + string.Join( "\n", loggerInstance.LogLines ) + "\n";
                         }
                     }
                 }
@@ -212,6 +240,18 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public static bool CompileAll( out string messages, CancellationToken cancellationToken )
         {
+            return CompileAll( false, out messages, cancellationToken );
+        }
+
+        /// <summary>
+        /// Compiles all themes with an option to only compile files if needed
+        /// </summary>
+        /// <param name="onlyCompileIfNeeded">if set to <c>true</c> [only compile if needed].</param>
+        /// <param name="messages">The messages.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        public static bool CompileAll( bool onlyCompileIfNeeded, out string messages, CancellationToken cancellationToken )
+        {
             messages = string.Empty;
             bool allCompiled = true;
 
@@ -227,7 +267,7 @@ namespace Rock.Web.UI
                 }
 
                 string themeMessage = string.Empty;
-                bool themeSuccess = theme.Compile( out themeMessage );
+                bool themeSuccess = theme.Compile( onlyCompileIfNeeded, out themeMessage );
 
                 if ( !themeSuccess )
                 {

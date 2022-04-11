@@ -43,6 +43,7 @@ namespace Rock.Rest.v2.Controllers
     /// Provides API interfaces for TV applications to use when communicating with Rock.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [RockGuid( "38541064-21b0-4614-a97c-5c9231ebcb4e" )]
     public class TvController : ApiControllerBase
     {
         // Used for creating random strings
@@ -58,6 +59,7 @@ namespace Rock.Rest.v2.Controllers
         /// <seealso cref="Rock.Rest.ApiControllerBase" />
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/apple/GetLaunchPacket" )]
+        [RockGuid( "55d648cd-0533-4fe6-99b1-ce301728db73" )]
         public IHttpActionResult GetLaunchPacket()
         {
             // Read site Id from the request header
@@ -186,6 +188,7 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/apple/GetApplicationJavaScript/{applicationId}" )]
+        [RockGuid( "a3792a52-0f64-4f55-9c9c-7e02aa96d0f9" )]
         public HttpResponseMessage GetApplicationScript( int applicationId )
         {
             var response = new HttpResponseMessage();
@@ -223,6 +226,7 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/apple/GetTvmlForPage/{pageGuid}" )]
+        [RockGuid( "ae76f738-7380-48eb-85bd-c42102e2a4a0" )]
         public HttpResponseMessage GetTvmlForPage( Guid pageGuid )
         {
             var response = new HttpResponseMessage();
@@ -353,6 +357,7 @@ namespace Rock.Rest.v2.Controllers
         [System.Web.Http.Route( "api/v2/tv/SaveInteractions/{personalDeviceGuid}" )]
         [HttpPost]
         [Authenticate]
+        [RockGuid( "624cdfbb-4688-4312-bccd-4aeaabb49523" )]
         public IHttpActionResult PostInteractions( [FromBody] List<TvInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
             var person = GetPerson();
@@ -550,6 +555,7 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/StartAuthenticationSession/{siteId}" )]
+        [RockGuid( "0747d3bf-8bcf-4c4d-a022-4158694ddb1b" )]
         public HttpResponseMessage StartAuthenicationSession( int siteId )
         {
             var response = new HttpResponseMessage();
@@ -646,6 +652,7 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/CheckAuthenticationSession/{siteId}/{code}" )]
+        [RockGuid( "35c60489-936f-42f9-8617-18c959abdb0c" )]
         public HttpResponseMessage CheckAuthenicationSession( int siteId, string code )
         {
             var response = new HttpResponseMessage();
@@ -716,7 +723,7 @@ namespace Rock.Rest.v2.Controllers
         /// </summary>
         /// <param name="length">The length.</param>
         /// <returns></returns>
-        public static string RandomString( int length )
+        private static string RandomString( int length )
         {
             // Removed vowels to prevent bad words and the letter nine to prevent other immature references
             const string chars = "BCDFGHJKLMNPQRSTVWXYZ012345678";

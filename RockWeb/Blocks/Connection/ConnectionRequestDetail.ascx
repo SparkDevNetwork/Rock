@@ -28,7 +28,7 @@
         display: inline-flex;
         justify-content: center;
         position: relative;
-        vertical-align: top; 
+        vertical-align: top;
     }
 
     .lava-activity-add-no-table-border {
@@ -56,17 +56,15 @@
                 Text="This block requires a valid connection request id and/or a connection opportunity id as query string parameters." />
 
             <asp:Panel ID="pnlContents" runat="server" CssClass="panel panel-block">
-                <div id="divHeaderDefault" runat="server">
-                    <div class="panel-heading">
-                        <h1 class="panel-title">
-                            <asp:Literal ID="lConnectionOpportunityIconHtml" runat="server" />Connection Request Detail
-                        </h1>
-                        <div class="panel-labels pt-2 mb-3">
-                            <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
-                            <Rock:HighlightLabel ID="hlOpportunity" runat="server" LabelType="Info" />
-                            <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Default" Visible="false" />
-                            <Rock:HighlightLabel ID="hlState" runat="server" Visible="false" />
-                        </div>
+                <div id="divHeaderDefault" class="panel-heading" runat="server">
+                    <h1 class="panel-title">
+                        <asp:Literal ID="lConnectionOpportunityIconHtml" runat="server" />Connection Request Detail
+                    </h1>
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+                        <Rock:HighlightLabel ID="hlOpportunity" runat="server" LabelType="Info" />
+                        <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Default" Visible="false" />
+                        <Rock:HighlightLabel ID="hlState" runat="server" Visible="false" />
                     </div>
                 </div>
                 <asp:Panel ID="pnlReadDetails" runat="server">
@@ -91,7 +89,7 @@
                                     <div class="col-sm-6 col-md-5 mb-3">
                                         <h6 class="mt-0 mb-1">Contact Information</h6>
                                         <div class="personcontact">
-                                            <Rock:RockLiteral ID="lContactInfo" runat="server" />
+                                            <asp:Literal ID="lContactInfo" runat="server" />
                                         </div>
                                     </div>
                                     <div class="col-sm-6 col-md-4 mb-3">
@@ -298,8 +296,8 @@
 
             </asp:Panel>
 
-            <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows" CssClass="clickable">
-                <div class="grid">
+            <Rock:PanelWidget ID="wpConnectionRequestWorkflow" runat="server" Title="Workflows" CssClass="clickable connection-request-workflows">
+                <div class="grid grid-panel">
                     <Rock:Grid ID="gConnectionRequestWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location" OnRowSelected="gConnectionRequestWorkflows_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="WorkflowType" HeaderText="Workflow Type" />
@@ -312,7 +310,7 @@
                 </div>
             </Rock:PanelWidget>
 
-            <asp:Panel ID="pnlConnectionRequestActivities" runat="server" CssClass="panel panel-block" Visible="true">
+            <asp:Panel ID="pnlConnectionRequestActivities" runat="server" CssClass="panel panel-block connection-request-activities" Visible="true">
                 <div id="divLavaActivities" runat="server">
                     <div class="panel-body">
                         <div id="divLavaActivitiesContent" >

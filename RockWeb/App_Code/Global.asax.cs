@@ -239,9 +239,10 @@ namespace RockWeb
 
                 Thread.CurrentThread.IsBackground = true;
                 string messages = string.Empty;
+                bool onlyCompileIfNeeded = true;
 
                 // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
-                RockTheme.CompileAll( out messages, _threadCancellationTokenSource.Token );
+                RockTheme.CompileAll( onlyCompileIfNeeded, out messages, _threadCancellationTokenSource.Token );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     if ( messages.IsNullOrWhiteSpace() )

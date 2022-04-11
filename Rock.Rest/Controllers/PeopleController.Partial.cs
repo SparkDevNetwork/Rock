@@ -55,7 +55,7 @@ namespace Rock.Rest.Controllers
         public override Person GetById( int id )
         {
             // NOTE: We want PrimaryAliasId to be populated, so call this.Get( true ) which includes "Aliases"
-            var person = this.Get( true ).FirstOrDefault( a => a.Id == id );
+            var person = this.Get( true ).Include( a => a.PhoneNumbers ).FirstOrDefault( a => a.Id == id );
             if ( person == null )
             {
                 throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -358,8 +358,12 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetInteractionStatistics/{personId?}" )]
         [RockGuid( "bc12a776-bfe9-487d-aeba-1099d2db5c6b" )]
-        public virtual PersonInteractionStatistics InteractionStatistics( int? personId = null, [FromUri] DateTime? date = null,
-            [FromUri] int? interactionChannelId = null, [FromUri] int? interactionComponentId = null, [FromUri] Guid? interactionChannelGuid = null,
+        public virtual PersonInteractionStatistics InteractionStatistics(
+            int? personId = null,
+            [FromUri] DateTime? date = null,
+            [FromUri] int? interactionChannelId = null,
+            [FromUri] int? interactionComponentId = null,
+            [FromUri] Guid? interactionChannelGuid = null,
             [FromUri] Guid? interactionComponentGuid = null )
         {
             var rockContext = new RockContext();
@@ -429,6 +433,7 @@ namespace Rock.Rest.Controllers
                         i.InteractionDateTime.Month == date.Value.Month &&
                         i.InteractionDateTime.Year == date.Value.Year )
                 }
+
             ).FirstOrDefault();
 
             return personInteractionStatistics ?? new PersonInteractionStatistics();
@@ -722,8 +727,7 @@ namespace Rock.Rest.Controllers
             bool includeDeceased = false,
             string address = null,
             string phone = null,
-            string email = null
-            )
+            string email = null )
         {
             return SearchForPeople( Service.Context as RockContext, name, address, phone, email, includeDetails, includeBusinesses, includeDeceased, true );
         }
@@ -750,8 +754,7 @@ namespace Rock.Rest.Controllers
             bool includeDetails,
             bool includeBusinesses,
             bool includeDeceased,
-            bool includeHtml
-            )
+            bool includeHtml )
         {
             if ( name.IsNullOrWhiteSpace() && address.IsNullOrWhiteSpace() && phone.IsNullOrWhiteSpace() && email.IsNullOrWhiteSpace() )
             {
@@ -929,6 +932,7 @@ namespace Rock.Rest.Controllers
             {
                 personSearchResult.ImageHtmlTag = Person.GetPersonPhotoImageTag( person, 50, 50 );
             }
+
             personSearchResult.ImageUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
             personSearchResult.AgeClassification = person.AgeClassification;
@@ -940,7 +944,7 @@ namespace Rock.Rest.Controllers
             personSearchResult.PhoneNumbers = person.PhoneNumbers
                 .Select( p => new PersonSearchPhoneNumber
                 {
-                    Type = DefinedValueCache.Get(p.NumberTypeValueId ?? 0)?.Value ?? string.Empty,
+                    Type = DefinedValueCache.Get( p.NumberTypeValueId ?? 0 )?.Value ?? string.Empty,
                     Number = p.NumberFormatted,
                     IsUnlisted = p.IsUnlisted
                 } )
@@ -981,12 +985,14 @@ namespace Rock.Rest.Controllers
             if ( person.AgeClassification != AgeClassification.Child )
             {
                 var personService = new PersonService( rockContext );
-                var spouse = personService.GetSpouse( person, a => new
-                {
-                    a.Person.NickName,
-                    a.Person.LastName,
-                    a.Person.SuffixValueId
-                } );
+                var spouse = personService.GetSpouse(
+                    person,
+                    a => new
+                    {
+                        a.Person.NickName,
+                        a.Person.LastName,
+                        a.Person.SuffixValueId
+                    } );
 
                 if ( spouse != null )
                 {
@@ -1249,8 +1255,7 @@ namespace Rock.Rest.Controllers
             int? dataViewId = null,
             DateTime? modifiedSince = null,
             string attributeKeys = null,
-            AttributeReturnType attributeReturnType = AttributeReturnType.Raw
-            )
+            AttributeReturnType attributeReturnType = AttributeReturnType.Raw )
         {
             // limit to 'API Max Items Per Page' global attribute
             int maxPageSize = GlobalAttributesCache.Get().GetValue( "core_ExportAPIsMaxItemsPerPage" ).AsIntegerOrNull() ?? 1000;
@@ -1303,7 +1308,7 @@ namespace Rock.Rest.Controllers
             string vCard = GlobalAttributesCache.Value( "VCardFormat" ).ResolveMergeFields( mergeFields ).Trim();
 
             // remove empty lines (the vcard spec is very picky)
-            vCard = Regex.Replace( vCard, @"^\s+$[\r\n]*", "", RegexOptions.Multiline );
+            vCard = Regex.Replace( vCard, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline );
 
             var inputEncoding = Encoding.Default;
             var outputEncoding = Encoding.GetEncoding( 28591 );
@@ -1501,6 +1506,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// A phone number that will be included in the search results.
     /// </summary>
+    [RockClientInclude( "Search result PersonSearchResult.PhoneNumbers from api/People/Search" )]
     public class PersonSearchPhoneNumber
     {
         /// <summary>

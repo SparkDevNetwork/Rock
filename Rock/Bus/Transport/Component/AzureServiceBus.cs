@@ -21,6 +21,7 @@ using MassTransit;
 using MassTransit.AzureServiceBusTransport;
 using Microsoft.ServiceBus;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Logging;
 using Rock.Security;
 
@@ -49,15 +50,15 @@ namespace Rock.Bus.Transport
 
     [TextField(
         "Message Expiration TimeSpan",
-        Description = "Enter an expiration in TimeSpan format 00:00:00:00 (i.e. day:hour:minute:second)",
+        Description = "Enter an expiration in TimeSpan format 00:00:00:00 (i.e. day:hour:minute:second). If an invalid format is specified the default will be 7 days.",
         IsRequired = true,
         Order = 2,
         DefaultValue = "07:00:00:00",
-        Key = AttributeKey.MessageExpiration )]
+        Key = AttributeKey.MessageExpiration)]
 
     [BooleanField(
         "Enable Dead Letter On Message Expiration",
-        Description = "Specify true or false to if a message should to go to a dead letter queue if a message expires before it is consumed.",
+        Description = "Specify true or false to indicate if a message should to go to a dead letter queue if a message expires before it is consumed.",
         IsRequired = true,
         Order = 3,
        DefaultBooleanValue = false,
@@ -97,8 +98,11 @@ namespace Rock.Bus.Transport
             {
                 RockLogger.Log.Warning( RockLogDomains.Bus, $"{nameof( AzureServiceBus )}: An invalid Message Expiration TimeSpan value of {messageExpirationString} was specified. Defaulting to 07:00:00:00 (7 days)." );
                 messageExpiration = TimeSpan.FromDays( 7 );
-            }
 
+                SetAttributeValue( AttributeKey.MessageExpiration, $"{messageExpiration.Days:D2}:{messageExpiration.Hours:D2}:{messageExpiration.Minutes:D2}:{messageExpiration.Seconds:D2}" );
+                this.SaveAttributeValue( AttributeKey.MessageExpiration, new RockContext() );
+            }
+                        
             var enableDeadletterOnMessageExpiration = GetAttributeValue( AttributeKey.DeadLetterOnMessageExpiration ).AsBoolean();
 
             return MassTransit.Bus.Factory.CreateUsingAzureServiceBus( configurator =>
@@ -132,9 +136,12 @@ namespace Rock.Bus.Transport
             {
                 foreach ( var queue in queues )
                 {
-                    queue.DefaultMessageTimeToLive = messageExpiration;
-                    queue.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
-                    namespaceManager.UpdateQueue( queue );
+                    if ( queue.DefaultMessageTimeToLive != messageExpiration || queue.EnableDeadLetteringOnMessageExpiration != enableDeadletterOnMessageExpiration )
+                    {
+                        queue.DefaultMessageTimeToLive = messageExpiration;
+                        queue.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+                        namespaceManager.UpdateQueue( queue );
+                    }
                 }
             }
 
@@ -144,8 +151,11 @@ namespace Rock.Bus.Transport
             {
                 foreach ( var topic in topics )
                 {
-                    topic.DefaultMessageTimeToLive = messageExpiration;
-                    namespaceManager.UpdateTopic( topic );
+                    if ( topic.DefaultMessageTimeToLive != messageExpiration )
+                    {
+                        topic.DefaultMessageTimeToLive = messageExpiration;
+                        namespaceManager.UpdateTopic( topic );
+                    }
 
                     var subs = namespaceManager.GetSubscriptions( topic.Path );
 
@@ -156,9 +166,12 @@ namespace Rock.Bus.Transport
                         {
                             // If the topic specifies a smaller TTL than the subscription, the topic TTL is applied ⬆.
 
-                            sub.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
+                            if ( sub.EnableDeadLetteringOnMessageExpiration != enableDeadletterOnMessageExpiration )
+                            {
+                                sub.EnableDeadLetteringOnMessageExpiration = enableDeadletterOnMessageExpiration;
 
-                            namespaceManager.UpdateSubscription( sub );
+                                namespaceManager.UpdateSubscription( sub );
+                            }
 
                         }
                     }

@@ -72,10 +72,9 @@ namespace RockWeb.Blocks.Core
             TargetPerson = ContextEntity<Person>();
 
             gSignatureDocuments.DataKeyNames = new string[] { "Id" };
-            gSignatureDocuments.Actions.ShowAdd = true;
             gSignatureDocuments.Actions.AddClick += gSignatureDocuments_Add;
+            gSignatureDocuments.Actions.ShowAdd = false;
             gSignatureDocuments.GridRebind += gSignatureDocuments_GridRebind;
-            gSignatureDocuments.Actions.ShowAdd = true;
             gSignatureDocuments.IsDeleteEnabled = true;
         }
 
@@ -195,6 +194,9 @@ namespace RockWeb.Blocks.Core
                 int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
                 if ( documentTypeId.HasValue )
                 {
+                    var isLegacyTemplate = new SignatureDocumentTemplateService( new RockContext() ).GetSelect( documentTypeId.Value, s => s.ProviderEntityTypeId.HasValue );
+                    gSignatureDocuments.Actions.ShowAdd = isLegacyTemplate;
+
                     qry = qry.Where( d =>
                         d.SignatureDocumentTemplateId == documentTypeId.Value );
 

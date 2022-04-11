@@ -29,7 +29,7 @@
 
     &::before {
       position: absolute;
-      top: 4px;
+      top: @custom-control-indicator-offset;
       left: -(@custom-switch-width + @custom-control-gutter);
       display: block;
       width: @custom-switch-width;
@@ -43,7 +43,7 @@
 
     &::after {
       position: absolute;
-      top: 4px + @custom-switch-indicator-padding;
+      top: @custom-control-indicator-offset + @custom-switch-indicator-padding;
       left: (-(@custom-switch-width + @custom-control-gutter) + @custom-switch-indicator-padding);
       display: block;
       width: @custom-switch-indicator-size;

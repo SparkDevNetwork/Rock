@@ -156,6 +156,10 @@ namespace Rock.Model
 
                                 Entity.Path = Entity.StorageProvider.GetPath( Entity );
                             }
+                            else
+                            {
+                                throw new Rock.Web.FileUploadException( "A storage provider has not been registered for this file type or the current storage provider is inactive.", System.Net.HttpStatusCode.BadRequest );
+                            }
                         }
                     }
 

@@ -374,7 +374,7 @@ namespace Rock.SystemGuid
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
 
         /// <summary>
-        /// The section types defined type, which has values that determine which section type the workflow action form section is based.
+        /// The section types defined type, which has values that determine the CSS class to apply to the section div.
         /// </summary>
         public const string SECTION_TYPE = "A72D940B-2A69-44B8-931C-7FE99824D84C";
 

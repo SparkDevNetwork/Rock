@@ -27,6 +27,7 @@ namespace Rock.Rest.v2.Controls
     /// API endpoints for the Person Picker.
     /// </summary>
     [RoutePrefix( "api/v2/Controls/PersonPicker" )]
+    [RockGuid( "8ac14bb1-fcea-491e-8bf7-0bcb147125c4" )]
     public class PersonPickerController : ControlsControllerBase
     {
         /// <summary>
@@ -38,6 +39,7 @@ namespace Rock.Rest.v2.Controls
         [Secured]
         [HttpPost]
         [System.Web.Http.Route( "Search" )]
+        [RockGuid( "2d8db6e9-93ea-4a88-9256-4ec77b386107" )]
         public IQueryable<Rock.Rest.Controllers.PersonSearchResult> PostSearch( [FromBody] SearchOptions searchOptions )
         {
             var rockContext = new RockContext();

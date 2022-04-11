@@ -613,11 +613,16 @@ namespace Rock.Web.Cache
 
             if ( rockControl != null )
             {
+                var isRequired = options.Required ?? IsRequired;
                 rockControl.Label = options.LabelText;
                 rockControl.Help = options.HelpText;
                 rockControl.Warning = options.WarningText;
-                rockControl.Required = options.Required ?? IsRequired;
+                rockControl.Required = isRequired;
                 rockControl.ValidationGroup = options.ValidationGroup;
+                if ( options.LabelText.IsNullOrWhiteSpace() && isRequired )
+                {
+                    rockControl.RequiredErrorMessage = $"{Name} is required.";
+                }
 
                 controls.Add( attributeControl );
             }

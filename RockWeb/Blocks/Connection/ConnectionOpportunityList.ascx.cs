@@ -232,7 +232,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            if ( AvailableAttributes != null )
+            if ( e.Key == MakeKeyUniqueToConnectionType( "Status" ) )
+            {
+                e.Value = e.Value == "True" ? "Only Show Active Items" : string.Empty;
+            }
+            else if ( AvailableAttributes != null )
             {
                 var attribute = AvailableAttributes.FirstOrDefault( a => MakeKeyUniqueToConnectionType( a.Key ) == e.Key );
                 if ( attribute != null )
@@ -247,10 +251,7 @@ namespace RockWeb.Blocks.Connection
                     {
                     }
                 }
-            }
-            else if ( e.Key == MakeKeyUniqueToConnectionType( "Status" ) )
-            {
-                e.Value = e.Value == "True" ? "Only Show Active Items" : string.Empty;
+                e.Value = string.Empty;
             }
             else
             {

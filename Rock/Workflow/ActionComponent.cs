@@ -264,8 +264,16 @@ namespace Rock.Workflow
             return SetWorkflowAttributeValue( action, key, value.ToString() );
         }
 
+        /*
+            02/18/2022 - KA
+
+            SetWorkflowAttributeValue() checks if the Attribute Field Type is an EncryptedTextFieldType
+            or an SSNFieldType and encrypts the value before setting it on the activity, there is no 
+            need to encrypt the values before calling SetWorkflowAttributeValue().
+        */
+
         /// <summary>
-        /// Sets the workflow attribute value.
+        /// Sets the workflow attribute value. If the attribute field type is an <see cref="Field.Types.EncryptedTextFieldType"/> the value will be encrypted.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
@@ -281,7 +289,7 @@ namespace Rock.Workflow
         }
 
         /// <summary>
-        /// Sets the workflow attribute value.
+        /// Sets the workflow attribute value. If the attribute field type is an <see cref="Field.Types.EncryptedTextFieldType"/> or <see cref="Field.Types.SSNFieldType"/> the value will be encrypted.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="guid">The unique identifier.</param>
@@ -291,6 +299,11 @@ namespace Rock.Workflow
             var attr = AttributeCache.Get( guid );
             if ( attr != null )
             {
+                if ( attr.FieldType.Field is Field.Types.EncryptedTextFieldType || attr.FieldType.Field is Field.Types.SSNFieldType )
+                {
+                    value = Security.Encryption.EncryptString( value );
+                }
+
                 if ( attr.EntityTypeId == new Rock.Model.Workflow().TypeId )
                 {
                     action.Activity.Workflow.SetAttributeValue( attr.Key, value );

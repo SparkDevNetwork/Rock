@@ -127,13 +127,13 @@ export default defineComponent({
         modelValue: {
             immediate: true,
             handler(): void {
-                const lower = this.modelValue.lower !== null ? this.modelValue.lower.toString() : "";
-                const upper = this.modelValue.upper !== null ? this.modelValue.upper.toString() : "";
-
-                if (this.internalValue.lower !== lower || this.internalValue.upper !== upper) {
+                // Model is stored as numbers and internal value is strings, so we need to determine if they're
+                // any different when converted to the same type. If they're different, update our internal value.
+                // Otherwise don't update because it can unintentionally end up deleting characters from the input box.
+                if (this.modelValue.lower !== toNumberOrNull(this.internalValue.lower) || this.modelValue.upper !== toNumberOrNull(this.internalValue.upper)) {
                     this.internalValue = {
-                        lower: lower,
-                        upper: upper
+                        lower: this.modelValue.lower != null ? this.modelValue.lower.toString() : "",
+                        upper: this.modelValue.upper != null ? this.modelValue.upper.toString() : ""
                     };
                 }
             }

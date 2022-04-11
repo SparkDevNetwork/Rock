@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a 32bit integer value
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class IntegerFieldType : FieldType
     {

@@ -30,7 +30,8 @@ namespace Rock.Model
     public partial class UserLoginService
     {
         /// <summary>
-        /// Returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in, and updates their last activity date if userIsOnline=true
+        /// NOTE: This does much more then is sounds like! It returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in,
+        /// but it also updates their last activity date, and will sign them out if they are not confirmed or are locked out.
         /// </summary>
         /// <param name="userIsOnline">A <see cref="System.Boolean"/> value that returns the logged in user if <c>true</c>; otherwise can return the impersonated user</param>
         /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
@@ -39,52 +40,59 @@ namespace Rock.Model
             var rockContext = new RockContext();
 
             string userName = UserLogin.GetCurrentUserName();
-            if ( userName != string.Empty )
+
+            if ( userName.IsNullOrWhiteSpace() )
             {
-                if ( userName.StartsWith( "rckipid=" ) )
+                return null;
+            }
+
+            if ( userName.StartsWith( "rckipid=" ) )
+            {
+                Rock.Model.PersonTokenService personTokenService = new Model.PersonTokenService( rockContext );
+                Rock.Model.PersonToken personToken = personTokenService.GetByImpersonationToken( userName.Substring( 8 ) );
+                if ( personToken?.PersonAlias?.Person != null )
                 {
-                    Rock.Model.PersonTokenService personTokenService = new Model.PersonTokenService( rockContext );
-                    Rock.Model.PersonToken personToken = personTokenService.GetByImpersonationToken( userName.Substring( 8 ) );
-                    if ( personToken?.PersonAlias?.Person != null )
+                    return personToken.PersonAlias.Person.GetImpersonatedUser();
+                }
+            }
+            else
+            {
+                var userLoginService = new UserLoginService( rockContext );
+                UserLogin user = userLoginService.GetByUserName( userName );
+
+                if ( user != null && userIsOnline )
+                {
+                    // Save last activity date
+                    var message = new UpdateUserLastActivity.Message
                     {
-                        return personToken.PersonAlias.Person.GetImpersonatedUser();
+                        UserId = user.Id,
+                        LastActivityDate = RockDateTime.Now,
+                    };
+
+                    if ( ( user.IsConfirmed ?? true ) && !( user.IsLockedOut ?? false ) )
+                    {
+                        if ( HttpContext.Current != null && HttpContext.Current.Session != null )
+                        {
+                            HttpContext.Current.Session["RockUserId"] = user.Id;
+                        }
+
+                        message.SendIfNeeded();
+                    }
+                    else
+                    {
+                        // Even though we are in the userIsOnline == true condition,
+                        // The user is either not confirmed or is locked out, so we'll mark them
+                        // as offline and sign them out.
+
+                        message.IsOnline = false;
+                        message.SendIfNeeded();
+
+                        Authorization.SignOut();
+                        return null;
                     }
                 }
-                else
-                {
-                    var userLoginService = new UserLoginService( rockContext );
-                    UserLogin user = userLoginService.GetByUserName( userName );
 
-                    if ( user != null && userIsOnline )
-                    {
-                        // Save last activity date
-                        var message = new UpdateUserLastActivity.Message
-                        {
-                            UserId = user.Id,
-                            LastActivityDate = RockDateTime.Now,
-                        };
-
-                        if ( ( user.IsConfirmed ?? true ) && !( user.IsLockedOut ?? false ) )
-                        {
-                            if ( HttpContext.Current != null && HttpContext.Current.Session != null )
-                            {
-                                HttpContext.Current.Session["RockUserId"] = user.Id;
-                            }
-
-                            message.Send();
-                        }
-                        else
-                        {
-                            message.IsOnline = false;
-                            message.Send();
-
-                            Authorization.SignOut();
-                            return null;
-                        }
-                    }
-
-                    return user;
-                }
+                return user;
             }
 
             return null;

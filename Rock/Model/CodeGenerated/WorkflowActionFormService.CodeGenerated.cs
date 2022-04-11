@@ -103,6 +103,7 @@ namespace Rock.Model
                 PersonEntryCampusStatusValueId = model.PersonEntryCampusStatusValueId,
                 PersonEntryCampusTypeValueId = model.PersonEntryCampusTypeValueId,
                 PersonEntryConnectionStatusValueId = model.PersonEntryConnectionStatusValueId,
+                PersonEntryDescription = model.PersonEntryDescription,
                 PersonEntryEmailEntryOption = ( int ) model.PersonEntryEmailEntryOption,
                 PersonEntryFamilyAttributeGuid = model.PersonEntryFamilyAttributeGuid,
                 PersonEntryGenderEntryOption = ( int ) model.PersonEntryGenderEntryOption,
@@ -114,9 +115,12 @@ namespace Rock.Model
                 PersonEntryPostHtml = model.PersonEntryPostHtml,
                 PersonEntryPreHtml = model.PersonEntryPreHtml,
                 PersonEntryRecordStatusValueId = model.PersonEntryRecordStatusValueId,
+                PersonEntrySectionTypeValueId = model.PersonEntrySectionTypeValueId,
+                PersonEntryShowHeadingSeparator = model.PersonEntryShowHeadingSeparator,
                 PersonEntrySpouseAttributeGuid = model.PersonEntrySpouseAttributeGuid,
                 PersonEntrySpouseEntryOption = ( int ) model.PersonEntrySpouseEntryOption,
                 PersonEntrySpouseLabel = model.PersonEntrySpouseLabel,
+                PersonEntryTitle = model.PersonEntryTitle,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -206,6 +210,7 @@ namespace Rock.Model
             target.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
             target.PersonEntryCampusTypeValueId = source.PersonEntryCampusTypeValueId;
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
+            target.PersonEntryDescription = source.PersonEntryDescription;
             target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
             target.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
@@ -217,9 +222,12 @@ namespace Rock.Model
             target.PersonEntryPostHtml = source.PersonEntryPostHtml;
             target.PersonEntryPreHtml = source.PersonEntryPreHtml;
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
+            target.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
+            target.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;
             target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             target.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
             target.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
+            target.PersonEntryTitle = source.PersonEntryTitle;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

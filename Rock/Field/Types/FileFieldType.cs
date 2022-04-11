@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field used to display or upload a new binary file of a specific type
     /// Stored as BinaryFile.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class FileFieldType : BinaryFileFieldType
     {
 

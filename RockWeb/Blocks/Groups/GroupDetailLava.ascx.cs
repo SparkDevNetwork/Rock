@@ -403,20 +403,13 @@ namespace RockWeb.Blocks.Groups
                 BindCommunicationPreference();
             }
 
-            // add a navigate event to capture when someone presses the back button
-            var sm = ScriptManager.GetCurrent( Page );
-            sm.EnableSecureHistoryState = false;
-            sm.Navigate += sm_Navigate;
+            // Add a navigate event to capture when someone presses the back button.
+            this.RockPage.PageNavigate += RockPage_PageNavigate;
         }
 
-        /// <summary>
-        /// Handles the Navigate event of the sm control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
-        public void sm_Navigate( object sender, HistoryEventArgs e )
+        private void RockPage_PageNavigate( object sender, HistoryEventArgs e )
         {
-            // show the view mode
+            // When this page is revisited from the browser history, show the view mode.
             pnlGroupEdit.Visible = false;
             pnlGroupView.Visible = true;
             pnlEditGroupMember.Visible = false;

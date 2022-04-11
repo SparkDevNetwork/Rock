@@ -55,6 +55,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Communications/ImportSent" )]
+        [RockGuid( "d99d0fee-3479-4dc5-b92e-5d743c07efc1" )]
         public virtual async Task<HttpResponseMessage> ImportSent( [FromBody] IEnumerable<ImportSentCommunicationApiModel> importCommunications )
         {
             if ( importCommunications == null || importCommunications.Count() == 0 )

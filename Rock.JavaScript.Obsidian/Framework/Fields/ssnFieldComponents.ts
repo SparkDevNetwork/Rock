@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, ref, watch, watchEffect } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
 import SocialSecurityNumberBox from "../Elements/socialSecurityNumberBox";
 
@@ -31,7 +31,7 @@ export const EditComponent = defineComponent({
         const internalValue = ref(props.modelValue);
 
         watch(() => props.modelValue, () => internalValue.value = props.modelValue ?? "");
-        watchEffect(() => emit("update:modelValue", internalValue.value));
+        watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
         return {
             internalValue

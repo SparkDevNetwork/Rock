@@ -42,7 +42,7 @@
         })
         .on('drag', function (el)
         {
-          if ($(el).attr('data-state') == 'component') {
+          if ($(el).attr('data-state') === 'component') {
             self.handleComponentClick(el, event);
           }
           $('body').addClass('state-drag');
@@ -53,7 +53,7 @@
         })
         .on('drop', function (el)
         {
-          if ($(el).attr('data-state') == 'template') {
+          if ($(el).attr('data-state') === 'template') {
             // replace the template contents
             el.innerHTML = $(el).attr('data-content');
             $(el).attr('data-state', 'component');
@@ -86,7 +86,7 @@
         })
         .on('drag', function (el)
         {
-          if ($(el).attr('data-state') == 'component') {
+          if ($(el).attr('data-state') === 'component') {
             self.handleComponentClick(el, event);
           }
           $('body').addClass('state-drag');
@@ -97,7 +97,7 @@
         })
         .on('drop', function (el)
         {
-          if ($(el).attr('data-state') == 'template') {
+          if ($(el).attr('data-state') === 'template') {
             // replace the template contents
             el.innerHTML = $(el).attr('data-content');
             $(el).attr('data-state', 'component');
@@ -114,7 +114,7 @@
         // parent window to handle the properties editing
         $(document).on('click', '.component', function (e)
         {
-          if ($(this).attr('data-state') == 'component') {
+          if ($(this).attr('data-state') === 'component') {
             self.handleComponentClick(this, e);
           }
         });
@@ -150,7 +150,7 @@
                     editorScrollLevel += 20;
                     $editorScrollWindow.scrollTop(editorScrollLevel);
                 }
-                else if (editorMousePositionProportion < .10 && editorScrollLevel != 0) {
+                else if (editorMousePositionProportion < .10 && editorScrollLevel !== 0) {
                     editorScrollLevel -= 20;
                     $editorScrollWindow.scrollTop(editorScrollLevel);
                 }
@@ -166,7 +166,7 @@
                     browserScrollLevel += 20;
                     $browserScrollWindow.scrollTop(browserScrollLevel);
                 }
-                else if (browserMousePositionProportion < .10 && browserScrollLevel != 0) {
+                else if (browserMousePositionProportion < .10 && browserScrollLevel !== 0) {
                     browserScrollLevel -= 20;
                     $browserScrollWindow.scrollTop(browserScrollLevel);
                 }
@@ -185,7 +185,7 @@
         var classNames = $(el).attr("class").toString().split(' ');
         $.each(classNames, function (i, className)
         {
-          if (className.indexOf('component-') == 0) {
+          if (className.indexOf('component-') === 0) {
             var componentParts = className.split('-');
             componentType = componentParts[1];
           }

@@ -15,9 +15,11 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType } from "../Reporting/comparisonType";
 import { asBooleanOrNull } from "../Services/boolean";
 import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
+import { getStandardFilterComponent } from "./utils";
 
 export const enum ConfigurationValueKey {
     BooleanControlType = "BooleanControlType",
@@ -34,6 +36,11 @@ const editComponent = defineAsyncComponent(async () => {
 // The configuration component can be quite large, so load it only as needed.
 const configurationComponent = defineAsyncComponent(async () => {
     return (await import("./booleanFieldComponents")).ConfigurationComponent;
+});
+
+// Only load the filter component as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./booleanFieldComponents")).FilterComponent;
 });
 
 /**
@@ -74,5 +81,13 @@ export class BooleanFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return ComparisonType.EqualTo | ComparisonType.NotEqualTo;
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
     }
 }

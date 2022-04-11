@@ -14,21 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field Type to select multiple (or none) Campuses.
+    /// Stored as Campus's Guid.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class CampusesFieldType : SelectFromListFieldType, ICachedEntitiesFieldType
     {
         #region Configuration
@@ -37,6 +40,11 @@ namespace Rock.Field.Types
         private const string FILTER_CAMPUS_TYPES_KEY = "filterCampusTypes";
         private const string FILTER_CAMPUS_STATUS_KEY = "filterCampusStatus";
         private const string SELECTABLE_CAMPUSES_KEY = "SelectableCampusIds";
+        private const string SELECTABLE_CAMPUSES_PUBLIC_KEY = "selectableCampuses";
+
+        private const string CAMPUSES_PROPERTY_KEY = "campuses";
+        private const string CAMPUS_TYPES_PROPERTY_KEY = "campusTypes";
+        private const string CAMPUS_STATUSES_PROPERTY_KEY = "campusStatuses";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -50,6 +58,95 @@ namespace Rock.Field.Types
             configKeys.Add( FILTER_CAMPUS_STATUS_KEY );
             configKeys.Add( SELECTABLE_CAMPUSES_KEY );
             return configKeys;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var configurationProperties = new Dictionary<string, string>();
+
+                // Disable security since we are intentionally returning items even
+                // if the person (whom we don't know) doesn't have access.
+                var definedValueClientService = new Rock.ClientService.Core.DefinedValue.DefinedValueClientService( rockContext, null )
+                {
+                    EnableSecurity = false
+                };
+
+                // Get the campus types and campus status values that are available
+                // for the person to choose in the pickers.
+                var campusTypes = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid() );
+                var campusStatuses = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.CAMPUS_STATUS.AsGuid() );
+
+                // Get the campuses that are available to be selected.
+                var campuses = CampusCache.All()
+                    .OrderBy( c => c.Order )
+                    .ThenBy( c => c.Name )
+                    .Select( c => new CampusFieldType.CampusItemViewModel
+                    {
+                        Guid = c.Guid,
+                        Name = c.Name,
+                        Type = c.CampusTypeValueId.HasValue ? ( Guid? ) DefinedValueCache.Get( c.CampusTypeValueId.Value ).Guid : null,
+                        Status = c.CampusStatusValueId.HasValue ? ( Guid? ) DefinedValueCache.Get( c.CampusStatusValueId.Value ).Guid : null,
+                        IsActive = c.IsActive ?? false
+                    } )
+                    .ToList();
+
+                configurationProperties[CAMPUS_TYPES_PROPERTY_KEY] = campusTypes.ToCamelCaseJson( false, true );
+                configurationProperties[CAMPUS_STATUSES_PROPERTY_KEY] = campusStatuses.ToCamelCaseJson( false, true );
+                configurationProperties[CAMPUSES_PROPERTY_KEY] = campuses.ToCamelCaseJson( false, true );
+
+                return configurationProperties;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationOptions = privateConfigurationValues.ToDictionary( i => i.Key, i => i.Value );
+
+            // Convert the selectable values from integer identifiers into
+            // unique identifiers that can be stored in the database.
+            var selectableValues = privateConfigurationValues.GetValueOrDefault( SELECTABLE_CAMPUSES_KEY, string.Empty );
+            configurationOptions[SELECTABLE_CAMPUSES_PUBLIC_KEY] = ConvertDelimitedIdsToGuids( selectableValues, v => CampusCache.Get( v )?.Guid );
+            configurationOptions.Remove( SELECTABLE_CAMPUSES_KEY );
+
+            // Convert the campus type options from integer identifiers into
+            // unique identifiers that can be stored in the database.
+            var campusTypes = privateConfigurationValues.GetValueOrDefault( FILTER_CAMPUS_TYPES_KEY, string.Empty );
+            configurationOptions[FILTER_CAMPUS_TYPES_KEY] = ConvertDelimitedIdsToGuids( campusTypes, v => DefinedValueCache.Get( v )?.Guid );
+
+            // Convert the campus status options from integer identifiers into
+            // unique identifiers that can be stored in the database.
+            var campusStatus = privateConfigurationValues.GetValueOrDefault( FILTER_CAMPUS_STATUS_KEY, string.Empty );
+            configurationOptions[FILTER_CAMPUS_STATUS_KEY] = ConvertDelimitedIdsToGuids( campusStatus, v => DefinedValueCache.Get( v )?.Guid );
+
+            return configurationOptions;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationOptions = publicConfigurationValues.ToDictionary( i => i.Key, i => i.Value );
+
+            // Convert the selectable values from unique identifiers into
+            // integer identifiers that can be stored in the database.
+            var selectableValues = publicConfigurationValues.GetValueOrDefault( SELECTABLE_CAMPUSES_PUBLIC_KEY, string.Empty );
+            configurationOptions[SELECTABLE_CAMPUSES_KEY] = ConvertDelimitedGuidsToIds( selectableValues, v => CampusCache.Get( v )?.Id );
+            configurationOptions.Remove( SELECTABLE_CAMPUSES_PUBLIC_KEY );
+
+            // Convert the campus type options from unique identifiers into
+            // integer identifiers that can be stored in the database.
+            var campusTypes = publicConfigurationValues.GetValueOrDefault( FILTER_CAMPUS_TYPES_KEY, string.Empty );
+            configurationOptions[FILTER_CAMPUS_TYPES_KEY] = ConvertDelimitedGuidsToIds( campusTypes, v => DefinedValueCache.Get( v )?.Id );
+
+            // Convert the campus status options from unique identifiers into
+            // integer identifiers that can be stored in the database.
+            var campusStatus = publicConfigurationValues.GetValueOrDefault( FILTER_CAMPUS_STATUS_KEY, string.Empty );
+            configurationOptions[FILTER_CAMPUS_STATUS_KEY] = ConvertDelimitedGuidsToIds( campusStatus, v => DefinedValueCache.Get( v )?.Id );
+
+            return configurationOptions;
         }
 
         /// <summary>

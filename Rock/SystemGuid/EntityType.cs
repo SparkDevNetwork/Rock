@@ -457,6 +457,16 @@ namespace Rock.SystemGuid
         public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "82F9C803-C998-46B2-B354-783D4D1E3B43";
 
         /// <summary>
+        /// The obsidian form builder detail
+        /// </summary>
+        public const string OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE = "BB44D8ED-DEDC-4C9B-A30D-C636019BC960";
+
+        /// <summary>
+        /// The obsidian form template detail
+        /// </summary>
+        public const string OBSIDIAN_FORM_TEMPLATE_DETAIL_BLOCK_TYPE = "4A08BC88-AD45-4106-BDD7-184A14B39B9A";
+
+        /// <summary>
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";

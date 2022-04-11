@@ -17,11 +17,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.ElectronicSignature;
 using Rock.Model;
@@ -32,6 +35,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Workflow.FormBuilder;
 
 namespace RockWeb.Blocks.WorkFlow
 {
@@ -142,6 +146,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
+            public const string CampusId = "CampusId";
         }
 
         #endregion PageParameter Keys
@@ -359,7 +364,7 @@ namespace RockWeb.Blocks.WorkFlow
                 GetWorkflowFormPersonEntryValues( personEntryRockContext );
             }
 
-            GetWorkflowFormAttributeValues();
+            SetWorkflowFormAttributeValues();
             CompleteFormAction( eventArgument );
         }
 
@@ -396,6 +401,30 @@ namespace RockWeb.Blocks.WorkFlow
                 return false;
             }
 
+            bool isLoginRequired;
+            if ( workflowType.FormBuilderTemplate != null )
+            {
+                isLoginRequired = workflowType.FormBuilderTemplate.IsLoginRequired;
+            }
+            else
+            {
+                isLoginRequired = workflowType.IsLoginRequired;
+            }
+
+            // Check Login Requirement
+            if ( isLoginRequired == true && CurrentUser == null )
+            {
+                var site = RockPage.Site;
+                if ( site.LoginPageId.HasValue )
+                {
+                    site.RedirectToLoginPage( true );
+                }
+                else
+                {
+                    System.Web.Security.FormsAuthentication.RedirectToLoginPage();
+                }
+            }
+
             if ( !workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 ShowNotes( false );
@@ -404,6 +433,34 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             if ( !( workflowType.IsActive ?? true ) )
+            {
+                ShowNotes( false );
+                ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
+                return false;
+            }
+
+            if ( workflowType.FormStartDateTime.HasValue && workflowType.FormStartDateTime.Value > RockDateTime.Now )
+            {
+                ShowNotes( false );
+                ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
+                return false;
+            }
+
+            if ( workflowType.FormEndDateTime.HasValue && workflowType.FormEndDateTime.Value < RockDateTime.Now )
+            {
+                ShowNotes( false );
+                ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
+                return false;
+            }
+
+            if ( workflowType.WorkflowExpireDateTime.HasValue && workflowType.WorkflowExpireDateTime.Value < RockDateTime.Now )
+            {
+                ShowNotes( false );
+                ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
+                return false;
+            }
+
+            if ( workflowType.FormBuilderTemplate != null && workflowType.FormBuilderTemplate.IsActive == false )
             {
                 ShowNotes( false );
                 ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
@@ -776,10 +833,36 @@ namespace RockWeb.Blocks.WorkFlow
 
             Dictionary<string, object> mergeFields = GetWorkflowEntryMergeFields();
 
+            var workflowType = GetWorkflowType();
+            string headerTemplate = string.Empty;
+            string footerTemplate = string.Empty;
+
+            if ( workflowType?.FormBuilderTemplateId != null )
+            {
+                /* If a Template Is Defined, use both the Forms.Header/Footer and Template.HeaderFooter in case they defined both
+                So it looks like this
+
+                Header from Template
+                Header from FormDetail
+                <inner form content>
+                Footer from FormDetail
+                Footer from Template
+
+                */
+                var formBuilderTemplate = new WorkflowFormBuilderTemplateService( new RockContext() ).Get( workflowType.FormBuilderTemplateId.Value );
+                headerTemplate = formBuilderTemplate.FormHeader + form.Header;
+                footerTemplate = form.Footer + formBuilderTemplate.FormFooter;
+            }
+            else
+            {
+                headerTemplate = form.Header;
+                footerTemplate = form.Footer;
+            }
+
             if ( setValues )
             {
-                lFormHeaderText.Text = form.Header.ResolveMergeFields( mergeFields );
-                lFormFooterText.Text = form.Footer.ResolveMergeFields( mergeFields );
+                lFormHeaderText.Text = headerTemplate.ResolveMergeFields( mergeFields );
+                lFormFooterText.Text = footerTemplate.ResolveMergeFields( mergeFields );
             }
 
             if ( _workflow != null && _workflow.CreatedDateTime.HasValue )
@@ -791,13 +874,83 @@ namespace RockWeb.Blocks.WorkFlow
                 hlblDateAdded.Visible = false;
             }
 
-            pnlPersonEntry.Visible = form.AllowPersonEntry;
-            if ( form.AllowPersonEntry )
-            {
-                BuildPersonEntryForm( _action, form, setValues, mergeFields );
-            }
+            BuildPersonEntryForm( _action, form, setValues, mergeFields );
 
             phWorkflowFormAttributes.Controls.Clear();
+
+            // Use PlaceHolder for non-folderbuilder sections.
+            // Real sections will render a div, but PlaceHolder will not.
+            var formSectionNone = new PlaceHolder()
+            {
+                ID = $"pnlFormSection_none",
+                Visible = form.FormAttributes.Any( x => !x.ActionFormSectionId.HasValue )
+            };
+
+            phWorkflowFormAttributes.Controls.Add( formSectionNone );
+
+            var formSections = form.FormAttributes.Select( a => a.ActionFormSectionId ).Where( a => a.HasValue ).Distinct().ToList()
+                .Select( a => WorkflowActionFormSectionCache.Get( a.Value ) )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Title )
+                .ToList();
+
+            Dictionary<int, Control> formSectionControlLookup = new Dictionary<int, Control>();
+            Dictionary<int, Control> formSectionRowLookup = new Dictionary<int, Control>();
+
+            foreach ( var formSection in formSections )
+            {
+                var formSectionControl = new Panel
+                {
+                    ID = $"formSectionControl_{formSection.Id}",
+                    CssClass = "form-section"
+                };
+
+                formSectionControlLookup.Add( formSection.Id, formSectionControl );
+
+                if ( formSection.SectionTypeValueId.HasValue )
+                {
+                    var sectionTypeValue = DefinedValueCache.Get( formSection.SectionTypeValueId.Value );
+                    var sectionTypeCssClass = sectionTypeValue?.GetAttributeValue( "CSSClass" );
+                    if ( sectionTypeCssClass.IsNotNullOrWhiteSpace() )
+                    {
+                        formSectionControl.AddCssClass( sectionTypeCssClass );
+                    }
+                }
+
+                if ( formSection.Title.IsNotNullOrWhiteSpace() )
+                {
+                    var formSectionHeader = new HtmlGenericControl( "h1" );
+                    formSectionHeader.InnerText = formSection.Title;
+                    formSectionControl.Controls.Add( formSectionHeader );
+                }
+
+                if ( formSection.Description.IsNotNullOrWhiteSpace() )
+                {
+                    var formSectionDescription = new HtmlGenericControl( "p" );
+                    formSectionDescription.InnerText = formSection.Description;
+                    formSectionControl.Controls.Add( formSectionDescription );
+                }
+
+                if ( formSection.ShowHeadingSeparator )
+                {
+                    var formSectionSeparator = new Literal { Text = "<hr>" };
+                    formSectionControl.Controls.Add( formSectionSeparator );
+                }
+
+                var formSectionFields = new Panel
+                {
+                    ID = $"formSectionFields_{formSection.Id}",
+                    CssClass = "form-section-fields"
+                };
+
+                HtmlGenericControl formSectionRow = new HtmlGenericControl( "div" );
+                formSectionRow.AddCssClass( "row" );
+                formSectionFields.Controls.Add( formSectionRow );
+                formSectionControl.Controls.Add( formSectionFields );
+
+                phWorkflowFormAttributes.Controls.Add( formSectionControl );
+
+                formSectionRowLookup.Add( formSection.Id, formSectionRow );
+            }
 
             foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
             {
@@ -834,9 +987,35 @@ namespace RockWeb.Blocks.WorkFlow
                 fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
                 {
                     FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
+                    ApplySectionVisibilityRules( formSections, formSectionControlLookup );
                 };
 
-                phWorkflowFormAttributes.Controls.Add( fieldVisibilityWrapper );
+                Control formSectionRow;
+                if ( formAttribute.ActionFormSectionId.HasValue )
+                {
+                    formSectionRow = formSectionRowLookup.GetValueOrNull( formAttribute.ActionFormSectionId.Value ) ?? formSectionNone;
+                }
+                else
+                {
+                    formSectionRow = formSectionNone;
+                }
+
+                Control fieldColumnContainer;
+                if ( formSectionRow == formSectionNone )
+                {
+                    // use PlaceHolder for non-formbuilder sections
+                    // Placeholder is only a container for other controls, it doesn't render any markup
+                    fieldColumnContainer = new PlaceHolder();
+                }
+                else
+                {
+                    fieldColumnContainer = new HtmlGenericControl( "div" );
+                    ( fieldColumnContainer as HtmlGenericControl ).AddCssClass( $"col-md-{formAttribute.ColumnSize ?? 12}" );
+                }
+
+                formSectionRow.Controls.Add( fieldColumnContainer );
+
+                fieldColumnContainer.Controls.Add( fieldVisibilityWrapper );
 
                 if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml ) )
                 {
@@ -852,11 +1031,11 @@ namespace RockWeb.Blocks.WorkFlow
                     // get formatted value
                     if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                     {
-                        formattedValue = field.FormatValueAsHtml( phWorkflowFormAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
+                        formattedValue = field.FormatValueAsHtml( fieldVisibilityWrapper, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
                     }
                     else
                     {
-                        formattedValue = field.FormatValueAsHtml( phWorkflowFormAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
+                        formattedValue = field.FormatValueAsHtml( fieldVisibilityWrapper, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
                     }
 
                     if ( formAttribute.HideLabel )
@@ -899,6 +1078,13 @@ namespace RockWeb.Blocks.WorkFlow
                     fieldVisibilityWrapper.EditControl = editControl;
 
                     var hasDependantVisibilityRule = form.FormAttributes.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToFormFieldGuid == attribute.Guid ) );
+
+                    if ( !hasDependantVisibilityRule )
+                    {
+                        // also check if this field is involved in any of the section visibility rules;
+                        hasDependantVisibilityRule = formSections.Any( a => a.SectionVisibilityRules != null && a.SectionVisibilityRules.RuleList.Any( r => r.ComparedToFormFieldGuid == attribute.Guid ) );
+                    }
+
                     if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
                     {
                         attribute.FieldType.Field.AddChangeHandler(
@@ -917,6 +1103,8 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             FieldVisibilityWrapper.ApplyFieldVisibilityRules( phWorkflowFormAttributes );
+
+            ApplySectionVisibilityRules( formSections, formSectionControlLookup );
 
             if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {
@@ -978,29 +1166,87 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
+        /// Applies the section visibility rules.
+        /// </summary>
+        /// <param name="formSections">The form sections.</param>
+        /// <param name="formSectionControlLookup">The form section control lookup.</param>
+        private void ApplySectionVisibilityRules( List<WorkflowActionFormSectionCache> formSections, Dictionary<int, Control> formSectionControlLookup )
+        {
+            foreach ( var formSection in formSections )
+            {
+                var sectionVisibilityRules = formSection.SectionVisibilityRules;
+                if ( sectionVisibilityRules != null )
+                {
+                    var formSectionControl = formSectionControlLookup.GetValueOrNull( formSection.Id );
+                    if ( formSectionControl != null )
+                    {
+                        // the conditions for a section's visibility should not include its own controls
+                        var otherSectionsFormEditValues = GetWorkflowFormEditAttributeValues( formSection.Id );
+                        var showVisible = sectionVisibilityRules.Evaluate( otherSectionsFormEditValues, new Dictionary<RegistrationPersonFieldType, string>() );
+                        formSectionControl.Visible = showVisible;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Builds the person entry form.
         /// </summary>
         /// <param name="action">The current action related to the form.</param>
         /// <param name="form">The form.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="mergeFields">The merge fields.</param>
-        private void BuildPersonEntryForm( WorkflowAction action, WorkflowActionFormCache form, bool setValues, Dictionary<string, object> mergeFields )
+        private void BuildPersonEntryForm( WorkflowAction action, WorkflowActionFormCache actionForm, bool setValues, Dictionary<string, object> mergeFields )
         {
-            pnlPersonEntry.Visible = form.AllowPersonEntry;
-            if ( !form.AllowPersonEntry )
+            var workflowType = GetWorkflowType();
+            string preHtml = actionForm.PersonEntryPreHtml;
+            string postHtml = actionForm.PersonEntryPostHtml;
+            var formPersonEntrySettings = actionForm.GetFormPersonEntrySettings( workflowType.FormBuilderTemplate );
+            var allowPersonEntry = actionForm.GetAllowPersonEntry( workflowType.FormBuilderTemplate );
+
+            pnlPersonEntrySection.Visible = allowPersonEntry;
+            if ( !allowPersonEntry )
             {
                 return;
             }
 
-            if ( form.PersonEntryHideIfCurrentPersonKnown && CurrentPerson != null )
+            if ( formPersonEntrySettings.HideIfCurrentPersonKnown && CurrentPerson != null )
             {
-                pnlPersonEntry.Visible = false;
+                pnlPersonEntrySection.Visible = false;
                 return;
             }
 
-            lPersonEntryPreHtml.Text = form.PersonEntryPreHtml.ResolveMergeFields( mergeFields );
+            lPersonEntryPreHtml.Text = preHtml.ResolveMergeFields( mergeFields );
+            var personEntrySectionHeaderHtml = new StringBuilder();
 
-            if ( form.PersonEntryCampusIsVisible )
+            if ( actionForm.PersonEntrySectionTypeValueId.HasValue )
+            {
+                var sectionTypeValue = DefinedValueCache.Get( actionForm.PersonEntrySectionTypeValueId.Value );
+                var sectionTypeCssClass = sectionTypeValue?.GetAttributeValue( "CSSClass" );
+                if ( sectionTypeCssClass.IsNotNullOrWhiteSpace() )
+                {
+                    pnlPersonEntrySection.AddCssClass( sectionTypeCssClass );
+                }
+            }
+
+            if ( actionForm.PersonEntryTitle.IsNotNullOrWhiteSpace() )
+            {
+                personEntrySectionHeaderHtml.AppendLine( $"<h1>{actionForm.PersonEntryTitle}</h1>" );
+            }
+
+            if ( actionForm.PersonEntryDescription.IsNotNullOrWhiteSpace() )
+            {
+                personEntrySectionHeaderHtml.AppendLine( $"<p>{actionForm.PersonEntryDescription}</p>" );
+            }
+
+            if ( actionForm.PersonEntryShowHeadingSeparator )
+            {
+                personEntrySectionHeaderHtml.AppendLine( "<hr>" );
+            }
+
+            lPersonEntrySectionHeaderHtml.Text = personEntrySectionHeaderHtml.ToString();
+
+            if ( formPersonEntrySettings.ShowCampus )
             {
                 // NOTE: If there is only one Campus in the system, this control be always be hidden
                 cpPersonEntryCampus.Visible = true;
@@ -1012,14 +1258,14 @@ namespace RockWeb.Blocks.WorkFlow
                  */
 
                 cpPersonEntryCampus.IncludeInactive = true;
-                if ( form.PersonEntryCampusStatusValueId.HasValue )
+                if ( formPersonEntrySettings.CampusStatusValueId.HasValue )
                 {
-                    cpPersonEntryCampus.CampusStatusFilter = new List<int> { form.PersonEntryCampusStatusValueId.Value };
+                    cpPersonEntryCampus.CampusStatusFilter = new List<int> { formPersonEntrySettings.CampusStatusValueId.Value };
                 }
 
-                if ( form.PersonEntryCampusTypeValueId.HasValue )
+                if ( formPersonEntrySettings.CampusTypeValueId.HasValue )
                 {
-                    cpPersonEntryCampus.CampusTypesFilter = new List<int> { form.PersonEntryCampusTypeValueId.Value };
+                    cpPersonEntryCampus.CampusTypesFilter = new List<int> { formPersonEntrySettings.CampusTypeValueId.Value };
                 }
             }
             else
@@ -1027,13 +1273,13 @@ namespace RockWeb.Blocks.WorkFlow
                 cpPersonEntryCampus.Visible = false;
             }
 
-            SetPersonEditorOptions( pePerson1, form );
-            SetPersonEditorOptions( pePerson2, form );
-            pePerson2.PersonLabelPrefix = form.PersonEntrySpouseLabel;
+            SetPersonEditorOptions( pePerson1, formPersonEntrySettings );
+            SetPersonEditorOptions( pePerson2, formPersonEntrySettings );
+            pePerson2.PersonLabelPrefix = formPersonEntrySettings.SpouseLabel;
             cbShowPerson2.TextCssClass = "font-weight-semibold";
             cbShowPerson2.ContainerCssClass = "show-spouse mt-3 mb-4";
-            cbShowPerson2.Text = string.Format( "Show {0}", form.PersonEntrySpouseLabel );
-            switch ( form.PersonEntrySpouseEntryOption )
+            cbShowPerson2.Text = string.Format( "Show {0}", formPersonEntrySettings.SpouseLabel );
+            switch ( formPersonEntrySettings.SpouseEntry )
             {
                 case WorkflowActionFormPersonEntryOption.Required:
                     {
@@ -1064,23 +1310,23 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-            dvpMaritalStatus.Required = form.PersonEntryMaritalStatusEntryOption == WorkflowActionFormPersonEntryOption.Required;
+            dvpMaritalStatus.Required = formPersonEntrySettings.MaritalStatus == WorkflowActionFormPersonEntryOption.Required;
 
-            if ( form.PersonEntryMaritalStatusEntryOption == WorkflowActionFormPersonEntryOption.Hidden )
+            if ( formPersonEntrySettings.MaritalStatus == WorkflowActionFormPersonEntryOption.Hidden )
             {
                 dvpMaritalStatus.Visible = false;
             }
 
-            acPersonEntryAddress.Required = form.PersonEntryAddressEntryOption == WorkflowActionFormPersonEntryOption.Required;
+            acPersonEntryAddress.Required = formPersonEntrySettings.Address == WorkflowActionFormPersonEntryOption.Required;
 
-            lPersonEntryPostHtml.Text = form.PersonEntryPostHtml.ResolveMergeFields( mergeFields );
+            lPersonEntryPostHtml.Text = postHtml.ResolveMergeFields( mergeFields );
 
-            var promptForAddress = ( form.PersonEntryAddressEntryOption != WorkflowActionFormPersonEntryOption.Hidden ) && form.PersonEntryGroupLocationTypeValueId.HasValue;
+            var promptForAddress = ( formPersonEntrySettings.Address != WorkflowActionFormPersonEntryOption.Hidden ) && formPersonEntrySettings.AddressTypeValueId.HasValue;
             acPersonEntryAddress.Visible = promptForAddress;
 
             if ( setValues )
             {
-                SetPersonEntryValues( action, form );
+                SetPersonEntryValues( action, formPersonEntrySettings );
             }
         }
 
@@ -1089,7 +1335,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         /// <param name="action">The current action related to the form.</param>
         /// <param name="form">The form details.</param>
-        private void SetPersonEntryValues( WorkflowAction action, WorkflowActionFormCache form )
+        private void SetPersonEntryValues( WorkflowAction action, Rock.Workflow.FormBuilder.FormPersonEntrySettings formPersonEntrySettings )
         {
             var rockContext = new RockContext();
             Person personEntryPerson = null;
@@ -1113,19 +1359,19 @@ namespace RockWeb.Blocks.WorkFlow
 
             pePerson1.SetFromPerson( personEntryPerson );
 
-            if ( form.PersonEntrySpouseEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
+            if ( formPersonEntrySettings.SpouseEntry != WorkflowActionFormPersonEntryOption.Hidden )
             {
                 pePerson2.SetFromPerson( personEntrySpouse );
             }
 
-            var promptForAddress = ( form.PersonEntryAddressEntryOption != WorkflowActionFormPersonEntryOption.Hidden ) && form.PersonEntryGroupLocationTypeValueId.HasValue;
+            var promptForAddress = ( formPersonEntrySettings.Address != WorkflowActionFormPersonEntryOption.Hidden ) && formPersonEntrySettings.AddressTypeValueId.HasValue;
 
             if ( promptForAddress && personEntryFamilyId != null )
             {
-                var personEntryGroupLocationTypeValueId = form.PersonEntryGroupLocationTypeValueId.Value;
+                var personEntryGroupLocationTypeValueId = formPersonEntrySettings.AddressTypeValueId.Value;
 
                 var familyLocation = new GroupLocationService( rockContext ).Queryable()
-                    .Where( a => a.GroupId == personEntryFamilyId.Value && a.GroupLocationTypeValueId == form.PersonEntryGroupLocationTypeValueId ).Select( a => a.Location ).FirstOrDefault();
+                    .Where( a => a.GroupId == personEntryFamilyId.Value && a.GroupLocationTypeValueId == formPersonEntrySettings.AddressTypeValueId ).Select( a => a.Location ).FirstOrDefault();
 
                 if ( familyLocation != null )
                 {
@@ -1143,7 +1389,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         /// <param name="personBasicEditor">The person basic editor.</param>
         /// <param name="form">The form.</param>
-        private static void SetPersonEditorOptions( PersonBasicEditor personBasicEditor, WorkflowActionFormCache form )
+        private static void SetPersonEditorOptions( PersonBasicEditor personBasicEditor, Rock.Workflow.FormBuilder.FormPersonEntrySettings formPersonEntrySettings )
         {
             personBasicEditor.ShowInColumns = false;
             personBasicEditor.ShowTitle = false;
@@ -1156,17 +1402,17 @@ namespace RockWeb.Blocks.WorkFlow
             personBasicEditor.ShowPersonRole = false;
             personBasicEditor.ShowGrade = false;
 
-            personBasicEditor.RequireGender = form.PersonEntryGenderEntryOption == WorkflowActionFormPersonEntryOption.Required;
-            personBasicEditor.ShowGender = form.PersonEntryGenderEntryOption != WorkflowActionFormPersonEntryOption.Hidden;
+            personBasicEditor.RequireGender = formPersonEntrySettings.Gender == WorkflowActionFormPersonEntryOption.Required;
+            personBasicEditor.ShowGender = formPersonEntrySettings.Gender != WorkflowActionFormPersonEntryOption.Hidden;
 
-            personBasicEditor.RequireEmail = form.PersonEntryEmailEntryOption == WorkflowActionFormPersonEntryOption.Required;
-            personBasicEditor.ShowEmail = form.PersonEntryEmailEntryOption != WorkflowActionFormPersonEntryOption.Hidden;
+            personBasicEditor.RequireEmail = formPersonEntrySettings.Email == WorkflowActionFormPersonEntryOption.Required;
+            personBasicEditor.ShowEmail = formPersonEntrySettings.Email != WorkflowActionFormPersonEntryOption.Hidden;
 
-            personBasicEditor.RequireMobilePhone = form.PersonEntryMobilePhoneEntryOption == WorkflowActionFormPersonEntryOption.Required;
-            personBasicEditor.ShowMobilePhone = form.PersonEntryMobilePhoneEntryOption != WorkflowActionFormPersonEntryOption.Hidden;
+            personBasicEditor.RequireMobilePhone = formPersonEntrySettings.MobilePhone == WorkflowActionFormPersonEntryOption.Required;
+            personBasicEditor.ShowMobilePhone = formPersonEntrySettings.MobilePhone != WorkflowActionFormPersonEntryOption.Hidden;
 
-            personBasicEditor.RequireBirthdate = form.PersonEntryBirthdateEntryOption == WorkflowActionFormPersonEntryOption.Required;
-            personBasicEditor.ShowBirthdate = form.PersonEntryBirthdateEntryOption != WorkflowActionFormPersonEntryOption.Hidden;
+            personBasicEditor.RequireBirthdate = formPersonEntrySettings.Birthdate == WorkflowActionFormPersonEntryOption.Required;
+            personBasicEditor.ShowBirthdate = formPersonEntrySettings.Birthdate != WorkflowActionFormPersonEntryOption.Hidden;
 
             // we have a another MaritalStatus picker that will apply to both Person and Person's Spouse
             personBasicEditor.ShowMaritalStatus = false;
@@ -1219,15 +1465,19 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
-            if ( !form.AllowPersonEntry )
+            var workflowType = GetWorkflowType();
+
+            if ( !form.GetAllowPersonEntry( workflowType.FormBuilderTemplate ) )
             {
                 return;
             }
 
+            var formPersonEntrySettings = form.GetFormPersonEntrySettings( workflowType.FormBuilderTemplate );
+
             int? existingPersonId;
             int? existingPersonSpouseId = null;
 
-            if ( CurrentPersonId.HasValue && ( form.PersonEntryAutofillCurrentPerson || form.PersonEntryHideIfCurrentPersonKnown ) )
+            if ( CurrentPersonId.HasValue && ( formPersonEntrySettings.AutofillCurrentPerson || formPersonEntrySettings.HideIfCurrentPersonKnown ) )
             {
                 existingPersonId = CurrentPersonId.Value;
                 var existingPersonSpouse = CurrentPerson.GetSpouse( personEntryRockContext );
@@ -1236,7 +1486,7 @@ namespace RockWeb.Blocks.WorkFlow
                     existingPersonSpouseId = existingPersonSpouse.Id;
                 }
 
-                if ( form.PersonEntryHideIfCurrentPersonKnown )
+                if ( formPersonEntrySettings.HideIfCurrentPersonKnown )
                 {
                     SavePersonEntryToAttributeValues( existingPersonId.Value, existingPersonSpouseId, CurrentPerson.PrimaryFamily );
                     return;
@@ -1252,8 +1502,8 @@ namespace RockWeb.Blocks.WorkFlow
             var personEntryPerson = CreateOrUpdatePersonFromPersonEditor( existingPersonId, null, pePerson1, personEntryRockContext );
             if ( personEntryPerson.Id == 0 )
             {
-                personEntryPerson.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
-                personEntryPerson.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                personEntryPerson.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
+                personEntryPerson.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
                 PersonService.SaveNewPerson( personEntryPerson, personEntryRockContext, cpPersonEntryCampus.SelectedCampusId );
             }
 
@@ -1265,7 +1515,7 @@ namespace RockWeb.Blocks.WorkFlow
                 existingPersonSpouseId = matchedPersonsSpouse.Id;
             }
 
-            if ( form.PersonEntryMaritalStatusEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
+            if ( formPersonEntrySettings.MaritalStatus != WorkflowActionFormPersonEntryOption.Hidden )
             {
                 personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
             }
@@ -1286,8 +1536,8 @@ namespace RockWeb.Blocks.WorkFlow
                 var personEntryPersonSpouse = CreateOrUpdatePersonFromPersonEditor( existingPersonSpouseId, primaryFamily, pePerson2, personEntryRockContext );
                 if ( personEntryPersonSpouse.Id == 0 )
                 {
-                    personEntryPersonSpouse.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
-                    personEntryPersonSpouse.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                    personEntryPersonSpouse.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
+                    personEntryPersonSpouse.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
 
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 
@@ -1322,13 +1572,13 @@ namespace RockWeb.Blocks.WorkFlow
                 primaryFamily.CampusId = cpPersonEntryCampus.SelectedCampusId;
             }
 
-            if ( acPersonEntryAddress.Visible && form.PersonEntryGroupLocationTypeValueId.HasValue && acPersonEntryAddress.HasValue )
+            if ( acPersonEntryAddress.Visible && formPersonEntrySettings.AddressTypeValueId.HasValue && acPersonEntryAddress.HasValue )
             {
                 // a Person should always have a PrimaryFamilyId, but check to make sure, just in case
                 if ( primaryFamily != null )
                 {
                     var groupLocationService = new GroupLocationService( personEntryRockContext );
-                    var familyLocation = primaryFamily.GroupLocations.Where( a => a.GroupLocationTypeValueId == form.PersonEntryGroupLocationTypeValueId.Value ).FirstOrDefault();
+                    var familyLocation = primaryFamily.GroupLocations.Where( a => a.GroupLocationTypeValueId == formPersonEntrySettings.AddressTypeValueId.Value ).FirstOrDefault();
 
                     var newOrExistingLocation = new LocationService( personEntryRockContext ).Get(
                             acPersonEntryAddress.Street1,
@@ -1344,7 +1594,7 @@ namespace RockWeb.Blocks.WorkFlow
                         {
                             familyLocation = new GroupLocation
                             {
-                                GroupLocationTypeValueId = form.PersonEntryGroupLocationTypeValueId.Value,
+                                GroupLocationTypeValueId = formPersonEntrySettings.AddressTypeValueId.Value,
                                 GroupId = primaryFamily.Id,
                                 IsMailingLocation = true,
                                 IsMappedLocation = true
@@ -1375,9 +1625,14 @@ namespace RockWeb.Blocks.WorkFlow
             var form = _actionType.WorkflowForm;
             var personAliasService = new PersonAliasService( new RockContext() );
 
-            if ( form.PersonEntryPersonAttributeGuid.HasValue )
+            var workflowType = GetWorkflowType();
+
+            var personEntryPersonAttribute = form.GetPersonEntryPersonAttribute( _workflow );
+            var personEntryFamilyAttribute = form.GetPersonEntryFamilyAttribute( _workflow );
+            var personEntrySpouseAttribute = form.GetPersonEntrySpouseAttribute( _workflow );
+
+            if ( personEntryPersonAttribute != null )
             {
-                AttributeCache personEntryPersonAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntryPersonAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
                 var item = GetWorkflowAttributeEntity( personEntryPersonAttribute );
                 if ( item != null )
                 {
@@ -1386,9 +1641,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            if ( form.PersonEntryFamilyAttributeGuid.HasValue )
+            if ( personEntryFamilyAttribute != null )
             {
-                AttributeCache personEntryFamilyAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntryFamilyAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
                 var item = GetWorkflowAttributeEntity( personEntryFamilyAttribute );
                 if ( item != null )
                 {
@@ -1396,9 +1650,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            if ( form.PersonEntrySpouseAttributeGuid.HasValue && personEntryPersonSpouseId.HasValue )
+            if ( personEntrySpouseAttribute != null && personEntryPersonSpouseId.HasValue )
             {
-                AttributeCache personEntrySpouseAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntrySpouseAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
                 var item = GetWorkflowAttributeEntity( personEntrySpouseAttribute );
                 if ( item != null )
                 {
@@ -1426,6 +1679,23 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             return item;
+        }
+
+        /// <summary>
+        /// Gets the workflow attribute entity attribute value.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        private string GetWorkflowAttributeEntityAttributeValue( AttributeCache attribute )
+        {
+            var workflowAttributeEntity = GetWorkflowAttributeEntity( attribute );
+            if ( workflowAttributeEntity != null )
+            {
+                return workflowAttributeEntity.GetAttributeValue( attribute.Key );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1570,9 +1840,9 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Gets the form values.
+        /// Saves the form values to the Workflow attributes
         /// </summary>
-        private void GetWorkflowFormAttributeValues()
+        private void SetWorkflowFormAttributeValues()
         {
             if ( _workflow == null || _actionType == null )
             {
@@ -1581,12 +1851,17 @@ namespace RockWeb.Blocks.WorkFlow
 
             var form = _actionType.WorkflowForm;
 
-            var values = new Dictionary<int, string>();
-            var editableFormAttributes = form.FormAttributes.Where( a => a.IsVisible && !a.IsReadOnly ).OrderBy( a => a.Order );
-            foreach ( WorkflowActionFormAttributeCache formAttribute in editableFormAttributes )
+            var formEditAttributesValues = GetWorkflowFormEditAttributeValues();
+
+            if ( formEditAttributesValues == null )
             {
-                var attribute = AttributeCache.Get( formAttribute.AttributeId );
-                var control = phWorkflowFormAttributes.FindControl( string.Format( "attribute_field_{0}", formAttribute.AttributeId ) );
+                return;
+            }
+
+            foreach ( var formEditAttributesValue in formEditAttributesValues.Values )
+            {
+                var attribute = AttributeCache.Get( formEditAttributesValue.AttributeId );
+                var control = phWorkflowFormAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
 
                 if ( attribute != null && control != null )
                 {
@@ -1598,6 +1873,47 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the workflow form edit attribute values.
+        /// </summary>
+        /// <param name="excludeSectionId">The exclude section identifier.</param>
+        /// <returns></returns>
+        private Dictionary<int, AttributeValueCache> GetWorkflowFormEditAttributeValues( int? excludeSectionId = null )
+        {
+            var result = new Dictionary<int, AttributeValueCache>();
+
+            if ( _workflow == null || _actionType == null )
+            {
+                return result;
+            }
+
+            var form = _actionType.WorkflowForm;
+
+            var values = new Dictionary<int, string>();
+            var editableFormAttributes = form.FormAttributes.Where( a => a.IsVisible && !a.IsReadOnly );
+
+            if ( excludeSectionId.HasValue )
+            {
+                editableFormAttributes = editableFormAttributes.Where( a => a.ActionFormSectionId.HasValue && a.ActionFormSectionId.Value != excludeSectionId.Value );
+            }
+
+            editableFormAttributes = editableFormAttributes.OrderBy( a => a.Order );
+
+            foreach ( WorkflowActionFormAttributeCache formAttribute in editableFormAttributes )
+            {
+                var attribute = AttributeCache.Get( formAttribute.AttributeId );
+                var control = phWorkflowFormAttributes.FindControl( string.Format( "attribute_field_{0}", formAttribute.AttributeId ) );
+
+                if ( attribute != null && control != null )
+                {
+                    var editValue = attribute.FieldType.Field.GetEditValue( attribute.GetControl( control ), attribute.QualifierValues );
+                    result.Add( attribute.Id, new AttributeValueCache( attribute.Id, null, editValue ) );
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1616,9 +1932,10 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
-            Guid? activityTypeGuid = null;
-            string responseText = "Your information has been submitted successfully.";
             var mergeFields = GetWorkflowEntryMergeFields();
+
+            Guid? activityTypeGuid = Guid.Empty;
+            string buttonResponseText = "Your information has been submitted successfully.";
 
             // If the selected action requires valid form data, trigger page validation and discontinue processing if there are any errors.
             var buttons = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
@@ -1641,7 +1958,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( !string.IsNullOrWhiteSpace( button.ResponseText ) )
                 {
-                    responseText = button.ResponseText.ResolveMergeFields( mergeFields );
+                    buttonResponseText = button.ResponseText;
                 }
             }
 
@@ -1660,6 +1977,75 @@ namespace RockWeb.Blocks.WorkFlow
 
             _action.FormAction = formAction;
             _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
+
+            var workflowType = GetWorkflowType();
+
+            string responseTextTemplate;
+
+            FormCompletionActionSettings completionActionSettings;
+            if ( workflowType?.FormBuilderTemplate != null )
+            {
+                completionActionSettings = workflowType?.FormBuilderTemplate.CompletionActionSettings;
+            }
+            else if ( workflowType.FormBuilderSettings != null )
+            {
+                completionActionSettings = workflowType?.FormBuilderSettings.CompletionAction;
+            }
+            else
+            {
+                // not a formbuilder or formbuilder template, so use UserForm buttons
+                completionActionSettings = null;
+            }
+
+            if ( completionActionSettings != null && completionActionSettings.Type == FormCompletionActionType.DisplayMessage )
+            {
+                // if this is a FormBuilder and a completion action of DisplayMessage, set responseText from that
+                responseTextTemplate = completionActionSettings.Message;
+            }
+            else
+            {
+                responseTextTemplate = buttonResponseText;
+            }
+
+            var responseText = responseTextTemplate.ResolveMergeFields( mergeFields );
+
+            var workflowCampusSetFrom = workflowType?.FormBuilderSettings?.CampusSetFrom;
+            switch ( workflowCampusSetFrom )
+            {
+                case CampusSetFrom.CurrentPerson:
+                    {
+                        _workflow.CampusId = this.CurrentPerson?.PrimaryCampusId;
+                    }
+                    break;
+                case CampusSetFrom.WorkflowPerson:
+                    {
+                        Person personEntryPerson;
+                        Person personEntrySpouse;
+                        _action.GetPersonEntryPeople( new RockContext(), CurrentPersonId, out personEntryPerson, out personEntrySpouse );
+                        if (personEntryPerson != null)
+                        {
+                            _workflow.CampusId = personEntryPerson.PrimaryCampusId;
+                        }
+                    }
+                    break;
+                case CampusSetFrom.QueryString:
+                    {
+                        _workflow.CampusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            if ( workflowType.IsPersisted == false && workflowType.IsFormBuilder )
+            {
+                /* 3/14/2022 MP 
+                 If this is a FormBuilder workflow, the WorkflowType probably has _workflowType.IsPersisted == false.
+                 This is because we don't want to persist the workflow until they have submitted.
+                 So, in the case of FormBuilder, we'll persist when they submit regardless of the _workflowType.IsPersisted setting
+                */
+                _workflowService.PersistImmediately( _action );
+            }
 
             CompleteCurrentWorkflowAction( activityTypeGuid, responseText );
         }
@@ -1781,6 +2167,233 @@ namespace RockWeb.Blocks.WorkFlow
                     pnlWorkflowUserForm.Visible = false;
                     pnlWorkflowActionElectronicSignature.Visible = false;
                 }
+
+                // Confirmation email can come FormBuilderSettings or FormBuilderTemplate
+                FormConfirmationEmailSettings confirmationEmailSettings;
+                FormCompletionActionSettings completionActionSettings;
+                if ( _workflowType?.FormBuilderTemplate != null )
+                {
+                    // Use FormBuilderTemplate
+                    confirmationEmailSettings = _workflowType?.FormBuilderTemplate.ConfirmationEmailSettings;
+                    completionActionSettings = _workflowType?.FormBuilderTemplate.CompletionActionSettings;
+                }
+                else if ( _workflowType?.FormBuilderSettings?.ConfirmationEmail != null )
+                {
+                    // User FormBuilderSettings
+                    confirmationEmailSettings = _workflowType.FormBuilderSettings.ConfirmationEmail;
+                    completionActionSettings = _workflowType.FormBuilderSettings.CompletionAction;
+                }
+                else
+                {
+                    // Not a FormBuilder
+                    confirmationEmailSettings = null;
+                    completionActionSettings = null;
+                }
+
+                if ( confirmationEmailSettings != null )
+                {
+                    if ( confirmationEmailSettings.Enabled == true )
+                    {
+                        SendFormBuilderConfirmationEmail( confirmationEmailSettings );
+                    }
+                }
+
+                // Notification Email is only defined on FormBuilder. FormBuilderTemplate doesn't have NotificationEmailSettings
+                FormNotificationEmailSettings notificationEmailSettings = _workflowType?.FormBuilderSettings?.NotificationEmail;
+
+                if ( notificationEmailSettings != null )
+                {
+                    SendFormBuilderNotificationEmail( notificationEmailSettings );
+                }
+
+                if ( completionActionSettings != null )
+                {
+                    if ( completionActionSettings.Type == FormCompletionActionType.Redirect )
+                    {
+                        // if this is a FormBuilder and has a completion action of Redirect, navigate to thw specified URL
+                        Response.Redirect( completionActionSettings.RedirectUrl, false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends the form builder confirmation email.
+        /// </summary>
+        /// <param name="confirmationEmailSettings">The confirmation email settings.</param>
+        private void SendFormBuilderConfirmationEmail( FormConfirmationEmailSettings confirmationEmailSettings )
+        {
+            if ( confirmationEmailSettings == null || confirmationEmailSettings.Enabled == false )
+            {
+                return;
+            }
+
+            var formConfirmationEmailDestination = confirmationEmailSettings.Destination;
+
+            Dictionary<string, object> workflowMergeFields = GetWorkflowEntryMergeFields();
+
+            // If the RecipientType indicates that we should use the Person or Spouse key. We'll get the attribute from the Workflow.
+            // Note it will only be a Workflow Attribute, not a Action attribute.
+            AttributeCache recipientWorkflowAttribute;
+            if ( formConfirmationEmailDestination == FormConfirmationEmailDestination.Person )
+            {
+                recipientWorkflowAttribute = _workflow.Attributes.GetValueOrNull( "Person" );
+            }
+            else if ( formConfirmationEmailDestination == FormConfirmationEmailDestination.Spouse )
+            {
+                // If the RecipientType indicates that we should use the Spouse key. We'll get the attribute from the Workflow 
+                recipientWorkflowAttribute = _workflow.Attributes.GetValueOrNull( "Spouse" );
+            }
+            else
+            {
+                Guid? recipientAttributeGuid = confirmationEmailSettings.RecipientAttributeGuid;
+                recipientWorkflowAttribute = recipientAttributeGuid.HasValue
+                    ? AttributeCache.Get( recipientAttributeGuid.Value )
+                    : null;
+            }
+
+            if ( recipientWorkflowAttribute == null )
+            {
+                // Unable to to determine Recipient Attribute
+                return;
+            }
+
+            var recipients = new List<RockMessageRecipient>();
+
+            var rockContext = new RockContext();
+
+            var recipientWorkflowAttributeValue = GetWorkflowAttributeEntityAttributeValue( recipientWorkflowAttribute );
+            if ( recipientWorkflowAttribute.FieldTypeId == FieldTypeCache.GetId( Rock.SystemGuid.FieldType.PERSON.AsGuid() ) )
+            {
+                Guid personAliasGuid = recipientWorkflowAttributeValue.AsGuid();
+                if ( !personAliasGuid.IsEmpty() )
+                {
+                    var recipientPerson = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
+                    if ( recipientPerson != null && !string.IsNullOrWhiteSpace( recipientPerson.Email ) )
+                    {
+                        recipients.Add( new RockEmailMessageRecipient( recipientPerson, workflowMergeFields ) );
+                    }
+                }
+            }
+            else
+            {
+                // If this isn't a Person, assume it is an email address.
+                string recipientEmailAddress = recipientWorkflowAttributeValue;
+                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipientEmailAddress, workflowMergeFields ) );
+            }
+
+            SendFormBuilderCommunication( confirmationEmailSettings.Source, recipients );
+        }
+
+        /// <summary>
+        /// Sends the form builder notification email.
+        /// </summary>
+        /// <param name="notificationEmailSettings">The notification email settings.</param>
+        private void SendFormBuilderNotificationEmail( FormNotificationEmailSettings notificationEmailSettings )
+        {
+            if ( notificationEmailSettings == null || notificationEmailSettings.Enabled == false )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+
+            var formNotificationEmailDestination = notificationEmailSettings.Destination;
+
+            Dictionary<string, object> workflowMergeFields = GetWorkflowEntryMergeFields();
+            var recipients = new List<RockMessageRecipient>();
+
+            if ( formNotificationEmailDestination == FormNotificationEmailDestination.EmailAddress
+                && notificationEmailSettings.EmailAddress.IsNotNullOrWhiteSpace() )
+            {
+                recipients.Add( RockEmailMessageRecipient.CreateAnonymous( notificationEmailSettings.EmailAddress, workflowMergeFields ) );
+            }
+            else if ( formNotificationEmailDestination == FormNotificationEmailDestination.SpecificIndividual
+                && notificationEmailSettings.RecipientAliasId.HasValue )
+            {
+                var recipientPerson = new PersonAliasService( rockContext ).GetPerson( notificationEmailSettings.RecipientAliasId.Value );
+                if ( recipientPerson == null )
+                {
+                    return;
+                }
+
+                recipients.Add( new RockEmailMessageRecipient( recipientPerson, workflowMergeFields ) );
+            }
+            else if ( formNotificationEmailDestination == FormNotificationEmailDestination.CampusTopic
+                && notificationEmailSettings.CampusTopicValueId.HasValue )
+            {
+                var workflowCampusId = _workflow?.CampusId;
+                if ( workflowCampusId.HasValue )
+                {
+                    var campusTopicEmail = new CampusTopicService( rockContext ).Queryable()
+                        .Where( a => a.TopicTypeValueId == notificationEmailSettings.CampusTopicValueId.Value && a.CampusId == workflowCampusId )
+                        .Select( a => a.Email ).FirstOrDefault();
+
+                    if ( campusTopicEmail.IsNullOrWhiteSpace() )
+                    {
+                        return;
+                    }
+
+                    recipients.Add( RockEmailMessageRecipient.CreateAnonymous( campusTopicEmail, workflowMergeFields ) );
+                }
+
+            }
+            else
+            {
+                return;
+            }
+
+            SendFormBuilderCommunication( notificationEmailSettings.Source, recipients );
+        }
+
+        /// <summary>
+        /// Sends a form builder communication.
+        /// </summary>
+        /// <param name="formEmailSourceSettings">The form email source settings.</param>
+        /// <param name="recipients">The recipients.</param>
+        private void SendFormBuilderCommunication( FormEmailSourceSettings formEmailSourceSettings, List<RockMessageRecipient> recipients )
+        {
+            if ( formEmailSourceSettings.Type == FormEmailSourceType.UseTemplate && formEmailSourceSettings.SystemCommunicationId.HasValue )
+            {
+                var systemCommunication = new SystemCommunicationService( new RockContext() ).Get( formEmailSourceSettings.SystemCommunicationId.Value );
+                if ( systemCommunication != null )
+                {
+                    var emailMessage = new RockEmailMessage( systemCommunication );
+                    emailMessage.SetRecipients( recipients );
+                    emailMessage.Send();
+                }
+            }
+            else if ( formEmailSourceSettings.Type == FormEmailSourceType.Custom )
+            {
+                string customBody;
+                if ( formEmailSourceSettings.AppendOrgHeaderAndFooter )
+                {
+                    var globalEmailHeader = "{{ 'Global' | Attribute:'EmailHeader' }}";
+                    var globalEmailFooter = "{{ 'Global' | Attribute:'EmailFooter' }}";
+
+                    customBody = $@"
+{globalEmailHeader}
+{formEmailSourceSettings.Body}
+{globalEmailFooter}
+";
+                }
+                else
+                {
+                    customBody = formEmailSourceSettings.Body;
+                }
+
+                Dictionary<string, object> workflowMergeFields = GetWorkflowEntryMergeFields();
+
+                var emailMessage = new RockEmailMessage
+                {
+                    ReplyToEmail = formEmailSourceSettings.ReplyTo,
+                    Subject = formEmailSourceSettings.Subject,
+                    Message = customBody?.ResolveMergeFields( workflowMergeFields )
+                };
+
+                emailMessage.SetRecipients( recipients );
+                emailMessage.Send();
             }
         }
 
