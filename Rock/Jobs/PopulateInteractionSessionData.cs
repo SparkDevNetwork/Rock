@@ -15,9 +15,16 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Text;
 using Quartz;
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -28,7 +35,7 @@ namespace Rock.Jobs
     [Description( "This job will create new InteractionSessionLocation records and / or link existing InteractionSession records to the corresponding InteractionSessionLocation record." )]
 
     [ComponentField(
-        "Rock.IpAddress.IpRegistry, Rock",
+        "Rock.IpAddress.IpAddressLookupContainer, Rock",
         Name = "IP Address GeoCoding Component",
         Description = "The service that will perform the IP GeoCoding lookup for any new IPs that have not been GeoCoded.Not required to be set here because the job will use the first active component if one is not configured here.",
         IsRequired = true,
@@ -87,11 +94,53 @@ namespace Rock.Jobs
         {
             // get the job map
             JobDataMap dataMap = context.JobDetail.JobDataMap;
+            StringBuilder results = new StringBuilder();
+            var errors = new List<string>();
+            List<Exception> exceptions = new List<Exception>();
 
-            int maxRecords = dataMap.GetString( "MaxRecordsPerRun" ).AsIntegerOrNull() ?? 1000;
-            int throttlePeriod = dataMap.GetString( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;
-            int retryPeriod = dataMap.GetString( "RetryPeriod" ).AsIntegerOrNull() ?? 200;
+            var rockContext = new RockContext();
+            var currentDateTime = RockDateTime.Now;
 
+            var channelIdsWithGeoTracking = GetInteractionChannelsWithGeoTracking();
+            var interactionComponentQry = new InteractionComponentService( rockContext ).Queryable().Where( a => channelIdsWithGeoTracking.Contains( a.InteractionChannelId ) ).Select( a => a.Id );
+            var lookbackMaximumInDays = dataMap.GetString( AttributeKey.LookbackMaximumInDays ).AsInteger();
+            var startDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );
+            var interationQry = new InteractionService( rockContext ).Queryable().Where( a => a.CreatedDateTime >= startDate && interactionComponentQry.Contains( a.InteractionComponentId ) ).Select( a => a.Id );
+            var ipAddressesQry = new InteractionSessionLocationService( rockContext ).Queryable().Select( a => a.IpAddress );
+            var interactionSessionQuery = new InteractionSessionService( rockContext )
+                .Queryable()
+                .Where( a =>
+                    !a.InteractionSessionLocationId.HasValue &&
+                    a.IpAddress != null &&
+                    a.IpAddress != string.Empty &&
+                    a.CreatedDateTime >= startDate &&
+                    a.Interactions.Any( b => interationQry.Contains( b.Id ) )
+                    ).Take(1000);
+
+            var notFoundIpAddressList = interactionSessionQuery.ToList();
+
+            context.Result = results.ToString();
+
+            if ( exceptions.Any() )
+            {
+                var exceptionList = new AggregateException( "One or more exceptions occurred in UpdatePersistedDatasets.", exceptions );
+                throw new RockJobWarningException( "UpdatePersistedDatasets completed with warnings", exceptionList );
+            }
+
+        }
+
+        private List<int> GetInteractionChannelsWithGeoTracking()
+        {
+            var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            var rockContext = new RockContext();
+            var siteWithEnableGeoTracking = new SiteService( rockContext ).Queryable().Where( a => a.EnablePageViewGeoTracking );
+            return new InteractionChannelService( rockContext )
+                .Queryable()
+                .Where( ic =>
+                    ic.ChannelTypeMediumValueId == channelMediumTypeValueId &&
+                    siteWithEnableGeoTracking.Any( b => ic.ChannelEntityId == b.Id ) )
+                .Select( a => a.Id )
+                .ToList();
         }
     }
 }
