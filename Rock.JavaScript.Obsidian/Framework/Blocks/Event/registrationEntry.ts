@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, provide, reactive, ref } from "vue";
 import Alert from "../../Elements/alert.vue";
 import CountdownTimer from "../../Elements/countdownTimer";
@@ -29,7 +30,7 @@ import { newGuid } from "../../Util/guid";
 import { List } from "../../Util/linq";
 import Page from "../../Util/page";
 import { RockDateTime } from "../../Util/rockDateTime";
-import { Person } from "../../ViewModels";
+import { Person } from "@Obsidian/ViewModels/Entities/person";
 import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
 import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
 import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";

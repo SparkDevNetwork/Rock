@@ -14,23 +14,27 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { Guid } from "@Obsidian/Types";
 import DropDownList from "../../Elements/dropDownList";
 import CurrencyBox from "../../Elements/currencyBox";
 import { defineComponent, inject } from "vue";
 import DatePicker from "../../Elements/datePicker";
 import RockButton from "../../Elements/rockButton";
-import { areEqual, Guid, newGuid } from "../../Util/guid";
+import { areEqual, newGuid } from "../../Util/guid";
 import { RockDateTime } from "../../Util/rockDateTime";
 import Alert from "../../Elements/alert.vue";
 import { asFormattedString } from "../../Services/number";
 import { ConfigurationValues, InvokeBlockActionFunc, useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import Toggle from "../../Elements/toggle";
-import { FinancialAccount, ListItem, Person } from "../../ViewModels";
 import { useStore } from "../../Store/index";
 import TextBox from "../../Elements/textBox";
 import { asCommaAnd } from "../../Services/string";
 import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "../../Controls/gatewayControl";
 import RockValidation from "../../Controls/rockValidation";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { FinancialAccount } from "@Obsidian/ViewModels/Entities/financialAccount";
 
 const store = useStore();
 
@@ -87,8 +91,8 @@ export default defineComponent({
 
     data() {
         const configurationValues = useConfigurationValues<ConfigurationValues>();
-        const campuses = configurationValues["campuses"] as ListItem[] || [];
-        const frequencies = configurationValues["frequencies"] as ListItem[] || [];
+        const campuses = configurationValues["campuses"] as ListItemBag[] || [];
+        const frequencies = configurationValues["frequencies"] as ListItemBag[] || [];
 
         return {
             loading: false,
@@ -163,12 +167,12 @@ export default defineComponent({
             return this.configurationValues["financialAccounts"] as FinancialAccount[] || [];
         },
 
-        campuses(): ListItem[] {
-            return this.configurationValues["campuses"] as ListItem[] || [];
+        campuses(): ListItemBag[] {
+            return this.configurationValues["campuses"] as ListItemBag[] || [];
         },
 
-        frequencies(): ListItem[] {
-            return this.configurationValues["frequencies"] as ListItem[] || [];
+        frequencies(): ListItemBag[] {
+            return this.configurationValues["frequencies"] as ListItemBag[] || [];
         },
 
         campusName(): string | null {
@@ -178,7 +182,7 @@ export default defineComponent({
 
             const matchedCampuses = this.campuses.filter(c => c.value === this.args.campusGuid);
 
-            return matchedCampuses.length >= 1 ? matchedCampuses[0].text : null;
+            return matchedCampuses.length >= 1 ? matchedCampuses[0].text ?? "" : null;
         },
 
         accountAndCampusString(): string {

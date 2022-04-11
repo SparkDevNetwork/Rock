@@ -17,7 +17,7 @@
 
 import { defineComponent, PropType } from "vue";
 import { useVModelPassthrough } from "../../../../Util/component";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export default defineComponent({
     name: "SegmentedPicker",
@@ -29,7 +29,7 @@ export default defineComponent({
         },
 
         options: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         }
     },
@@ -48,7 +48,7 @@ export default defineComponent({
          *
          * @returns A collection of CSS class names.
          */
-        const getButtonClass = (item: ListItem): string[] => {
+        const getButtonClass = (item: ListItemBag): string[] => {
             return ["btn", item.value === internalValue.value ? "btn-primary" : "btn-default"];
         };
 
@@ -57,8 +57,8 @@ export default defineComponent({
          * 
          * @param item The ListItem that represents the button that was clicked.
          */
-        const onItemClick = (item: ListItem): void => {
-            internalValue.value = item.value;
+        const onItemClick = (item: ListItemBag): void => {
+            internalValue.value = item.value ?? "";
         };
 
         return {

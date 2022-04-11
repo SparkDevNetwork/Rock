@@ -21,13 +21,13 @@ import DropDownList from "../../../../Elements/dropDownList";
 import EmailBox from "../../../../Elements/emailBox";
 import TextBox from "../../../../Elements/textBox";
 import { toNumberOrNull } from "../../../../Services/number";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import EmailSource from "../Shared/emailSource";
 import SegmentedPicker from "../Shared/segmentedPicker";
 import SectionContainer from "../../../../Controls/sectionContainer";
 import { FormNotificationEmail, FormNotificationEmailDestination } from "../Shared/types";
 
-const notificationDestinationOptions: ListItem[] = [
+const notificationDestinationOptions: ListItemBag[] = [
     {
         value: FormNotificationEmailDestination.SpecificIndividual.toString(),
         text: "Specific Individual"
@@ -66,12 +66,12 @@ export default defineComponent({
         },
 
         sourceTemplateOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
         campusTopicOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         }
     },

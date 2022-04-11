@@ -20,7 +20,7 @@ import { defineComponent, PropType, ref, watch } from "vue";
 import RockForm from "../../../../Controls/rockForm";
 import Alert from "../../../../Elements/alert.vue";
 import { FormError } from "../../../../Util/form";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import ConfirmationEmail from "../Shared/confirmationEmail";
 import NotificationEmail from "./notificationEmail";
 import { FormCommunication, FormTemplateListItem } from "./types";
@@ -43,7 +43,7 @@ export default defineComponent({
         },
 
         recipientOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 

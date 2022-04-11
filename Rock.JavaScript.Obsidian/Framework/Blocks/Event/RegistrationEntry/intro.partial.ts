@@ -21,10 +21,10 @@ import NumberUpDown from "../../../Elements/numberUpDown";
 import RockButton from "../../../Elements/rockButton";
 import { toTitleCase, pluralConditional } from "../../../Services/string";
 import { areEqual } from "../../../Util/guid";
-import { Person } from "../../../ViewModels";
 import { getDefaultRegistrantInfo, getForcedFamilyGuid } from "./utils.partial";
 import { RegistrationEntryBlockViewModel, RegistrationEntryState } from "./types";
 import { useStore } from "../../../Store/index";
+import { Person } from "@Obsidian/ViewModels/Entities/person";
 
 const store = useStore();
 

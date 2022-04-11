@@ -19,7 +19,7 @@ import { computed, defineComponent, inject, ref, watch } from "vue";
 import AttributeValuesContainer from "../../../Controls/attributeValuesContainer";
 import RockForm from "../../../Controls/rockForm";
 import RockButton from "../../../Elements/rockButton";
-import { PublicAttribute } from "../../../ViewModels";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { RegistrationEntryState } from "./types";
 
 export default defineComponent({
@@ -35,18 +35,18 @@ export default defineComponent({
         const attributeValues = ref<Record<string, string>>({});
 
         for (const a of registrationEntryState.viewModel.registrationAttributesStart) {
-            attributeValues.value[a.key] = (registrationEntryState.registrationFieldValues[a.attributeGuid] as string) || "";
+            attributeValues.value[a.key ?? ""] = (registrationEntryState.registrationFieldValues[a.attributeGuid ?? ""] as string) || "";
         }
 
         const showPrevious = computed((): boolean => {
             return registrationEntryState.firstStep === registrationEntryState.steps.intro;
         });
 
-        const attributes = computed((): Record<string, PublicAttribute> => {
-            const attrs: Record<string, PublicAttribute> = {};
+        const attributes = computed((): Record<string, PublicAttributeBag> => {
+            const attrs: Record<string, PublicAttributeBag> = {};
 
             for (const a of registrationEntryState.viewModel.registrationAttributesStart) {
-                attrs[a.key] = a;
+                attrs[a.key ?? ""] = a;
             }
 
             return attrs;
@@ -62,7 +62,7 @@ export default defineComponent({
 
         watch(attributeValues, () => {
             for (const a of registrationEntryState.viewModel.registrationAttributesStart) {
-                registrationEntryState.registrationFieldValues[a.attributeGuid] = attributeValues.value[a.key];
+                registrationEntryState.registrationFieldValues[a.attributeGuid ?? ""] = attributeValues.value[a.key ?? ""];
             }
         });
 

@@ -15,9 +15,9 @@
 // </copyright>
 //
 
-import { Guid } from "../../../../Util/guid";
-import { ListItem } from "../../../../ViewModels";
-import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGroup";
+import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 
 // #region Enums
 
@@ -125,7 +125,7 @@ export type FormSection = {
     fields?: FormField[] | null;
 
     /** The rule that controls when this section is visible. */
-    visibilityRule?: FieldFilterGroup | null;
+    visibilityRule?: FieldFilterGroupBag | null;
 };
 
 /**
@@ -175,7 +175,7 @@ export type FormField = {
     configurationValues?: Record<string, string> | null;
 
     /** The rule that controls when this field is visible. */
-    visibilityRule?: FieldFilterGroup | null;
+    visibilityRule?: FieldFilterGroupBag | null;
 
     /** The default value that will be used when the field is initially displayed. */
     defaultValue?: string | null;
@@ -268,10 +268,10 @@ export type FormNotificationEmail = {
     destination?: FormNotificationEmailDestination;
 
     /**
-     * The ListItem that identifies the current person that will receive
+     * The ListItemBag that identifies the current person that will receive
      * the e-mail.
      */
-    recipient?: ListItem | null;
+    recipient?: ListItemBag | null;
 
     /**
      * Contains the e-mail address that will receive the notification e-mail.
@@ -314,7 +314,7 @@ export type FormGeneral = {
     template?: Guid | null;
 
     /** The category that this form belongs to for organization purposes. */
-    category?: ListItem | null;
+    category?: ListItemBag | null;
 
     /** The date and time this form will begin to allow entries. */
     entryStarts?: string | null;

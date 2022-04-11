@@ -15,11 +15,11 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, inject, PropType, ref } from "vue";
 import DropDownList from "../../../Elements/dropDownList";
 import ElectronicSignature from "../../../Controls/electronicSignature";
 import RadioButtonList from "../../../Elements/radioButtonList";
-import { ListItem, Person } from "../../../ViewModels";
 import { getRegistrantBasicInfo } from "./utils.partial";
 import StringFilter from "../../../Services/string";
 import RockButton from "../../../Elements/rockButton";
@@ -27,11 +27,13 @@ import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import Alert from "../../../Elements/alert.vue";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
-import { areEqual, Guid, newGuid } from "../../../Util/guid";
+import { areEqual, newGuid } from "../../../Util/guid";
 import RockForm from "../../../Controls/rockForm";
 import FeeField from "./feeField.partial";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "../../../Elements/itemsWithPreAndPostHtml";
 import { useStore } from "../../../Store/index";
+import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "../../../Util/block";
 import { ElectronicSignatureValue } from "../../../ViewModels/Controls/electronicSignatureValue";
 
@@ -155,8 +157,8 @@ export default defineComponent({
 
         /** The radio options that are displayed to allow the user to pick another person that this
          *  registrant is part of a family. */
-        familyOptions(): ListItem[] {
-            const options: ListItem[] = [];
+        familyOptions(): ListItemBag[] {
+            const options: ListItemBag[] = [];
             const usedFamilyGuids: Record<Guid, boolean> = {};
 
             if (this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask) {
@@ -200,7 +202,7 @@ export default defineComponent({
         },
 
         /** The people that can be picked from because they are members of the same family. */
-        familyMemberOptions (): ListItem[] {
+        familyMemberOptions (): ListItemBag[] {
             const selectedFamily = this.currentRegistrant.familyGuid;
 
             if (!selectedFamily) {

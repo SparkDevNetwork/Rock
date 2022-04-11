@@ -16,8 +16,8 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import { ITreeItemProvider } from "../ViewModels/Controls/treeList";
-import { TreeItem } from "../ViewModels/treeItem";
+import { ITreeItemProvider } from "../Util/treeItemProviders";
+import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 
 function isPromise<T>(obj: PromiseLike<T> | T): obj is PromiseLike<T> {
     return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as Record<string, unknown>).then === "function";
@@ -41,7 +41,7 @@ const treeItem = defineComponent({
         },
 
         item: {
-            type: Object as PropType<TreeItem>,
+            type: Object as PropType<TreeItemBag>,
             default: {}
         }
     },
@@ -53,7 +53,7 @@ const treeItem = defineComponent({
 
     setup(props, { emit }) {
         /** The list of child items to this item. */
-        const children = computed((): TreeItem[] => props.item.children ?? []);
+        const children = computed((): TreeItemBag[] => props.item.children ?? []);
 
         /** Determines if we currently have any children to display. */
         const hasChildren = computed((): boolean => children.value.length > 0);
@@ -110,7 +110,7 @@ const treeItem = defineComponent({
          * 
          * @param item The item that was expanded.
          */
-        const onChildItemExpanded = (item: TreeItem): void => {
+        const onChildItemExpanded = (item: TreeItemBag): void => {
             emit("treeitem-expanded", item);
         };
 
@@ -195,7 +195,7 @@ export default defineComponent({
         },
 
         items: {
-            type: Array as PropType<TreeItem[]>,
+            type: Array as PropType<TreeItemBag[]>,
             default: []
         },
 
@@ -212,7 +212,7 @@ export default defineComponent({
 
     setup(props, { emit }) {
         /** The list of items currently being displayed in the tree list. */
-        const internalItems = ref<TreeItem[]>(props.items ?? []);
+        const internalItems = ref<TreeItemBag[]>(props.items ?? []);
 
         /**
          * Get the root items from the provider as an asynchronous operation.
@@ -222,7 +222,7 @@ export default defineComponent({
                 const result = props.provider.getRootItems();
                 const rootItems = isPromise(result) ? await result : result;
 
-                internalItems.value = JSON.parse(JSON.stringify(rootItems)) as TreeItem[];
+                internalItems.value = JSON.parse(JSON.stringify(rootItems)) as TreeItemBag[];
 
                 emit("update:items", internalItems.value);
             }
@@ -248,7 +248,7 @@ export default defineComponent({
          * 
          * @param item The item that was expanded.
          */
-        const onItemExpanded = async (item: TreeItem): Promise<void> => {
+        const onItemExpanded = async (item: TreeItemBag): Promise<void> => {
             if (props.provider) {
                 // We have a provider, check if the item needs it's children
                 // loaded still.
@@ -256,7 +256,7 @@ export default defineComponent({
                     const result = props.provider.getChildItems(item);
                     const children = isPromise(result) ? await result : result;
 
-                    item.children = JSON.parse(JSON.stringify(children)) as TreeItem[];
+                    item.children = JSON.parse(JSON.stringify(children)) as TreeItemBag[];
 
                     emit("update:items", internalItems.value);
                 }

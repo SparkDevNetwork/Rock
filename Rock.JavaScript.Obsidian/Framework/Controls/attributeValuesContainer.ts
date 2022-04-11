@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import { PublicAttribute } from "../ViewModels";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import RockField from "./rockField";
 import LoadingIndicator from "../Elements/loadingIndicator";
 import { List } from "../Util/linq";
@@ -36,7 +36,7 @@ export default defineComponent({
             default: false
         },
         attributes: {
-            type: Object as PropType<Record<string, PublicAttribute>>,
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
             required: true
         },
         showEmptyValues: {
@@ -50,7 +50,7 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
-        const validAttributes = computed((): PublicAttribute[] => {
+        const validAttributes = computed((): PublicAttributeBag[] => {
             return new List(Object.values(props.attributes))
                 .orderBy(a => a.order)
                 .toArray();

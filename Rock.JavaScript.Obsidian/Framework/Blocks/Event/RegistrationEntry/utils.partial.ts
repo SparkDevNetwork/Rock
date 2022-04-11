@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-import { Guid, newGuid } from "../../../Util/guid";
-import { Person } from "../../../ViewModels";
+import { Guid } from "@Obsidian/Types";
+import { Person } from "@Obsidian/ViewModels/Entities";
+import { newGuid } from "../../../Util/guid";
 import { RegistrantBasicInfo, RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from "./types";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,

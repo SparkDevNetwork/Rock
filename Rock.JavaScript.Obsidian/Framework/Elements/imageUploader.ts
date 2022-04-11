@@ -15,12 +15,12 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import Alert from "../Elements/alert.vue";
 import { BinaryFiletype } from "../SystemGuids";
-import { Guid } from "../Util/guid";
 import { uploadBinaryFile } from "../Util/http";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
@@ -33,7 +33,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<ListItem | null>,
+            type: Object as PropType<ListItemBag | null>,
             required: false
         },
 
@@ -121,8 +121,8 @@ export default defineComponent({
                     }
                 });
 
-                fileGuid.value = result.value;
-                fileName.value = result.text;
+                fileGuid.value = result.value ?? "";
+                fileName.value = result.text ?? "";
             }
             catch (e) {
                 // Show any error message we got.
@@ -222,7 +222,7 @@ export default defineComponent({
 
         // Watch for changes to our internal values and update the model value.
         watch([fileGuid, fileName], () => {
-            let newValue: ListItem | undefined = undefined;
+            let newValue: ListItemBag | undefined = undefined;
 
             if (fileGuid.value) {
                 newValue = {

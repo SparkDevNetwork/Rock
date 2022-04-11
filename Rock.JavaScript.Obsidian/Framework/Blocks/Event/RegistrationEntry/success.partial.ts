@@ -15,9 +15,9 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject } from "vue";
 import SaveFinancialAccountForm from "../../../Controls/saveFinancialAccountForm";
-import { Guid } from "../../../Util/guid";
 import { RegistrationEntryState } from "./types";
 
 export default defineComponent({

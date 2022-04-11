@@ -14,18 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref } from "vue";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import Loading from "../../Controls/loading";
 import Alert from "../../Elements/alert.vue";
 import { useStore } from "../../Store/index";
-import { Guid } from "../../Util/guid";
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import JavaScriptAnchor from "../../Elements/javaScriptAnchor";
 import RockForm from "../../Controls/rockForm";
 import TextBox from "../../Elements/textBox";
 import RockButton from "../../Elements/rockButton";
-import { PublicAttribute } from "../../ViewModels";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
 import { List } from "../../Util/linq";
 
@@ -42,12 +43,12 @@ type ConfigurationValues = {
 
     categoryGuids: Guid[];
 
-    attributes: Record<string, PublicAttribute>;
+    attributes: Record<string, PublicAttributeBag>;
 
     values: Record<string, string>;
 };
 
-function sortedAttributeValues(attributeValues: PublicAttribute[]): PublicAttribute[] {
+function sortedAttributeValues(attributeValues: PublicAttributeBag[]): PublicAttributeBag[] {
     return new List(attributeValues)
         .orderBy(v => v.order)
         .thenBy(v => v.name)
@@ -81,7 +82,7 @@ export default defineComponent({
         };
 
         const goToEditMode = async (): Promise<void> => {
-            const result = await invokeBlockAction<PublicAttribute[]>("GetAttributeValuesForEdit");
+            const result = await invokeBlockAction<PublicAttributeBag[]>("GetAttributeValuesForEdit");
             if (result.isSuccess) {
                 //attributeValues.value = sortedAttributeValues(result.data ?? []);
                 isEditMode.value = true;

@@ -1015,7 +1015,6 @@
     <Compile Include="Model\CRM\PersonViewed\PersonViewed.Logic.cs" />
     <Compile Include="Model\CRM\Person\AgeClassification.cs" />
     <Compile Include="Model\CRM\Person\EmailPreference.cs" />
-    <Compile Include="Model\CRM\Person\Gender.cs" />
     <Compile Include="Model\CRM\Person\GetPersonPhotoImageTagArgs.cs" />
     <Compile Include="Model\CRM\Person\Person.cs" />
     <Compile Include="Model\CRM\Person\Person.Logic.cs" />
@@ -1610,10 +1609,10 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
-    <Compile Include="ViewModel\DefaultViewModelHelperAttribute.cs" />
-    <Compile Include="ViewModel\IViewModelHelper.cs" />
+    <Compile Include="ViewModels\DefaultViewModelHelperAttribute.cs" />
+    <Compile Include="ViewModels\IViewModelHelper.cs" />
     <Compile Include="Utility\CodeGenExcludeAttribute.cs" />
-    <Compile Include="ViewModel\ViewModelHelper.cs" />
+    <Compile Include="ViewModels\ViewModelHelper.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
@@ -3960,6 +3959,10 @@
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>
       <Name>Rock.DownhillCss</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
+      <Name>Rock.Enums</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
       <Project>{79aa470a-dc63-4cb4-b0b6-77285f60c69b}</Project>
       <Name>Rock.Lava.DotLiquid</Name>
@@ -3980,9 +3983,9 @@
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
       <Name>Rock.Version</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
       <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
-      <Name>Rock.ViewModel</Name>
+      <Name>Rock.ViewModels</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

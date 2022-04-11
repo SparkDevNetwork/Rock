@@ -15,12 +15,12 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "../../../Controls/rockField";
 import Alert from "../../../Elements/alert.vue";
 import { ComparisonType } from "../../../Reporting/comparisonType";
 import { FilterExpressionType } from "../../../Reporting/filterExpressionType";
-import { Guid } from "../../../Util/guid";
 import { RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from "./types";
 
 function isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel, fieldValues: Record<Guid, unknown>): boolean {

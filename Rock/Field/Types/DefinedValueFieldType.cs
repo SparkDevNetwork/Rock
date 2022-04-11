@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -88,7 +88,7 @@ namespace Rock.Field.Types
             // Get the defined types that are available to be selected.
             var definedTypes = DefinedTypeCache.All()
                 .OrderBy( t => t.Name )
-                .Select( t => new ListItemViewModel
+                .Select( t => new ListItemBag
                 {
                     Value = t.Guid.ToString(),
                     Text = t.Name
@@ -113,7 +113,7 @@ namespace Rock.Field.Types
                     .DefinedValues
                     .Where( v => v.IsActive || includeInactive )
                     .OrderBy( v => v.Order )
-                    .Select( v => new ListItemViewModel
+                    .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
                         Text = displayDescription ? v.Description : v.Value

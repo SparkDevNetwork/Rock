@@ -23,7 +23,7 @@ import Alert from "../../../Elements/alert.vue";
 import RockButton from "../../../Elements/rockButton";
 import { useInvokeBlockAction } from "../../../Util/block";
 import { newGuid, toGuidOrNull } from "../../../Util/guid";
-import { SavedFinancialAccountListItem } from "../../../ViewModels";
+import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, RegistrationEntryState } from "./types";
 
 export default defineComponent({
@@ -94,7 +94,7 @@ export default defineComponent({
         },
 
         /** Contains the options to display in the saved account drop down list. */
-        savedAccountOptions(): SavedFinancialAccountListItem[] {
+        savedAccountOptions(): SavedFinancialAccountListItemBag[] {
             if (this.registrationEntryState.viewModel.savedAccounts === null) {
                 return [];
             }
@@ -219,8 +219,8 @@ export default defineComponent({
          * 
          * @returns A string that contains the unique control identifier.
          */
-        getOptionUniqueId(option: SavedFinancialAccountListItem): string {
-            const key = option.value.replace(" ", "-");
+        getOptionUniqueId(option: SavedFinancialAccountListItemBag): string {
+            const key = option.value?.replace(" ", "-") ?? "";
 
             return `${this.uniqueId}-${key}`;
         },
@@ -232,7 +232,7 @@ export default defineComponent({
          *
          * @returns A string with the URL of the image to display.
          */
-        getAccountImage(option: SavedFinancialAccountListItem): string {
+        getAccountImage(option: SavedFinancialAccountListItemBag): string {
             return option.image ?? "";
         },
 
@@ -243,8 +243,8 @@ export default defineComponent({
          *
          * @returns A string with the user friendly name of the saved account.
          */
-        getAccountName(option: SavedFinancialAccountListItem): string {
-            return option.text;
+        getAccountName(option: SavedFinancialAccountListItemBag): string {
+            return option.text ?? "";
         },
 
         /**
@@ -254,7 +254,7 @@ export default defineComponent({
          *
          * @returns A string with the user friendly description of the saved account.
          */
-        getAccountDescription(option: SavedFinancialAccountListItem): string {
+        getAccountDescription(option: SavedFinancialAccountListItemBag): string {
             return option.description ?? "";
         },
 

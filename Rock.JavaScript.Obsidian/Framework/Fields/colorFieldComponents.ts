@@ -19,7 +19,7 @@ import DropDownList from "../Elements/dropDownList";
 import ColorPicker from "../Elements/colorPicker";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { useVModelPassthrough } from "../Util/component";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 enum ConfigurationValueKey {
     ColorControlType = "selectiontype",
@@ -73,7 +73,7 @@ export const EditComponent = defineComponent({
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
         const dropDownListOptions = namedColors.map(v => {
-            return { text: v, value: v } as ListItem;
+            return { text: v, value: v } as ListItemBag;
         });
 
         const isNamedPicker = computed((): boolean => {

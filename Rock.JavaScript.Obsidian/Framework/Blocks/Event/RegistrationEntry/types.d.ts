@@ -15,9 +15,11 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { GatewayControlModel } from "../../../Controls/gatewayControl";
-import { Guid } from "../../../Util/guid";
-import { PublicAttribute, ListItem, SavedFinancialAccountListItem } from "../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
 import { ComparisonType } from "../../../Reporting/comparisonType";
 import { FilterExpressionType } from "../../../Reporting/filterExpressionType";
 
@@ -79,8 +81,8 @@ export type RegistrationEntryBlockViewModel = {
     registrantForms: RegistrationEntryBlockFormViewModel[];
     fees: RegistrationEntryBlockFeeViewModel[];
     familyMembers: RegistrationEntryBlockFamilyMemberViewModel[];
-    registrationAttributesStart: PublicAttribute[];
-    registrationAttributesEnd: PublicAttribute[];
+    registrationAttributesStart: PublicAttributeBag[];
+    registrationAttributesEnd: PublicAttributeBag[];
     forceEmailUpdate: boolean;
     registrarOption: RegistrarOption;
     cost: number;
@@ -100,12 +102,12 @@ export type RegistrationEntryBlockViewModel = {
     allowRegistrationUpdates: boolean;
     startAtBeginning: boolean;
     gatewayGuid: Guid | null;
-    campuses: ListItem[];
-    maritalStatuses: ListItem[];
-    connectionStatuses: ListItem[];
-    grades: ListItem[];
+    campuses: ListItemBag[];
+    maritalStatuses: ListItemBag[];
+    connectionStatuses: ListItemBag[];
+    grades: ListItemBag[];
     enableSaveAccount: boolean;
-    savedAccounts: SavedFinancialAccountListItem[] | null;
+    savedAccounts: SavedFinancialAccountListItemBag[] | null;
     registrationInstanceNotFoundMessage: string | null;
 
     isInlineSignatureRequired: boolean;
@@ -146,7 +148,7 @@ export type RegistrationEntryBlockFormFieldViewModel = {
     personFieldType: RegistrationPersonFieldType;
     isRequired: boolean;
     isSharedValue: boolean;
-    attribute: PublicAttribute | null;
+    attribute: PublicAttributeBag | null;
     visibilityRuleType: FilterExpressionType;
     visibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
     preHtml: string;
@@ -210,7 +212,7 @@ export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
     previouslyPaid: number;
 };
 
-const enum Step {
+export const enum Step {
     Intro = "intro",
     RegistrationStartForm = "registrationStartForm",
     PerRegistrantForms = "perRegistrantForms",

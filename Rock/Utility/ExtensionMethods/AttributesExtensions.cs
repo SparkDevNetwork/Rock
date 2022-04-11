@@ -23,8 +23,8 @@ using System.Linq.Expressions;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -192,7 +192,7 @@ namespace Rock
         /// <param name="currentPerson">The current person.</param>
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
         [RockInternal]
-        public static void PopulatePublicAttributesAndValuesForView( this IViewModelWithAttributes viewModel, IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static void LoadAttributesAndValuesForPublicView( this IViewModelWithAttributes viewModel, IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
         {
             viewModel.Attributes = GetPublicAttributesForView( entity, currentPerson, enforceSecurity );
             viewModel.AttributeValues = GetPublicAttributeValuesForView( entity, currentPerson, enforceSecurity );
@@ -215,7 +215,7 @@ namespace Rock
         /// <param name="currentPerson">The current person.</param>
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
         [RockInternal]
-        public static void PopulatePublicAttributesAndValuesForEdit( this IViewModelWithAttributes viewModel, IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static void LoadAttributesAndValuesForPublicEdit( this IViewModelWithAttributes viewModel, IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
         {
             viewModel.Attributes = GetPublicAttributesForEdit( entity, currentPerson, enforceSecurity );
             viewModel.AttributeValues = GetPublicAttributeValuesForEdit( entity, currentPerson, enforceSecurity );
@@ -238,11 +238,11 @@ namespace Rock
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
         /// <returns>A dictionary that represents the attribute values.</returns>
         [RockInternal]
-        public static Dictionary<string, PublicAttributeViewModel> GetPublicAttributesForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static Dictionary<string, PublicAttributeBag> GetPublicAttributesForView( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
         {
             if ( entity == null || entity.Attributes == null )
             {
-                return new Dictionary<string, PublicAttributeViewModel>();
+                return new Dictionary<string, PublicAttributeBag>();
             }
 
             return entity.Attributes
@@ -306,11 +306,11 @@ namespace Rock
         /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
         /// <returns>A dictionary that represents the attributes.</returns>
         [RockInternal]
-        public static Dictionary<string, PublicAttributeViewModel> GetPublicAttributesForEdit( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        public static Dictionary<string, PublicAttributeBag> GetPublicAttributesForEdit( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
         {
             if ( entity == null || entity.Attributes == null )
             {
-                return new Dictionary<string, PublicAttributeViewModel>();
+                return new Dictionary<string, PublicAttributeBag>();
             }
 
             return entity.Attributes

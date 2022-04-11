@@ -33,10 +33,10 @@ import { useInvokeBlockAction } from "../../../../Util/block";
 import { FormError } from "../../../../Util/form";
 import { areEqual } from "../../../../Util/guid";
 import { List } from "../../../../Util/linq";
-import { FieldTypeConfigurationViewModel } from "../../../../ViewModels/Controls/fieldTypeEditor";
-import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGroup";
-import { FieldFilterRule } from "../../../../ViewModels/Reporting/fieldFilterRule";
-import { FieldFilterSource } from "../../../../ViewModels/Reporting/fieldFilterSource";
+import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { FormField, FormFieldType } from "../Shared/types";
 import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils";
 
@@ -147,7 +147,7 @@ export default defineComponent({
         const visibilityRule = ref(props.modelValue.visibilityRule ?? null);
 
         /** The value used by the FieldTypeEditor for editing the field configuration. */
-        const fieldTypeValue = ref<FieldTypeConfigurationViewModel>({
+        const fieldTypeValue = ref<FieldTypeConfigurationBag>({
             fieldTypeGuid: props.modelValue.fieldTypeGuid,
             configurationValues: props.modelValue.configurationValues ?? {},
             defaultValue: props.modelValue.defaultValue ?? ""
@@ -167,13 +167,13 @@ export default defineComponent({
         const scrollableElement = ref<HTMLElement | null>(null);
 
         /** Contains the model used when editing the field visibility rules. */
-        const conditionalModel = ref<FieldFilterGroup | null>(null);
+        const conditionalModel = ref<FieldFilterGroupBag | null>(null);
 
         /**
          * Contains the field filter sources that are available when editing
          * the visibility rules.
          */
-        const conditionalSources = ref<FieldFilterSource[] | null>(null);
+        const conditionalSources = ref<FieldFilterSourceBag[] | null>(null);
 
         /** True if the conditional panel is expanded; otherwise false. */
         const conditionalPanelOpen = ref(false);
@@ -235,7 +235,7 @@ export default defineComponent({
         });
 
         /** The individual rules that decide if this field will be visible. */
-        const conditionalRules = computed((): FieldFilterRule[] => {
+        const conditionalRules = computed((): FieldFilterRuleBag[] => {
             return visibilityRule.value?.rules ?? [];
         });
 
@@ -253,7 +253,7 @@ export default defineComponent({
          *
          * @returns A string that contains a human friendly description about the rule.
          */
-        const getRuleDescription = (rule: FieldFilterRule): string => {
+        const getRuleDescription = (rule: FieldFilterRuleBag): string => {
             return getFilterRuleDescription(rule, conditionalSources.value ?? [], props.formFields);
         };
 
@@ -264,7 +264,7 @@ export default defineComponent({
             // Get all fields except our own.
             const fields = props.formFields.filter(f => !areEqual(f.guid, props.modelValue.guid));
 
-            const getFilterSources = invokeBlockAction<FieldFilterSource[]>("GetFilterSources", {
+            const getFilterSources = invokeBlockAction<FieldFilterSourceBag[]>("GetFilterSources", {
                 formFields: fields
             });
 
@@ -293,7 +293,7 @@ export default defineComponent({
          *
          * @param value The value that contains the changed information.
          */
-        const onFieldTypeModelValueUpdate = (value: FieldTypeConfigurationViewModel): void => {
+        const onFieldTypeModelValueUpdate = (value: FieldTypeConfigurationBag): void => {
             emit("update:modelValue", {
                 ...props.modelValue,
                 configurationValues: value.configurationValues,
@@ -383,7 +383,7 @@ export default defineComponent({
             visibilityRule.value = props.modelValue.visibilityRule ?? null;
 
             const isConfigChanged = fieldTypeValue.value.fieldTypeGuid !== props.modelValue.fieldTypeGuid
-                || !shallowStrictEqual(fieldTypeValue.value.configurationValues, props.modelValue.configurationValues ?? {})
+                || !shallowStrictEqual(fieldTypeValue.value.configurationValues ?? {}, props.modelValue.configurationValues ?? {})
                 || fieldTypeValue.value.defaultValue !== props.modelValue.defaultValue;
 
             // Only update the field type if anything actually changed.

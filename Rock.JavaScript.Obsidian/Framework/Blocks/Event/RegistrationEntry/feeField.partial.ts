@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType } from "vue";
 import Alert from "../../../Elements/alert.vue";
 import CheckBox from "../../../Elements/checkBox";
@@ -22,8 +23,8 @@ import DropDownList from "../../../Elements/dropDownList";
 import NumberUpDown from "../../../Elements/numberUpDown";
 import NumberUpDownGroup, { NumberUpDownGroupOption } from "../../../Elements/numberUpDownGroup";
 import Number from "../../../Services/number";
-import GuidHelper, { Guid } from "../../../Util/guid";
-import { ListItem } from "../../../ViewModels";
+import GuidHelper from "../../../Util/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from "./types";
 
 export default defineComponent({
@@ -93,7 +94,7 @@ export default defineComponent({
         isDropDown(): boolean {
             return this.fee.items.length > 1 && !this.fee.allowMultiple;
         },
-        dropDownListOptions(): ListItem[] {
+        dropDownListOptions(): ListItemBag[] {
             return this.fee.items.map(i => ({
                 text: this.getItemLabel(i),
                 value: i.guid

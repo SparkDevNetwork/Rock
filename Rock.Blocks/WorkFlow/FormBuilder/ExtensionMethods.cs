@@ -17,12 +17,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.Blocks.WorkFlow.FormBuilder;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.WorkFlow.FormBuilder;
+using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.WorkFlow.FormBuilder
@@ -185,18 +187,21 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 return new FormNotificationEmailViewModel();
             }
 
-            ListItemViewModel recipient = null;
+            ListItemBag recipient = null;
 
             if ( emailSettings.RecipientAliasId.HasValue )
             {
-                var person = new PersonAliasService( rockContext ).GetPerson( emailSettings.RecipientAliasId.Value );
+                var personAlias = new PersonAliasService( rockContext ).Queryable()
+                    .Include( pa => pa.Person )
+                    .Where( pa => pa.Id == emailSettings.RecipientAliasId.Value )
+                    .FirstOrDefault();
 
-                if ( person != null )
+                if ( personAlias != null )
                 {
-                    recipient = new ListItemViewModel
+                    recipient = new ListItemBag
                     {
-                        Value = person.Guid.ToString(),
-                        Text = person.FullName
+                        Value = personAlias.Guid.ToString(),
+                        Text = personAlias.Person.FullName
                     };
                 }
             }
@@ -229,7 +234,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
 
             if ( viewModel.Recipient != null && viewModel.Recipient.Value.AsGuidOrNull().HasValue )
             {
-                recipientAliasId = new PersonService( rockContext ).Get( viewModel.Recipient.Value.AsGuid() )?.PrimaryAliasId;
+                recipientAliasId = new PersonAliasService( rockContext ).GetId( viewModel.Recipient.Value.AsGuid() );
             }
 
             return new Rock.Workflow.FormBuilder.FormNotificationEmailSettings
@@ -445,9 +450,9 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// </summary>
         /// <param name="rules">The object to be represented as a view model.</param>
         /// <returns>The view model representation.</returns>
-        internal static FieldFilterGroupViewModel ToViewModel( this Rock.Field.FieldVisibilityRules rules )
+        internal static FieldFilterGroupBag ToViewModel( this Rock.Field.FieldVisibilityRules rules )
         {
-            return new FieldFilterGroupViewModel
+            return new FieldFilterGroupBag
             {
                 Guid = Guid.NewGuid(),
                 ExpressionType = ( int ) rules.FilterExpressionType,
@@ -461,7 +466,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// </summary>
         /// <param name="viewModel">The view model that represents the object.</param>
         /// <returns>The object created from the view model.</returns>
-        internal static Rock.Field.FieldVisibilityRules FromViewModel( this FieldFilterGroupViewModel viewModel, List<FormFieldViewModel> formFields )
+        internal static Rock.Field.FieldVisibilityRules FromViewModel( this FieldFilterGroupBag viewModel, List<FormFieldViewModel> formFields )
         {
             return new Rock.Field.FieldVisibilityRules
             {
@@ -475,9 +480,9 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// </summary>
         /// <param name="rule">The object to be represented as a view model.</param>
         /// <returns>The view model representation.</returns>
-        internal static FieldFilterRuleViewModel ToViewModel( this Rock.Field.FieldVisibilityRule rule )
+        internal static FieldFilterRuleBag ToViewModel( this Rock.Field.FieldVisibilityRule rule )
         {
-            var viewModel = new FieldFilterRuleViewModel
+            var viewModel = new FieldFilterRuleBag
             {
                 Guid = rule.Guid,
                 ComparisonType = ( int ) rule.ComparisonType,
@@ -507,7 +512,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// </summary>
         /// <param name="viewModel">The view model that represents the object.</param>
         /// <returns>The object created from the view model.</returns>
-        internal static Rock.Field.FieldVisibilityRule FromViewModel( this FieldFilterRuleViewModel viewModel, List<FormFieldViewModel> formFields )
+        internal static Rock.Field.FieldVisibilityRule FromViewModel( this FieldFilterRuleBag viewModel, List<FormFieldViewModel> formFields )
         {
             var rule = new Rock.Field.FieldVisibilityRule
             {

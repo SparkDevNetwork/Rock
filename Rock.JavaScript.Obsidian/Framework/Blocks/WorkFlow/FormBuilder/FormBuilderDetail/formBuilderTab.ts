@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, reactive, Ref, ref, watch } from "vue";
 import DropDownList from "../../../../Elements/dropDownList";
 import Modal from "../../../../Controls/modal";
@@ -33,7 +34,7 @@ import PersonEntryEditAside from "./personEntryEditAside";
 import SectionEditAside from "./sectionEditAside";
 import SectionZone from "./sectionZone";
 import { DragSource, DragTarget, IDragSourceOptions } from "../../../../Directives/dragDrop";
-import { areEqual, Guid, newGuid } from "../../../../Util/guid";
+import { areEqual, newGuid } from "../../../../Util/guid";
 import { List } from "../../../../Util/linq";
 import { FormBuilderSettings, FormTemplateListItem, GeneralAsideSettings, IAsideProvider, SectionAsideSettings } from "./types";
 import { FormField, FormFieldType, FormPersonEntry, FormSection } from "../Shared/types";

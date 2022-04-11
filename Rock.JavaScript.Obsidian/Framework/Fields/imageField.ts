@@ -16,7 +16,7 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType } from "../Reporting/comparisonType";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 
 /**
@@ -55,7 +55,7 @@ const configurationComponent = defineAsyncComponent(async () => {
 export class ImageFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         try {
-            const realValue = JSON.parse(value ?? "") as ListItem;
+            const realValue = JSON.parse(value ?? "") as ListItemBag;
 
             if (!realValue.value) {
                 return "";
@@ -70,7 +70,7 @@ export class ImageFieldType extends FieldTypeBase {
 
     public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
         try {
-            const realValue = JSON.parse(value ?? "") as ListItem;
+            const realValue = JSON.parse(value ?? "") as ListItemBag;
 
             if (!realValue.value) {
                 return "";
@@ -85,7 +85,7 @@ export class ImageFieldType extends FieldTypeBase {
 
     public override getCondensedHtmlValue(value: string, _configurationValues: Record<string, string>): string {
         try {
-            const realValue = JSON.parse(value ?? "") as ListItem;
+            const realValue = JSON.parse(value ?? "") as ListItemBag;
 
             if (!realValue.value) {
                 return "";

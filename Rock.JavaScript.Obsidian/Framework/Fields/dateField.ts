@@ -21,7 +21,6 @@ import { asBoolean } from "../Services/boolean";
 import { toNumber } from "../Services/number";
 import { getRangeTypeText, getTimeUnitText, parseSlidingDateRangeString, RangeType, TimeUnit } from "../Services/slidingDateRange";
 import { RockDateTime } from "../Util/rockDateTime";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref, watch } from "vue";
 import AttributeEditor from "../../Controls/attributeEditor";
 import Modal from "../../Controls/modal";
@@ -28,16 +29,17 @@ import { FieldType } from "../../SystemGuids";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import { alert, confirmDelete } from "../../Util/dialogs";
-import { Guid, normalize as normalizeGuid } from "../../Util/guid";
-import { ListItem, PublicAttribute } from "../../ViewModels";
-import { PublicEditableAttributeViewModel } from "../../ViewModels/publicEditableAttribute";
+import { normalize as normalizeGuid } from "../../Util/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 type BlockConfiguration = {
     attributeEntityTypeId: number;
 
     entityTypeGuid?: Guid;
 
-    entityTypes?: ListItem[];
+    entityTypes?: ListItemBag[];
 
     hideColumns: boolean;
 
@@ -53,7 +55,7 @@ type EditAttribute = {
 
     entityTypeQualifierValue?: string | null;
 
-    attribute: PublicEditableAttributeViewModel;
+    attribute: PublicEditableAttributeBag;
 };
 
 type GridRow = {
@@ -69,7 +71,7 @@ type GridRow = {
 
     isActive: boolean;
 
-    attribute: PublicAttribute;
+    attribute: PublicAttributeBag;
 
     value: string;
 
@@ -124,7 +126,7 @@ export default defineComponent({
         // #region Attribute Editing
 
         /** The current attribute in an editable format. */
-        const editableAttribute = ref<PublicEditableAttributeViewModel | null>(null);
+        const editableAttribute = ref<PublicEditableAttributeBag | null>(null);
 
         /** True if the edit attribute modal should be visible. */
         const showEditAttributeModal = ref<boolean>(false);
@@ -203,7 +205,17 @@ export default defineComponent({
         const onAddAttribute = (): void => {
             editableAttribute.value = {
                 isActive: true,
-                fieldTypeGuid: normalizeGuid(FieldType.Text)
+                fieldTypeGuid: normalizeGuid(FieldType.Text),
+                isPublic: false,
+                isSystem: false,
+                isRequired: false,
+                isShowInGrid: false,
+                isShowOnBulk: false,
+                isAnalytic: false,
+                isAllowSearch: false,
+                isAnalyticHistory: false,
+                isEnableHistory: false,
+                isIndexEnabled: false
             };
             showEditAttributeModal.value = true;
             entityTypeQualifierColumn.value = "";
@@ -243,7 +255,7 @@ export default defineComponent({
 
         /** The current attribute value in an editable format. */
         const editAttributeValue = ref("");
-        const editAttribute = ref<PublicAttribute | null>(null);
+        const editAttribute = ref<PublicAttributeBag | null>(null);
 
         /** True if the edit attribute value modal should be visible. */
         const showEditAttributeValueModal = ref<boolean>(false);
@@ -270,7 +282,7 @@ export default defineComponent({
                 return;
             }
 
-            const result = await invokeBlockAction<{ attribute: PublicAttribute, value: string }>("GetEditAttributeValue", {
+            const result = await invokeBlockAction<{ attribute: PublicAttributeBag, value: string }>("GetEditAttributeValue", {
                 attributeGuid: row.guid
             });
 

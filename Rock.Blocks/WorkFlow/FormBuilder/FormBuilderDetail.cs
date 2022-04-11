@@ -27,8 +27,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemKey;
-using Rock.ViewModel.Blocks.WorkFlow.FormBuilder;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.WorkFlow.FormBuilder;
+using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Workflow.FormBuilder;
 
@@ -479,7 +480,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             if ( workflowType.Category != null )
             {
-                viewModel.Category = new ListItemViewModel
+                viewModel.Category = new ListItemBag
                 {
                     Value = workflowType.Category.Guid.ToString(),
                     Text = workflowType.Category.Name
@@ -631,7 +632,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 SectionTypeOptions = DefinedTypeCache.Get( SystemGuid.DefinedType.SECTION_TYPE.AsGuid() )
                     .DefinedValues
                     .Where( v => v.IsActive )
-                    .Select( v => new ListItemViewModel
+                    .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
                         Text = v.Value,
@@ -721,11 +722,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// Gets the field filter sources that relate to the specified form fields.
         /// </summary>
         /// <param name="formFields">The form fields that need to be represented as filter sources.</param>
-        /// <returns>A response that contains the list of <see cref="FieldFilterSourceViewModel"/> objects.</returns>
+        /// <returns>A response that contains the list of <see cref="FieldFilterSourceBag"/> objects.</returns>
         [BlockAction]
         public BlockActionResult GetFilterSources( List<FormFieldViewModel> formFields )
         {
-            var fieldFilterSources = new List<FieldFilterSourceViewModel>();
+            var fieldFilterSources = new List<FieldFilterSourceBag>();
 
             foreach ( var field in formFields )
             {
@@ -755,11 +756,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     continue;
                 }
 
-                var source = new FieldFilterSourceViewModel
+                var source = new FieldFilterSourceBag
                 {
                     Guid = field.Guid,
                     Type = 0,
-                    Attribute = new PublicFilterableAttributeViewModel
+                    Attribute = new PublicAttributeBag
                     {
                         AttributeGuid = field.Guid,
                         ConfigurationValues = publicConfigurationValues,
@@ -776,14 +777,5 @@ namespace Rock.Blocks.Workflow.FormBuilder
         }
 
         #endregion
-
-        private class FieldFilterSourceViewModel
-        {
-            public Guid Guid { get; set; }
-
-            public int Type { get; set; }
-
-            public PublicFilterableAttributeViewModel Attribute { get; set; }
-        }
     }
 }

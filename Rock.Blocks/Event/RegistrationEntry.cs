@@ -23,6 +23,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
@@ -33,10 +34,10 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Pdf;
 using Rock.Tasks;
-using Rock.ViewModel;
-using Rock.ViewModel.Blocks.Event.RegistrationEntry;
-using Rock.ViewModel.Controls;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.Event.RegistrationEntry;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Finance;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
@@ -1077,7 +1078,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantFirstName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        private string GetRegistrantFirstName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var fields = context.RegistrationSettings.Forms.SelectMany( f => f.Fields );
             var field = fields.FirstOrDefault( f => f.PersonFieldType == RegistrationPersonFieldType.FirstName );
@@ -1090,7 +1091,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantLastName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        private string GetRegistrantLastName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var fields = context.RegistrationSettings.Forms.SelectMany( f => f.Fields );
             var field = fields.FirstOrDefault( f => f.PersonFieldType == RegistrationPersonFieldType.LastName );
@@ -1103,7 +1104,7 @@ namespace Rock.Blocks.Event
         /// <param name="context">The context.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
-        private string GetRegistrantFullName( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        private string GetRegistrantFullName( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             var firstName = GetRegistrantFirstName( context, registrantInfo );
             var lastName = GetRegistrantLastName( context, registrantInfo );
@@ -1218,7 +1219,7 @@ namespace Rock.Blocks.Event
                     return person.Gender.ConvertToInt().ToString();
 
                 case RegistrationPersonFieldType.Birthdate:
-                    return new BirthdayPickerViewModel
+                    return new BirthdayPickerBag
                     {
                         Year = person.BirthYear ?? 0,
                         Month = person.BirthMonth ?? 0,
@@ -1226,7 +1227,7 @@ namespace Rock.Blocks.Event
                     };
 
                 case RegistrationPersonFieldType.AnniversaryDate:
-                    return new BirthdayPickerViewModel
+                    return new BirthdayPickerBag
                     {
                         Year = person.AnniversaryDate?.Year ?? 0,
                         Month = person.AnniversaryDate?.Month ?? 0,
@@ -1236,7 +1237,7 @@ namespace Rock.Blocks.Event
                 case RegistrationPersonFieldType.Address:
                     var location = person.GetHomeLocation( rockContext );
 
-                    return new AddressControlViewModel
+                    return new AddressControlBag
                     {
                         Street1 = location?.Street1 ?? string.Empty,
                         Street2 = location?.Street2 ?? string.Empty,
@@ -1493,7 +1494,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrarFamilyGuid">The registrar family unique identifier.</param>
         /// <param name="rockContext">The rock context for any database lookups.</param>
         /// <returns>A tuple that contains the <see cref="Person"/> object and the optional <see cref="RegistrationRegistrant"/> object.</returns>
-        private (Person person, RegistrationRegistrant registrant) GetExistingOrCreatePerson( RegistrationContext context, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, Person registrar, Guid registrarFamilyGuid, RockContext rockContext )
+        private (Person person, RegistrationRegistrant registrant) GetExistingOrCreatePerson( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, Person registrar, Guid registrarFamilyGuid, RockContext rockContext )
         {
             RegistrationRegistrant registrant = null;
             Person person = null;
@@ -1502,7 +1503,7 @@ namespace Rock.Blocks.Event
             var firstName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
             var lastName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
             var email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
-            var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime();
+            var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime();
             var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
 
             registrant = context.Registration.Registrants.FirstOrDefault( r => r.Guid == registrantInfo.Guid );
@@ -1612,7 +1613,7 @@ namespace Rock.Blocks.Event
         /// <param name="personChanges">The person history changes that were made.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns>A tuple that contains the <see cref="Campus"/> identifier and the <see cref="Location"/> object if either were found.</returns>
-        private (int? campusId, Location location, bool updateExistingCampus) UpdatePersonFromRegistrant( Person person, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, History.HistoryChangeList personChanges, RegistrationSettings settings )
+        private (int? campusId, Location location, bool updateExistingCampus) UpdatePersonFromRegistrant( Person person, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, History.HistoryChangeList personChanges, RegistrationSettings settings )
         {
             Location location = null;
             var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
@@ -1643,7 +1644,7 @@ namespace Rock.Blocks.Event
                             break;
 
                         case RegistrationPersonFieldType.Address:
-                            var addressViewModel = fieldValue.ToStringSafe().FromJsonOrNull<AddressControlViewModel>();
+                            var addressViewModel = fieldValue.ToStringSafe().FromJsonOrNull<AddressControlBag>();
 
                             if ( addressViewModel != null )
                             {
@@ -1666,7 +1667,7 @@ namespace Rock.Blocks.Event
                             var oldBirthDay = person.BirthDay;
                             var oldBirthYear = person.BirthYear;
 
-                            person.SetBirthDate( fieldValue.ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime() );
+                            person.SetBirthDate( fieldValue.ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime() );
 
                             History.EvaluateChange( personChanges, "Birth Month", oldBirthMonth, person.BirthMonth );
                             History.EvaluateChange( personChanges, "Birth Day", oldBirthDay, person.BirthDay );
@@ -1681,7 +1682,7 @@ namespace Rock.Blocks.Event
 
                         case RegistrationPersonFieldType.AnniversaryDate:
                             var oldAnniversaryDate = person.AnniversaryDate;
-                            person.AnniversaryDate = fieldValue.ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime();
+                            person.AnniversaryDate = fieldValue.ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime();
                             History.EvaluateChange( personChanges, "Anniversary Date", oldAnniversaryDate, person.AnniversaryDate );
                             break;
 
@@ -1749,7 +1750,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns><c>true</c> if any attributes were modified, <c>false</c> otherwise.</returns>
-        private bool UpdatePersonAttributes( Person person, History.HistoryChangeList personChanges, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationSettings settings )
+        private bool UpdatePersonAttributes( Person person, History.HistoryChangeList personChanges, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationSettings settings )
         {
             bool isChanged = false;
             var personAttributes = settings.Forms
@@ -1816,7 +1817,7 @@ namespace Rock.Blocks.Event
             RegistrationContext context,
             Person registrar,
             Guid registrarFamilyGuid,
-            ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo,
+            ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo,
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
@@ -2070,7 +2071,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrantChanges">The registrant changes that were made.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns><c>true</c> if any attributes were modified, <c>false</c> otherwise.</returns>
-        private bool UpdateRegistrantAttributes( RegistrationRegistrant registrant, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, History.HistoryChangeList registrantChanges, RegistrationSettings settings )
+        private bool UpdateRegistrantAttributes( RegistrationRegistrant registrant, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, History.HistoryChangeList registrantChanges, RegistrationSettings settings )
         {
             var isChanged = false;
             var registrantAttributeFields = settings.Forms
@@ -2376,7 +2377,7 @@ namespace Rock.Blocks.Event
 
             // If we are using saved accounts and have all the details that we
             // need then attempt to load the current person's saved accounts.
-            List<SavedFinancialAccountListItemViewModel> savedAccounts = null;
+            List<SavedFinancialAccountListItemBag> savedAccounts = null;
             if ( enableSavedAccount && RequestContext.CurrentPerson != null && financialGateway != null )
             {
                 var accountOptions = new SavedFinancialAccountOptions
@@ -2397,13 +2398,13 @@ namespace Rock.Blocks.Event
                     RegistrationSessionGuid = Guid.NewGuid()
                 };
 
-                session.Registrants = new List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo>();
+                session.Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>();
                 var isOnWaitList = context.SpotsRemaining.HasValue && context.SpotsRemaining.Value == 0;
 
                 if ( context.RegistrationSettings.AreCurrentFamilyMembersShown )
                 {
                     // Fill in first registrant info as a member of the family.
-                    session.Registrants.Add( new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
+                    session.Registrants.Add( new ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = currentPerson.PrimaryFamily.Guid,
@@ -2417,7 +2418,7 @@ namespace Rock.Blocks.Event
                 {
                     // Only fill in the first registrant with existing values
                     // as a "new" person if family members are not shown.
-                    session.Registrants.Add( new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
+                    session.Registrants.Add( new ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo
                     {
                         Guid = Guid.NewGuid(),
                         FamilyGuid = Guid.NewGuid(),
@@ -2455,7 +2456,7 @@ namespace Rock.Blocks.Event
                 ForceEmailUpdate = forceEmailUpdate,
                 RegistrarOption = ( int ) context.RegistrationSettings.RegistrarOption,
                 Cost = baseCost,
-                GatewayControl = isRedirectGateway ? null : new GatewayControlViewModel
+                GatewayControl = isRedirectGateway ? null : new GatewayControlBag
                 {
                     FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
                     Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, null ) ?? new object()
@@ -2481,7 +2482,7 @@ namespace Rock.Blocks.Event
                 MaritalStatuses = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )
                     .DefinedValues
                     .OrderBy( v => v.Order )
-                    .Select( v => new ListItemViewModel
+                    .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
                         Text = v.Value
@@ -2490,7 +2491,7 @@ namespace Rock.Blocks.Event
                 ConnectionStatuses = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS )
                     .DefinedValues
                     .OrderBy( v => v.Order )
-                    .Select( v => new ListItemViewModel
+                    .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
                         Text = v.Value
@@ -2499,7 +2500,7 @@ namespace Rock.Blocks.Event
                 Grades = DefinedTypeCache.Get( SystemGuid.DefinedType.SCHOOL_GRADES )
                     .DefinedValues
                     .OrderBy( v => v.Order )
-                    .Select( v => new ListItemViewModel
+                    .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
                         Text = v.GetAttributeValue( "Abbreviation" )
@@ -2542,7 +2543,7 @@ namespace Rock.Blocks.Event
             RegistrationContext context,
             decimal amount,
             RegistrarInfo registrar,
-            List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo> registrants,
+            List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo> registrants,
             Guid registrationSessionGuid,
             string returnUrl )
         {
@@ -3174,7 +3175,7 @@ namespace Rock.Blocks.Event
                 DiscountPercentage = registration.DiscountPercentage,
                 FieldValues = new Dictionary<Guid, object>(),
                 GatewayToken = string.Empty,
-                Registrants = new List<ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo>(),
+                Registrants = new List<ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo>(),
                 Registrar = new RegistrarInfo(),
                 RegistrationGuid = registration.Guid,
                 PreviouslyPaid = alreadyPaid
@@ -3197,7 +3198,7 @@ namespace Rock.Blocks.Event
                 person.LoadAttributes( rockContext );
                 registrant.LoadAttributes( rockContext );
 
-                var registrantInfo = new ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo
+                var registrantInfo = new ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo
                 {
                     FamilyGuid = person?.GetFamily( rockContext )?.Guid,
                     Guid = registrant.Guid,
@@ -3481,7 +3482,7 @@ namespace Rock.Blocks.Event
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="settings">The registration settings.</param>
         /// <returns><c>true</c> if any attribute value was changed, <c>false</c> otherwise.</returns>
-        private bool UpdateGroupMemberAttributes( GroupMember groupMember, ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationSettings settings )
+        private bool UpdateGroupMemberAttributes( GroupMember groupMember, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, RegistrationSettings settings )
         {
             bool isChanged = false;
             var memberAttributeFields = settings.Forms
@@ -3585,7 +3586,7 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <returns>A <see cref="string"/> that contains the token to be hashed.</returns>
-        private string GetRegistrantSignatureHashToken( ViewModel.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
+        private string GetRegistrantSignatureHashToken( ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo )
         {
             return registrantInfo.FieldValues
                 .OrderBy( kvp => kvp.Key )

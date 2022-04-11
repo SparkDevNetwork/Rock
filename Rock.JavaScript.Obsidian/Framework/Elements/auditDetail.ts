@@ -16,14 +16,14 @@
 //
 
 import { computed, defineComponent, PropType, ref } from "vue";
-import { AuditDetail as AuditDetailViewModel } from "../ViewModels/auditDetail";
+import { AuditDetailBag } from "@Obsidian/ViewModels/Utility/auditDetailBag";
 
 export default defineComponent({
     name: "AuditDetail",
 
     props: {
         modelValue: {
-            type: Object as PropType<AuditDetailViewModel>,
+            type: Object as PropType<AuditDetailBag>,
             default: {}
         }
     },

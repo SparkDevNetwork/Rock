@@ -17,7 +17,7 @@
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType } from "../Reporting/comparisonType";
 import { escapeHtml } from "../Services/string";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 
 /**
@@ -53,9 +53,9 @@ const configurationComponent = defineAsyncComponent(async () => {
 export class FileFieldType extends FieldTypeBase {
     public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
-            const realValue = JSON.parse(value) as ListItem;
+            const realValue = JSON.parse(value) as ListItemBag;
 
-            return realValue.text;
+            return realValue.text ?? "";
         }
         catch {
             return value;
@@ -64,9 +64,9 @@ export class FileFieldType extends FieldTypeBase {
 
     public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
         try {
-            const realValue = JSON.parse(value ?? "") as ListItem;
+            const realValue = JSON.parse(value ?? "") as ListItemBag;
 
-            return `<a href="/GetFile.ashx?guid=${realValue.value}" title="${escapeHtml(realValue.text)}" class="btn btn-xs btn-default">View</a>`;
+            return `<a href="/GetFile.ashx?guid=${realValue.value}" title="${escapeHtml(realValue.text ?? "")}" class="btn btn-xs btn-default">View</a>`;
         }
         catch {
             return value ?? "";
