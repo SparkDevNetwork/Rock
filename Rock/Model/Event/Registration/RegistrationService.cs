@@ -446,6 +446,16 @@ namespace Rock.Model
             GroupTypeId = template.GroupTypeId;
             GroupMemberRoleId = template.GroupMemberRoleId;
             GroupMemberStatus = template.GroupMemberStatus;
+
+            // Signature Document
+            if ( template.RequiredSignatureDocumentTemplate != null && template.RequiredSignatureDocumentTemplate.IsActive )
+            {
+                SignatureDocumentTemplateId = template.RequiredSignatureDocumentTemplateId;
+                IsInlineSignatureRequired = template.RequiredSignatureDocumentTemplateId.HasValue && template.SignatureDocumentAction == SignatureDocumentAction.Embed;
+                IsSignatureDrawn = template.RequiredSignatureDocumentTemplate.SignatureType == SignatureType.Drawn;
+                SignatureDocumentTerm = template.RequiredSignatureDocumentTemplate?.DocumentTerm;
+                SignatureDocumentTemplateName = template.RequiredSignatureDocumentTemplate?.Name;
+            }
         }
 
         /// <summary>
@@ -736,5 +746,47 @@ namespace Rock.Model
         ///   <c>true</c> if [allow registration updates]; otherwise, <c>false</c>.
         /// </value>
         public bool AllowExternalRegistrationUpdates { get; private set; }
+
+        /// <summary>
+        /// Gets the <see cref="SignatureDocumentTemplate"/> identifier that
+        /// must be signed for each registrant.
+        /// </summary>
+        /// <value>
+        /// Gets the <see cref="SignatureDocumentTemplate"/> identifier.
+        /// </value>
+        public int? SignatureDocumentTemplateId { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this registration requires the
+        /// signature document to be signed inline.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this registration requires inline signing; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsInlineSignatureRequired { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the signature should be drawn.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this the signature is drawn; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSignatureDrawn { get; set; }
+
+        /// <summary>
+        /// Gets the signature document term.
+        /// </summary>
+        /// <value>
+        /// The signature document term.
+        /// </value>
+        public string SignatureDocumentTerm { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the signature document template.
+        /// </summary>
+        /// <value>
+        /// The name of the signature document template.
+        /// </value>
+        public string SignatureDocumentTemplateName { get; private set; }
     }
 }

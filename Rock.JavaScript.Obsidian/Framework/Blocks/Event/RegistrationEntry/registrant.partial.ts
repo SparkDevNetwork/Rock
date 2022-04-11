@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-import { defineComponent, inject, PropType } from "vue";
+import { computed, defineComponent, inject, PropType, ref } from "vue";
 import DropDownList from "../../../Elements/dropDownList";
+import ElectronicSignature from "../../../Controls/electronicSignature";
 import RadioButtonList from "../../../Elements/radioButtonList";
 import { ListItem, Person } from "../../../ViewModels";
 import { getRegistrantBasicInfo } from "./utils.partial";
@@ -25,18 +26,21 @@ import RockButton from "../../../Elements/rockButton";
 import RegistrantPersonField from "./registrantPersonField.partial";
 import RegistrantAttributeField from "./registrantAttributeField.partial";
 import Alert from "../../../Elements/alert.vue";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState } from "./types";
+import { RegistrantInfo, RegistrantsSameFamily, RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
 import { areEqual, Guid, newGuid } from "../../../Util/guid";
 import RockForm from "../../../Controls/rockForm";
 import FeeField from "./feeField.partial";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "../../../Elements/itemsWithPreAndPostHtml";
 import { useStore } from "../../../Store/index";
+import { useInvokeBlockAction } from "../../../Util/block";
+import { ElectronicSignatureValue } from "../../../ViewModels/Controls/electronicSignatureValue";
 
 const store = useStore();
 
 export default defineComponent({
     name: "Event.RegistrationEntry.Registrant",
     components: {
+        ElectronicSignature,
         RadioButtonList,
         RockButton,
         RegistrantPersonField,
@@ -58,10 +62,27 @@ export default defineComponent({
         }
     },
     setup () {
+        const invokeBlockAction = useInvokeBlockAction();
         const registrationEntryState = inject("registrationEntryState") as RegistrationEntryState;
+        const getRegistrationEntryBlockArgs = inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs;
+
+        const signatureData = ref<ElectronicSignatureValue | null>(null);
+        const signatureSource = ref("");
+        const signatureToken = ref("");
+
+        const isNextDisabled = ref(false);
+
+        const isSignatureDrawn = computed((): boolean => registrationEntryState.viewModel.isSignatureDrawn);
 
         return {
-            registrationEntryState
+            getRegistrationEntryBlockArgs,
+            invokeBlockAction,
+            isNextDisabled,
+            isSignatureDrawn,
+            registrationEntryState,
+            signatureData,
+            signatureSource,
+            signatureToken
         };
     },
     data () {
@@ -89,6 +110,16 @@ export default defineComponent({
         },
         isLastForm (): boolean {
             return (this.currentFormIndex + 1) === this.formsToShow.length;
+        },
+        isDataForm(): boolean {
+            return this.currentFormIndex < this.formsToShow.length;
+        },
+        isSignatureForm(): boolean {
+            return this.viewModel.isInlineSignatureRequired && this.currentFormIndex === this.formsToShow.length;
+        },
+
+        isNextVisible(): boolean {
+            return !this.isSignatureForm;
         },
 
         /** The filtered list of forms that will be shown */
@@ -203,6 +234,14 @@ export default defineComponent({
             }
 
             return this.viewModel.familyMembers.find(fm => areEqual(fm.guid, personGuid)) || null;
+        },
+
+        signatureDocumentName(): string {
+            return this.viewModel.signatureDocumentTemplateName ?? "";
+        },
+
+        signatureDocumentTerm(): string {
+            return this.viewModel.signatureDocumentTerm ?? "";
         }
     },
     methods: {
@@ -214,8 +253,36 @@ export default defineComponent({
 
             this.registrationEntryState.currentRegistrantFormIndex--;
         },
-        onNext(): void {
-            const lastFormIndex = this.formsToShow.length - 1;
+        async onNext(): Promise<void> {
+            let lastFormIndex = this.formsToShow.length - 1;
+
+            // If we have an inline signature then there is an additional form
+            // screen that we need to show. Get the document to be signed from
+            // the server and then display the form.
+            if (this.viewModel.isInlineSignatureRequired) {
+                this.isNextDisabled = true;
+
+                try {
+                    const result = await this.invokeBlockAction("GetSignatureDocumentData", {
+                        args: this.getRegistrationEntryBlockArgs(),
+                        registrantGuid: this.currentRegistrant.guid
+                    });
+
+                    if (result.isSuccess && result.data) {
+                        this.signatureSource = (result.data as Record<string, string>).documentHtml;
+                        this.signatureToken = (result.data as Record<string, string>).securityToken;
+
+                        lastFormIndex += 1;
+                    }
+                    else {
+                        console.error(result.data);
+                        return;
+                    }
+                }
+                finally {
+                    this.isNextDisabled = false;
+                }
+            }
 
             if (this.currentFormIndex >= lastFormIndex) {
                 this.$emit("next");
@@ -223,6 +290,28 @@ export default defineComponent({
             }
 
             this.registrationEntryState.currentRegistrantFormIndex++;
+        },
+
+        async onSigned(): Promise<void> {
+            // Send all the signed document information to the server. This will
+            // prepare the final signed document data that will be later sent
+            // when we complete the registration.
+            const result = await this.invokeBlockAction<string>("SignDocument", {
+                args: this.getRegistrationEntryBlockArgs(),
+                registrantGuid: this.currentRegistrant.guid,
+                documentHtml: this.signatureSource,
+                securityToken: this.signatureToken,
+                signature: this.signatureData
+            });
+
+            if (result.isSuccess && result.data) {
+                // Store the signed document data on the registrant.
+                this.currentRegistrant.signatureData = result.data;
+                this.$emit("next");
+            }
+            else {
+                console.error(result.data);
+            }
         },
 
         /** Copy the values that are to have current values used */
@@ -283,30 +372,42 @@ export default defineComponent({
     template: `
 <div>
     <RockForm @submit="onNext">
-        <template v-if="currentFormIndex === 0">
-            <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
-                <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :options="familyOptions" validationTitle="Family" />
-            </div>
-            <div v-if="familyMemberOptions.length" class="row">
-                <div class="col-md-6">
-                    <DropDownList v-model="currentRegistrant.personGuid" :options="familyMemberOptions" label="Family Member to Register" />
+        <template v-if="isDataForm">
+            <template v-if="currentFormIndex === 0">
+                <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
+                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :options="familyOptions" validationTitle="Family" />
                 </div>
+                <div v-if="familyMemberOptions.length" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="currentRegistrant.personGuid" :options="familyMemberOptions" label="Family Member to Register" />
+                    </div>
+                </div>
+            </template>
+
+            <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
+                <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
+                    <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
+                    <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" />
+                    <Alert alertType="danger" v-else>Could not resolve field source {{field.fieldSource}}</Alert>
+                </template>
+            </ItemsWithPreAndPostHtml>
+
+            <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
+                <h4>{{pluralFeeTerm}}</h4>
+                <template v-for="fee in viewModel.fees" :key="fee.guid">
+                    <FeeField :fee="fee" v-model="currentRegistrant.feeItemQuantities" />
+                </template>
             </div>
         </template>
 
-        <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
-            <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
-                <RegistrantPersonField v-if="field.fieldSource === fieldSources.personField" :field="field" :fieldValues="currentRegistrant.fieldValues" :isKnownFamilyMember="!!currentRegistrant.personGuid" />
-                <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.registrantAttribute || field.fieldSource === fieldSources.personAttribute" :field="field" :fieldValues="currentRegistrant.fieldValues" />
-                <Alert alertType="danger" v-else>Could not resolve field source {{field.fieldSource}}</Alert>
-            </template>
-        </ItemsWithPreAndPostHtml>
+        <div v-if="isSignatureForm" class="registrant-signature-document">
+            <h2 class="signature-header">Please sign the {{ signatureDocumentName }} {{ signatureDocumentTerm }} for {{ firstName }}</h2>
 
-        <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
-            <h4>{{pluralFeeTerm}}</h4>
-            <template v-for="fee in viewModel.fees" :key="fee.guid">
-                <FeeField :fee="fee" v-model="currentRegistrant.feeItemQuantities" />
-            </template>
+            <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" class="signaturedocument-container" border="0" frameborder="0" cellspacing="0" style="width: 100%; height: 450px" :srcdoc="signatureSource"></iframe>
+
+            <div class="well">
+                <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" />
+            </div>
         </div>
 
         <div class="actions row">
@@ -316,7 +417,7 @@ export default defineComponent({
                 </RockButton>
             </div>
             <div class="col-xs-6 text-right">
-                <RockButton btnType="primary" type="submit">
+                <RockButton v-if="isNextVisible" btnType="primary" type="submit" :disabled="isNextDisabled">
                     Next
                 </RockButton>
             </div>

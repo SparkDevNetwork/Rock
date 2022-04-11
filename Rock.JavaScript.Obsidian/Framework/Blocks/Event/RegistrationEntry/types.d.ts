@@ -107,6 +107,11 @@ export type RegistrationEntryBlockViewModel = {
     enableSaveAccount: boolean;
     savedAccounts: SavedFinancialAccountListItem[] | null;
     registrationInstanceNotFoundMessage: string | null;
+
+    isInlineSignatureRequired: boolean;
+    isSignatureDrawn: boolean;
+    signatureDocumentTerm?: string | null;
+    signatureDocumentTemplateName?: string | null;
 };
 
 export type RegistrationEntryBlockFamilyMemberViewModel = {
@@ -164,8 +169,10 @@ export type RegistrantInfo = {
 
     /** If the person were an existing person, this is his/her guid */
     personGuid: Guid | null;
+
     fieldValues: Record<Guid, unknown>;
     feeItemQuantities: Record<Guid, number>;
+    signatureData?: string | null;
 
     guid: Guid;
 };

@@ -206,6 +206,14 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         public Dictionary<Guid, int> FeeItemQuantities { get; set; }
 
         /// <summary>
+        /// Gets or sets the encoded signature data.
+        /// </summary>
+        /// <value>
+        /// The encoded signature data.
+        /// </value>
+        public string SignatureData { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique identifier.
         /// </summary>
         /// <value>

@@ -469,7 +469,17 @@ export default defineComponent({
         async onSummaryPrevious(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
-                this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.PerRegistrantForms;
+
+                if (this.hasPostAttributes) {
+                    this.registrationEntryState.currentStep = Step.RegistrationEndForm;
+                }
+                else {
+                    const lastFormIndex = this.registrationEntryState.viewModel.registrantForms.length - 1;
+
+                    this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
+                    this.registrationEntryState.currentStep = Step.PerRegistrantForms;
+                }
+
                 Page.smoothScrollToTop();
             }
         },

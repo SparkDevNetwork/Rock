@@ -2615,7 +2615,7 @@ namespace RockWeb.Blocks.WorkFlow
             signatureDocument.SignedClientUserAgent = Request.UserAgent;
 
             // Needed before determing SignatureInformation (Signed Name, metadata)
-            signatureDocument.SignatureVerificationHash = signatureDocument.CalculateSignatureVerificationHash();
+            signatureDocument.SignatureVerificationHash = SignatureDocumentService.CalculateSignatureVerificationHash( signatureDocument );
 
             var signatureInformationHtmlArgs = new GetSignatureInformationHtmlOptions
             {
@@ -2666,7 +2666,6 @@ namespace RockWeb.Blocks.WorkFlow
 
             // reload with new context to get navigation properties to load. This wil be needed to save values back to Workflow Attributes
             signatureDocument = new SignatureDocumentService( new RockContext() ).Get( signatureDocument.Id );
-            var recalcuatedHash = signatureDocument.CalculateSignatureVerificationHash();
 
             // Save to Workflow Attributes
             electronicSignatureWorkflowAction.SaveSignatureDocumentValuesToAttributes( _workflowRockContext, workflowAction, signatureDocument );

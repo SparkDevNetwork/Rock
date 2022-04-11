@@ -365,6 +365,38 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// A message to show to the indiviual when the registration instance cannot be found.
         /// </value>
         public string RegistrationInstanceNotFoundMessage { get; set; }
+
+        /// Gets a value indicating whether this registration requires the
+        /// signature document to be signed inline.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this registration requires inline signing; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsInlineSignatureRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the signature should be drawn.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this the signature is drawn; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSignatureDrawn { get; set; }
+
+        /// <summary>
+        /// Gets the signature document term.
+        /// </summary>
+        /// <value>
+        /// The signature document term.
+        /// </value>
+        public string SignatureDocumentTerm { get; set; }
+
+        /// <summary>
+        /// Gets the name of the signature document template.
+        /// </summary>
+        /// <value>
+        /// The name of the signature document template.
+        /// </value>
+        public string SignatureDocumentTemplateName { get; set; }
     }
 
     /// <summary>
@@ -687,5 +719,31 @@ namespace Rock.ViewModel.Blocks.Event.RegistrationEntry
         /// The discount help.
         /// </value>
         public string DiscountHelp { get; set; }
+    }
+
+    /// <summary>
+    /// Defines the data required to display a signature document on a single
+    /// registrant form.
+    /// </summary>
+    public sealed class RegistrationEntrySignatureDocument
+    {
+        /// <summary>
+        /// Gets or sets the document HTML to be displayed on the form. This should
+        /// be displayed inside an IFrame element to ensure no other CSS on the
+        /// page interferes.
+        /// </summary>
+        /// <value>
+        /// The document HTML to be displayed on the form.
+        /// </value>
+        public string DocumentHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security token that will be used to authenticate the
+        /// document after it has been signed.
+        /// </summary>
+        /// <value>
+        /// The security token that will be used to authenticate the document.
+        /// </value>
+        public string SecurityToken { get; set; }
     }
 }
