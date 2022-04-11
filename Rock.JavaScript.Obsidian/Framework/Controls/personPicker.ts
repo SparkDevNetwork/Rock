@@ -415,7 +415,7 @@ export default defineComponent({
                     <i class="fa fa-times"></i>
                 </a>
 
-                <Panel v-if="showPopup" isFullscreen title="Person Search">
+                <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search">
                     <template #actionAside>
                         <span class="panel-action" @click.prevent.stop="onCancel">
                             <i class="fa fa-times"></i>

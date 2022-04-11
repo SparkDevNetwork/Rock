@@ -215,19 +215,17 @@ namespace Rock.Lava
             // Resolve the merge fields in the shortcode template in a separate context, using the set of merge fields that have been modified by the shortcode parameters.
             // Apply the set of enabled commands specified by the shortcode definition, or those enabled for the current context if none are defined by the shortcode.
             // The resulting content is a shortcode template that is ready to be processed to resolve its child elements.
-            var enabledCommands = _shortcode.EnabledLavaCommands ?? new List<string>();
+            var shortcodeCommands = _shortcode.EnabledLavaCommands ?? new List<string>();
 
-            enabledCommands = enabledCommands.Where( x => !string.IsNullOrWhiteSpace( x ) ).ToList();
+            shortcodeCommands = shortcodeCommands.Where( x => !string.IsNullOrWhiteSpace( x ) ).ToList();
 
-            if ( !enabledCommands.Any() )
+            if ( !shortcodeCommands.Any() )
             {
-                enabledCommands = context.GetEnabledCommands();
+                shortcodeCommands = context.GetEnabledCommands();
             }
 
-            var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, enabledCommands );
-
+            var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, shortcodeCommands );
             var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( shortcodeTemplateContext ) );
-
             var shortcodeTemplateMarkup = blockMarkupRenderResult.Text;
 
             // Extract child elements from the shortcode template content.
@@ -247,20 +245,12 @@ namespace Rock.Lava
             }
 
             // Set context variables related to the block content so they can be referenced by the shortcode template.
-            if ( residualMarkup.IsNotNullOrWhiteSpace() )
-            {
-                // JME (7/23/2019) Commented out the two lines below and substituted the line after to allow for better
-                // processing of the block content. Testing was done on all existing shortcodes but leaving
-                // this code in place in case a future edge case is found. Could/should remove this in the future.
-                // Regex rgx = new Regex( @"{{\s*blockContent\s*}}", RegexOptions.IgnoreCase );
-                // lavaTemplate = rgx.Replace( lavaTemplate, blockMarkup );
-                parms.AddOrReplace( "blockContent", residualMarkup );
+            var blockHasContent = residualMarkup.IsNotNullOrWhiteSpace();
+            parms.AddOrReplace( "blockContentExists", blockHasContent );
 
-                parms.AddOrReplace( "blockContentExists", true );
-            }
-            else
+            if ( blockHasContent )
             {
-                parms.AddOrReplace( "blockContentExists", false );
+                parms.AddOrReplace( "blockContent", residualMarkup );
             }
 
             // Now ensure there aren't any entity commands in the block that are not allowed.
@@ -268,8 +258,8 @@ namespace Rock.Lava
             // than the source block, template, action, etc. permits.
             var securityCheckResult = _engine.RenderTemplate( residualMarkup, LavaRenderParameters.WithContext( context ) );
 
-            Regex securityErrorPattern = new Regex( string.Format( Constants.Messages.NotAuthorizedMessage, ".*" ) );
-            Match securityErrorMatch = securityErrorPattern.Match( securityCheckResult.Text );
+            var securityErrorPattern = new Regex( string.Format( Constants.Messages.NotAuthorizedMessage, ".*" ) );
+            var securityErrorMatch = securityErrorPattern.Match( securityCheckResult.Text );
 
             // If the security check failed, return the error message.
             if ( securityErrorMatch.Success )
@@ -279,24 +269,36 @@ namespace Rock.Lava
                 return;
             }
 
-            // Merge the shortcode template in a new context, using the parameters and security allowed by the shortcode.
-            var shortcodeContext = _engine.NewRenderContext( parms );
+            // Render the shortcode template in a child scope that includes the shortcode parameters.
+            context.EnterChildScope();
 
-            // If the shortcode specifies a set of enabled Lava commands, set these for the current context.
-            // If not, use the commands enabled for the current context.
-            if ( _shortcode.EnabledLavaCommands != null
-                 && _shortcode.EnabledLavaCommands.Any() )
+            LavaRenderResult results;
+            try
             {
-                shortcodeContext.SetEnabledCommands( _shortcode.EnabledLavaCommands );
+                context.SetMergeFields( parms );
+
+                // If the shortcode specifies a set of Lava commands, add these to the context.
+                // The set of permitted entity commands is the union of the parent scope and the specific shortcode settings.
+                if ( _shortcode.EnabledLavaCommands != null )
+                {
+                    var enabledCommands = context.GetEnabledCommands();
+                    foreach ( var commandName in _shortcode.EnabledLavaCommands )
+                    {
+                        if ( !enabledCommands.Contains(commandName) )
+                        {
+                            enabledCommands.Add( commandName );
+                        }
+                    }
+                    context.SetEnabledCommands( enabledCommands );
+                }
+
+                results = _engine.RenderTemplate( _shortcode.TemplateMarkup, LavaRenderParameters.WithContext( context ) );
+                result.Write( results.Text.Trim() );
             }
-            else
+            finally
             {
-                shortcodeContext.SetEnabledCommands( context.GetEnabledCommands() );
+                context.ExitChildScope();
             }
-
-            var results = _engine.RenderTemplate( _shortcode.TemplateMarkup, LavaRenderParameters.WithContext( shortcodeContext ) );
-
-            result.Write( results.Text.Trim() );
         }
 
         #endregion

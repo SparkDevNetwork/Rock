@@ -310,7 +310,7 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="rockContext">The rock database context.</param>
         /// <param name="attribute">The attribute whose value will be viewed.</param>
-        /// <returns>A <see cref="ClientAttributeValueViewModel"/> that represents the attribute value.</returns>
+        /// <returns>A <see cref="PublicAttributeValueViewModel"/> that represents the attribute value.</returns>
         private PublicAttributeValueViewModel GetAttributeValue( RockContext rockContext, AttributeCache attribute )
         {
             var entityId = GetEntityId();

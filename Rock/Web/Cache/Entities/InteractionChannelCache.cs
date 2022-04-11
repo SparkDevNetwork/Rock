@@ -356,6 +356,51 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the channel identifier by type identifier and name, or creates a new channel if no match is found.
+        /// </summary>
+        /// <param name="channelTypeMediumValueId">The channel type medium value identifier.</param>
+        /// <param name="channelName">An optional channel name. If this value is specified it will form part of the lookup for an existing channel, or used to create a new channel if no matching channel is found.</param>
+        /// <param name="componentEntityTypeId">The component entity type identifier. This value will only be used if a new record is created.</param>
+        /// <param name="interactionEntityTypeId">The interaction entity type identifier. This value will only be used if a new record is created.</param>
+        /// <returns></returns>
+        public static int GetOrCreateChannelIdByName( int channelTypeMediumValueId, string channelName, int? componentEntityTypeId, int? interactionEntityTypeId )
+        {
+            // Get a key that differentiates a name lookup, to avoid any possible collisions.
+            var lookupKey = $"{channelTypeMediumValueId}|name={channelName}";
+
+            if ( _interactionChannelLookupFromChannelIdByEntityId.TryGetValue( lookupKey, out int channelId ) )
+            {
+                return channelId;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionChannelService = new InteractionChannelService( rockContext );
+                var interactionChannel = interactionChannelService.Queryable()
+                    .Where( a =>
+                        a.ChannelTypeMediumValueId == channelTypeMediumValueId &&
+                        a.Name == channelName )
+                    .FirstOrDefault();
+
+                if ( interactionChannel == null )
+                {
+                    interactionChannel = new InteractionChannel();
+                    interactionChannel.Name = channelName;
+                    interactionChannel.ChannelTypeMediumValueId = channelTypeMediumValueId;
+                    interactionChannel.ComponentEntityTypeId = componentEntityTypeId;
+                    interactionChannel.InteractionEntityTypeId = interactionEntityTypeId;
+                    interactionChannelService.Add( interactionChannel );
+                    rockContext.SaveChanges();
+                }
+
+                var interactionChannelId = Get( interactionChannel ).Id;
+                _interactionChannelLookupFromChannelIdByEntityId.AddOrUpdate( lookupKey, interactionChannelId, ( k, v ) => interactionChannelId );
+
+                return interactionChannelId;
+            }
+        }
+
+        /// <summary>
         /// Gets the channel identifier by ForeignKey, and creates it if it doesn't exist.
         /// If foreignKey is blank, this will throw a <seealso cref="ArgumentNullException" />
         /// </summary>

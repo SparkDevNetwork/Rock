@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 
+using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.ViewModel.Controls;
 using Rock.ViewModel.NonEntities;
@@ -32,6 +33,7 @@ namespace Rock.Rest.v2.Controls
     /// </summary>
     /// <seealso cref="Rock.Rest.v2.Controls.ControlsControllerBase" />
     [RoutePrefix( "api/v2/Controls/FieldTypeEditor" )]
+    [RockGuid( "fe748698-53d3-4ca8-ba59-1ba36f2350e3" )]
     public class FieldTypeEditorController : ControlsControllerBase
     {
         /// <summary>
@@ -39,8 +41,9 @@ namespace Rock.Rest.v2.Controls
         /// </summary>
         /// <returns>A collection <see cref="ListItemViewModel"/> that represents the field types that are available.</returns>
         [HttpGet]
-        [Route( "availableFieldTypes" )]
+        [System.Web.Http.Route( "availableFieldTypes" )]
         [Authenticate]
+        [RockGuid( "5300346b-1569-4120-bc85-bd39078c0032" )]
         public IHttpActionResult GetAvailableFieldTypes()
         {
             var fieldTypes = FieldTypeCache.All()
@@ -67,8 +70,9 @@ namespace Rock.Rest.v2.Controls
         /// <param name="updateViewModel">The view model that contains the update request.</param>
         /// <returns>An instance of <see cref="FieldTypeConfigurationPropertiesViewModel"/> that represents the state of the attribute configuration.</returns>
         [HttpPost]
-        [Route( "fieldTypeConfiguration" )]
+        [System.Web.Http.Route( "fieldTypeConfiguration" )]
         [Authenticate]
+        [RockGuid( "3a544b0f-7ba9-472c-bb08-f1537a484fad" )]
         public IHttpActionResult UpdateAttributeConfiguration( [FromBody] FieldTypeConfigurationViewModel updateViewModel )
         {
             var fieldType = Rock.Web.Cache.FieldTypeCache.Get( updateViewModel.FieldTypeGuid )?.Field;

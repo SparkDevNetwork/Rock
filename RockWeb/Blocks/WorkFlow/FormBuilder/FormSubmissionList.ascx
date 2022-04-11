@@ -9,8 +9,7 @@
             <div class="panel-heading panel-follow">
 
                 <div class="pull-left">
-                    <h1 class="panel-title"><span class="fa fa-user"></span>&nbsp;
-                    <asp:Label ID="lTitle" runat="server">My Ministry Form</asp:Label></h1>
+                    <h1 class="panel-title"><span class="fa fa-poll-h"></span>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
                 </div>
 
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
@@ -55,7 +54,7 @@
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" PersonIdField="PersonId" OnRowSelected="gWorkflows_RowSelected" EnableStickyHeaders="true">
+                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" PersonIdField="PersonId" OnRowSelected="gWorkflows_RowSelected" EnableStickyHeaders="true" RowItemText="Submissions">
                         <Columns>
                             <Rock:SelectField />
                             <Rock:DateField DataField="ActivatedDateTime" HeaderText="Submitted" SortExpression="SubmittedDate" />

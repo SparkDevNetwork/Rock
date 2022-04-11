@@ -282,5 +282,15 @@
                 window.location = postback;
             }
         });
+
+        // Auto-fill in the internal name if it's blank after they have typed in
+        // the public name.
+        var $tbName = $("#<%= tbName.ClientID %>");
+        var $tbInternalName = $("#<%= tbInternalName.ClientID %>");
+        $tbName.on("blur", function () {
+            if ($tbName.val() !== "" && $tbInternalName.val() === "") {
+                $tbInternalName.val($tbName.val());
+            }
+        });
     });
 </script>

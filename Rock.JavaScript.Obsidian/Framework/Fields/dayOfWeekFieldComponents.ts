@@ -29,79 +29,50 @@ export const EditComponent = defineComponent({
     },
     props: getFieldEditorProps(),
 
-    data() {
-        return {
-            /** The currently selected value. */
-            internalValue: ""
-        };
-    },
+    setup(props, {emit} ) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-    methods: {
-        /**
-         * Builds a list of the drop down options that are used to display
-         * in the drop down list.
-         */
-        options(): Array<ListItem> {
-            return [
-                { text: "Sunday", value: DayOfWeek.Sunday.toString() },
-                { text: "Monday", value: DayOfWeek.Monday.toString() },
-                { text: "Tuesday", value: DayOfWeek.Tuesday.toString() },
-                { text: "Wednesday", value: DayOfWeek.Wednesday.toString() },
-                { text: "Thursday", value: DayOfWeek.Thursday.toString() },
-                { text: "Friday", value: DayOfWeek.Friday.toString() },
-                { text: "Saturday", value: DayOfWeek.Saturday.toString() }
-            ];
-        },
-    },
+        const options: ListItem[] = [
+            { text: "Sunday", value: DayOfWeek.Sunday.toString() },
+            { text: "Monday", value: DayOfWeek.Monday.toString() },
+            { text: "Tuesday", value: DayOfWeek.Tuesday.toString() },
+            { text: "Wednesday", value: DayOfWeek.Wednesday.toString() },
+            { text: "Thursday", value: DayOfWeek.Thursday.toString() },
+            { text: "Friday", value: DayOfWeek.Friday.toString() },
+            { text: "Saturday", value: DayOfWeek.Saturday.toString() }
+        ];
 
-    watch: {
-        /**
-         * Watch for changes to internalValue and emit the new value out to
-         * the consuming component.
-         */
-        internalValue() {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-
-        /**
-         * Watch for changes to modelValue which indicate the component
-         * using us has given us a new value to work with.
-         */
-        modelValue: {
-            immediate: true,
-            handler() {
-                this.internalValue = this.modelValue || "";
-            }
-        }
+        return {internalValue, options}
     },
     template: `
-<DropDownList v-model="internalValue" :options="options()" />
+<DropDownList v-model="internalValue" :options="options" />
 `
 });
 
 export const FilterComponent = defineComponent({
     name: "DayOfWeekField.Filter",
-
     components: {
-        TextBox
+        DropDownList
     },
-
     props: getFieldEditorProps(),
 
-    emits: [
-        "update:modelValue"
-    ],
-
-    setup(props, { emit }) {
+    setup(props, {emit} ) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-        return {
-            internalValue
-        };
-    },
+        const options: ListItem[] = [
+            { text: "Sunday", value: DayOfWeek.Sunday.toString() },
+            { text: "Monday", value: DayOfWeek.Monday.toString() },
+            { text: "Tuesday", value: DayOfWeek.Tuesday.toString() },
+            { text: "Wednesday", value: DayOfWeek.Wednesday.toString() },
+            { text: "Thursday", value: DayOfWeek.Thursday.toString() },
+            { text: "Friday", value: DayOfWeek.Friday.toString() },
+            { text: "Saturday", value: DayOfWeek.Saturday.toString() }
+        ];
 
+        return {internalValue, options}
+    },
     template: `
-<TextBox v-model="internalValue" />
+<DropDownList v-model="internalValue" :options="options" />
 `
 });
 

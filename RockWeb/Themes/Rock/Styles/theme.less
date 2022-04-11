@@ -57,6 +57,12 @@ main {
   line-height: 18px;
 }
 
+.control-label-sm {
+  display: block;
+  font-size: @font-size-xs;
+  color: @text-muted;
+}
+
 .panel-body {
   // DOES NOT WORK WITH ROWS
   // > .row {
@@ -399,6 +405,10 @@ textarea,
 
 .btn-group.open .dropdown-toggle {
   box-shadow: none;
+}
+
+.dropdown-menu {
+  font-size: 14px;
 }
 
 .has-error {
@@ -1181,9 +1191,6 @@ body.nav-open {
     border: 0;
 
     a {
-      width: 100%;
-      line-height: 34px;
-
       &:hover {
         color: @white;
         background-color: @brand-primary;
@@ -1800,6 +1807,19 @@ body.navbar-side-open {
   &.active:focus,
   &.active:hover {
     background: #cbeefa;
+  }
+
+  &.btn-primary {
+    background: @btn-primary-bg;
+    border-radius: @btn-border-radius-base;
+
+    &:active,
+    &:active:focus,
+    &.active,
+    &.active:focus,
+    &.active:hover {
+      background: darken(@btn-primary-bg, 10%);
+    }
   }
 }
 

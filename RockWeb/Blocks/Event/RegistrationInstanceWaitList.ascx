@@ -5,8 +5,6 @@
 
         <asp:Panel ID="pnlDetails" runat="server">
 
-            <div class="panel panel-block">
-
                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
 
                 <asp:Panel ID="pnlWaitList" runat="server" CssClass="panel panel-block">
@@ -42,8 +40,6 @@
                             </Rock:Grid>
                         </div>
                 </asp:Panel>
-
-            </div>
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

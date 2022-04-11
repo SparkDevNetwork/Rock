@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to save a boolean value. Stored as "True" or "False"
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class BooleanFieldType : FieldType
     {

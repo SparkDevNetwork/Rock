@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.Prayer
 
                 var prayerRequest = new PrayerRequest { Id = 0 };
                 prayerRequest.LoadAttributes();
-                avcEditAttributes.ExcludedAttributes = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+                avcEditAttributes.ExcludedAttributes = prayerRequest.Attributes.Where( a => !a.Value.IsPublic || !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
                 avcEditAttributes.AddEditControls( prayerRequest );
                 avcEditAttributes.ValidationGroup = this.BlockValidationGroup;
             }

@@ -13,21 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -298,7 +296,9 @@ namespace RockWeb.Blocks.Finance
             drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
 
             ddlFrequency.Items.Clear();
-            var frequencies = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
+            var frequencies = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() )
+                .DefinedValues.Where( dv => dv.IsActive ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
+
             foreach ( var frequency in frequencies )
             {
                 ddlFrequency.Items.Add( new ListItem( frequency.Value, frequency.Id.ToString() ) );
@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Same logic as TransactionEntry.ascx.cs
-                var personQuery = new PersonService.PersonMatchQuery( firstName, tbLastName.Text, tbEmail.Text, string.Empty);
+                var personQuery = new PersonService.PersonMatchQuery( firstName, tbLastName.Text, tbEmail.Text, string.Empty );
                 person = personService.FindPerson( personQuery, true );
             }
 

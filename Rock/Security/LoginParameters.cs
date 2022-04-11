@@ -23,11 +23,11 @@ namespace Rock.Security
     /// <summary>
     /// 
     /// </summary>
-    [RockClientInclude("Use this as the Content of a api/Auth/Login POST")]
+    [RockClientInclude( "Use this as the Content of a api/Auth/Login POST. Specify UserName/Password to authenticate by username or specify Authorization to authenticate using JWT." )]
     public class LoginParameters
     {
         /// <summary>
-        /// Gets or sets the username.
+        /// Gets or sets the username. Specify Authorization instead of UserName to use JWT Authorization.
         /// </summary>
         /// <value>
         /// The username.
@@ -36,13 +36,20 @@ namespace Rock.Security
         public string Username { get; set; }
 
         /// <summary>
-        /// Gets or sets the password.
+        /// If authorizating using UserName, the password.
         /// </summary>
         /// <value>
         /// The password.
         /// </value>
         [DataMember]
         public string Password { get; set; }
+
+        /// <summary>
+        /// Specify Authorization instead of UserName to use JWT Authorization
+        /// </summary>
+        /// <value>The authorization.</value>
+        [DataMember]
+        public string Authorization { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="LoginParameters"/> information is going to be persisted.

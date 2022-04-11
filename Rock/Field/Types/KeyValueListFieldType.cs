@@ -21,6 +21,8 @@ using System.Web;
 using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Data;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -30,10 +32,11 @@ namespace Rock.Field.Types
     /// Field used to save and display a key/value list
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class KeyValueListFieldType : ValueListFieldType
     {
         private const string VALUES_KEY = "values";
+        private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
 
         #region Configuration
 
@@ -47,6 +50,87 @@ namespace Rock.Field.Types
             configKeys.Insert(0, "keyprompt" );
             configKeys.Insert( 0, "displayvaluefirst" );
             return configKeys;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
+
+            // Get a list of all DefinedTypes that can be selected.
+            var definedTypes = DefinedTypeCache.All()
+                .OrderBy( t => t.Name )
+                .Select( t => new ListItemViewModel
+                {
+                    Value = t.Guid.ToString(),
+                    Text = t.Name
+                } )
+                .ToList();
+
+            configurationProperties[DEFINED_TYPES_PROPERTY_KEY] = definedTypes.ToCamelCaseJson( false, true );
+
+            return configurationProperties;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationOptions = base.GetPublicConfigurationOptions( privateConfigurationValues );
+
+            var options = GetCustomValues( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
+                .Select( kvp => new
+                {
+                    value = kvp.Key,
+                    text = kvp.Value
+                } )
+                .ToCamelCaseJson( false, true );
+
+            configurationOptions[VALUES_KEY] = options;
+
+            if ( configurationOptions.ContainsKey( "definedtype" ) )
+            {
+                var definedTypeId = configurationOptions["definedtype"].AsIntegerOrNull();
+
+                if ( definedTypeId.HasValue )
+                {
+                    configurationOptions["definedtype"] = DefinedTypeCache.Get( definedTypeId.Value )?.Guid.ToString() ?? "";
+                }
+                else
+                {
+                    configurationOptions["definedtype"] = "";
+                }
+            }
+
+            return configurationOptions;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationOptions( publicConfigurationValues );
+
+            // Don't allow them to provide the actual value items.
+            if ( privateConfigurationValues.ContainsKey( VALUES_KEY ) )
+            {
+                privateConfigurationValues.Remove( VALUES_KEY );
+            }
+
+            // Convert the defined type value from Guid to Id.
+            if ( privateConfigurationValues.ContainsKey( "definedtype" ) )
+            {
+                var definedTypeGuid = privateConfigurationValues["definedtype"].AsGuidOrNull();
+
+                if ( definedTypeGuid.HasValue )
+                {
+                    privateConfigurationValues["definedtype"] = DefinedTypeCache.Get( definedTypeGuid.Value )?.Id.ToString() ?? "";
+                }
+                else
+                {
+                    privateConfigurationValues["definedtype"] = "";
+                }
+            }
+
+            return privateConfigurationValues;
         }
 
         /// <inheritdoc/>

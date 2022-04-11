@@ -29,7 +29,7 @@ namespace Rock.Field.Types
     /// Field used to save and display an image value
     /// Stored as BinaryFile.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     public class ImageFieldType : BinaryFileFieldType
     {
         #region Configuration

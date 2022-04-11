@@ -14,13 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
 import { ConfigurationValueKey } from "./dateTimeField";
+import SlidingDateRangePicker from "../Controls/slidingDateRangePicker";
 import DateTimePicker from "../Elements/dateTimePicker";
 import TextBox from "../Elements/textBox";
 import CheckBox from "../Elements/checkBox";
+import { ComparisonType } from "../Reporting/comparisonType";
+import { parseSlidingDateRangeString, slidingDateRangeToString } from "../Services/slidingDateRange";
+import { updateRefValue } from "../Util/util";
 
 export const EditComponent = defineComponent({
     name: "DateTimeField.Edit",
@@ -88,6 +92,87 @@ export const EditComponent = defineComponent({
     },
     template: `
 <DateTimePicker v-model="internalValue" v-bind="configAttributes" />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "DateField.Filter",
+
+    components: {
+        EditComponent,
+        SlidingDateRangePicker
+    },
+
+    props: {
+        ...getFieldEditorProps(),
+        comparisonType: {
+            type: Number as PropType<ComparisonType | null>,
+            required: true
+        }
+    },
+
+    emits: [
+        "update:modelValue"
+    ],
+
+    setup(props, { emit }) {
+        // The internal values that make up the model value.
+        const internalValue = ref(props.modelValue);
+        const internalValueSegments = internalValue.value.split("\t");
+        const dateValue = ref(internalValueSegments[0]);
+        const rangeValue = ref(parseSlidingDateRangeString(internalValueSegments.length > 1 ? internalValueSegments[1] : ""));
+
+        // Get the configuration values and force the DisplayCurrentOption to True.
+        const configurationValues = ref({ ...props.configurationValues });
+        configurationValues.value[ConfigurationValueKey.DisplayCurrentOption] = "True";
+
+        /** True if the comparison type is of type Between. */
+        const isComparisonTypeBetween = computed((): boolean => props.comparisonType === ComparisonType.Between);
+
+        // Watch for changes in the configuration values and update our own list.
+        watch(() => props.configurationValues, () => {
+            configurationValues.value = { ...props.configurationValues };
+            configurationValues.value[ConfigurationValueKey.DisplayCurrentOption] = "True";
+        });
+
+        // Watch for changes from the standard DatePicker.
+        watch(dateValue, () => {
+            if (props.comparisonType !== ComparisonType.Between) {
+                internalValue.value = `${dateValue.value}\t`;
+            }
+        });
+
+        // Watch for changes from the SlidingDateRangePicker.
+        watch(rangeValue, () => {
+            if (props.comparisonType === ComparisonType.Between) {
+                internalValue.value = `\t${rangeValue.value ? slidingDateRangeToString(rangeValue.value) : ""}`;
+            }
+        });
+
+        // Watch for changes to the model value and update our internal values.
+        watch(() => props.modelValue, () => {
+            internalValue.value = props.modelValue;
+            const segments = internalValue.value.split("\t");
+            dateValue.value = segments[0];
+            updateRefValue(rangeValue, parseSlidingDateRangeString(segments.length > 1 ? segments[1] : ""));
+        });
+
+        // Watch for changes to our internal value and update the model value.
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        });
+
+        return {
+            configurationValues,
+            dateValue,
+            isComparisonTypeBetween,
+            rangeValue
+        };
+    },
+
+    template: `
+<SlidingDateRangePicker v-if="isComparisonTypeBetween" v-model="rangeValue" />
+<EditComponent v-else v-model="dateValue" :configurationValues="configurationValues" />
 `
 });
 

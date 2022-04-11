@@ -101,6 +101,7 @@
     <Compile Include="CodeGenerated\BlockType.cs" />
     <Compile Include="CodeGenerated\Campus.cs" />
     <Compile Include="CodeGenerated\CampusSchedule.cs" />
+    <Compile Include="CodeGenerated\CampusTopic.cs" />
     <Compile Include="CodeGenerated\Category.cs" />
     <Compile Include="CodeGenerated\Communication.cs" />
     <Compile Include="CodeGenerated\CommunicationAttachment.cs" />
@@ -265,6 +266,7 @@
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
     <Compile Include="CodeGenerated\PersonScheduleExclusion.cs" />
     <Compile Include="CodeGenerated\PersonSearchKey.cs" />
+    <Compile Include="CodeGenerated\PersonSearchPhoneNumber.cs" />
     <Compile Include="CodeGenerated\PersonSearchResult.cs" />
     <Compile Include="CodeGenerated\PersonSignal.cs" />
     <Compile Include="CodeGenerated\PersonToken.cs" />
@@ -285,6 +287,7 @@
     <Compile Include="CodeGenerated\RegistrationTemplateFormField.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplatePlacement.cs" />
     <Compile Include="CodeGenerated\RelatedEntity.cs" />
+    <Compile Include="CodeGenerated\RemoteAuthenticationSession.cs" />
     <Compile Include="CodeGenerated\Report.cs" />
     <Compile Include="CodeGenerated\ReportField.cs" />
     <Compile Include="CodeGenerated\RestAction.cs" />
@@ -327,9 +330,11 @@
     <Compile Include="CodeGenerated\WorkflowAction.cs" />
     <Compile Include="CodeGenerated\WorkflowActionForm.cs" />
     <Compile Include="CodeGenerated\WorkflowActionFormAttribute.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionFormSection.cs" />
     <Compile Include="CodeGenerated\WorkflowActionType.cs" />
     <Compile Include="CodeGenerated\WorkflowActivity.cs" />
     <Compile Include="CodeGenerated\WorkflowActivityType.cs" />
+    <Compile Include="CodeGenerated\WorkflowFormBuilderTemplate.cs" />
     <Compile Include="CodeGenerated\WorkflowLog.cs" />
     <Compile Include="CodeGenerated\WorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\WorkflowType.cs" />

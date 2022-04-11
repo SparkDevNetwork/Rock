@@ -20,13 +20,29 @@ import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
     Values = "values",
-    RepeatColumns = "repeatColumns"
+    EnhancedSelection = "enhancedselection",
+    RepeatColumns = "repeatColumns",
+    IncludeInactive = "includeInactive",
+    FilterCampusTypes = "filterCampusTypes",
+    FilterCampusStatus = "filterCampusStatus",
+    SelectableCampuses = "selectableCampuses"
+}
+
+export const enum ConfigurationPropertyKey {
+    Campuses = "campuses",
+    CampusTypes = "campusTypes",
+    CampusStatuses = "campusStatuses"
 }
 
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./campusesFieldComponents")).EditComponent;
+});
+
+// Load the configuration component only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./campusesFieldComponents")).ConfigurationComponent;
 });
 
 /**
@@ -52,5 +68,9 @@ export class CampusesFieldType extends FieldTypeBase {
 
     public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
     }
 }

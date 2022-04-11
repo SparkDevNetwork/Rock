@@ -71,8 +71,14 @@ registerFieldType(FieldTypeGuids.DefinedValueRange, new DefinedValueRangeFieldTy
 import { EmailFieldType } from "./emailField";
 registerFieldType(FieldTypeGuids.Email, new EmailFieldType());
 
+import { FileFieldType } from "./fileField";
+registerFieldType(FieldTypeGuids.File, new FileFieldType());
+
 import { GenderFieldType } from "./genderField";
 registerFieldType(FieldTypeGuids.Gender, new GenderFieldType());
+
+import { ImageFieldType } from "./imageField";
+registerFieldType(FieldTypeGuids.Image, new ImageFieldType());
 
 import { IntegerFieldType } from "./integerField";
 registerFieldType(FieldTypeGuids.Integer, new IntegerFieldType());

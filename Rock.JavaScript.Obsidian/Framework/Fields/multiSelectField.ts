@@ -15,20 +15,37 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType, containsComparisonTypes } from "../Reporting/comparisonType";
+import { ComparisonValue } from "../Reporting/comparisonValue";
 import { ListItem } from "../ViewModels";
+import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldTypeBase } from "./fieldType";
+import { getStandardFilterComponent } from "./utils";
 
 export const enum ConfigurationValueKey {
     Values = "values",
     RepeatColumns = "repeatColumns",
     RepeatDirection = "repeatDirection",
-    EnhancedSelection = "enhancedselection"
+    EnhancedSelection = "enhancedselection",
+
+    /** Only used during editing of the field type configuration. */
+    RawValues = "rawValues"
 }
 
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./multiSelectFieldComponents")).EditComponent;
+});
+
+// Load the filter component only as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./multiSelectFieldComponents")).FilterComponent;
+});
+
+// Load the configuration component only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./multiSelectFieldComponents")).ConfigurationComponent;
 });
 
 /**
@@ -54,5 +71,39 @@ export class MultiSelectFieldType extends FieldTypeBase {
 
     public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return containsComparisonTypes;
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
+    }
+
+    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+        if (value.value === "") {
+            return "";
+        }
+
+        try {
+            const rawValues = value.value.split(",");
+            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const selectedValues = values.filter(v => rawValues.includes(v.value));
+
+            if (selectedValues.length >= 1) {
+                return `'${selectedValues.map(v => v.value).join("' OR '")}'`;
+            }
+            else {
+                return "";
+            }
+        }
+        catch {
+            return value.value;
+        }
     }
 }

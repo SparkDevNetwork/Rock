@@ -14,14 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, inject } from "vue";
-import { getFieldEditorProps } from "./utils";
-import ListBox from "../Elements/listBox";
+import { computed, defineComponent, inject, ref, watch } from "vue";
 import CheckBoxList from "../Elements/checkBoxList";
+import DropDownList from "../Elements/dropDownList";
+import ListBox from "../Elements/listBox";
+import NumberBox from "../Elements/numberBox";
+import TextBox from "../Elements/textBox";
+import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "../Services/boolean";
 import { toNumberOrNull } from "../Services/number";
-import { ConfigurationValueKey } from "./multiSelectField";
+import { updateRefValue } from "../Util/util";
 import { ListItem } from "../ViewModels";
-import { asBoolean } from "../Services/boolean";
+import { ConfigurationValueKey } from "./multiSelectField";
+import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({
     name: "MultiSelectField.Edit",
@@ -85,7 +89,7 @@ export const EditComponent = defineComponent({
                 attributes["repeatColumns"] = toNumberOrNull(repeatColumnsConfig) || 0;
             }
 
-            if (repeatDirection !== "Vertical") {
+            if (repeatDirection !== "1") {
                 attributes["horizontal"] = true;
             }
 
@@ -118,5 +122,195 @@ export const EditComponent = defineComponent({
     template: `
 <ListBox v-if="isListBox" v-model="internalValue" v-bind="listBoxConfigAttributes" :options="options" />
 <CheckBoxList v-else v-model="internalValue" v-bind="checkBoxListConfigAttributes" :options="options" />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "MultiSelectField.Filter",
+
+    components: {
+        CheckBoxList
+    },
+
+    props: getFieldEditorProps(),
+
+    setup(props, { emit }) {
+        const internalValue = ref(props.modelValue.split(",").filter(v => v !== ""));
+
+        const options = computed((): ListItem[] => {
+            try {
+                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+
+                return providedOptions;
+            }
+            catch {
+                return [];
+            }
+        });
+
+        watch(() => props.modelValue, () => {
+            updateRefValue(internalValue, props.modelValue.split(",").filter(v => v !== ""));
+        });
+
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value.join(","));
+        });
+
+        return {
+            internalValue,
+            options
+        };
+    },
+
+    template: `
+<CheckBoxList v-model="internalValue" :options="options" horizontal />
+`
+});
+
+const repeatDirectionOptions: ListItem[] = [
+    {
+        value: "0",
+        text: "Horizontal"
+    },
+    {
+        value: "1",
+        text: "Vertical"
+    }
+];
+
+export const ConfigurationComponent = defineComponent({
+    name: "MultiSelectField.Configuration",
+
+    components: {
+        DropDownList,
+        TextBox,
+        NumberBox
+    },
+
+    props: getFieldConfigurationProps(),
+
+    emits: [
+        "update:modelValue",
+        "updateConfiguration",
+        "updateConfigurationValue"
+    ],
+
+    setup(props, { emit }) {
+        // Define the properties that will hold the current selections.
+        const rawValues = ref("");
+        const internalRawValues = ref("");
+        const enhanceForLongLists = ref(false);
+        const repeatColumns = ref<number | null>(null);
+        const repeatDirection = ref("");
+
+        const onBlur = (): void => {
+            internalRawValues.value = rawValues.value;
+        };
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {};
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.RawValues] = internalRawValues.value ?? "";
+            newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
+            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationValueKey.RepeatDirection] = repeatDirection.value ?? "0";
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.RawValues] !== (props.modelValue[ConfigurationValueKey.RawValues] ?? "")
+                || newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
+                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "")
+                || newValue[ConfigurationValueKey.RepeatDirection] !== (props.modelValue[ConfigurationValueKey.RepeatDirection] ?? "0");
+
+
+            // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Emits the updateConfigurationValue if the value has actually changed.
+         * 
+         * @param key The key that was possibly modified.
+         * @param value The new value.
+         */
+        const maybeUpdateConfiguration = (key: string, value: string): void => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfigurationValue", key, value);
+            }
+        };
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            rawValues.value = props.modelValue[ConfigurationValueKey.RawValues] ?? "";
+            internalRawValues.value = rawValues.value;
+            enhanceForLongLists.value = asBooleanOrNull(props.modelValue[ConfigurationValueKey.EnhancedSelection]) ?? false;
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            repeatDirection.value = props.modelValue[ConfigurationValueKey.RepeatDirection] ?? "0";
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        watch([internalRawValues], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+        // Watch for changes in properties that only require a local UI update.
+        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationValueKey.EnhancedSelection, asTrueFalseOrNull(enhanceForLongLists.value) ?? "False"));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(repeatDirection, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatDirection, repeatDirection.value ?? "0"));
+
+        return {
+            enhanceForLongLists,
+            onBlur,
+            rawValues,
+            repeatColumns,
+            repeatDirection,
+            repeatDirectionOptions
+        };
+    },
+
+    template: `
+<div>
+    <TextBox v-model="rawValues"
+        label="Values"
+        help="The source of the values to display in a list. Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns a result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>."
+        textMode="multiline"
+        @blur="onBlur" />
+
+    <CheckBox v-model="enhanceForLongLists"
+        label="Enhance For Long Lists"
+        help="When set, will render a searchable selection of options." />
+
+    <NumberBox
+        v-model="repeatColumns"
+        label="Columns"
+        help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no enforced upper limit however the block this control is used in might add contraints due to available space." />
+
+    <DropDownList v-model="repeatDirection"
+        label="Repeat Direction"
+        help="The direction that the list options will be displayed."
+        :options="repeatDirectionOptions"
+        :showBlankItem="false" />
+</div>
 `
 });

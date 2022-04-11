@@ -44,7 +44,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Media Element Detail" )]
     [Category( "CMS" )]
@@ -552,6 +552,7 @@ namespace RockWeb.Blocks.Cms
             pnlViewFile.Visible = false;
             lbMediaFiles.Visible = true;
             lbMediaAnalytics.Visible = false;
+            hlDuration.Visible = true;
 
             var rockContext = new RockContext();
             var mediaElementService = new MediaElementService( rockContext );
@@ -589,6 +590,7 @@ namespace RockWeb.Blocks.Cms
             pnlViewAnalytics.Visible = true;
 
             lActionTitle.Text = mediaElement.Name.FormatAsHtmlTitle();
+            hlDuration.Text = mediaElement.DurationSeconds.ToFriendlyDuration();
             mpMedia.MediaElementId = mediaElement.Id;
 
             RegisterStartupScript( mediaElement );
@@ -760,7 +762,7 @@ namespace RockWeb.Blocks.Cms
             var kpiMetrics = new List<string>();
 
             var engagement = interactions.Sum( a => a.WatchMap.WatchedPercentage ) / interactions.Count();
-            kpiMetrics.Add( GetKpiMetricLava( "blue-400", "fa fa-broadcast-tower", $"{engagement:n1}%", "Engagement", $"On average, people played {engagement:n1}% of the video." ) );
+            kpiMetrics.Add( GetKpiMetricLava( "blue-400", "fa fa-broadcast-tower", $"{engagement:n1}%", "Engagement", $"The total minutes played divided by the length of the video times the total number of plays." ) );
 
             var playCount = interactions.Count();
             var playCountText = GetFormattedNumber( playCount );
@@ -945,6 +947,7 @@ namespace RockWeb.Blocks.Cms
             bool isExistingElement = ( mediaElement != null );
 
             lbMediaAnalytics.Visible = isExistingElement;
+            hlDuration.Visible = isExistingElement;
             lbMediaFiles.Visible = false;
             pnlViewAnalytics.Visible = false;
 
@@ -1018,6 +1021,7 @@ namespace RockWeb.Blocks.Cms
             SetEditMode( false );
 
             lActionTitle.Text = mediaElement.Name.FormatAsHtmlTitle();
+            hlDuration.Text = mediaElement.DurationSeconds.ToFriendlyDuration();
 
             var descriptionList = new DescriptionList();
             descriptionList.Add( "Folder", mediaElement.MediaFolder.Name );

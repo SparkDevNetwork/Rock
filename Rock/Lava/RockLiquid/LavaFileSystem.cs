@@ -58,7 +58,7 @@ namespace Rock.Lava
             var file = new FileInfo( FullPath( templatePath ) );
             if ( file.Exists )
             {
-                return File.ReadAllText( file.FullName );
+                return GetLavaTemplateFromFile( file.FullName );
             }
 
             // If requested template file does not include an extension
@@ -68,14 +68,14 @@ namespace Rock.Lava
                 string filePath = file.FullName + ".lava";
                 if ( File.Exists( filePath ) )
                 {
-                    return File.ReadAllText( filePath );
+                    return GetLavaTemplateFromFile( filePath );
                 }
 
                 // Try to find file with .liquid extension
                 filePath = file.FullName + ".liquid";
                 if ( File.Exists( filePath ) )
                 {
-                    return File.ReadAllText( filePath );
+                    return GetLavaTemplateFromFile( filePath );
                 }
 
                 // If file still not found, try prefixing filename with an underscore
@@ -84,17 +84,35 @@ namespace Rock.Lava
                     filePath = Path.Combine( file.DirectoryName, string.Format( "_{0}.lava", file.Name ) );
                     if ( File.Exists( filePath ) )
                     {
-                        return File.ReadAllText( filePath );
+                        return GetLavaTemplateFromFile( filePath );
                     }
                     filePath = Path.Combine( file.DirectoryName, string.Format( "_{0}.liquid", file.Name ) );
                     if ( File.Exists( filePath ) )
                     {
-                        return File.ReadAllText( filePath );
+                        return GetLavaTemplateFromFile( filePath );
                     }
                 }
             }
 
             throw new FileSystemException( "LavaFileSystem Template Not Found", templatePath );
+        }
+
+        /// <summary>
+        /// Read a lava template from a file.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        private string GetLavaTemplateFromFile( string filePath )
+        {
+            var templateText = File.ReadAllText( filePath );
+
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+                // Strip the Lava comments before returning the template for processing by DotLiquid.
+                templateText = LavaHelper.RemoveLavaComments( templateText );
+            }
+
+            return templateText;
         }
 
         /// <summary>

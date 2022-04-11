@@ -21,9 +21,10 @@ import DropDownList from "../Elements/dropDownList";
 import NumberBox from "../Elements/numberBox";
 import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
 import { toNumber, toNumberOrNull } from "../Services/number";
+import { useVModelPassthrough } from "../Util/component";
 import { ListItem } from "../ViewModels";
 import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueField";
-import { getFieldEditorProps } from "./utils";
+import { ConfigurationValues, getFieldEditorProps } from "./utils";
 
 function parseModelValue(modelValue: string | undefined): string {
     try {
@@ -93,7 +94,7 @@ export const EditComponent = defineComponent({
             return providedOptions;
         });
 
-        /** The options to choose from in the drop down list */
+        /** The options to choose from in the checkbox list */
         const optionsMultiple = computed((): ListItem[] => {
             return valueOptions.value.map(v => {
                 return {
@@ -155,6 +156,37 @@ export const EditComponent = defineComponent({
     template: `
 <DropDownList v-if="!isMultiple" v-model="internalValue" v-bind="configAttributes" :options="options" :showBlankItem="!isRequired" />
 <CheckBoxList v-else v-model="internalValues" :options="optionsMultiple" horizontal :repeatColumns="repeatColumns" />
+`
+});
+
+export const FilterComponent = defineComponent({
+    name: "DefinedValueField.Filter",
+
+    components: {
+        EditComponent
+    },
+
+    props: getFieldEditorProps(),
+
+    setup(props, { emit }) {
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+        const configurationValues = ref({ ...props.configurationValues });
+        configurationValues.value[ConfigurationValueKey.AllowMultiple] = "True";
+
+        watch(() => props.configurationValues, () => {
+            configurationValues.value = { ...props.configurationValues };
+            configurationValues.value[ConfigurationValueKey.AllowMultiple] = "True";
+        });
+
+        return {
+            internalValue,
+            configurationValues
+        };
+    },
+
+    template: `
+<EditComponent v-model="internalValue" :configurationValues="configurationValues" />
 `
 });
 

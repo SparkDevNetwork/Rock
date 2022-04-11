@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI;
@@ -1223,12 +1224,12 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( minValue.HasValue )
                     {
-                        query.Add( string.Format( "[{0}] >= #{1}#", colName, minValue.Value ) );
+                        query.Add( string.Format( "[{0}] >= #{1}#", colName, minValue.Value.ToISO8601DateString() ) );
                     }
 
                     if ( maxValue.HasValue )
                     {
-                        query.Add( string.Format( "[{0}] < #{1}#", colName, maxValue.Value.AddDays( 1 ) ) );
+                        query.Add( string.Format( "[{0}] < #{1}#", colName, maxValue.Value.AddDays( 1 ).ToISO8601DateString() ) );
                     }
                 }
                 else if ( control is RockDropDownList )
