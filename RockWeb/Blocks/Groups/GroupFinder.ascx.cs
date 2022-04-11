@@ -308,7 +308,7 @@ namespace RockWeb.Blocks.Groups
         private static class AttributeDefaultLava
         {
             public const string MapInfo = @"
-<h4 class='margin-t-none'>{{ Group.Name }}</h4> 
+<h4 class='margin-t-none'>{{ Group.Name }}</h4>
 
 <div class='margin-b-sm'>
 {% for attribute in Group.AttributeValues %}
@@ -945,7 +945,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    // Hide the search button and show the results immediately since there is 
+                    // Hide the search button and show the results immediately since there is
                     // no filter criteria to be entered
                     phFilterControls.Visible = false;
                     btnSearch.Visible = GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean();
@@ -972,7 +972,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AttributeFilters = new List<AttributeCache>();
             foreach ( string attr in GetAttributeValue( AttributeKey.AttributeFilters ).SplitDelimitedValues() )
             {
@@ -987,7 +987,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AttributeColumns = new List<AttributeCache>();
             foreach ( string attr in GetAttributeValue( AttributeKey.AttributeColumns ).SplitDelimitedValues() )
             {
@@ -1312,7 +1312,7 @@ namespace RockWeb.Blocks.Groups
 
                     If we don't do this, when the Admin adds attributes from two different Group Types and then the user enters data
                     for both attributes they would get no results because Attribute A from Group Type A doesn't exists in Group Type B.
-                    
+
                     Reason: Queries across Group Types
                 */
                 var filters = new Dictionary<string, Expression>();
@@ -1889,7 +1889,7 @@ namespace RockWeb.Blocks.Groups
 
         var locationData = {0};
         var fenceData = {1};
-        var groupData = {2}; 
+        var groupData = {2};
         var markerScale = 1;
 
         var allMarkers = [];
@@ -1905,7 +1905,7 @@ namespace RockWeb.Blocks.Groups
 
         var min = .999999;
         var max = 1.000001;
-        
+
         initializeMap();
 
         function initializeMap() {{
@@ -1973,7 +1973,7 @@ namespace RockWeb.Blocks.Groups
                         info_window: marker.info_window,
                     }});
 
-                if ( updatedMarker.info_window != null ) {{ 
+                if ( updatedMarker.info_window != null ) {{
                     google.maps.event.addListener(updatedMarker, 'click', (function (marker) {{
                         return function () {{
                             openInfoWindow(marker);
@@ -1981,7 +1981,7 @@ namespace RockWeb.Blocks.Groups
                     }})(updatedMarker));
                 }}
 
-                if ( updatedMarker.id && updatedMarker.id > 0 ) {{ 
+                if ( updatedMarker.id && updatedMarker.id > 0 ) {{
                     google.maps.event.addListener(updatedMarker, 'mouseover', (function (marker) {{
                         return function () {{
                             $(""tr[datakey='"" + marker.id + ""']"").addClass('row-highlight');
@@ -2057,7 +2057,7 @@ namespace RockWeb.Blocks.Groups
 
             var items = [];
 
-            if (mapItem.Point) {{ 
+            if (mapItem.Point) {{
 
                 var position = new google.maps.LatLng(mapItem.Point.Latitude, mapItem.Point.Longitude);
                 bounds.extend(position);
@@ -2090,11 +2090,11 @@ namespace RockWeb.Blocks.Groups
                     icon: pinImage,
                     info_window: mapItem.InfoWindow,
                 }});
-    
+
                 items.push(marker);
                 allMarkers.push(marker);
 
-                if ( mapItem.InfoWindow != null ) {{ 
+                if ( mapItem.InfoWindow != null ) {{
                     google.maps.event.addListener(marker, 'click', (function (marker, i) {{
                         return function () {{
                             openInfoWindow(marker);
@@ -2102,7 +2102,7 @@ namespace RockWeb.Blocks.Groups
                     }})(marker, i));
                 }}
 
-                if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{ 
+                if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{
                     google.maps.event.addListener(marker, 'mouseover', (function (marker, i) {{
                         return function () {{
                             $(""tr[datakey='"" + mapItem.EntityId + ""']"").addClass('row-highlight');
@@ -2147,7 +2147,7 @@ namespace RockWeb.Blocks.Groups
                     polyBounds.extend(polygonPoints[j]);
                 }}
 
-                if ( mapItem.InfoWindow != null ) {{ 
+                if ( mapItem.InfoWindow != null ) {{
                     google.maps.event.addListener(polygon, 'click', (function (polygon, i) {{
                         return function () {{
                             infoWindow.setContent( $('<div/>').html(mapItem.InfoWindow).text() );
@@ -2161,7 +2161,7 @@ namespace RockWeb.Blocks.Groups
             return items;
 
         }}
-        
+
         function setAllMap(markers, map) {{
             for (var i = 0; i < markers.length; i++) {{
                 markers[i].setMap(map);
@@ -2187,7 +2187,7 @@ namespace RockWeb.Blocks.Groups
         }}
 
         function adjustOverlappedMarkers() {{
-            
+
             if (allMarkers.length > 1) {{
                 for(i=0; i < allMarkers.length-1; i++) {{
                     var marker1 = allMarkers[i];

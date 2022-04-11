@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Groups
                     ILavaTemplate lavaTemplate = null;
 
                     if ( LavaService.RockLiquidIsEnabled )
-                    {                        
+                    {
                         if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                         {
                             template = Template.Parse( GetAttributeValue( "InfoWindowContents" ).Trim() );
