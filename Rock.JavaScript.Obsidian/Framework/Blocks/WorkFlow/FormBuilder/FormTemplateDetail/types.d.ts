@@ -15,9 +15,9 @@
 // </copyright>
 //
 
-import { Guid } from "../../../../Util/guid";
-import { ListItem } from "../../../../ViewModels";
-import { AuditDetail } from "../../../../ViewModels/auditDetail";
+import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { AuditDetailBag } from "@Obsidian/ViewModels/Utility/auditDetailBag";
 import { FormCompletionAction, FormConfirmationEmail, FormPersonEntry } from "../Shared/types";
 
 /**
@@ -26,22 +26,22 @@ import { FormCompletionAction, FormConfirmationEmail, FormPersonEntry } from "..
  */
 export type ValueSources = {
     /** The list of campus type options that are available to pick from. */
-    campusTypeOptions?: ListItem[] | null;
+    campusTypeOptions?: ListItemBag[] | null;
 
     /** The list of campus status options that are available to pick from. */
-    campusStatusOptions?: ListItem[] | null;
+    campusStatusOptions?: ListItemBag[] | null;
 
     /** The list of record status options that are available to pick from. */
-    recordStatusOptions?: ListItem[] | null;
+    recordStatusOptions?: ListItemBag[] | null;
 
     /** The list of connection status options that are available to pick from. */
-    connectionStatusOptions?: ListItem[] | null;
+    connectionStatusOptions?: ListItemBag[] | null;
 
     /** The list of address type options that are available to pick from. */
-    addressTypeOptions?: ListItem[] | null;
+    addressTypeOptions?: ListItemBag[] | null;
 
     /** The list of e-mail template options that are available to pick from. */
-    emailTemplateOptions?: ListItem[] | null;
+    emailTemplateOptions?: ListItemBag[] | null;
 };
 
 /**
@@ -56,7 +56,7 @@ export type TemplateDetail = {
     description?: string | null;
 
     /** The list of workflow types that use this form template. */
-    usedBy?: ListItem[] | null;
+    usedBy?: ListItemBag[] | null;
 
     /**
      * True if this form template is active and should show up as a selection
@@ -65,7 +65,7 @@ export type TemplateDetail = {
     isActive?: boolean;
 
     /** The details that describe the audit trail for this view model. */
-    auditDetails?: AuditDetail | null;
+    auditDetails?: AuditDetailBag | null;
 };
 
 /**

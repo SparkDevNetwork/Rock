@@ -18,8 +18,7 @@ import { defineComponent } from "vue";
 import { getFieldEditorProps } from "./utils";
 import { DayOfWeek } from "./dayOfWeekField";
 import DropDownList from "../Elements/dropDownList";
-import TextBox from "../Elements/textBox";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useVModelPassthrough } from "../Util/component";
 
 export const EditComponent = defineComponent({
@@ -29,10 +28,10 @@ export const EditComponent = defineComponent({
     },
     props: getFieldEditorProps(),
 
-    setup(props, {emit} ) {
+    setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-        const options: ListItem[] = [
+        const options: ListItemBag[] = [
             { text: "Sunday", value: DayOfWeek.Sunday.toString() },
             { text: "Monday", value: DayOfWeek.Monday.toString() },
             { text: "Tuesday", value: DayOfWeek.Tuesday.toString() },
@@ -42,7 +41,10 @@ export const EditComponent = defineComponent({
             { text: "Saturday", value: DayOfWeek.Saturday.toString() }
         ];
 
-        return {internalValue, options}
+        return {
+            internalValue,
+            options
+        };
     },
     template: `
 <DropDownList v-model="internalValue" :options="options" />
@@ -56,10 +58,10 @@ export const FilterComponent = defineComponent({
     },
     props: getFieldEditorProps(),
 
-    setup(props, {emit} ) {
+    setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
-        const options: ListItem[] = [
+        const options: ListItemBag[] = [
             { text: "Sunday", value: DayOfWeek.Sunday.toString() },
             { text: "Monday", value: DayOfWeek.Monday.toString() },
             { text: "Tuesday", value: DayOfWeek.Tuesday.toString() },
@@ -69,7 +71,10 @@ export const FilterComponent = defineComponent({
             { text: "Saturday", value: DayOfWeek.Saturday.toString() }
         ];
 
-        return {internalValue, options}
+        return {
+            internalValue,
+            options
+        };
     },
     template: `
 <DropDownList v-model="internalValue" :options="options" />

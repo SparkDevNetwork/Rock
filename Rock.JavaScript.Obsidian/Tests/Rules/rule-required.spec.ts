@@ -75,4 +75,16 @@ describe("required Rule", () => {
 
         assert.deepStrictEqual(result, []);
     });
+
+    it("Empty array produces error", () => {
+        const result = validateValue([], "required");
+
+        assert.deepStrictEqual(result, [expectedRequiredErrorText]);
+    });
+
+    it("Non-empty array produces no error", () => {
+        const result = validateValue(["text"], "required");
+
+        assert.deepStrictEqual(result, []);
+    });
 });

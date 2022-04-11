@@ -376,7 +376,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>A collection of list items.</returns>
-        private List<ViewModel.NonEntities.ListItemViewModel> GetValidCampuses( RockContext rockContext )
+        private List<ViewModels.Utility.ListItemBag> GetValidCampuses( RockContext rockContext )
         {
             var campusClientService = new CampusClientService( rockContext, RequestContext.CurrentPerson );
 

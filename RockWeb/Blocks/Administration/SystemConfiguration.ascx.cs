@@ -147,6 +147,7 @@ namespace RockWeb.Blocks.Administration
             // Save General
             Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT, cbEnableMultipleTimeZone.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER, cbIncludeBusinessInPersonPicker.Checked.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_KEEP_ALIVE, cbEnableKeepAlive.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT, tbPDFExternalRenderEndpoint.Text );
 
             nbGeneralMessage.NotificationBoxType = NotificationBoxType.Success;
@@ -215,6 +216,7 @@ namespace RockWeb.Blocks.Administration
         {
             cbEnableMultipleTimeZone.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
             cbIncludeBusinessInPersonPicker.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER ).AsBoolean();
+            cbEnableKeepAlive.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean();
             tbPDFExternalRenderEndpoint.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
         }
 

@@ -145,8 +145,8 @@
     <Reference Include="Google.Cloud.Storage.V1, Version=2.4.0.0, Culture=neutral, PublicKeyToken=185c282632e132a0, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Cloud.Storage.V1.2.4.0\lib\net45\Google.Cloud.Storage.V1.dll</HintPath>
     </Reference>
-    <Reference Include="GreenPipes, Version=2.1.0.106, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
-      <HintPath>..\packages\GreenPipes.2.1.0\lib\net452\GreenPipes.dll</HintPath>
+    <Reference Include="GreenPipes, Version=2.1.4.118, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
+      <HintPath>..\packages\GreenPipes.2.1.4\lib\net452\GreenPipes.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
@@ -187,14 +187,14 @@
     <Reference Include="Lucene.Net.Sandbox, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Lucene.Net.Sandbox.4.8.0-beta00005\lib\net45\Lucene.Net.Sandbox.dll</HintPath>
     </Reference>
-    <Reference Include="MassTransit, Version=5.1.0.1516, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
-      <HintPath>..\packages\MassTransit.5.1.0\lib\net452\MassTransit.dll</HintPath>
+    <Reference Include="MassTransit, Version=5.5.2.0, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\MassTransit.5.5.2\lib\net452\MassTransit.dll</HintPath>
     </Reference>
-    <Reference Include="MassTransit.AzureServiceBusTransport, Version=5.1.0.1516, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
-      <HintPath>..\packages\MassTransit.AzureServiceBus.5.1.0\lib\net452\MassTransit.AzureServiceBusTransport.dll</HintPath>
+    <Reference Include="MassTransit.AzureServiceBusTransport, Version=5.5.2.0, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\MassTransit.AzureServiceBus.5.5.2\lib\net452\MassTransit.AzureServiceBusTransport.dll</HintPath>
     </Reference>
-    <Reference Include="MassTransit.RabbitMqTransport, Version=5.1.0.1516, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
-      <HintPath>..\packages\MassTransit.RabbitMQ.5.1.0\lib\net452\MassTransit.RabbitMqTransport.dll</HintPath>
+    <Reference Include="MassTransit.RabbitMqTransport, Version=5.5.2.0, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\MassTransit.RabbitMQ.5.5.2\lib\net452\MassTransit.RabbitMqTransport.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
@@ -881,7 +881,10 @@
     <Compile Include="Model\Core\AuthAuditLog\ChangeType.cs" />
     <Compile Include="Model\Core\CampusSchedule\CampusSchedule.Logic.cs" />
     <Compile Include="Model\Core\InteractionSessionLocation\InteractionSessionLocation.cs" />
+    <Compile Include="Model\Core\ServiceJob\ServiceJob.WebForms.cs" />
+    <Compile Include="Model\Core\ServiceJob\ServiceJob.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplate.Logic.cs" />
+    <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureDocumentTemplateExtensionMethods.cs" />
     <Compile Include="Model\Core\SignatureDocumentTemplate\SignatureType.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.Logic.cs" />
     <Compile Include="Model\Core\SignatureDocument\SignatureDocument.SaveHook.cs" />
@@ -1017,7 +1020,6 @@
     <Compile Include="Model\CRM\PersonViewed\PersonViewed.Logic.cs" />
     <Compile Include="Model\CRM\Person\AgeClassification.cs" />
     <Compile Include="Model\CRM\Person\EmailPreference.cs" />
-    <Compile Include="Model\CRM\Person\Gender.cs" />
     <Compile Include="Model\CRM\Person\GetPersonPhotoImageTagArgs.cs" />
     <Compile Include="Model\CRM\Person\Person.cs" />
     <Compile Include="Model\CRM\Person\Person.Logic.cs" />
@@ -1612,10 +1614,10 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
-    <Compile Include="ViewModel\DefaultViewModelHelperAttribute.cs" />
-    <Compile Include="ViewModel\IViewModelHelper.cs" />
+    <Compile Include="ViewModels\DefaultViewModelHelperAttribute.cs" />
+    <Compile Include="ViewModels\IViewModelHelper.cs" />
     <Compile Include="Utility\CodeGenExcludeAttribute.cs" />
-    <Compile Include="ViewModel\ViewModelHelper.cs" />
+    <Compile Include="ViewModels\ViewModelHelper.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
@@ -3962,6 +3964,10 @@
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>
       <Name>Rock.DownhillCss</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
+      <Name>Rock.Enums</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
       <Project>{79aa470a-dc63-4cb4-b0b6-77285f60c69b}</Project>
       <Name>Rock.Lava.DotLiquid</Name>
@@ -3982,9 +3988,9 @@
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
       <Name>Rock.Version</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
       <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
-      <Name>Rock.ViewModel</Name>
+      <Name>Rock.ViewModels</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -17,14 +17,16 @@
 
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "../Controls/rockField";
-import Alert from "../Elements/alert";
+import Alert from "../Elements/alert.vue";
 import DropDownList from "../Elements/dropDownList";
 import StaticFormControl from "../Elements/staticFormControl";
 import { getFieldType } from "../Fields/index";
 import { get, post } from "../Util/http";
 import { areEqual, newGuid } from "../Util/guid";
-import { PublicAttribute, ListItem } from "../ViewModels";
-import { FieldTypeConfigurationPropertiesViewModel, FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
+import { FieldTypeConfigurationPropertiesBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationPropertiesBag";
 import { deepEqual, updateRefValue } from "../Util/util";
 
 export default defineComponent({
@@ -39,7 +41,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<FieldTypeConfigurationViewModel | null>,
+            type: Object as PropType<FieldTypeConfigurationBag | null>,
             default: null
         },
 
@@ -98,7 +100,7 @@ export default defineComponent({
         const fieldErrorMessage = ref("");
 
         /** The options to be shown in the field type drop down control. */
-        const fieldTypeOptions = ref<ListItem[]>([]);
+        const fieldTypeOptions = ref<ListItemBag[]>([]);
 
         /** The UI component that will handle the configuration of the field type. */
         const configurationComponent = computed((): Component | null => {
@@ -118,10 +120,10 @@ export default defineComponent({
         const fieldTypeName = computed((): string => {
             const matches = fieldTypeOptions.value.filter(v => areEqual(v.value, fieldTypeValue.value));
 
-            return matches.length >= 1 ? matches[0].text : "";
+            return matches.length >= 1 ? matches[0].text ?? "" : "";
         });
 
-        const defaultValueAttribute = computed((): PublicAttribute => {
+        const defaultValueAttribute = computed((): PublicAttributeBag => {
             return {
                 fieldTypeGuid: fieldTypeValue.value,
                 attributeGuid: newGuid(),
@@ -150,7 +152,7 @@ export default defineComponent({
                 return;
             }
 
-            const newValue: FieldTypeConfigurationViewModel = {
+            const newValue: FieldTypeConfigurationBag = {
                 fieldTypeGuid: fieldTypeValue.value,
                 configurationValues: configurationValues.value,
                 defaultValue: defaultValue.value ?? ""
@@ -189,13 +191,13 @@ export default defineComponent({
                 return;
             }
 
-            const update: FieldTypeConfigurationViewModel = {
+            const update: FieldTypeConfigurationBag = {
                 fieldTypeGuid: fieldTypeValue.value,
                 configurationValues: configurationValues.value,
                 defaultValue: currentDefaultValue
             };
 
-            post<FieldTypeConfigurationPropertiesViewModel>("/api/v2/Controls/FieldTypeEditor/fieldTypeConfiguration", null, update)
+            post<FieldTypeConfigurationPropertiesBag>("/api/v2/Controls/FieldTypeEditor/fieldTypeConfiguration", null, update)
                 .then(result => {
                     resetToDefaults();
                     console.debug("got configuration", result.data);
@@ -207,7 +209,7 @@ export default defineComponent({
                         isInternalUpdate = true;
                         configurationProperties.value = result.data.configurationProperties;
                         configurationValues.value = result.data.configurationValues;
-                        defaultValue.value = result.data.defaultValue;
+                        defaultValue.value = result.data.defaultValue ?? "";
                         isInternalUpdate = false;
 
                         updateModelValue();
@@ -268,7 +270,7 @@ export default defineComponent({
         });
 
         // Get all the available field types that the user is allowed to edit.
-        get<ListItem[]>("/api/v2/Controls/FieldTypeEditor/availableFieldTypes")
+        get<ListItemBag[]>("/api/v2/Controls/FieldTypeEditor/availableFieldTypes")
             .then(result => {
                 if (result.isSuccess && result.data) {
                     fieldTypeOptions.value = result.data;

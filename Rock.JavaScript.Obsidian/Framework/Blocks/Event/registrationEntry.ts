@@ -15,8 +15,9 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, provide, reactive, ref } from "vue";
-import Alert from "../../Elements/alert";
+import Alert from "../../Elements/alert.vue";
 import CountdownTimer from "../../Elements/countdownTimer";
 import JavaScriptAnchor from "../../Elements/javaScriptAnchor";
 import ProgressTracker, { ProgressTrackerItem } from "../../Elements/progressTracker";
@@ -25,120 +26,23 @@ import NumberFilter, { toWord } from "../../Services/number";
 import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "../../Services/string";
 import { useStore } from "../../Store/index";
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
-import { Guid, newGuid } from "../../Util/guid";
+import { newGuid } from "../../Util/guid";
 import { List } from "../../Util/linq";
 import Page from "../../Util/page";
 import { RockDateTime } from "../../Util/rockDateTime";
-import { Person } from "../../ViewModels";
-import RegistrationEntryIntro from "./RegistrationEntry/intro";
-import { default as RegistrationEntryRegistrants } from "./RegistrationEntry/registrants";
-import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd";
-import { RegistrationEntryBlockArgs } from "./RegistrationEntry/registrationEntryBlockArgs";
-import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from "./RegistrationEntry/registrationEntryBlockViewModel";
-import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart";
-import SessionRenewal from "./RegistrationEntry/sessionRenewal";
-import RegistrationEntrySuccess from "./RegistrationEntry/success";
-import RegistrationEntryPayment from "./RegistrationEntry/payment";
-import RegistrationEntrySummary from "./RegistrationEntry/summary";
+import { Person } from "@Obsidian/ViewModels/Entities/person";
+import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
+import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
+import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
+import { RegistrantInfo, RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockViewModel, RegistrationEntryBlockArgs, Step, RegistrationEntryState } from "./RegistrationEntry/types";
+import RegistrationEntryRegistrationStart from "./RegistrationEntry/registrationStart.partial";
+import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial";
+import RegistrationEntrySuccess from "./RegistrationEntry/success.partial";
+import RegistrationEntryPayment from "./RegistrationEntry/payment.partial";
+import RegistrationEntrySummary from "./RegistrationEntry/summary.partial";
+import { getDefaultRegistrantInfo, getForcedFamilyGuid, getRegistrantBasicInfo } from "./RegistrationEntry/utils.partial";
 
 const store = useStore();
-
-const enum Step {
-    Intro = "intro",
-    RegistrationStartForm = "registrationStartForm",
-    PerRegistrantForms = "perRegistrantForms",
-    RegistrationEndForm = "registrationEndForm",
-    Review = "review",
-    Payment = "payment",
-    Success = "success"
-}
-
-export type RegistrantBasicInfo = {
-    firstName: string;
-    lastName: string;
-    email: string;
-    guid: Guid;
-};
-
-export type RegistrationEntryState = {
-    steps: Record<Step, Step>;
-    viewModel: RegistrationEntryBlockViewModel;
-    currentStep: string;
-    firstStep: string;
-    currentRegistrantIndex: number;
-    currentRegistrantFormIndex: number;
-    registrants: RegistrantInfo[];
-    registrationFieldValues: Record<Guid, unknown>;
-    registrar: RegistrarInfo;
-    gatewayToken: string;
-    savedAccountGuid: Guid | null;
-    discountCode: string;
-    discountAmount: number;
-    discountPercentage: number;
-    successViewModel: RegistrationEntryBlockSuccessViewModel | null;
-    amountToPayToday: number;
-    sessionExpirationDateMs: number | null;
-    registrationSessionGuid: Guid;
-    ownFamilyGuid: Guid;
-};
-
-/** If all registrants are to be in the same family, but there is no currently authenticated person,
- *  then this guid is used as a common family guid */
-const unknownSingleFamilyGuid = newGuid();
-
-/**
- * If there is a forced family guid because of RegistrantsSameFamily setting, then this returns that guid
- * @param currentPerson
- * @param viewModel
- */
-export function getForcedFamilyGuid (currentPerson: Person | null, viewModel: RegistrationEntryBlockViewModel): string | null {
-    return (currentPerson && viewModel.registrantsSameFamily === RegistrantsSameFamily.Yes) ?
-        (currentPerson.primaryFamilyGuid || unknownSingleFamilyGuid) :
-        null;
-}
-
-/**
- * Get a default registrant object with the current family guid set.
- * @param currentPerson
- * @param viewModel
- * @param familyGuid
- */
-export function getDefaultRegistrantInfo (currentPerson: Person | null, viewModel: RegistrationEntryBlockViewModel, familyGuid: Guid | null): RegistrantInfo {
-    const forcedFamilyGuid = getForcedFamilyGuid(currentPerson, viewModel);
-
-    if (forcedFamilyGuid) {
-        familyGuid = forcedFamilyGuid;
-    }
-
-    // If the family is not specified, then assume the person is in their own family
-    if (!familyGuid) {
-        familyGuid = newGuid();
-    }
-
-    return {
-        isOnWaitList: false,
-        familyGuid: familyGuid,
-        fieldValues: {},
-        feeItemQuantities: {},
-        guid: newGuid(),
-        personGuid: null
-    } as RegistrantInfo;
-}
-
-export function getRegistrantBasicInfo (registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[]): RegistrantBasicInfo {
-    const fields = registrantForms?.reduce((acc, f) => acc.concat(f.fields), [] as RegistrationEntryBlockFormFieldViewModel[]) || [];
-
-    const firstNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.FirstName)?.guid || "";
-    const lastNameGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.LastName)?.guid || "";
-    const emailGuid = fields.find(f => f.personFieldType === RegistrationPersonFieldType.Email)?.guid || "";
-
-    return {
-        firstName: (registrant?.fieldValues[ firstNameGuid ] || "") as string,
-        lastName: (registrant?.fieldValues[ lastNameGuid ] || "") as string,
-        email: (registrant?.fieldValues[ emailGuid ] || "") as string,
-        guid: registrant?.guid
-    };
-}
 
 export default defineComponent({
     name: "Event.RegistrationEntry",
@@ -472,7 +376,7 @@ export default defineComponent({
                 return false;
             }
 
-            const hasCostFees = new List(this.viewModel.fees)
+            const hasCostFees = new List<RegistrationEntryBlockFeeViewModel>(this.viewModel.fees)
                 .any(f => new List(f.items).any(i => i.cost > 0));
 
             // If no cost or fees, then no gateway will be needed.
@@ -566,7 +470,17 @@ export default defineComponent({
         async onSummaryPrevious(): Promise<void> {
             if (this.persistSession && this.registrationEntryState) {
                 await this.persistSession(false);
-                this.registrationEntryState.currentStep = this.hasPostAttributes ? Step.RegistrationEndForm : Step.PerRegistrantForms;
+
+                if (this.hasPostAttributes) {
+                    this.registrationEntryState.currentStep = Step.RegistrationEndForm;
+                }
+                else {
+                    const lastFormIndex = this.registrationEntryState.viewModel.registrantForms.length - 1;
+
+                    this.registrationEntryState.currentRegistrantFormIndex = lastFormIndex;
+                    this.registrationEntryState.currentStep = Step.PerRegistrantForms;
+                }
+
                 Page.smoothScrollToTop();
             }
         },

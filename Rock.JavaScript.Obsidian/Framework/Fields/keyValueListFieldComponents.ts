@@ -20,7 +20,7 @@ import DropDownList from "../Elements/dropDownList";
 import RockFormField from "../Elements/rockFormField";
 import TextBox from "../Elements/textBox";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "../Services/boolean";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./keyValueListField";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 
@@ -57,8 +57,8 @@ export const EditComponent = defineComponent({
         });
 
         /** The options to choose from in the drop down list */
-        const options = computed((): ListItem[] => {
-            const providedOptions: ListItem[] = valueOptions.value.map(v => {
+        const options = computed((): ListItemBag[] => {
+            const providedOptions: ListItemBag[] = valueOptions.value.map(v => {
                 return {
                     text: v.text,
                     value: v.value
@@ -185,9 +185,9 @@ export const ConfigurationComponent = defineComponent({
         const allowHtml = ref(false);
         const displayValueFirst = ref(false);
 
-        const definedTypeOptions = computed((): ListItem[] => {
+        const definedTypeOptions = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationProperties[ConfigurationPropertyKey.DefinedTypes] ?? "[]") as ListItem[];
+                return JSON.parse(props.configurationProperties[ConfigurationPropertyKey.DefinedTypes] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];

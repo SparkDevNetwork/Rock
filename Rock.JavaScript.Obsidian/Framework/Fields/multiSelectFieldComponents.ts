@@ -23,7 +23,7 @@ import TextBox from "../Elements/textBox";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "../Services/boolean";
 import { toNumberOrNull } from "../Services/number";
 import { updateRefValue } from "../Util/util";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./multiSelectField";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 
@@ -51,15 +51,15 @@ export const EditComponent = defineComponent({
 
     computed: {
         /** The options to choose from */
-        options(): ListItem[] {
+        options(): ListItemBag[] {
             try {
-                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
 
                 return valuesConfig.map(v => {
                     return {
                         text: v.text,
                         value: v.value
-                    } as ListItem;
+                    } as ListItemBag;
                 });
             }
             catch {
@@ -137,9 +137,9 @@ export const FilterComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref(props.modelValue.split(",").filter(v => v !== ""));
 
-        const options = computed((): ListItem[] => {
+        const options = computed((): ListItemBag[] => {
             try {
-                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
 
                 return providedOptions;
             }
@@ -167,7 +167,7 @@ export const FilterComponent = defineComponent({
 `
 });
 
-const repeatDirectionOptions: ListItem[] = [
+const repeatDirectionOptions: ListItemBag[] = [
     {
         value: "0",
         text: "Horizontal"

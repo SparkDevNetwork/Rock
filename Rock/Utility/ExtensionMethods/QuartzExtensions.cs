@@ -54,9 +54,41 @@ namespace Rock
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public static int GetJobId( this Quartz.IJobExecutionContext context)
+        public static int GetJobId( this Quartz.IJobExecutionContext context )
         {
             return context.JobDetail.Description.AsInteger();
+        }
+
+        /// <summary>
+        /// Gets the Job of the Rock Job associated with the IJobExecutionContext.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>ServiceJob.</returns>
+        public static ServiceJob GetJob( this Quartz.IJobExecutionContext context, RockContext rockContext )
+        {
+            var jobId = context.GetJobId();
+            return new ServiceJobService( rockContext ).Get( jobId );
+        }
+
+        /// <summary>
+        /// Loads from job attribute values.
+        /// </summary>
+        /// <param name="jobDataMap">The job data map.</param>
+        /// <param name="job">The job.</param>
+        internal static void LoadFromJobAttributeValues( this Quartz.JobDataMap jobDataMap, ServiceJob job )
+        {
+            if ( job.Attributes == null )
+            {
+                job.LoadAttributes();
+            }
+
+            jobDataMap.Clear();
+
+            foreach ( var attrib in job.AttributeValues )
+            {
+                jobDataMap.Add( attrib.Key, attrib.Value.Value );
+            }
         }
 
         #endregion

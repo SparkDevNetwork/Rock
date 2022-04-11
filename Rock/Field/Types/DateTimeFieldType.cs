@@ -172,6 +172,18 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Try to ensure the value is the proper format.
+            if ( DateTime.TryParse( publicValue, out var dateTimeValue ) )
+            {
+                return dateTimeValue.ToString( "o" );
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>

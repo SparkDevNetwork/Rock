@@ -22,7 +22,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.WorkFlow.FormBuilder
@@ -69,7 +69,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// </summary>
         /// <param name="rockContext">The database context to use for data lookup.</param>
         /// <returns>A collection of view models that represent the e-mail templates.</returns>
-        internal static List<ListItemViewModel> GetEmailTemplateOptions( RockContext rockContext, RockRequestContext requestContext )
+        internal static List<ListItemBag> GetEmailTemplateOptions( RockContext rockContext, RockRequestContext requestContext )
         {
             return new SystemCommunicationService( rockContext )
                 .Queryable()
@@ -77,7 +77,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 .ToList()
                 .Where( c => c.IsAuthorized( Rock.Security.Authorization.VIEW, requestContext.CurrentPerson ) )
                 .OrderBy( c => c.Title )
-                .Select( c => new ListItemViewModel
+                .Select( c => new ListItemBag
                 {
                     Value = c.Guid.ToString(),
                     Text = c.Title

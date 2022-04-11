@@ -62,10 +62,11 @@ import FileUploader from "../../Elements/fileUploader";
 import ImageUploader from "../../Elements/imageUploader";
 import SlidingDateRangePicker from "../../Controls/slidingDateRangePicker";
 import { toNumber } from "../../Services/number";
-import { ListItem, PublicAttribute } from "../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import "../../Fields/index";
 import { newGuid } from "../../Util/guid";
-import { FieldFilterGroup } from "../../ViewModels/Reporting/fieldFilterGroup";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { BinaryFiletype, FieldType } from "../../SystemGuids";
 import { SlidingDateRange, slidingDateRangeToString } from "../../Services/slidingDateRange";
 
@@ -121,7 +122,7 @@ const attributeValuesContainerGallery = defineComponent({
 
         const showAbbreviatedName = ref(false);
 
-        const attributes = ref<Record<string, PublicAttribute>>({
+        const attributes = ref<Record<string, PublicAttributeBag>>({
             text: {
                 attributeGuid: newGuid(),
                 categories: [],
@@ -310,7 +311,7 @@ const filterRules = defineComponent({
             return JSON.parse(sourcesText.value);
         });
 
-        const prefilled = (): FieldFilterGroup => ({
+        const prefilled = (): FieldFilterGroupBag => ({
             guid: newGuid(),
             expressionType: 4,
             "rules": [
@@ -380,7 +381,7 @@ const filterRules = defineComponent({
             ]
         });
 
-        const clean = (): FieldFilterGroup => ({
+        const clean = (): FieldFilterGroupBag => ({
             guid: newGuid(),
             expressionType: 1,
             rules: []
@@ -475,7 +476,7 @@ const dropDownListGallery = defineComponent({
                 { text: "B Text", value: "b" },
                 { text: "C Text", value: "c" },
                 { text: "D Text", value: "d" }
-            ] as ListItem[]
+            ] as ListItemBag[]
         };
     },
     template: `
@@ -517,7 +518,7 @@ const radioButtonListGallery = defineComponent({
                 { text: "E Text", value: "e" },
                 { text: "F Text", value: "f" },
                 { text: "G Text", value: "g" }
-            ] as ListItem[]
+            ] as ListItemBag[]
         };
     },
     template: `
@@ -694,7 +695,7 @@ const checkBoxListGallery = defineComponent({
                 { value: "red", text: "Red" },
                 { value: "green", text: "Green" },
                 { value: "blue", text: "Blue" }
-            ] as ListItem[],
+            ] as ListItemBag[],
             items: ["green"]
         };
     },
@@ -728,7 +729,7 @@ const listBoxGallery = defineComponent({
                 { text: "B Text", value: "b" },
                 { text: "C Text", value: "c" },
                 { text: "D Text", value: "d" }
-            ] as ListItem[]
+            ] as ListItemBag[]
         };
     },
     template: `

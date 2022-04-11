@@ -19,7 +19,7 @@ import { defineComponent, PropType, ref, watch } from "vue";
 import DropDownList from "../../../../Elements/dropDownList";
 import InlineSwitch from "../../../../Elements/inlineSwitch";
 import TransitionVerticalCollapse from "../../../../Elements/transitionVerticalCollapse";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import EmailSource from "./emailSource";
 import SectionContainer from "../../../../Controls/sectionContainer";
 import { FormConfirmationEmail, FormEmailSource } from "./types";
@@ -46,12 +46,12 @@ export default defineComponent({
         },
 
         recipientOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
         sourceTemplateOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         }
     },

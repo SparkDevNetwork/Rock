@@ -19,7 +19,6 @@ import { Component, computed, defineComponent, PropType } from "vue";
 import { ComparisonType, getComparisonName } from "../Reporting/comparisonType";
 import { ComparisonValue } from "../Reporting/comparisonValue";
 import { escapeHtml, truncate } from "../Services/string";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { EditComponent as TextEditComponent } from "./textFieldComponents";
 import { getFieldEditorProps, getStandardFilterComponent } from "./utils";
 

@@ -97,25 +97,23 @@ namespace Rock.Data
         public string SourceOfChange { get; set; }
 
         /// <summary>
-        /// If <see cref="WrapTransaction(Action)"/> in in progress, this will be set as completed after the transaction is committed.
-        /// Otherwise, it will return completed immediately.
+        /// If <see cref="WrapTransaction(Action)"/> is in progress, this will return a task that will return completed
+        /// after the transaction is committed. Oherwise, it will return a completed task immediately.
         /// </summary>
         /// <value>
         /// The wrapped transaction completed.
         /// </value>
-        public TaskCompletionSource<bool> WrappedTransactionCompleted
+        public Task<bool> WrappedTransactionCompletedTask
         {
             get
             {
-                if ( _transactionInProgress && _wrappedTransactionCompleted != null)
+                if ( _transactionInProgress )
                 {
-                    return _wrappedTransactionCompleted;
+                    return _wrappedTransactionCompleted?.Task ?? Task.FromResult( true );
                 }
                 else
                 {
-                    var alreadyCompletedWithSaveChanges = new TaskCompletionSource<bool>();
-                    alreadyCompletedWithSaveChanges.SetResult( true );
-                    return alreadyCompletedWithSaveChanges;
+                    return Task.FromResult( true );
                 }
             }
         }
@@ -921,7 +919,7 @@ namespace Rock.Data
                             EntityTypeId = entity.TypeId
                         };
 
-                        processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompleted );
+                        processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompletedTask );
                     }
                 }
             }

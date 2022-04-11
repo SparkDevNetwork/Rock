@@ -19,9 +19,9 @@ import { inject, provide } from "vue";
 import { getFieldType } from "../../../../Fields/utils";
 import { FilterExpressionType } from "../../../../Reporting/filterExpressionType";
 import { areEqual } from "../../../../Util/guid";
-import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGroup";
-import { FieldFilterRule } from "../../../../ViewModels/Reporting/fieldFilterRule";
-import { FieldFilterSource } from "../../../../ViewModels/Reporting/fieldFilterSource";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { FormField } from "../Shared/types";
 import { FormValueSources } from "./types";
 
@@ -54,7 +54,7 @@ export function useFormSources(): FormValueSources {
  *
  * @returns An HTML formatted string with the comparison type text.
  */
-export function getFilterGroupTitle(group: FieldFilterGroup): string {
+export function getFilterGroupTitle(group: FieldFilterGroupBag): string {
     switch (group.expressionType) {
         case FilterExpressionType.GroupAll:
             return "<strong>Show</strong> when <strong>all</strong> of the following match:";
@@ -82,7 +82,7 @@ export function getFilterGroupTitle(group: FieldFilterGroup): string {
  *
  * @returns A plain text string that represents the rule in a human friendly format.
  */
-export function getFilterRuleDescription(rule: FieldFilterRule, sources: FieldFilterSource[], fields: FormField[]): string {
+export function getFilterRuleDescription(rule: FieldFilterRuleBag, sources: FieldFilterSourceBag[], fields: FormField[]): string {
     const ruleField = fields.filter(f => areEqual(f.guid, rule.attributeGuid));
     const ruleSource = sources.filter(s => areEqual(s.guid, rule.attributeGuid));
 
@@ -92,7 +92,7 @@ export function getFilterRuleDescription(rule: FieldFilterRule, sources: FieldFi
         if (fieldType) {
             const descr = fieldType.getFilterValueDescription({
                 comparisonType: rule.comparisonType,
-                value: rule.value
+                value: rule.value ?? ""
             }, ruleSource[0].attribute.configurationValues ?? {});
 
             return `${ruleSource[0].attribute.name} ${descr}`;

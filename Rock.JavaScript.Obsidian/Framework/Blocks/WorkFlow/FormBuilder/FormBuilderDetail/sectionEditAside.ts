@@ -30,10 +30,9 @@ import TextBox from "../../../../Elements/textBox";
 import { SectionAsideSettings } from "./types";
 import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutAsync } from "./utils";
 import { FormError } from "../../../../Util/form";
-import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGroup";
-import { FieldFilterSource } from "../../../../ViewModels/Reporting/fieldFilterSource";
-import { FieldFilterRule } from "../../../../ViewModels/Reporting/fieldFilterRule";
-import { areEqual } from "../../../../Util/guid";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { useInvokeBlockAction } from "../../../../Util/block";
 import { FormField } from "../Shared/types";
 
@@ -108,13 +107,13 @@ export default defineComponent({
         const sectionTypeOptions = useFormSources().sectionTypeOptions ?? [];
 
         /** Contains the model used when editing the field visibility rules. */
-        const conditionalModel = ref<FieldFilterGroup | null>(null);
+        const conditionalModel = ref<FieldFilterGroupBag | null>(null);
 
         /**
          * Contains the field filter sources that are available when editing
          * the visibility rules.
          */
-        const conditionalSources = ref<FieldFilterSource[] | null>(null);
+        const conditionalSources = ref<FieldFilterSourceBag[] | null>(null);
 
         /** True if the conditional panel is expanded; otherwise false. */
         const conditionalPanelOpen = ref(false);
@@ -139,7 +138,7 @@ export default defineComponent({
         });
 
         /** The individual rules that decide if this field will be visible. */
-        const conditionalRules = computed((): FieldFilterRule[] => {
+        const conditionalRules = computed((): FieldFilterRuleBag[] => {
             return visibilityRule.value?.rules ?? [];
         });
 
@@ -157,7 +156,7 @@ export default defineComponent({
          *
          * @returns A string that contains a human friendly description about the rule.
          */
-        const getRuleDescription = (rule: FieldFilterRule): string => {
+        const getRuleDescription = (rule: FieldFilterRuleBag): string => {
             return getFilterRuleDescription(rule, conditionalSources.value ?? [], props.formFields);
         };
 
@@ -165,7 +164,7 @@ export default defineComponent({
          * Loads all the conditional sources that will be used by this field during filtering.
          */
         const loadConditionalSources = async (): Promise<void> => {
-            const getFilterSources = invokeBlockAction<FieldFilterSource[]>("GetFilterSources", {
+            const getFilterSources = invokeBlockAction<FieldFilterSourceBag[]>("GetFilterSources", {
                 formFields: props.formFields
             });
 

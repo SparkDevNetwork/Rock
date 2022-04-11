@@ -18,8 +18,7 @@ import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType } from "../Reporting/comparisonType";
 import { ComparisonValue } from "../Reporting/comparisonValue";
 import { areEqual } from "../Util/guid";
-import { ListItem } from "../ViewModels";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
@@ -63,7 +62,7 @@ export class CampusFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(o => o.value === value);
 
             return selectedValues.map(o => o.text).join(", ");
@@ -92,7 +91,7 @@ export class CampusFieldType extends FieldTypeBase {
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(o => rawValues.filter(v => areEqual(v, o.value)).length > 0);
 
             return `'${selectedValues.map(o => o.text).join("' OR '")}'`;

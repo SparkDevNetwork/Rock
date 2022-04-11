@@ -60,13 +60,13 @@ namespace Rock.Tasks
         /// Sends the command message when the specified task completes successfully. See also <seealso cref="RockMessageBus.SendAsync{TQueue, TMessage}(TMessage)" />
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="taskCompletionSource">The task completion source.</param>
-        public static void SendWhen( this BusStartedTaskMessage message, TaskCompletionSource<bool> taskCompletionSource)
+        /// <param name="completionTask">The task to wait for before sending the message</param>
+        public static void SendWhen( this BusStartedTaskMessage message, Task<bool> completionTask)
         {
             Task.Run( async () =>
             {
                 // Wait for specified task to complete, then send the message if the task completed successfully
-                var completedSuccessfully = await taskCompletionSource.Task;
+                var completedSuccessfully = await completionTask;
                 if ( completedSuccessfully )
                 {
                     message.Send();

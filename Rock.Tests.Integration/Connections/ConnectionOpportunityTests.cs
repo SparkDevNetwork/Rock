@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +15,6 @@ namespace Rock.Tests.Integration.Connections
         [TestMethod]
         public void ConnectionOpportunity_NewSignupProducesWorkflow()
         {
-            //ConfigureEntitySaveHooks();
             var testStartDateTime = RockDateTime.Now;
 
             var rockContext = new RockContext();
@@ -36,10 +33,11 @@ namespace Rock.Tests.Integration.Connections
             connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
             connectionRequest.PersonAliasId = connectionOpportunity.ModifiedByPersonAliasId.Value;
             connectionRequest.ConnectionStatusId = defaultStatusId;
+            ConnectionWorkflow testConnectionWorkflow = null;
 
             if ( !connectionOpportunity.ConnectionWorkflows.Any() )
             {
-                var connectionWorkflow = new ConnectionWorkflow();
+                testConnectionWorkflow = new ConnectionWorkflow();
 
                 // Whatever workflow type id. 13 is 'External Inquiry'
                 var workflowType = new WorkflowTypeService(rockContext).Get( 13 );
@@ -50,11 +48,10 @@ namespace Rock.Tests.Integration.Connections
                     rockContext.SaveChanges();
                 }
 
-                
-                connectionWorkflow.WorkflowTypeId = 13;
-                connectionWorkflow.TriggerType = ConnectionWorkflowTriggerType.RequestStarted;
-                connectionWorkflow.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
-                connectionOpportunity.ConnectionWorkflows.Add( connectionWorkflow );
+                testConnectionWorkflow.WorkflowTypeId = 13;
+                testConnectionWorkflow.TriggerType = ConnectionWorkflowTriggerType.RequestStarted;
+                testConnectionWorkflow.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
+                connectionOpportunity.ConnectionWorkflows.Add( testConnectionWorkflow );
                 rockContext.SaveChanges();
             }
 
@@ -83,6 +80,9 @@ namespace Rock.Tests.Integration.Connections
                     producedConnectionRequestWorkflow = connectionRequestWorkflowQuery.Any();
                     if ( producedConnectionRequestWorkflow )
                     {
+                        // Looks like it created it, so cleanup and break out
+                        connectionRequestWorkflowService.DeleteRange( connectionRequestWorkflowQuery.ToList() );
+
                         break;
                     }
 
@@ -90,38 +90,15 @@ namespace Rock.Tests.Integration.Connections
                     Task.Delay( 1000 ).Wait();
                 }
 
-                Debug.WriteLine( retryAttempt );
+                // clean up if we needed to create a testConnectionWorkflow
+                if ( testConnectionWorkflow != null)
+                {
+                    new ConnectionWorkflowService( rockContext ).Delete( testConnectionWorkflow );
+                    rockContext.SaveChanges();
+                }
+
+                // test expected condition
                 Assert.IsTrue( producedConnectionRequestWorkflow );
-            }
-        }
-
-        /// <summary>
-        /// Searches all assemblies for <see cref="IEntitySaveHook"/> subclasses
-        /// that need to be registered in the default save hook provider.
-        /// </summary>
-        private static void ConfigureEntitySaveHooks()
-        {
-            var hookProvider = Rock.Data.DbContext.SharedSaveHookProvider;
-            var entityHookType = typeof( EntitySaveHook<> );
-
-            var hookTypes = Rock.Reflection.FindTypes( typeof( Rock.Data.IEntitySaveHook ) )
-                .Select( a => a.Value )
-                .ToList();
-
-            foreach ( var hookType in hookTypes )
-            {
-                if ( !hookType.IsDescendentOf( entityHookType ) )
-                {
-                    continue;
-                }
-
-                var genericTypes = hookType.GetGenericArgumentsOfBaseType( entityHookType );
-                var entityType = genericTypes[0];
-
-                if ( entityType.Assembly == hookType.Assembly )
-                {
-                    hookProvider.AddHook( entityType, hookType );
-                }
             }
         }
     }

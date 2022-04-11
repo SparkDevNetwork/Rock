@@ -18,19 +18,19 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "../../../../Controls/rockField";
 import { DragSource, IDragSourceOptions } from "../../../../Directives/dragDrop";
-import Alert from "../../../../Elements/alert";
+import Alert from "../../../../Elements/alert.vue";
 import DropDownList from "../../../../Elements/dropDownList";
 import RockLabel from "../../../../Elements/rockLabel";
 import Switch from "../../../../Elements/switch";
 import { toNumberOrNull } from "../../../../Services/number";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import TransitionVerticalCollapse from "../../../../Elements/transitionVerticalCollapse";
 import { CampusSetFrom, FormFieldType } from "../Shared/types";
 import ConfigurableZone from "./configurableZone";
 import { GeneralAsideSettings } from "./types";
 import { useFormSources } from "./utils";
 
-const campusSetFromOptions: ListItem[] = [
+const campusSetFromOptions: ListItemBag[] = [
     {
         value: CampusSetFrom.CurrentPerson.toString(),
         text: "Current Person"

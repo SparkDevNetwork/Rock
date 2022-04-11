@@ -15,9 +15,9 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType } from "vue";
-import { Guid } from "../Util/guid";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
@@ -27,7 +27,7 @@ export default defineComponent({
     },
     props: {
         options: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
         modelValue: {
@@ -70,8 +70,8 @@ export default defineComponent({
         }
     },
     methods: {
-        getOptionUniqueId(uniqueId: Guid, option: ListItem): string {
-            const key = option.value.replace(" ", "-");
+        getOptionUniqueId(uniqueId: Guid, option: ListItemBag): string {
+            const key = (option.value ?? "").replace(" ", "-");
 
             return `${uniqueId}-${key}`;
         }

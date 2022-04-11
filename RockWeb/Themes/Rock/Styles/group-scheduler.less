@@ -710,7 +710,11 @@
   flex-grow: 1;
   padding: 1px 16px 130px;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: scroll;
+
+  .tooltip-inner {
+    max-width: 200px;
+  }
 }
 
 .styled-scroll ::-webkit-scrollbar {

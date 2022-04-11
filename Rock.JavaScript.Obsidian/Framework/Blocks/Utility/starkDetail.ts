@@ -17,7 +17,7 @@
 
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import { defineComponent, ref } from "vue";
-import Alert from "../../Elements/alert";
+import Alert from "../../Elements/alert.vue";
 import RockButton from "../../Elements/rockButton";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 

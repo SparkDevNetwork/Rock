@@ -15,11 +15,11 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType, ref, watch } from "vue";
-import { Guid } from "../Util/guid";
 import { CategoryTreeItemProvider } from "../Util/treeItemProviders";
 import { updateRefValue } from "../Util/util";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import TreeItemPicker from "./treeItemPicker";
 
 export default defineComponent({
@@ -31,7 +31,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<ListItem | null>
+            type: Object as PropType<ListItemBag | null>
         },
 
         rootCategoryGuid: {

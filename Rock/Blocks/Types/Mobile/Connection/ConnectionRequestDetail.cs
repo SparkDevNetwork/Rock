@@ -25,7 +25,7 @@ using Rock.ClientService.Core.Campus;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Connection
@@ -548,11 +548,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </summary>
         /// <param name="connectionType">Connection type to query.</param>
         /// <returns>A list of list items that can be displayed.</returns>
-        private static List<ListItemViewModel> GetOpportunityStatusListItems( ConnectionType connectionType )
+        private static List<ListItemBag> GetOpportunityStatusListItems( ConnectionType connectionType )
         {
             return connectionType.ConnectionStatuses
                 .OrderBy( s => s.Order )
-                .Select( s => new ListItemViewModel
+                .Select( s => new ListItemBag
                 {
                     Value = s.Guid.ToString(),
                     Text = s.Name
@@ -1424,7 +1424,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // in the Guid an Name to send to the client.
                 var activityTypes = connectionActivityTypeService.Queryable()
                     .Where( a => a.ConnectionTypeId == request.ConnectionOpportunity.ConnectionTypeId )
-                    .Select( a => new ListItemViewModel
+                    .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
                         Text = a.Name
@@ -2167,7 +2167,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The campuses available to pick from.
             /// </value>
-            public List<ListItemViewModel> Campuses { get; set; }
+            public List<ListItemBag> Campuses { get; set; }
 
             /// <summary>
             /// Gets or sets the placement groups available to pick from.
@@ -2183,7 +2183,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The statuses available to pick from.
             /// </value>
-            public List<ListItemViewModel> Statuses { get; set; }
+            public List<ListItemBag> Statuses { get; set; }
 
             /// <summary>
             /// Gets or sets the future follow up date.
@@ -2400,7 +2400,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// <value>
             /// The activity types available to pick from.
             /// </value>
-            public List<ListItemViewModel> ActivityTypes { get; set; }
+            public List<ListItemBag> ActivityTypes { get; set; }
 
             /// <summary>
             /// Gets or sets the connectors available.
@@ -2463,7 +2463,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// Custom class to store the value along with the attribute. This is for
         /// backwards compatibility with Mobile Shell.
         /// </summary>
-        public class PublicEditableAttributeValueViewModel : PublicAttributeViewModel
+        public class PublicEditableAttributeValueViewModel : PublicAttributeBag
         {
             /// <summary>
             /// Gets or sets the value.
@@ -2482,7 +2482,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// Gets or sets the attributes.
             /// </summary>
             /// <value>The attributes.</value>
-            public Dictionary<string, PublicAttributeViewModel> Attributes { get; set; }
+            public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
 
             /// <summary>
             /// Gets or sets the values for the attributes.

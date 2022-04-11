@@ -23,7 +23,7 @@ import RadioButtonList from "../Elements/radioButtonList";
 import TextBox from "../Elements/textBox";
 import { toNumberOrNull } from "../Services/number";
 import { ConfigurationValueKey } from "./singleSelectField";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "../Util/util";
 
 export const EditComponent = defineComponent({
@@ -50,9 +50,9 @@ export const EditComponent = defineComponent({
 
     computed: {
         /** The options to choose from in the drop down list */
-        options(): ListItem[] {
+        options(): ListItemBag[] {
             try {
-                const providedOptions = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+                const providedOptions = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
 
                 if (this.isRadioButtons && !this.isRequired) {
                     providedOptions.unshift({
@@ -130,9 +130,9 @@ export const FilterComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref(props.modelValue.split(",").filter(v => v !== ""));
 
-        const options = computed((): ListItem[] => {
+        const options = computed((): ListItemBag[] => {
             try {
-                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
 
                 return providedOptions;
             }
@@ -160,7 +160,7 @@ export const FilterComponent = defineComponent({
 `
 });
 
-const controlTypeOptions: ListItem[] = [
+const controlTypeOptions: ListItemBag[] = [
     {
         value: "ddl",
         text: "Drop Down List"

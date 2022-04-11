@@ -19,9 +19,9 @@ using System.Xml;
 using LoxSmoke.DocXml;
 
 using Rock;
-using Rock.ViewModel;
 using Rock.Utility;
 using Rock.Data;
+using Rock.ViewModels.Utility;
 
 namespace Rock.CodeGeneration
 {
@@ -80,7 +80,7 @@ namespace Rock.CodeGeneration
             var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
 
             tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
-            tbViewModelFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".ViewModel" );
+            tbViewModelFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".ViewModels" );
             tbViewModelTsFolder.Text = Path.Combine( RootFolder().FullName, "Rock.JavaScript.Obsidian", "Framework", "ViewModels" );
             tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
             tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
@@ -149,7 +149,7 @@ namespace Rock.CodeGeneration
 
                     if ( cbViewModelTs.Checked && cblModels.Items.Count == cblModels.CheckedItems.Count )
                     {
-                        var codeGenFolder = Path.Combine( viewModelTypescriptFolder, "CodeGenerated" );
+                        var codeGenFolder = Path.Combine( viewModelTypescriptFolder, "Entities" );
                         if ( Directory.Exists( codeGenFolder ) )
                         {
                             Directory.Delete( codeGenFolder, true );
@@ -777,7 +777,8 @@ GO
             sb.AppendLine( "" );
             sb.AppendLine( @"using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 " );
 
@@ -810,7 +811,7 @@ using Rock.Web.Cache;
     /// {type.Name} View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( {type.Name} ) )]
-    public partial class {type.Name}ViewModelHelper : ViewModelHelper<{type.Name}, Rock.ViewModel.{type.Name}ViewModel>
+    public partial class {type.Name}ViewModelHelper : ViewModelHelper<{type.Name}, {type.Name}Bag>
     {{
         /// <summary>
         /// Converts the model to a view model.
@@ -819,14 +820,14 @@ using Rock.Web.Cache;
         /// <param name=""currentPerson"">The current person.</param>
         /// <param name=""loadAttributes"">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.{type.Name}ViewModel CreateViewModel( {type.Name} model, Person currentPerson = null, bool loadAttributes = true )
+        public override {type.Name}Bag CreateViewModel( {type.Name} model, Person currentPerson = null, bool loadAttributes = true )
         {{
             if ( model == null )
             {{
                 return default;
             }}
 
-            var viewModel = new Rock.ViewModel.{type.Name}ViewModel
+            var viewModel = new {type.Name}Bag
             {{
                 Id = model.Id,
                 Guid = model.Guid," );
@@ -948,7 +949,7 @@ using Rock.Web.Cache;
         /// <param name=""model"">The entity.</param>
         /// <param name=""currentPerson"" >The currentPerson.</param>
         /// <param name=""loadAttributes"" >Load attributes?</param>
-        public static Rock.ViewModel.{type.Name}ViewModel ToViewModel( this {type.Name} model, Person currentPerson = null, bool loadAttributes = false )
+        public static {type.Name}Bag ToViewModel( this {type.Name} model, Person currentPerson = null, bool loadAttributes = false )
         {{
             var helper = new {type.Name}ViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
@@ -987,12 +988,14 @@ using Rock.Web.Cache;
 using System;
 using System.Linq;
 
-namespace Rock.ViewModel
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Entities
 {{
     /// <summary>
     /// {type.Name} View Model
     /// </summary>
-    public partial class {type.Name}ViewModel : ViewModelBase
+    public partial class {type.Name}Bag : EntityBagBase
     {{" );
 
             foreach ( var property in properties )
@@ -1010,7 +1013,7 @@ namespace Rock.ViewModel
             sb.AppendLine( @"    }
 }" );
 
-            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", type.Name + "ViewModel.cs" ) );
+            var file = new FileInfo( Path.Combine( rootFolder, "Entities", type.Name + "Bag.cs" ) );
             WriteFile( file, sb );
         }
 
@@ -1148,7 +1151,7 @@ namespace Rock.ViewModel
 
             sb.AppendLine( "};" );
 
-            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", "generated-index.d.ts" ) );
+            var file = new FileInfo( Path.Combine( rootFolder, "Entities", "index.d.ts" ) );
             WriteFile( file, sb );
         }
 
@@ -1166,7 +1169,7 @@ namespace Rock.ViewModel
                 return;
             }
 
-            var viewModelType = viewModelTypes.FirstOrDefault( vmt => vmt.Name == $"{type.Name}ViewModel" );
+            var viewModelType = viewModelTypes.FirstOrDefault( vmt => vmt.FullName == $"Rock.ViewModels.Entities.{type.Name}Bag" );
 
             if ( viewModelType == null )
             {
@@ -1221,7 +1224,7 @@ namespace Rock.ViewModel
 
             sb.AppendLine( "};" );
 
-            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", $"{fileName}.d.ts" ) );
+            var file = new FileInfo( Path.Combine( rootFolder, "Entities", $"{fileName}.d.ts" ) );
             WriteFile( file, sb );
         }
 
@@ -1345,7 +1348,7 @@ namespace Rock.ViewModel
                     if ( type == typeof( Guid ) )
                     {
                         tsType = "Guid";
-                        imports.Add( "import { Guid } from \"../../Util/guid\";" );
+                        imports.Add( "import { Guid } from \"@Obsidian/Types\";" );
                     }
                     else if ( type.IsArray )
                     {

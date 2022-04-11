@@ -14,7 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, ref } from "vue";
+
+function isPromise<T>(obj: PromiseLike<T> | T): obj is PromiseLike<T> {
+    return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as Record<string, unknown>).then === "function";
+}
 
 export enum BtnType {
     Default = "default",
@@ -35,6 +39,9 @@ export enum BtnSize {
 
 export default defineComponent({
     name: "RockButton",
+
+    inheritAttrs: false,
+
     props: {
         isLoading: {
             type: Boolean as PropType<boolean>,
@@ -59,36 +66,85 @@ export default defineComponent({
         btnSize: {
             type: String as PropType<BtnSize>,
             default: BtnSize.Default
-        }
-    },
-    emits: [
-        "click"
-    ],
-    methods: {
-        handleClick: function (event: Event) {
-            if (!this.isLoading) {
-                this.$emit("click", event);
-            }
-        }
-    },
-    computed: {
-        typeClass(): string {
-            return `btn-${this.btnType}`;
         },
-        sizeClass(): string {
-            if (!this.btnSize) {
+        autoLoading: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        autoDisable: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        onClick: {
+            type: Function as PropType<((event: MouseEvent) => void | PromiseLike<void>)>,
+            required: false
+        }
+    },
+
+    emits: [
+    ],
+
+    setup(props) {
+        const isProcessing = ref(false);
+
+        const isButtonDisabled = computed((): boolean => {
+            return props.disabled || (props.autoDisable && isProcessing.value);
+        });
+
+        const isButtonLoading = computed((): boolean => {
+            return props.isLoading || (props.autoLoading && isProcessing.value);
+        });
+
+        const typeClass = computed((): string => {
+            return `btn-${props.btnType}`;
+        });
+
+        const sizeClass = computed((): string => {
+            if (!props.btnSize) {
                 return "";
             }
 
-            return `btn-${this.btnSize}`;
-        },
-        cssClasses(): string {
-            return `btn ${this.typeClass} ${this.sizeClass}`;
-        }
+            return `btn-${props.btnSize}`;
+        });
+
+        const cssClass = computed((): string => {
+            return `btn ${typeClass.value} ${sizeClass.value}`;
+        });
+
+        const onButtonClick = async (event: MouseEvent): Promise<void> => {
+            if (isButtonDisabled.value || isButtonLoading.value) {
+                return;
+            }
+
+            isProcessing.value = true;
+
+            try {
+                const clickHandler = props.onClick;
+
+                if (clickHandler) {
+                    const result = clickHandler(event);
+
+                    if (isPromise(result)) {
+                        await result;
+                    }
+                }
+            }
+            finally {
+                isProcessing.value = false;
+            }
+        };
+
+        return {
+            cssClass,
+            isButtonDisabled,
+            isButtonLoading,
+            onButtonClick
+        };
     },
+
     template: `
-<button :class="cssClasses" :disabled="isLoading || disabled" @click="handleClick" :type="type">
-    <template v-if="isLoading">
+<button :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type">
+    <template v-if="isButtonLoading">
         {{loadingText}}
     </template>
     <slot v-else />

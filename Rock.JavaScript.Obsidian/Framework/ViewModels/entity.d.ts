@@ -14,12 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-import { Guid } from "../Util/guid";
-import { PublicAttribute } from "./publicAttribute";
+
+import { Guid } from "@Obsidian/Types";
+import { PublicAttributeBag } from "./Utility/publicAttributeBag";
 
 export interface IEntity {
     id: number;
     guid: Guid;
-    attributes: Record<string, PublicAttribute> | null;
-    attributeValues: Record<string, string> | null;
+    attributes?: Record<string, PublicAttributeBag> | null;
+    attributeValues?: Record<string, string> | null;
 }

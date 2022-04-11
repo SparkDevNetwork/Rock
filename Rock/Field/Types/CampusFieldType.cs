@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -133,7 +133,7 @@ namespace Rock.Field.Types
             }
 
             var publicValues = GetListSource( privateConfigurationValues )
-                .Select( kvp => new ListItemViewModel
+                .Select( kvp => new ListItemBag
                 {
                     Value = kvp.Key,
                     Text = kvp.Value

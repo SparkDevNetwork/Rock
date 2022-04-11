@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, ref, PropType, watch } from "vue";
 import RockForm from "../../../../Controls/rockForm";
-import Alert from "../../../../Elements/alert";
+import Alert from "../../../../Elements/alert.vue";
 import { useVModelPassthrough } from "../../../../Util/component";
 import CompletionSettings from "../Shared/completionSettings";
 import GeneralSettings from "./generalSettings";

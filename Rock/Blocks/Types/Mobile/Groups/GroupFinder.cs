@@ -27,7 +27,7 @@ using Rock.ClientService.Core.Campus.Options;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using Regex = System.Text.RegularExpressions.Regex;
@@ -517,7 +517,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>A collection of list items.</returns>
-        private List<ViewModel.NonEntities.ListItemViewModel> GetValidCampuses( RockContext rockContext )
+        private List<ViewModels.Utility.ListItemBag> GetValidCampuses( RockContext rockContext )
         {
             var campusClientService = new CampusClientService( rockContext, RequestContext.CurrentPerson );
 
@@ -1078,7 +1078,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Custom class to store the value along with the attribute. This is for
         /// backwards compatibility with Mobile Shell.
         /// </summary>
-        private class PublicEditableAttributeValueViewModel : PublicAttributeViewModel
+        private class PublicEditableAttributeValueViewModel : PublicAttributeBag
         {
             /// <summary>
             /// Gets or sets the value.

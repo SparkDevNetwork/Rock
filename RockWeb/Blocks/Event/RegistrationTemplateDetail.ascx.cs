@@ -2322,7 +2322,16 @@ The logged-in person's information will be used to complete the registrar inform
         protected void ddlSignatureDocumentTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
             var selectedTemplate = GetSelectedTemplate();
-            cbDisplayInLine.Visible = selectedTemplate?.IsLegacy != true;
+            var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
+
+            cbDisplayInLine.Visible = !isNonLegacySelected;
+            cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
+            cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
+
+            if ( isNonLegacySelected )
+            {
+                cbAllowExternalUpdates.Checked = false;
+            }
         }
 
         #endregion
@@ -2576,6 +2585,9 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="rockContext">The rock context.</param>
         private void ShowEditDetails( RegistrationTemplate registrationTemplate, RockContext rockContext )
         {
+            var signatureDocTemplate = registrationTemplate.RequiredSignatureDocumentTemplate;
+            var isNonLegacySignatureSelected = signatureDocTemplate != null && signatureDocTemplate.IsLegacy != true;
+
             if ( registrationTemplate.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( RegistrationTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -2603,6 +2615,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
+            cbDisplayInLine.Visible = !isNonLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
@@ -2617,6 +2630,8 @@ The logged-in person's information will be used to complete the registrar inform
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
+            cbAllowExternalUpdates.Enabled = !isNonLegacySignatureSelected;
+            cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySignatureSelected );
             cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants.ToString();
@@ -2675,6 +2690,20 @@ The logged-in person's information will be used to complete the registrar inform
             var defaultForm = FormState.FirstOrDefault();
             BuildControls( true, defaultForm.Guid );
             BindRegistrationAttributesGrid();
+        }
+
+        /// <summary>
+        /// Gets the help text for the AllowExternalUpdates field based on whether or not it is enabled
+        /// because if it's disabled, we'd like to explain to the user why.
+        /// </summary>
+        private string GetAllowExternalUpdatesHelpText(bool isEnabled)
+        {
+            if (isEnabled)
+            {
+                return "Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will not be allowed to change any of the registrant information and attributes.";
+            }
+
+            return "Updating details of a registration are not allowed when a signature document is used because it could otherwise invalidate the previously signed document.";
         }
 
         /// <summary>

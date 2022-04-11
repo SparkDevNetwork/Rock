@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import Alert from "../Elements/alert";
+import Alert from "../Elements/alert.vue";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { RockDateTime } from "../Util/rockDateTime";
 import { FormError } from "../Util/form";

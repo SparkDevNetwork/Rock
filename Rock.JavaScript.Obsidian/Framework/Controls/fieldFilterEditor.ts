@@ -20,10 +20,10 @@ import DropDownList from "../Elements/dropDownList";
 import { FilterExpressionType } from "../Reporting/filterExpressionType";
 import { areEqual, newGuid } from "../Util/guid";
 import { updateRefValue } from "../Util/util";
-import { ListItem } from "../ViewModels";
-import { FieldFilterGroup } from "../ViewModels/Reporting/fieldFilterGroup";
-import { FieldFilterRule } from "../ViewModels/Reporting/fieldFilterRule";
-import { FieldFilterSource } from "../ViewModels/Reporting/fieldFilterSource";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { FieldFilterRuleRow } from "./fieldFilterRuleRow";
 
 type ShowHide = "Show" | "Hide";
@@ -44,12 +44,12 @@ const filterExpressionTypeMap: Record<ShowHide, Record<AllAny, FilterExpressionT
 const filterExpressionToShowHideMap: ShowHide[] = ["Show", "Show", "Hide", "Hide"]; // Use FilterExpressionType - 1 as index
 const filterExpressionToAllAnyMap: AllAny[] = ["All", "Any", "All", "Any"]; // Use FilterExpressionType - 1 as index
 
-const showHideOptions: ListItem[] = [
+const showHideOptions: ListItemBag[] = [
     { text: "Show", value: "Show" },
     { text: "Hide", value: "Hide" }
 ];
 
-const allAnyOptions: ListItem[] = [
+const allAnyOptions: ListItemBag[] = [
     { text: "All", value: "All" },
     { text: "Any", value: "Any" }
 ];
@@ -65,11 +65,11 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<FieldFilterGroup>,
+            type: Object as PropType<FieldFilterGroupBag>,
             required: true
         },
         sources: {
-            type: Array as PropType<FieldFilterSource[]>,
+            type: Array as PropType<FieldFilterSourceBag[]>,
             required: true
         },
         title: {
@@ -119,7 +119,7 @@ export default defineComponent({
          * 
          * @param rule The new rule information.
          */
-        const onUpdateRule = (rule: FieldFilterRule): void => {
+        const onUpdateRule = (rule: FieldFilterRuleBag): void => {
             const newRules = [...rules.value];
             const ruleIndex = newRules.findIndex(r => areEqual(r.guid, rule.guid));
 
@@ -136,8 +136,8 @@ export default defineComponent({
          * 
          * @param rule The rule to be removed.
          */
-        function onRemoveRule(rule: FieldFilterRule): void {
-            rules.value = (rules.value || []).filter((val: FieldFilterRule) => !areEqual(val.guid, rule.guid));
+        function onRemoveRule(rule: FieldFilterRuleBag): void {
+            rules.value = (rules.value || []).filter((val: FieldFilterRuleBag) => !areEqual(val.guid, rule.guid));
         }
 
         // Watch for changes to the model value and update our internal values.
@@ -149,7 +149,7 @@ export default defineComponent({
 
         // Watch for changes to our internal values and update the model value.
         watch([showHide, allAny, rules], () => {
-            const newValue: FieldFilterGroup = {
+            const newValue: FieldFilterGroupBag = {
                 ...props.modelValue,
                 expressionType: filterExpressionTypeMap[showHide.value][allAny.value],
                 rules: rules.value

@@ -20,7 +20,7 @@ import DropDownList from "../Elements/dropDownList";
 import RockLabel from "../Elements/rockLabel";
 import TextBox from "../Elements/textBox";
 import { newGuid } from "../Util/guid";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type AddressControlValue = {
     street1?: string;
@@ -38,7 +38,7 @@ export function getDefaultAddressControlModel(): AddressControlValue {
     };
 }
 
-const stateOptions: ListItem[] = [
+const stateOptions: ListItemBag[] = [
     "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM",
     "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
     "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV",

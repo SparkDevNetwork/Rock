@@ -16,8 +16,7 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonValue } from "../Reporting/comparisonValue";
-import { ListItem } from "../ViewModels";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
@@ -56,11 +55,11 @@ export class SingleSelectFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(v => v.value === value);
 
             if (selectedValues.length >= 1) {
-                return selectedValues[0].text;
+                return selectedValues[0].text ?? "";
             }
             else {
                 return "";
@@ -90,8 +89,8 @@ export class SingleSelectFieldType extends FieldTypeBase {
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
-            const selectedValues = values.filter(v => rawValues.includes(v.value));
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const selectedValues = values.filter(v => rawValues.includes(v.value ?? ""));
 
             if (selectedValues.length >= 1) {
                 return `'${selectedValues.map(v => v.value).join("' OR '")}'`;
