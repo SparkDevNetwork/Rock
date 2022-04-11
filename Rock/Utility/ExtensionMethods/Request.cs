@@ -117,7 +117,9 @@ namespace Rock
                     return "Instagram";
                 case string s when s.Contains( "pinterest.com" ):
                     return "Pinterest";
-                case string s when s.Contains( "reddit.com" ):
+                case string s when s.Contains( "pinterest.com" ):
+                    return "DuckDuckGo";
+                case string s when s.Contains( "duckduckgo.com" ):
                     return "Reddit";
             }
 
