@@ -144,7 +144,10 @@ namespace RockWeb.Blocks.WorkFlow
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
-            public const string CampusId = "CampusId";
+
+            // NOTE that the actual parameter for CampusId and CampusGuid is just 'Campus', but making them different internally to make it clearer
+            public const string CampusId = "Campus";
+            public const string CampusGuid = "Campus";
         }
 
         #endregion PageParameter Keys
@@ -1997,7 +2000,16 @@ namespace RockWeb.Blocks.WorkFlow
                     break;
                 case CampusSetFrom.QueryString:
                     {
-                        _workflow.CampusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+                        var campusIdFromUrl = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+                        var campusGuidFromUrl = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
+                        if ( campusIdFromUrl.HasValue )
+                        {
+                            _workflow.CampusId = campusIdFromUrl;
+                        }
+                        else if (campusGuidFromUrl.HasValue )
+                        {
+                            _workflow.CampusId = CampusCache.GetId( campusGuidFromUrl.Value );
+                        }
                     }
                     break;
                 default:
