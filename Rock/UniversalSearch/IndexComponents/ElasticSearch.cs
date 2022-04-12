@@ -74,6 +74,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [IntegerField( "Shard Count",
         Key = AttributeKey.ShardCount,
         Description = "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database gets very large (> 50GB).",
+        DefaultIntegerValue = 1,
         IsRequired = true,
         Order = 5 )]
     public class Elasticsearch : IndexComponent
