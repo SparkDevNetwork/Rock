@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { Guid } from "@Obsidian/Types";
 import axios, { AxiosResponse } from "axios";
-import { ListItem } from "../ViewModels/listItem";
-import { Guid } from "./guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 export type HttpUrlParams = Record<string, unknown> | undefined | null;
@@ -184,9 +185,9 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
  * @param folderPath The additional sub-folder path to use inside the root folder.
  * @param options The options to use when uploading the file.
  *
- * @returns A ListItem that contains the scrubbed filename that was uploaded.
+ * @returns A ListItemBag that contains the scrubbed filename that was uploaded.
  */
-export async function uploadContentFile(file: File, encryptedRootFolder: string, folderPath: string, options?: UploadOptions): Promise<ListItem> {
+export async function uploadContentFile(file: File, encryptedRootFolder: string, folderPath: string, options?: UploadOptions): Promise<ListItemBag> {
     const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encryptedRootFolder}`;
     const formData = new FormData();
 
@@ -212,9 +213,9 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
  * @param binaryFileTypeGuid The unique identifier of the BinaryFileType to handle the upload.
  * @param options The options ot use when uploading the file.
  *
- * @returns A ListItem whose value contains the new file Guid and text specifies the filename.
+ * @returns A ListItemBag whose value contains the new file Guid and text specifies the filename.
  */
-export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, options?: UploadOptions): Promise<ListItem> {
+export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, options?: UploadOptions): Promise<ListItemBag> {
     let url = `${options?.baseUrl ?? "/FileUploader.ashx"}?isBinaryFile=True&fileTypeGuid=${binaryFileTypeGuid}`;
 
     if (options?.isTemporary) {

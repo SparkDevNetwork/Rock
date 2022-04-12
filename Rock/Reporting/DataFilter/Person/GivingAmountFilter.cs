@@ -504,7 +504,7 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
                     var parentAccountIds = accountIdList.ToList();
                     foreach ( var parentAccountId in parentAccountIds )
                     {
-                        var descendantChildAccountIds = financialAccountService.GetAllDescendentIds( parentAccountId );
+                        var descendantChildAccountIds = FinancialAccountCache.Get( parentAccountId )?.GetDescendentFinancialAccountIds();
                         accountIdList.AddRange( descendantChildAccountIds );
                     }
                 }

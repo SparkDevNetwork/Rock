@@ -14,11 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -34,11 +37,12 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
+        /// <param name="lazyLoad">if set to <c>true</c> [lazy load]</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
         [RockGuid( "5c21d8b8-5c68-42ca-bf19-80050c8ff2a4" )]
-        public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly )
+        public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly, bool lazyLoad = false )
         {
             return GetChildren( id, activeOnly, true );
         }
@@ -49,33 +53,50 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
         /// <param name="displayPublicName">if set to <c>true</c> [public name].</param>
+        /// <param name="lazyLoad">if set to <c>true</c> [lazy load].</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}/{displayPublicName}" )]
         [RockGuid( "976bdf2a-92e6-4902-a84d-be7cb25a3824" )]
-        public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName )
+        public IQueryable<TreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName, bool lazyLoad = false )
         {
-            IQueryable<FinancialAccount> qry;
+            List<TreeViewItem> accountItemList = GetChildrenRecursive( this.Service.Context as RockContext, id, activeOnly, displayPublicName, lazyLoad );
+            return accountItemList.AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets the children recursive.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
+        /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
+        /// <param name="lazyLoad">if set to <c>true</c> [lazy load].</param>
+        /// <returns></returns>
+        private static List<TreeViewItem> GetChildrenRecursive( RockContext rockContext, int id, bool activeOnly, bool displayPublicName, bool lazyLoad )
+        {
+            IEnumerable<FinancialAccountCache> childAccounts;
 
             if ( id == 0 )
             {
-                qry = Get().Where( f =>
-                    f.ParentAccountId.HasValue == false );
+                childAccounts = new FinancialAccountService( rockContext as RockContext ).Queryable().Where( a => a.ParentAccountId == null )
+                    .Select( a => a.Id )
+                    .ToList()
+                    .Select( a => FinancialAccountCache.Get( a ) )
+                    .ToList();
             }
             else
             {
-                qry = Get().Where( f =>
-                    f.ParentAccountId.HasValue &&
-                    f.ParentAccountId.Value == id );
+                childAccounts = FinancialAccountCache.Get( id )?.ChildAccounts ?? new FinancialAccountCache[0];
             }
 
             if ( activeOnly )
             {
-                qry = qry
+                childAccounts = childAccounts
                     .Where( f => f.IsActive == true );
             }
 
-            var accountList = qry
+            var accountList = childAccounts
                 .OrderBy( f => f.Order )
                 .ThenBy( f => f.Name )
                 .ToList();
@@ -83,34 +104,28 @@ namespace Rock.Rest.Controllers
             var accountItemList = accountList.Select( a => new TreeViewItem
             {
                 Id = a.Id.ToString(),
-                Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name )
+                Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name ),
+                HasChildren = a.ChildAccounts.Any()
             } ).ToList();
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 
-            var qryHasChildren = Get()
-                .Where( f =>
-                    f.ParentAccountId.HasValue &&
-                    resultIds.Contains( f.ParentAccountId.Value ) )
-                .Select( f => f.ParentAccountId.Value )
-                .Distinct()
-                .ToList();
-
             foreach ( var accountItem in accountItemList )
             {
                 int accountId = int.Parse( accountItem.Id );
-                accountItem.HasChildren = qryHasChildren.Any( f => f == accountId );
-                if ( accountItem.HasChildren )
+
+                
+                if ( lazyLoad == false )
                 {
-                    // since there usually aren't that many accounts, go ahead and fetch all the children so that they don't need to be lazy loaded.
-                    // this will also help the "Select Children" btn in the AccountPicker work better
-                    accountItem.Children = this.GetChildren( accountId, activeOnly, displayPublicName ).ToList();
+                    
+                    accountItem.Children = GetChildrenRecursive( rockContext, accountId, activeOnly, displayPublicName, lazyLoad ).ToList();
                 }
 
                 accountItem.IconCssClass = "fa fa-file-o";
             }
 
-            return accountItemList.AsQueryable();
+            return accountItemList;
         }
+
     }
 }

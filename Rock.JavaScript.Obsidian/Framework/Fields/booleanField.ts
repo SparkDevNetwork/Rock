@@ -17,7 +17,6 @@
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType } from "../Reporting/comparisonType";
 import { asBooleanOrNull } from "../Services/boolean";
-import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
@@ -47,8 +46,8 @@ const filterComponent = defineAsyncComponent(async () => {
  * The field type handler for the Boolean field.
  */
 export class BooleanFieldType extends FieldTypeBase {
-    public override getCondensedTextValue(value: PublicAttributeValue): string {
-        const boolValue = asBooleanOrNull(value.value);
+    public override getCondensedTextValue(value: string, _configurationValues: Record<string, string>): string {
+        const boolValue = asBooleanOrNull(value);
 
         if (boolValue === null) {
             return "";
@@ -61,7 +60,7 @@ export class BooleanFieldType extends FieldTypeBase {
         }
     }
 
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         const boolValue = asBooleanOrNull(value);
 
         if (boolValue === null) {

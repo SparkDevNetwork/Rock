@@ -140,7 +140,7 @@ WHERE {targetColumn} NOT LIKE '%{newValue}%' AND [AttributeId] = @attributeId" )
         /// </summary>
         public void PastoralNoteAndFollowingEventPersonNoteAdded_Up()
         {
-            RockMigrationHelper.UpdateNoteType(
+            RockMigrationHelper.AddOrUpdateNoteTypeByMatchingNameAndEntityType(
                 "Pastoral Note",
                 "Rock.Model.Person",
                 false,

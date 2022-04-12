@@ -17,7 +17,7 @@
 import { asFormattedString } from "../Services/number";
 import { defineComponent, PropType } from "vue";
 import { useStore } from "../Store/index";
-import { DebugTiming } from "../ViewModels";
+import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
 
 const store = useStore();
 

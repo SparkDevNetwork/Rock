@@ -23,7 +23,7 @@ import CheckBox from "../../../../Elements/checkBox";
 import RockButton from "../../../../Elements/rockButton";
 import TextBox from "../../../../Elements/textBox";
 import { updateRefValue } from "../../../../Util/util";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import CompletionSettings from "../Shared/completionSettings";
 import ConfirmationEmail from "../Shared/confirmationEmail";
 import PersonEntrySettings from "../Shared/personEntrySettings";
@@ -37,7 +37,7 @@ import { useSources } from "./utils";
  * These are hard-coded values that will then be translated when the form is
  * actually run to lookup the real values.
  */
-const recipientOptions: ListItem[] = [
+const recipientOptions: ListItemBag[] = [
     {
         value: "00000000-0000-0000-0000-000000000001",
         text: "Person"

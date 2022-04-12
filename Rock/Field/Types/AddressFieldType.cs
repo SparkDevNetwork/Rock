@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Field used to save and display an address value
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M8,1A5.25,5.25,0,0,0,2.75,6.25c0,2.12.74,2.71,4.71,8.47a.66.66,0,0,0,1.08,0c4-5.76,4.71-6.35,4.71-8.47A5.25,5.25,0,0,0,8,1ZM8,13.19c-.48-.7-.91-1.31-1.3-1.85C4.32,8,4.06,7.53,4.06,6.25a3.94,3.94,0,0,1,7.88,0c0,1.28-.26,1.7-2.64,5.09C8.91,11.86,8.48,12.5,8,13.19ZM8,4a2.19,2.19,0,1,0,2.19,2.19A2.19,2.19,0,0,0,8,4Z""/></g></svg>" )]
     public class AddressFieldType : FieldType, IEntityFieldType
     {
 
@@ -121,6 +122,15 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
+            // Check if we have any values.
+            if ( string.IsNullOrWhiteSpace( addressValue.Street1 )
+                 && string.IsNullOrWhiteSpace( addressValue.Street2 )
+                 && string.IsNullOrWhiteSpace( addressValue.City )
+                 && string.IsNullOrWhiteSpace( addressValue.PostalCode ) )
+            {
+                return string.Empty;
+            }
+
             var globalAttributesCache = GlobalAttributesCache.Get();
 
             using ( var rockContext = new RockContext() )
@@ -164,13 +174,22 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var addressControl = control as AddressControl;
+            if ( addressControl == null || !addressControl.HasValue )
+            {
+                return null;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var locationService = new LocationService( rockContext );
                 string result = null;
 
-                if ( addressControl != null
-                     && addressControl.HasValue )
+                var editLocation = new Location();
+                addressControl.GetValues( editLocation );
+                var addressIsValid = locationService.ValidateAddressRequirements( editLocation, out _ );
+
+                // Only get a LocationGuid if the AddressControl has a value and has met the ValidateAddressRequirements rules
+                if ( addressIsValid )
                 {
                     var guid = Guid.Empty;
 

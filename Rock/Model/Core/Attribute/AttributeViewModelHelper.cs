@@ -16,7 +16,7 @@
 //
 
 using System.Linq;
-using Rock.ViewModel;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -33,7 +33,7 @@ namespace Rock.Model
         /// <param name="viewModel">The view model.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( Attribute model, AttributeViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( Attribute model, AttributeBag viewModel, Person currentPerson = null, bool loadAttributes = true )
         {
             var attributeCache = AttributeCache.Get( model.Id );
 
@@ -42,12 +42,7 @@ namespace Rock.Model
             viewModel.QualifierValues = attributeCache.QualifierValues
                 .ToDictionary(
                 kvp => kvp.Key,
-                kvp => new ViewModel.NonEntities.AttributeConfigurationValue
-                {
-                    Name = kvp.Value.Name,
-                    Value = kvp.Value.Value,
-                    Description = kvp.Value.Description
-                } );
+                kvp => kvp.Value.Value );
         }
     }
 }

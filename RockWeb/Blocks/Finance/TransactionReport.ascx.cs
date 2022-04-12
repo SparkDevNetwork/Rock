@@ -31,9 +31,6 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Transaction Report" )]
     [Category( "Finance" )]
     [Description( "Block that reports transactions for the currently logged in user with filters." )]

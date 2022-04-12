@@ -22,7 +22,7 @@ using System.Linq;
 using Rock.ClientService.Connection.ConnectionOpportunity;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.Connection.ConnectionRequest;
+using Rock.ViewModels.Connection;
 
 namespace Rock.ClientService.Connection.ConnectionType
 {
@@ -50,14 +50,14 @@ namespace Rock.ClientService.Connection.ConnectionType
         #region Methods
 
         /// <summary>
-        /// Gets the type request counts for the given connection types. The
-        /// Person that the service was initialized with is used to calculate
-        /// <see cref="ConnectionRequestCountsViewModel.AssignedToYouCount"/>.
+        /// Gets the type request counts (TotalCount and AssignedToYouCount) for the
+        /// given connection types. The Person the service was initialized with is used to calculate
+        /// <see cref="ConnectionRequestCountsBag.AssignedToYouCount"/>.
         /// </summary>
         /// <remarks>This method does not check security, it is assumed you have already done so.</remarks>
         /// <param name="connectionTypeIds">The connection type identifiers.</param>
         /// <returns>A dictionary of connection request count objects.</returns>
-        public Dictionary<int, ConnectionRequestCountsViewModel> GetConnectionTypeCounts( IEnumerable<int> connectionTypeIds )
+        public Dictionary<int, ConnectionRequestCountsBag> GetConnectionTypeCounts( IEnumerable<int> connectionTypeIds )
         {
             var opportunityClientService = new ConnectionOpportunityClientService( RockContext, Person );
 
@@ -79,9 +79,10 @@ namespace Rock.ClientService.Connection.ConnectionType
                     Counts = c.Value
                 } )
                 .GroupBy( c => c.TypeId )
-                .ToDictionary( g => g.Key, g => new ConnectionRequestCountsViewModel
+                .ToDictionary( g => g.Key, g => new ConnectionRequestCountsBag
                 {
-                    AssignedToYouCount = g.Sum( c => c.Counts.AssignedToYouCount )
+                    AssignedToYouCount = g.Sum( c => c.Counts.AssignedToYouCount ),
+                    TotalCount = g.Sum( c => c.Counts.TotalCount )
                 } );
 
             // Fill in any missing types with empty counts.
@@ -89,7 +90,7 @@ namespace Rock.ClientService.Connection.ConnectionType
             {
                 if ( !requestCounts.ContainsKey( typeId ) )
                 {
-                    requestCounts.Add( typeId, new ConnectionRequestCountsViewModel() );
+                    requestCounts.Add( typeId, new ConnectionRequestCountsBag() );
                 }
             }
 

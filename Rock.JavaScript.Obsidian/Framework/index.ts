@@ -18,7 +18,7 @@ import { App, Component, createApp, defineComponent, h, markRaw, VNode } from "v
 import RockBlock from "./rockBlock";
 import { useStore } from "./Store/index";
 import "./Rules/index";
-import { DebugTiming } from "./ViewModels";
+import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
 import { BlockConfig } from "./Util/block";
 import { PageConfig } from "./Util/page";
 import { RockDateTime } from "./Util/rockDateTime";

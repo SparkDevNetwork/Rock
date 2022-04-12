@@ -37,9 +37,6 @@ using Rock.Web;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Map" )]
     [Category( "Groups" )]
     [Description( "Displays a group (and any child groups) on a map." )]

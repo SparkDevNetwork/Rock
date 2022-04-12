@@ -15,13 +15,13 @@
 //
 
 import { toNumber } from "../Services/number";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ComparisonType, getComparisonName } from "./comparisonType";
 
 /**
  * The full list of comparison type options that can be used in pickers.
  */
-export const comparisonTypeOptions: ListItem[] = [
+export const comparisonTypeOptions: ListItemBag[] = [
     {
         value: ComparisonType.EqualTo.toString(),
         text: getComparisonName(ComparisonType.EqualTo)
@@ -87,7 +87,7 @@ export const comparisonTypeOptions: ListItem[] = [
  *
  * @returns A filtered collection of ListItem objects that contain only the comparison types specified.
  */
-export function getFilteredComparisonTypeOptions(...comparisonTypes: ComparisonType[]): ListItem[] {
+export function getFilteredComparisonTypeOptions(...comparisonTypes: ComparisonType[]): ListItemBag[] {
     let realComparisonTypes: ComparisonType = 0;
 
     for (const comparisonType of comparisonTypes) {

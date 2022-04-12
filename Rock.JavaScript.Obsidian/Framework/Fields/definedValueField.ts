@@ -18,7 +18,6 @@ import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType, containsComparisonTypes } from "../Reporting/comparisonType";
 import { ComparisonValue } from "../Reporting/comparisonValue";
 import { asBoolean } from "../Services/boolean";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
@@ -45,7 +44,7 @@ export const enum ConfigurationValueKey {
      * The unique identifiers of the defined values that can be selected
      * during editing.
      */
-    SelectableValues = "selectableValues",
+    Values = "values",
 
     /**
      * Contains "True" if the edit control should be rendered to allow
@@ -106,12 +105,12 @@ const filterComponent = defineAsyncComponent(async () => {
  * The field type handler for the Defined Value field.
  */
 export class DefinedValueFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
             const clientValue = JSON.parse(value ?? "") as ClientValue;
 
             try {
-                const values = JSON.parse(configurationValues[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+                const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
                 const displayDescription = asBoolean(configurationValues[ConfigurationValueKey.DisplayDescription]);
                 const rawValues = clientValue.value.split(",");
 
@@ -140,12 +139,12 @@ export class DefinedValueFieldType extends FieldTypeBase {
         return containsComparisonTypes;
     }
 
-    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+    public override getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {
         try {
             const clientValue = JSON.parse(value.value ?? "") as ClientValue;
 
-            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
-            const useDescription = asBoolean(attribute.configurationValues?.[ConfigurationValueKey.DisplayDescription]);
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
+            const useDescription = asBoolean(configurationValues?.[ConfigurationValueKey.DisplayDescription]);
             const rawValues = clientValue.value.split(",");
 
             const text = values.filter(v => rawValues.includes(v.value))

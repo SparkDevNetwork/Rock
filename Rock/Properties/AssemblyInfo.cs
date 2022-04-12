@@ -44,3 +44,6 @@ using System.Runtime.InteropServices;
 [assembly: TypeForwardedTo( typeof( Rock.RockObsolete ) )]
 [assembly: TypeForwardedTo( typeof( Rock.RockDateTime ) )]
 [assembly: TypeForwardedTo( typeof( Rock.Utility.RockColor ) )]
+
+// The following type forwardings were setup in Rock 1.14.0
+[assembly: TypeForwardedTo( typeof( Rock.Model.Gender ) )]

@@ -2163,6 +2163,8 @@ END" );
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="key">The key. Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core_' prefix</param>
+        [Obsolete("Use AddOrUpdateEntityAttribute instead.")]
+        [RockObsolete("1.13")]
         public void AddEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string category, string description, int order, string defaultValue, string guid, string key = null )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
@@ -2231,11 +2233,39 @@ END" );
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core global attribute, specify the key with a 'core_' prefix</param>
+        [Obsolete("Use AddNewEntityAttributeDeletingAllAttributeValues or AddOrUpdateEntityAttribute instead.")]
+        [RockObsolete("1.13")]
         public void AddNewEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string abbreviatedName, string description, int order, string defaultValue, string guid, string key )
+        {
+            AddNewEntityAttributeDeletingAllAttributeValues( entityTypeName, fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierValue, name, abbreviatedName, description, order, defaultValue, guid, key );
+        }
+
+        /// <summary>
+        /// Adds a new EntityType Attribute for the given EntityType, FieldType, and name (key).
+        /// NOTE: If the attribute exists for the EntityType, Key, EntityTypeQualifierColumn, and EntityTypeQualifierValue it will be deleted first, which also deletes the AttributeValues.
+        /// Consider using AddOrUpdateEntityAttribute if the AttributeValues should be retained.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="abbreviatedName">Name of the abbreviated.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="key">The key.</param>
+        public void AddNewEntityAttributeDeletingAllAttributeValues( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string abbreviatedName, string description, int order, string defaultValue, string guid, string key )
         {
             if ( string.IsNullOrWhiteSpace( key ) )
             {
                 key = name.Replace( " ", string.Empty );
+            }
+
+            if ( abbreviatedName.IsNullOrWhiteSpace() )
+            {
+                abbreviatedName = name.Truncate( 100, false );
             }
 
             string formattedName = name.Replace( "'", "''" );
@@ -2270,7 +2300,8 @@ END" );
                     , [DefaultValue]
                     , [IsMultiValue]
                     , [IsRequired]
-                    , [Guid])
+                    , [Guid]
+                    , [AbbreviatedName])
                 VALUES(
                       1
                     , @FieldTypeId
@@ -2285,7 +2316,8 @@ END" );
                     , '{formattedDefaultValue}'
                     , 0
                     , 0
-                    , '{guid}')" );
+                    , '{guid}'
+                    , '{abbreviatedName}')" );
         }
 
         /// <summary>
@@ -4484,45 +4516,71 @@ END
         /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="AllowWatching">if set to <c>true</c> [allow watching].</param>
+        [Obsolete( "Use AddOrUpdateNoteTypeByMatchingNameAndEntityType() instead." )]
+        [RockObsolete( "1.13" )]
         public void UpdateNoteType( string name, string entityTypeName, bool userSelectable, string guid, bool IsSystem = true, string iconCssClass = null, bool AllowWatching = false )
         {
-            EnsureEntityTypeExists( entityTypeName );
+            AddOrUpdateNoteTypeByMatchingNameAndEntityType( name, entityTypeName, userSelectable, guid, IsSystem, iconCssClass, AllowWatching );
+        }
 
-            if ( iconCssClass == null )
-            {
-                iconCssClass = "NULL";
-            }
-            else
-            {
-                iconCssClass = $"'{iconCssClass}'";
-            }
+        /// <summary>
+        /// Adds the type of the or update note type by matching name and entity.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="userSelectable">if set to <c>true</c> [user selectable].</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="AllowWatching">if set to <c>true</c> [allow watching].</param>
+        public void AddOrUpdateNoteTypeByMatchingNameAndEntityType( string name, string entityTypeName, bool userSelectable, string guid, bool IsSystem, string iconCssClass, bool AllowWatching )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+            iconCssClass = iconCssClass.IsNullOrWhiteSpace() ? "NULL" : $"'{iconCssClass}'";
 
             Migration.Sql( $@"
-
                 DECLARE @EntityTypeId int = (SELECT top 1 [Id] FROM [EntityType] WHERE [Name] = '{entityTypeName}')
-
                 DECLARE @Id int = (SELECT [Id] FROM [NoteType] WHERE [Name] = '{name}' AND [EntityTypeId] = @EntityTypeId)
 
                 IF @Id IS NULL
                 BEGIN
-                    INSERT INTO [NoteType] (
-                        [Name],[EntityTypeId],[UserSelectable],[Guid],[IsSystem], [IconCssClass], [AllowsWatching])
-                    VALUES(
-                        '{name}',@EntityTypeId,{userSelectable.Bit()},'{guid}',{IsSystem.Bit()}, {iconCssClass}, {AllowWatching.Bit()})
+                    INSERT INTO [NoteType] ([Name], [EntityTypeId], [UserSelectable], [Guid], [IsSystem], [IconCssClass], [AllowsWatching])
+                    VALUES('{name}', @EntityTypeId, {userSelectable.Bit()}, '{guid}', {IsSystem.Bit()}, {iconCssClass}, {AllowWatching.Bit()})
                 END
-                ELSE
-                BEGIN
-                    UPDATE [NoteType] SET
-                        [Name] = '{name}',
-                        [EntityTypeId] = @EntityTypeId,
-                        [UserSelectable] = {userSelectable.Bit()},
-                        [Guid] = '{guid}',
-                        [IsSystem] = {IsSystem.Bit()},
-                        [IconCssClass] = {iconCssClass},
-                        [AllowsWatching] = {AllowWatching.Bit()}
+                ELSE BEGIN
+                    UPDATE [NoteType]
+                    SET
+                          [UserSelectable] = {userSelectable.Bit()}
+                        , [Guid] = '{guid}'
+                        , [IsSystem] = {IsSystem.Bit()}
+                        , [IconCssClass] = {iconCssClass}
+                        , [AllowsWatching] = {AllowWatching.Bit()}
                     WHERE Id = @Id;
                 END" );
+        }
 
+        /// <summary>
+        /// Updates the note type by unique identifier.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="userSelectable">if set to <c>true</c> [user selectable].</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="AllowWatching">if set to <c>true</c> [allow watching].</param>
+        public void UpdateNoteTypeByGuid( string name, string entityTypeGuid, bool userSelectable, string guid, bool IsSystem, string iconCssClass, bool AllowWatching )
+        {
+            Migration.Sql( $@"
+                UPDATE [NoteType]
+                SET
+                      [Name] = '{name}'
+                    , [EntityTypeId] = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{entityTypeGuid}')
+                    , [UserSelectable] = {userSelectable.Bit()}
+                    , [IsSystem] = {IsSystem.Bit()}
+                    , [IconCssClass] = {(iconCssClass.IsNullOrWhiteSpace() ? "NULL" : $"'{iconCssClass}'")}
+                    , [AllowsWatching] = {AllowWatching.Bit()}
+                WHERE [Guid] = '{guid}'" );
         }
 
         /// <summary>

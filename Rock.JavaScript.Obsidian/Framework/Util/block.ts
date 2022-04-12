@@ -15,9 +15,9 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { HttpBodyData, HttpResult, HttpUrlParams } from "../Util/http";
 import { inject } from "vue";
-import { Guid } from "./guid";
 
 export type ConfigurationValues = Record<string, unknown>;
 

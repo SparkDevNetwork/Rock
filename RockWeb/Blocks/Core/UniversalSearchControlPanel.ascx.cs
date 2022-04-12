@@ -37,9 +37,6 @@ using Rock.Tasks;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Universal Search Control Panel" )]
     [Category( "Core" )]
     [Description( "Block to configure Rock's universal search features." )]

@@ -123,3 +123,16 @@ export function updateRefValue<T>(target: Ref<T>, value: T): boolean {
 
     return true;
 }
+
+/**
+ * Checks if the value is a promise to return a value. This is used to check
+ * if a function that could have returned either a value or a promise for a
+ * value returned a promise.
+ * 
+ * @param obj The object to be tested if it is a promise.
+ *
+ * @returns True if the object is a promise.
+ */
+export function isPromise<T>(obj: PromiseLike<T> | T): obj is PromiseLike<T> {
+    return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as Record<string, unknown>).then === "function";
+}

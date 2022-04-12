@@ -7,17 +7,13 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading panel-follow">
-
-                <div class="pull-left">
-                    <h1 class="panel-title"><span class="fa fa-poll-h"></span>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
-                </div>
+                <h1 class="panel-title"><i class="fa fa-poll-h"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
-            <div class="panel-body">
-                <div>
-                    <ul class="nav nav-pills">
+                <div class="panel-toolbar panel-toolbar-shadow">
+                    <ul class="nav nav-pills nav-sm">
                         <li id="tabSubmissions" runat="server">
                             <asp:LinkButton ID="lnkSubmissions" runat="server" Text="Submissions" CssClass="show-pill" OnClick="lnkSubmissions_Click" pill="submissions-tab" />
                         </li>
@@ -36,13 +32,13 @@
                     </ul>
                 </div>
 
-                <hr />
+            <div class="panel-body">
 
-                <div>
-                    <h4 class="step-title text-break">Form Analytics</h4>
+                <div class="rock-header">
+                    <h3 class="title">Form Analytics</h3>
                     <div class="row">
                         <div class="col-sm-7">
-                            Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.
+                            <span class="description">Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.</span>
                         </div>
                         <div class="col-sm-5">
                             <div class="flex-grow-1 d-flex justify-content-end">
@@ -54,12 +50,12 @@
                             </div>
                         </div>
                     </div>
-                    <hr />
+                    <hr class="section-header-hr" />
                 </div>
 
                 <div class="row">
                     <div class="col-md-12">
-                        <asp:Literal runat="server" ID="lKPIHtml" />
+                        <asp:Literal ID="lKPIHtml" runat="server" />
                     </div>
                 </div>
 

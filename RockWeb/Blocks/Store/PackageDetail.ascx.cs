@@ -31,9 +31,6 @@ using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Store
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Package Detail" )]
     [Category( "Store" )]
     [Description( "Manages the details of a package." )]

@@ -18,9 +18,9 @@
 import { computed } from "vue";
 import { defineComponent, PropType, ref, watch } from "vue";
 import RockForm from "../../../../Controls/rockForm";
-import Alert from "../../../../Elements/alert";
+import Alert from "../../../../Elements/alert.vue";
 import { FormError } from "../../../../Util/form";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import ConfirmationEmail from "../Shared/confirmationEmail";
 import NotificationEmail from "./notificationEmail";
 import { FormCommunication, FormTemplateListItem } from "./types";
@@ -43,7 +43,7 @@ export default defineComponent({
         },
 
         recipientOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
@@ -78,7 +78,7 @@ export default defineComponent({
 
         /**
          * Event handler for when the validation state of the form has changed.
-         * 
+         *
          * @param errors Any errors that were detected on the form.
          */
         const onValidationChanged = (errors: FormError[]): void => {
@@ -120,7 +120,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
+<div class="form-builder-scroll">
     <div class="panel-body">
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
             <ConfirmationEmail v-if="!isConfirmationEmailForced" v-model="confirmationEmail" :sourceTemplateOptions="sourceTemplateOptions" :recipientOptions="recipientOptions" />

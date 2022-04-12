@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     [Serializable]
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M8,14a6,6,0,1,1,6-6A6,6,0,0,1,8,14ZM8,3.5A4.5,4.5,0,1,0,12.5,8,4.51,4.51,0,0,0,8,3.5Z""/><circle  cx=""8"" cy=""8"" r=""3""/></svg>" )]
     public class SelectSingleFieldType : FieldType
     {
 
@@ -45,7 +46,7 @@ namespace Rock.Field.Types
         private const string FIELDTYPE_KEY = "fieldtype";
         private const string REPEAT_COLUMNS = "repeatColumns";
 
-        private const string RAW_VALUES_OPTION_KEY = "rawValues";
+        private const string CUSTOM_VALUES_PUBLIC_KEY = "customValues";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -61,12 +62,19 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var configurationOptions = base.GetPublicConfigurationOptions( privateConfigurationValues );
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            if ( configurationOptions.ContainsKey( VALUES_KEY ) )
+            if ( publicConfigurationValues.ContainsKey( VALUES_KEY ) )
             {
+                if ( usage == ConfigurationValueUsage.Configure )
+                {
+                    // customValues contains the actual raw string that comprises the values.
+                    // is used while editing the configuration values only.
+                    publicConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY] = publicConfigurationValues[VALUES_KEY];
+                }
+
                 var options = Helper.GetConfiguredValues( privateConfigurationValues )
                     .Select( kvp => new
                     {
@@ -74,23 +82,20 @@ namespace Rock.Field.Types
                         text = kvp.Value
                     } );
 
-                // rawValues contains the actual raw string that comprises the values.
-                // is used while editing the configuration values only.
-                configurationOptions[RAW_VALUES_OPTION_KEY] = configurationOptions[VALUES_KEY];
-                configurationOptions[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+                publicConfigurationValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
             }
             else
             {
-                configurationOptions[VALUES_KEY] = "[]";
+                publicConfigurationValues[VALUES_KEY] = "[]";
             }
 
-            return configurationOptions;
+            return publicConfigurationValues;
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            var privateConfigurationValues = base.GetPrivateConfigurationOptions( publicConfigurationValues );
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
             // Don't allow them to provide the actual value items.
             if ( privateConfigurationValues.ContainsKey( VALUES_KEY ) )
@@ -98,11 +103,11 @@ namespace Rock.Field.Types
                 privateConfigurationValues.Remove( VALUES_KEY );
             }
 
-            // Convert the raw values string into the values to be stored.
-            if ( privateConfigurationValues.ContainsKey( RAW_VALUES_OPTION_KEY ) )
+            // Convert the custom values string into the values to be stored.
+            if ( privateConfigurationValues.ContainsKey( CUSTOM_VALUES_PUBLIC_KEY ) )
             {
-                privateConfigurationValues[VALUES_KEY] = privateConfigurationValues[RAW_VALUES_OPTION_KEY];
-                privateConfigurationValues.Remove( RAW_VALUES_OPTION_KEY );
+                privateConfigurationValues[VALUES_KEY] = privateConfigurationValues[CUSTOM_VALUES_PUBLIC_KEY];
+                privateConfigurationValues.Remove( CUSTOM_VALUES_PUBLIC_KEY );
             }
             else
             {
@@ -110,30 +115,6 @@ namespace Rock.Field.Types
             }
 
             return privateConfigurationValues;
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
-        {
-            var clientValues = base.GetPublicConfigurationValues( privateConfigurationValues );
-
-            if ( clientValues.ContainsKey( VALUES_KEY ) )
-            {
-                var options = Helper.GetConfiguredValues( privateConfigurationValues )
-                    .Select( kvp => new
-                    {
-                        value = kvp.Key,
-                        text = kvp.Value
-                    } );
-
-                clientValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
-            }
-            else
-            {
-                clientValues[VALUES_KEY] = "[]";
-            }
-
-            return clientValues;
         }
 
         /// <summary>

@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The Lava template to use to provide the cover the fees prompt to the individual. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         Key = AttributeKey.FeeCoverageMessage,
-        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% (${{ CalculatedAmount }}) to help cover the electronic transaction fees.",
+        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% ({{ AmountHTML }}) to help cover the electronic transaction fees.",
         Order = 28 )]
 
     #region Scheduled Transactions
@@ -1191,7 +1191,8 @@ mission. We are so grateful for your commitment.</p>
                 dtpStartDate.SelectedDate = RockDateTime.Today;
             }
 
-            pnlScheduledTransaction.Visible = allowScheduledTransactions;
+            pnlScheduledTransactionFrequency.Visible = allowScheduledTransactions;
+            pnlScheduledTransactionStartDate.Visible = allowScheduledTransactions;
 
             return true;
         }
@@ -1937,7 +1938,7 @@ mission. We are so grateful for your commitment.</p>
             IEntity transactionEntity = GetTransactionEntity();
 
             introMessageMergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
-            if ( transactionEntity != null && introMessageTemplate.HasMergeFields() )
+            if ( transactionEntity != null && LavaHelper.IsLavaTemplate( introMessageTemplate ) )
             {
                 introMessageMergeFields.Add( "TransactionEntity", transactionEntity );
                 var transactionEntityTypeId = transactionEntity.TypeId;

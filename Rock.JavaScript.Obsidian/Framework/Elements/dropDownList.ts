@@ -15,13 +15,13 @@
 // </copyright>
 //
 import { computed, defineComponent, nextTick, onMounted, PropType, ref, watch } from "vue";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
 
 type OptionGroup = {
     text: string;
 
-    options: ListItem[];
+    options: ListItemBag[];
 };
 
 export default defineComponent({
@@ -38,7 +38,7 @@ export default defineComponent({
         },
 
         options: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
@@ -90,7 +90,7 @@ export default defineComponent({
             return props.formControlClasses;
         });
 
-        const optionsWithoutGroup = computed((): ListItem[] => {
+        const optionsWithoutGroup = computed((): ListItemBag[] => {
             return props.options
                 .filter(o => !o.category);
         });

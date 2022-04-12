@@ -27,8 +27,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemKey;
-using Rock.ViewModel.Blocks.WorkFlow.FormBuilder;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.WorkFlow.FormBuilder;
+using Rock.ViewModels.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Workflow.FormBuilder;
 
@@ -367,7 +368,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             // Convert the attribute configuration into values that can be stored
             // in the database.
-            var configurationValues = fieldType.Field.GetPrivateConfigurationOptions( field.ConfigurationValues );
+            var configurationValues = fieldType.Field.GetPrivateConfigurationValues( field.ConfigurationValues );
 
             // Update all the standard properties.
             formField.ActionFormSection = formSection;
@@ -479,7 +480,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             if ( workflowType.Category != null )
             {
-                viewModel.Category = new ListItemViewModel
+                viewModel.Category = new ListItemBag
                 {
                     Value = workflowType.Category.Guid.ToString(),
                     Text = workflowType.Category.Name
@@ -531,7 +532,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
                     sectionViewModel.Fields.Add( new FormFieldViewModel
                     {
-                        ConfigurationValues = fieldType.Field.GetPublicConfigurationOptions( attribute.ConfigurationValues ),
+                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Configure, null ),
                         DefaultValue = fieldType.Field.GetPublicEditValue( attribute.DefaultValue, attribute.ConfigurationValues ),
                         Description = attribute.Description,
                         FieldTypeGuid = fieldType.Guid,
@@ -567,7 +568,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 {
                     Guid = f.Guid,
                     Text = f.Name,
-                    Icon = f.IconCssClass,
+                    Svg = f.IconSvg,
                     IsCommon = f.Usage.HasFlag( Field.FieldTypeUsage.Common )
                 } )
                 .ToList();
@@ -631,13 +632,16 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 SectionTypeOptions = DefinedTypeCache.Get( SystemGuid.DefinedType.SECTION_TYPE.AsGuid() )
                     .DefinedValues
                     .Where( v => v.IsActive )
-                    .Select( v => new ListItemViewModel
+                    .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
                         Text = v.Value,
                         Category = v.GetAttributeValue( "CSSClass" )
                     } )
-                    .ToList()
+                    .ToList(),
+
+                // Default section type is the "No Style" value.
+                DefaultSectionType = "85CA07EE-6888-43FD-B8BF-24E4DD35C725".AsGuid()
             };
         }
 
@@ -718,11 +722,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// Gets the field filter sources that relate to the specified form fields.
         /// </summary>
         /// <param name="formFields">The form fields that need to be represented as filter sources.</param>
-        /// <returns>A response that contains the list of <see cref="FieldFilterSourceViewModel"/> objects.</returns>
+        /// <returns>A response that contains the list of <see cref="FieldFilterSourceBag"/> objects.</returns>
         [BlockAction]
         public BlockActionResult GetFilterSources( List<FormFieldViewModel> formFields )
         {
-            var fieldFilterSources = new List<FieldFilterSourceViewModel>();
+            var fieldFilterSources = new List<FieldFilterSourceBag>();
 
             foreach ( var field in formFields )
             {
@@ -737,8 +741,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
                 // Convert the attribute configuration into values that can be used
                 // for filtering a value.
-                var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationOptions( field.ConfigurationValues );
-                var publicConfigurationValues = fieldType.Field.GetPublicFilterConfigurationValues( privateConfigurationValues );
+                var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( field.ConfigurationValues );
+                var publicConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, Field.ConfigurationValueUsage.Configure, null );
 
                 /*
                  * Daniel Hazelbaker - 3/17/2022
@@ -752,11 +756,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     continue;
                 }
 
-                var source = new FieldFilterSourceViewModel
+                var source = new FieldFilterSourceBag
                 {
                     Guid = field.Guid,
                     Type = 0,
-                    Attribute = new PublicFilterableAttributeViewModel
+                    Attribute = new PublicAttributeBag
                     {
                         AttributeGuid = field.Guid,
                         ConfigurationValues = publicConfigurationValues,
@@ -773,14 +777,5 @@ namespace Rock.Blocks.Workflow.FormBuilder
         }
 
         #endregion
-
-        private class FieldFilterSourceViewModel
-        {
-            public Guid Guid { get; set; }
-
-            public int Type { get; set; }
-
-            public PublicFilterableAttributeViewModel Attribute { get; set; }
-        }
     }
 }

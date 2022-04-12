@@ -28,9 +28,6 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Cache Reader" )]
     [Category( "Utility" )]
     [Description( "Shows information about what's being cached in Rock." )]

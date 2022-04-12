@@ -17,7 +17,7 @@
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CategoryPicker from "../../../../Controls/categoryPicker";
-import Alert from "../../../../Elements/alert";
+import Alert from "../../../../Elements/alert.vue";
 import CheckBox from "../../../../Elements/checkBox";
 import DateTimePicker from "../../../../Elements/dateTimePicker";
 import DropDownList from "../../../../Elements/dropDownList";

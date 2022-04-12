@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.RequestTemplate,
         Description = @"This Lava template will be used to display the Connection Types.
                          <i>(Note: The Lava will include the following merge fields:
-                            <p><strong>ConnectionRequests, ConnectionOpportunity, DetailPage, CurrentPerson, Context, PageParameter, Campuses</strong>)</p>
+                            <p><strong>ConnectionRequests, ConnectionOpportunity, DetailPage</strong>)</p>
                          </i>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
@@ -91,16 +91,12 @@ namespace RockWeb.Blocks.Connection
         {
             public const string ConnectionRequests = @"
 /-
-   This is the default lava template for the ConnectionOpportunitySelect block
+   This is the default lava template for the block
 
    Available Lava Fields:
        ConnectionRequests
        ConnectionOpportunity
-       DetailPage (Detail Page GUID)
-       CurrentPerson
-       Context
-       PageParameter
-       Campuses
+       DetailPage (page GUID)
 -/
 <style>
     .card:hover {
@@ -108,7 +104,8 @@ namespace RockWeb.Blocks.Connection
       box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
     }
 </style>
-{% if ConnectionRequests.size > 0 %}
+{% assign count = ConnectionRequests | Size %}
+{% if count > 0 %}
     {% for connectionRequest in ConnectionRequests %}
         <div class=""card card-sm mb-2"">
             {% if DetailPage != '' and DetailPage != null %}
@@ -136,7 +133,7 @@ namespace RockWeb.Blocks.Connection
         </div>
     {% endfor %}
 {% else %}
-    <div class=""alert alert-info"">No Connection Requests Currently Available</div>
+    <div class=""alert alert-info"">No connection requests currently available or assigned to you.</div>
 {% endif %}";
 
         }
@@ -234,6 +231,11 @@ namespace RockWeb.Blocks.Connection
         #region Page Control Events
         protected void lbOptions_Click( object sender, EventArgs e )
         {
+            if ( CurrentPerson == null )
+            {
+                nbWarning.Visible = true;
+                swOnlyShowMyConnections.Visible = false;
+            }
             mdOptions.Show();
         }
 

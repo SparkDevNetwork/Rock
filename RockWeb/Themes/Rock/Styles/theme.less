@@ -443,6 +443,7 @@ textarea,
 .grid-filter {
   .btn-filter-toggle {
     left: 18px;
+    top: 1px;
     padding: 4px;
     margin: 0;
 
@@ -641,12 +642,19 @@ textarea,
   }
 }
 
-.modal {
-  .box-shadow(@shadow-modal);
-  border-radius: 0;
+.panel-analytics {
+  .panel-body {
+    > .row {
+      > * {
+        padding-left: @panel-body-padding;
+        padding-right: @panel-body-padding;
+      }
 
-  .modal-content {
-    .box-shadow(none);
+      .row {
+        margin-right: -@panel-body-padding;
+        margin-left: -@panel-body-padding;
+      }
+    }
   }
 }
 
@@ -666,10 +674,10 @@ textarea,
 }
 
 .wizard {
-  margin: -5px -15px 35px;
+  margin: 0 0 35px;
 
   @media (min-width: @screen-md-min) {
-    margin: -35px -35px 35px;
+    margin: 0 0 35px;
   }
 }
 
@@ -1891,6 +1899,26 @@ body.navbar-side-open {
   background-color: mix(lighten(@brand-success, 4%), #fff, 15%) !important;
 }
 
+.nav-sm {
+  > li > a {
+    font-size: 14px;
+    line-height: 16px;
+    padding: 8px 12px;
+    font-weight: 500;
+  }
+}
+
+.container-in-block {
+  max-width: 1020px;
+  margin: 0 auto;
+  @media (min-width: @screen-md-min) {
+    padding: 48px 30px;
+  }
+}
+
 /* #endregion */
 @import "_print.less";
 @import "_css-overrides.less";
+
+
+

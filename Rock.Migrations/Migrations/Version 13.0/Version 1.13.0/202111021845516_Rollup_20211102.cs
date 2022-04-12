@@ -143,7 +143,7 @@ namespace Rock.Migrations
         private void AddCSSInliningEnabledDefault_Up()
         {
             // Attrib for EntityType: Communication Medium Email: CSS Inlining Enabled
-            RockMigrationHelper.AddNewEntityAttribute(
+            RockMigrationHelper.AddNewEntityAttributeDeletingAllAttributeValues(
                 "Rock.Communication.Medium.Email",
                 SystemGuid.FieldType.BOOLEAN,
                 string.Empty,

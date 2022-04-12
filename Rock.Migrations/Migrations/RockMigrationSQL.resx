@@ -253,4 +253,13 @@
   <data name="_202203152204281_Rollup_20220315_update_chartjs" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202203152204281_Rollup_20220315_update-chartjs.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_202204072027407_Rollup_20220407_FixDuplicateConnectionOpportunitySelectBlock" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202204072027407_rollup_20220407_fixduplicateconnectionopportunityselectblock.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202204072027407_Rollup_20220407_FixDuplicateConnectionRequestBoardBlock" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202204072027407_rollup_20220407_fixduplicateconnectionrequestboardblock.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202204072027407_rollup_20220407_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

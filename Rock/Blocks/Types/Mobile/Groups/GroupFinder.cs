@@ -27,6 +27,7 @@ using Rock.ClientService.Core.Campus.Options;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 using Regex = System.Text.RegularExpressions.Regex;
@@ -452,7 +453,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 var attributes = AttributeFiltersGuids.Select( a => AttributeCache.Get( a ) )
                     .Where( a => a != null )
-                    .Select( a => PublicAttributeHelper.ToPublicEditableAttributeValue( a, a.DefaultValue ) )
+                    .Select( a => ToPublicEditableAttributeValue( a, a.DefaultValue ) )
                     .ToList();
 
                 return new
@@ -470,6 +471,32 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         #endregion
+
+        /// <summary>
+        /// Converts to an attribute and value into a custom poco that will
+        /// be transmitted to the shell.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>The editable attribute including the value.</returns>
+        private PublicEditableAttributeValueViewModel ToPublicEditableAttributeValue( AttributeCache attribute, string value )
+        {
+            var attr = PublicAttributeHelper.GetPublicAttributeForEdit( attribute );
+
+            return new PublicEditableAttributeValueViewModel
+            {
+                AttributeGuid = attr.AttributeGuid,
+                Categories = attr.Categories,
+                ConfigurationValues = attr.ConfigurationValues,
+                Description = attr.Description,
+                FieldTypeGuid = attr.FieldTypeGuid,
+                IsRequired = attr.IsRequired,
+                Key = attr.Key,
+                Name = attr.Name,
+                Order = attr.Order,
+                Value = PublicAttributeHelper.GetPublicEditValue( attribute, value )
+            };
+        }
 
         #region Methods
 
@@ -490,7 +517,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>A collection of list items.</returns>
-        private List<ViewModel.NonEntities.ListItemViewModel> GetValidCampuses( RockContext rockContext )
+        private List<ViewModels.Utility.ListItemBag> GetValidCampuses( RockContext rockContext )
         {
             var campusClientService = new CampusClientService( rockContext, RequestContext.CurrentPerson );
 
@@ -1046,5 +1073,18 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         #endregion
+
+        /// <summary>
+        /// Custom class to store the value along with the attribute. This is for
+        /// backwards compatibility with Mobile Shell.
+        /// </summary>
+        private class PublicEditableAttributeValueViewModel : PublicAttributeBag
+        {
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            /// <value>The value.</value>
+            public string Value { get; set; }
+        }
     }
 }

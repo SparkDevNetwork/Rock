@@ -15,52 +15,51 @@
 // </copyright>
 //
 
-import { Component, defineComponent, PropType, reactive, ref } from "vue";
+import { Guid } from "@Obsidian/Types";
+import { Component, computed, defineComponent, PropType, reactive, ref } from "vue";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
 import PanelWidget from "../../Elements/panelWidget";
 import TextBox from "../../Elements/textBox";
 import { FieldType as FieldTypeGuids } from "../../SystemGuids";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
-import { Guid } from "../../Util/guid";
-import { PublicEditableAttributeValue, ListItem } from "../../ViewModels";
+import { useVModelPassthrough } from "../../Util/component";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /**
- * Convert a simpler set of parameters into AttributeValueData
+ * Convert a simpler set of parameters into PublicAttribute
  * @param name
  * @param fieldTypeGuid
  * @param configValues
  */
-const getAttributeValueData = (name: string, initialValue: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Array<PublicEditableAttributeValue> => {
+const getAttributeData = (name: string, fieldTypeGuid: Guid, configValues: Record<string, string>): Record<string, PublicAttributeBag> => {
     const configurationValues = configValues;
 
-    return [reactive({
+    return {
+        "value1": reactive({
             fieldTypeGuid: fieldTypeGuid,
             name: `${name} 1`,
-            key: name,
+            key: "value1",
             description: `This is the description of the ${name} without an initial value`,
             configurationValues,
             isRequired: false,
-            textValue: "",
-            value: "",
             attributeGuid: "",
             order: 0,
             categories: []
         }),
-        reactive({
-            fieldTypeGuid: fieldTypeGuid,
-            name: `${name} 2`,
-            key: name,
-            description: `This is the description of the ${name} with an initial value`,
-            configurationValues,
-            isRequired: false,
-            textValue: initialValue,
-            value: initialValue,
-            attributeGuid: "",
-            order: 0,
-            categories: []
-        })
-    ];
+        "value2": reactive({
+                fieldTypeGuid: fieldTypeGuid,
+                name: `${name} 2`,
+                key: "value2",
+                description: `This is the description of the ${name} with an initial value`,
+                configurationValues,
+                isRequired: false,
+                attributeGuid: "",
+                order: 0,
+                categories: []
+            })
+    };
 };
 
 /** An inner component that describes the template used for each of the controls
@@ -72,23 +71,32 @@ const galleryAndResult = defineComponent({
         AttributeValuesContainer
     },
     props: {
+        values: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
         title: {
             type: String as PropType<string>,
             required: true
         },
-        attributeValues: {
-            type: Array as PropType<PublicEditableAttributeValue[]>,
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
             required: true
         }
     },
-    computed: {
-        value1Json(): string {
-            return this.attributeValues[0].value ?? "";
-        },
-        value2Json(): string {
-            return this.attributeValues[1].value ?? "";
-        }
+
+    setup(props) {
+        const values = ref(props.values);
+        const value1Json = computed((): string => values.value["value1"]);
+        const value2Json = computed((): string => values.value["value2"]);
+
+        return {
+            value1Json,
+            value2Json,
+            values
+        };
     },
+
     template: `
 <PanelWidget>
     <template #header>{{title}}</template>
@@ -98,11 +106,11 @@ const galleryAndResult = defineComponent({
             <slot />
             <hr />
             <h4>Attribute Values Container (edit)</h4>
-            <AttributeValuesContainer :attributeValues="attributeValues" :isEditMode="true" />
+            <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="true" />
         </div>
         <div class="col-md-6">
             <h4>Attribute Values Container (view)</h4>
-            <AttributeValuesContainer :attributeValues="attributeValues" :isEditMode="false" />
+            <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="false" />
             <hr />
             <h4>Values</h4>
             <p>
@@ -134,16 +142,18 @@ const getFieldTypeGalleryComponent = (name: string, initialValue: string, fieldT
         data () {
             return {
                 name,
+                values: { "value1": "", "value2": initialValue },
                 configValues: { ...initialConfigValues } as Record<string, string>,
-                attributeValues: getAttributeValueData(name, initialValue, fieldTypeGuid, initialConfigValues)
+                attributes: getAttributeData(name, fieldTypeGuid, initialConfigValues)
             };
         },
         computed: {
             configKeys(): string[] {
                 const keys: string[] = [];
 
-                for (const attributeValue of this.attributeValues) {
-                    for (const key in attributeValue.configurationValues) {
+                for (const attributeKey in this.attributes) {
+                    const attribute = this.attributes[attributeKey];
+                    for (const key in attribute.configurationValues) {
                         if (keys.indexOf(key) === -1) {
                             keys.push(key);
                         }
@@ -157,17 +167,18 @@ const getFieldTypeGalleryComponent = (name: string, initialValue: string, fieldT
             configValues: {
                 deep: true,
                 handler() {
-                    for (const attributeValue of this.attributeValues) {
-                        for (const key in attributeValue.configurationValues) {
+                    for (const attributeKey in this.attributes) {
+                        const attribute = this.attributes[attributeKey];
+                        for (const key in attribute.configurationValues) {
                             const value = this.configValues[key] || "";
-                            attributeValue.configurationValues[key] = value;
+                            attribute.configurationValues[key] = value;
                         }
                     }
                 }
             }
         },
         template: `
-<GalleryAndResult :title="name" :attributeValues="attributeValues">
+<GalleryAndResult :title="name" :values="values" :attributes="attributes">
     <TextBox v-for="configKey in configKeys" :key="configKey" :label="configKey" v-model="configValues[configKey]" />
 </GalleryAndResult>`
     });
@@ -188,7 +199,7 @@ const galleryComponents: Record<string, Component> = {
             { value: "069D4509-398A-4E08-8225-A0658E8A51E8", text: "Main Campus" },
             { value: "0D8B2F85-5DC2-406E-8A7D-D435F3153C58", text: "Secondary Campus" },
             { value: "8C99160C-D0FC-49E4-AA9D-87EAE7297AF1", text: "Tertiary Campus" }
-        ] as ListItem[])
+        ] as ListItemBag[])
     }),
 
     CampusesGallery: getFieldTypeGalleryComponent("Campuses", "", FieldTypeGuids.Campuses, {
@@ -197,7 +208,7 @@ const galleryComponents: Record<string, Component> = {
             { value: "069D4509-398A-4E08-8225-A0658E8A51E8", text: "Main Campus" },
             { value: "0D8B2F85-5DC2-406E-8A7D-D435F3153C58", text: "Secondary Campus" },
             { value: "8C99160C-D0FC-49E4-AA9D-87EAE7297AF1", text: "Tertiary Campus" }
-        ] as ListItem[])
+        ] as ListItemBag[])
     }),
 
     ColorGallery: getFieldTypeGalleryComponent("Color", "#ee7725", FieldTypeGuids.Color, {
@@ -237,7 +248,7 @@ const galleryComponents: Record<string, Component> = {
     }),
 
     DefinedValueGallery: getFieldTypeGalleryComponent("DefinedValue", '{ "value": "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D", "text": "Single", "description": "Used when the individual is single." }', FieldTypeGuids.DefinedValue, {
-        values: JSON.stringify([
+        selectableValues: JSON.stringify([
             { value: "5FE5A540-7D9F-433E-B47E-4229D1472248", text: "Married", description: "Used when an individual is married." },
             { value: "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D", text: "Single", description: "Used when the individual is single." },
             { value: "3B689240-24C2-434B-A7B9-A4A6CBA7928C", text: "Divorced", description: "Used when the individual is divorced." },

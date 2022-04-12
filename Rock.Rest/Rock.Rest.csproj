@@ -140,6 +140,8 @@
     <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
+    <Compile Include="v2\Controls\DefinedValuePickerController.cs" />
+    <Compile Include="v2\Controls\LocationPickerController.cs" />
     <Compile Include="v2\Controls\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
@@ -494,6 +496,10 @@
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
       <Name>Rock.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
+      <Name>Rock.Enums</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
       <Name>Rock.Lava.Shared</Name>
@@ -502,9 +508,9 @@
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
       <Name>Rock.Version</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
       <Project>{05BAAF85-9C53-4CCD-A535-036427B0DF72}</Project>
-      <Name>Rock.ViewModel</Name>
+      <Name>Rock.ViewModels</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>

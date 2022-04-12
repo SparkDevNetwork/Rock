@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model

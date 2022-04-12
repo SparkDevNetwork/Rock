@@ -20,7 +20,7 @@ import CheckBox from "../Elements/checkBox";
 import DropDownList from "../Elements/dropDownList";
 import ImageUploader from "../Elements/imageUploader";
 import { ConfigurationValueKey, ConfigurationPropertyKey } from "./imageField";
-import { ListItem } from "../ViewModels/listItem";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "../Util/util";
 import { asBooleanOrNull, asTrueFalseOrNull } from "../Services/boolean";
 
@@ -35,7 +35,7 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         // The internal value used by the text editor.
-        const internalValue = ref<ListItem | null>(null);
+        const internalValue = ref<ListItemBag | null>(null);
 
         // Configuration attributes passed to the edit control.
         const binaryFileType = computed((): string => {
@@ -45,7 +45,7 @@ export const EditComponent = defineComponent({
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
             try {
-                updateRefValue(internalValue, JSON.parse(props.modelValue ?? "") as ListItem);
+                updateRefValue(internalValue, JSON.parse(props.modelValue ?? "") as ListItemBag);
             }
             catch {
                 internalValue.value = null;
@@ -92,9 +92,9 @@ export const ConfigurationComponent = defineComponent({
         const formatAsLink = ref(false);
 
         /** The binary file types the individual can select from. */
-        const fileTypeOptions = computed((): ListItem[] => {
+        const fileTypeOptions = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationProperties[ConfigurationPropertyKey.BinaryFileTypes] ?? "[]") as ListItem[];
+                return JSON.parse(props.configurationProperties[ConfigurationPropertyKey.BinaryFileTypes] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];

@@ -28,7 +28,6 @@ using Rock.BulkExport;
 using Rock.Data;
 using Rock.Security;
 using Rock.Utility.Enums;
-using Rock.ViewModel;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 

@@ -22,9 +22,9 @@ import NumberBox from "../Elements/numberBox";
 import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
 import { toNumber, toNumberOrNull } from "../Services/number";
 import { useVModelPassthrough } from "../Util/component";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueField";
-import { ConfigurationValues, getFieldEditorProps } from "./utils";
+import { getFieldEditorProps } from "./utils";
 
 function parseModelValue(modelValue: string | undefined): string {
     try {
@@ -73,7 +73,7 @@ export const EditComponent = defineComponent({
 
         const valueOptions = computed((): ValueItem[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.SelectableValues] ?? "[]") as ValueItem[];
+                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
             }
             catch {
                 return [];
@@ -83,8 +83,8 @@ export const EditComponent = defineComponent({
         const displayDescription = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]));
 
         /** The options to choose from in the drop down list */
-        const options = computed((): ListItem[] => {
-            const providedOptions: ListItem[] = valueOptions.value.map(v => {
+        const options = computed((): ListItemBag[] => {
+            const providedOptions: ListItemBag[] = valueOptions.value.map(v => {
                 return {
                     text: displayDescription.value ? v.description : v.text,
                     value: v.value
@@ -95,12 +95,12 @@ export const EditComponent = defineComponent({
         });
 
         /** The options to choose from in the checkbox list */
-        const optionsMultiple = computed((): ListItem[] => {
+        const optionsMultiple = computed((): ListItemBag[] => {
             return valueOptions.value.map(v => {
                 return {
                     text: displayDescription.value ? v.description : v.text,
                     value: v.value
-                } as ListItem;
+                } as ListItemBag;
             });
         });
 
@@ -222,18 +222,18 @@ export const ConfigurationComponent = defineComponent({
         const selectableValues = ref<string[]>([]);
 
         /** The defined types that are available to be selected from. */
-        const definedTypeItems = ref<ListItem[]>([]);
+        const definedTypeItems = ref<ListItemBag[]>([]);
 
         /** The defined values that are available to be selected from. */
-        const definedValueItems = ref<ListItem[]>([]);
+        const definedValueItems = ref<ListItemBag[]>([]);
 
         /** The options to show in the defined type picker. */
-        const definedTypeOptions = computed((): ListItem[] => {
+        const definedTypeOptions = computed((): ListItemBag[] => {
             return definedTypeItems.value;
         });
 
         /** The options to show in the selectable values picker. */
-        const definedValueOptions = computed((): ListItem[] => definedValueItems.value);
+        const definedValueOptions = computed((): ListItemBag[] => definedValueItems.value);
 
         /** Determines if we have any defined values to show. */
         const hasValues = computed((): boolean => {
@@ -254,7 +254,7 @@ export const ConfigurationComponent = defineComponent({
             // Construct the new value that will be emitted if it is different
             // than the current value.
             newValue[ConfigurationValueKey.DefinedType] = definedTypeValue.value;
-            newValue[ConfigurationValueKey.SelectableValues] = selectableValues.value.join(",");
+            newValue[ConfigurationValueKey.Values] = selectableValues.value.join(",");
             newValue[ConfigurationValueKey.AllowMultiple] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
             newValue[ConfigurationValueKey.DisplayDescription] = asTrueFalseOrNull(displayDescriptions.value) ?? "False";
             newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
@@ -263,7 +263,7 @@ export const ConfigurationComponent = defineComponent({
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== props.modelValue[ConfigurationValueKey.DefinedType]
-                || newValue[ConfigurationValueKey.SelectableValues] !== (props.modelValue[ConfigurationValueKey.SelectableValues] ?? "")
+                || newValue[ConfigurationValueKey.Values] !== (props.modelValue[ConfigurationValueKey.Values] ?? "")
                 || newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple] ?? "False")
                 || newValue[ConfigurationValueKey.DisplayDescription] !== (props.modelValue[ConfigurationValueKey.DisplayDescription] ?? "False")
                 || newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
@@ -298,8 +298,8 @@ export const ConfigurationComponent = defineComponent({
             const definedTypes = props.configurationProperties[ConfigurationPropertyKey.DefinedTypes];
             const definedValues = props.configurationProperties[ConfigurationPropertyKey.DefinedValues];
 
-            definedTypeItems.value = definedTypes ? JSON.parse(props.configurationProperties.definedTypes) as ListItem[] : [];
-            definedValueItems.value = definedValues ? JSON.parse(props.configurationProperties.definedValues) as ListItem[] : [];
+            definedTypeItems.value = definedTypes ? JSON.parse(props.configurationProperties.definedTypes) as ListItemBag[] : [];
+            definedValueItems.value = definedValues ? JSON.parse(props.configurationProperties.definedValues) as ListItemBag[] : [];
 
             definedTypeValue.value = props.modelValue.definedtype;
             allowMultipleValues.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowMultiple]);

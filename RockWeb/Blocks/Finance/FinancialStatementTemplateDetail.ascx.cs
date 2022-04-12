@@ -386,17 +386,16 @@ namespace RockWeb.Blocks.Finance
             cbHideRefundedTransactions.Checked = transactionSetting.HideRefundedTransactions;
             cbHideModifiedTransactions.Checked = transactionSetting.HideCorrectedTransactionOnSameData;
             dvpCurrencyTypesCashGifts.SetValues( transactionSetting.CurrencyTypesForCashGiftGuids.Select( a => DefinedValueCache.GetId( a ) ).Where( a => a.HasValue ).Select( a => a.Value ).ToList() );
-            dvpCurrencyTypesNonCashGifts.SetValues( transactionSetting.CurrencyTypesForNonCashGuids.Select( a => DefinedValueCache.GetId( a )).Where( a => a.HasValue ).Select( a => a.Value ).ToList() );
+            dvpCurrencyTypesNonCashGifts.SetValues( transactionSetting.CurrencyTypesForNonCashGuids.Select( a => DefinedValueCache.GetId( a ) ).Where( a => a.HasValue ).Select( a => a.Value ).ToList() );
             dvpTransactionType.SetValues( transactionSetting.TransactionTypeGuids.Select( a => DefinedValueCache.GetId( a ) ).Where( a => a.HasValue ).Select( a => a.Value ).ToList() );
             rbAllTaxDeductibleAccounts.Checked = transactionSetting.AccountSelectionOption == FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
             rbUseCustomAccountIds.Checked = transactionSetting.AccountSelectionOption != FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
             if ( transactionSetting.SelectedAccountIds.Any() )
             {
-                var accountList = new FinancialAccountService( new RockContext() )
-                    .GetByIds( transactionSetting.SelectedAccountIds )
+                var accountList = FinancialAccountCache.GetByIds( transactionSetting.SelectedAccountIds )
                     .Where( a => a.IsActive )
                     .ToList();
-                apTransactionAccountsCustom.SetValues( accountList );
+                apTransactionAccountsCustom.SetValuesFromCache( accountList );
             }
 
             cbIncludeChildAccountsCustom.Checked = transactionSetting.AccountSelectionOption == FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccountsIncludeChildren;
@@ -409,11 +408,11 @@ namespace RockWeb.Blocks.Finance
             cbIncludeNonCashGifts.Checked = pledgeSetting.IncludeNonCashGifts;
             if ( pledgeSetting.AccountIds.Any() )
             {
-                var accountList = new FinancialAccountService( new RockContext() )
-                    .GetByIds( pledgeSetting.AccountIds )
+                var accountList = FinancialAccountCache.GetByIds( pledgeSetting.AccountIds )
                     .Where( a => a.IsActive )
                     .ToList();
-                apPledgeAccounts.SetValues( accountList );
+
+                apPledgeAccounts.SetValuesFromCache( accountList );
             }
         }
 
@@ -440,10 +439,6 @@ namespace RockWeb.Blocks.Finance
             this.HideSecondaryBlocks( editable );
         }
 
-        
-
         #endregion Internal Methods
-
-        
     }
 }

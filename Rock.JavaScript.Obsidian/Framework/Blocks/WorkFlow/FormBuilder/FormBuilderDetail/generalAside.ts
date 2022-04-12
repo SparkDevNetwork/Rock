@@ -18,17 +18,19 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockField from "../../../../Controls/rockField";
 import { DragSource, IDragSourceOptions } from "../../../../Directives/dragDrop";
-import Alert from "../../../../Elements/alert";
+import Alert from "../../../../Elements/alert.vue";
 import DropDownList from "../../../../Elements/dropDownList";
+import RockLabel from "../../../../Elements/rockLabel";
 import Switch from "../../../../Elements/switch";
 import { toNumberOrNull } from "../../../../Services/number";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import TransitionVerticalCollapse from "../../../../Elements/transitionVerticalCollapse";
+import { CampusSetFrom, FormFieldType } from "../Shared/types";
 import ConfigurableZone from "./configurableZone";
 import { GeneralAsideSettings } from "./types";
-import { CampusSetFrom, FormFieldType } from "../Shared/types";
 import { useFormSources } from "./utils";
-import { ListItem } from "../../../../ViewModels";
 
-const campusSetFromOptions: ListItem[] = [
+const campusSetFromOptions: ListItemBag[] = [
     {
         value: CampusSetFrom.CurrentPerson.toString(),
         text: "Current Person"
@@ -50,7 +52,9 @@ export default defineComponent({
         ConfigurableZone,
         DropDownList,
         RockField,
-        Switch
+        RockLabel,
+        Switch,
+        TransitionVerticalCollapse
     },
 
     directives: {
@@ -104,6 +108,7 @@ export default defineComponent({
         const hasPersonEntry = ref(props.modelValue.hasPersonEntry ?? false);
 
         const fieldTypes = useFormSources().fieldTypes ?? [];
+        const isAdditionalFieldsVisible = ref(false);
 
         /** The field types to display in the common field types section. */
         const commonFieldTypes = computed((): FormFieldType[] => {
@@ -115,9 +120,16 @@ export default defineComponent({
             return fieldTypes.filter(f => !f.isCommon);
         });
 
+        const additionalFieldsClass = computed((): string => {
+            return isAdditionalFieldsVisible.value ? "fa fa-chevron-up" : "fa fa-chevron-down";
+        });
 
         /** Used to temporarily disable emitting the modelValue when something changes. */
         let autoSyncModelValue = true;
+
+        const onAdditionalFieldsClick = (): void => {
+            isAdditionalFieldsVisible.value = !isAdditionalFieldsVisible.value;
+        };
 
         // Watch for changes in the model value and update our internal values.
         watch(() => props.modelValue, () => {
@@ -142,56 +154,65 @@ export default defineComponent({
         });
 
         return {
+            additionalFieldsClass,
             advancedFieldTypes,
             campusSetFrom,
             campusSetFromOptions,
             commonFieldTypes,
             hasPersonEntry,
+            isAdditionalFieldsVisible,
+            onAdditionalFieldsClick
         };
     },
 
     template: `
-<div class="d-flex flex-column" style="overflow-y: hidden; flex-grow: 1;">
-    <div class="p-2 aside-header" style="border-right: 1px solid #dfe0e1; border-bottom: 1px solid #dfe0e1;">
+<div class="form-sidebar">
+    <div class="sidebar-header">
         <span class="title">Field List</span>
     </div>
 
-    <div class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
-        <div class="mt-3" v-drag-source="sectionDragOptions">
-            <div class="form-template-item form-template-item-section">
-                <i class="fa fa-expand fa-fw"></i>
-                Section
-            </div>
-        </div>
-
-        <div class="mt-3" style="flex-grow: 1;">
-            <RockLabel>Field Types</RockLabel>
-
-            <div class="d-flex flex-wrap mt-1" style="overflow-x: clip; margin-right: -5px;" v-drag-source="fieldDragOptions">
-                <div v-for="field in commonFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
-                    <i :class="field.icon + ' fa-fw'"></i>
-                    <div class="text">{{ field.text }}</div>
+    <div class="sidebar-body">
+        <div class="panel-body">
+            <div v-drag-source="sectionDragOptions">
+                <div class="form-template-item form-template-item-section">
+                    <i class="fa fa-expand fa-fw"></i>
+                    Section
                 </div>
             </div>
 
-            <div class="text-semibold text-sm mt-2">More Fields</div>
+            <div class="mt-3">
+                <RockLabel>Common Fields</RockLabel>
 
-            <div class="d-flex flex-wrap mt-1" style="overflow-x: clip; margin-right: -5px;" v-drag-source="fieldDragOptions">
-                <div v-for="field in advancedFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
-                    <i :class="field.icon + ' fa-fw'"></i>
-                    <div class="text">{{ field.text }}</div>
+                <div class="form-template-item-list" v-drag-source="fieldDragOptions">
+                    <div v-for="field in commonFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
+                        <span class="inline-svg icon" v-html="field.svg"></span>
+                        <div class="text">{{ field.text }}</div>
+                    </div>
                 </div>
+
+                <div @click="onAdditionalFieldsClick" class="mt-2">
+                    <RockLabel>Additional Fields <i :class="additionalFieldsClass"></i></RockLabel>
+                </div>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="isAdditionalFieldsVisible" class="form-template-item-list" v-drag-source="fieldDragOptions">
+                        <div v-for="field in advancedFieldTypes" class="form-template-item form-template-item-field" :data-field-type="field.guid">
+                            <span class="inline-svg icon" v-html="field.svg"></span>
+                            <div class="text">{{ field.text }}</div>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
             </div>
-        </div>
 
-        <div class="mt-3">
-            <Switch v-if="!isPersonEntryForced" v-model="hasPersonEntry" text="Enable Person Entry" />
+            <div class="mt-3">
+                <Switch v-if="!isPersonEntryForced" v-model="hasPersonEntry" text="Enable Person Entry" />
 
-            <Alert v-else alertType="info">
-                Person entry is enabled on the template and cannot be changed.
-            </Alert>
+                <Alert v-else alertType="info">
+                    Person entry is enabled on the template and cannot be changed.
+                </Alert>
 
-            <DropDownList v-model="campusSetFrom" label="Campus Set From" :options="campusSetFromOptions" />
+                <DropDownList v-model="campusSetFrom" label="Campus Set From" :options="campusSetFromOptions" />
+            </div>
         </div>
     </div>
 </div>

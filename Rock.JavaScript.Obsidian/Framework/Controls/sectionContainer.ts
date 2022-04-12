@@ -77,19 +77,19 @@ export default defineComponent({
 
     template: `
 <div class="section-container well">
-    <div class="section-header d-flex">
-        <div class="section-header-content" style="flex-grow: 1;">
+    <div class="section-header">
+        <div class="section-header-content">
             <Header :title="title" :description="description" />
         </div>
 
-        <div v-if="toggleText" class="section-header-toggle" style="align-self: end;">
+        <div v-if="toggleText" class="section-header-toggle align-self-end">
             <InlineSwitch v-model="enabled" :label="toggleText" />
         </div>
     </div>
 
     <TransitionVerticalCollapse>
         <div v-if="showContent">
-            <hr />
+            <hr class="section-header-hr" />
 
             <slot />
         </div>

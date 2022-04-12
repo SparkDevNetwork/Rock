@@ -1222,7 +1222,7 @@ namespace Rock.Model
         public PhoneNumber GetPhoneNumber( Guid phoneType )
         {
             int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
-            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
+            return PhoneNumbers?.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 
         /// <summary>

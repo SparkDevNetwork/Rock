@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// GroupMemberRequirement View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( GroupMemberRequirement ) )]
-    public partial class GroupMemberRequirementViewModelHelper : ViewModelHelper<GroupMemberRequirement, Rock.ViewModel.GroupMemberRequirementViewModel>
+    public partial class GroupMemberRequirementViewModelHelper : ViewModelHelper<GroupMemberRequirement, GroupMemberRequirementBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,14 +72,14 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupMemberRequirementViewModel CreateViewModel( GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupMemberRequirementBag CreateViewModel( GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupMemberRequirementViewModel
+            var viewModel = new GroupMemberRequirementBag
             {
                 Id = model.Id,
                 Guid = model.Guid,
@@ -180,7 +181,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupMemberRequirementViewModel ToViewModel( this GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupMemberRequirementBag ToViewModel( this GroupMemberRequirement model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupMemberRequirementViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

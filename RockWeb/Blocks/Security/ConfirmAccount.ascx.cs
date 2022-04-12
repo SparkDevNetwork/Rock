@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
@@ -43,7 +44,7 @@ namespace RockWeb.Blocks.Security
     [CodeEditorField( "Invalid Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>.", "Captions", 5 )]
     [CodeEditorField( "Password Reset Unavailable Caption", "", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "This type of account does not allow passwords to be changed.  Please contact your system administrator for assistance changing your password.", "Captions", 6 )]
     [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' option (if blank will use 'NewAccount' page route)" )]
-    public partial class ConfirmAccount : Rock.Web.UI.RockBlock
+    public partial class ConfirmAccount : Rock.Web.UI.RockBlock, IDisallowReturnUrlBlock
     {
         #region Properties
 
