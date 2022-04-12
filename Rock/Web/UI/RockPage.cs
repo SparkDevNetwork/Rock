@@ -1898,7 +1898,7 @@ Obsidian.onReady(() => {{
                 }
 
                 string showTimingsUrl = this.Request.UrlProxySafe().ToString();
-                if ( !showTimingsUrl.Contains( "ShowDebugTimings" ) )
+                if ( showTimingsUrl.IndexOf( "ShowDebugTimings", StringComparison.OrdinalIgnoreCase) < 0)
                 {
                     if ( showTimingsUrl.Contains( "?" ) )
                     {

@@ -26,6 +26,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Person Index
     /// </summary>
     /// <seealso cref="Rock.UniversalSearch.IndexModels.IndexModelBase" />
+    [System.Diagnostics.DebuggerDisplay( "{FirstName} {LastName}" )]
     public class PersonIndex : IndexModelBase
     {
         /// <summary>

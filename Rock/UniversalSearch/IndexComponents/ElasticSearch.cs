@@ -73,7 +73,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
     [IntegerField( "Shard Count",
         Key = AttributeKey.ShardCount,
-        Description = "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).",
+        Description = "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database gets very large (> 50GB).",
         IsRequired = true,
         Order = 5 )]
     public class Elasticsearch : IndexComponent
@@ -182,7 +182,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                     /* 04-01-2022 MDP
 
-                       Make sure to use JsonNetSerializer. NEST's default serializer doesn't support inheritance on POCOs.
+                       Make sure to use JsonNetSerializer. NEST's default serializer doesn't support serializing/deserializing inherited classes.
 
                     */
 
@@ -206,6 +206,15 @@ namespace Rock.UniversalSearch.IndexComponents
                     }
 
                     _client = new ElasticClient( config );
+
+                    var pingResult = _client.Ping();
+                    if ( !pingResult.IsValid )
+                    {
+                        if ( pingResult.OriginalException != null )
+                        {
+                            ExceptionLogService.LogException( new Exception( "Error Connecting to ElasticSearch server", pingResult.OriginalException ) );
+                        }
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -342,7 +351,13 @@ namespace Rock.UniversalSearch.IndexComponents
                                 typeMapping.Properties.Add( propertyInfo, new DateProperty()
                                 {
                                     Name = propertyInfo,
-                                    Index = nsIndexOption
+                                    Index = nsIndexOption,
+
+                                    // Our DateTime data gets serialized as '2022-04-11T16:40:47.4070819'
+                                    // But by default ElasticSearch wants the Z portion (DateTimeOffset)
+                                    // Since we don't use DateTimeOffset, we'll add a couple more options for how query terms are 
+                                    // See all the formatting options here https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html
+                                    Format = $"{DateFormat.date_optional_time}||{DateFormat.epoch_millis}||MM-dd-yyyy||yyyy-MM-dd'T'HH:mm:ss.SSS"
                                 } );
                                 break;
                             }
@@ -437,258 +452,353 @@ namespace Rock.UniversalSearch.IndexComponents
             List<IndexModelBase> documents = new List<IndexModelBase>();
             totalResultsAvailable = 0;
 
-            if ( _client != null )
+            if ( _client == null )
             {
-                ISearchResponse<IndexModelBase> results = null;
-                List<SearchResultModel> searchResults = new List<SearchResultModel>();
+                return documents;
+            }
 
-                QueryContainer queryContainer = new QueryContainer();
+            ISearchResponse<IndexModelBase> results = null;
+            List<SearchResultModel> searchResults = new List<SearchResultModel>();
 
-                // add and field constraints
-                var searchDescriptor = new SearchDescriptor<IndexModelBase>().AllIndices();
+            QueryContainer queryContainer = new QueryContainer();
 
-                List<Type> indexModelTypes;
+            // add and field constraints
+            var searchDescriptor = new SearchDescriptor<IndexModelBase>().AllIndices();
 
-                if ( entities == null || entities.Count == 0 )
+            List<Type> indexModelTypes;
+
+            if ( entities == null || entities.Count == 0 )
+            {
+                searchDescriptor = searchDescriptor.AllIndices();
+                indexModelTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" ).Select( a => a.IndexModelType ).ToList();
+            }
+            else
+            {
+                indexModelTypes = new List<Type>();
+                var indexNameList = new List<IndexName>();
+                foreach ( var entityId in entities )
                 {
-                    searchDescriptor = searchDescriptor.AllIndices();
-                    indexModelTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" ).Select( a => a.IndexModelType ).ToList();
-                }
-                else
-                {
-                    indexModelTypes = new List<Type>();
-                    var indexNameList = new List<IndexName>();
-                    foreach ( var entityId in entities )
+                    // get entities search model name
+                    var entityType = EntityTypeCache.Get( entityId );
+                    indexModelTypes.Add( entityType.IndexModelType );
+                    var indexName = entityType.IndexModelType.Name.ToLower();
+
+                    if ( _client.Indices.Exists( indexName ).Exists )
                     {
-                        // get entities search model name
-                        var entityType = EntityTypeCache.Get( entityId );
-                        indexModelTypes.Add( entityType.IndexModelType );
-                        var indexName = entityType.IndexModelType.Name.ToLower();
-
-                        if ( _client.Indices.Exists( indexName ).Exists )
-                        {
-                            indexNameList.Add( indexName );
-                        }
-
-                        // check if this is a person model, if so we need to add two model types one for person and the other for businesses
-                        // wish there was a cleaner way to do this
-                        if ( entityType.Guid == SystemGuid.EntityType.PERSON.AsGuid() )
-                        {
-                            if ( _client.Indices.Exists( "businessindex" ).Exists )
-                            {
-                                indexNameList.Add( "businessindex" );
-                            }
-                        }
+                        indexNameList.Add( indexName );
                     }
 
-                    searchDescriptor = searchDescriptor.Index( indexNameList.ToArray() );
-                }
-
-                QueryContainer matchQuery = null;
-                if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
-                {
-                    foreach ( var match in fieldCriteria.FieldValues )
+                    // check if this is a person model, if so we need to add two model types one for person and the other for businesses
+                    // wish there was a cleaner way to do this
+                    if ( entityType.Guid == SystemGuid.EntityType.PERSON.AsGuid() )
                     {
-                        if ( fieldCriteria.SearchType == CriteriaSearchType.Or )
+                        if ( _client.Indices.Exists( "businessindex" ).Exists )
                         {
-                            matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
-                        }
-                        else
-                        {
-                            matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value };
+                            indexNameList.Add( "businessindex" );
                         }
                     }
                 }
-                else
+
+                searchDescriptor = searchDescriptor.Index( indexNameList.ToArray() );
+            }
+
+            var searchFields = GetSearchFields( query, indexModelTypes );
+
+            QueryContainer matchQuery = null;
+            if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+            {
+                foreach ( var match in fieldCriteria.FieldValues )
                 {
-                    //  ##TODO## figure out how to make boost work like it used to ###
-                    List<Nest.Field> fieldList = new List<Nest.Field>();
-                    foreach ( var indexModelType in indexModelTypes )
+                    if ( fieldCriteria.SearchType == CriteriaSearchType.Or )
                     {
-                        foreach ( var property in indexModelType.GetProperties() )
-                        {
-                            var rockIndexFieldAttribute = property.GetCustomAttribute<RockIndexField>();
-                            if ( rockIndexFieldAttribute != null )
-                            {
-                                if ( rockIndexFieldAttribute?.Index == IndexType.Indexed )
-                                {
-                                    fieldList.Add( new Nest.Field( property, boost: rockIndexFieldAttribute.Boost ) );
-                                }
-                            }
-                        }
+                        matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
                     }
-
-                    matchQuery |= new MultiMatchQuery() { Fields = fieldList.ToArray(), Query = query, Analyzer = "whitespace", FuzzyRewrite = MultiTermQueryRewrite.ScoringBoolean };
-                }
-
-
-                switch ( searchType )
-                {
-                    case SearchType.ExactMatch:
-                        {
-                            if ( !string.IsNullOrWhiteSpace( query ) )
-                            {
-                                queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true };
-                            }
-
-                            // special logic to support emails
-                            if ( query.Contains( "@" ) )
-                            {
-                                queryContainer |= new QueryStringQuery { Query = $"{nameof( PersonIndex.Email )}:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
-                            }
-
-                            // special logic to support phone search
-                            if ( query.IsDigitsOnly() )
-                            {
-                                queryContainer |= new QueryStringQuery { Query = $"{nameof( PersonIndex.PhoneNumbers )}:*" + query + "*", AnalyzeWildcard = true };
-                            }
-
-                            // add a search for all the words as one single search term
-                            queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
-
-                            if ( matchQuery != null )
-                            {
-                                queryContainer &= matchQuery;
-                            }
-
-                            if ( size.HasValue )
-                            {
-                                searchDescriptor.Size( size.Value );
-                            }
-
-                            if ( from.HasValue )
-                            {
-                                searchDescriptor.From( from.Value );
-                            }
-
-                            searchDescriptor.Query( q => queryContainer );
-
-                            results = _client.Search<IndexModelBase>( searchDescriptor );
-                            break;
-                        }
-
-                    case SearchType.Fuzzy:
-                        {
-                            results = _client.Search<IndexModelBase>( d =>
-                                        d.AllIndices()
-                                        .Query( q =>
-                                            q.Fuzzy( f => f.Value( query )
-                                                .Rewrite( MultiTermQueryRewrite.TopTerms( size ?? 10 ) ) ) ) );
-                            break;
-                        }
-
-                    case SearchType.Wildcard:
-                        {
-                            bool enablePhraseSearch = true;
-
-                            if ( !string.IsNullOrWhiteSpace( query ) )
-                            {
-                                QueryContainer wildcardQuery = null;
-
-                                // break each search term into a separate query and add the * to the end of each
-                                var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
-
-                                // special logic to support emails
-                                if ( queryTerms.Count == 1 && query.Contains( "@" ) )
-                                {
-                                    wildcardQuery |= new QueryStringQuery { Query = $"{nameof( PersonIndex.Email )}:*" + query + "*", Analyzer = "whitespace" };
-                                    enablePhraseSearch = false;
-                                }
-                                else
-                                {
-                                    // We want to require each of the terms to exists for a result to be returned.
-                                    var searchString = "+" + queryTerms.JoinStrings( "* +" ) + "*";
-                                    wildcardQuery &= new QueryStringQuery { Query = searchString, Analyzer = "whitespace", MinimumShouldMatch = "100%", FuzzyRewrite = MultiTermQueryRewrite.ScoringBoolean };
-
-                                    // add special logic to help boost last names
-                                    if ( queryTerms.Count > 1 )
-                                    {
-                                        QueryContainer nameQuery = null;
-                                        nameQuery &= new QueryStringQuery { Query = $"{nameof( PersonIndex.LastName )}:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
-                                        nameQuery &= new QueryStringQuery { Query = $"{nameof( PersonIndex.FirstName )}:" + queryTerms.First() + "*", Analyzer = "whitespace" };
-                                        wildcardQuery |= nameQuery;
-                                    }
-
-                                    // special logic to support phone search
-                                    if ( query.IsDigitsOnly() )
-                                    {
-                                        wildcardQuery |= new QueryStringQuery { Query = $"{nameof( PersonIndex.PhoneNumbers )}:*" + query, Analyzer = "whitespace" };
-                                    }
-                                }
-
-                                queryContainer &= wildcardQuery;
-
-                                // add a search for all the words as one single search term
-                                if ( enablePhraseSearch )
-                                {
-                                    var searchString = "+" + queryTerms.JoinStrings( " +" );
-                                    queryContainer |= new QueryStringQuery { Query = searchString, AnalyzeWildcard = true, PhraseSlop = 0 };
-                                }
-                            }
-
-                            if ( matchQuery != null )
-                            {
-                                queryContainer &= matchQuery;
-                            }
-
-                            if ( size.HasValue )
-                            {
-                                searchDescriptor.Size( size.Value );
-                            }
-
-                            if ( from.HasValue )
-                            {
-                                searchDescriptor.From( from.Value );
-                            }
-
-                            searchDescriptor.Query( q => queryContainer );
-
-                            var globalIndexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
-
-                            if ( globalIndexBoost.IsNotNullOrWhiteSpace() )
-                            {
-                                var boostItems = globalIndexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                                foreach ( var boostItem in boostItems )
-                                {
-                                    var boostParms = boostItem.Split( new char[] { '^' } );
-
-                                    if ( boostParms.Length == 2 )
-                                    {
-                                        int boost = 1;
-                                        Int32.TryParse( boostParms[1], out boost );
-                                        searchDescriptor.IndicesBoost( b => b.Add( boostParms[0], boost ) );
-                                    }
-                                }
-                            }
-
-                            var resultsAsIndexModelBase = _client.Search<IndexModelBase>( searchDescriptor );
-                            results = resultsAsIndexModelBase;
-                            break;
-                        }
-                }
-
-                if ( results == null )
-                {
-                    return documents;
-                }
-
-                totalResultsAvailable = results.Total;
-
-                foreach ( var hit in results.Hits )
-                {
-                    IndexModelBase document = hit.Source;
-                    if ( document == null )
+                    else
                     {
-                        continue;
+                        matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value };
                     }
-
-                    document["Explain"] = hit.Explanation.ToJson();
-                    document.Score = hit.Score ?? 0.00;
-                    documents.Add( document );
                 }
             }
 
+            switch ( searchType )
+            {
+                case SearchType.ExactMatch:
+                    {
+                        if ( !string.IsNullOrWhiteSpace( query ) )
+                        {
+                            // Main ExactMatch Query, search all indexable fields
+                            queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true, Fields = searchFields };
+                        }
+
+                        // special logic to support emails
+                        if ( query.Contains( "@" ) )
+                        {
+                            // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimiter by default
+                            queryContainer |= new QueryStringQuery { Query = $"{nameof( PersonIndex.Email )}:" + query, Analyzer = "whitespace" };
+                        }
+
+                        // special logic to support phone search
+                        if ( query.IsDigitsOnly() )
+                        {
+                            queryContainer |= new QueryStringQuery { Query = $"{nameof( PersonIndex.PhoneNumbers )}:*" + query + "*", AnalyzeWildcard = true };
+                        }
+
+                        // add a search for all the words as one single search term
+                        queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
+
+                        if ( matchQuery != null )
+                        {
+                            queryContainer &= matchQuery;
+                        }
+
+                        if ( size.HasValue )
+                        {
+                            searchDescriptor.Size( size.Value );
+                        }
+
+                        if ( from.HasValue )
+                        {
+                            searchDescriptor.From( from.Value );
+                        }
+
+                        searchDescriptor.Query( q => queryContainer );
+
+                        results = _client.Search<IndexModelBase>( searchDescriptor );
+                        break;
+                    }
+
+                case SearchType.Fuzzy:
+                    {
+                        results = _client.Search<IndexModelBase>( d =>
+                                    d.AllIndices()
+                                    .Query( q =>
+                                        q.Fuzzy( f => f.Value( query )
+                                            .Rewrite( MultiTermQueryRewrite.TopTerms( size ?? 10 ) ) ) ) );
+                        break;
+                    }
+
+                case SearchType.Wildcard:
+                    {
+                        bool enablePhraseSearch = true;
+
+                        if ( !string.IsNullOrWhiteSpace( query ) )
+                        {
+                            QueryContainer wildcardQuery = null;
+
+                            // break each search term into a separate query and add the * to the end of each
+                            var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
+
+                            // special logic to support emails
+                            if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                            {
+                                var emailSearchField = searchFields.Where( a => a.Property.Name == nameof( PersonIndex.Email ) ).FirstOrDefault();
+                                wildcardQuery |= new QueryStringQuery
+                                {
+                                    Query = query + "*",
+                                    Analyzer = "whitespace",
+                                    Fields = emailSearchField,
+                                };
+
+                                enablePhraseSearch = false;
+                            }
+                            else
+                            {
+                                // We want to require each of the terms to exists for a result to be returned.
+                                var searchString = "+" + queryTerms.JoinStrings( "* +" ) + "*";
+
+                                // Main WildCard Query, search all indexable fields
+                                wildcardQuery &= new QueryStringQuery { Query = searchString, Analyzer = "whitespace", MinimumShouldMatch = "100%", FuzzyRewrite = MultiTermQueryRewrite.ScoringBoolean, Fields = searchFields };
+
+
+                                // add an additional 'OR' query with special logic to help boost last names if there are at least 2 terms
+                                if ( queryTerms.Count > 1 )
+                                {
+                                    var firstNameSearchField = searchFields.Where( a => a.Property.Name == nameof( PersonIndex.FirstName ) ).FirstOrDefault();
+                                    var lastNameSearchField = searchFields.Where( a => a.Property.Name == nameof( PersonIndex.LastName ) ).FirstOrDefault();
+                                    QueryContainer nameQuery = null;
+
+                                    if ( lastNameSearchField != null )
+                                    {
+                                        var extraBoostedLastNameField = new Nest.Field( lastNameSearchField.Property, 30 );
+                                        nameQuery &= new QueryStringQuery
+                                        {
+                                            Query = $"{queryTerms.Last()}*",
+                                            Analyzer = "whitespace",
+                                            Fields = extraBoostedLastNameField,
+                                        };
+                                    }
+
+                                    if ( firstNameSearchField != null )
+                                    {
+                                        nameQuery &= new QueryStringQuery
+                                        {
+                                            Query = $"{queryTerms.First()}*",
+                                            Analyzer = "whitespace",
+                                            Fields = firstNameSearchField
+                                        };
+                                    }
+
+                                    wildcardQuery |= nameQuery;
+                                }
+
+                                // Add an additional 'OR' query if the query is just numeric. We'll see if there is a phone number that matches
+                                if ( query.IsDigitsOnly() )
+                                {
+                                    var phoneNumbersSearchField = searchFields.Where( a => a.Property.Name == nameof( PersonIndex.PhoneNumbers ) ).FirstOrDefault();
+                                    wildcardQuery |= new QueryStringQuery
+                                    {
+                                        // Find numbers that end with query term
+                                        Query = $"*" + query,
+                                        Analyzer = "whitespace",
+                                        Fields = phoneNumbersSearchField,
+                                    };
+                                }
+                            }
+
+                            queryContainer &= wildcardQuery;
+
+                            // add an additional 'OR' search for all the words as one single search term
+                            if ( enablePhraseSearch )
+                            {
+                                var searchString = "+" + queryTerms.JoinStrings( " +" );
+                                queryContainer |= new QueryStringQuery { Query = searchString, AnalyzeWildcard = true, PhraseSlop = 0, Fields = searchFields };
+                            }
+                        }
+
+                        if ( matchQuery != null )
+                        {
+                            queryContainer &= matchQuery;
+                        }
+
+                        if ( size.HasValue )
+                        {
+                            searchDescriptor.Size( size.Value );
+                        }
+
+                        if ( from.HasValue )
+                        {
+                            searchDescriptor.From( from.Value );
+                        }
+
+                        searchDescriptor.Query( q => queryContainer );
+
+                        var globalIndexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
+
+                        if ( globalIndexBoost.IsNotNullOrWhiteSpace() )
+                        {
+                            var boostItems = globalIndexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                            foreach ( var boostItem in boostItems )
+                            {
+                                var boostParms = boostItem.Split( new char[] { '^' } );
+
+                                if ( boostParms.Length == 2 )
+                                {
+                                    int boost = 1;
+                                    Int32.TryParse( boostParms[1], out boost );
+                                    searchDescriptor.IndicesBoost( b => b.Add( boostParms[0], boost ) );
+                                }
+                            }
+                        }
+
+                        results = _client.Search<IndexModelBase>( searchDescriptor );
+
+                        /* 04-12-2022 MDP
+
+                        To see the RAW Json Request and Response that was POST'd to Elastic search
+                        look at results.DebugInformation. This is useful to see the JSON of the query
+                        that got constructed.
+
+                        var debugInformation = results.DebugInformation;
+
+                        */
+
+                        break;
+                    }
+            }
+
+            if ( results == null )
+            {
+                return documents;
+            }
+
+            totalResultsAvailable = results.Total;
+
+            foreach ( var hit in results.Hits )
+            {
+                IndexModelBase document = hit.Source;
+                if ( document == null )
+                {
+                    continue;
+                }
+
+                document["Explain"] = hit.Explanation.ToJson();
+                document.Score = hit.Score ?? 0.00;
+                documents.Add( document );
+            }
+
             return documents;
+        }
+
+        /// <summary>
+        /// Gets the search fields. We specify them explicitly so that different boost levels per field can be specified.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="indexModelTypes">The index model types.</param>
+        /// <returns>Nest.Field[].</returns>
+        private static Nest.Field[] GetSearchFields( string query, List<Type> indexModelTypes )
+        {
+            // if the query is a single term, see if it can be interpreted as a Date, Number or Boolean. If so, include fields of that type.
+            var queryIsDateTime = query.AsDateTime().HasValue;
+            var queryIsNumber = query.AsIntegerOrNull().HasValue;
+            var queryIsBoolean = query == "true" || query == "false";
+            List<Nest.Field> searchFields = new List<Nest.Field>();
+            foreach ( var indexModelType in indexModelTypes )
+            {
+                foreach ( var property in indexModelType.GetProperties() )
+                {
+                    var rockIndexFieldAttribute = property.GetCustomAttribute<RockIndexField>();
+                    if ( rockIndexFieldAttribute != null )
+                    {
+                        if ( rockIndexFieldAttribute.Index == IndexType.Indexed )
+                        {
+                            // only add search field if the query is a single term and can be compared as that data type
+                            bool addField;
+                            switch ( rockIndexFieldAttribute.Type )
+                            {
+                                case IndexFieldType.Date:
+                                    {
+                                        addField = queryIsDateTime;
+                                    }
+                                    break;
+
+                                case IndexFieldType.Number:
+                                    {
+                                        addField = queryIsNumber;
+                                    }
+                                    break;
+                                case IndexFieldType.Boolean:
+                                    {
+                                        addField = queryIsBoolean;
+                                    }
+                                    break;
+                                default:
+                                    {
+                                        addField = true;
+                                    }
+                                    break;
+                            }
+
+
+                            if ( addField )
+                            {
+                                searchFields.Add( new Nest.Field( property, boost: rockIndexFieldAttribute.Boost ) );
+                            }
+                        }
+                    }
+                }
+            }
+
+            return searchFields.ToArray();
         }
 
         /// <summary>
