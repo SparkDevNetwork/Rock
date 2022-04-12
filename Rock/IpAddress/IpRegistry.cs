@@ -59,36 +59,78 @@ namespace Rock.IpAddress
         /// <summary>
         /// Gets all the IP Address result through IPRegistry
         /// </summary>
-        public override List<LookupResult> Lookup( List<string> ipAddresses, out string resultMsg )
+        public override LookupResult Lookup( List<string> ipAddresses, out string resultMsg )
         {
-            var lookupResults = new List<LookupResult>();
-            resultMsg = string.Empty;
-            var apiKey = GetAttributeValue( AttributeKey.APIKey );
-            var client = new RestClient( string.Format( "https://api.ipregistry.co?key={0}", apiKey ) );
-            var request = new RestRequest( Method.POST );
-            request.RequestFormat = DataFormat.Json;
-            request.AddHeader( "Accept", "application/json" );
-            request.AddBody( ipAddresses.ToJson() );
-            var response = client.Execute( request );
-
-            if ( response.StatusCode == HttpStatusCode.OK )
+            var lookupResult = new LookupResult();
+            var ipAddressCount = ipAddresses.Count;
+            while ( ipAddressCount > 0 )
             {
-                var lookupResult = JsonConvert.DeserializeObject( response.Content, typeof( List<LookupResult> ) ) as List<LookupResult>;
-                if ( lookupResult.Any() )
+                var requestCount = 0;
+                var apiKey = GetAttributeValue( AttributeKey.APIKey );
+                var client = new RestClient( string.Format( "https://api.ipregistry.co?key={0}", apiKey ) );
+                var request = new RestRequest( Method.POST );
+                request.RequestFormat = DataFormat.Json;
+                request.AddHeader( "Accept", "application/json" );
+
+                //maximum of 1024 ipaddresses can be handle in batch request
+                var takeCount = ipAddressCount > 1024 ? 1024 : ipAddressCount;
+                var ipAddressesBody = ipAddresses.Skip( requestCount ).Take( takeCount );
+                ipAddressCount = ipAddressCount - takeCount;
+                request.AddParameter( "application/json", ipAddressesBody.ToJson(), ParameterType.RequestBody );
+                var response = client.Execute( request );
+                requestCount += 1;
+                if ( response.StatusCode == HttpStatusCode.OK )
                 {
-          
+                    response.Content
                 }
                 else
                 {
-                    resultMsg = "No Match";
+                    resultMsg = response.StatusDescription;
                 }
             }
-            else
-            {
-                resultMsg = response.StatusDescription;
-            }
 
-            return lookupResults;
+            resultMsg = string.Empty;
+          
+
+            return lookupResult;
         }
     }
+
+
+
+    #region Nested Classes
+
+    public class Results
+    {
+        [JsonProperty( "ip " )]
+        public string IP { get; set; }
+
+        [JsonProperty( "location" )]
+        public Location Location { get; set; }
+
+        [JsonProperty( "company" )]
+        public Company Company { get; set; }
+    }
+
+    public class Location
+    {
+
+        [JsonProperty( "postal" )]
+        public string PostalCode { get; set; }
+
+        [JsonProperty( "latitude" )]
+        public double Latitude { get; set; }
+
+        [JsonProperty( "longitude" )]
+        public double Longitude { get; set; }
+
+    }
+
+    public class Company
+    {
+        [JsonProperty( "name" )]
+        public string Name { get; set; }
+    }
+
+    #endregion
 }

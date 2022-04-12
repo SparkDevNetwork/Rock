@@ -40,7 +40,7 @@ namespace Rock.IpAddress
         /// <summary>
         /// Gets all the IP Address result
         /// </summary>
-        public virtual List<LookupResult> Lookup( List<string> ipAddresses, out string resultMsg )
+        public virtual LookupResult Lookup( List<string> ipAddresses, out string resultMsg )
         {
             throw new NotImplementedException();
         }
@@ -55,60 +55,14 @@ namespace Rock.IpAddress
     public class LookupResult
     {
         /// <summary>
-        /// Gets or sets the IP address of the request.
+        /// Gets or sets the success count.
         /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> of the IP address of the request.
-        /// </value>
-        public string IpAddress { get; set; }
+        public int SuccessCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the postal code.
+        /// Gets or sets the failed count.
         /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> of the postal code.
-        /// </value>
-        public string PostalCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the location.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> of the location.
-        /// </value>
-        public string Location { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ISP.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> of the ISP.
-        /// </value>
-        public string ISP { get; set; }
-
-        /// <summary>
-        /// Gets or sets the country code.
-        /// </summary>
-        /// <value>
-        /// The country code.
-        /// </value>
-        public string CountryCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the region code.
-        /// </summary>
-        /// <value>
-        /// The region code.
-        /// </value>
-        public string RegionCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GeoPoint (GeoLocation) for the IP
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that represents the GeoLocation of the IP.
-        /// </value>
-        public DbGeography GeoPoint { get; set; }
+        public int FailedCount { get; set; }
     }
 
     #endregion
