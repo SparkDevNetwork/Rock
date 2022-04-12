@@ -15,6 +15,8 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -153,6 +155,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue RegionValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Interaction">Interactions</see>  for this session.
+        /// </summary>
+        /// <value>
+        /// A collection containing the <see cref="Rock.Model.Interaction" /> interactions for this session.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<InteractionSession> InteractionSessions
+        {
+            get { return _interactionSessions ?? ( _interactionSessions = new Collection<InteractionSession>() ); }
+            set { _interactionSessions = value; }
+        }
+        private ICollection<InteractionSession> _interactionSessions;
 
         #endregion
     }
