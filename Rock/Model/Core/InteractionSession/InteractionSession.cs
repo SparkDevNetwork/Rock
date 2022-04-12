@@ -101,7 +101,7 @@ namespace Rock.Model
         /// <value>
         /// The last calculated date time.
         /// </value>
-        public DateTime DurationLastCalculatedDateTime { get; set; }
+        public DateTime? DurationLastCalculatedDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.InteractionSessionLocation"/> Session Location that that is associated with this Interaction Session.
@@ -111,6 +111,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? InteractionSessionLocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interaction Count.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing Interaction count.
+        /// </value>
+        [DataMember]
+        public int? InteractionCount { get; set; }
 
         #endregion
 
@@ -164,7 +173,7 @@ namespace Rock.Model
         public InteractionSessionConfiguration()
         {
             this.HasOptional( r => r.DeviceType ).WithMany().HasForeignKey( r => r.DeviceTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( r => r.InteractionSessionLocation ).WithMany().HasForeignKey( r => r.InteractionSessionLocationId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.InteractionSessionLocation ).WithMany( r => r.InteractionSessions ).HasForeignKey( r => r.InteractionSessionLocationId ).WillCascadeOnDelete( false );
         }
     }
 

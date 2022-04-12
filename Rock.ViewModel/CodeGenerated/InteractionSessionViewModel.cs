@@ -45,7 +45,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The DurationLastCalculatedDateTime.
         /// </value>
-        public DateTime DurationLastCalculatedDateTime { get; set; }
+        public DateTime? DurationLastCalculatedDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the DurationSeconds.
@@ -54,6 +54,14 @@ namespace Rock.ViewModel
         /// The DurationSeconds.
         /// </value>
         public int? DurationSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the InteractionCount.
+        /// </summary>
+        /// <value>
+        /// The InteractionCount.
+        /// </value>
+        public int? InteractionCount { get; set; }
 
         /// <summary>
         /// Gets or sets the InteractionMode.
