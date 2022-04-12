@@ -45,7 +45,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [TextField(
         "Node URL",
         Key = AttributeKey.NodeURL,
-        Description = "The URL of the ElasticSearch node (http://myserver:9200)",
+        Description = "The URL of the ElasticSearch node (https://myserver:9200)",
         IsRequired = true,
         Order = 0 )]
 
@@ -88,7 +88,9 @@ namespace Rock.UniversalSearch.IndexComponents
         }
 
         /// <summary>
-        /// The Client
+        /// Keep the created client around so we don't have to keep recreating it.
+        /// Note that if any connection parameters change,
+        /// ValidateAttributeValues will take care of re-creating the client.
         /// </summary>
         protected ElasticClient _client;
 
@@ -178,7 +180,6 @@ namespace Rock.UniversalSearch.IndexComponents
                 try
                 {
                     var node = new Uri( GetAttributeValue( AttributeKey.NodeURL ) );
-                    var pool = new SingleNodeConnectionPool( new Uri( "http://localhost:9200" ) );
 
                     /* 04-01-2022 MDP
 
@@ -533,18 +534,38 @@ namespace Rock.UniversalSearch.IndexComponents
                         // special logic to support emails
                         if ( query.Contains( "@" ) )
                         {
-                            // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimiter by default
-                            queryContainer |= new QueryStringQuery { Query = $"{nameof( PersonIndex.Email )}:" + query, Analyzer = "whitespace" };
+                            var emailSearchField = searchFields.Where( a => a.Property.Name == nameof( PersonIndex.Email ) ).FirstOrDefault();
+                            queryContainer |= new QueryStringQuery
+                            {
+                                // exact match, no wildcard
+                                Query = query,
+
+                                // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimiter by default
+                                Analyzer = "whitespace",
+                                Fields = emailSearchField,
+                            };
                         }
 
-                        // special logic to support phone search
+                        // Add an additional 'OR' query if the query is just numeric. We'll see if there is a phone number that matches
                         if ( query.IsDigitsOnly() )
                         {
-                            queryContainer |= new QueryStringQuery { Query = $"{nameof( PersonIndex.PhoneNumbers )}:*" + query + "*", AnalyzeWildcard = true };
+                            var phoneNumbersSearchField = searchFields.Where( a => a.Property.Name == nameof( PersonIndex.PhoneNumbers ) ).FirstOrDefault();
+                            queryContainer |= new QueryStringQuery
+                            {
+                                // Find numbers that end with query term
+                                Query = $"*" + query + "*",
+                                AnalyzeWildcard = true,
+                                Fields = phoneNumbersSearchField,
+                            };
                         }
 
                         // add a search for all the words as one single search term
-                        queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
+                        queryContainer |= new QueryStringQuery
+                        {
+                            Query = query,
+                            AnalyzeWildcard = true,
+                            PhraseSlop = 0
+                        };
 
                         if ( matchQuery != null )
                         {
