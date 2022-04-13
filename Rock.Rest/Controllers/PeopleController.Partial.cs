@@ -729,6 +729,9 @@ namespace Rock.Rest.Controllers
             string phone = null,
             string email = null )
         {
+            // We need access to PrimaryAlias navigation property.
+            SetProxyCreation( true );
+
             return SearchForPeople( Service.Context as RockContext, name, address, phone, email, includeDetails, includeBusinesses, includeDeceased, true );
         }
 
