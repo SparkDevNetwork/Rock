@@ -17,8 +17,10 @@
 using System;
 using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -244,21 +246,18 @@ namespace Rock.UniversalSearch.IndexModels
 
                 personIndex.ModelOrder = 10;
 
-                if ( person.SuffixValue != null )
+                if ( person.SuffixValueId.HasValue )
                 {
-                    personIndex.Suffix = person.SuffixValue.Value;
+                    personIndex.Suffix = DefinedValueCache.GetValue( person.SuffixValueId );
                 }
 
-                var campuses = person.GetCampusIds();
+                personIndex.CampusId = person.PrimaryCampusId;
 
-                if ( campuses != null && campuses.Count > 0 )
-                {
-                    personIndex.CampusId = campuses.FirstOrDefault();
-                }
+                var rockContext = new RockContext();
 
                 personIndex.ConnectionStatusValueId = person.ConnectionStatusValueId;
                 personIndex.RecordStatusValueId = person.RecordStatusValueId;
-                personIndex.PreviousLastNames = string.Join( ",", person.GetPreviousNames().Select( n => n.LastName ) );
+                personIndex.PreviousLastNames = string.Join( ",", person.GetPreviousNames( rockContext ).Select( n => n.LastName ) );
                 personIndex.Age = person.Age;
                 personIndex.Gender = person.Gender.ToString();
                 personIndex.PhotoUrl = person.PhotoUrl;
@@ -267,16 +266,10 @@ namespace Rock.UniversalSearch.IndexModels
 
                 if ( person.PhoneNumbers != null )
                 {
-                    personIndex.PhoneNumbers = string.Join( "|", person.PhoneNumbers.Select( p => p.NumberTypeValue.Value + "^" + p.Number ) );
+                    personIndex.PhoneNumbers = string.Join( "|", person.PhoneNumbers.Select( p => DefinedValueCache.GetValue( p.NumberTypeValueId ) + "^" + p.Number ) );
                 }
-
-                // get family role
-                var familyRole = person.GetFamilyRole();
-
-                if ( familyRole != null )
-                {
-                    personIndex.FamilyRole = familyRole.Name;
-                }
+                
+                personIndex.FamilyRole = person.AgeClassification.ToString();
 
                 // get home address
                 var address = person.GetHomeLocation();
@@ -291,11 +284,11 @@ namespace Rock.UniversalSearch.IndexModels
                 }
 
                 // get spouse
-                var spouse = person.GetSpouse();
+                var spouse = person.GetSpouse( rockContext );
 
                 if ( spouse != null )
                 {
-                    personIndex.Spouse = person.GetSpouse().FullName;
+                    personIndex.Spouse = spouse.FullName;
                 }
 
                 AddIndexableAttributes( personIndex, person );
