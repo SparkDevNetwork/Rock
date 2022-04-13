@@ -2286,8 +2286,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             var maxDays = dataMap.GetIntValue( AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays );
 
             var filter = rockContext.BenevolenceRequests
-                .Where( b => b.RequestedByPersonAliasId == null || b.RequestedByPersonAliasId == 0
-                        & DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays );
+                .Where( b => (b.RequestedByPersonAliasId == null || b.RequestedByPersonAliasId == 0)
+                        && (DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays) );
 
             rockContext.BenevolenceRequests.RemoveRange( filter );
             var removedCount = rockContext.SaveChanges();

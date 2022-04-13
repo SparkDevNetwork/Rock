@@ -630,15 +630,36 @@ export default defineComponent({
                 return;
             }
 
-            // Find the original field and delete it.
+            deleteField(guid);
+        };
+
+        /**
+         * Delete the field with the given GUID and remove any visibility rules referencing it.
+         *
+         * @param guid GUID of the field being deleted
+         */
+        const deleteField = (guid:Guid): void => {
+            // Find the field and visibility rules associated with it to
             for (const section of sections) {
                 if (section.fields) {
                     const existingFieldIndex = section.fields.findIndex(f => areEqual(f.guid, guid));
 
+                    // If the field is in this section, delete it
                     if (existingFieldIndex !== -1) {
                         section.fields.splice(existingFieldIndex, 1);
-                        break;
                     }
+
+                    // Search the rest of the fields for visibility rules that use the field we're deleting
+                    for (const field of section.fields) {
+                        if (field.visibilityRule?.rules?.length) {
+                            field.visibilityRule.rules = field.visibilityRule.rules.filter(rule => rule.attributeGuid !== guid);
+                        }
+                    }
+                }
+
+                // Find visibility rules on the section that may correspond with this field
+                if (section.visibilityRule?.rules?.length) {
+                    section.visibilityRule.rules = section.visibilityRule.rules.filter(rule => rule.attributeGuid !== guid);
                 }
             }
 
@@ -683,6 +704,15 @@ export default defineComponent({
             const existingSectionIndex = sections.findIndex(s => areEqual(s.guid, guid));
 
             if (existingSectionIndex !== -1) {
+                const section = sections[existingSectionIndex];
+
+                // Delete all the fields from the section first so anything referencing the fields can be updated
+                if (section.fields) {
+                    const guids = section.fields.map(field => field.guid);
+                    for (const guid of guids) {
+                        deleteField(guid);
+                    }
+                }
                 sections.splice(existingSectionIndex, 1);
             }
 
