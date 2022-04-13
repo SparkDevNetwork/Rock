@@ -92,6 +92,7 @@ namespace Rock.Model
                 DeviceTypeId = model.DeviceTypeId,
                 DurationLastCalculatedDateTime = model.DurationLastCalculatedDateTime,
                 DurationSeconds = model.DurationSeconds,
+                InteractionCount = model.InteractionCount,
                 InteractionMode = model.InteractionMode,
                 InteractionSessionLocationId = model.InteractionSessionLocationId,
                 IpAddress = model.IpAddress,
@@ -171,6 +172,7 @@ namespace Rock.Model
             target.DurationSeconds = source.DurationSeconds;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InteractionCount = source.InteractionCount;
             target.InteractionMode = source.InteractionMode;
             target.InteractionSessionLocationId = source.InteractionSessionLocationId;
             target.IpAddress = source.IpAddress;

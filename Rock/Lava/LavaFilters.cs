@@ -46,6 +46,7 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 using UAParser;
 using Calendar = Ical.Net.Calendar;
 
@@ -1038,6 +1039,27 @@ namespace Rock.Lava
         #endregion String Filters
 
         #region DateTime Filters
+
+        /// <summary>
+        /// Returns a date range from the format of the sliding date range control.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static LavaDataObject DateRangeFromSlidingFormat( string input )
+        {
+            if ( input.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( input );
+
+            var lavaDateRange = new LavaDataObject();
+            lavaDateRange["StartDate"] = dateRange.Start;
+            lavaDateRange["EndDate"] = dateRange.End;
+
+            return lavaDateRange;
+        }
 
         /// <summary>
         /// Sundays the date.
