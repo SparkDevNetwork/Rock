@@ -41,7 +41,6 @@ import { PropType } from "vue";
 import { useFormSources } from "./utils";
 import { confirmDelete } from "../../../../Util/dialogs";
 import { FormError } from "../../../../Util/form";
-import { object } from "yup";
 
 /**
  * Get the drag source options for the section zones. This allows the user to
@@ -666,7 +665,7 @@ export default defineComponent({
             if (areEqual(guid, editField.value?.guid ?? null)) {
                 closeAside();
             }
-        }
+        };
 
         /**
          * Event handler for when a section's settings have been updated in the
