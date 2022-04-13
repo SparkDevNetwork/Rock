@@ -3866,7 +3866,9 @@ if "$(ConfigurationName)" == "Debug" (
  echo "setting VBCSCOMPILER_TTL to 10 seconds"
  call "$(ProjectDir)..\Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
  if Exist "$(ProjectDir)..\.githooks\" (
-  xcopy "$(ProjectDir)..\.githooks\*" "$(ProjectDir)..\.git\hooks\" /S /Y
+  if Exist "$(ProjectDir)..\.git\hooks\" (
+   xcopy "$(ProjectDir)..\.githooks\*" "$(ProjectDir)..\.git\hooks\" /S /Y
+  )
  )
 )
 
