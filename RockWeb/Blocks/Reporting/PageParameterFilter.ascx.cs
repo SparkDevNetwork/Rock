@@ -358,8 +358,15 @@ namespace RockWeb.Blocks.Reporting
             {
                 CurrentParameters = this.RockPage.PageParameters();
 
-                var query = new AttributeService( new RockContext() ).Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
-                var attribsWithDefaultValue = query.AsQueryable().Where( a => a.DefaultValue != null && a.DefaultValue != "" ).ToList();
+                // Get list of attributes with default values (4/12/2022 JME replaces code that read
+                // this from the DB with the call below that reads from cache.
+                var attribsWithDefaultValue = AttributeCache.AllForEntityType( _blockTypeEntityId )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "Id"
+                        && a.EntityTypeQualifierValue == _block.Id.ToString()
+                        && a.DefaultValue != null
+                        && a.DefaultValue != string.Empty )
+                    .ToList();
 
                 // If we have any filters with default values, we want to load this block with the page parameters already set.
                 if ( attribsWithDefaultValue.Any() && !this.RockPage.PageParameters().Any() )
@@ -454,9 +461,12 @@ namespace RockWeb.Blocks.Reporting
         {
             var rockContext = new RockContext();
             var attributeService = new AttributeService( rockContext );
-            var qry = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
-            qry = qry.OrderBy( a => a.Order );
-            var updatedAttributeIds = attributeService.Reorder( qry.ToList(), e.OldIndex, e.NewIndex );
+
+            var attributes = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() )
+                        .OrderBy( a => a.Order )
+                        .ToList();
+
+            var updatedAttributeIds = attributeService.Reorder( attributes, e.OldIndex, e.NewIndex );
 
             rockContext.SaveChanges();
 
@@ -497,11 +507,14 @@ namespace RockWeb.Blocks.Reporting
             var attributeService = new AttributeService( rockContext );
             var attribute = new AttributeService( rockContext ).Get( e.RowKeyId );
 
-            edtFilter.ReservedKeyNames = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() )
-                 .Where( a => a.Id != e.RowKeyId )
-                 .Select( a => a.Key )
-                 .Distinct()
-                 .ToList();
+            edtFilter.ReservedKeyNames = AttributeCache.AllForEntityType( _blockTypeEntityId )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "Id"
+                        && a.EntityTypeQualifierValue == _block.Id.ToString()
+                        && a.Id != e.RowKeyId )
+                    .Select( a => a.Key )
+                    .Distinct()
+                    .ToList();
 
             edtFilter.SetAttributeProperties( attribute );
   
@@ -548,10 +561,13 @@ namespace RockWeb.Blocks.Reporting
             edtFilter.IsFieldTypeEditable = true;
             edtFilter.SetAttributeFieldType( FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id, null );
 
-            edtFilter.ReservedKeyNames = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() )
-                 .Select( a => a.Key )
-                 .Distinct()
-                 .ToList();
+            edtFilter.ReservedKeyNames = AttributeCache.AllForEntityType( _blockTypeEntityId )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "Id"
+                        && a.EntityTypeQualifierValue == _block.Id.ToString() )
+                    .Select( a => a.Key )
+                    .Distinct()
+                    .ToList();
 
             mdFilter.Title = "Add Filter";
             mdFilter.Show();
@@ -566,16 +582,20 @@ namespace RockWeb.Blocks.Reporting
         {
             Rock.Model.Attribute attribute = null;
 
-            // sets the attribute to use the "CustomSetting" attribute
+            // Sets the attribute to use the "CustomSetting" attribute
             var entityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.ATTRIBUTE ).Id;
             var entityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.BLOCK ).Id;
 
-            edtFilter.CategoryIds = new CategoryService( new RockContext() ).Queryable().Where( c => c.Name == "CustomSetting" &&
-                                                                                                c.EntityTypeId == entityTypeId &&
-                                                                                                c.EntityTypeQualifierColumn == "EntityTypeId" &&
-                                                                                                c.EntityTypeQualifierValue == entityId.ToString() )
-                                                                                        .Select( c => c.Id );
+            edtFilter.CategoryIds = CategoryCache.All()
+                .Where( c =>
+                    c.Name == "CustomSetting"
+                    && c.EntityTypeId == entityTypeId
+                    && c.EntityTypeQualifierColumn == "EntityTypeId"
+                    && c.EntityTypeQualifierValue == entityId.ToString() )
+                .Select( c => c.Id );
 
+            // ISSUE JME - When adding a new attribute the edtFilter does not load here with it's default value setting.
+            // currently you need to add the attribute then edit it again to add a default value.
             attribute = Helper.SaveAttributeEdits( edtFilter, _blockTypeEntityId, "Id", _block.Id.ToString() );
 
             // Attribute will be null if it was not valid
@@ -698,8 +718,12 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BuildControls()
         {
-            var query = new AttributeService( new RockContext() ).Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
-            var attributes = query.OrderBy( a => a.Order ).ToList();
+            var attributes = AttributeCache.AllForEntityType( _blockTypeEntityId )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "Id"
+                        && a.EntityTypeQualifierValue == _block.Id.ToString() )
+                    .OrderBy( a => a.Order )
+                    .ToList();
 
             var exclusions = new List<string>();
             exclusions.Add( AttributeKey.RedirectPage );
