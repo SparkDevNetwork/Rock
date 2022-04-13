@@ -20,9 +20,13 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.IpAddress
 {
@@ -59,39 +63,120 @@ namespace Rock.IpAddress
         /// <summary>
         /// Gets all the IP Address result through IPRegistry
         /// </summary>
-        public override LookupResult Lookup( List<string> ipAddresses, out string resultMsg )
+        public override LookupResult Lookup( Dictionary<string, List<int>> ipAddressesWithSessionIds, out string resultMsg )
         {
             var lookupResult = new LookupResult();
-            var ipAddressCount = ipAddresses.Count;
+            resultMsg = string.Empty;
+            var ipAddressCount = ipAddressesWithSessionIds.Count;
+            var requestCount = 0;
+            //maximum of 1024 ipaddresses can be handled in batch request
+            var maxBatchRecords = 1024;
             while ( ipAddressCount > 0 )
             {
-                var requestCount = 0;
                 var apiKey = GetAttributeValue( AttributeKey.APIKey );
                 var client = new RestClient( string.Format( "https://api.ipregistry.co?key={0}", apiKey ) );
                 var request = new RestRequest( Method.POST );
                 request.RequestFormat = DataFormat.Json;
                 request.AddHeader( "Accept", "application/json" );
-
-                //maximum of 1024 ipaddresses can be handle in batch request
-                var takeCount = ipAddressCount > 1024 ? 1024 : ipAddressCount;
-                var ipAddressesBody = ipAddresses.Skip( requestCount ).Take( takeCount );
-                ipAddressCount = ipAddressCount - takeCount;
-                request.AddParameter( "application/json", ipAddressesBody.ToJson(), ParameterType.RequestBody );
+                var takeCount = ipAddressCount > maxBatchRecords ? maxBatchRecords : ipAddressCount;
+                var ipAddresses = ipAddressesWithSessionIds.Skip( requestCount * maxBatchRecords ).Take( takeCount );
+                var ipAddressBody = ipAddresses.Select( a => a.Key ).ToList();
+                request.AddParameter( "application/json", ipAddressBody.ToJson(), ParameterType.RequestBody );
                 var response = client.Execute( request );
-                requestCount += 1;
+                var rateLimit = response.Headers.Where( a => a.Name == "X-Rate-Limit-Reset" ).FirstOrDefault();
+                var batchRemaining = response.Headers.Where( a => a.Name == "X-Rate-Limit-Remaining" ).FirstOrDefault();
                 if ( response.StatusCode == HttpStatusCode.OK )
                 {
-                    response.Content
+                    var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Root ) ) as Root;
+                    var rockContext = new RockContext();
+                    var interactionSessionLocationService = new InteractionSessionLocationService( rockContext );
+                    var interactionSessionService = new InteractionSessionService( rockContext );
+                    var countryDefinedValues = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ).DefinedValues;
+                    var regionDefinedValues = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ).DefinedValues;
+                    foreach ( var result in responseContent.Results.Where( a => ipAddressesWithSessionIds.ContainsKey( a.IP ) ) )
+                    {
+                        var interactionSessions = interactionSessionService.GetByIds( ipAddressesWithSessionIds[result.IP] );
+                        if ( result.Location != null )
+                        {
+                            var interactionSessionLocation = new InteractionSessionLocation
+                            {
+                                IpAddress = result.IP,
+                                PostalCode = result.Location.PostalCode,
+                                Location = $"{result.Location.City}, {result.Location.Region.Name}",
+                                LookupDateTime = RockDateTime.Now
+                            };
+
+                            var regionCode = result.Location.Region.Code.Split( '-' ).LastOrDefault();
+                            if ( regionCode.IsNotNullOrWhiteSpace() )
+                            {
+                                interactionSessionLocation.RegionCode = regionCode.Left( 2 );
+                                var regionDefinedValue = regionDefinedValues.Where( a => a.Value == regionCode ).FirstOrDefault();
+                                if ( regionDefinedValue != null )
+                                {
+                                    interactionSessionLocation.RegionValueId = regionDefinedValue.Id;
+                                }
+                            }
+
+                            if ( result.Location.Country.Code.IsNotNullOrWhiteSpace() )
+                            {
+                                interactionSessionLocation.CountryCode = result.Location.Country.Code;
+                                var countryDefinedValue = countryDefinedValues.Where( a => a.Value == result.Location.Country.Code ).FirstOrDefault();
+                                if ( countryDefinedValue != null )
+                                {
+                                    interactionSessionLocation.CountryValueId = countryDefinedValue.Id;
+                                }
+                            }
+
+                            if ( result.Company != null )
+                            {
+                                interactionSessionLocation.ISP = result.Company.Name;
+                            }
+
+                            interactionSessionLocation.GeoPoint = Rock.Model.Location.GetGeoPoint( result.Location.Latitude, result.Location.Longitude );
+                            interactionSessionLocationService.Add( interactionSessionLocation );
+                            foreach ( var interactionSession in interactionSessions )
+                            {
+                                interactionSessionLocation.InteractionSessions.Add( interactionSession );
+                            }
+                            
+                            rockContext.SaveChanges();
+                            lookupResult.SuccessCount += 1;
+                        }
+                    }
+
+                    ipAddressCount = ipAddressCount - takeCount;
+                    requestCount += takeCount;
+                }
+                else if((int)response.StatusCode ==  429 )
+                {
+                    if ( rateLimit != null && rateLimit.Value.ToString().AsInteger() > 300 )
+                    {
+                        resultMsg = response.StatusDescription;
+                        break;
+                    }
                 }
                 else
                 {
                     resultMsg = response.StatusDescription;
+                    break;
+                }
+
+                if ( batchRemaining!=null &&   maxBatchRecords > batchRemaining.Value.ToString().AsInteger() )
+                {
+                    maxBatchRecords = batchRemaining.Value.ToString().AsInteger();
+                }
+
+                if ( rateLimit != null && rateLimit.Value.ToString().AsInteger() < 300 )
+                {
+                    System.Threading.Thread.Sleep( rateLimit.Value.ToString().AsInteger() );
+                }
+                else
+                {
+                    break;
                 }
             }
 
-            resultMsg = string.Empty;
-          
-
+            lookupResult.FailedCount = ipAddressesWithSessionIds.Count - lookupResult.SuccessCount;
             return lookupResult;
         }
     }
@@ -100,36 +185,175 @@ namespace Rock.IpAddress
 
     #region Nested Classes
 
-    public class Results
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Result
     {
-        [JsonProperty( "ip " )]
+        /// <summary>
+        /// Gets or sets the IP
+        /// </summary>
+        /// <value>
+        /// The IP.
+        /// </value>
+        [JsonProperty( "ip" )]
         public string IP { get; set; }
 
+        /// <summary>
+        /// Gets or sets the location
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
         [JsonProperty( "location" )]
         public Location Location { get; set; }
 
+        /// <summary>
+        /// Gets or sets the company
+        /// </summary>
+        /// <value>
+        /// The company.
+        /// </value>
         [JsonProperty( "company" )]
         public Company Company { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class Location
     {
-
+        /// <summary>
+        /// Gets or sets the postal
+        /// </summary>
+        /// <value>
+        /// The postal.
+        /// </value>
         [JsonProperty( "postal" )]
         public string PostalCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the latitude
+        /// </summary>
+        /// <value>
+        /// The latitude.
+        /// </value>
         [JsonProperty( "latitude" )]
         public double Latitude { get; set; }
 
+        /// <summary>
+        /// Gets or sets the longitude
+        /// </summary>
+        /// <value>
+        /// The longitude.
+        /// </value>
         [JsonProperty( "longitude" )]
         public double Longitude { get; set; }
 
+        /// <summary>
+        /// Gets or sets the country
+        /// </summary>
+        /// <value>
+        /// The country.
+        /// </value>
+        [JsonProperty( "country" )]
+        public Country Country { get; set; }
+
+        /// <summary>
+        /// Gets or sets the region
+        /// </summary>
+        /// <value>
+        /// The region.
+        /// </value>
+        [JsonProperty( "region" )]
+        public Region Region { get; set; }
+
+        /// <summary>
+        /// Gets or sets the city
+        /// </summary>
+        /// <value>
+        /// The city.
+        /// </value>
+        [JsonProperty( "city" )]
+        public string City { get; set; }
     }
 
-    public class Company
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Region
     {
+        /// <summary>
+        /// Gets or sets the name
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [JsonProperty( "name" )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the code
+        /// </summary>
+        /// <value>
+        /// The code.
+        /// </value>
+        [JsonProperty( "code" )]
+        public string Code { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Country
+    {
+        /// <summary>
+        /// Gets or sets the code
+        /// </summary>
+        /// <value>
+        /// The code.
+        /// </value>
+        [JsonProperty( "code" )]
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [JsonProperty( "name" )]
+        public string Name { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Company
+    {
+        /// <summary>
+        /// Gets or sets the name
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [JsonProperty( "name" )]
+        public string Name { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Root
+    {
+        /// <summary>
+        /// Gets or sets the name
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [JsonProperty( "results" )]
+        public List<Result> Results { get; set; }
     }
 
     #endregion

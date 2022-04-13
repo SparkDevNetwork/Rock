@@ -40,7 +40,7 @@ namespace Rock.IpAddress
         /// <summary>
         /// Gets all the IP Address result
         /// </summary>
-        public virtual LookupResult Lookup( List<string> ipAddresses, out string resultMsg )
+        public virtual LookupResult Lookup( Dictionary<string, List<int>> ipAddressesWithSessionIds, out string resultMsg )
         {
             throw new NotImplementedException();
         }

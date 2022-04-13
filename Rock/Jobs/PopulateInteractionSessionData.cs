@@ -115,33 +115,47 @@ namespace Rock.Jobs
             var errors = new List<string>();
             List<Exception> exceptions = new List<Exception>();
             bool anyRemaining = true;
-            var sessionIpAddressKeyValue = new Dictionary<int, string>();
-
+            var ipAddressSessionKeyValue = new Dictionary<string, List<int>>();
+            var channelIdsWithGeoTracking = GetInteractionChannelsWithGeoTracking();
+            var componentIds = InteractionComponentCache.All().Where( a => channelIdsWithGeoTracking.Contains( a.InteractionChannelId ) ).Select( a => a.Id ).ToList();
+            var filterOnComponentQueryable = false;
+            if ( componentIds.Count > 5000 )
+            {
+                filterOnComponentQueryable = true;
+            }
+            var recordsProcessed = 0;
+            var maxSessionRecords = 1000;
             while ( howManyRecords > 0 )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     var currentDateTime = RockDateTime.Now;
-
-                    var channelIdsWithGeoTracking = GetInteractionChannelsWithGeoTracking();
                     var interactionComponentQry = new InteractionComponentService( rockContext )
                         .Queryable()
                         .Where( a => channelIdsWithGeoTracking.Contains( a.InteractionChannelId ) )
                         .Select( a => a.Id );
-                    var interationQry = new InteractionService( rockContext )
+                    var interactionQry = new InteractionService( rockContext )
                         .Queryable()
-                        .Where( a => a.CreatedDateTime >= startDate && interactionComponentQry.Contains( a.InteractionComponentId ) )
-                        .Select( a => a.Id );
+                        .Where( a => a.InteractionDateTime >= startDate );
+                    if ( filterOnComponentQueryable )
+                    {
+                        interactionQry = interactionQry.Where( a => interactionComponentQry.Contains( a.InteractionComponentId ) );
+                    }
+                    else
+                    {
+                        interactionQry = interactionQry.Where( a => componentIds.Contains( a.InteractionComponentId ) );
+                    }
+
+                    var interactionIdsQry = interactionQry.Select( a => a.Id );
                     var interactionSessionLocationQry = new InteractionSessionLocationService( rockContext ).Queryable();
-                    var take = howManyRecords < 1000 ? howManyRecords : 1000;
+                    var take = howManyRecords < maxSessionRecords ? howManyRecords : maxSessionRecords;
                     var interactionSessionQuery = new InteractionSessionService( rockContext )
                         .Queryable()
                         .Where( a =>
                             !a.InteractionSessionLocationId.HasValue &&
                             a.IpAddress != null &&
-                            a.IpAddress != string.Empty && a.IpAddress != "::1" && !a.IpAddress.Contains( "192.") &&
-                            a.CreatedDateTime >= startDate &&
-                            a.Interactions.Any( b => interationQry.Contains( b.Id ) ) )
+                            a.IpAddress != string.Empty && a.IpAddress != "::1" && !a.IpAddress.Contains( "192.") && !a.IpAddress.Contains( "172." ) &&
+                            a.Interactions.Any( b => interactionIdsQry.Contains( b.Id ) ) )
                         .Take( 1000 );
 
                     anyRemaining = interactionSessionQuery.Count() >= take;
@@ -156,31 +170,46 @@ namespace Rock.Jobs
                         if ( interactionSessionLocationId != default( int ) )
                         {
                             interactionSession.InteractionSessionLocationId = interactionSessionLocationId;
+                            recordsProcessed += 1;
                         }
                         else
                         {
-                            sessionIpAddressKeyValue.Add( interactionSession.Id, interactionSession.IpAddress );
+                            if ( !ipAddressSessionKeyValue.ContainsKey( interactionSession.IpAddress ) )
+                            {
+                                ipAddressSessionKeyValue.Add( interactionSession.IpAddress, new List<int> { interactionSession.Id } );
+                            }
+                            else
+                            {
+                                ipAddressSessionKeyValue[interactionSession.IpAddress].Add( interactionSession.Id );
+                            }
                         }
                     }
-
-                    if ( sessionIpAddressKeyValue.Count > 0 )
-                    {
-                        var provider = IpAddressLookupContainer.GetComponent( ipAddressComponentGuid );
-                        if ( provider != null )
-                        {
-                            var errorMessage = string.Empty;
-                            provider.Lookup( sessionIpAddressKeyValue.Values.ToList(), out errorMessage );
-                        }
-                    }
-
-
-
 
                     rockContext.SaveChanges(); 
                 }
             }
 
-            
+            if ( ipAddressSessionKeyValue.Count > 0 )
+            {
+                var ipAddressSessionValueCount = ipAddressSessionKeyValue.Count;
+                var requestCount = 0;
+                var maxRecords = 50000;
+                while ( ipAddressSessionValueCount > 0 )
+                {
+                    var take = ipAddressSessionValueCount > maxRecords ? maxRecords : ipAddressSessionValueCount;
+                    var ipAddresses = ipAddressSessionKeyValue.Skip( requestCount * maxRecords ).Take( take ).ToDictionary( pair => pair.Key, pair => pair.Value );
+                    var provider = IpAddressLookupContainer.GetComponent( ipAddressComponentGuid );
+                    if ( provider != null )
+                    {
+                        var errorMessage = string.Empty;
+                        var lookupResult = provider.Lookup( ipAddresses, out errorMessage );
+                        recordsProcessed += lookupResult.SuccessCount;
+                    }
+
+                    ipAddressSessionValueCount = ipAddressSessionValueCount - take;
+                    requestCount += 1;
+                }
+            }
 
             context.Result = results.ToString();
 
