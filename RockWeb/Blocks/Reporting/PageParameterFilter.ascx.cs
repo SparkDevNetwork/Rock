@@ -64,6 +64,16 @@ namespace RockWeb.Blocks.Reporting
 
     The concept and code came from a Bema PR.
 
+    2. Show/Hide Filter Buttons
+    --------------------
+    4/12/2022 - JME
+    This block had some odd block settings. One showed and hid All Filter buttons and another showed
+    and hid just the reset buttons. This was re-written with a bug where you could never hide the reset
+    button as the 'ShowFilterButtons' would make it visible again. While this bug could have been fix,
+    it seemed to make more sense (and clean) to have separate settings for each button. While this is
+    a bit of a breaking change it seems rare that one would have hidden all filter buttons and deemed
+    with it to polish these settings.
+
     ========================================
     */
 
@@ -149,10 +159,10 @@ namespace RockWeb.Blocks.Reporting
         Order = 9 )]
 
     [BooleanField(
-        "Hide Filter Actions",
-        Key = AttributeKey.HideFilterActions,
-        Description = "Hides the filter buttons. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick.",
-        DefaultBooleanValue = false,
+        "Show Filter Button",
+        Key = AttributeKey.ShowFilterButton,
+        Description = "Shows or hides the filter buttons. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick.",
+        DefaultBooleanValue = true,
         Category = "CustomSetting",
         Order = 10 )]
     #endregion
@@ -181,7 +191,7 @@ namespace RockWeb.Blocks.Reporting
             public const string FilterButtonSize = "FilterButtonSize";
             public const string RedirectPage = "RedirectPage";
             public const string DoesSelectionCausePostback = "DoesSelectionCausePostback";
-            public const string HideFilterActions = "HideFilterActions";
+            public const string ShowFilterButton = "ShowFilterButton";
         }
 
         #endregion Attribute Keys
@@ -279,8 +289,6 @@ namespace RockWeb.Blocks.Reporting
             var filterButtonText = GetAttributeValue( AttributeKey.FilterButtonText );
             btnFilter.Text = filterButtonText.IsNotNullOrWhiteSpace() ? filterButtonText : "Filter";
 
-            btnResetFilters.Visible = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
-
             var securityField = gFilters.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
@@ -370,9 +378,8 @@ namespace RockWeb.Blocks.Reporting
 
             base.OnLoad( e );
 
-            var hideFilterButtons = GetAttributeValue( AttributeKey.HideFilterActions ).AsBoolean();
-            btnFilter.Visible = !hideFilterButtons;
-            btnResetFilters.Visible = !hideFilterButtons;
+            btnFilter.Visible = GetAttributeValue( AttributeKey.ShowFilterButton ).AsBoolean();
+            btnResetFilters.Visible = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
         }
 
         protected override object SaveViewState()
@@ -396,7 +403,7 @@ namespace RockWeb.Blocks.Reporting
             rtbBlockTitleIconCssClass.Text = GetAttributeValue( AttributeKey.BlockTitleIconCssClass );
             nbFiltersPerRow.Text = GetAttributeValue( AttributeKey.FiltersPerRow );
             cbShowResetFiltersButton.Checked = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
-            cbHideFilterActions.Checked = GetAttributeValue( AttributeKey.HideFilterActions ).AsBoolean();
+            cbShowFilterButton.Checked = GetAttributeValue( AttributeKey.ShowFilterButton ).AsBoolean();
             rtbFilterButtonText.Text = GetAttributeValue( AttributeKey.FilterButtonText );
             ddlFilterButtonSize.SetValue( GetAttributeValue( AttributeKey.FilterButtonSize ).AsInteger() );
             var ppFieldType = new PageReferenceFieldType();
@@ -421,7 +428,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.BlockTitleIconCssClass, rtbBlockTitleIconCssClass.Text );
             SetAttributeValue( AttributeKey.FiltersPerRow, nbFiltersPerRow.Text );
             SetAttributeValue( AttributeKey.ShowResetFiltersButton, cbShowResetFiltersButton.Checked.ToString() );
-            SetAttributeValue( AttributeKey.HideFilterActions, cbHideFilterActions.Checked.ToString() );
+            SetAttributeValue( AttributeKey.ShowFilterButton, cbShowFilterButton.Checked.ToString() );
             SetAttributeValue( AttributeKey.FilterButtonText, rtbFilterButtonText.Text );
             SetAttributeValue( AttributeKey.FilterButtonSize, ddlFilterButtonSize.SelectedValue );
             var ppFieldType = new PageReferenceFieldType();
@@ -730,13 +737,18 @@ namespace RockWeb.Blocks.Reporting
 
             NameValueCollection queryString = GenerateQueryString();
 
+            // 4/12/2022 JME
+            // Updated the redirects to set the endResponse = true (was false). This prevents
+            // child blocks from fully loading, redirecting and loading again. The child blocks
+            // are typically SQL so that could mean a very slow initial page load as they would
+            // be run twice. Not sure why these were originally set to false. 
             if ( queryString.AllKeys.Any() )
             {
-                Response.Redirect( $"{Request.UrlProxySafe().AbsolutePath}?{queryString}", false );
+                Response.Redirect( $"{Request.UrlProxySafe().AbsolutePath}?{queryString}", true );
             }
             else
             {
-                Response.Redirect( Request.UrlProxySafe().AbsolutePath, false );
+                Response.Redirect( Request.UrlProxySafe().AbsolutePath, true );
             }
         }
 
@@ -747,6 +759,17 @@ namespace RockWeb.Blocks.Reporting
         private NameValueCollection GenerateQueryString()
         {
             var queryString = HttpUtility.ParseQueryString( String.Empty );
+
+            // Don't create a query string if the block's page does not match the current page. This
+            // would be the case when editing the settings from 'Admin Tools > CMS Settings > Pages'.
+            // Without this check the block would thrown an exception as CurrentParameters would be
+            // null. This may not be the _best_ place for this check, but the correct change may
+            // need a major refactor.
+            if (RockPage.PageId != BlockCache.PageId )
+            {
+                return queryString;
+            }
+
             foreach ( var parameter in CurrentParameters )
             {
                 if ( parameter.Key != "PageId" )
@@ -765,6 +788,12 @@ namespace RockWeb.Blocks.Reporting
                     if ( control != null )
                     {
                         string value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
+
+                        // If there is no value use the attribute's default value
+                        if ( value.IsNullOrWhiteSpace() )
+                        {
+                            value = attribute.Value.DefaultValue;
+                        }
 
                         if ( value.IsNotNullOrWhiteSpace() )
                         {
