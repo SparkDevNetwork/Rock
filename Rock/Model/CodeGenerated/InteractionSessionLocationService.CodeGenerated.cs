@@ -55,6 +55,12 @@ namespace Rock.Model
         public bool CanDelete( InteractionSessionLocation item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<InteractionSession>( Context ).Queryable().Any( a => a.InteractionSessionLocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionSessionLocation.FriendlyTypeName, InteractionSession.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

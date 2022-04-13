@@ -27,21 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for InteractionSession that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for InteractionSessionLocation that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class InteractionSessionEntity
+    public partial class InteractionSessionLocationEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? DeviceTypeId { get; set; }
+        public string CountryCode { get; set; }
 
         /// <summary />
-        public DateTime? DurationLastCalculatedDateTime { get; set; }
-
-        /// <summary />
-        public int? DurationSeconds { get; set; }
+        public int? CountryValueId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -50,16 +47,19 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int? InteractionCount { get; set; }
-
-        /// <summary />
-        public string InteractionMode { get; set; }
-
-        /// <summary />
-        public int? InteractionSessionLocationId { get; set; }
+        public object GeoPoint { get; set; }
 
         /// <summary />
         public string IpAddress { get; set; }
+
+        /// <summary />
+        public string ISP { get; set; }
+
+        /// <summary />
+        public string Location { get; set; }
+
+        /// <summary />
+        public DateTime LookupDateTime { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -67,10 +67,13 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string SessionData { get; set; }
+        public string PostalCode { get; set; }
 
         /// <summary />
-        public int? SessionStartDateKey { get; set; }
+        public string RegionCode { get; set; }
+
+        /// <summary />
+        public int? RegionValueId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -99,24 +102,25 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source InteractionSession object
+        /// Copies the base properties from a source InteractionSessionLocation object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( InteractionSession source )
+        public void CopyPropertiesFrom( InteractionSessionLocation source )
         {
             this.Id = source.Id;
-            this.DeviceTypeId = source.DeviceTypeId;
-            this.DurationLastCalculatedDateTime = source.DurationLastCalculatedDateTime;
-            this.DurationSeconds = source.DurationSeconds;
+            this.CountryCode = source.CountryCode;
+            this.CountryValueId = source.CountryValueId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.InteractionCount = source.InteractionCount;
-            this.InteractionMode = source.InteractionMode;
-            this.InteractionSessionLocationId = source.InteractionSessionLocationId;
+            this.GeoPoint = source.GeoPoint;
             this.IpAddress = source.IpAddress;
+            this.ISP = source.ISP;
+            this.Location = source.Location;
+            this.LookupDateTime = source.LookupDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.SessionData = source.SessionData;
-            this.SessionStartDateKey = source.SessionStartDateKey;
+            this.PostalCode = source.PostalCode;
+            this.RegionCode = source.RegionCode;
+            this.RegionValueId = source.RegionValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -128,12 +132,18 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for InteractionSession that includes all the fields that are available for GETs. Use this for GETs (use InteractionSessionEntity for POST/PUTs)
+    /// Client model for InteractionSessionLocation that includes all the fields that are available for GETs. Use this for GETs (use InteractionSessionLocationEntity for POST/PUTs)
     /// </summary>
-    public partial class InteractionSession : InteractionSessionEntity
+    public partial class InteractionSessionLocation : InteractionSessionLocationEntity
     {
         /// <summary />
-        public ICollection<Interaction> Interactions { get; set; }
+        public DefinedValue CountryValue { get; set; }
+
+        /// <summary />
+        public ICollection<InteractionSession> InteractionSessions { get; set; }
+
+        /// <summary />
+        public DefinedValue RegionValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
