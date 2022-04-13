@@ -33,7 +33,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Currency field.
  */
 export class CurrencyFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         return toCurrencyOrNull(value) ?? "";
     }
 

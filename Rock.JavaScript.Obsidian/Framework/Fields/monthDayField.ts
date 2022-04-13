@@ -32,7 +32,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the MonthDay field.
  */
 export class MonthDayFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         const components = (value).split("/");
 
         if (components.length !== 2) {

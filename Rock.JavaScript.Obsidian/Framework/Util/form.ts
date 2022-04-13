@@ -60,5 +60,5 @@ export function provideFormState(state: FormState): void {
  * @returns The form state or undefined if it was not available.
  */
 export function useFormState(): FormState | undefined {
-    return inject<FormState>(formStateSymbol);
+    return inject<FormState | undefined>(formStateSymbol, undefined);
 }

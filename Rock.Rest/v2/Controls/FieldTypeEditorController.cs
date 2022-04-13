@@ -22,8 +22,8 @@ using System.Web.Http;
 
 using Rock.Data;
 using Rock.Rest.Filters;
-using Rock.ViewModel.Controls;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.v2.Controls
@@ -39,7 +39,7 @@ namespace Rock.Rest.v2.Controls
         /// <summary>
         /// Gets the available field types for the current person.
         /// </summary>
-        /// <returns>A collection <see cref="ListItemViewModel"/> that represents the field types that are available.</returns>
+        /// <returns>A collection <see cref="ListItemBag"/> that represents the field types that are available.</returns>
         [HttpGet]
         [System.Web.Http.Route( "availableFieldTypes" )]
         [Authenticate]
@@ -51,7 +51,7 @@ namespace Rock.Rest.v2.Controls
                 .ToList();
 
             var fieldTypeItems = fieldTypes
-                .Select( f => new ListItemViewModel
+                .Select( f => new ListItemBag
                 {
                     Text = f.Name,
                     Value = f.Guid.ToString()
@@ -68,12 +68,12 @@ namespace Rock.Rest.v2.Controls
         /// in order for it to continue editing the attribute.
         /// </summary>
         /// <param name="updateViewModel">The view model that contains the update request.</param>
-        /// <returns>An instance of <see cref="FieldTypeConfigurationPropertiesViewModel"/> that represents the state of the attribute configuration.</returns>
+        /// <returns>An instance of <see cref="FieldTypeConfigurationPropertiesBag"/> that represents the state of the attribute configuration.</returns>
         [HttpPost]
         [System.Web.Http.Route( "fieldTypeConfiguration" )]
         [Authenticate]
         [RockGuid( "3a544b0f-7ba9-472c-bb08-f1537a484fad" )]
-        public IHttpActionResult UpdateAttributeConfiguration( [FromBody] FieldTypeConfigurationViewModel updateViewModel )
+        public IHttpActionResult UpdateAttributeConfiguration( [FromBody] FieldTypeConfigurationBag updateViewModel )
         {
             var fieldType = Rock.Web.Cache.FieldTypeCache.Get( updateViewModel.FieldTypeGuid )?.Field;
 
@@ -84,7 +84,7 @@ namespace Rock.Rest.v2.Controls
 
             // Convert the public configuration options into our private
             // configuration options (values).
-            var configurationValues = fieldType.GetPrivateConfigurationOptions( updateViewModel.ConfigurationOptions );
+            var configurationValues = fieldType.GetPrivateConfigurationValues( updateViewModel.ConfigurationValues );
 
             // Convert the default value from the public value into our
             // private internal value.
@@ -95,30 +95,13 @@ namespace Rock.Rest.v2.Controls
             var configurationProperties = fieldType.GetPublicEditConfigurationProperties( configurationValues );
 
             // Get the public configuration options from the internal options (values).
-            var publicConfigurationOptions = fieldType.GetPublicConfigurationOptions( configurationValues );
+            var publicConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
 
-            // Get the editable attribute value so they can render a default value
-            // control.
-            var clientEditableValue = new PublicEditableAttributeValueViewModel
-            {
-                FieldTypeGuid = updateViewModel.FieldTypeGuid,
-                AttributeGuid = Guid.Empty,
-                Name = "Default Value",
-                Categories = new List<PublicAttributeValueCategoryViewModel>(),
-                Order = 0,
-                TextValue = fieldType.GetTextValue( privateDefaultValue, configurationValues ),
-                Value = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues ),
-                Key = "DefaultValue",
-                IsRequired = false,
-                Description = string.Empty,
-                ConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues )
-            };
-
-            return Ok( new FieldTypeConfigurationPropertiesViewModel
+            return Ok( new FieldTypeConfigurationPropertiesBag
             {
                 ConfigurationProperties = configurationProperties,
-                ConfigurationOptions = publicConfigurationOptions,
-                DefaultValue = clientEditableValue
+                ConfigurationValues = publicConfigurationValues,
+                DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
         }
     }

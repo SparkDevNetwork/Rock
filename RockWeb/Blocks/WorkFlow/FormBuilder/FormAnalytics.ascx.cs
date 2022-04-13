@@ -222,8 +222,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             const string kpiLava = @"
 {[kpis style:'card' columncount:'3']}
-  [[ kpi icon:'fa fa-user' value:'{{TotalViews | Format:'N0' }}' label:'Total Views' color:'green-500']][[ endkpi ]]
-  [[ kpi icon:'fa-check-circle' value:'{{Completions | Format:'N0' }}' label:'Completions' color:'blue-500']][[ endkpi ]]
+  [[ kpi icon:'fa fa-user' value:'{{TotalViews | Format:'N0' }}' label:'Total Views' color:'blue-500' ]][[ endkpi ]]
+  [[ kpi icon:'fa-check-circle' value:'{{Completions | Format:'N0' }}' label:'Completions' color:'green-500' ]][[ endkpi ]]
   [[ kpi icon:'fa fa-percentage' value:'{{ConversionRate | Format:'P0' }}' label:'Conversion Rate' color:'indigo-500' ]][[ endkpi ]]
 {[endkpis]}";
 
@@ -349,7 +349,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             factory.TimeScale = chartTimeScale;
             factory.StartDateTime = dateRange.Start;
             factory.EndDateTime = dateRange.End;
-            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.StackedLine;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+            factory.ChartColors = new List<string> { "#2ECC71", "#3498DB" };
 
             var viewedDataset = new ChartJsTimeSeriesDataset();
             viewedDataset.Name = "Views";
@@ -365,8 +366,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 .Cast<IChartJsTimeSeriesDataPoint>()
                 .ToList();
 
-            factory.Datasets.Add( viewedDataset );
             factory.Datasets.Add( completionDataset );
+            factory.Datasets.Add( viewedDataset );
 
             return factory;
         }

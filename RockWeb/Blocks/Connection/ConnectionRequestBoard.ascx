@@ -348,7 +348,7 @@
                                 <Rock:RockLiteralField id="lLastActivityText" HeaderText="Last Activity" />
                                 <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
                                 <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                                <Rock:SecurityField TitleField="PersonFullname" />
+                                <Rock:SecurityField TitleField="PersonAlias.Person.Fullname" />
                             </Columns>
                         </Rock:Grid>
                     </div>

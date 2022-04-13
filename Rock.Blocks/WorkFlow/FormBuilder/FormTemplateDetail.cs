@@ -26,8 +26,8 @@ using Rock.ClientService.Core.DefinedValue;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModel.Blocks.WorkFlow.FormBuilder.FormTemplateDetail;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormTemplateDetail;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Workflow.FormBuilder
 {
@@ -150,7 +150,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             // perform any security checking since we are only showing the name.
             var usedBy = new WorkflowTypeService( rockContext ).Queryable()
                 .Where( t => t.FormBuilderTemplateId.HasValue && t.FormBuilderTemplateId == template.Id )
-                .Select( t => new ListItemViewModel
+                .Select( t => new ListItemBag
                 {
                     Value = t.Guid.ToString(),
                     Text = t.Name

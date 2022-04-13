@@ -19,10 +19,12 @@ using System;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Compilation;
+using System.Collections.Concurrent;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock.Data;
 using Rock.Jobs;
 
@@ -176,6 +178,22 @@ namespace Rock.Model
 
         }
 
+        private static ConcurrentDictionary<string, bool> _verifiedJobTypeAttributes = new ConcurrentDictionary<string, bool>();
+
+        /// <summary>
+        /// Updates the attributes on the Job's Job Type if they haven't been verified yet
+        /// </summary>
+        /// <param name="jobCompiledType">Type of the job compiled.</param>
+        public static void UpdateAttributesIfNeeded( Type jobCompiledType )
+        {
+            if ( !_verifiedJobTypeAttributes.ContainsKey( jobCompiledType.FullName ) )
+            {
+                int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
+                Rock.Attribute.Helper.UpdateAttributes( jobCompiledType, jobEntityTypeId, "Class", jobCompiledType.FullName );
+                _verifiedJobTypeAttributes.TryAdd( jobCompiledType.FullName, true );
+            }
+        }
+
         /// <summary>
         /// Builds a Quartz Job for a specified <see cref="Rock.Model.ServiceJob">Job</see>
         /// </summary>
@@ -183,39 +201,12 @@ namespace Rock.Model
         /// <returns>A object that implements the <see cref="Quartz.IJobDetail"/> interface</returns>
         public IJobDetail BuildQuartzJob( ServiceJob job )
         {
-            // build the type object, will depend if the class is in an assembly or the App_Code folder
-            Type type = null;
+            var type = job.GetCompiledType();
 
-            if ( string.IsNullOrWhiteSpace( job.Assembly ) )
-            {
-                // first, if no assembly is known, look in all the dlls for it
-                type = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
-
-                if ( type == null )
-                {
-                    // if it can't be found in dlls, look in App_Code using BuildManager
-                    type = BuildManager.GetType( job.Class, false );
-                }
-            }
-            else
-            {
-                // if an assembly is specified, load the type from that
-                string thetype = string.Format( "{0}, {1}", job.Class, job.Assembly );
-                type = Type.GetType( thetype );
-            }
-
-            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
-            Rock.Attribute.Helper.UpdateAttributes( type, jobEntityTypeId, "Class", type.FullName );
-
-            // load up job attributes (parameters) 
-            job.LoadAttributes();
+            UpdateAttributesIfNeeded( type );
 
             JobDataMap map = new JobDataMap();
-
-            foreach ( var attrib in job.AttributeValues )
-            {
-                map.Add( attrib.Key, attrib.Value.Value );
-            }
+            map.LoadFromJobAttributeValues( job );
 
             // create the quartz job object
             IJobDetail jobDetail = JobBuilder.Create( type )

@@ -21,9 +21,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Bar Chart" )]
     [Category( "Reporting > Dashboard" )]
     [Description( "Bar Chart Dashboard Widget" )]

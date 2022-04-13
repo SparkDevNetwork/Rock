@@ -21,7 +21,7 @@ using System.Linq;
 using Rock.ClientService.Core.Campus.Options;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.ClientService.Core.Campus
@@ -62,8 +62,8 @@ namespace Rock.ClientService.Core.Campus
         /// Gets the campuses that can be sent to a client.
         /// </summary>
         /// <param name="options">The options that specify which campuses to include.</param>
-        /// <returns>A list of <see cref="ListItemViewModel"/> that represent the campus values.</returns>
-        public List<ListItemViewModel> GetCampusesAsListItems( CampusOptions options = null )
+        /// <returns>A list of <see cref="ListItemBag"/> that represent the campus values.</returns>
+        public List<ListItemBag> GetCampusesAsListItems( CampusOptions options = null )
         {
             IEnumerable<CampusCache> source = CampusCache.All( RockContext );
 
@@ -112,7 +112,7 @@ namespace Rock.ClientService.Core.Campus
             source = CheckSecurity( source );
 
             return source.OrderBy( c => c.Order )
-                .Select( c => new ListItemViewModel()
+                .Select( c => new ListItemBag()
                 {
                     Value = c.Guid.ToString(),
                     Text = c.Name

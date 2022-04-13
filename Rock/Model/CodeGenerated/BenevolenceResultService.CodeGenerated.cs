@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// BenevolenceResult View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( BenevolenceResult ) )]
-    public partial class BenevolenceResultViewModelHelper : ViewModelHelper<BenevolenceResult, Rock.ViewModel.BenevolenceResultViewModel>
+    public partial class BenevolenceResultViewModelHelper : ViewModelHelper<BenevolenceResult, BenevolenceResultBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,14 +72,14 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.BenevolenceResultViewModel CreateViewModel( BenevolenceResult model, Person currentPerson = null, bool loadAttributes = true )
+        public override BenevolenceResultBag CreateViewModel( BenevolenceResult model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.BenevolenceResultViewModel
+            var viewModel = new BenevolenceResultBag
             {
                 Id = model.Id,
                 Guid = model.Guid,
@@ -176,7 +177,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.BenevolenceResultViewModel ToViewModel( this BenevolenceResult model, Person currentPerson = null, bool loadAttributes = false )
+        public static BenevolenceResultBag ToViewModel( this BenevolenceResult model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new BenevolenceResultViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

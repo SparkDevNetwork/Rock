@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public DateTime? ConfirmationSentDateTime { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -42,6 +45,9 @@ namespace Rock.Client
 
         /// <summary />
         public int GroupMemberId { get; set; }
+
+        /// <summary />
+        public DateTime? LastRSVPReminderSentDateTime { get; set; }
 
         /// <summary />
         public int? LocationId { get; set; }
@@ -87,9 +93,11 @@ namespace Rock.Client
         public void CopyPropertiesFrom( GroupMemberAssignment source )
         {
             this.Id = source.Id;
+            this.ConfirmationSentDateTime = source.ConfirmationSentDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupMemberId = source.GroupMemberId;
+            this.LastRSVPReminderSentDateTime = source.LastRSVPReminderSentDateTime;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.ScheduleId = source.ScheduleId;

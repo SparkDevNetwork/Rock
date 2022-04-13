@@ -37,6 +37,7 @@
         <!-- Modal -->
         <Rock:ModalDialog ID="mdOptions" runat="server" Title="Options" SaveButtonText="Save" OnSaveClick="mdOptions_SaveClick">
             <Content>
+                <Rock:NotificationBox id="nbWarning" runat="server" NotificationBoxType="Warning" Visible="false">You are not logged in so some options are not available.</Rock:NotificationBox>
                 <div class="row">
                     <div class="col-xs-12">
                         <div class="form-group">

@@ -10,5 +10,6 @@ module.exports = {
     testEnvironment: 'jsdom',
     testMatch: [
         "**/?(*.)+(spec|test).ts"
-    ]
+    ],
+    moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node", "d.ts"]
 };

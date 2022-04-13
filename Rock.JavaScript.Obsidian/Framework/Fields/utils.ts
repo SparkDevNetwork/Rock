@@ -14,17 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { Guid } from "@Obsidian/Types";
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import { binaryComparisonTypes, ComparisonType, containsComparisonTypes, isCompareVisibleForComparisonFilter, isSingleComparisonType, stringComparisonTypes } from "../Reporting/comparisonType";
 import { getFilteredComparisonTypeOptions } from "../Reporting/comparisonTypeOptions";
 import { ComparisonValue } from "../Reporting/comparisonValue";
 import { FilterMode } from "../Reporting/filterMode";
-import { Guid, normalize, isValidGuid } from "../Util/guid";
+import { normalize, isValidGuid } from "../Util/guid";
 import { IFieldType } from "./fieldType";
 import DropDownList from "../Elements/dropDownList";
 import FieldFilterContainer from "../Elements/fieldFilterContainer";
 import { toNumberOrNull } from "../Services/number";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 const fieldTypeTable: Record<Guid, IFieldType> = {};
 
@@ -191,7 +193,7 @@ export function getFieldType(fieldTypeGuid: Guid): IFieldType | null {
  * Allows callers to modify the names of the comparison type options. The values
  * and the array itself should not be modified.
  */
-export type UpdateComparisonTypeNamesCallback = (comparisonTypeOptions: ListItem[]) => void;
+export type UpdateComparisonTypeNamesCallback = (comparisonTypeOptions: ListItemBag[]) => void;
 
 /**
  * Options that can be passed to the getStandardFilterComponent method which

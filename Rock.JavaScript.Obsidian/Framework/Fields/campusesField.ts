@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
@@ -49,15 +49,15 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Campuses field.
  */
 export class CampusesFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === undefined || value === null || value === "") {
             return "";
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             const userValues = value.split(",");
-            const selectedValues = values.filter(o => userValues.includes(o.value));
+            const selectedValues = values.filter(o => userValues.includes(o.value ?? ""));
 
             return selectedValues.map(o => o.text).join(", ");
         }

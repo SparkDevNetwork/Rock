@@ -29,9 +29,6 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Person Page Views" )]
     [Category( "CRM" )]
     [Description( "Lists a persons web sessions with details." )]

@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -65,7 +65,7 @@ namespace Rock.Field.Types
                 var binaryFileTypes = new BinaryFileTypeService( rockContext )
                     .Queryable()
                     .OrderBy( t => t.Name )
-                    .Select( t => new ListItemViewModel
+                    .Select( t => new ListItemBag
                     {
                         Value = t.Guid.ToString(),
                         Text = t.Name
@@ -250,7 +250,7 @@ namespace Rock.Field.Types
 
                 // A binary file needs more than just the Guid to properly display
                 // in most cases, so include the guid and the filename.
-                return new ListItemViewModel
+                return new ListItemBag
                 {
                     Value = binaryFileInfo.Guid.ToString(),
                     Text = binaryFileInfo.FileName
@@ -262,7 +262,7 @@ namespace Rock.Field.Types
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             // Extract the raw value.
-            return publicValue.FromJsonOrNull<ListItemViewModel>()?.Value ?? string.Empty;
+            return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
         }
 
         /// <summary>

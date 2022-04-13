@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.ViewModel;
+using Rock.ViewModels.Entities;
 
 namespace Rock.Model
 {
@@ -37,7 +37,7 @@ namespace Rock.Model
         /// <param name="viewModel">The view model.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( RegistrationTemplate model, RegistrationTemplateViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( RegistrationTemplate model, RegistrationTemplateBag viewModel, Person currentPerson = null, bool loadAttributes = true )
         {
             viewModel.PluralRegistrantTerm = model.RegistrantTerm.Pluralize();
         }

@@ -46,9 +46,9 @@ export default defineComponent({
     },
 
     template: `
-<div class="header">
-    <h3 v-if="title">{{ title }}</h3>
-    <p v-if="description">{{ description }}</p>
+<div class="rock-header">
+    <h3 v-if="title" class="title">{{ title }}</h3>
+    <p v-if="description" class="description">{{ description }}</p>
 </div>
 `
 });

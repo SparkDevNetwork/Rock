@@ -55,9 +55,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues );
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
             var definedTypeGuid = publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? publicConfigurationValues[DEFINED_TYPE_KEY].AsGuidOrNull() : null;
 
             if ( definedTypeGuid.HasValue )
@@ -73,12 +73,15 @@ namespace Rock.Field.Types
                         v.Description
                     } )
                     .ToCamelCaseJson( false, true );
-
-                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
             }
             else
             {
                 publicConfigurationValues[PUBLIC_VALUES] = "[]";
+            }
+
+            if ( usage != ConfigurationValueUsage.Configure )
+            {
+                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
             }
 
             return publicConfigurationValues;

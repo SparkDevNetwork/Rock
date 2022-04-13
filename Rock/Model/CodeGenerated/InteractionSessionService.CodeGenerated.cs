@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// InteractionSession View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( InteractionSession ) )]
-    public partial class InteractionSessionViewModelHelper : ViewModelHelper<InteractionSession, Rock.ViewModel.InteractionSessionViewModel>
+    public partial class InteractionSessionViewModelHelper : ViewModelHelper<InteractionSession, InteractionSessionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,21 +78,26 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.InteractionSessionViewModel CreateViewModel( InteractionSession model, Person currentPerson = null, bool loadAttributes = true )
+        public override InteractionSessionBag CreateViewModel( InteractionSession model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.InteractionSessionViewModel
+            var viewModel = new InteractionSessionBag
             {
                 Id = model.Id,
                 Guid = model.Guid,
                 DeviceTypeId = model.DeviceTypeId,
+                DurationLastCalculatedDateTime = model.DurationLastCalculatedDateTime,
+                DurationSeconds = model.DurationSeconds,
+                InteractionCount = model.InteractionCount,
                 InteractionMode = model.InteractionMode,
+                InteractionSessionLocationId = model.InteractionSessionLocationId,
                 IpAddress = model.IpAddress,
                 SessionData = model.SessionData,
+                SessionStartDateKey = model.SessionStartDateKey,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -162,11 +168,16 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.DeviceTypeId = source.DeviceTypeId;
+            target.DurationLastCalculatedDateTime = source.DurationLastCalculatedDateTime;
+            target.DurationSeconds = source.DurationSeconds;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InteractionCount = source.InteractionCount;
             target.InteractionMode = source.InteractionMode;
+            target.InteractionSessionLocationId = source.InteractionSessionLocationId;
             target.IpAddress = source.IpAddress;
             target.SessionData = source.SessionData;
+            target.SessionStartDateKey = source.SessionStartDateKey;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -182,7 +193,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.InteractionSessionViewModel ToViewModel( this InteractionSession model, Person currentPerson = null, bool loadAttributes = false )
+        public static InteractionSessionBag ToViewModel( this InteractionSession model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new InteractionSessionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

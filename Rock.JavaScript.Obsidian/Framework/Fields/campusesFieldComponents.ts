@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref, SetupContext, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "../Elements/checkBox";
@@ -21,8 +23,8 @@ import CheckBoxList from "../Elements/checkBoxList";
 import NumberBox from "../Elements/numberBox";
 import { toNumberOrNull } from "../Services/number";
 import { ConfigurationPropertyKey, ConfigurationValueKey } from "./campusesField";
-import { ListItem } from "../ViewModels";
-import { areEqual, Guid } from "../Util/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { areEqual } from "../Util/guid";
 import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
 import { updateRefValue } from "../Util/util";
 
@@ -47,9 +49,9 @@ export const EditComponent = defineComponent({
         const internalValue = ref(props.modelValue ? props.modelValue.split(",") : []);
 
         /** The options to choose from in the drop down list */
-        const options = computed((): ListItem[] => {
+        const options = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -103,16 +105,16 @@ export const ConfigurationComponent = defineComponent({
         const selectableCampuses = ref<string[]>([]);
 
         /** The campus types that are available to be selected from. */
-        const campusTypeOptions = ref<ListItem[]>([]);
+        const campusTypeOptions = ref<ListItemBag[]>([]);
 
         /** The campus statuses that are available to be selected from. */
-        const campusStatusOptions = ref<ListItem[]>([]);
+        const campusStatusOptions = ref<ListItemBag[]>([]);
 
         /** The campuses that are available to be selected from. */
         const allCampusItems = ref<CampusItem[]>([]);
 
-        const allCampusOptions = computed((): ListItem[] => {
-            return allCampusItems.value.map((c): ListItem => {
+        const allCampusOptions = computed((): ListItemBag[] => {
+            return allCampusItems.value.map((c): ListItemBag => {
                 return {
                     value: c.guid,
                     text: c.name
@@ -124,7 +126,7 @@ export const ConfigurationComponent = defineComponent({
          * The campuses that are available to be selected from, these values
          * get emitted as the options the default value control can pick from.
          */
-        const campusOptions = computed((): ListItem[] => {
+        const campusOptions = computed((): ListItemBag[] => {
             return allCampusItems.value.filter(c => {
                 if (!includeInactive.value && !c.isActive) {
                     return false;
@@ -176,6 +178,7 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.FilterCampusTypes] = filterCampusTypes.value.join(",");
             newValue[ConfigurationValueKey.FilterCampusStatus] = filterCampusStatus.value.join(",");
             newValue[ConfigurationValueKey.SelectableCampuses] = selectableCampuses.value.join(",");
+            newValue[ConfigurationValueKey.Values] = JSON.stringify(campusOptions.value);
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
@@ -183,7 +186,8 @@ export const ConfigurationComponent = defineComponent({
                 || newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive] ?? "False")
                 || newValue[ConfigurationValueKey.FilterCampusTypes] !== (props.modelValue[ConfigurationValueKey.FilterCampusTypes] ?? "")
                 || newValue[ConfigurationValueKey.FilterCampusStatus] !== (props.modelValue[ConfigurationValueKey.FilterCampusStatus] ?? "")
-                || newValue[ConfigurationValueKey.SelectableCampuses] !== (props.modelValue[ConfigurationValueKey.SelectableCampuses] ?? "");
+                || newValue[ConfigurationValueKey.SelectableCampuses] !== (props.modelValue[ConfigurationValueKey.SelectableCampuses] ?? "")
+                || newValue[ConfigurationValueKey.Values] !== (props.modelValue[ConfigurationValueKey.Values] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -215,8 +219,8 @@ export const ConfigurationComponent = defineComponent({
             const campusStatuses = props.configurationProperties[ConfigurationPropertyKey.CampusStatuses];
 
             allCampusItems.value = campuses ? JSON.parse(campuses) as CampusItem[] : [];
-            campusTypeOptions.value = campusTypes ? JSON.parse(campusTypes) as ListItem[] : [];
-            campusStatusOptions.value = campusStatuses ? JSON.parse(campusStatuses) as ListItem[] : [];
+            campusTypeOptions.value = campusTypes ? JSON.parse(campusTypes) as ListItemBag[] : [];
+            campusStatusOptions.value = campusStatuses ? JSON.parse(campusStatuses) as ListItemBag[] : [];
 
             enhancedSelection.value = asBoolean(props.modelValue[ConfigurationValueKey.EnhancedSelection]);
             numberOfColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
@@ -243,7 +247,7 @@ export const ConfigurationComponent = defineComponent({
         watch(filterCampusTypes, () => maybeUpdateConfiguration(ConfigurationValueKey.FilterCampusTypes, filterCampusTypes.value.join(",")));
         watch(filterCampusStatus, () => maybeUpdateConfiguration(ConfigurationValueKey.FilterCampusStatus, filterCampusStatus.value.join(",")));
         watch(selectableCampuses, () => maybeUpdateConfiguration(ConfigurationValueKey.SelectableCampuses, selectableCampuses.value.join(",")));
-        watch(campusOptions, () => emit("updateConfigurationValue", ConfigurationValueKey.Values, JSON.stringify(campusOptions.value)));
+        watch(campusOptions, () => maybeUpdateConfiguration(ConfigurationValueKey.Values, JSON.stringify(campusOptions.value)));
 
         return {
             allCampusOptions,

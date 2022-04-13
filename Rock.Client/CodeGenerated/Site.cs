@@ -80,6 +80,9 @@ namespace Rock.Client
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
+        public bool EnablePageViewGeoTracking { get; set; }
+
+        /// <summary />
         public bool EnablePageViews { get; set; } = true;
 
         /// <summary />
@@ -213,6 +216,7 @@ namespace Rock.Client
             this.EnabledForShortening = source.EnabledForShortening;
             this.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
+            this.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
             this.EnablePageViews = source.EnablePageViews;
             this.ErrorPage = source.ErrorPage;
             this.ExternalUrl = source.ExternalUrl;
