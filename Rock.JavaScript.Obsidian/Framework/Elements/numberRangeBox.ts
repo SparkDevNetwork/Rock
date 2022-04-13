@@ -64,8 +64,8 @@ export default defineComponent({
     data: function () {
         return {
             internalValue: {
-                lower: "",
-                upper: ""
+                lower: "" as number | string,
+                upper: "" as number | string
             }
         };
     },

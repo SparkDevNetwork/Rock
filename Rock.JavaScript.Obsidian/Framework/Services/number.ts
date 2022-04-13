@@ -46,7 +46,7 @@ export function asFormattedString(num: number | null, digits?: number, options: 
  * Ex: $1,000.20 => 1000.2
  * @param str
  */
-export function toNumber(str?: string | null): number {
+export function toNumber(str?: string | number | null): number {
     return toNumberOrNull(str) || 0;
 }
 
@@ -55,9 +55,13 @@ export function toNumber(str?: string | null): number {
  * Ex: $1,000.20 => 1000.2
  * @param str
  */
-export function toNumberOrNull(str?: string | null): number | null {
+export function toNumberOrNull(str?: string | number | null): number | null {
     if (str === null || str === undefined || str == "") {
         return null;
+    }
+
+    if (typeof str === "number") {
+        return str;
     }
 
     const replaced = str.replace(/[$,]/g, "");
