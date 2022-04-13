@@ -27,6 +27,7 @@ using Quartz.Impl.Matchers;
 
 using Rock.Data;
 using Rock.Jobs;
+using CronExpressionDescriptor;
 
 namespace Rock.Model
 {
@@ -225,10 +226,23 @@ namespace Rock.Model
         /// <returns>A Quartz trigger that implements <see cref="Quartz.ITrigger"/> for the specified job.</returns>
         public ITrigger BuildQuartzTrigger( ServiceJob job )
         {
+
+            string cronExpression;
+            if ( IsValidCronDescription( job.CronExpression ) )
+            {
+                cronExpression = job.CronExpression;
+            }
+            else
+            {
+                // Invalid cron expression, so specify to never run.
+                // If they view the job in ScheduledJobDetail they'll see that it isn't a valid expression.
+                cronExpression = ServiceJob.NeverScheduledCronExpression;
+            }
+
             // create quartz trigger
             ITrigger trigger = ( ICronTrigger ) TriggerBuilder.Create()
                 .WithIdentity( job.Guid.ToString(), job.Name )
-                .WithCronSchedule( job.CronExpression, x =>
+                .WithCronSchedule( cronExpression, x =>
                 {
                     x.InTimeZone( RockDateTime.OrgTimeZoneInfo );
                     x.WithMisfireHandlingInstructionDoNothing();
@@ -237,6 +251,40 @@ namespace Rock.Model
                 .Build();
 
             return trigger;
+        }
+
+        /// <summary>
+        /// Determines whether the Cron Expression is valid for Quartz
+        /// </summary>
+        /// <param name="cronExpression">The cron expression.</param>
+        /// <returns>bool.</returns>
+        public static bool IsValidCronDescription( string cronExpression )
+        {
+            return Quartz.CronExpression.IsValidExpression( cronExpression );
+        }
+
+        /// <summary>
+        /// Gets a friendly cron description, or 'Invalid Cron Expression' if it isn't valid.
+        /// </summary>
+        /// <param name="cronExpression">The cron expression.</param>
+        /// <returns>string.</returns>
+        public static string GetCronDescription( string cronExpression )
+        {
+            if ( Quartz.CronExpression.IsValidExpression( cronExpression ) )
+            {
+                try
+                {
+                    return ExpressionDescriptor.GetDescription( cronExpression, new Options { ThrowExceptionOnParseError = true } );
+                }
+                catch
+                {
+                    return "Invalid Cron Expression";
+                }
+            }
+            else
+            {
+                return "Invalid Cron Expression";
+            }
         }
 
         /// <summary>
