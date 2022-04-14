@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RestSharp;
 using Rock.Attribute;
@@ -136,11 +135,11 @@ namespace Rock.IpAddress
                             interactionSessionLocationService.Add( interactionSessionLocation );
                             foreach ( var interactionSession in interactionSessions )
                             {
+                                lookupResult.SuccessCount += 1;
                                 interactionSessionLocation.InteractionSessions.Add( interactionSession );
                             }
                             
                             rockContext.SaveChanges();
-                            lookupResult.SuccessCount += 1;
                         }
                     }
 
@@ -176,7 +175,7 @@ namespace Rock.IpAddress
                 }
             }
 
-            lookupResult.FailedCount = ipAddressesWithSessionIds.Count - lookupResult.SuccessCount;
+            lookupResult.FailedCount = ipAddressesWithSessionIds.SelectMany( a => a.Value ).Count() - lookupResult.SuccessCount;
             return lookupResult;
         }
     }

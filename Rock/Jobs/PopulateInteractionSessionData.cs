@@ -84,6 +84,14 @@ namespace Rock.Jobs
 
         #endregion Keys
 
+        #region Fields
+
+        private List<string> _errors;
+
+        private List<Exception> _exceptions;
+
+        #endregion
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -105,16 +113,78 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void Execute( IJobExecutionContext context )
         {
-            // get the job map
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var howManyRecords = dataMap.GetString( AttributeKey.HowManyRecords ).AsIntegerOrNull() ?? 50000;
-            var lookbackMaximumInDays = dataMap.GetString( AttributeKey.LookbackMaximumInDays ).AsInteger();
-            var ipAddressComponentGuid = dataMap.GetString( AttributeKey.IPAddressGeoCodingComponent);
-            var startDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );
+            _errors = new List<string>();
+            _exceptions = new List<Exception>();
             StringBuilder results = new StringBuilder();
-            var errors = new List<string>();
-            List<Exception> exceptions = new List<Exception>();
-            bool anyRemaining = true;
+            var result = ProcessInteractionSessionForIP( context );
+            results.AppendLine( result );
+
+            result = ProcessInteractionCountAndDuration( context );
+            results.AppendLine( result );
+
+            foreach ( var error in _errors )
+            {
+                results.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
+            }
+
+            context.Result = results.ToString();
+
+            if ( _exceptions.Any() )
+            {
+                var exceptionList = new AggregateException( "One or more exceptions occurred in Process Interaction Session Data.", _exceptions );
+                throw new RockJobWarningException( "Process Interaction Session Data completed with warnings", exceptionList );
+            }
+        }
+
+        private string ProcessInteractionCountAndDuration( IJobExecutionContext context )
+        {
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            var anyRemaining = true;
+            var howManyRecords = dataMap.GetString( AttributeKey.HowManyRecords ).AsIntegerOrNull() ?? 50000;
+            var maxSessionRecords = 2000;
+            var totalRecordsProcessed = 0;
+            while ( howManyRecords > 0 )
+            {
+                var recordsTobeUpdated = 0;
+                var rockContext = new RockContext();
+                var startDate = RockDateTime.Now.AddDays( -1 );
+                var take = howManyRecords < maxSessionRecords ? howManyRecords : maxSessionRecords;
+                var interactionSessionQuery = new InteractionSessionService( rockContext )
+                    .Queryable( "Interactions" )
+                    .Where( a => a.CreatedDateTime >= startDate &&
+                                 ( !a.DurationLastCalculatedDateTime.HasValue || a.Interactions.Any( b => b.CreatedDateTime > a.DurationLastCalculatedDateTime ) ) )
+
+                    .Take( take );
+
+                context.UpdateLastStatusMessage( $"Processing Interaction Count And Session Duration : {take} sessions are being processed currently. Total {totalRecordsProcessed} Interaction Session{( totalRecordsProcessed < 2 ? "" : "s" )} are processed till now." );
+
+                foreach ( var interactionSession in interactionSessionQuery )
+                {
+                    recordsTobeUpdated += 1;
+                    interactionSession.InteractionCount = interactionSession.Interactions.Count();
+                    interactionSession.DurationSeconds = ( int ) ( interactionSession.Interactions.Max( b => b.CreatedDateTime.Value ) - interactionSession.Interactions.Min( b => b.CreatedDateTime.Value ) ).TotalSeconds;
+                    interactionSession.DurationLastCalculatedDateTime = RockDateTime.Now;
+                }
+
+                rockContext.SaveChanges();
+                totalRecordsProcessed += recordsTobeUpdated;
+
+                var totalRemainingCount = interactionSessionQuery.Count();
+                anyRemaining = totalRemainingCount >= take;
+                howManyRecords = anyRemaining ? howManyRecords - take : 0;
+            }
+
+            return $"<i class='fa fa-circle text-success'></i> Updated Interaction Count And Session Duration for {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )}";
+        }
+
+        private string ProcessInteractionSessionForIP( IJobExecutionContext jobContext )
+        {
+            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
+            var lookbackMaximumInDays = dataMap.GetString( AttributeKey.LookbackMaximumInDays ).AsInteger();
+            var startDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );
+            var anyRemaining = true;
+            var howManyRecords = dataMap.GetString( AttributeKey.HowManyRecords ).AsIntegerOrNull() ?? 50000;
+            var ipAddressComponentGuid = dataMap.GetString( AttributeKey.IPAddressGeoCodingComponent );
             var ipAddressSessionKeyValue = new Dictionary<string, List<int>>();
             var channelIdsWithGeoTracking = GetInteractionChannelsWithGeoTracking();
             var componentIds = InteractionComponentCache.All().Where( a => channelIdsWithGeoTracking.Contains( a.InteractionChannelId ) ).Select( a => a.Id ).ToList();
@@ -123,12 +193,15 @@ namespace Rock.Jobs
             {
                 filterOnComponentQueryable = true;
             }
-            var recordsProcessed = 0;
+
+            var recordsUpdated = 0;
+            var totalRecordsProcessed = 0;
             var maxSessionRecords = 1000;
             while ( howManyRecords > 0 )
             {
-                using ( var rockContext = new RockContext() )
+                try
                 {
+                    var rockContext = new RockContext();
                     var currentDateTime = RockDateTime.Now;
                     var interactionComponentQry = new InteractionComponentService( rockContext )
                         .Queryable()
@@ -154,15 +227,20 @@ namespace Rock.Jobs
                         .Where( a =>
                             !a.InteractionSessionLocationId.HasValue &&
                             a.IpAddress != null &&
-                            a.IpAddress != string.Empty && a.IpAddress != "::1" && !a.IpAddress.Contains( "192.") && !a.IpAddress.Contains( "172." ) &&
+                            a.IpAddress != string.Empty && a.IpAddress != "::1" && !a.IpAddress.Contains( "192." ) && !a.IpAddress.Contains( "172." ) &&
                             a.Interactions.Any( b => interactionIdsQry.Contains( b.Id ) ) )
-                        .Take( 1000 );
+                        .Take( take );
 
-                    anyRemaining = interactionSessionQuery.Count() >= take;
+                    var totalRemainingCount = interactionSessionQuery.Count();
+                    anyRemaining = totalRemainingCount >= take;
                     howManyRecords = anyRemaining ? howManyRecords - take : 0;
+
+                    // Update the progress
+                    jobContext.UpdateLastStatusMessage( $"Processing Interaction Session for IP : {take} IP's are being processed currently. Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. " );
 
                     foreach ( var interactionSession in interactionSessionQuery )
                     {
+                        totalRecordsProcessed += 1;
                         var interactionSessionLocationId = interactionSessionLocationQry
                             .Where( m => m.IpAddress == interactionSession.IpAddress )
                             .Select( a => a.Id )
@@ -170,7 +248,7 @@ namespace Rock.Jobs
                         if ( interactionSessionLocationId != default( int ) )
                         {
                             interactionSession.InteractionSessionLocationId = interactionSessionLocationId;
-                            recordsProcessed += 1;
+                            recordsUpdated += 1;
                         }
                         else
                         {
@@ -185,10 +263,34 @@ namespace Rock.Jobs
                         }
                     }
 
-                    rockContext.SaveChanges(); 
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception ex )
+                {
+                    // Capture and log the exception because we're not going to fail this job
+                    // unless all the data views fail.
+                    var message = $"An error occurred while trying to process interaction sessions. Error: {ex.Message}";
+                    _errors.Add( string.Format( @"ProcessInteractionSessionForIP method after {0} records.", totalRecordsProcessed ) );
+                    var ex2 = new Exception( message, ex );
+                    _exceptions.Add( ex2 );
+                    ExceptionLogService.LogException( ex2, null );
+                    continue;
                 }
             }
 
+            if ( ipAddressSessionKeyValue.Count > 0 )
+            {
+                jobContext.UpdateLastStatusMessage( $"Processing Interaction Session : Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. {ipAddressSessionKeyValue.Count} sent to LookupComponent to process." );
+                recordsUpdated = ProcessIPOnLookupComponent( ipAddressComponentGuid, ipAddressSessionKeyValue );
+            }
+
+            // Format the result message
+            return $"<i class='fa fa-circle text-success'></i> Updated {recordsUpdated} out of {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )}";
+        }
+
+        private int ProcessIPOnLookupComponent( string ipAddressComponentGuid, Dictionary<string, List<int>> ipAddressSessionKeyValue )
+        {
+            var recordsProcessed = 0;
             if ( ipAddressSessionKeyValue.Count > 0 )
             {
                 var ipAddressSessionValueCount = ipAddressSessionKeyValue.Count;
@@ -198,12 +300,31 @@ namespace Rock.Jobs
                 {
                     var take = ipAddressSessionValueCount > maxRecords ? maxRecords : ipAddressSessionValueCount;
                     var ipAddresses = ipAddressSessionKeyValue.Skip( requestCount * maxRecords ).Take( take ).ToDictionary( pair => pair.Key, pair => pair.Value );
-                    var provider = IpAddressLookupContainer.GetComponent( ipAddressComponentGuid );
-                    if ( provider != null )
+                    var errorMessage = string.Empty;
+                    try
                     {
-                        var errorMessage = string.Empty;
-                        var lookupResult = provider.Lookup( ipAddresses, out errorMessage );
-                        recordsProcessed += lookupResult.SuccessCount;
+                        var provider = IpAddressLookupContainer.GetComponent( ipAddressComponentGuid );
+                        if ( provider != null )
+                        {
+                            var lookupResult = provider.Lookup( ipAddresses, out errorMessage );
+                            if ( errorMessage.IsNotNullOrWhiteSpace() )
+                            {
+                                _errors.Add( string.Format( @"Ip Lookup Component failed with batch of {0} IP with error message {1}.", ipAddresses.Count, errorMessage ) );
+                            }
+
+                            recordsProcessed += lookupResult.SuccessCount;
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        // Capture and log the exception because we're not going to fail this job
+                        // unless all the data views fail.
+                        var message = $"An error occurred while trying to lookup IP Addresses from Lookup Component so it was skipped. Error: {ex.Message}";
+                        _errors.Add( string.Format( @"Ip Lookup Component failed with batch of {0} IP.", ipAddresses.Count ) );
+                        var ex2 = new Exception( message, ex );
+                        _exceptions.Add( ex2 );
+                        ExceptionLogService.LogException( ex2, null );
+                        continue;
                     }
 
                     ipAddressSessionValueCount = ipAddressSessionValueCount - take;
@@ -211,14 +332,7 @@ namespace Rock.Jobs
                 }
             }
 
-            context.Result = results.ToString();
-
-            if ( exceptions.Any() )
-            {
-                var exceptionList = new AggregateException( "One or more exceptions occurred in UpdatePersistedDatasets.", exceptions );
-                throw new RockJobWarningException( "UpdatePersistedDatasets completed with warnings", exceptionList );
-            }
-
+            return recordsProcessed;
         }
 
         private List<int> GetInteractionChannelsWithGeoTracking()
