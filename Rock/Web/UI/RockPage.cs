@@ -1370,8 +1370,8 @@ Rock.settings.initialize({{
                         {
                             var script = $@"
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializePage({{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializePage({{
             executionStartTime: new Date().getTime(),
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
@@ -1691,8 +1691,8 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     {
                         var script = $@"
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializePageTimings({{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializePageTimings({{
             elementId: '{_obsidianPageTimingControlId}',
             debugTimingViewModels: { _debugTimingViewModels.ToCamelCaseJson( false, true ) }
         }});

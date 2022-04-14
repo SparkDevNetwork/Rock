@@ -7,7 +7,7 @@ module.exports = {
     devtool: process.env.CONFIGURATION === "Debug" ? "source-map" : false,
     entry: {
         "obsidian-core": {
-            import: "./Core/core.ts",
+            import: "./System/core.ts",
             library: {
                 type: "window",
                 name: "Obsidian",
@@ -15,7 +15,7 @@ module.exports = {
             }
         },
         "obsidian-vendor": {
-            import: "./Core/vendor.ts",
+            import: "./System/vendor.ts",
             library: {
                 type: "system"
             }

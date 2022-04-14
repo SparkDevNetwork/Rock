@@ -16,9 +16,9 @@
 //
 
 import { computed, defineComponent, PropType } from "vue";
-import InlineSwitch from "../Elements/inlineSwitch";
-import TransitionVerticalCollapse from "../Elements/transitionVerticalCollapse";
-import { useVModelPassthrough } from "../Util/component";
+import InlineSwitch from "./inlineSwitch";
+import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import Header from "./header";
 
 /**

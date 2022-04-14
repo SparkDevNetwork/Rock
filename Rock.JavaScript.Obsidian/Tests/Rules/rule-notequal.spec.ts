@@ -16,8 +16,7 @@
 //
 
 import assert = require("assert");
-import exp = require("constants");
-import { validateValue } from "../../Framework/Rules/index";
+import { validateValue } from "../../Framework/ValidationRules/index";
 
 const expectedNotEqualErrorText = (value: unknown): string => `must not equal ${value}`;
 

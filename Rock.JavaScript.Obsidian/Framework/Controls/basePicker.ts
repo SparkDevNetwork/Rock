@@ -16,10 +16,10 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import Alert from "../Elements/alert.vue";
-import LoadingIndicator from "../Elements/loadingIndicator";
-import { useVModelPassthrough } from "../Util/component";
-import { isPromise } from "../Util/util";
+import Alert from "./alert";
+import LoadingIndicator from "./loadingIndicator";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import { isPromise } from "@Obsidian/Utility/util";
 
 function isDescendant(parent: Node, child: Node): boolean {
     for (let node: Node | null = child; node !== null; node = node.parentNode) {

@@ -1,0 +1,125 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <Name>Rock.JavaScript.Obsidian.Blocks</Name>
+    <RootNamespace>Rock.JavaScript.Obsidian.Blocks</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>11acff28-4199-450b-8a43-f59adef63a99</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>
+    </StartupFile>
+    <StartWebBrowser>False</StartWebBrowser>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <EnableTypeScript>true</EnableTypeScript>
+    <StartWebBrowser>false</StartWebBrowser>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="package.json" />
+    <Content Include="rollup.config.js" />
+    <Content Include="tsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\" />
+    <Folder Include="src\Core\" />
+    <Folder Include="src\Core\CampusDetail\" />
+    <Folder Include="src\Crm\" />
+    <Folder Include="src\Event\" />
+    <Folder Include="src\Event\RegistrationEntry\" />
+    <Folder Include="src\Example\" />
+    <Folder Include="src\Finance\" />
+    <Folder Include="src\Groups\" />
+    <Folder Include="src\Security\" />
+    <Folder Include="src\Utility\" />
+    <Folder Include="src\WorkFlow\" />
+    <Folder Include="src\WorkFlow\FormBuilder\" />
+    <Folder Include="src\WorkFlow\FormBuilder\FormBuilderDetail\" />
+    <Folder Include="src\WorkFlow\FormBuilder\FormTemplateDetail\" />
+    <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="src\Core\attributes.ts" />
+    <TypeScriptCompile Include="src\Core\campusDetail.ts" />
+    <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.ts" />
+    <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.ts" />
+    <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
+    <TypeScriptCompile Include="src\Event\registrationEntry.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\costSummary.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\discountCodeForm.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\feeField.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\intro.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\payment.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\registrant.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\registrantAttributeField.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\registrantPersonField.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\registrants.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\registrar.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\registrationEnd.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\registrationStart.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\sessionRenewal.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\success.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\summary.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\types.d.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationEntry\utils.partial.ts" />
+    <TypeScriptCompile Include="src\Example\controlGallery.ts" />
+    <TypeScriptCompile Include="src\Example\fieldTypeGallery.ts" />
+    <TypeScriptCompile Include="src\Example\largeDatasetGrid.ts" />
+    <TypeScriptCompile Include="src\Example\personDetail.ts" />
+    <TypeScriptCompile Include="src\Example\personSecondary.ts" />
+    <TypeScriptCompile Include="src\Finance\transactionEntry.ts" />
+    <TypeScriptCompile Include="src\Groups\groupMemberList.ts" />
+    <TypeScriptCompile Include="src\Security\login.ts" />
+    <TypeScriptCompile Include="src\Utility\starkDetail.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\formBuilderDetail.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\communicationsTab.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\configurableZone.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\fieldEditAside.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\formBuilderTab.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\formContentModal.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\formContentZone.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\generalAside.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\generalSettings.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\notificationEmail.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\personEntryEditAside.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\sectionEditAside.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\sectionZone.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\settingsTab.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\utils.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\formTemplateDetail.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormTemplateDetail\editPanel.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormTemplateDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormTemplateDetail\utils.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormTemplateDetail\viewPanel.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\completionSettings.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\confirmationEmail.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\emailSource.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\personEntrySettings.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\segmentedPicker.ts" />
+    <TypeScriptCompile Include="src\WorkFlow\FormBuilder\Shared\types.d.ts" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
+  <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">
+    <Exec Command="npm install" />
+    <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
+  </Target>
+  <Target Name="AfterCompile">
+    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
+  </Target>
+</Project>

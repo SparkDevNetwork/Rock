@@ -16,12 +16,12 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import RockButton from "../Elements/rockButton";
-import RockFormField from "../Elements/rockFormField";
+import RockButton from "./rockButton";
+import RockFormField from "./rockFormField";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ITreeItemProvider } from "../Util/treeItemProviders";
+import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
-import TreeList from "../Elements/treeList";
+import TreeList from "./treeList";
 
 /**
  * Helper function to flatten an array of items that contains child items

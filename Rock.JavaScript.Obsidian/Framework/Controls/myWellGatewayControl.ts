@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import LoadingIndicator from "../Elements/loadingIndicator";
+import LoadingIndicator from "./loadingIndicator";
 import { ValidationField } from "./gatewayControl";
 
 type Settings = {

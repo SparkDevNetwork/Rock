@@ -15,10 +15,10 @@
 // </copyright>
 //
 import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
-import { useVModelPassthrough } from "../Util/component";
-import RockButton from "../Elements/rockButton";
-import Fullscreen from "../Elements/fullscreen";
-import TransitionVerticalCollapse from "../Elements/transitionVerticalCollapse";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import RockButton from "./rockButton";
+import Fullscreen from "./fullscreen";
+import TransitionVerticalCollapse from "./transitionVerticalCollapse";
 
 export default defineComponent({
     name: "Panel",

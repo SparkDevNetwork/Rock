@@ -16,18 +16,18 @@
 //
 
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
-import RockField from "../Controls/rockField";
-import Alert from "../Elements/alert.vue";
-import DropDownList from "../Elements/dropDownList";
-import StaticFormControl from "../Elements/staticFormControl";
-import { getFieldType } from "../Fields/index";
-import { get, post } from "../Util/http";
-import { areEqual, newGuid } from "../Util/guid";
+import RockField from "./rockField";
+import Alert from "./alert";
+import DropDownList from "./dropDownList";
+import StaticFormControl from "./staticFormControl";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { get, post } from "@Obsidian/Utility/http";
+import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
 import { FieldTypeConfigurationPropertiesBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationPropertiesBag";
-import { deepEqual, updateRefValue } from "../Util/util";
+import { deepEqual, updateRefValue } from "@Obsidian/Utility/util";
 
 export default defineComponent({
     name: "FieldTypeEditor",

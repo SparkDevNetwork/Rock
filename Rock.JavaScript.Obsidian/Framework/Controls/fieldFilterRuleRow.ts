@@ -16,11 +16,11 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import DropDownList from "../Elements/dropDownList";
-import TextBox from "../Elements/textBox";
-import { ComparisonValue } from "../Reporting/comparisonValue";
-import { areEqual } from "../Util/guid";
-import { updateRefValue } from "../Util/util";
+import DropDownList from "./dropDownList";
+import TextBox from "./textBox";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { areEqual } from "@Obsidian/Utility/guid";
+import { updateRefValue } from "@Obsidian/Utility/util";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";

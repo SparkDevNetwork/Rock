@@ -16,11 +16,11 @@
 //
 
 import { defineComponent, PropType, ref, watch } from "vue";
-import RockButton from "../Elements/rockButton";
-import TextBox from "../Elements/textBox";
-import { loadJavaScriptAsync } from "../Util/page";
-import { updateRefValue } from "../Util/util";
-import { ElectronicSignatureValue } from "../ViewModels/Controls/electronicSignatureValue";
+import RockButton from "./rockButton";
+import TextBox from "./textBox";
+import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+import { updateRefValue } from "@Obsidian/Utility/util";
+import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 import RockForm from "./rockForm";
 
 // #region SignaturePad library types.

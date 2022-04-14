@@ -16,7 +16,7 @@
 //
 
 import { Directive } from "vue";
-import { loadJavaScriptAsync } from "../Util/page";
+import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
 
 const dragulaScriptPromise = loadJavaScriptAsync("/Scripts/dragula.min.js", () => window.dragula !== undefined);
 

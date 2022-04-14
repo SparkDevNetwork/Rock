@@ -17,12 +17,12 @@
 
 import { computed, defineComponent, PropType, ref } from "vue";
 import PaneledBlockTemplate from "./paneledBlockTemplate";
-import { useVModelPassthrough } from "../Util/component";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import RockForm from "../Controls/rockForm";
-import RockButton from "../Elements/rockButton";
-import { isPromise } from "../Util/util";
-import { confirmDelete } from "../Util/dialogs";
+import RockForm from "@Obsidian/Controls/rockForm";
+import RockButton from "@Obsidian/Controls/rockButton";
+import { isPromise } from "@Obsidian/Utility/util";
+import { confirmDelete } from "@Obsidian/Utility/dialogs";
 
 export default defineComponent({
     name: "PaneledDetailBlockTemplate",

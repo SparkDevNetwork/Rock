@@ -15,16 +15,26 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "strict": true,
+    "importHelpers": true,
     "lib": [
       "DOM",
       "ES2016",
       "ES2020.Symbol.WellKnown" /* Fixes compile issue in Vue declaration files, not actually in use. */
     ],
     "paths": {
+      "@Obsidian/Controls/*": [ "./Controls/*" ],
+      "@Obsidian/Core/*": [ "./Core/*" ],
+      "@Obsidian/Directives/*": [ "./Directives/*" ],
       "@Obsidian/Enums/*": [ "./Enums/*" ],
-      "@Obsidian/ViewModels/*": [ "./ViewModels/*" ],
+      "@Obsidian/FieldTypes/*": [ "./FieldTypes/*" ],
+      "@Obsidian/PageState": [ "./PageState" ],
+      "@Obsidian/SystemGuids": [ "./SystemGuids" ],
       "@Obsidian/Types": [ "./Types" ],
-      "@Obsidian/Types/*": [ "./Types/*" ]
+      "@Obsidian/Types/*": [ "./Types/*" ],
+      "@Obsidian/Utility": [ "./Utility" ],
+      "@Obsidian/Utility/*": [ "./Utility/*" ],
+      "@Obsidian/ValidationRules": [ "./ValidationRules" ],
+      "@Obsidian/ViewModels/*": [ "./ViewModels/*" ]
     }
   },
   "exclude": [

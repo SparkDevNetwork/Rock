@@ -17,11 +17,11 @@
 
 import { computed, defineComponent, PropType, Ref, ref, watch } from "vue";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import RockFormField from "../Elements/rockFormField";
+import RockFormField from "./rockFormField";
 import Panel from "./panel";
-import TextBox from "../Elements/textBox";
+import TextBox from "./textBox";
 import { nextTick } from "vue";
-import { doApiCall } from "../Util/http";
+import { doApiCall } from "@Obsidian/Utility/http";
 
 const enum AgeClassification {
     Unknown = 0,

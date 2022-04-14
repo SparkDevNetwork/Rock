@@ -17,8 +17,8 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import RockField from "./rockField";
-import LoadingIndicator from "../Elements/loadingIndicator";
-import { List } from "../Util/linq";
+import LoadingIndicator from "./loadingIndicator";
+import { List } from "@Obsidian/Utility/linq";
 
 export default defineComponent({
     name: "AttributeValuesContainer",
