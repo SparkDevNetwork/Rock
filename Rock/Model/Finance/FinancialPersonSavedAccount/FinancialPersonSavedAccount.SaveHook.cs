@@ -57,7 +57,7 @@ namespace Rock.Model
                 }
                 catch ( Exception ex )
                 {
-                    if ( State != EntityContextState.Added && State != EntityContextState.Modified )
+                    if ( State == EntityContextState.Added && State == EntityContextState.Modified )
                     {
                         RockLogger.Log.Error( ex, $"An exception occurred while attempting to add a reciprocal relationship to a FinancialPaymentDetail from FinancialPersonSavedAccount {Entity.Id}." );
                     }
