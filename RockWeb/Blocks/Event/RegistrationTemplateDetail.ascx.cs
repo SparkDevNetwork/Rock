@@ -1758,12 +1758,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrantFormField_SaveClick( object sender, EventArgs e )
         {
-            var isSaved = FieldSave();
-            if ( !isSaved )
-            {
-                return;
-            }
-
+            FieldSave();
             HideDialog();
             BuildControls( true );
         }
@@ -1771,7 +1766,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <summary>
         /// Saves the form field
         /// </summary>
-        private bool FieldSave()
+        private void FieldSave()
         {
             var formGuid = hfFormGuid.Value.AsGuid();
 
@@ -1811,12 +1806,6 @@ The logged-in person's information will be used to complete the registrar inform
 
                     case RegistrationFieldSource.RegistrantAttribute:
                         {
-                            Page.Validate( edtRegistrantAttribute.ValidationGroup );
-                            if ( !Page.IsValid )
-                            {
-                                return false;
-                            }
-
                             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
                             edtRegistrantAttribute.GetAttributeProperties( attribute );
                             attributeForm.Attribute = attribute;
@@ -1851,8 +1840,6 @@ The logged-in person's information will be used to complete the registrar inform
                     }
                 }
             }
-
-            return true;
         }
 
         /// <summary>
@@ -2324,7 +2311,7 @@ The logged-in person's information will be used to complete the registrar inform
             var selectedTemplate = GetSelectedTemplate();
             var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
 
-            cbDisplayInLine.Visible = !isNonLegacySelected;
+            cbDisplayInLine.Visible = isNonLegacySelected;
             cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
             cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
 
@@ -2615,7 +2602,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
-            cbDisplayInLine.Visible = !isNonLegacySignatureSelected;
+            cbDisplayInLine.Visible = isNonLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
@@ -3410,15 +3397,10 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrationAttribute_SaveClick( object sender, EventArgs e )
         {
-            Page.Validate( edtRegistrationAttributes.ValidationGroup );
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
             edtRegistrationAttributes.GetAttributeProperties( attribute );
 
+            // Controls will show warnings
             if ( !attribute.IsValid )
             {
                 return;

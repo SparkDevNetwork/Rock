@@ -248,6 +248,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="financialGateway">The financial gateway.</param>
         private void ShowInactiveGatwayMessage( FinancialGateway financialGateway )
         {
+            nbIsActiveWarning.Text = "An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
+
             if ( cbIsActive.Checked )
             {
                 nbIsActiveWarning.Visible = false;
