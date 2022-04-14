@@ -128,6 +128,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CONVERT_BUSINESS = "115A7725-6760-4E86-8171-57F4A3CF6909";
 
+        /// <summary>
+        /// The financial account search block type
+        /// </summary>
+        public const string FINANCIAL_ACCOUNT_SEARCH = "867E32A8-786E-4090-BE2B-6BE780440D44";
+
         #endregion
 
         /// <summary>

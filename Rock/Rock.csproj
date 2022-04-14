@@ -1302,6 +1302,7 @@
     <Compile Include="Reporting\DataFilter\ConnectionRequest\PlacementGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DocumentTypeFilter.cs" />
     <Compile Include="Reporting\DataTransform\Person\HeadOfHouseholdTransform.cs" />
+    <Compile Include="Search\Finance\FinancialAccount.cs" />
     <Compile Include="Security\Options\PasswordRequirementOptions.cs" />
     <Compile Include="Security\Password.cs" />
     <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
@@ -1650,6 +1651,7 @@
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
     <Compile Include="Web\UI\Controls\PDFViewer.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AccountTreeViewItem.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialStatementTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
@@ -4012,7 +4014,9 @@ if "$(ConfigurationName)" == "Debug" (
  echo "setting VBCSCOMPILER_TTL to 10 seconds"
  call "$(ProjectDir)..\Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
  if Exist "$(ProjectDir)..\.githooks\" (
-  xcopy "$(ProjectDir)..\.githooks\*" "$(ProjectDir)..\.git\hooks\" /S /Y
+  if Exist "$(ProjectDir)..\.git\hooks\" (
+   xcopy "$(ProjectDir)..\.githooks\*" "$(ProjectDir)..\.git\hooks\" /S /Y
+  )
  )
 )
 
