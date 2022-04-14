@@ -1265,8 +1265,8 @@ namespace RockWeb.Blocks.Finance
             var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
             if ( accountIds.Any() )
             {
-                var accounts = FinancialAccountCache.GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).ToList();
-                apAccount.SetValuesFromCache( accounts );
+                var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIds ).OrderBy( a => a.Order ).OrderBy( a => a.Name ).ToList();
+                apAccount.SetValues( accounts );
             }
             else
             {

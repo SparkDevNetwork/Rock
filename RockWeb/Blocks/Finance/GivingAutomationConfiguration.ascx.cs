@@ -401,7 +401,7 @@ namespace RockWeb.Blocks.Finance
                 .Intersect( transactionTypes.Select( dv => dv.Guid.ToString() ) );
 
             var savedAccountGuids = givingAutomationSetting.FinancialAccountGuids ?? new List<Guid>();
-            FinancialAccountCache[] accounts;
+            var accounts = new List<FinancialAccount>();
             var areChildAccountsIncluded = givingAutomationSetting.AreChildAccountsIncluded ?? false;
 
             if ( savedAccountGuids.Any() )
@@ -409,17 +409,13 @@ namespace RockWeb.Blocks.Finance
                 using ( var rockContext = new RockContext() )
                 {
                     var accountService = new FinancialAccountService( rockContext );
-                    accounts = FinancialAccountCache.GetByGuids( savedAccountGuids );
+                    accounts = new FinancialAccountService( new RockContext() ).GetByGuids( savedAccountGuids ).ToList();
                 }
-            }
-            else
-            {
-                accounts = new FinancialAccountCache[0];
             }
 
             // Sync the system setting values to the controls
             divAccounts.Visible = savedAccountGuids.Any();
-            apGivingAutomationAccounts.SetValuesFromCache( accounts );
+            apGivingAutomationAccounts.SetValues( accounts );
             rblAccountTypes.SetValue( savedAccountGuids.Any() ? AccountTypes_Custom : AccountTypes_AllTaxDeductible );
             cbGivingAutomationIncludeChildAccounts.Checked = areChildAccountsIncluded;
             cblTransactionTypes.SetValues( savedTransactionTypeGuidStrings );
