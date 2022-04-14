@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 
 namespace Rock.Model
 {
@@ -24,6 +25,21 @@ namespace Rock.Model
     /// </summary>
     public partial class FinancialAccountService
     {
+        /// <summary>
+        /// Enum AccountHierarchyDirection
+        /// </summary>
+        public enum AccountHierarchyDirection
+        {
+            /// <summary>
+            /// The current account to parent
+            /// </summary>
+            CurrentAccountToParent,
+            /// <summary>
+            /// The parent account to last descendant account
+            /// </summary>
+            ParentAccountToLastDescendantAccount
+        }
+
         /// <summary>
         /// Gets immediate children of a account (id) or a rootGroupId. Specify 0 for both Id and rootGroupId to get top level accounts limited
         /// </summary>
@@ -191,6 +207,58 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the accounts by search term.
+        /// </summary>
+        /// <param name="searchTerm">The search term.</param>
+        /// <param name="includeAll">if set to <c>true</c> [include all].</param>
+        /// <returns>IQueryable&lt;FinancialAccount&gt;.</returns>
+        public IQueryable<FinancialAccount> GetAccountsBySearchTerm( string searchTerm, bool includeAll = false )
+        {
+            var qry = Queryable();
+            
+            if( string.IsNullOrEmpty( searchTerm ) && !includeAll){
+                return null;
+            }
+
+            qry = qry
+                .Where( f =>
+                ( f.Name != null && f.Name.Contains( searchTerm ) )
+                || ( f.PublicName != null && f.PublicName.Contains( searchTerm ) )
+                || ( f.GlCode != null && f.GlCode.Contains( searchTerm ) )
+                );
+
+            return qry;
+        }
+
+
+        /// <summary>
+        /// Gets the account hierarchy path as a '^' delimited string..
+        /// </summary>
+        /// <param name="account">The account.</param>
+        /// <param name="accountHierarchyDirection">The account hierarchy direction.</param>
+        /// <returns>System.String.</returns>
+        public string GetDelimitedAccountHierarchy( FinancialAccount account, AccountHierarchyDirection accountHierarchyDirection = AccountHierarchyDirection.ParentAccountToLastDescendantAccount )
+        {
+            var selectedAccounts = new List<SimpleFinancialAccount>();
+
+            var relatedIds = accountHierarchyDirection == AccountHierarchyDirection.CurrentAccountToParent
+                ? GetAllAncestorIds( account.Id )
+                : GetAllDescendentIds( account.Id );
+
+            var parentAccounts = GetParents( relatedIds?.ToArray() )?.ToList();
+
+            selectedAccounts = parentAccounts.Select( v => new SimpleFinancialAccount {
+                Id = v.Id,
+                Name = HttpUtility.HtmlEncode( v.PublicName.IsNotNullOrWhiteSpace() ? v.PublicName : v.Name ),
+                GlCode = v.GlCode,
+                IsActive = v.IsActive,
+                ParentId = v.ParentAccountId
+            } )?.ToList();
+
+            return selectedAccounts?.Select( v => v.Name ).JoinStrings( "^" );
+        }
+
+        /// <summary>
         /// Class PersonAliasAndPurposeKey.
         /// </summary>
         public class PersonAliasAndPurposeKey
@@ -208,6 +276,37 @@ namespace Rock.Model
             public string PurposeKey { get; set; }
         }
 
+        /// <summary>
+        /// Class SimpleFinancialAccount.
+        /// </summary>
+        public class SimpleFinancialAccount
+        {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>The identifier.</value>
+            public int Id { get; set; }
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>The name.</value>
+            public string Name { get; set; }
+            /// <summary>
+            /// Gets or sets the gl code.
+            /// </summary>
+            /// <value>The gl code.</value>
+            public string GlCode { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is active.
+            /// </summary>
+            /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>
+            public bool IsActive { get; set; }
+            /// <summary>
+            /// Gets or sets the parent identifier.
+            /// </summary>
+            /// <value>The parent identifier.</value>
+            public int? ParentId { get; set; }
+        }
 
         /// <summary>
         /// Sets the participants (<see cref="PersonAlias" />) for the specified  <see cref="FinancialAccount" /> and purpose key
@@ -219,5 +318,14 @@ namespace Rock.Model
         {
             this.RelatedEntities.SetRelatedToSourceEntity( financialAccountId, givingAlertParticipants, purposeKey );
         }
+
+        #region Help Methods
+
+        private IQueryable<FinancialAccount> GetParents( IEnumerable<int> parentIds )
+        {
+            return Queryable()
+                       .Where( v => parentIds.Contains(v.Id) );
+        }
+        #endregion Help Methods
     }
 }

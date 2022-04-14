@@ -246,9 +246,9 @@ namespace Rock.Web.UI.Controls
         private HiddenFieldWithClass _hfExpandedCategoryIds;
         private HiddenFieldWithClass _hfItemName;
         private HiddenFieldWithClass _hfItemRestUrlExtraParams;
+
         private HtmlAnchor _btnSelect;
         private HtmlAnchor _btnSelectNone;
-
         #endregion
 
         #region Properties
@@ -259,18 +259,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [enable full width]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnableFullWidth
-        {
-            get
-            {
-                return ViewState["EnableFullWidth"] as bool? ?? false;
-            }
-
-            set
-            {
-                ViewState["EnableFullWidth"] = value;
-            }
-        }
+        public bool EnableFullWidth { get; set; }
 
         /// <summary>
         /// Gets the item rest URL.
@@ -300,6 +289,26 @@ namespace Rock.Web.UI.Controls
                 _hfItemRestUrlExtraParams.Value = value;
             }
         }
+
+        /// <summary>
+        /// Gets the item rest URL extra parameters control.
+        /// </summary>
+        /// <value>The item rest URL extra parameters control.</value>
+        internal HiddenFieldWithClass ItemRestUrlExtraParamsControl
+        {
+            get
+            {
+                return _hfItemRestUrlExtraParams;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the dropdown picker menu classes. Default: 'picker-menu dropdown-menu'
+        /// </summary>
+        /// <value>
+        /// The CSS classes to apply.
+        /// </value>
+        public string PickerMenuCssClasses { get; set; }
 
         /// <summary>
         /// Gets or sets the item id.
@@ -702,6 +711,9 @@ $@"Rock.controls.itemPicker.initialize({{
 }});
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ClientID, treeViewScript, true );
+
+            // Search Control
+
         }
 
         /// <summary>
@@ -713,26 +725,37 @@ $@"Rock.controls.itemPicker.initialize({{
 
             Controls.Clear();
 
-            _hfItemId = new HiddenFieldWithClass();
-            _hfItemId.ID = this.ID + "_hfItemId";
-            _hfItemId.CssClass = "js-item-id-value";
-            _hfItemId.Value = Constants.None.IdValue;
+            _hfItemId = new HiddenFieldWithClass
+            {
+                ID = this.ID + "_hfItemId",
+                CssClass = "js-item-id-value",
+                Value = Constants.None.IdValue
+            };
 
-            _hfInitialItemParentIds = new HiddenFieldWithClass();
-            _hfInitialItemParentIds.ID = this.ID + "_hfInitialItemParentIds";
-            _hfInitialItemParentIds.CssClass = "js-initial-item-parent-ids-value";
+            _hfInitialItemParentIds = new HiddenFieldWithClass
+            {
+                ID = this.ID + "_hfInitialItemParentIds",
+                CssClass = "js-initial-item-parent-ids-value",
+                Value = Constants.None.IdValue
+            };
 
-            _hfExpandedCategoryIds = new HiddenFieldWithClass();
-            _hfExpandedCategoryIds.ID = this.ID + "_hfExpandedCategoryIds";
-            _hfExpandedCategoryIds.CssClass = "js-expanded-category-ids";
+            _hfExpandedCategoryIds = new HiddenFieldWithClass
+            {
+                ID = this.ID + "_hfExpandedCategoryIds",
+                CssClass = "js-expanded-category-ids"
+            };
 
-            _hfItemName = new HiddenFieldWithClass();
-            _hfItemName.ID = this.ID + "_hfItemName";
-            _hfItemName.CssClass = "js-item-name-value";
+            _hfItemName = new HiddenFieldWithClass
+            {
+                ID = this.ID + "_hfItemName",
+                CssClass = "js-item-name-value"
+            };
 
-            _hfItemRestUrlExtraParams = new HiddenFieldWithClass();
-            _hfItemRestUrlExtraParams.ID = this.ID + "_hfItemRestUrlExtraParams";
-            _hfItemRestUrlExtraParams.CssClass = "js-item-rest-url-extra-params-value";
+            _hfItemRestUrlExtraParams = new HiddenFieldWithClass
+            {
+                ID = this.ID + "_hfItemRestUrlExtraParams",
+                CssClass = "js-item-rest-url-extra-params-value"
+            };
 
             if ( ModePanel != null )
             {
@@ -748,7 +771,7 @@ $@"Rock.controls.itemPicker.initialize({{
             // make sure  this always does a postback if this is a PagePicker or if ValueChanged is assigned, even if _selectItem is not assigned
             if ( _selectItem == null && ( this is PagePicker || _valueChanged != null ) )
             {
-                _btnSelect.ServerClick += btnSelect_Click;
+            _btnSelect.ServerClick += btnSelect_Click;
             }
 
             _btnSelectNone = new HtmlAnchor();
@@ -842,8 +865,13 @@ $@"Rock.controls.itemPicker.initialize({{
                     _btnSelectNone.RenderControl( writer );
                 }
 
+                if ( string.IsNullOrEmpty( PickerMenuCssClasses ) )
+                {
+                    PickerMenuCssClasses = "picker-menu dropdown-menu";
+                }
+
                 // picker menu
-                writer.AddAttribute( "class", "picker-menu dropdown-menu" );
+                writer.AddAttribute( "class", PickerMenuCssClasses );
                 if ( ShowDropDown )
                 {
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "block" );
@@ -867,19 +895,18 @@ $@"Rock.controls.itemPicker.initialize({{
                                         </div>
                                     </div>
                                 </div>
-                                <div class='viewport'>
+                                <div id='treeview-view-port_{0}' class='viewport'>
                                     <div class='overview'>
-                                        <div id='treeviewItems_{0}' class='treeview treeview-items'></div>        
+                                        <div id='treeviewItems_{0}' class='treeview treeview-items'>               
+                                        </div>
                                     </div>
                                 </div>
-                            </div>",
-                           this.ClientID );
+                            </div>", this.ClientID );
 
                 // picker actions
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
 
                 // render any additional picker actions that a child class if ItemPicker implements
                 RenderCustomPickerActions( writer );
@@ -900,6 +927,7 @@ $@"Rock.controls.itemPicker.initialize({{
                 // this picker is not enabled (readonly), so just render a readonly version
                 List<string> pickerClasses = new List<string>();
                 pickerClasses.Add( "picker" );
+
                 if ( EnableFullWidth )
                 {
                     pickerClasses.Add( "picker-fullwidth" );
@@ -926,7 +954,7 @@ $@"Rock.controls.itemPicker.initialize({{
         /// <param name="writer">The writer.</param>
         public virtual void RenderCustomPickerActions( HtmlTextWriter writer )
         {
-            //
+            writer.Write( "<a class='btn btn-xs btn-link picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
         }
 
         /// <summary>
