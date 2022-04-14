@@ -9,11 +9,11 @@ namespace Rock.Migrations
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
     public sealed partial class FinancialAccountCoreUpdates : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(Rollup_20220215));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(UpdateInteractionSession));
         
         string IMigrationMetadata.Id
         {
-            get { return "202204131803387_FinancialAccountCoreUpdates"; }
+            get { return "202204142107548_FinancialAccountCoreUpdates"; }
         }
         
         string IMigrationMetadata.Source
