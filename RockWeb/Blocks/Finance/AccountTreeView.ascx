@@ -27,7 +27,7 @@
     .rocktree-search-result-item:hover  {
         background-color: #f5f5f5 !important;
     }
-    
+
 </style>
 
 <asp:UpdatePanel ID="upAccountType" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
@@ -65,11 +65,11 @@
                 </div>
                 <div class="panel-body">
                     <div class="rocktree-drawer js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
-                        <div class="row">
-                            <div class="col-xs-6">
-                                <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
+                        <div class="d-flex flex-wrap justify-content-between align-items-end">
+                            <div class="mb-1">
+                                <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" FormGroupCssClass="m-0" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
                             </div>
-                            <div class="col-xs-6">
+                            <div class="mb-1">
                                 <label for="" class="control-label">&nbsp;</label>
                                 <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs btn-default" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
                             </div>
@@ -220,7 +220,7 @@
 
              // If no input then revert the control
              $searchInputControl.off('keyup').on('keyup', function () {
-                 
+
                  if ($searchInputControl.val().length === 0) {
                      $('#<%=divSearchResults.ClientID%>').hide();
                      $('#<%=divSearchResults.ClientID%>').html('');
@@ -265,7 +265,7 @@
                              hasChildren: obj.HasChildren,
                              isActive: obj.IsActive,
                              path: obj.Path
-                             };                        
+                             };
 
                          nodes.push(node);
                      }
@@ -324,7 +324,7 @@
                          });
 
                      });
-                 }); //getJson                
+                 }); //getJson
               }
            });
          } //createSearch
@@ -353,6 +353,6 @@
          }
      }
  </script>
-    
+
 </ContentTemplate>
 </asp:UpdatePanel>
