@@ -91,6 +91,9 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" Label="Icon CSS Class" PropertyName="AchievementIconCssClass" ValidateRequestMode="Disabled" Help="The font awesome icon class to use for this achievement." />
                         </div>
+                        <div class="col-md-6">
+                            <Rock:ColorPicker ID="cpHighlightColor" runat="server" Help="The color to use when displaying achievements of this type." Label="Highlight Color" />
+                        </div>
                     </div>
 
                     <div class="well">
@@ -157,6 +160,7 @@
                                 <Rock:ImageUploader ID="imgupImageBinaryFile" runat="server" IsBinaryFile="true" Label="Image" Help="The image that will be used in the summary. For example, a trophy icon." />
                             </div>
                             <div class="col-sm-6">
+                                <Rock:ImageUploader ID="imgupAlternateImageBinaryFile" runat="server" IsBinaryFile="true" Label="Alternate Image" Help= "An alternate image that can be used for custom purposes." />
                             </div>
                             <div class="col-sm-12">
                                 <Rock:CodeEditor ID="ceCustomSummaryLavaTemplate" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Custom Summary Lava Template" Help="The lava template used to render the status summary of the achievement. If this is blank, a default will be used." />

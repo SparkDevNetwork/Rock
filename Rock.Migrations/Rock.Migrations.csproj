@@ -133,6 +133,10 @@
     <Compile Include="Migrations\202204170930362_AddNewRoutesForContentPage.Designer.cs">
       <DependentUpon>202204170930362_AddNewRoutesForContentPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.cs" />
+    <Compile Include="Migrations\202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.Designer.cs">
+      <DependentUpon>202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1124,6 +1128,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202204170930362_AddNewRoutesForContentPage.resx">
       <DependentUpon>202204170930362_AddNewRoutesForContentPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.resx">
+      <DependentUpon>202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
