@@ -607,7 +607,7 @@
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">
-    <Exec Command="npm install" />
+    <Exec Command="npm ci" />
     <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="AfterCompile">
