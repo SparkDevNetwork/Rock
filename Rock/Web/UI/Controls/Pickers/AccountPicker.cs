@@ -80,6 +80,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show active check box].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show active check box]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowActiveCheckBox
+        {
+            get
+            {
+                return ViewState["ShowActiveCheckBox"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ShowActiveCheckBox"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [display public name].
         /// </summary>
         /// <value>
@@ -131,7 +150,18 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [enhance for long list]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnhanceForLongLists { get; set; }
+        public bool EnhanceForLongLists
+        {
+            get
+            {
+                return ViewState["EnhanceForLongLists"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["EnhanceForLongLists"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether the <see cref="ItemPicker"/> should display the child count item count label on the parent item.
@@ -139,7 +169,18 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [display child item count label]; otherwise, <c>false</c>.
         /// </value>
-        public bool DisplayChildItemCountLabel { get; set; }
+        public bool DisplayChildItemCountLabel
+        {
+            get
+            {
+                return ViewState["DisplayChildItemCountLabel"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayChildItemCountLabel"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the custom data items that will be serialized as a json object that is used to add custom properties to the itemPicker.js node object.
@@ -205,6 +246,7 @@ function doPostBack() {{
 
             this.Controls.Add( _btnSelectAll );
 
+
             _cbShowInactiveAccounts = new RockCheckBox
             {
                 ID = this.ID + "_cbShowInactiveAccounts",
@@ -219,16 +261,13 @@ function doPostBack() {{
             _cbShowInactiveAccounts.CheckedChanged += _cbShowInactiveAccounts_CheckedChanged;
             this.Controls.Add( _cbShowInactiveAccounts );
 
-            if ( EnhanceForLongLists )
+            _hfSearchValue = new HiddenFieldWithClass
             {
-                _hfSearchValue = new HiddenFieldWithClass
-                {
-                    ID = this.ID + "_hfSearchValue",
-                    CssClass = "js-existing-search-value"
-                };
+                ID = this.ID + "_hfSearchValue",
+                CssClass = "js-existing-search-value"
+            };
 
-                this.Controls.Add( _hfSearchValue );
-            }
+            this.Controls.Add( _hfSearchValue );
 
             _hfPickerShowActive = new HiddenFieldWithClass
             {
@@ -249,7 +288,7 @@ function doPostBack() {{
         private void _cbShowInactiveAccounts_CheckedChanged( object sender, EventArgs e )
         {
             ShowDropDown = true;
-            SetExtraRestParams( _cbShowInactiveAccounts.Checked );
+            SetExtraRestParams();
         }
 
         /// <summary>
@@ -258,7 +297,7 @@ function doPostBack() {{
         /// <param name="writer">The writer.</param>
         public override void RenderCustomPickerActions( HtmlTextWriter writer )
         {
-            if ( _hfSearchValue != null )
+            if ( EnhanceForLongLists && _hfSearchValue != null )
             {
                 _hfSearchValue.RenderControl( writer );
             }
@@ -268,7 +307,7 @@ function doPostBack() {{
                 _hfPickerShowActive.RenderControl( writer );
             }
 
-            if( _hfViewMode != null )
+            if ( _hfViewMode != null )
             {
                 _hfViewMode.RenderControl( writer );
             }
@@ -282,11 +321,14 @@ function doPostBack() {{
                 _btnSelectAll.RenderControl( writer );
             }
 
-            if ( !DisplayActiveOnly && _cbShowInactiveAccounts != null )
+            if ( ShowActiveCheckBox )
             {
                 _cbShowInactiveAccounts.RenderControl( writer );
             }
-
+            else
+            {
+                Page.Controls.Remove( _cbShowInactiveAccounts );
+            }
         }
 
         /// <summary>
@@ -493,14 +535,17 @@ function doPostBack() {{
         /// <summary>
         /// Sets the extra rest parameters.
         /// </summary>
-        private void SetExtraRestParams( bool? includeInactiveAccounts = null )
+        private void SetExtraRestParams()
         {
-            var activeOnly = this.DisplayActiveOnly || !includeInactiveAccounts.GetValueOrDefault( false );
+            var activeOnly = this.DisplayActiveOnly;
 
-            bool displayActiveOnly = activeOnly;
+            if ( !this.DisplayActiveOnly && this.ShowActiveCheckBox )
+            {
+                activeOnly = !_cbShowInactiveAccounts.Checked;
+            }
 
             var extraParams = new System.Text.StringBuilder();
-            extraParams.Append( $"/{displayActiveOnly}/{this.DisplayPublicName}" );
+            extraParams.Append( $"/{activeOnly}/{this.DisplayPublicName}" );
             ItemRestUrlExtraParams = extraParams.ToString();
         }
         #endregion Methods

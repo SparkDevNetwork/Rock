@@ -26,6 +26,7 @@ namespace Rock.Attribute
         private const string DISPLAY_PUBLIC_NAME = "displaypublicname";
         private const string DISPLAY_CHILD_ITEM_COUNTS = "displaychilditemcounts";
         private const string DISPLAY_ACTIVE_ONLY = "displayactiveitemsonly";
+        private const string SHOW_ACTIVE_CHECKBOX = "showactivecheckbox";
         private const string ENHANCED_FOR_LONG_LISTS = "enhancedforlonglists";
 
         /// <summary>
@@ -41,8 +42,7 @@ namespace Rock.Attribute
         public AccountFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) : 
             base( name, description, required, defaultValue, category, order, key, typeof( AccountFieldType ).FullName )
         {
-            DisplayActiveItemsOnly = true;
-            DisplayChildItemCounts = false;
+
         }
 
         /// <summary>
@@ -76,6 +76,23 @@ namespace Rock.Attribute
             set
             {
                 FieldConfigurationValues.AddOrReplace( DISPLAY_PUBLIC_NAME, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show active check box].
+        /// </summary>
+        /// <value><c>true</c> if [show active check box]; otherwise, <c>false</c>.</value>
+        public virtual bool ShowActiveCheckbox
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( SHOW_ACTIVE_CHECKBOX ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( SHOW_ACTIVE_CHECKBOX, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
 
