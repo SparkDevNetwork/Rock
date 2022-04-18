@@ -203,7 +203,16 @@ namespace RockWeb.Blocks.Cms
 
                 if ( ddlCategory.Visible )
                 {
-                    ddlCategory.SetValue( GetUserPreference( CATEGORY_FILTER_SETTING ).AsIntegerOrNull() );
+                    var categoryGuid = PageParameter( "CategoryGuid" ).AsGuidOrNull();
+                    if ( categoryGuid.HasValue )
+                    {
+                        var categoryId = CategoryCache.Get( categoryGuid.Value ).Id;
+                        ddlCategory.SetValue( categoryId );
+                    }
+                    else
+                    {
+                        ddlCategory.SetValue( GetUserPreference( CATEGORY_FILTER_SETTING ).AsIntegerOrNull() );
+                    }
                 }
 
                 GetData();
@@ -255,7 +264,17 @@ namespace RockWeb.Blocks.Cms
         protected void ddlCategory_OnSelectedIndexChanged( object sender, EventArgs e )
         {
             SetUserPreference( CATEGORY_FILTER_SETTING, ddlCategory.SelectedValue );
-            GetData();
+            var categoryGuid = CategoryCache.Get( ddlCategory.SelectedValue.AsInteger() )?.Guid;
+
+            var queryString = new Dictionary<string, string>();
+
+            if ( categoryGuid.HasValue )
+            {
+                queryString.Add( "CategoryGuid", categoryGuid.ToString() );
+            }
+
+            // Navigate to page with route parameters set so new Url is generated in browser 
+            NavigateToCurrentPage( queryString );
         }
 
         /// <summary>
@@ -281,14 +300,18 @@ namespace RockWeb.Blocks.Cms
 
             SelectedChannelId = selectedChannelValue.AsIntegerOrNull();
 
-            GetData();
+            var selectedChannelGuid = ContentChannelCache.Get( SelectedChannelId.Value ).Guid;
+            var queryString = new Dictionary<string, string> { { "ContentChannelGuid", selectedChannelGuid.ToString() } };
 
-            ScriptManager.RegisterStartupScript(
-                Page,
-                GetType(),
-                "ScrollToGrid",
-                "scrollToGrid();",
-                true );
+            // Get CategoryGuid from Route
+            var categoryGuid = PageParameter( "CategoryGuid" ).AsGuidOrNull();
+            if ( categoryGuid.HasValue )
+            {
+                queryString.Add( "CategoryGuid", categoryGuid.ToString() );
+            }
+
+            // Navigate to page with route parameters set so new Url is generated in browser 
+            NavigateToCurrentPage( queryString );
         }
 
         /// <summary>

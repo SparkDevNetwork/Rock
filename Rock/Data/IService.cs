@@ -22,6 +22,13 @@ namespace Rock.Data
     /// <summary>
     /// Interface for all <see cref="Service&lt;T&gt;"/> classes
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         This interface may be used by third party plugins but it should not
+    ///         be inherited from directly. The interface may change without warning
+    ///         which would break custom implementations.
+    ///     </para>
+    /// </remarks>
     public interface IService
     {
         /// <summary>

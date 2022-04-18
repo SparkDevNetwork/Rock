@@ -185,9 +185,13 @@
 
                         self.togglePickerElements();
 
-                        if (self.getViewMode() === 'select') {
+                        if (self.getViewMode() === 'selecting') {
                             self.setViewMode('clear');
                             $control.find('.picker-btn').trigger('click', [$hfItemIds.val()]);
+                        }
+
+                        if (self.getViewMode() === 'selected') {
+                            $control.find('.picker-cancel').trigger('click');
                         }
                     })
                     .on('rockTree:fetchCompleted', function (evt, data) {
@@ -346,7 +350,7 @@
                 $control.find('.picker-btn').on('click', function (el) {
 
                     if (self.getViewMode() === 'preview' || self.getViewMode() === 'search') {
-                        self.setViewMode('select');
+                        self.setViewMode('selecting');
                         $('#tbSearch_' + self.options.controlId).val('');
                         $control.find('.js-existing-search-value').val('');
 
@@ -390,7 +394,7 @@
                                                 
                         return;
                     }
-
+                                        
                     var rockTree = $control.find('.treeview').data('rockTree'),
                         selectedNodes = rockTree.selectedNodes,
                         selectedIds = [],
@@ -427,6 +431,8 @@
                             window.location = jsPostback;
                         }
                     }
+
+                    self.setViewMode('selected');
                 });
 
                 $control.find('.picker-select-none').on("click", function (e) {
