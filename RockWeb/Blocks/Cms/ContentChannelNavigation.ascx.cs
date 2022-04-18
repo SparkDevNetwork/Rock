@@ -266,14 +266,7 @@ namespace RockWeb.Blocks.Cms
             SetUserPreference( CATEGORY_FILTER_SETTING, ddlCategory.SelectedValue );
             var categoryGuid = CategoryCache.Get( ddlCategory.SelectedValue.AsInteger() )?.Guid;
 
-            // Get ContentChannelGuid from Route
-            var selectedChannelGuid = PageParameter( "ContentChannelGuid" ).AsGuidOrNull();
             var queryString = new Dictionary<string, string>();
-
-            if ( selectedChannelGuid.HasValue )
-            {
-                queryString.Add( "ContentChannelGuid", selectedChannelGuid.ToString() );
-            }
 
             if ( categoryGuid.HasValue )
             {
