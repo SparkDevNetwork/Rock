@@ -54,6 +54,32 @@ namespace Rock.Data
         public int Id { get; set; }
 
         /// <summary>
+        /// Gets the <see cref="Id"/> as a hashed identifier that can be used
+        /// to lookup the entity later. This hides the actual <see cref="Id"/>
+        /// number so that individuals cannot attempt to guess the next sequential
+        /// identifier numbers.
+        /// </summary>
+        /// <value>The hashed identifier key.</value>
+        [DataMember]
+        [NotMapped]
+        [IncludeForReporting]
+        public string IdKey
+        {
+            get
+            {
+                try
+                {
+                    return IdHasher.Instance.GetHash( Id );
+                }
+                catch
+                {
+                    return string.Empty;
+                }
+            }
+            private set { /* Make DataContract happy. */ }
+        }
+
+        /// <summary>
         /// Gets or sets a <see cref="System.Guid"/> value that is a guaranteed unique identifier for the entity object.  This value
         /// is an alternate key for the object, and should be used when interacting with external systems and when comparing and synchronizing
         /// objects across across data stores or external /implementations of Rock
