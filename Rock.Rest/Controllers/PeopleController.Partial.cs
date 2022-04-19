@@ -729,6 +729,9 @@ namespace Rock.Rest.Controllers
             string phone = null,
             string email = null )
         {
+            // We need access to PrimaryAlias navigation property.
+            SetProxyCreation( true );
+
             return SearchForPeople( Service.Context as RockContext, name, address, phone, email, includeDetails, includeBusinesses, includeDeceased, true );
         }
 
@@ -885,6 +888,7 @@ namespace Rock.Rest.Controllers
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Id = person.Id;
                 personSearchResult.Guid = person.Guid;
+                personSearchResult.PrimaryAliasGuid = person.PrimaryAlias.Guid;
                 personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
                 if ( person.RecordStatusValueId.HasValue )
                 {
@@ -1343,6 +1347,12 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <value>Gets or sets the unique identifier of the person.</value>
         public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the person's primary alias.
+        /// </summary>
+        /// <value>Gets or sets the unique identifier of the person's primary alias.</value>
+        public Guid PrimaryAliasGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the full name last first.

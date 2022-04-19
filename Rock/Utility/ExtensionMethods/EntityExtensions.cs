@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -104,14 +104,14 @@ namespace Rock
         #region IModel Extensions
 
         /// <summary>
-        /// Gets the <see cref="AuditDetailViewModel"/> that contains the information
+        /// Gets the <see cref="AuditDetailBag"/> that contains the information
         /// used by the standard (Obsidian) audit drawer details.
         /// </summary>
         /// <param name="model">The model whose audit details are requested.</param>
-        /// <returns>An instance of <see cref="AuditDetailViewModel"/> that represents the audit information.</returns>
-        internal static AuditDetailViewModel GetAuditDetailViewModel( this IModel model )
+        /// <returns>An instance of <see cref="AuditDetailBag"/> that represents the audit information.</returns>
+        internal static AuditDetailBag GetAuditDetailViewModel( this IModel model )
         {
-            return new AuditDetailViewModel
+            return new AuditDetailBag
             {
                 Id = model.Id,
                 Guid = model.Guid,

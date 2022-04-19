@@ -18,7 +18,7 @@ import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import DropDownList from "../Elements/dropDownList";
 import CheckBox from "../Elements/checkBox";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueFalseOrNull } from "../Services/boolean";
 
 const enum ConfigurationValueKey {
@@ -43,7 +43,7 @@ export const EditComponent = defineComponent({
     },
 
     computed: {
-        dropDownListOptions(): ListItem[] {
+        dropDownListOptions(): ListItemBag[] {
             const hideUnknownGenderConfig = this.configurationValues[ConfigurationValueKey.HideUnknownGender];
             const hideUnknownGender = hideUnknownGenderConfig?.toLowerCase() === "true";
 
@@ -52,13 +52,13 @@ export const EditComponent = defineComponent({
                     { text: "Unknown", value: "0" },
                     { text: "Male", value: "1" },
                     { text: "Female", value: "2" }
-                ] as ListItem[];
+                ] as ListItemBag[];
                 }
             else {
                 return [
                     { text: "Male", value: "1" },
                     { text: "Female", value: "2" }
-                ] as ListItem[];
+                ] as ListItemBag[];
             }
         }
     },

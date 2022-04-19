@@ -15,32 +15,31 @@
 // </copyright>
 //
 
-import { defineComponent, ref, watch } from "vue";
-import Alert from "../../Elements/alert";
+import { Guid } from "@Obsidian/Types";
+import { computed, defineComponent, ref, watch } from "vue";
 import AttributeEditor from "../../Controls/attributeEditor";
-import DropDownList from "../../Elements/dropDownList";
 import Modal from "../../Controls/modal";
-import RockButton from "../../Elements/rockButton";
-import RockForm from "../../Controls/rockForm";
 import RockField from "../../Controls/rockField";
-import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
+import RockForm from "../../Controls/rockForm";
+import Alert from "../../Elements/alert.vue";
+import DropDownList from "../../Elements/dropDownList";
+import RockButton from "../../Elements/rockButton";
 import TextBox from "../../Elements/textBox";
-import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
-import { Guid, normalize as normalizeGuid } from "../../Util/guid";
-import { PublicAttributeValue, PublicEditableAttributeValue, ListItem } from "../../ViewModels";
-import { getFieldType } from "../../Fields/index";
-import { truncate } from "../../Services/string";
-import { computed } from "vue";
-import { PublicEditableAttributeViewModel } from "../../ViewModels/publicEditableAttribute";
 import { FieldType } from "../../SystemGuids";
+import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
+import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
 import { alert, confirmDelete } from "../../Util/dialogs";
+import { normalize as normalizeGuid } from "../../Util/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 type BlockConfiguration = {
     attributeEntityTypeId: number;
 
     entityTypeGuid?: Guid;
 
-    entityTypes?: ListItem[];
+    entityTypes?: ListItemBag[];
 
     hideColumns: boolean;
 
@@ -56,7 +55,7 @@ type EditAttribute = {
 
     entityTypeQualifierValue?: string | null;
 
-    attribute: PublicEditableAttributeViewModel;
+    attribute: PublicEditableAttributeBag;
 };
 
 type GridRow = {
@@ -72,7 +71,9 @@ type GridRow = {
 
     isActive: boolean;
 
-    value: PublicAttributeValue;
+    attribute: PublicAttributeBag;
+
+    value: string;
 
     isDeleteEnabled: boolean;
 
@@ -125,7 +126,7 @@ export default defineComponent({
         // #region Attribute Editing
 
         /** The current attribute in an editable format. */
-        const editableAttribute = ref<PublicEditableAttributeViewModel | null>(null);
+        const editableAttribute = ref<PublicEditableAttributeBag | null>(null);
 
         /** True if the edit attribute modal should be visible. */
         const showEditAttributeModal = ref<boolean>(false);
@@ -144,10 +145,10 @@ export default defineComponent({
 
         /**
          * Start editing an attribute on the given row.
-         * 
+         *
          * @param row The row that represents the attribute.
          */
-        const editAttribute = async (row: GridRow): Promise<void> => {
+        const onEditAttribute = async (row: GridRow): Promise<void> => {
             const result = await invokeBlockAction<EditAttribute>("GetEditAttribute", {
                 attributeGuid: row.guid
             });
@@ -204,7 +205,17 @@ export default defineComponent({
         const onAddAttribute = (): void => {
             editableAttribute.value = {
                 isActive: true,
-                fieldTypeGuid: normalizeGuid(FieldType.Text)
+                fieldTypeGuid: normalizeGuid(FieldType.Text),
+                isPublic: false,
+                isSystem: false,
+                isRequired: false,
+                isShowInGrid: false,
+                isShowOnBulk: false,
+                isAnalytic: false,
+                isAllowSearch: false,
+                isAnalyticHistory: false,
+                isEnableHistory: false,
+                isIndexEnabled: false
             };
             showEditAttributeModal.value = true;
             entityTypeQualifierColumn.value = "";
@@ -213,7 +224,7 @@ export default defineComponent({
 
         /**
          * Event handler for when a delete button on a row is clicked.
-         * 
+         *
          * @param row The row on which the delete button was clicked.
          */
         const onDeleteAttribute = async (row: GridRow): Promise<void> => {
@@ -243,7 +254,8 @@ export default defineComponent({
         // #region Attribute Value Editing
 
         /** The current attribute value in an editable format. */
-        const editableAttributeValue = ref<PublicEditableAttributeValue | null>(null);
+        const editAttributeValue = ref("");
+        const editAttribute = ref<PublicAttributeBag | null>(null);
 
         /** True if the edit attribute value modal should be visible. */
         const showEditAttributeValueModal = ref<boolean>(false);
@@ -253,8 +265,8 @@ export default defineComponent({
 
         /** The title to display in the edit attribute value modal. */
         const editAttributeValueModalTitle = computed((): string => {
-            if (editableAttributeValue.value) {
-                return `${editableAttributeValue.value.name} Value`;
+            if (editAttribute.value) {
+                return `${editAttribute.value.name} Value`;
             }
 
             return "";
@@ -262,15 +274,15 @@ export default defineComponent({
 
         /**
          * Begins editing an attribute's value.
-         * 
+         *
          * @param row The row that initiated the action.
          */
-        const editAttributeValue = async (row: GridRow): Promise<void> => {
+        const onEditAttributeValue = async (row: GridRow): Promise<void> => {
             if (!config.allowSettingOfValues) {
                 return;
             }
 
-            const result = await invokeBlockAction<PublicEditableAttributeValue>("GetEditAttributeValue", {
+            const result = await invokeBlockAction<{ attribute: PublicAttributeBag, value: string }>("GetEditAttributeValue", {
                 attributeGuid: row.guid
             });
 
@@ -278,7 +290,8 @@ export default defineComponent({
                 return alert(result.errorMessage ?? "Unable to edit attribute value.");
             }
 
-            editableAttributeValue.value = result.data;
+            editAttribute.value = result.data.attribute;
+            editAttributeValue.value = result.data.value;
             showEditAttributeValueModal.value = true;
         };
 
@@ -294,8 +307,8 @@ export default defineComponent({
          */
         const saveEditAttributeValue = async (): Promise<void> => {
             const result = await invokeBlockAction<GridRow>("SaveEditAttributeValue", {
-                attributeGuid: editableAttributeValue.value?.attributeGuid,
-                value: editableAttributeValue.value?.value
+                attributeGuid: editAttribute.value?.attributeGuid,
+                value: editAttributeValue.value
             });
 
             if (!result.isSuccess || !result.data) {
@@ -308,35 +321,16 @@ export default defineComponent({
                 attributes.value.splice(index, 1, result.data);
             }
 
-            editableAttributeValue.value = null;
+            editAttribute.value = null;
+            editAttributeValue.value = "";
             showEditAttributeValueModal.value = false;
         };
 
         // #endregion
 
         /**
-         * Get the condensed value to display in a row.
-         * 
-         * @param value The value representation to display.
-         *
-         * @returns A string to display in the grid row for the value.
-         */
-        const getCondensedValue = (value: PublicAttributeValue): string => {
-            // TODO: This should probably be updated to have a new method called
-            // getFieldTypeOrDefault() that will return the Text field type.
-            const fieldType = getFieldType(value.fieldTypeGuid);
-
-            if (!fieldType) {
-                return truncate(value.textValue ?? "", 100);
-            }
-            else {
-                return fieldType.getCondensedTextValue(value);
-            }
-        };
-
-        /**
          * Gets the CSS classes to be applied to the delete button.
-         * 
+         *
          * @param row The row containing the delete button.
          *
          * @returns An array of class names.
@@ -389,16 +383,14 @@ export default defineComponent({
         return {
             attributes,
             editableAttribute,
-            editableAttributeValue,
             editAttribute,
-            editAttributeValue,
             editAttributeModalTitle,
+            editAttributeValue,
             editAttributeValueModalTitle,
             entityTypeGuid,
             entityTypeOptions,
             entityTypeQualifierColumn,
             entityTypeQualifierValue,
-            getCondensedValue,
             getDataCellClass,
             getDeleteButtonClass,
             saveEditAttribute,
@@ -406,6 +398,8 @@ export default defineComponent({
             entityTypeSelectionIsValid,
             onAddAttribute,
             onDeleteAttribute,
+            onEditAttribute,
+            onEditAttributeValue,
             onIgnore: () => { /* Intentionally blank */ },
             showEditAttributeModal,
             showEditAttributeValueModal,
@@ -437,7 +431,7 @@ export default defineComponent({
 
     <template v-slot:default>
         <div v-if="entityTypeSelectionIsValid" class="grid grid-panel">
-            <div class="grid-actions" style="border-bottom: 1px solid #dfe0e1;">
+            <div class="grid-actions border-bottom border-panel">
                 <RockButton class="btn-add btn-grid-action" btnType="default" btnSize="sm" @click="onAddAttribute"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
             </div>
 
@@ -457,14 +451,16 @@ export default defineComponent({
                     </thead>
 
                     <tbody>
-                        <tr v-for="attribute in attributes" :key="attribute.id" align="left" @click.stop="editAttributeValue(attribute)">
+                        <tr v-for="attribute in attributes" :key="attribute.id" align="left" @click.stop="onEditAttributeValue(attribute)">
                             <td :class="getDataCellClass(attribute)" data-priority="1" style="white-space: nowrap;" align="right">{{ attribute.id }}</td>
                             <td :class="getDataCellClass(attribute)" data-priority="1" style="white-space: nowrap;">{{ attribute.qualifier }}</td>
                             <td :class="getDataCellClass(attribute)" data-priority="1">{{ attribute.name }}</td>
                             <td :class="getDataCellClass(attribute)" data-priority="1">{{ attribute.categories }}</td>
-                            <td :class="getDataCellClass(attribute)" data-priority="1">{{ getCondensedValue(attribute.value) }}</td>
+                            <td :class="getDataCellClass(attribute)" data-priority="1">
+                                <RockField :modelValue="attribute.value" :attribute="attribute.attribute" :showLabel="false" isCondensed />
+                            </td>
                             <td class="grid-columncommand" data-priority="1" align="center" @click.stop="onIgnore">
-                                <a title="Edit" class="btn btn-default btn-sm" @click.prevent.stop="editAttribute(attribute)"><i class="fa fa-pencil"></i></a>
+                                <a title="Edit" class="btn btn-default btn-sm" @click.prevent.stop="onEditAttribute(attribute)"><i class="fa fa-pencil"></i></a>
                             </td>
                             <td class="grid-columncommand" data-priority="1" align="center" @click.stop="onIgnore">
                                 <a title="Security" class="btn btn-security btn-sm disabled"><i class="fa fa-lock"></i></a>
@@ -486,7 +482,7 @@ export default defineComponent({
 
 <Modal v-model="showEditAttributeValueModal" :title="editAttributeValueModalTitle">
     <RockForm v-model:submit="submitEditAttributeValue" @submit="saveEditAttributeValue">
-        <RockField v-model:attributeValue="editableAttributeValue" isEditMode />
+        <RockField v-model="editAttributeValue" :attribute="editAttribute" isEditMode />
     </RockForm>
 
     <template #customButtons>

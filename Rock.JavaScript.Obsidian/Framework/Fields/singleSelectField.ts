@@ -16,8 +16,7 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonValue } from "../Reporting/comparisonValue";
-import { ListItem } from "../ViewModels";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
@@ -27,7 +26,7 @@ export const enum ConfigurationValueKey {
     RepeatColumns = "repeatColumns",
 
     /** Only used during editing of the field type configuration. */
-    RawValues = "rawValues"
+    CustomValues = "customValues"
 }
 
 
@@ -50,17 +49,17 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the SingleSelect field.
  */
 export class SingleSelectFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === "") {
             return "";
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(v => v.value === value);
 
             if (selectedValues.length >= 1) {
-                return selectedValues[0].text;
+                return selectedValues[0].text ?? "";
             }
             else {
                 return "";
@@ -83,15 +82,15 @@ export class SingleSelectFieldType extends FieldTypeBase {
         return getStandardFilterComponent("Is", filterComponent);
     }
 
-    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+    public override getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {
         if (value.value === "") {
             return "";
         }
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
-            const selectedValues = values.filter(v => rawValues.includes(v.value));
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const selectedValues = values.filter(v => rawValues.includes(v.value ?? ""));
 
             if (selectedValues.length >= 1) {
                 return `'${selectedValues.map(v => v.value).join("' OR '")}'`;

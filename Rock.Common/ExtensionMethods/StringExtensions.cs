@@ -815,7 +815,7 @@ namespace Rock
         public static string ReplaceFirstOccurrence( this string source, string find, string replace )
         {
             var regex = new Regex( Regex.Escape( find ) );
-            return regex.Replace( source, replace, 1);
+            return regex.Replace( source, replace, 1 );
         }
 
         /// <summary>
@@ -1406,3 +1406,4 @@ namespace Rock
         #endregion String Extensions
     }
 }
+

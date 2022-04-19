@@ -20,11 +20,11 @@ import DropDownList from "../../../../Elements/dropDownList";
 import InlineCheckbox from "../../../../Elements/inlineCheckBox";
 import TextBox from "../../../../Elements/textBox";
 import { toNumberOrNull } from "../../../../Services/number";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import SegmentedPicker from "./segmentedPicker";
 import { FormEmailSource, FormEmailSourceType } from "./types";
 
-const emailSourceOptions: ListItem[] = [
+const emailSourceOptions: ListItemBag[] = [
     {
         value: FormEmailSourceType.UseTemplate.toString(),
         text: "Use Email Template"
@@ -56,7 +56,7 @@ export default defineComponent({
         },
 
         templateOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         }
     },

@@ -19,7 +19,7 @@ import InlineCheckBox from "../../Elements/inlineCheckBox";
 import RockButton from "../../Elements/rockButton";
 import { defineComponent, inject } from "vue";
 import { InvokeBlockActionFunc } from "../../Util/block";
-import Alert from "../../Elements/alert";
+import Alert from "../../Elements/alert.vue";
 import { RockDateTime } from "../../Util/rockDateTime";
 
 type AuthCookie = {

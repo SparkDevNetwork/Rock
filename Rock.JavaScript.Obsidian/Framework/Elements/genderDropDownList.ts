@@ -16,7 +16,7 @@
 //
 import { computed, defineComponent } from "vue";
 import { normalizeRules, rulesPropType } from "../Rules/index";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import DropDownList from "./dropDownList";
 
 export const enum Gender {
@@ -37,7 +37,7 @@ export default defineComponent({
     },
 
     setup(props) {
-        const options: ListItem[] = [
+        const options: ListItemBag[] = [
             { text: "Male", value: Gender.Male.toString() },
             { text: "Female", value: Gender.Female.toString() }
         ];

@@ -128,7 +128,7 @@ export default defineComponent({
             const classes = ["panel-heading"];
 
             if (props.hasCollapse) {
-                classes.push("clickable");
+                classes.push("cursor-pointer");
             }
 
             return classes;
@@ -154,7 +154,7 @@ export default defineComponent({
 
         /**
          * Event handler for when a key is pressed down inside the panel.
-         * 
+         *
          * @param ev The event that describes which key was pressed.
          */
         const onPanelKeyDown = (ev: KeyboardEvent): void => {
@@ -224,6 +224,7 @@ export default defineComponent({
             }
 
             .panel.panel-flex > .panel-heading > .panel-action {
+                position: relative;
                 display: flex;
                 border-left: 1px solid #ccc;
                 align-self: stretch;
@@ -231,6 +232,11 @@ export default defineComponent({
                 width: 48px;
                 justify-content: center;
                 cursor: pointer;
+            }
+
+            .panel.panel-flex > .panel-heading > .panel-action .rock-fullscreen-toggle {
+                position: relative;
+                border-left: 0;
             }
 
             .panel.panel-fullscreen {
@@ -297,7 +303,7 @@ export default defineComponent({
             <slot name="actionAside" />
 
             <span v-if="hasFullscreen" class="panel-action" @click.prevent.stop="onFullscreenClick">
-                <i class="fa fa-expand"></i>
+                <div class="rock-fullscreen-toggle"></div>
             </span>
         </div>
 

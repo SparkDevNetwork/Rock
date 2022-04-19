@@ -28,7 +28,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddEntityAttribute( "Rock.Checkr.Checkr", FieldType.ENCRYPTED_TEXT, "", "", "Access Token", "", "Checkr Access Token", 0, "", "E52B6D10-52F3-B694-4DDF-74A6FEA14B12" );
+            RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Checkr.Checkr", FieldType.ENCRYPTED_TEXT, "", "", "Access Token", "", "Checkr Access Token", 0, "", "E52B6D10-52F3-B694-4DDF-74A6FEA14B12", null );
         }
 
         /// <summary>

@@ -32,9 +32,6 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Member RemoveFrom URL" )]
     [Category( "Groups" )]
     [Description( "Removes a person from a group based on inputs from the URL query string (GroupId, PersonGuid)." )]

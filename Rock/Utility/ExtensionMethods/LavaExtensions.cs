@@ -585,7 +585,7 @@ namespace Rock
         {
             try
             {
-                if ( !content.HasMergeFields() )
+                if ( !content.IsLavaTemplate() )
                 {
                     return content ?? string.Empty;
                 }
@@ -837,6 +837,8 @@ namespace Rock
         /// </summary>
         /// <param name="content">The content.</param>
         /// <returns></returns>
+        [Obsolete("Use the LavaHelper.IsLavaTemplate method instead.")]
+        [RockObsolete("1.13.3")]
         public static bool HasMergeFields( this string content )
         {
             if ( content == null )

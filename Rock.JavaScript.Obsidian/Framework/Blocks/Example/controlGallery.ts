@@ -18,6 +18,7 @@
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldVisibilityRulesEditor from "../../Controls/fieldFilterEditor";
+import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
 import TextBox from "../../Elements/textBox";
 import EmailBox from "../../Elements/emailBox";
 import CurrencyBox from "../../Elements/currencyBox";
@@ -61,11 +62,12 @@ import FileUploader from "../../Elements/fileUploader";
 import ImageUploader from "../../Elements/imageUploader";
 import SlidingDateRangePicker from "../../Controls/slidingDateRangePicker";
 import { toNumber } from "../../Services/number";
-import { ListItem } from "../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import "../../Fields/index";
 import { newGuid } from "../../Util/guid";
-import { FieldFilterGroup } from "../../ViewModels/Reporting/fieldFilterGroup";
-import { BinaryFiletype } from "../../SystemGuids";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+import { BinaryFiletype, FieldType } from "../../SystemGuids";
 import { SlidingDateRange, slidingDateRangeToString } from "../../Services/slidingDateRange";
 
 /** An inner component that describes the template used for each of the controls
@@ -105,7 +107,83 @@ const GalleryAndResult = defineComponent({
 });
 
 
-/** Demonstrates a phone number box */
+/** Demonstrates an attribute values container. */
+const attributeValuesContainerGallery = defineComponent({
+    name: "AttributeValuesContainerGallery",
+    components: {
+        GalleryAndResult,
+        AttributeValuesContainer,
+        CheckBox
+    },
+    setup() {
+        const isEditMode = ref(true);
+
+        const showEmptyValues = ref(false);
+
+        const showAbbreviatedName = ref(false);
+
+        const attributes = ref<Record<string, PublicAttributeBag>>({
+            text: {
+                attributeGuid: newGuid(),
+                categories: [],
+                description: "A text attribute.",
+                fieldTypeGuid: FieldType.Text,
+                isRequired: false,
+                key: "text",
+                name: "Text Attribute",
+                order: 2,
+                configurationValues: {}
+            },
+            single: {
+                attributeGuid: newGuid(),
+                categories: [],
+                description: "A single select attribute.",
+                fieldTypeGuid: FieldType.SingleSelect,
+                isRequired: false,
+                key: "single",
+                name: "Single Select",
+                order: 1,
+                configurationValues: {
+                    values: JSON.stringify([{ value: "1", text: "One" }, { value: "2", text: "Two" }, { value: "3", text: "Three" }])
+                }
+            }
+        });
+
+        const attributeValues = ref<Record<string, string>>({
+            "text": "Default text value",
+            single: ""
+        });
+
+        return {
+            attributes,
+            attributeValues,
+            isEditMode,
+            showAbbreviatedName,
+            showEmptyValues
+        };
+    },
+    template: `
+<GalleryAndResult :splitWidth="false">
+    <template #header>
+        AttributeValuesContainer
+    </template>
+    <template #gallery>
+        <CheckBox v-model="isEditMode" label="Is Editable" />
+
+        <CheckBox v-model="showAbbreviatedName" label="Show Abbreviated Name" />
+
+        <CheckBox v-model="showEmptyValues" label="Show Empty Values" />
+
+        <AttributeValuesContainer v-model="attributeValues"
+            :attributes="attributes"
+            :isEditMode="isEditMode"
+            :showAbbreviatedName="showAbbreviatedName"
+            :showEmptyValues="showEmptyValues" />
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a field visibility rules editor. */
 const filterRules = defineComponent({
     name: "FilterRules",
     components: {
@@ -233,7 +311,7 @@ const filterRules = defineComponent({
             return JSON.parse(sourcesText.value);
         });
 
-        const prefilled = (): FieldFilterGroup => ({
+        const prefilled = (): FieldFilterGroupBag => ({
             guid: newGuid(),
             expressionType: 4,
             "rules": [
@@ -303,7 +381,7 @@ const filterRules = defineComponent({
             ]
         });
 
-        const clean = (): FieldFilterGroup => ({
+        const clean = (): FieldFilterGroupBag => ({
             guid: newGuid(),
             expressionType: 1,
             rules: []
@@ -398,7 +476,7 @@ const dropDownListGallery = defineComponent({
                 { text: "B Text", value: "b" },
                 { text: "C Text", value: "c" },
                 { text: "D Text", value: "d" }
-            ] as ListItem[]
+            ] as ListItemBag[]
         };
     },
     template: `
@@ -440,7 +518,7 @@ const radioButtonListGallery = defineComponent({
                 { text: "E Text", value: "e" },
                 { text: "F Text", value: "f" },
                 { text: "G Text", value: "g" }
-            ] as ListItem[]
+            ] as ListItemBag[]
         };
     },
     template: `
@@ -617,7 +695,7 @@ const checkBoxListGallery = defineComponent({
                 { value: "red", text: "Red" },
                 { value: "green", text: "Green" },
                 { value: "blue", text: "Blue" }
-            ] as ListItem[],
+            ] as ListItemBag[],
             items: ["green"]
         };
     },
@@ -651,7 +729,7 @@ const listBoxGallery = defineComponent({
                 { text: "B Text", value: "b" },
                 { text: "C Text", value: "c" },
                 { text: "D Text", value: "d" }
-            ] as ListItem[]
+            ] as ListItemBag[]
         };
     },
     template: `
@@ -1634,6 +1712,7 @@ const slidingDateRangePickerGallery = defineComponent({
 
 
 const galleryComponents: Record<string, Component> = {
+    attributeValuesContainerGallery,
     filterRules,
     textBoxGallery,
     datePickerGallery,

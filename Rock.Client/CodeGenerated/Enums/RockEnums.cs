@@ -395,15 +395,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum Gender
-    {
-        Unknown = 0x0,
-        Male = 0x1,
-        Female = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum GroupCapacityRule
     {
         None = 0x0,

@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -80,7 +81,7 @@ namespace Rock.Model
     /// Site View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Site ) )]
-    public partial class SiteViewModelHelper : ViewModelHelper<Site, Rock.ViewModel.SiteViewModel>
+    public partial class SiteViewModelHelper : ViewModelHelper<Site, SiteBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -89,14 +90,14 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.SiteViewModel CreateViewModel( Site model, Person currentPerson = null, bool loadAttributes = true )
+        public override SiteBag CreateViewModel( Site model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.SiteViewModel
+            var viewModel = new SiteBag
             {
                 Id = model.Id,
                 Guid = model.Guid,
@@ -115,6 +116,7 @@ namespace Rock.Model
                 EnabledForShortening = model.EnabledForShortening,
                 EnableExclusiveRoutes = model.EnableExclusiveRoutes,
                 EnableMobileRedirect = model.EnableMobileRedirect,
+                EnablePageViewGeoTracking = model.EnablePageViewGeoTracking,
                 EnablePageViews = model.EnablePageViews,
                 ErrorPage = model.ErrorPage,
                 ExternalUrl = model.ExternalUrl,
@@ -224,6 +226,7 @@ namespace Rock.Model
             target.EnabledForShortening = source.EnabledForShortening;
             target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
+            target.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
             target.EnablePageViews = source.EnablePageViews;
             target.ErrorPage = source.ErrorPage;
             target.ExternalUrl = source.ExternalUrl;
@@ -266,7 +269,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.SiteViewModel ToViewModel( this Site model, Person currentPerson = null, bool loadAttributes = false )
+        public static SiteBag ToViewModel( this Site model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new SiteViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

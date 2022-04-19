@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="BlockGenerator.Controls.NavigationFrame"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="1" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Name="BackButton"
+                    HorizontalContentAlignment="Center"
+                    BorderThickness="0"
+                    Background="Transparent"
+                    Content="{fa:Icon ChevronLeft, Foreground=Black}"
+                    Click="BackButton_Click" />
+
+            <Label Grid.Column="1"
+                   Name="PageTitle">
+                Page Title
+            </Label>
+        </Grid>
+
+        <Rectangle Grid.Row="1"
+                   Fill="#ccc" />
+
+        <Frame Grid.Row="2"
+               Name="ContentFrame"
+               NavigationUIVisibility="Hidden" />
+    </Grid>
+</UserControl>

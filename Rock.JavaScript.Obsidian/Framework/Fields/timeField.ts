@@ -34,7 +34,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Time field.
  */
 export class TimeFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         const values = /^(\d+):(\d+)/.exec(value ?? "");
 
         if (values === null || values.length < 3) {

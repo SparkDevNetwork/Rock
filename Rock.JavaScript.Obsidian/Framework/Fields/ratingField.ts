@@ -16,7 +16,7 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType, numericComparisonTypes } from "../Reporting/comparisonType";
-import { PublicAttributeValue } from "../ViewModels";
+import { toNumberOrNull } from "../Services/number";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
@@ -43,22 +43,18 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Rating field.
  */
 export class RatingFieldType extends FieldTypeBase {
-    public override getTextValue(value: PublicAttributeValue): string {
-        return value.textValue || "0";
-    }
-
-    public override getHtmlValue(value: PublicAttributeValue): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
         let ratingValue: RatingValue | null;
 
         try {
-            ratingValue = JSON.parse(value.value ?? "") as RatingValue;
+            ratingValue = JSON.parse(value ?? "") as RatingValue;
         }
         catch {
             ratingValue = null;
         }
 
         const rating = ratingValue?.value ?? 0;
-        const maxRating = ratingValue?.maxValue ?? 5;
+        const maxRating = toNumberOrNull(configurationValues[ConfigurationValueKey.MaxRating]) ?? 5;
         let html = "";
 
         for (let i = 0; i < rating && i < maxRating; i++) {
@@ -70,16 +66,6 @@ export class RatingFieldType extends FieldTypeBase {
         }
 
         return html;
-    }
-
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
-        try {
-            const ratingValue = JSON.parse(value ?? "") as RatingValue;
-            return ratingValue?.value?.toString() ?? "";
-        }
-        catch {
-            return "";
-        }
     }
 
     public override getEditComponent(): Component {

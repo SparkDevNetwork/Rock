@@ -64,18 +64,17 @@ export default defineComponent({
     data: function () {
         return {
             internalValue: {
-                lower: "",
-                upper: ""
-            },
-            validationValue: ""
+                lower: "" as number | string,
+                upper: "" as number | string
+            }
         };
     },
 
     methods: {
         onChange(): void {
             this.internalValue = {
-                lower: asFormattedString(this.modelValue.lower, this.internalDecimalCount ?? undefined),
-                upper: asFormattedString(this.modelValue.upper, this.internalDecimalCount ?? undefined)
+                lower: asFormattedString(this.modelValue.lower, this.internalDecimalCount ?? undefined, { useGrouping: false }),
+                upper: asFormattedString(this.modelValue.upper, this.internalDecimalCount ?? undefined, { useGrouping: false })
             };
         }
     },
@@ -101,23 +100,15 @@ export default defineComponent({
 
             return rules;
         },
+
+        validationValue(): string {
+            return `${this.internalValue.lower ?? ""},${this.internalValue.upper ?? ""}`;
+        }
     },
 
     watch: {
         computedValue(): void {
             this.$emit("update:modelValue", this.computedValue);
-        },
-
-        internalValue(): void {
-            const value = `${this.internalValue.lower ?? ""},${this.internalValue.upper ?? ""}`;
-            this.validationValue = value;
-
-            const emitValue = {
-                lower: toNumberOrNull(this.internalValue.lower),
-                upper: toNumberOrNull(this.internalValue.upper)
-            } as NumberRangeModelValue;
-
-            this.$emit("update:modelValue", emitValue);
         },
 
         internalStep(): string {

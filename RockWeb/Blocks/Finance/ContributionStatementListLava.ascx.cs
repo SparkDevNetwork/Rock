@@ -34,9 +34,6 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Contribution Statement List Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a listing of years where contribution statements are available." )]

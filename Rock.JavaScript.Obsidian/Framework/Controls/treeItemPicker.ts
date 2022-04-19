@@ -18,9 +18,9 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockButton from "../Elements/rockButton";
 import RockFormField from "../Elements/rockFormField";
-import { ListItem } from "../ViewModels";
-import { ITreeItemProvider } from "../ViewModels/Controls/treeList";
-import { TreeItem } from "../ViewModels/treeItem";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { ITreeItemProvider } from "../Util/treeItemProviders";
+import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import TreeList from "../Elements/treeList";
 
 /**
@@ -58,7 +58,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
@@ -68,7 +68,7 @@ export default defineComponent({
         },
 
         items: {
-            type: Array as PropType<TreeItem[]>
+            type: Array as PropType<TreeItemBag[]>
         },
 
         provider: {
@@ -87,13 +87,13 @@ export default defineComponent({
          * because we don't actually emit the new values until the user clicks
          * the select button.
          */
-        const internalValues = ref<string[]>(props.modelValue.map(v => v.value));
+        const internalValues = ref<string[]>(props.modelValue.map(v => v.value ?? ""));
 
         /**
          * A flat array of items from the tree. This is used to quickly filter
          * to just the selected items.
          */
-        const flatItems = ref<TreeItem[]>(flatten(props.items ?? [], i => i.children ?? []));
+        const flatItems = ref<TreeItemBag[]>(flatten(props.items ?? [], i => i.children ?? []));
 
         /** Will contain the value true if the popup tree list should be shown. */
         const showPopup = ref(false);
@@ -120,7 +120,7 @@ export default defineComponent({
          * 
          * @param newItems The new root items being used by the tree list.
          */
-        const onUpdateItems = (newItems: TreeItem[]): void => {
+        const onUpdateItems = (newItems: TreeItemBag[]): void => {
             // Update our flatItems array with the list of new items.
             flatItems.value = flatten(newItems ?? [], i => i.children ?? []);
         };
@@ -155,7 +155,7 @@ export default defineComponent({
         const onSelect = (): void => {
             // Create a new set of selected items to emit.
             const newModelValue = props.modelValue
-                .filter(v => internalValues.value.includes(v.value));
+                .filter(v => internalValues.value.includes(v.value ?? ""));
 
             // Helpful list of the values already in the new model value.
             const knownValues = newModelValue.map(v => v.value);
@@ -184,7 +184,7 @@ export default defineComponent({
 
         // Watch for changes to the selected values from the parent control and
         // update our internal values to match.
-        watch(() => props.modelValue, () => internalValues.value = props.modelValue.map(v => v.value));
+        watch(() => props.modelValue, () => internalValues.value = props.modelValue.map(v => v.value ?? ""));
 
         return {
             internalValues,

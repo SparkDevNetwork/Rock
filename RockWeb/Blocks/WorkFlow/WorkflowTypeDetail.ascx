@@ -30,7 +30,7 @@
                 <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" EnableViewState="false" />
 
                 <div id="pnlEditDetails" runat="server">
-
+                    <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
                     <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                         <div class="row">
                             <div class="col-md-6">
@@ -137,7 +137,6 @@
                 </div>
 
                 <fieldset id="fieldsetViewDetails" runat="server">
-
                     <div class="description">
                         <asp:Literal ID="lWorkflowTypeDescription" runat="server" EnableViewState="false"></asp:Literal>
                     </div>

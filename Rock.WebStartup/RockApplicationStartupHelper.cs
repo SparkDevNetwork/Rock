@@ -343,6 +343,11 @@ namespace Rock.WebStartup
         private static void UpdateAttributesFromRockConfig( RockContext rockContext )
         {
             var rockConfig = RockConfig.Config;
+            if ( rockConfig?.AttributeValues == null )
+            {
+                return;
+            }
+
             if ( rockConfig.AttributeValues.Count > 0 )
             {
                 foreach ( AttributeValueConfig attributeValueConfig in rockConfig.AttributeValues )

@@ -19,7 +19,7 @@
         <div class="treeview js-grouptreeview">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title">Groups</h1>
+                    <h1 class="panel-title"><asp:Literal ID="lPanelTitle" runat="server"/></h1>
                         <asp:Panel ID="pnlTreeviewActions" CssClass="panel-labels treeview-actions" runat="server">
                             <div id="divAddGroup" runat="server" class="btn-group">
                                 <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown" title="Add Group">

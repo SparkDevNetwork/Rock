@@ -275,6 +275,10 @@ defineRule("required", (value: unknown, params?: unknown[]): ValidationResult =>
         return "is required";
     }
 
+    if (Array.isArray(value) && value.length === 0) {
+        return "is required";
+    }
+
     // Special case for booleans, required rule is ignored. Otherwise things
     // like checkbox and toggle would always require a True value.
     if (typeof value === "boolean") {

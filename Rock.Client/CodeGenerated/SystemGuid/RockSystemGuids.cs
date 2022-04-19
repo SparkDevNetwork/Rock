@@ -447,8 +447,9 @@ namespace Rock.Client.SystemGuid
     public class ConnectionActivityType
     {
         public const string ASSIGNED = "DB4C6D25-211C-4995-B194-9FEF7551F26B";
+        public const string BULK_UPDATE = "10104830-5AFC-491F-9885-747521A2AA75";
         public const string CONNECTED = "04C61230-97B6-4702-89C0-634E5AE57D6F";
-        public const string FUTURE_FOLLOWUP_COMPLETE = "D0FBB866-9029-4705-B3BA-07364F3D7FC1";
+        public const string FOLLOWUP_DATE_REACHED = "D0FBB866-9029-4705-B3BA-07364F3D7FC1";
         public const string TRANSFERRED = "6E7C8475-2A03-42EB-A883-5B2CC6CAE519";
     }
 

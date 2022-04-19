@@ -396,6 +396,7 @@ namespace RockWeb.Blocks.Event
             public const string RegistrationTemplatePlacementGuidGroupIdsStateJSON = "RegistrationTemplatePlacementGuidGroupIdsStateJSON";
             public const string FeeStateJSON = "FeeStateJSON";
             public const string FeeItemsEditStateJSON = "FeeItemsEditStateJSON";
+            public const string SignatureDocumentTemplateStateJSON = "SignatureDocumentTemplateState";
         }
 
         #endregion ViewState Keys
@@ -428,6 +429,14 @@ namespace RockWeb.Blocks.Event
         /// The State of the RegistrationTemplateFeeItems in the Fees Dialog while it is being edited
         /// </summary>
         private List<RegistrationTemplateFeeItem> FeeItemsEditState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state of the signature document template.
+        /// </summary>
+        /// <value>
+        /// The state of the signature document template.
+        /// </value>
+        private List<SignatureDocumentTemplate> SignatureDocumentTemplateState { get; set; }
 
         private int? GridFieldsDeleteIndex { get; set; }
 
@@ -527,6 +536,16 @@ namespace RockWeb.Blocks.Event
             else
             {
                 FeeItemsEditState = JsonConvert.DeserializeObject<List<RegistrationTemplateFeeItem>>( json );
+            }
+
+            json = ViewState[ViewStateKey.SignatureDocumentTemplateStateJSON] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                SignatureDocumentTemplateState = new List<SignatureDocumentTemplate>();
+            }
+            else
+            {
+                SignatureDocumentTemplateState = JsonConvert.DeserializeObject<List<SignatureDocumentTemplate>>( json );
             }
 
             BuildControls( false );
@@ -704,6 +723,7 @@ The logged-in person's information will be used to complete the registrar inform
             ViewState[ViewStateKey.RegistrationTemplatePlacementGuidGroupIdsStateJSON] = JsonConvert.SerializeObject( RegistrationTemplatePlacementGuidGroupIdsState, Formatting.None, jsonSetting );
             ViewState[ViewStateKey.FeeStateJSON] = JsonConvert.SerializeObject( FeeState, Formatting.None, jsonSetting );
             ViewState[ViewStateKey.FeeItemsEditStateJSON] = JsonConvert.SerializeObject( FeeItemsEditState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.SignatureDocumentTemplateStateJSON] = JsonConvert.SerializeObject( SignatureDocumentTemplateState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -963,6 +983,7 @@ The logged-in person's information will be used to complete the registrar inform
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
             RegistrationTemplate registrationTemplate = null;
+            SignatureDocumentTemplate documentTemplate = GetSelectedTemplate();
 
             int? registrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
             if ( registrationTemplateId.HasValue )
@@ -994,7 +1015,9 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             registrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
             registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
-            registrationTemplate.SignatureDocumentAction = cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
+            // Rock’s signature system is only in-line enabled so if a new (non-legacy) template is selected
+            // RegistrationTemplate.SignatureDocumentAction should be embed, if not then defer to the user's choice.
+            registrationTemplate.SignatureDocumentAction = documentTemplate?.IsLegacy == false || cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
             registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
@@ -2291,6 +2314,26 @@ The logged-in person's information will be used to complete the registrar inform
             BindFeeItemsControls( feeItems, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>() );
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlSignatureDocumentTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlSignatureDocumentTemplate_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var selectedTemplate = GetSelectedTemplate();
+            var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
+
+            cbDisplayInLine.Visible = !isNonLegacySelected;
+            cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
+            cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
+
+            if ( isNonLegacySelected )
+            {
+                cbAllowExternalUpdates.Checked = false;
+            }
+        }
+
         #endregion
 
         #endregion
@@ -2542,6 +2585,9 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="rockContext">The rock context.</param>
         private void ShowEditDetails( RegistrationTemplate registrationTemplate, RockContext rockContext )
         {
+            var signatureDocTemplate = registrationTemplate.RequiredSignatureDocumentTemplate;
+            var isNonLegacySignatureSelected = signatureDocTemplate != null && signatureDocTemplate.IsLegacy != true;
+
             if ( registrationTemplate.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( RegistrationTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -2569,6 +2615,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
+            cbDisplayInLine.Visible = !isNonLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
@@ -2583,6 +2630,8 @@ The logged-in person's information will be used to complete the registrar inform
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
+            cbAllowExternalUpdates.Enabled = !isNonLegacySignatureSelected;
+            cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySignatureSelected );
             cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants.ToString();
@@ -2641,6 +2690,20 @@ The logged-in person's information will be used to complete the registrar inform
             var defaultForm = FormState.FirstOrDefault();
             BuildControls( true, defaultForm.Guid );
             BindRegistrationAttributesGrid();
+        }
+
+        /// <summary>
+        /// Gets the help text for the AllowExternalUpdates field based on whether or not it is enabled
+        /// because if it's disabled, we'd like to explain to the user why.
+        /// </summary>
+        private string GetAllowExternalUpdatesHelpText(bool isEnabled)
+        {
+            if (isEnabled)
+            {
+                return "Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will not be allowed to change any of the registrant information and attributes.";
+            }
+
+            return "Updating details of a registration are not allowed when a signature document is used because it could otherwise invalidate the previously signed document.";
         }
 
         /// <summary>
@@ -2837,12 +2900,22 @@ The logged-in person's information will be used to complete the registrar inform
 
             ddlSignatureDocumentTemplate.Items.Clear();
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
-            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
-                .Queryable().AsNoTracking()
-                .OrderBy( t => t.Name ) )
+            SignatureDocumentTemplateState = new SignatureDocumentTemplateService( rockContext ).Queryable().AsNoTracking().OrderBy( t => t.Name ).ToList();
+
+            foreach ( var documentType in SignatureDocumentTemplateState )
             {
                 ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
             }
+        }
+
+        /// <summary>
+        /// Gets the selected template.
+        /// </summary>
+        /// <returns></returns>
+        private SignatureDocumentTemplate GetSelectedTemplate()
+        {
+            var selectedId = ddlSignatureDocumentTemplate.SelectedValueAsInt() ?? 0;
+            return SignatureDocumentTemplateState.Find( m => m.Id == selectedId );
         }
 
         #endregion

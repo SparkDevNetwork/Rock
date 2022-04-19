@@ -21,7 +21,7 @@ import CheckBox from "../../../../Elements/checkBox";
 import DropDownList from "../../../../Elements/dropDownList";
 import TextBox from "../../../../Elements/textBox";
 import RockForm from "../../../../Controls/rockForm";
-import { ListItem } from "../../../../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumberOrNull } from "../../../../Services/number";
 import { FormPersonEntry } from "./types";
 import { FormFieldVisibility } from "./types";
@@ -30,7 +30,7 @@ import { FormFieldVisibility } from "./types";
  * The list of options for the individual to pick from when defining if or how
  * a field is shown.
  */
-const formFieldVisibilityOptions: ListItem[] = [
+const formFieldVisibilityOptions: ListItemBag[] = [
     {
         value: FormFieldVisibility.Hidden.toString(),
         text: "Hidden"
@@ -62,27 +62,27 @@ export default defineComponent({
         },
 
         recordStatusOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
         connectionStatusOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
         campusTypeOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
         campusStatusOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 
         addressTypeOptions: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             default: []
         },
 

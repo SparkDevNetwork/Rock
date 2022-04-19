@@ -18,6 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldFilterEditor from "../../../../Controls/fieldFilterEditor";
 import FieldTypeEditor from "../../../../Controls/fieldTypeEditor";
+import Alert/*, { AlertType }*/ from "../../../../Elements/alert.vue";
 import Modal from "../../../../Controls/modal";
 import Panel from "../../../../Controls/panel";
 import RockForm from "../../../../Controls/rockForm";
@@ -32,18 +33,17 @@ import { useInvokeBlockAction } from "../../../../Util/block";
 import { FormError } from "../../../../Util/form";
 import { areEqual } from "../../../../Util/guid";
 import { List } from "../../../../Util/linq";
-import { ListItem } from "../../../../ViewModels";
-import { FieldTypeConfigurationViewModel } from "../../../../ViewModels/Controls/fieldTypeEditor";
-import { FieldFilterGroup } from "../../../../ViewModels/Reporting/fieldFilterGroup";
-import { FieldFilterRule } from "../../../../ViewModels/Reporting/fieldFilterRule";
-import { FieldFilterSource } from "../../../../ViewModels/Reporting/fieldFilterSource";
+import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { FormField, FormFieldType } from "../Shared/types";
-import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutAsync } from "./utils";
+import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils";
 
 /**
  * Check if the two records are equal. This makes sure all the key names match
  * and the associated values also match. Strict checking is performed.
- * 
+ *
  * @param a The first record value to be compared.
  * @param b The second record value to be compared.
  *
@@ -86,7 +86,8 @@ export default defineComponent({
         RockButton,
         RockForm,
         Slider,
-        TextBox
+        TextBox,
+        Alert
     },
 
     props: {
@@ -132,7 +133,6 @@ export default defineComponent({
 
     setup(props, { emit }) {
         // #region Values
-
         const invokeBlockAction = useInvokeBlockAction();
         const fieldTypes = useFormSources().fieldTypes ?? [];
         let conditionalSourcesLoadAttempted = false;
@@ -147,9 +147,9 @@ export default defineComponent({
         const visibilityRule = ref(props.modelValue.visibilityRule ?? null);
 
         /** The value used by the FieldTypeEditor for editing the field configuration. */
-        const fieldTypeValue = ref<FieldTypeConfigurationViewModel>({
+        const fieldTypeValue = ref<FieldTypeConfigurationBag>({
             fieldTypeGuid: props.modelValue.fieldTypeGuid,
-            configurationOptions: props.modelValue.configurationValues ?? {},
+            configurationValues: props.modelValue.configurationValues ?? {},
             defaultValue: props.modelValue.defaultValue ?? ""
         });
 
@@ -167,13 +167,13 @@ export default defineComponent({
         const scrollableElement = ref<HTMLElement | null>(null);
 
         /** Contains the model used when editing the field visibility rules. */
-        const conditionalModel = ref<FieldFilterGroup | null>(null);
+        const conditionalModel = ref<FieldFilterGroupBag | null>(null);
 
         /**
          * Contains the field filter sources that are available when editing
          * the visibility rules.
          */
-        const conditionalSources = ref<FieldFilterSource[] | null>(null);
+        const conditionalSources = ref<FieldFilterSourceBag[] | null>(null);
 
         /** True if the conditional panel is expanded; otherwise false. */
         const conditionalPanelOpen = ref(false);
@@ -197,7 +197,7 @@ export default defineComponent({
         });
 
         /** The icon to display in the title area. */
-        const asideIconClass = computed((): string => fieldType.value?.icon ?? "");
+        const asideIconSvg = computed((): string => fieldType.value?.svg ?? "");
 
         /**
          * The validation rules for the attribute key. This uses custom logic
@@ -205,17 +205,14 @@ export default defineComponent({
          */
         const fieldKeyRules = computed((): ValidationRule[] => {
             const rules: ValidationRule[] = ["required"];
-            const keys: ListItem[] = props.formFields
+            const keys: string[] = props.formFields
                 .filter(f => !areEqual(f.guid, props.modelValue.guid))
-                .map(f => ({
-                    value: f.guid,
-                    text: f.name
-                }));
+                .map(f => f.key);
 
             rules.push((value): ValidationResult => {
                 const valueString = value as string;
 
-                if (keys.filter(k => k.text === valueString).length > 0) {
+                if (keys.includes(valueString)) {
                     return "must be unique";
                 }
 
@@ -238,7 +235,7 @@ export default defineComponent({
         });
 
         /** The individual rules that decide if this field will be visible. */
-        const conditionalRules = computed((): FieldFilterRule[] => {
+        const conditionalRules = computed((): FieldFilterRuleBag[] => {
             return visibilityRule.value?.rules ?? [];
         });
 
@@ -251,12 +248,12 @@ export default defineComponent({
 
         /**
          * Gets the description of a single filter rule, including the source name.
-         * 
+         *
          * @param rule The rule that needs to be translated into description text.
          *
          * @returns A string that contains a human friendly description about the rule.
          */
-        const getRuleDescription = (rule: FieldFilterRule): string => {
+        const getRuleDescription = (rule: FieldFilterRuleBag): string => {
             return getFilterRuleDescription(rule, conditionalSources.value ?? [], props.formFields);
         };
 
@@ -267,7 +264,7 @@ export default defineComponent({
             // Get all fields except our own.
             const fields = props.formFields.filter(f => !areEqual(f.guid, props.modelValue.guid));
 
-            const getFilterSources = invokeBlockAction<FieldFilterSource[]>("GetFilterSources", {
+            const getFilterSources = invokeBlockAction<FieldFilterSourceBag[]>("GetFilterSources", {
                 formFields: fields
             });
 
@@ -293,20 +290,20 @@ export default defineComponent({
         /**
          * Event handler for when the field type editor has updated any configuration
          * values.
-         * 
+         *
          * @param value The value that contains the changed information.
          */
-        const onFieldTypeModelValueUpdate = (value: FieldTypeConfigurationViewModel): void => {
+        const onFieldTypeModelValueUpdate = (value: FieldTypeConfigurationBag): void => {
             emit("update:modelValue", {
                 ...props.modelValue,
-                configurationValues: value.configurationOptions,
+                configurationValues: value.configurationValues,
                 defaultValue: value.defaultValue
             });
         };
 
         /**
          * Event handler for when the validation state of the form has changed.
-         * 
+         *
          * @param errors Any errors that were detected on the form.
          */
         const onValidationChanged = (errors: FormError[]): void => {
@@ -386,21 +383,21 @@ export default defineComponent({
             visibilityRule.value = props.modelValue.visibilityRule ?? null;
 
             const isConfigChanged = fieldTypeValue.value.fieldTypeGuid !== props.modelValue.fieldTypeGuid
-                || !shallowStrictEqual(fieldTypeValue.value.configurationOptions, props.modelValue.configurationValues ?? {})
+                || !shallowStrictEqual(fieldTypeValue.value.configurationValues ?? {}, props.modelValue.configurationValues ?? {})
                 || fieldTypeValue.value.defaultValue !== props.modelValue.defaultValue;
 
             // Only update the field type if anything actually changed.
             if (isConfigChanged) {
                 fieldTypeValue.value = {
                     fieldTypeGuid: props.modelValue.fieldTypeGuid,
-                    configurationOptions: props.modelValue.configurationValues ?? {},
+                    configurationValues: props.modelValue.configurationValues ?? {},
                     defaultValue: props.modelValue.defaultValue ?? ""
                 };
             }
         });
 
         return {
-            asideIconClass,
+            asideIconSvg,
             conditionalTitle,
             conditionalModalOpen,
             conditionalModel,
@@ -427,25 +424,26 @@ export default defineComponent({
             onFieldTypeModelValueUpdate,
             onValidationChanged,
             scrollableElement,
-            validationErrors
+            validationErrors,
+            //AlertType
         };
     },
 
     template: `
-<div class="d-flex flex-column" style="overflow-y: hidden; flex-grow: 1;">
-    <div class="d-flex">
-        <div class="d-flex clickable" style="background-color: #484848; color: #fff; align-items: center; justify-content: center; width: 40px;" @click="onBackClick">
+    <div class="form-sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-back" @click="onBackClick">
             <i class="fa fa-chevron-left"></i>
         </div>
 
-        <div class="p-2 aside-header" style="flex-grow: 1;">
-            <i v-if="asideIconClass" :class="asideIconClass"></i>
-            <span class="title">{{ fieldName }}</span>
+        <div class="title">
+            <span v-if="asideIconSvg" class="inline-svg icon" v-html="asideIconSvg"></span>
+            {{ fieldName }}
         </div>
     </div>
 
-    <div ref="scrollableElement" class="aside-body d-flex flex-column" style="flex-grow: 1; overflow-y: auto;">
-        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="d-flex flex-column" style="flex-grow: 1;">
+    <div ref="scrollableElement" class="sidebar-body">
+        <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="sidebar-panels sidebar-field-edit field-edit-aside">
             <Panel :modelValue="true" title="Field Type" :hasCollapse="true">
                 <TextBox v-model="fieldName"
                     rules="required"
@@ -459,6 +457,14 @@ export default defineComponent({
             <Panel title="Conditionals" v-model="conditionalPanelOpen" :hasCollapse="true">
                 <LoadingIndicator v-if="isConditionalsLoading" />
 
+                <div v-else-if="conditionalSources.length < 1">
+                    <Alert :alertType="AlertType.Warning">No source fields available.</Alert>
+
+                    <div class="d-flex justify-content-end">
+                        <RockButton btnType="default" btnSize="sm" disabled><i class="fa fa-pencil"></i></RockButton>
+                    </div>
+                </div>
+
                 <div v-else>
                     <div v-if="hasConditions">
                         <div v-html="conditionalTitle"></div>
@@ -467,10 +473,8 @@ export default defineComponent({
                         </ul>
                     </div>
 
-                    <div class="clearfix">
-                        <div class="pull-right">
-                            <RockButton btnType="link" @click="onConditionalEditClick"><i class="fa fa-pencil"></i></RockButton>
-                        </div>
+                    <div class="d-flex justify-content-end">
+                        <RockButton btnType="default" btnSize="sm" @click="onConditionalEditClick"><i class="fa fa-pencil"></i></RockButton>
                     </div>
                 </div>
             </Panel>
@@ -493,6 +497,6 @@ export default defineComponent({
     <Modal v-model="conditionalModalOpen" title="Conditional Settings" saveText="Save" @save="onConditionalSave">
         <FieldFilterEditor v-model="conditionalModel" :title="fieldName" :sources="conditionalSources" />
     </Modal>
-</div>
+    </div>
 `
 });

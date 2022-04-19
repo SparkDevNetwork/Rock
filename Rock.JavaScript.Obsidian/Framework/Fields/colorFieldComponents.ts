@@ -19,7 +19,7 @@ import DropDownList from "../Elements/dropDownList";
 import ColorPicker from "../Elements/colorPicker";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { useVModelPassthrough } from "../Util/component";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 enum ConfigurationValueKey {
     ColorControlType = "selectiontype",
@@ -73,22 +73,17 @@ export const EditComponent = defineComponent({
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
         const dropDownListOptions = namedColors.map(v => {
-            return { text: v, value: v } as ListItem;
-        });
-
-        const isColorPicker = computed((): boolean => {
-            return props.configurationValues[ConfigurationValueKey.ColorControlType] === ConfigurationValueKey.ColorPicker;
+            return { text: v, value: v } as ListItemBag;
         });
 
         const isNamedPicker = computed((): boolean => {
-            return props.configurationValues[ConfigurationValueKey.ColorControlType] !== ConfigurationValueKey.ColorPicker;
+            return props.configurationValues[ConfigurationValueKey.ColorControlType] === ConfigurationValueKey.NamedColor;
         });
 
         return {
             internalValue,
             dropDownListOptions,
-            isNamedPicker,
-            isColorPicker
+            isNamedPicker
         };
     },
     template: `
@@ -112,8 +107,8 @@ export const ConfigurationComponent = defineComponent({
         // Define the properties that will hold the current selections.
         const colorControlType = ref("");
         const typeList = [
-            { text: ConfigurationValueKey.NamedColor, value: ConfigurationValueKey.NamedColor },
-            { text: ConfigurationValueKey.ColorPicker, value: ConfigurationValueKey.ColorPicker }
+            { text: ConfigurationValueKey.ColorPicker, value: ConfigurationValueKey.ColorPicker },
+            { text: ConfigurationValueKey.NamedColor, value: ConfigurationValueKey.NamedColor }
         ];
 
         /**
@@ -129,10 +124,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ColorControlType] = colorControlType.value ?? ConfigurationValueKey.NamedColor;
+            newValue[ConfigurationValueKey.ColorControlType] = colorControlType.value ?? ConfigurationValueKey.ColorPicker;
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ColorControlType] !== (props.modelValue[ConfigurationValueKey.ColorControlType] ?? "False");
+            const anyValueChanged = newValue[ConfigurationValueKey.ColorControlType] !== (props.modelValue[ConfigurationValueKey.ColorControlType] ?? ConfigurationValueKey.ColorPicker);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -159,7 +154,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            colorControlType.value = props.modelValue[ConfigurationValueKey.ColorControlType] ?? ConfigurationValueKey.NamedColor;
+            colorControlType.value = props.modelValue[ConfigurationValueKey.ColorControlType] ?? ConfigurationValueKey.ColorPicker;
         }, {
             immediate: true
         });
@@ -175,9 +170,12 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(colorControlType, () => maybeUpdateConfiguration(ConfigurationValueKey.ColorControlType, colorControlType.value || ConfigurationValueKey.NamedColor));
+        watch(colorControlType, () => maybeUpdateConfiguration(ConfigurationValueKey.ColorControlType, colorControlType.value || ConfigurationValueKey.ColorPicker));
 
-        return { colorControlType, typeList };
+        return {
+            colorControlType,
+            typeList
+        };
     },
 
     template: `

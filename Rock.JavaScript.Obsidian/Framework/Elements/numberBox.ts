@@ -60,7 +60,7 @@ export default defineComponent({
     ],
     data: function () {
         return {
-            internalValue: "",
+            internalValue: "" as number | string,
         };
     },
     methods: {
