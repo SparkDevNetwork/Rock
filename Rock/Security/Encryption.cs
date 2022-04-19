@@ -58,7 +58,7 @@ namespace Rock.Security
         {
             get
             {
-                if ( _oldDataEncryptionKeyBytesBacker.IsNull() )
+                if ( _oldDataEncryptionKeyBytesBacker == null )
                 {
                     /* 2021-06-07 ETD
                      * Thred safety fix:
@@ -151,7 +151,7 @@ namespace Rock.Security
                 return string.Empty;
             }
 
-            if ( keyBytes.IsNull() || keyBytes.Length == 0 )
+            if ( keyBytes == null || keyBytes.Length == 0 )
             {
                 throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
             }
@@ -289,7 +289,7 @@ namespace Rock.Security
             }
 
             // Try old decryption keys
-            if ( _oldDataEncryptionKeyBytes.IsNotNull() )
+            if ( _oldDataEncryptionKeyBytes != null )
             {
                 foreach ( var oldDataEncryptionKeyBytes in _oldDataEncryptionKeyBytes )
                 {

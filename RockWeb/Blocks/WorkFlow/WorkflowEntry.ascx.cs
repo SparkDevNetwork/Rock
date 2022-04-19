@@ -750,7 +750,7 @@ namespace RockWeb.Blocks.WorkFlow
                     WorkflowTypeDeterminedByBlockAttribute = true;
                 }
 
-                if ( _workflowType.IsNull() )
+                if ( _workflowType == null )
                 {
                     // If an attribute value was not provided, check for query parameter or route value.
                     WorkflowTypeDeterminedByBlockAttribute = false;
@@ -764,7 +764,7 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    if ( _workflowType.IsNull() )
+                    if ( _workflowType == null )
                     {
                         // If the workflowType is still not set, try to find a WorkflowTypeGuid from either the query or route, via the PageParameter.
                         var workflowTypeGuidFromURL = PageParameter( PageParameterKey.WorkflowTypeGuid ).AsGuid();
@@ -778,10 +778,10 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             // If the ViewState WorkflowTypeGuid is still empty
-            if ( WorkflowTypeGuid.IsNull() )
+            if ( WorkflowTypeGuid == null )
             {
                 // If the workflowType is not set, set the ViewState WorkflowTypeGuid to empty, otherwise set it to the Guid of the workflowType.
-                WorkflowTypeGuid = _workflowType.IsNull() ? string.Empty : _workflowType.Guid.ToString();
+                WorkflowTypeGuid = _workflowType == null ? string.Empty : _workflowType.Guid.ToString();
             }
             else
             {

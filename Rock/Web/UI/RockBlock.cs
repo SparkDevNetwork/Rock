@@ -1445,7 +1445,7 @@ namespace Rock.Web.UI
         /// <param name="e">The <see cref="BlockUpdatedEventArgs"/> instance containing the event data.</param>
         internal void Page_BlockUpdated( object sender, BlockUpdatedEventArgs e )
         {
-            if ( BlockUpdated.IsNotNull() && BlockCache.IsNotNull() && e.BlockID == BlockCache.Id )
+            if ( BlockUpdated != null && BlockCache != null && e.BlockID == BlockCache.Id )
             {
                 BlockUpdated( sender, e );
             }

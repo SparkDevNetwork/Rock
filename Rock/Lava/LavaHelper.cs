@@ -343,7 +343,7 @@ namespace Rock.Lava
         /// </param>
         public static void ParseCommandMarkup( string markup, ILavaRenderContext context, Dictionary<string, string> parms )
         {
-            if ( markup.IsNull() )
+            if ( markup == null )
             {
                 return;
             }
@@ -671,7 +671,7 @@ namespace Rock.Lava
         /// </param>
         public static void ParseCommandMarkup( string markup, Context context, Dictionary<string, string> parms )
         {
-            if ( markup.IsNull() )
+            if ( markup == null )
             {
                 return;
             }

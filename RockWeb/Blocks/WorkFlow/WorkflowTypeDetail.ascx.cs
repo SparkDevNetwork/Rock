@@ -1787,7 +1787,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             var attr = actionComponent.GetType().GetCustomAttribute<ActionCategoryAttribute>( false );
 
-            if ( attr.IsNotNull() && attr.CategoryName == "HideFromUser" )
+            if ( attr != null && attr.CategoryName == "HideFromUser" )
             {
                 return false;
             }
