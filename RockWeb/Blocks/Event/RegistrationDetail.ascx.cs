@@ -2702,7 +2702,7 @@ namespace RockWeb.Blocks.Event
                         @"<a href='{0}' target='_blank'>Signed On {1}</a>
                         <a href='{2}' target='_blank'>By {3}</a>",
                         ResolveRockUrl( string.Format( "~/GetFile.ashx?id={0}", registrant.SignatureDocumentId ?? 0 ) ),
-                        registrant.SignatureDocumentSignedDateTime.Value.ToString("dddd, MMMM dd, yyyy"),
+                        registrant.SignatureDocumentSignedDateTime?.ToString( "dddd, MMMM dd, yyyy" ),
                         ResolveRockUrl( string.Format( "~/Person/{0}", registrant.PersonId.Value ) ),
                         registrant.SignatureDocumentSignedName );
 

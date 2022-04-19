@@ -756,20 +756,16 @@ namespace RockWeb.Blocks.Event
                 SetPlacementFieldHtml( registrant, lPlacements );
             }
 
-            if ( registrant.Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
+            if ( registrant.Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
             {
-                if ( _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
-                {
-                    const string textTemplate = @"
+                const string textTemplate = @"
 <a href='{0}?id={1}' target='_blank' style='color: black;'>
     <i class='fa fa-file-signature'></i>
 </a>
 ";
-                    var document = _signatureDocuments[registrant.PersonId.Value];
-                    RockLiteralField lSignedDocument = gRegistrants.Columns.Cast<DataControlField>().First( c => c.HeaderText == "Signed Documents" ) as RockLiteralField;
-                    lSignedDocument.Text = string.Format( textTemplate, ResolveRockUrl( "~/GetFile.ashx" ), document.Id );
-                    lSignedDocument.Visible = true;
-                }
+                var document = _signatureDocuments[registrant.PersonId.Value];
+                var lSignedDocument = e.Row.FindControl( "rlSignedDocument" ) as Literal;
+                lSignedDocument.Text = string.Format( textTemplate, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
             }
 
             if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
