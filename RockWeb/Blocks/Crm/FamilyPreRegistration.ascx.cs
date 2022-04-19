@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Crm
     [CustomDropdownListField(
         "Planned Visit Date",
         Key = AttributeKey.PlannedVisitDate,
-        Description = "How should the Planned Visit Date field be displayed. The date selected by the user is only used for the workflow. If the 'Campus Schedule Attribute' block setting has a selection this will control if schedule date/time are required or not but not if it shows or not.",
+        Description = "How should the Planned Visit Date field be displayed. The date selected by the user is only used for the workflow. If the 'Campus Schedule Attribute' block setting has a selection this will control if schedule date/time are required or not but not if it shows or not. The Lava merge field for this in workflows is 'PlannedVisitDate'.",
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Optional",
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Crm
     [AttributeField(
         "Campus Schedule Attribute",
         Key = AttributeKey.CampusScheduleAttribute,
-        Description = "Allows you select a campus attribute that contains schedules for determining which dates and times for which pre-registration is available. This requries the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block.",
+        Description = "Allows you select a campus attribute that contains schedules for determining which dates and times for which pre-registration is available. This requries the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. The Lava merge field for this in workflows is 'ScheduleId'.",
         EntityTypeGuid = Rock.SystemGuid.EntityType.CAMPUS,
         IsRequired = false,
         Order = 3 )]

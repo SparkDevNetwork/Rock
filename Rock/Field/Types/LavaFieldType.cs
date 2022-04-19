@@ -45,7 +45,7 @@ namespace Rock.Field.Types
         {
             string newValue = value;
 
-            if ( value.HasMergeFields() )
+            if ( value.IsLavaTemplate() )
             {
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                 if ( entityTypeId.HasValue && entityId.HasValue )

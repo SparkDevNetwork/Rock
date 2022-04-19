@@ -17,7 +17,7 @@
 import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType } from "../Reporting/comparisonType";
 import { escapeHtml } from "../Services/string";
-import { ListItem, PublicAttributeValue } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 
 /**
@@ -51,29 +51,25 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the File field.
  */
 export class FileFieldType extends FieldTypeBase {
-    public override getTextValue(value: PublicAttributeValue): string {
-        return value.textValue || "Unknown";
-    }
-
-    public override getHtmlValue(value: PublicAttributeValue): string {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
-            const realValue = JSON.parse(value.value ?? "") as ListItem;
+            const realValue = JSON.parse(value) as ListItemBag;
 
-            return `<a href="/GetFile.ashx?guid=${realValue.value}" title="${escapeHtml(realValue.text)}" class="btn btn-xs btn-default">View</a>`;
-        }
-        catch {
-            return value.value ?? "";
-        }
-    }
-
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
-        try {
-            const realValue = JSON.parse(value) as ListItem;
-
-            return realValue?.text ?? value;
+            return realValue.text ?? "";
         }
         catch {
             return value;
+        }
+    }
+
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
+        try {
+            const realValue = JSON.parse(value ?? "") as ListItemBag;
+
+            return `<a href="/GetFile.ashx?guid=${realValue.value}" title="${escapeHtml(realValue.text ?? "")}" class="btn btn-xs btn-default">View</a>`;
+        }
+        catch {
+            return value ?? "";
         }
     }
 

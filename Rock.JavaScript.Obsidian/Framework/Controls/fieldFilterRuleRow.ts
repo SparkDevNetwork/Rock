@@ -21,10 +21,10 @@ import TextBox from "../Elements/textBox";
 import { ComparisonValue } from "../Reporting/comparisonValue";
 import { areEqual } from "../Util/guid";
 import { updateRefValue } from "../Util/util";
-import { ListItem } from "../ViewModels";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
-import { FieldFilterRule } from "../ViewModels/Reporting/fieldFilterRule";
-import { FieldFilterSource } from "../ViewModels/Reporting/fieldFilterSource";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import RockAttributeFilter from "./rockAttributeFilter";
 
 export const FieldFilterRuleRow = defineComponent({
@@ -38,11 +38,11 @@ export const FieldFilterRuleRow = defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<FieldFilterRule>,
+            type: Object as PropType<FieldFilterRuleBag>,
             required: true
         },
         sources: {
-            type: Array as PropType<FieldFilterSource[]>,
+            type: Array as PropType<FieldFilterSourceBag[]>,
             required: true
         }
     },
@@ -58,20 +58,20 @@ export const FieldFilterRuleRow = defineComponent({
         const attributeGuid = ref(props.modelValue.attributeGuid);
         const comparisonValue = ref<ComparisonValue>({
             comparisonType: props.modelValue.comparisonType,
-            value: props.modelValue.value
+            value: props.modelValue.value ?? ""
         });
 
         // Current Selected Attribute/Property
-        const currentAttribute = computed<PublicFilterableAttribute>(() => {
+        const currentAttribute = computed<PublicAttributeBag>(() => {
             const source = props.sources.find(source => {
                 return areEqual(attributeGuid.value ?? "", source.attribute?.attributeGuid ?? "");
             }) || props.sources[0];
 
-            return source.attribute as PublicFilterableAttribute;
+            return source.attribute as PublicAttributeBag;
         });
 
-        // Convert the list of sources into the options you can choose from the 
-        const attributeList = computed<ListItem[]>(() => {
+        // Convert the list of sources into the options you can choose from the
+        const attributeList = computed<ListItemBag[]>(() => {
             return props.sources.map(source => {
                 return {
                     text: source.attribute?.name as string,
@@ -92,7 +92,7 @@ export const FieldFilterRuleRow = defineComponent({
             updateRefValue(attributeGuid, props.modelValue.attributeGuid);
             updateRefValue(comparisonValue, {
                 comparisonType: props.modelValue.comparisonType,
-                value: props.modelValue.value
+                value: props.modelValue.value ?? ""
             });
 
             internalUpdate = false;
@@ -100,7 +100,7 @@ export const FieldFilterRuleRow = defineComponent({
 
         // Watch for changes to our internal values and update the model value.
         watch([attributeGuid, comparisonValue], () => {
-            const newValue: FieldFilterRule = {
+            const newValue: FieldFilterRuleBag = {
                 ...props.modelValue,
                 attributeGuid: attributeGuid.value,
                 comparisonType: comparisonValue.value.comparisonType ?? 0,
@@ -131,8 +131,8 @@ export const FieldFilterRuleRow = defineComponent({
     },
 
     template: `
-    <div class="filter-rule row form-row">
-        <div class="col-xs-10 col-sm-11">
+    <div class="d-flex form-group">
+        <div class="flex-fill">
             <div class="row form-row">
                 <div class="filter-rule-comparefield col-md-4">
                     <DropDownList :options="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
@@ -142,7 +142,7 @@ export const FieldFilterRuleRow = defineComponent({
                 </div>
             </div>
         </div>
-        <div class="col-xs-2 col-sm-1">
+        <div class="flex-shrink-0 ml-2">
             <button class="btn btn-danger btn-square" @click.prevent="onRemoveRuleClick"><i class="fa fa-times"></i></button>
         </div>
     </div>

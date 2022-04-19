@@ -1665,6 +1665,8 @@ namespace RockWeb.Blocks.Event
                     var document = documents.Where( d => d.AppliesToPersonAlias.PersonId == registrantInfo.PersonId ).FirstOrDefault();
                     registrantInfo.SignatureDocumentId = document != null ? document.BinaryFileId : ( int? ) null;
                     registrantInfo.SignatureDocumentLastSent = document != null ? document.LastInviteDate : ( DateTime? ) null;
+                    registrantInfo.SignatureDocumentSignedDateTime = document != null ? document.SignedDateTime : ( DateTime? ) null;
+                    registrantInfo.SignatureDocumentSignedName = document != null ? document.SignedName : null;
                 }
             }
 
@@ -2489,7 +2491,7 @@ namespace RockWeb.Blocks.Event
                 documentTemplate = Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate;
             }
 
-            if ( documentTemplate != null && !registrant.SignatureDocumentId.HasValue )
+            if ( documentTemplate != null && !registrant.SignatureDocumentId.HasValue && documentTemplate.IsLegacy )
             {
                 var template = Registration.RegistrationInstance.RegistrationTemplate;
                 var divSigAlert = new HtmlGenericControl( "div" );
@@ -2672,15 +2674,53 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            if ( documentTemplate != null && registrant.SignatureDocumentId.HasValue )
+            if ( documentTemplate != null )
             {
                 var rlDocumentLink = new RockLiteral();
                 rlDocumentLink.ID = string.Format( "rlDocumentLink_{0}", registrant.Id );
                 rlDocumentLink.Label = documentTemplate.Name;
+
+                const string htmlFormat = @"
+<div class='col-xs-6' style='padding-left: 0px;'>
+    <div style='display: flex; flex-direction: row; align-items: center;'>
+        <div style='display: flex; border: 1px solid {0}; height: 40px; width: 40px; border-radius: 50%; background: {1}; color: {0}; justify-content: center; align-items: center;'>
+            <i class='fa fa-signature'></i>
+        </div>
+        <div style='display: flex; flex-direction: column; margin-left: 10px;'>
+            {2}
+        </div>  
+    </div>
+</div>
+";
+                string borderColor = string.Empty;
+                string backgroundColor = string.Empty;
+                string links = string.Empty;
+
+                if ( registrant.SignatureDocumentId.HasValue )
+                {
+                    links = string.Format(
+                        @"<a href='{0}' target='_blank'>Signed On {1}</a>
+                        <a href='{2}' target='_blank'>By {3}</a>",
+                        ResolveRockUrl( string.Format( "~/GetFile.ashx?id={0}", registrant.SignatureDocumentId ?? 0 ) ),
+                        registrant.SignatureDocumentSignedDateTime.Value.ToString("dddd, MMMM dd, yyyy"),
+                        ResolveRockUrl( string.Format( "~/Person/{0}", registrant.PersonId.Value ) ),
+                        registrant.SignatureDocumentSignedName );
+
+                    borderColor = "#16C98D";
+                    backgroundColor = "#D6FFF1";
+                }
+                else
+                {
+                    links = "<p>Not yet Signed</p>";
+                    borderColor = "#737475";
+                    backgroundColor = "#DFE0E1";
+                }
+
                 rlDocumentLink.Text = string.Format(
-                    "<a href='{0}?id={1}' target='_blank'>View Document</a>",
-                    ResolveRockUrl( "~/GetFile.ashx" ),
-                    registrant.SignatureDocumentId.Value );
+                        htmlFormat,
+                        borderColor,
+                        backgroundColor,
+                        links );
                 divRightColumn.Controls.Add( rlDocumentLink );
             }
 

@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// NcoaHistory View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( NcoaHistory ) )]
-    public partial class NcoaHistoryViewModelHelper : ViewModelHelper<NcoaHistory, Rock.ViewModel.NcoaHistoryViewModel>
+    public partial class NcoaHistoryViewModelHelper : ViewModelHelper<NcoaHistory, NcoaHistoryBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,14 +72,14 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.NcoaHistoryViewModel CreateViewModel( NcoaHistory model, Person currentPerson = null, bool loadAttributes = true )
+        public override NcoaHistoryBag CreateViewModel( NcoaHistory model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.NcoaHistoryViewModel
+            var viewModel = new NcoaHistoryBag
             {
                 Id = model.Id,
                 Guid = model.Guid,
@@ -220,7 +221,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.NcoaHistoryViewModel ToViewModel( this NcoaHistory model, Person currentPerson = null, bool loadAttributes = false )
+        public static NcoaHistoryBag ToViewModel( this NcoaHistory model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new NcoaHistoryViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

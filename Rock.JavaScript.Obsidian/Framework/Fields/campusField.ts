@@ -18,8 +18,7 @@ import { Component, defineAsyncComponent } from "vue";
 import { ComparisonType } from "../Reporting/comparisonType";
 import { ComparisonValue } from "../Reporting/comparisonValue";
 import { areEqual } from "../Util/guid";
-import { ListItem } from "../ViewModels";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
@@ -57,13 +56,13 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Campus field.
  */
 export class CampusFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === undefined || value === null || value === "") {
             return "";
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(o => o.value === value);
 
             return selectedValues.map(o => o.text).join(", ");
@@ -85,14 +84,14 @@ export class CampusFieldType extends FieldTypeBase {
         return ComparisonType.None;
     }
 
-    public override getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
+    public override getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {
         if (!value.value) {
             return "";
         }
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(attribute.configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(o => rawValues.filter(v => areEqual(v, o.value)).length > 0);
 
             return `'${selectedValues.map(o => o.text).join("' OR '")}'`;

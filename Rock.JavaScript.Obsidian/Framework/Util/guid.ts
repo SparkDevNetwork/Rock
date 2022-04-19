@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-export type Guid = string;
+
+import { Guid } from "@Obsidian/Types";
 
 /** An empty unique identifier. */
 export const emptyGuid = "00000000-0000-0000-0000-000000000000";

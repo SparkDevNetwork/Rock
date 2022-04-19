@@ -60,15 +60,19 @@ namespace Rock.Field
 
         /// <inheritdoc/>
         [RockInternal]
-        public virtual Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public virtual Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
-            return privateConfigurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( privateConfigurationValues );
         }
 
         /// <inheritdoc/>
-        public virtual Dictionary<string, string> GetPublicFilterConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public virtual Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            return GetPublicConfigurationValues( privateConfigurationValues );
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( publicConfigurationValues );
         }
 
         /// <summary>
@@ -103,22 +107,6 @@ namespace Rock.Field
         public virtual Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
             return new Dictionary<string, string>();
-        }
-
-        /// <inheritdoc/>
-        public virtual Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
-        {
-            // Create a new dictionary to protect against the passed dictionary
-            // being changed after we are called.
-            return new Dictionary<string, string>( privateConfigurationValues );
-        }
-
-        /// <inheritdoc/>
-        public virtual Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
-        {
-            // Create a new dictionary to protect against the passed dictionary
-            // being changed after we are called.
-            return new Dictionary<string, string>( publicConfigurationValues );
         }
 
         #endregion

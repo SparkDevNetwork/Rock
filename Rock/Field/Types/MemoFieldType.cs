@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// </summary>
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M1.65,2.46h7.7A.65.65,0,0,0,10,1.81V1.62A.66.66,0,0,0,9.35,1H1.65A.66.66,0,0,0,1,1.62v.19A.65.65,0,0,0,1.65,2.46Zm0,8h7.7A.65.65,0,0,0,10,9.81V9.62A.65.65,0,0,0,9.35,9H1.65A.65.65,0,0,0,1,9.62v.19A.65.65,0,0,0,1.65,10.46ZM14.25,5H1.72a.75.75,0,0,0,0,1.5H14.25A.74.74,0,0,0,15,5.74.8.8,0,0,0,14.25,5Zm0,8H1.72a.75.75,0,0,0,0,1.5H14.25a.74.74,0,0,0,.75-.72A.8.8,0,0,0,14.25,13Z""/></g></svg>" )]
     public class MemoFieldType : FieldType
     {
 

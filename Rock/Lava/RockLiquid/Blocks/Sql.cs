@@ -165,7 +165,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                 {
                     var value = itemParts[1];
 
-                    if ( value.HasMergeFields() )
+                    if ( value.IsLavaTemplate() )
                     {
                         value = value.ResolveMergeFields( internalMergeFields );
                     }

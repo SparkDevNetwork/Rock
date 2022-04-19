@@ -34,9 +34,6 @@ using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Crm
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Person Update - Kiosk" )]
     [Category( "CRM" )]
     [Description( "Block used to update a person's information from a kiosk." )]

@@ -22,7 +22,7 @@ import DropDownList from "../Elements/dropDownList";
 import Toggle from "../Elements/toggle";
 import CheckBox from "../Elements/checkBox";
 import TextBox from "../Elements/textBox";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumberOrNull } from "../Services/number";
 
 enum BooleanControlType {
@@ -115,14 +115,14 @@ export const EditComponent = defineComponent({
         }));
 
         // configuration for a dropdown control
-        const dropDownListOptions = computed((): ListItem[] => {
+        const dropDownListOptions = computed((): ListItemBag[] => {
             const trueVal = asTrueFalseOrNull(true);
             const falseVal = asTrueFalseOrNull(false);
 
             return [
                 { text: falseText.value, value: falseVal },
                 { text: trueText.value, value: trueVal }
-            ] as ListItem[];
+            ] as ListItemBag[];
         });
 
         return {
@@ -180,14 +180,14 @@ export const FilterComponent = defineComponent({
         });
 
         // configuration for a dropdown control
-        const dropDownListOptions = computed((): ListItem[] => {
+        const dropDownListOptions = computed((): ListItemBag[] => {
             const trueVal = asTrueFalseOrNull(true);
             const falseVal = asTrueFalseOrNull(false);
 
             return [
                 { text: falseText.value, value: falseVal },
                 { text: trueText.value, value: trueVal }
-            ] as ListItem[];
+            ] as ListItemBag[];
         });
 
         return {

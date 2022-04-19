@@ -3,7 +3,7 @@
     "outDir": "../dist/Framework",
     "rootDir": ".",
     "incremental": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noImplicitOverride": true,
     "noEmitOnError": true,
     "removeComments": true,
@@ -21,6 +21,10 @@
       "ES2020.Symbol.WellKnown" /* Fixes compile issue in Vue declaration files, not actually in use. */
     ],
     "paths": {
+      "@Obsidian/Enums/*": [ "./Enums/*" ],
+      "@Obsidian/ViewModels/*": [ "./ViewModels/*" ],
+      "@Obsidian/Types": [ "./Types" ],
+      "@Obsidian/Types/*": [ "./Types/*" ]
     }
   },
   "exclude": [

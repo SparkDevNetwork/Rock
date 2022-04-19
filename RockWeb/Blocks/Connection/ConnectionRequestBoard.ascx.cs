@@ -157,6 +157,14 @@ namespace RockWeb.Blocks.Connection
         Order = 15,
         Key = AttributeKey.ConnectionRequestHistoryPage )]
 
+    [LinkedPage(
+        "Bulk Update Requests",
+        Description = "Page used to update selected connection requests",
+        IsRequired = true,
+        DefaultValue = "",
+        Order = 16,
+        Key = AttributeKey.BulkUpdateRequestsPage )]
+
     #endregion Block Attributes
 
     [ContextAware( typeof( Person ), IsConfigurable = false )]
@@ -245,6 +253,9 @@ namespace RockWeb.Blocks.Connection
             public const string ConnectionRequestId = "ConnectionRequestId";
             public const string ConnectionRequestGuid = "ConnectionRequestGuid";
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+            public const string CampusId = "CampusId";
+            public const string ConnectionTypeId = "ConnectionTypeId";
+            public const string EntitySetId = "EntitySetId";
         }
 
         /// <summary>
@@ -266,6 +277,7 @@ namespace RockWeb.Blocks.Connection
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string StatusTemplate = "StatusTemplate";
             public const string ConnectionRequestHistoryPage = "ConnectionRequestHistoryPage";
+            public const string BulkUpdateRequestsPage = "BulkUpdateRequestsPage";
         }
 
         /// <summary>
@@ -589,6 +601,16 @@ namespace RockWeb.Blocks.Connection
             BlockUpdated += Block_BlockUpdated;
             AddConfigurationUpdateTrigger( upnlRoot );
 
+            // Add a custom button with an EventHandler for bulk updates
+            var customActionConfigEventButton = new CustomActionConfigEvent
+            {
+                IconCssClass = "fa fa-truck fa-fw",
+                HelpText = "Update selected requests",
+                EventHandler = LbUpdateConnections_Click
+            };
+
+            gRequests.Actions.AddCustomActionBlockButton( customActionConfigEventButton );
+
             // Configure the badge types
             var delimitedBadgeGuids = GetAttributeValue( AttributeKey.Badges );
 
@@ -609,6 +631,57 @@ namespace RockWeb.Blocks.Connection
 
             blRequestModalViewModeBadges.BadgeTypes.AddRange( badgeTypes );
             pnlRequestModalViewModeBadges.Visible = true;
+        }
+
+        private void LbUpdateConnections_Click( object sender, EventArgs e )
+        {
+            var selectedItems = new List<int>();
+            gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+
+            if ( selectedItems.Count == 0 )
+            {
+                gRequests.ShowModalAlertMessage( "No requests selected", ModalAlertType.Information );
+            }
+            else
+            {
+                var connectionType = GetConnectionType();
+                int entitySetId = GetEntitySetId( selectedItems );
+                int connectionTypeId = connectionType.Id;
+
+                var queryParams = new Dictionary<string, string>()
+                {
+                    { PageParameterKey.ConnectionTypeId, connectionTypeId.ToString() },
+                    { PageParameterKey.EntitySetId, entitySetId.ToString() }
+                };
+
+                NavigateToLinkedPage( AttributeKey.BulkUpdateRequestsPage, queryParams );
+            }
+        }
+
+        private int GetEntitySetId( List<int> ids )
+        {
+            var rockContext = new RockContext();
+            var entitySet = new EntitySet();
+            entitySet.EntityTypeId = gRequests.EntityTypeId ?? ConnectionRequestEntityTypeId;
+            entitySet.ExpireDateTime = RockDateTime.Now.AddDays( 1 );
+
+            var service = new EntitySetService( rockContext );
+            service.Add( entitySet );
+            rockContext.SaveChanges();
+
+            List<EntitySetItem> entitySetItems = new List<EntitySetItem>();
+
+            foreach ( var id in ids )
+            {
+                var item = new EntitySetItem();
+                item.EntitySetId = entitySet.Id;
+                item.EntityId = id;
+                entitySetItems.Add( item );
+            }
+
+            rockContext.BulkInsert( entitySetItems );
+
+            return entitySet.Id;
         }
 
         /// <summary>
@@ -2565,7 +2638,7 @@ namespace RockWeb.Blocks.Connection
                     .Queryable()
                     .AsNoTracking()
                     .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id );
-                var campuses = CampusCache.All().Where( c => !c.IsActive.HasValue || c.IsActive.Value ).ToList();
+                var campuses = CampusCache.All().Where( c => c.IsActive ?? true ).ToList();
 
                 // Grant edit access to any of those in a non campus-specific connector group
                 userCanEditConnectionRequest = qryConnectionOpportunityConnectorGroups
@@ -4582,6 +4655,7 @@ namespace RockWeb.Blocks.Connection
             // Check for a connection request or opportunity id param. The request takes priority since it is more specific
             var connectionRequestIdParam = PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
             var connectionOpportunityIdParam = PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull();
+            var campusIdParam = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
 
             if ( !ConnectionOpportunityId.HasValue && connectionRequestIdParam.HasValue )
             {
@@ -4618,6 +4692,10 @@ namespace RockWeb.Blocks.Connection
                 ViewAllActivities = false;
                 IsRequestModalAddEditMode = false;
                 RequestModalViewModeSubMode = RequestModalViewModeSubMode_View;
+                if ( campusIdParam.HasValue )
+                {
+                    SaveSettingByConnectionType( UserPreferenceKey.CampusFilter, campusIdParam.ToString() );
+                }
             }
 
             // If the opportunity is not yet set by the request or opportunity id params, then set it from preference

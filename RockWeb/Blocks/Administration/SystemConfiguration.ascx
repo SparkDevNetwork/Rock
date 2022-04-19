@@ -21,6 +21,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIncludeBusinessInPersonPicker" runat="server" Label="Always Show Businesses in Person Picker" ValidationGroup="GeneralSetting" Help="When enabled, businesses will always be included in the search results of the person picker." />
+                            <Rock:RockCheckBox ID="cbEnableKeepAlive" runat="server" Label="Enable Keep Alive" ValidationGroup="GeneralSetting" Help="Enable this setting to have Rock poll itself to keep it alive during times of inactivity. This setting is not needed if your AppPool's Idle Time-out is set to 0 (Highly Recommended). See the Rock Solid Internal Hosting guide for recommended AppPool settings." />
                         </div>
                     </div>
                     <div class="actions">

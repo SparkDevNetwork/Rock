@@ -25,9 +25,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Store
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Store Header" )]
     [Category( "Store" )]
     [Description( "Shows the Organization information used by the Rock Shop." )]

@@ -528,7 +528,7 @@ namespace Rock.Lava
 
         #endregion
 
-        #region IsLavaTemplate
+        #region Contains
 
         /// <summary>
         /// Indicates if the target string contains any elements of a Lava template.
@@ -544,7 +544,7 @@ namespace Rock.Lava
             }
 
             // If the input string contains any Lava tags, consider it as a template.
-            if ( content.HasMergeFields() )
+            if ( ContainsLavaTags( content ) )
             {
                 return true;
             }
@@ -556,6 +556,35 @@ namespace Rock.Lava
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Compiled RegEx for detecting if a string has Lava tags
+        /// regex from some ideas in
+        ///  http://stackoverflow.com/a/16538131/1755417
+        ///  http://stackoverflow.com/a/25776530/1755417
+        /// </summary>
+        private static Regex _hasLavaTags = new Regex( @"(?<=\{).+(?<=\})", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Determines whether a string potentially contains Lava tags.
+        /// NOTE: Might return true even though it doesn't really have merge fields, but something like looks like it. For example '{56408602-5E41-4D66-98C7-BD361CD93AED}'
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static bool ContainsLavaTags( this string content )
+        {
+            if ( content == null )
+            {
+                return false;
+            }
+
+            if ( !_hasLavaTags.IsMatch( content ) )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         #endregion

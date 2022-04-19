@@ -23,7 +23,7 @@ import GridColumn from "../../Controls/gridColumn";
 import GridSelectColumn from "../../Controls/gridSelectColumn";
 import GridProfileLinkColumn from "../../Controls/gridProfileLinkColumn";
 import { InvokeBlockActionFunc } from "../../Util/block";
-import Alert from "../../Elements/alert";
+import Alert from "../../Elements/alert.vue";
 
 type GroupMemberViewModel = {
     fullName: string;

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -111,14 +112,34 @@ namespace Rock.Model
 
             // do an explicit LINQ inner join on PersonAlias to avoid performance issue where it would do an outer join instead
             var communicationRecipientJoinQuery =
-                from cr in communicationRecipientQuery
-                join pa in personAliasQuery on cr.PersonAliasId equals pa.Id
-                select new { cr, pa };
+                from cr in communicationRecipientQuery.Where( a => a.PersonAliasId.HasValue )
+                join pa in personAliasQuery on cr.PersonAliasId.Value equals pa.Id
+                select new
+                {
+                    PersonId = pa.PersonId,
+                    Person = pa.Person,
+                    CreatedDateTime = cr.CreatedDateTime,
+                    cr.Communication,
+                    cr.CommunicationId,
+                    CommunicationSMSMessage = cr.Communication.SMSMessage,
+                    SentMessage = cr.SentMessage,
+                    PersonAliasId = cr.PersonAliasId
+                };
 
-            IQueryable<CommunicationRecipient> mostRecentCommunicationRecipientQuery = communicationRecipientJoinQuery
-                .GroupBy( r => r.pa.PersonId )
-                .Select( a => a.OrderByDescending( x => x.cr.CreatedDateTime ).FirstOrDefault() )
-                .OrderByDescending( a => a.cr.CreatedDateTime ).Select( a => a.cr );
+            var mostRecentCommunicationRecipientQuery = communicationRecipientJoinQuery
+                .GroupBy( r => r.PersonId )
+                .Select( a =>
+                    a.Select( s => new
+                    {
+                        s.Person,
+                        s.CreatedDateTime,
+                        s.CommunicationSMSMessage,
+                        s.CommunicationId,
+                        s.Communication,
+                        s.SentMessage,
+                        s.PersonAliasId
+                    } ).OrderByDescending( s => s.CreatedDateTime ).FirstOrDefault()
+                );
 
             var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery.Include( a => a.FromPersonAlias.Person ).AsNoTracking().Take( maxCount ).ToList();
 
@@ -136,35 +157,29 @@ namespace Rock.Model
                     MessageKey = mostRecentCommunicationResponse.MessageKey,
                     IsOutbound = false,
                     RecipientPersonAliasId = mostRecentCommunicationResponse.FromPersonAliasId,
-                    SMSMessage = mostRecentCommunicationResponse.Response
+                    SMSMessage = mostRecentCommunicationResponse.Response,
+                    CommunicationResponseId = mostRecentCommunicationResponse.Id
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
 
-            var mostRecentCommunicationRecipientList = mostRecentCommunicationRecipientQuery.Take( maxCount ).Select( a => new
-            {
-                a.CreatedDateTime,
-                a.PersonAlias.Person,
-                a.PersonAliasId,
-                a.Communication,
-                a.SentMessage,
-            } ).ToList();
+            var mostRecentCommunicationRecipientList = mostRecentCommunicationRecipientQuery.Take( maxCount ).ToList();
 
             foreach ( var mostRecentCommunicationRecipient in mostRecentCommunicationRecipientList )
             {
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = mostRecentCommunicationRecipient.CreatedDateTime,
-                    PersonId = mostRecentCommunicationRecipient?.Person.Id,
-                    RecordTypeValueId = mostRecentCommunicationRecipient?.Person.RecordTypeValueId,
-                    FullName = mostRecentCommunicationRecipient?.Person.FullName,
+                    PersonId = mostRecentCommunicationRecipient.Person.Id,
+                    RecordTypeValueId = mostRecentCommunicationRecipient.Person.RecordTypeValueId,
+                    FullName = mostRecentCommunicationRecipient.Person.FullName,
                     IsOutbound = true,
                     IsRead = true,
                     MessageKey = null, // communication recipients just need to show their name, not their number
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.PersonAliasId,
-                    SMSMessage = mostRecentCommunicationRecipient.SentMessage.IsNullOrWhiteSpace() ? mostRecentCommunicationRecipient.Communication.SMSMessage : mostRecentCommunicationRecipient.SentMessage,
-                    BinaryFileGuids = mostRecentCommunicationRecipient.Communication.Attachments?.Select( c => c.BinaryFile.Guid ).ToList()
+                    SMSMessage = mostRecentCommunicationRecipient.SentMessage.IsNullOrWhiteSpace() ? mostRecentCommunicationRecipient.CommunicationSMSMessage : mostRecentCommunicationRecipient.SentMessage,
+                    CommunicationId = mostRecentCommunicationRecipient.CommunicationId
                 };
 
                 if ( mostRecentCommunicationRecipient?.Person.IsNameless() == true )
@@ -198,25 +213,41 @@ namespace Rock.Model
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use GetCommunicationConversationForPerson instead." )]
         public List<CommunicationRecipientResponse> GetCommunicationConversation( int personAliasId, int relatedSmsFromDefinedValueId )
+        {
+            int? personId = new PersonAliasService( this.Context as RockContext ).GetPersonId( personAliasId );
+            if ( personId.HasValue )
+            {
+                return GetCommunicationConversationForPerson( personId.Value, relatedSmsFromDefinedValueId );
+            }
+            else
+            {
+                return new List<CommunicationRecipientResponse>();
+            }
+        }
+
+        /// <summary>
+        /// Gets the SMS conversation history for a person alias ID. Includes the communication sent by Rock that the person may be responding to.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
+        /// <returns>List&lt;CommunicationRecipientResponse&gt;.</returns>
+        public List<CommunicationRecipientResponse> GetCommunicationConversationForPerson( int personId, int relatedSmsFromDefinedValueId )
         {
             List<CommunicationRecipientResponse> communicationRecipientResponseList = new List<CommunicationRecipientResponse>();
 
             var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Value;
 
-            /*
-             * 5/4/2021 MSB
-             * When we include conversations we need to make sure we include conversations from all aliases related to the
-             * person so that conversations from merged records still appear here.
-             * 
-             * Reason: Merge People Conversations
-             */
+            var personAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.PersonId == personId ).Select( a => a.Id );
 
             var communicationResponseQuery = this.Queryable()
                 .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId
                         && r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId
-                        && r.FromPersonAlias != null
-                        && r.FromPersonAlias.Person.Aliases.Any( fpa => fpa.Id == personAliasId ) );
+                        && r.FromPersonAliasId.HasValue
+                        && personAliasIdQuery.Contains( r.FromPersonAliasId.Value )
+                         );
 
             var communicationResponseList = communicationResponseQuery.ToList();
 
@@ -233,7 +264,7 @@ namespace Rock.Model
                     RecipientPersonAliasId = communicationResponse.FromPersonAliasId,
                     SMSMessage = communicationResponse.Response,
                     MessageStatus = CommunicationRecipientStatus.Delivered, // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
-                    BinaryFileGuids = communicationResponse.Attachments?.Select( r => r.BinaryFile.Guid ).ToList()
+                    CommunicationResponseId = communicationResponse.Id,
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
@@ -243,8 +274,8 @@ namespace Rock.Model
                 .Queryable()
                 .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId )
                 .Where( r => r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId )
-                .Where( r => r.PersonAlias != null )
-                .Where( r => r.PersonAlias.Person.Aliases.Any( fpa => fpa.Id == personAliasId ))
+                .Where( r => r.PersonAliasId.HasValue )
+                .Where( r => personAliasIdQuery.Contains( r.PersonAliasId.Value ) )
                 .Where( r => r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending );
 
             var communicationRecipientList = communicationRecipientQuery.Include( a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new
@@ -269,7 +300,7 @@ namespace Rock.Model
                     RecipientPersonAliasId = communicationRecipient.PersonAliasId,
                     SMSMessage = communicationRecipient.SentMessage,
                     MessageStatus = communicationRecipient.Status,
-                    BinaryFileGuids = communicationRecipient.Communication.Attachments?.Select( c => c.BinaryFile.Guid ).ToList()
+                    CommunicationId = communicationRecipient.Communication?.Id,
                 };
 
                 if ( communicationRecipient.Person?.IsNameless() == true )
@@ -294,9 +325,26 @@ namespace Rock.Model
         /// </summary>
         /// <param name="fromPersonAliasId">From person alias identifier.</param>
         /// <param name="relatedSmsFromDefinedValueId">The defined value ID of the from SMS phone number.</param>
+        [Obsolete( "Use UpdateReadPropertyByFromPersonId instead." )]
+        [RockObsolete( "1.13" )]
         public void UpdateReadPropertyByFromPersonAliasId( int fromPersonAliasId, int relatedSmsFromDefinedValueId )
         {
-            var communicationResponsesToUpdate = Queryable().Where( a => a.FromPersonAliasId == fromPersonAliasId && a.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && a.IsRead == false );
+            int? fromPersonId = new PersonAliasService( this.Context as RockContext ).GetPersonId( fromPersonAliasId );
+            if ( fromPersonId != null )
+            {
+                UpdateReadPropertyByFromPersonId( fromPersonId.Value, relatedSmsFromDefinedValueId );
+            }
+        }
+
+        /// <summary>
+        /// Updates the IsRead property of SMS Responses sent from the provided person to the SMSPhone number stored in SmsFromDefinedValue.
+        /// </summary>
+        /// <param name="fromPersonId">From person identifier.</param>
+        /// <param name="relatedSmsFromDefinedValueId">The defined value ID of the from SMS phone number.</param>
+        public void UpdateReadPropertyByFromPersonId( int fromPersonId, int relatedSmsFromDefinedValueId )
+        {
+            var personAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.PersonId == fromPersonId ).Select( a => a.Id );
+            var communicationResponsesToUpdate = Queryable().Where( a => a.FromPersonAliasId.HasValue && personAliasIdQuery.Contains( a.FromPersonAliasId.Value ) && a.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && a.IsRead == false );
 
             this.Context.BulkUpdate( communicationResponsesToUpdate, a => new CommunicationResponse { IsRead = true } );
         }

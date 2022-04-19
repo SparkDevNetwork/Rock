@@ -29,9 +29,6 @@ using Rock.SystemKey;
 
 namespace RockWeb.Blocks.Crm
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Person Preferences" )]
     [Category( "CRM" )]
     [Description( "Allows the person to set their personal preferences." )]

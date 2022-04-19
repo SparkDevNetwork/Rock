@@ -33,7 +33,6 @@ namespace Rock.Web
     /// </summary>
     public class PageReference
     {
-
         #region Properties
 
         /// <summary>
@@ -428,7 +427,7 @@ namespace Rock.Web
         /// </summary>
         /// <param name="parms">The parms.</param>
         /// <returns></returns>
-        private string BuildRouteURL( Dictionary<string, string> parms )
+        public string BuildRouteURL( Dictionary<string, string> parms )
         {
             string routeUrl = string.Empty;
 
@@ -631,6 +630,7 @@ namespace Rock.Web
                                             rockBlock.SetBlock( page, block );
                                             rockBlock.GetBreadCrumbs( parentPageReference ).ForEach( c => parentPageReference.BreadCrumbs.Add( c ) );
                                         }
+
                                         control = null;
                                     }
                                     catch ( Exception ex )
@@ -638,7 +638,6 @@ namespace Rock.Web
                                         ExceptionLogService.LogException( ex, HttpContext.Current, currentPage.Id, currentPage.Layout.SiteId );
                                     }
                                 }
-
                             }
 
                             parentPageReference.BreadCrumbs.ForEach( c => c.Active = false );

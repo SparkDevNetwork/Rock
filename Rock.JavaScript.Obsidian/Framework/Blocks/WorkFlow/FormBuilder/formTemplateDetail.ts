@@ -18,7 +18,7 @@
 import { computed, defineComponent, ref } from "vue";
 import Panel from "../../../Controls/panel";
 import RockForm from "../../../Controls/rockForm";
-import Alert from "../../../Elements/alert";
+import Alert from "../../../Elements/alert.vue";
 import AuditDetail from "../../../Elements/auditDetail";
 import RockButton from "../../../Elements/rockButton";
 import { useConfigurationValues, useInvokeBlockAction } from "../../../Util/block";

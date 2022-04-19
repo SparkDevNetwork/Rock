@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType } from "vue";
 import { newGuid } from "../Util/guid";
 import RockFormField from "./rockFormField";
@@ -31,7 +31,7 @@ export default defineComponent({
         },
 
         options: {
-            type: Array as PropType<ListItem[]>,
+            type: Array as PropType<ListItemBag[]>,
             required: true
         },
 

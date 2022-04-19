@@ -31,9 +31,6 @@ using Rock.Common.Tv;
 
 namespace RockWeb.Blocks.Tv
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Apple TV Page Detail" )]
     [Category( "TV > TV Apps" )]
     [Description( "Allows a person to edit an Apple TV page." )]

@@ -27,9 +27,6 @@ using System.Xml.Linq;
 
 namespace RockWeb.Blocks.Utility
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "ViewState Viewer" )]
     [Category( "Utility" )]
     [Description( "Block allows you to see what's in the View State of a page." )]

@@ -16,8 +16,12 @@
 //
 using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data.Entity;
 using System.Linq;
 
 namespace Rock.Model
@@ -40,10 +44,7 @@ namespace Rock.Model
         {
             get
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    return new FinancialAccountService( rockContext ).GetAllAncestorIds( this.Id ).ToList();
-                }
+                return FinancialAccountCache.Get( this.Id )?.GetAncestorFinancialAccountIds().ToList() ?? new List<int>();
             }
         }
 
@@ -63,7 +64,7 @@ namespace Rock.Model
                     // make sure it isn't getting saved with a recursive parent hierarchy
                     var parentIds = new List<int>();
                     parentIds.Add( this.Id );
-                    var parent = this.ParentAccountId.HasValue ? ( this.ParentAccount ?? new FinancialAccountService( new RockContext() ).Get( this.ParentAccountId.Value ) ) : null;
+                    var parent = this.ParentAccountId.HasValue ? FinancialAccountCache.Get( this.ParentAccountId.Value ).ParentAccount : null;
                     while ( parent != null )
                     {
                         if ( parentIds.Contains( parent.Id ) )
@@ -99,5 +100,38 @@ namespace Rock.Model
         }
 
         #endregion Public Methods
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return FinancialAccountCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            FinancialAccountCache.UpdateCachedEntity( this.Id, entityState );
+
+            if ( this.ParentAccountId.HasValue )
+            {
+                FinancialAccountCache.UpdateCachedEntity( this.ParentAccountId.Value, EntityState.Detached );
+            }
+
+            if ( _originalParentAccountId.HasValue && _originalParentAccountId != this.ParentAccountId )
+            {
+                FinancialAccountCache.UpdateCachedEntity( _originalParentAccountId.Value, EntityState.Detached );
+            }
+        }
+
+        #endregion ICacheable
     }
 }

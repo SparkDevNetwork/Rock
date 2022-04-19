@@ -1,0 +1,21 @@
+﻿<Window x:Class="BlockGenerator.Dialogs.SelectEntityDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BlockGenerator.Dialogs"
+        mc:Ignorable="d"
+        Title="SelectEntityDialog"
+        Height="450"
+        Width="400"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="ToolWindow">
+    <ListBox Name="EntityListBox"
+             SelectionChanged="EntityListBox_SelectionChanged">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
+</Window>

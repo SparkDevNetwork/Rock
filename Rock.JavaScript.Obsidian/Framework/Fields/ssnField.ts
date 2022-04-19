@@ -29,7 +29,7 @@ const configurationComponent = defineAsyncComponent(async () => {
 });
 
 export class SSNFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         const strippedValue = value.replace(/[^0-9]/g, "");
 
         if (strippedValue.length !== 9) {

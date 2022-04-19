@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { Guid } from "@Obsidian/Types";
 import { doApiCall, HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "./Util/http";
 import { Component, defineComponent, PropType, provide, reactive } from "vue";
 import { BlockConfig, BlockHttp, InvokeBlockActionFunc } from "./Util/block";
 import { useStore } from "./Store/index";
-import { Guid } from "./Util/guid";
 import { RockDateTime } from "./Util/rockDateTime";
 
 type LogItem = {

@@ -72,7 +72,7 @@ namespace Rock.Financial
 
     [EnumsField(
         "Gateway Mode",
-        Description = "Selected the gateway mode",
+        Description = "Select the gateway mode",
         Key = AttributeKey.GatewayMode,
         EnumSourceType = typeof( HostedGatewayMode ),
         DefaultValue = "Unhosted",

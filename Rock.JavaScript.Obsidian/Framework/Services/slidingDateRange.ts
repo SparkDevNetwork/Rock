@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { ListItem } from "../ViewModels/listItem";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "./number";
 
 // This file contains helper functions and tooling required to work with sliding
@@ -93,10 +93,10 @@ export type SlidingDateRange = {
 };
 
 /**
- * The sliding date range types represented as an array of ListItem objects.
+ * The sliding date range types represented as an array of ListItemBag objects.
  * These are ordered correctly and can be used in pickers.
  */
-export const rangeTypeOptions: ListItem[] = [
+export const rangeTypeOptions: ListItemBag[] = [
     {
         value: RangeType.Current.toString(),
         text: "Current"
@@ -124,10 +124,10 @@ export const rangeTypeOptions: ListItem[] = [
 ];
 
 /**
- * The sliding date range time units represented as an array of ListItem objects.
+ * The sliding date range time units represented as an array of ListItemBag objects.
  * These are ordered correctly and can be used in pickers.
  */
-export const timeUnitOptions: ListItem[] = [
+export const timeUnitOptions: ListItemBag[] = [
     {
         value: TimeUnit.Hour.toString(),
         text: "Hour"
@@ -151,17 +151,17 @@ export const timeUnitOptions: ListItem[] = [
 ];
 
 /**
- * Helper function to get the text from a ListItem that matches the value.
+ * Helper function to get the text from a ListItemBag that matches the value.
  * 
  * @param value The value to be searched for.
- * @param options The ListItem options to be searched.
+ * @param options The ListItemBag options to be searched.
  *
- * @returns The text value of the ListItem or an empty string if not found.
+ * @returns The text value of the ListItemBag or an empty string if not found.
  */
-function getTextForValue(value: string, options: ListItem[]): string {
+function getTextForValue(value: string, options: ListItemBag[]): string {
     const matches = options.filter(v => v.value === value);
 
-    return matches.length > 0 ? matches[0].text : "";
+    return matches.length > 0 ? matches[0].text ?? "" : "";
 }
 
 /**
@@ -174,7 +174,7 @@ function getTextForValue(value: string, options: ListItem[]): string {
 export function getRangeTypeText(rangeType: RangeType): string {
     const rangeTypes = rangeTypeOptions.filter(o => o.value === rangeType.toString());
 
-    return rangeTypes.length > 0 ? rangeTypes[0].text : "";
+    return rangeTypes.length > 0 ? rangeTypes[0].text ?? "" : "";
 }
 
 /**
@@ -187,7 +187,7 @@ export function getRangeTypeText(rangeType: RangeType): string {
 export function getTimeUnitText(timeUnit: TimeUnit): string {
     const timeUnits = timeUnitOptions.filter(o => o.value === timeUnit.toString());
 
-    return timeUnits.length > 0 ? timeUnits[0].text : "";
+    return timeUnits.length > 0 ? timeUnits[0].text ?? "" : "";
 }
 
 /**
@@ -207,8 +207,8 @@ export function parseSlidingDateRangeString(value: string): SlidingDateRange | n
 
     // Find the matching range types and time units (should be 0 or 1) that
     // match the values in the string.
-    const rangeTypes = rangeTypeOptions.filter(o => o.text.replace(" ", "").toLowerCase() === segments[0].toLowerCase());
-    const timeUnits = timeUnitOptions.filter(o => o.text.toLowerCase() === segments[2].toLowerCase());
+    const rangeTypes = rangeTypeOptions.filter(o => (o.text ?? "").replace(" ", "").toLowerCase() === segments[0].toLowerCase());
+    const timeUnits = timeUnitOptions.filter(o => (o.text ?? "").toLowerCase() === segments[2].toLowerCase());
 
     if (rangeTypes.length === 0) {
         return null;

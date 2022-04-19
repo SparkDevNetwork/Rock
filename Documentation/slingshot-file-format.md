@@ -35,7 +35,7 @@ A zip file named *.slingshot with the following sub files:
 # Sub File Formats
 
 ## attendance.csv
-`AttendanceId,PersonId,GroupId,LocationId,ScheduleId,DeviceId,StartDateTime,EndDateTime,NoteCampusId`
+`AttendanceId,PersonId,GroupId,LocationId,ScheduleId,DeviceId,StartDateTime,EndDateTime,Note,CampusId`
 
 Example:
 `732216119,19471,1096,2021694793,1645614320,3/1/2010 9:00,3/1/2010 10:00,1`		

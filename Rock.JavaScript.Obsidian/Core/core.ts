@@ -26,8 +26,8 @@ const vendorMaps: Record<string, string> = {
     "axios": "Axios",
     "luxon": "Luxon",
     "mitt": "Mitt",
-    "vee-validate": "VeeValidate",
-    "vue": "Vue"
+    "vue": "Vue",
+    "tslib": "TSLib"
 };
 
 /**

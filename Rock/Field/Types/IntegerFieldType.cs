@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     [Serializable]
     [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><g><path d=""M14.25,4.25H11.94l.42-2.37a.74.74,0,0,0-.6-.87.75.75,0,0,0-.87.61l-.48,2.63H6.94l.42-2.37A.74.74,0,0,0,6.76,1a.75.75,0,0,0-.87.61L5.41,4.25H2.75a.75.75,0,0,0,0,1.5H5.14l-.81,4.5H1.75a.75.75,0,0,0,0,1.5H4.06l-.42,2.37a.74.74,0,0,0,.6.87h.14a.74.74,0,0,0,.73-.62l.48-2.63H9.06l-.43,2.37a.76.76,0,0,0,.61.87h.13a.74.74,0,0,0,.74-.62l.48-2.63h2.66a.74.74,0,1,0,0-1.47H10.86l.81-4.5,2.58,0a.75.75,0,1,0,0-1.5Zm-4.92,6H5.86l.81-4.5h3.47Z""/></g></svg>" )]
     public class IntegerFieldType : FieldType
     {
 

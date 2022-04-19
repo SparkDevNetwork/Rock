@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using CronExpressionDescriptor;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -78,9 +78,13 @@ namespace RockWeb.Blocks.Administration
         {
             try
             {
-                ExpressionDescriptor.GetDescription( tbCronExpression.Text );
+                if ( !ServiceJobService.IsValidCronDescription( tbCronExpression.Text ) )
+                {
+                    tbCronExpression.ShowErrorMessage( "Invalid Cron Expression" );
+                    return;
+                }
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 tbCronExpression.ShowErrorMessage( "Invalid Cron Expression: " + ex.Message );
                 return;
@@ -107,7 +111,7 @@ namespace RockWeb.Blocks.Administration
             job.Description = tbDescription.Text;
             job.IsActive = cbActive.Checked;
 
-            if (job.Class != ddlJobTypes.SelectedValue)
+            if ( job.Class != ddlJobTypes.SelectedValue )
             {
                 job.Class = ddlJobTypes.SelectedValue;
 
@@ -117,7 +121,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             job.NotificationEmails = tbNotificationEmails.Text;
-            job.NotificationStatus = (JobNotificationStatus)int.Parse( ddlNotificationStatus.SelectedValue );
+            job.NotificationStatus = ( JobNotificationStatus ) int.Parse( ddlNotificationStatus.SelectedValue );
             job.CronExpression = tbCronExpression.Text;
             job.HistoryCount = nbHistoryCount.Text.AsInteger();
 
@@ -183,7 +187,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tbCronExpression_TextChanged( object sender, EventArgs e )
         {
-            lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( tbCronExpression.Text, new Options { ThrowExceptionOnParseError = false } );
+            lCronExpressionDesc.Text = ServiceJobService.GetCronDescription( tbCronExpression.Text );
             lCronExpressionDesc.Visible = true;
         }
 
@@ -230,11 +234,11 @@ namespace RockWeb.Blocks.Administration
             ddlJobTypes.SetValue( job.Class );
 
             tbNotificationEmails.Text = job.NotificationEmails;
-            ddlNotificationStatus.SetValue( (int)job.NotificationStatus );
+            ddlNotificationStatus.SetValue( ( int ) job.NotificationStatus );
             tbCronExpression.Text = job.CronExpression;
             nbHistoryCount.Text = job.HistoryCount.ToString();
 
-            if (job.Id == 0)
+            if ( job.Id == 0 )
             {
                 job.Class = ddlJobTypes.SelectedValue;
                 lCronExpressionDesc.Visible = false;
@@ -242,7 +246,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( job.CronExpression, new Options { ThrowExceptionOnParseError = false } );
+                lCronExpressionDesc.Text = ServiceJobService.GetCronDescription( job.CronExpression );
                 lCronExpressionDesc.Visible = true;
 
                 lLastStatusMessage.Text = job.LastStatusMessage.ConvertCrLfToHtmlBr();
@@ -306,7 +310,7 @@ namespace RockWeb.Blocks.Administration
             {
                 try
                 {
-                    Rock.Attribute.Helper.UpdateAttributes( job, jobEntityTypeId, "Class", job.FullName, rockContext );
+                    ServiceJobService.UpdateAttributesIfNeeded( job );
                 }
                 catch ( Exception ex )
                 {
@@ -317,7 +321,7 @@ namespace RockWeb.Blocks.Administration
 
             ddlJobTypes.Items.Clear();
             ddlJobTypes.Items.Add( new ListItem() );
-            foreach ( var job in jobsList.OrderBy(a => a.FullName ))
+            foreach ( var job in jobsList.OrderBy( a => a.FullName ) )
             {
                 ddlJobTypes.Items.Add( new ListItem( CreateJobTypeFriendlyName( job.FullName ), job.FullName ) );
             }

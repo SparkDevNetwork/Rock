@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// AuthScope View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( AuthScope ) )]
-    public partial class AuthScopeViewModelHelper : ViewModelHelper<AuthScope, Rock.ViewModel.AuthScopeViewModel>
+    public partial class AuthScopeViewModelHelper : ViewModelHelper<AuthScope, AuthScopeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,14 +72,14 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AuthScopeViewModel CreateViewModel( AuthScope model, Person currentPerson = null, bool loadAttributes = true )
+        public override AuthScopeBag CreateViewModel( AuthScope model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AuthScopeViewModel
+            var viewModel = new AuthScopeBag
             {
                 Id = model.Id,
                 Guid = model.Guid,
@@ -176,7 +177,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AuthScopeViewModel ToViewModel( this AuthScope model, Person currentPerson = null, bool loadAttributes = false )
+        public static AuthScopeBag ToViewModel( this AuthScope model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AuthScopeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

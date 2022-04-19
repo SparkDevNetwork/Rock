@@ -1348,13 +1348,13 @@ namespace Rock.Model
                     var locationParam = schedulerResourceParameters.AttendanceOccurrenceLocationIds?.ToList() ?? new List<int>();
                     if ( locationParam.Any() )
                     {
-                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.All( ma => locationParam.Contains( ma.LocationId.Value ) ) || a.MemberAssignments.All( ma => ma.LocationId == null ) );
+                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.Any( ma => locationParam.Contains( ma.LocationId.Value ) || ma.LocationId == null ) );
                     }
 
                     var scheduleParam = schedulerResourceParameters.AttendanceOccurrenceScheduleIds?.ToList() ?? new List<int>();
                     if ( scheduleParam.Any() )
                     {
-                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.All( ma => scheduleParam.Contains( ma.Schedule.Id ) ) || a.MemberAssignments.All( ma => ma.Schedule == null ) );
+                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.Any( ma => scheduleParam.Contains( ma.Schedule.Id ) || ma.Schedule == null ) );
                     }
                 }
 

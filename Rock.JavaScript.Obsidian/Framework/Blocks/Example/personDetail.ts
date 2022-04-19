@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { Guid } from "@Obsidian/Types";
 import bus from "../../Util/bus";
 import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import RockButton from "../../Elements/rockButton";
@@ -23,15 +25,14 @@ import { useStore } from "../../Store/index";
 import EmailBox from "../../Elements/emailBox";
 import RockValidation from "../../Controls/rockValidation";
 import RockForm from "../../Controls/rockForm";
-import { Guid } from "../../Util/guid";
 import Loading from "../../Controls/loading";
 import PrimaryBlock from "../../Controls/primaryBlock";
 import { InvokeBlockActionFunc } from "../../Util/block";
-import { Person } from "../../ViewModels";
 import DatePicker from "../../Elements/datePicker";
 import AddressControl, { getDefaultAddressControlModel } from "../../Controls/addressControl";
 import { toNumber } from "../../Services/number";
 import { DateTimeFormat, RockDateTime } from "../../Util/rockDateTime";
+import { Person } from "@Obsidian/ViewModels/Entities/person";
 
 const store = useStore();
 

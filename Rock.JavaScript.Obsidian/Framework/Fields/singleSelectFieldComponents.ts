@@ -23,7 +23,7 @@ import RadioButtonList from "../Elements/radioButtonList";
 import TextBox from "../Elements/textBox";
 import { toNumberOrNull } from "../Services/number";
 import { ConfigurationValueKey } from "./singleSelectField";
-import { ListItem } from "../ViewModels";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "../Util/util";
 
 export const EditComponent = defineComponent({
@@ -50,9 +50,9 @@ export const EditComponent = defineComponent({
 
     computed: {
         /** The options to choose from in the drop down list */
-        options(): ListItem[] {
+        options(): ListItemBag[] {
             try {
-                const providedOptions = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+                const providedOptions = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
 
                 if (this.isRadioButtons && !this.isRequired) {
                     providedOptions.unshift({
@@ -130,9 +130,9 @@ export const FilterComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref(props.modelValue.split(",").filter(v => v !== ""));
 
-        const options = computed((): ListItem[] => {
+        const options = computed((): ListItemBag[] => {
             try {
-                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
 
                 return providedOptions;
             }
@@ -160,7 +160,7 @@ export const FilterComponent = defineComponent({
 `
 });
 
-const controlTypeOptions: ListItem[] = [
+const controlTypeOptions: ListItemBag[] = [
     {
         value: "ddl",
         text: "Drop Down List"
@@ -216,16 +216,16 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {};
+            const newValue: Record<string, string> = {...props.modelValue};
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.RawValues] = internalRawValues.value ?? "";
+            newValue[ConfigurationValueKey.CustomValues] = internalRawValues.value ?? "";
             newValue[ConfigurationValueKey.FieldType] = controlType.value ?? "";
             newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.RawValues] !== (props.modelValue[ConfigurationValueKey.RawValues] ?? "")
+            const anyValueChanged = newValue[ConfigurationValueKey.CustomValues] !== (props.modelValue[ConfigurationValueKey.CustomValues] ?? "")
                 || newValue[ConfigurationValueKey.FieldType] !== (props.modelValue[ConfigurationValueKey.FieldType] ?? "")
                 || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "");
 
@@ -254,7 +254,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            rawValues.value = props.modelValue[ConfigurationValueKey.RawValues] ?? "";
+            rawValues.value = props.modelValue[ConfigurationValueKey.CustomValues] ?? "";
             internalRawValues.value = rawValues.value;
             controlType.value = props.modelValue[ConfigurationValueKey.FieldType] ?? "ddl";
             repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);

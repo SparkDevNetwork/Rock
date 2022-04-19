@@ -417,7 +417,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _ddlCriteriaComparisonType.ID = this.ID + "_ddlCriteriaComparisonType";
             _ddlCriteriaComparisonType.EnableViewState = false;
             _ddlCriteriaComparisonType.CssClass = "js-action-criteria-comparison";
-            _ddlCriteriaComparisonType.BindToEnum<ComparisonType>();
+            _ddlCriteriaComparisonType.BindToEnum<ComparisonType>( ignoreTypes: new ComparisonType[1] { ComparisonType.Between } );
             _ddlCriteriaComparisonType.Label = "&nbsp;";
 
             _tbddlCriteriaValue = new RockTextOrDropDownList();
@@ -588,10 +588,13 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6 control-label-offset" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbIsActionCompletedOnSuccess.ValidationGroup = ValidationGroup;
             _cbIsActionCompletedOnSuccess.RenderControl( writer );
             _cbIsActivityCompletedOnSuccess.ValidationGroup = ValidationGroup;
             _cbIsActivityCompletedOnSuccess.RenderControl( writer );
+            writer.RenderEndTag();
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
