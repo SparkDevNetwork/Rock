@@ -2310,8 +2310,9 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var selectedTemplate = GetSelectedTemplate();
             var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
+            var isLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy == true;
 
-            cbDisplayInLine.Visible = isNonLegacySelected;
+            cbDisplayInLine.Visible = isLegacySelected;
             cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
             cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
 
@@ -2574,6 +2575,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var signatureDocTemplate = registrationTemplate.RequiredSignatureDocumentTemplate;
             var isNonLegacySignatureSelected = signatureDocTemplate != null && signatureDocTemplate.IsLegacy != true;
+            var isLegacySignatureSelected = signatureDocTemplate != null && signatureDocTemplate.IsLegacy == true;
 
             if ( registrationTemplate.Id == 0 )
             {
@@ -2602,7 +2604,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
-            cbDisplayInLine.Visible = isNonLegacySignatureSelected;
+            cbDisplayInLine.Visible = isLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
@@ -2862,8 +2864,8 @@ The logged-in person's information will be used to complete the registrar inform
 
                  Normally, we order by Order, but in this particular situation it was decided
                  it would be better to order these by Name in the dropdown list.
-    
-                 Reason: To improve usability. 
+
+                 Reason: To improve usability.
             */
             var groupTypeList = new GroupTypeService( rockContext )
                 .Queryable().AsNoTracking()
