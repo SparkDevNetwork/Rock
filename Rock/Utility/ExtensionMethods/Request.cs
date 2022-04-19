@@ -41,7 +41,7 @@ namespace Rock
         public static Uri UrlProxySafe( this HttpRequest request )
         {
             // If no proxy just return the request URL
-            var isRequestForwardedFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
+            var isRequestForwardedFromProxy = request.Headers["X-Forwarded-Host"] != null && request.Headers["X-Forwarded-Proto"] != null;
 
             if ( !isRequestForwardedFromProxy )
             {
@@ -70,7 +70,7 @@ namespace Rock
         public static Uri UrlProxySafe( this HttpRequestBase request )
         {
             // If no proxy just return the request URL
-            var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
+            var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"] != null && request.Headers["X-Forwarded-Proto"] != null;
 
             if ( !isRequestForwaredFromProxy )
             {
@@ -96,7 +96,7 @@ namespace Rock
         {
             // Consider making this a defined value someday
 
-            if ( request.UrlReferrer.IsNull() )
+            if ( request.UrlReferrer == null )
             {
                 return null;
             }
@@ -135,7 +135,7 @@ namespace Rock
         /// <returns></returns>
         public static string UrlReferrerSearchTerms( this HttpRequest request )
         {
-            if ( request.UrlReferrer.IsNull() )
+            if ( request.UrlReferrer == null )
             {
                 return null;
             }
@@ -144,7 +144,7 @@ namespace Rock
             var parms = HttpUtility.ParseQueryString( request.UrlReferrer.AbsoluteUri );
             var searchQuery = parms["q"];
 
-            if ( searchQuery.IsNotNull() )
+            if ( searchQuery != null )
             {
                 return null;
             }

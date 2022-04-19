@@ -68,7 +68,7 @@ namespace Rock.Communication.VideoEmbed
             var restResponse = restClient.Execute<VimeoResponse>( restRequest );
 
             // Return if video was not found.
-            if ( restResponse.Data.IsNull() )
+            if ( restResponse.Data == null )
             {
                 return string.Empty;
             }

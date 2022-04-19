@@ -141,7 +141,7 @@ namespace Rock.Financial
             get
             {
                 // We are only checking null here because empty string is valid.
-                if ( _nameOnCard.IsNull() )
+                if ( _nameOnCard == null )
                 {
                     return _nameOnCardEncrypted;
                 }
@@ -165,7 +165,7 @@ namespace Rock.Financial
             get
             {
                 // We are only checking null here because empty string is valid.
-                if ( _nameOnCard.IsNull() )
+                if ( _nameOnCard == null )
                 {
                     return Encryption.DecryptString( _nameOnCardEncrypted );
                 }

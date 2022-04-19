@@ -170,7 +170,7 @@ namespace Rock.Model
             {
                 var indexableEventItem = EventItemIndex.LoadByModel( eventItem );
 
-                if ( indexableEventItem.IsNotNull() )
+                if ( indexableEventItem != null )
                 {
                     indexableItems.Add( indexableEventItem );
                 }

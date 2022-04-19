@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Tv
             var site = SiteCache.Get( applicationId );
 
             // Site is new so create one
-            if ( page.IsNull() )
+            if ( page == null )
             {
                 page = new Rock.Model.Page();
                 pageService.Add( page );
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Tv
             {
                 var page = new PageService( new RockContext() ).Get( pageId );
 
-                if ( page.IsNotNull() )
+                if ( page != null )
                 {
                     tbDescription.Text = page.Description;
 

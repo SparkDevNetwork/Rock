@@ -5278,7 +5278,7 @@ namespace Rock.Lava
                     var propertyValue = value.GetPropertyValue( filterKey );
 
                     // Allow for null checking as an empty string. Could be differing opinions on this...?!
-                    if ( propertyValue.IsNull() )
+                    if ( propertyValue == null )
                     {
                         propertyValue = string.Empty;
                     }

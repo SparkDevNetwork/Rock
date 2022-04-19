@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Tv
             if ( !Page.IsPostBack )
             {
                 // Check to ensure that the person is logged in.
-                if ( CurrentPerson.IsNull() )
+                if ( CurrentPerson == null )
                 {
                     nbWarningMessages.Text = "This page requires that a person be authenticated to use.";
                     nbWarningMessages.Visible = true;
@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Tv
                                 .FirstOrDefault();
 
             // Check for code that does not exist
-            if ( authSession.IsNull() )
+            if ( authSession == null )
             {
                 nbAuthenticationMessages.Text = "The code provided is not valid. Please confirm that you have correctly entered the code.";
                 nbAuthenticationMessages.NotificationBoxType = NotificationBoxType.Warning;
