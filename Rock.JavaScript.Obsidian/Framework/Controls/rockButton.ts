@@ -40,8 +40,6 @@ export enum BtnSize {
 export default defineComponent({
     name: "RockButton",
 
-    inheritAttrs: false,
-
     props: {
         isLoading: {
             type: Boolean as PropType<boolean>,

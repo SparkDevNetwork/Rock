@@ -23,18 +23,6 @@ import { formFieldTests } from "./rockFormFieldHelper";
 describe("TextBox", () => {
     formFieldTests(TextBox);
 
-    it("Does not render label when not passed", () => {
-        const wrapper = mount(TextBox, {
-            props: {
-                modelValue: "",
-                label: ""
-            }
-        });
-
-        const labels = wrapper.findAll("label");
-        assert.strictEqual(labels.length, 0);
-    });
-
     it("Shows a countdown", () => {
         const text = "This is some text";
         const maxLength = 20;
