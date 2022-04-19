@@ -1,0 +1,63 @@
+.notes .panel-heading {
+    display: none;
+}
+
+.notes .note-editor {
+    margin: 0;
+    padding: @padding-base-horizontal*2;
+    background-color: @white;
+    border-radius: @border-radius-large;
+}
+
+.notes .note-editor textarea {
+    resize: none;
+    padding: @padding-base-horizontal;
+    color: @gray-darker;
+    box-shadow: none;
+}
+
+.note-editor .settings {
+    padding: @padding-base-horizontal;
+}
+
+.note-editor .meta-body:focus, .note-editor .meta-body:focus-within, .note-editor .meta-body.focus-within {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.note-editor .meta-body {
+    border-radius: @border-radius-large;
+    border-color: transparent;
+    overflow: hidden;
+}
+
+.notes .panel,
+.notes .panel-body {
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.note {
+    word-wrap: break-word;
+    border: 0px;
+}
+
+.note-editor .settings .noteentry-notetype {
+    height: 36px;
+    font-size: 16px;
+    font-family: @font-family-sans-serif;
+    margin-right: 10px;
+}
+
+.note-editor .settings .checkbox {
+    font-size: 16px;
+    margin-top: 6px !important;
+}
+
+.note .note-comments {
+    position: relative;
+    z-index: 1;
+    background-color: transparent;
+    border: 0;
+}
