@@ -207,6 +207,8 @@ namespace RockWeb.Blocks.Cms
                     if ( categoryGuid.HasValue )
                     {
                         var categoryId = CategoryCache.Get( categoryGuid.Value ).Id;
+
+                        SetUserPreference( CATEGORY_FILTER_SETTING, categoryId.ToString() );
                         ddlCategory.SetValue( categoryId );
                     }
                     else
