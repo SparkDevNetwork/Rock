@@ -20,7 +20,7 @@ import RockButton from "./rockButton";
 import TextBox from "./textBox";
 import EmailBox from "./emailBox";
 import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 import RockForm from "./rockForm";
 

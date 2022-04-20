@@ -17,13 +17,15 @@
 
 import { computed, defineComponent, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert";
-import PaneledDetailBlockTemplate from "@Obsidian/Templates/paneledDetailBlockTemplate";
+import DetailPanelTemplate from "@Obsidian/Templates/detailPanelTemplate";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import EditPanel from "./CampusDetail/editPanel";
 import { CampusDetailOptionsBag, CampusBag, DetailBlockBox, NavigationUrlKey } from "./CampusDetail/types";
 import ViewPanel from "./CampusDetail/viewPanel";
+import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
 export default defineComponent({
     name: "Core.CampusDetail",
@@ -31,7 +33,7 @@ export default defineComponent({
     components: {
         Alert,
         EditPanel,
-        PaneledDetailBlockTemplate,
+        DetailPanelTemplate,
         ViewPanel
     },
 
@@ -47,45 +49,40 @@ export default defineComponent({
         const campusViewBag = ref(config.entity);
         const campusEditBag = ref<CampusBag | null>(null);
 
-        const isEditMode = ref(false);
+        const panelMode = ref(DetailPanelMode.View);
 
         // #endregion
 
         // #region Computed Values
 
         /**
-         * The title to display in the block panel depending on the current state.
+         * The name to display in the panel title.
          */
-        const blockTitle = computed((): string => {
-            if (campusViewBag.value?.guid === emptyGuid) {
-                return "Add Campus";
-            }
-            else if (!isEditMode.value) {
-                return campusViewBag.value?.name ?? "";
-            }
-            else if (campusEditBag.value?.name) {
-                return `Edit ${campusEditBag.value.name}`;
-            }
-            else {
-                return "Edit Campus";
-            }
-        });
+        const panelName = computed((): string => campusViewBag.value?.name ?? "");
 
         /**
          * Additional labels to display in the block panel.
          */
-        const blockLabels = computed((): ListItemBag[] => {
-            const labels: ListItemBag[] = [];
+        const panelLabels = computed((): PanelAction[] => {
+            const labels: PanelAction[] = [];
 
             if (isEditMode.value) {
                 return labels;
             }
 
             if (campusViewBag.value?.isActive === true) {
-                labels.push({ value: "success", text: "Active" });
+                labels.push({
+                    iconCssClass: "fa fa-lightbulb",
+                    title: "Active",
+                    type: "success"
+                });
             }
             else {
-                labels.push({ value: "danger", text: "Inactive" });
+                labels.push({
+                    iconCssClass: "far fa-lightbulb",
+                    title: "Inactive",
+                    type: "danger"
+                });
             }
 
             return labels;
@@ -94,6 +91,8 @@ export default defineComponent({
         const isEditable = computed((): boolean => {
             return config.isEditable === true && campusViewBag.value?.isSystem !== true;
         });
+
+        const isEditMode = computed((): boolean => panelMode.value === DetailPanelMode.Edit || panelMode.value === DetailPanelMode.Add);
 
         const options = computed((): CampusDetailOptionsBag => {
             return config.options ?? {};
@@ -195,7 +194,7 @@ export default defineComponent({
             };
 
             const result = await invokeBlockAction<CampusBag | string>("Save", {
-                saveCrate: data
+                box: data
             });
 
             if (result.isSuccess && result.data) {
@@ -227,13 +226,11 @@ export default defineComponent({
         }
         else if (config.entity.guid === emptyGuid) {
             campusEditBag.value = config.entity;
-            isEditMode.value = true;
+            panelMode.value = DetailPanelMode.Add;
         }
 
         return {
             blockError,
-            blockLabels,
-            blockTitle,
             campusViewBag,
             campusEditBag,
             errorMessage,
@@ -243,15 +240,14 @@ export default defineComponent({
             onDelete,
             onEdit,
             onSave,
-            options
+            options,
+            panelLabels,
+            panelMode,
+            panelName
         };
     },
 
     template: `
-<Alert alertType="warning">
-    This is an experimental block and should not be used in production.
-</Alert>
-
 <Alert v-if="blockError" alertType="warning">
     {{ blockError }}
 </Alert>
@@ -260,20 +256,19 @@ export default defineComponent({
     {{ errorMessage }}
 </Alert>
 
-<PaneledDetailBlockTemplate v-if="!blockError"
-    v-model:isEditMode="isEditMode"
-    :title="blockTitle"
-    iconClass="fa fa-building-o"
-    :labels="blockLabels"
-    entityTitle="Campus"
-    :isEditAllowed="isEditable"
-    :isDeleteAllowed="isEditable"
+<DetailPanelTemplate v-if="!blockError"
+    v-model:mode="panelMode"
+    :name="panelName"
+    :labels="panelLabels"
+    entityTypeName="Campus"
+    :isEditVisible="isEditable"
+    :isDeleteVisible="isEditable"
     @cancelEdit="onCancelEdit"
     @delete="onDelete"
     @edit="onEdit"
     @save="onSave">
     <EditPanel v-if="isEditMode" v-model="campusEditBag" :options="options" />
     <ViewPanel v-else :modelValue="campusViewBag" :options="options" />
-</PaneledDetailBlockTemplate>
+</DetailPanelTemplate>
 `
 });

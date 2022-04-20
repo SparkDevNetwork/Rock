@@ -19,7 +19,7 @@ import { defineComponent, PropType, ref, TransitionGroup, watch } from "vue";
 import DropDownList from "./dropDownList";
 import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";

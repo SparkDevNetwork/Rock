@@ -15,6 +15,7 @@
 // </copyright>
 
 import { ref, Ref, watch, WatchOptions } from "vue";
+import { deepEqual } from "./util";
 
 type Prop = { [key: string]: unknown };
 type PropKey<T extends Prop> = Extract<keyof T, string>;
@@ -37,4 +38,23 @@ export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E ext
     watch(internalValue, val => emit(`update:${modelName}`, val), options);
 
     return internalValue;
+}
+
+/**
+ * Updates the Ref value, but only if the new value is actually different than
+ * the current value. A strict comparison is performed.
+ * 
+ * @param target The target Ref object to be updated.
+ * @param value The new value to be assigned to the target.
+ *
+ * @returns True if the target was updated, otherwise false.
+ */
+export function updateRefValue<T>(target: Ref<T>, value: T): boolean {
+    if (deepEqual(target.value, value, true)) {
+        return false;
+    }
+
+    target.value = value;
+
+    return true;
 }

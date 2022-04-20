@@ -20,7 +20,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList";
 import FileUploader from "@Obsidian/Controls/fileUploader";
 import { ConfigurationValueKey, ConfigurationPropertyKey } from "./fileField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({
     name: "FileField.Edit",

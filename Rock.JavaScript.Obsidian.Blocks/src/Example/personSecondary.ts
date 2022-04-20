@@ -15,7 +15,7 @@
 // </copyright>
 //
 import bus from "@Obsidian/Utility/bus";
-import PaneledBlockTemplate from "@Obsidian/Templates/paneledBlockTemplate";
+import BlockTemplate from "@Obsidian/Templates/blockTemplate";
 import SecondaryBlock from "@Obsidian/Controls/secondaryBlock";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -28,7 +28,7 @@ const store = useStore();
 export default defineComponent({
     name: "Example.PersonSecondary",
     components: {
-        PaneledBlockTemplate,
+        BlockTemplate,
         SecondaryBlock,
         TextBox,
         RockButton
@@ -71,12 +71,8 @@ export default defineComponent({
     },
     template:
 `<SecondaryBlock>
-    <PaneledBlockTemplate>
-        <template v-slot:title>
-            <i class="fa fa-flask"></i>
-            Secondary Block
-        </template>
-        <template v-slot:default>
+    <BlockTemplate title="Secondary Block">
+        <template #default>
             <div class="row">
                 <div class="col-sm-6">
                     <p>
@@ -98,6 +94,6 @@ export default defineComponent({
                 </div>
             </div>
         </template>
-    </PaneledBlockTemplate>
+    </BlockTemplate>
 </SecondaryBlock>`
 });

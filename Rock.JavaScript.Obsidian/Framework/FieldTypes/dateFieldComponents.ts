@@ -31,7 +31,7 @@ import CheckBox from "@Obsidian/Controls/checkBox";
 import { PropType } from "vue";
 import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({
     name: "DateField.Edit",

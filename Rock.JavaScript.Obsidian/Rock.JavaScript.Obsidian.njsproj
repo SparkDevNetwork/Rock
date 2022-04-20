@@ -42,6 +42,8 @@
     <Content Include="Framework\Controls\modal.ts" />
     <Content Include="Framework\Controls\transitionVerticalCollapse.ts" />
     <Content Include="Framework\Templates\tsconfig.json" />
+    <Content Include="Framework\tsconfig.base.json" />
+    <Content Include="Framework\Utility\README.md" />
     <Content Include="Framework\Utility\treeItemProviders.ts" />
     <Content Include="Framework\Utility\tsconfig.json" />
     <Content Include="Framework\ValidationRules\tsconfig.json" />
@@ -155,6 +157,9 @@
     <TypeScriptCompile Include="Framework\FieldTypes\urlLinkFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\utils.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonTypeOptions.ts" />
+    <TypeScriptCompile Include="Framework\Templates\detailPanelTemplate.ts" />
+    <TypeScriptCompile Include="Framework\Types\Controls\detailPanelMode.d.ts" />
+    <TypeScriptCompile Include="Framework\Types\Controls\panelAction.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\valueDetailListItem.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Reporting\comparisonValue.d.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\filterMode.d.ts" />
@@ -264,6 +269,7 @@
     <TypeScriptCompile Include="Framework\Types\fieldType.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Reporting\comparisonType.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
+    <TypeScriptCompile Include="Framework\Utility\promiseUtils.ts" />
     <TypeScriptCompile Include="Framework\ValidationRules\index.ts" />
     <TypeScriptCompile Include="Framework\Utility\booleanUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\slidingDateRange.ts" />
@@ -314,8 +320,7 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\systemSetting.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\workflowType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\index.d.ts" />
-    <TypeScriptCompile Include="Framework\Templates\paneledBlockTemplate.ts" />
-    <TypeScriptCompile Include="Framework\Templates\paneledDetailBlockTemplate.ts" />
+    <TypeScriptCompile Include="Framework\Templates\blockTemplate.ts" />
     <TypeScriptCompile Include="Framework\Types\index.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\component.ts" />
     <TypeScriptCompile Include="Framework\Utility\dialogs.ts" />

@@ -21,7 +21,7 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import PanelWidget from "@Obsidian/Controls/panelWidget";
 import TextBox from "@Obsidian/Controls/textBox";
 import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids";
-import PaneledBlockTemplate from "@Obsidian/Templates/paneledBlockTemplate";
+import BlockTemplate from "@Obsidian/Templates/blockTemplate";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -346,7 +346,7 @@ export default defineComponent({
     name: "Example.FieldTypeGallery",
 
     components: {
-        PaneledBlockTemplate,
+        BlockTemplate,
         ...galleryComponents
     },
 
@@ -356,14 +356,10 @@ export default defineComponent({
     },
 
     template: `
-<PaneledBlockTemplate>
-    <template v-slot:title>
-        <i class="fa fa-flask"></i>
-        Obsidian Field Type Gallery
-    </template>
-    <template v-slot:default>
+<BlockTemplate title="Obsidian Field Type Gallery">
+    <template #default>
         ${galleryTemplate}
     </template>
-</PaneledBlockTemplate>
+</BlockTemplate>
 `
 });

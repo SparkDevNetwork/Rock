@@ -21,7 +21,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
 import { ConfigurationValueKey, ConfigurationPropertyKey } from "./imageField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
 export const EditComponent = defineComponent({

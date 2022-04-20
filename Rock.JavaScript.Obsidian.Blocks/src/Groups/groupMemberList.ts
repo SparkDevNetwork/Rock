@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import PaneledBlockTemplate from "@Obsidian/Templates/paneledBlockTemplate";
+import BlockTemplate from "@Obsidian/Templates/blockTemplate";
 import { defineComponent, inject } from "vue";
 import { useStore } from "@Obsidian/PageState";
 import Grid, { FilterOptions, RowContext, SortDirection, SortProperty } from "@Obsidian/Controls/grid";
@@ -43,7 +43,7 @@ const store = useStore();
 export default defineComponent({
     name: "Groups.GroupMemberList",
     components: {
-        PaneledBlockTemplate,
+        BlockTemplate,
         Alert,
         Grid,
         GridRow,
@@ -129,11 +129,7 @@ export default defineComponent({
         }
     },
     template: `
-<PaneledBlockTemplate>
-    <template #title>
-        <i class="fa fa-users"></i>
-        Group Members
-    </template>
+<BlockTemplate title="Group Members">
     <template #default>
         <Alert v-if="errorMessage" alertType="danger">
             {{errorMessage}}
@@ -159,5 +155,5 @@ export default defineComponent({
             </Grid>
         </div>
     </template>
-</PaneledBlockTemplate>`
+</BlockTemplate>`
 });

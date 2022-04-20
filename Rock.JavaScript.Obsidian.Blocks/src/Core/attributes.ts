@@ -23,10 +23,10 @@ import RockField from "@Obsidian/Controls/rockField";
 import RockForm from "@Obsidian/Controls/rockForm";
 import Alert from "@Obsidian/Controls/alert";
 import DropDownList from "@Obsidian/Controls/dropDownList";
+import BlockTemplate from "@Obsidian/Templates/blockTemplate";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { FieldType } from "@Obsidian/SystemGuids";
-import PaneledBlockTemplate from "@Obsidian/Templates/paneledBlockTemplate";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
 import { normalize as normalizeGuid } from "@Obsidian/Utility/guid";
@@ -86,9 +86,9 @@ export default defineComponent({
     components: {
         Alert,
         AttributeEditor,
+        BlockTemplate,
         DropDownList,
         Modal,
-        PaneledBlockTemplate,
         RockButton,
         RockField,
         RockForm,
@@ -417,9 +417,8 @@ export default defineComponent({
     This is an experimental block and should not be used in production.
 </Alert>
 
-<PaneledBlockTemplate>
-    <template v-slot:title>Attribute List</template>
-    <template v-slot:titleAside>
+<BlockTemplate title="Attribute List">
+    <template #headerActions>
         <div v-if="showEntityTypePicker" class="form-inline panel-labels">
             <DropDownList v-model="entityTypeGuid"
                 label="Entity Type"
@@ -429,10 +428,10 @@ export default defineComponent({
         </div>
     </template>
 
-    <template v-slot:default>
+    <template #default>
         <div v-if="entityTypeSelectionIsValid" class="grid grid-panel">
             <div class="grid-actions border-bottom border-panel">
-                <RockButton class="btn-add btn-grid-action" btnType="default" btnSize="sm" @click="onAddAttribute"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
+                <RockButton class="btn-add btn-grid-action" btnType="link" @click="onAddAttribute"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
             </div>
 
             <div class="table-responsive">
@@ -477,8 +476,7 @@ export default defineComponent({
             Please select an entity to display attributes for.
         </Alert>
     </template>
-
-</PaneledBlockTemplate>
+</BlockTemplate>
 
 <Modal v-model="showEditAttributeValueModal" :title="editAttributeValueModalTitle">
     <RockForm v-model:submit="submitEditAttributeValue" @submit="saveEditAttributeValue">

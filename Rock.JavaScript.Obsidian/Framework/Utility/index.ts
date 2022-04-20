@@ -14,6 +14,7 @@ import * as Http from "./http";
 import * as Linq from "./linq";
 import * as NumberUtils from "./numberUtils";
 import * as Page from "./page";
+import * as PromiseUtils from "./promiseUtils";
 import * as RockDateTime from "./rockDateTime";
 import * as SlidingDateRange from "./slidingDateRange";
 import * as StringUtils from "./stringUtils";
@@ -38,6 +39,7 @@ export {
     Linq,
     NumberUtils,
     Page,
+    PromiseUtils,
     RockDateTime,
     SlidingDateRange,
     StringUtils,

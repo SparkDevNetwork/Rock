@@ -18,10 +18,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
-
-function isPromise<T>(obj: PromiseLike<T> | T): obj is PromiseLike<T> {
-    return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as Record<string, unknown>).then === "function";
-}
+import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
 /**
  * Internal helper component that renders individual tree items.

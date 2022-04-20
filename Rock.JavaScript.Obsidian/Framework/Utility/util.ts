@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-import { Ref } from "vue";
-
 /**
  * Compares two values for equality by performing deep nested comparisons
  * if the values are objects or arrays.
@@ -103,36 +101,4 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
     }
 
     return false;
-}
-
-/**
- * Updates the Ref value, but only if the new value is actually different than
- * the current value. A strict comparison is performed.
- * 
- * @param target The target Ref object to be updated.
- * @param value The new value to be assigned to the target.
- *
- * @returns True if the target was updated, otherwise false.
- */
-export function updateRefValue<T>(target: Ref<T>, value: T): boolean {
-    if (deepEqual(target.value, value, true)) {
-        return false;
-    }
-
-    target.value = value;
-
-    return true;
-}
-
-/**
- * Checks if the value is a promise to return a value. This is used to check
- * if a function that could have returned either a value or a promise for a
- * value returned a promise.
- * 
- * @param obj The object to be tested if it is a promise.
- *
- * @returns True if the object is a promise.
- */
-export function isPromise<T>(obj: PromiseLike<T> | T): obj is PromiseLike<T> {
-    return !!obj && (typeof obj === "object" || typeof obj === "function") && typeof (obj as Record<string, unknown>).then === "function";
 }

@@ -26,7 +26,7 @@ import { ConfigurationPropertyKey, ConfigurationValueKey } from "./campusesField
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 
 type CampusItem = {
     guid: Guid,

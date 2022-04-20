@@ -27,7 +27,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
 import { FieldTypeConfigurationPropertiesBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationPropertiesBag";
-import { deepEqual, updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
+import { deepEqual } from "@Obsidian/Utility/util";
 
 export default defineComponent({
     name: "FieldTypeEditor",

@@ -342,7 +342,7 @@ export default defineComponent({
     {{ blockError }}
 </Alert>
 
-<Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconClass="fa fa-poll-h">
+<Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconCssClass="fa fa-poll-h">
     <template #default>
 
         <div ref="bodyElement" class="form-builder-detail panel-flex-fill-body styled-scroll">

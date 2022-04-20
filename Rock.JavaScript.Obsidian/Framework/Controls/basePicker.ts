@@ -19,7 +19,7 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import Alert from "./alert";
 import LoadingIndicator from "./loadingIndicator";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import { isPromise } from "@Obsidian/Utility/util";
+import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
 function isDescendant(parent: Node, child: Node): boolean {
     for (let node: Node | null = child; node !== null; node = node.parentNode) {

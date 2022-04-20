@@ -3,7 +3,7 @@
   "description": "Project for all Rock Obsidian UI functionality.",
   "scripts": {
     "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && npm run copy-webforms-framework",
-    "build-framework": "tsc --build Framework/Utility && tsc --build Framework/ValidationRules && tsc --build Framework/PageState && tsc --build Framework/Core && tsc --build Framework/Directives && tsc --build Framework/Controls && tsc --build Framework/FieldTypes && tsc --build Framework/Templates && rollup --config Framework/rollup.config.js",
+    "build-framework": "tsc --build Framework && rollup --config Framework/rollup.config.js",
     "build-core": "webpack --no-color",
     "watch": "echo \"Watch is currently not supported.\" && exit 1 && rollup --config Framework/rollup.config.js --watch",
     "copy-webforms-core": "copyfiles -u 1 \"dist/obsidian-core.*\" \"dist/obsidian-vendor.*\" \"../RockWeb/Obsidian/\"",

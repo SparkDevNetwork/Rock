@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-import PaneledBlockTemplate from "@Obsidian/Templates/paneledBlockTemplate";
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldVisibilityRulesEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
-import PanelWidget from "@Obsidian/Controls/panelWidget";
 import DatePicker from "@Obsidian/Controls/datePicker";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker";
@@ -57,6 +55,7 @@ import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import Rating from "@Obsidian/Controls/rating";
 import Fullscreen from "@Obsidian/Controls/fullscreen";
 import Panel from "@Obsidian/Controls/panel";
+import DetailPanelTemplate from "@Obsidian/Templates/detailPanelTemplate";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import FileUploader from "@Obsidian/Controls/fileUploader";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
@@ -64,11 +63,11 @@ import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-//import "../../Fields/index";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-import { BinaryFiletype, FieldType } from "@Obsidian/SystemGuids";
+import { BinaryFiletype, EntityType, FieldType } from "@Obsidian/SystemGuids";
 import { SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
@@ -934,20 +933,21 @@ const numberBoxGallery = defineComponent({
         TextBox,
         NumberBox
     },
-    data() {
+    setup() {
+        const minimumValue = ref("0");
+        const maximumValue = ref("1");
+        const value = ref(42);
+
+        const numericMinimumValue = computed((): number => toNumber(minimumValue.value));
+        const numericMaximumValue = computed((): number => toNumber(maximumValue.value));
+
         return {
-            minimumValue: "0",
-            maximumValue: "100",
-            value: 42,
+            minimumValue,
+            maximumValue,
+            numericMinimumValue,
+            numericMaximumValue,
+            value,
         };
-    },
-    computed: {
-        numericMinimumValue(): number {
-            return toNumber(this.minimumValue);
-        },
-        numericMaximumValue(): number {
-            return toNumber(this.maximumValue);
-        }
     },
     template: `
 <GalleryAndResult>
@@ -1517,18 +1517,90 @@ const panelGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
-        Panel
+        CheckBoxList,
+        Panel,
+        RockButton
     },
-    data() {
+
+    setup() {
+        const simulateValues = ref<string[]>([]);
+
+        const headerSecondaryActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("headerSecondaryActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "default",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
         return {
             colors: Array.apply(0, Array(256)).map((_: unknown, index: number) => `rgb(${index}, ${index}, ${index})`),
-            collapsableValue: true,
-            drawerValue: false,
-            hasAside: false,
-            hasDrawer: true,
-            hasFullscreen: false,
-            isFullscreenPageOnly: true,
-            value: true
+            collapsableValue: ref(true),
+            drawerValue: ref(false),
+            hasFullscreen: ref(false),
+            headerSecondaryActions,
+            simulateValues,
+            simulateOptions: [
+                {
+                    value: "drawer",
+                    text: "Drawer"
+                },
+                {
+                    value: "headerActions",
+                    text: "Header Actions"
+                },
+                {
+                    value: "headerSecondaryActions",
+                    text: "Header Secondary Actions"
+                },
+                {
+                    value: "subheaderLeft",
+                    text: "Subheader Left",
+                },
+                {
+                    value: "subheaderRight",
+                    text: "Subheader Right"
+                },
+                {
+                    value: "footerActions",
+                    text: "Footer Actions"
+                },
+                {
+                    value: "footerSecondaryActions",
+                    text: "Footer Secondary Actions"
+                },
+                {
+                    value: "helpContent",
+                    text: "Help Content"
+                },
+                {
+                    value: "largeBody",
+                    text: "Large Body"
+                }
+            ],
+            simulateDrawer: computed((): boolean => simulateValues.value.includes("drawer")),
+            simulateHeaderActions: computed((): boolean => simulateValues.value.includes("headerActions")),
+            simulateSubheaderLeft: computed((): boolean => simulateValues.value.includes("subheaderLeft")),
+            simulateSubheaderRight: computed((): boolean => simulateValues.value.includes("subheaderRight")),
+            simulateFooterActions: computed((): boolean => simulateValues.value.includes("footerActions")),
+            simulateFooterSecondaryActions: computed((): boolean => simulateValues.value.includes("footerSecondaryActions")),
+            simulateLargeBody: computed((): boolean => simulateValues.value.includes("largeBody")),
+            simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent")),
+            isFullscreenPageOnly: ref(true),
+            value: ref(true)
         };
     },
     template: `
@@ -1539,28 +1611,254 @@ const panelGallery = defineComponent({
     <template #gallery>
         <CheckBox v-model="collapsableValue" label="Collapsable" />
         <CheckBox v-model="value" label="Panel Open" />
-        <CheckBox v-model="hasDrawer" label="Has Drawer" />
-        <CheckBox v-model="hasAside" label="Has Aside" />
         <CheckBox v-model="hasFullscreen" label="Has Fullscreen" />
         <CheckBox v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
+        <CheckBoxList v-model="simulateValues" label="Simulate" :options="simulateOptions" />
 
-        <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsableValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title">
-            <template v-if="hasDrawer" #drawer>
+        <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsableValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
+            <template v-if="simulateHelp" #helpContent>
+                This is some help text.
+            </template>
+
+            <template v-if="simulateDrawer" #drawer>
                 <div style="text-align: center;">Drawer Content</div>
             </template>
 
-            <template v-if="hasAside" #titleAside>
-                <span class="label label-warning">Warning</span>
-            </template>
-
-            <template v-if="hasAside" #actionAside>
-                <span class="panel-action">
+            <template v-if="simulateHeaderActions" #headerActions>
+                <span class="action">
                     <i class="fa fa-star-o"></i>
+                </span>
+
+                <span class="action">
+                    <i class="fa fa-user"></i>
                 </span>
             </template>
 
-            <div v-for="c in colors" :style="{ background: c, height: '5px' }"></div>
+            <template v-if="simulateSubheaderLeft" #subheaderLeft>
+                <span class="label label-warning">Warning</span>&nbsp;
+                <span class="label label-default">Default</span>
+            </template>
+
+            <template v-if="simulateSubheaderRight" #subheaderRight>
+                <span class="label label-info">Info</span>&nbsp;
+                <span class="label label-default">Default</span>
+            </template>
+
+            <template v-if="simulateFooterActions" #footerActions>
+                <RockButton btnType="primary">Action 1</RockButton>
+                <RockButton btnType="primary">Action 2</RockButton>
+            </template>
+
+            <template v-if="simulateFooterSecondaryActions" #footerSecondaryActions>
+                <RockButton btnType="default"><i class="fa fa-lock"></i></RockButton>
+                <RockButton btnType="default"><i class="fa fa-unlock"></i></RockButton>
+            </template>
+
+            <div v-for="c in colors" :style="{ background: c, height: simulateLargeBody ? '5px' : '1px' }"></div>
         </Panel>
+    </template>
+    <template #result>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates the detailPanel component. */
+const detailPanelGallery = defineComponent({
+    name: "DetailPanelGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        CheckBoxList,
+        DetailPanelTemplate
+    },
+
+    setup() {
+        const simulateValues = ref<string[]>([]);
+
+        const headerActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("headerActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        const labels = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("labels")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "info",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        const headerSecondaryActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("headerSecondaryActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        const footerActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("footerActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        const footerSecondaryActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("footerSecondaryActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        return {
+            colors: Array.apply(0, Array(256)).map((_: unknown, index: number) => `rgb(${index}, ${index}, ${index})`),
+            entityTypeGuid: EntityType.Group,
+            footerActions,
+            footerSecondaryActions,
+            headerActions,
+            headerSecondaryActions,
+            isAuditHidden: ref(false),
+            isBadgesVisible: ref(true),
+            isDeleteVisible: ref(true),
+            isEditVisible: ref(true),
+            isFollowVisible: ref(true),
+            isSecurityHidden: ref(false),
+            labels,
+            simulateValues,
+            simulateOptions: [
+                {
+                    value: "headerActions",
+                    text: "Header Actions"
+                },
+                {
+                    value: "headerSecondaryActions",
+                    text: "Header Secondary Actions"
+                },
+                {
+                    value: "labels",
+                    text: "Labels",
+                },
+                {
+                    value: "footerActions",
+                    text: "Footer Actions"
+                },
+                {
+                    value: "footerSecondaryActions",
+                    text: "Footer Secondary Actions"
+                },
+                {
+                    value: "helpContent",
+                    text: "Help Content"
+                }
+            ],
+            simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent"))
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        DetailPanelTemplate
+    </template>
+    <template #gallery>
+        <CheckBox v-model="isAuditHidden" label="Is Audit Hidden" />
+        <CheckBox v-model="isBadgesVisible" label="Is Badges Visible" />
+        <CheckBox v-model="isDeleteVisible" label="Is Delete Visible" />
+        <CheckBox v-model="isEditVisible" label="Is Edit Visible" />
+        <CheckBox v-model="isFollowVisible" label="Is Follow Visible" />
+        <CheckBox v-model="isSecurityHidden" label="Is Security Hidden" />
+        <CheckBoxList v-model="simulateValues" label="Simulate" :options="simulateOptions" />
+
+        <DetailPanelTemplate name="Sample Group"
+            :entityTypeGuid="entityTypeGuid"
+            entityTypeName="Group"
+            entityKey="1"
+            :headerActions="headerActions"
+            :headerSecondaryActions="headerSecondaryActions"
+            :labels="labels"
+            :footerActions="footerActions"
+            :footerSecondaryActions="footerSecondaryActions"
+            :isAuditHidden="isAuditHidden"
+            :isEditVisible="isEditVisible"
+            :isDeleteVisible="isDeleteVisible"
+            :isFollowVisible="isFollowVisible"
+            :isBadgesVisible="isBadgesVisible"
+            :isSecurityHidden="isSecurityHidden">
+            <template v-if="simulateHelp" #helpContent>
+                This is some help text.
+            </template>
+
+            <div v-for="c in colors" :style="{ background: c, height: '1px' }"></div>
+        </DetailPanelTemplate>
     </template>
     <template #result>
     </template>
@@ -1749,6 +2047,7 @@ const galleryComponents: Record<string, Component> = {
     urlLinkBoxGallery,
     fullscreenGallery,
     panelGallery,
+    detailPanelGallery,
     personPickerGallery,
     fileUploaderGallery,
     imageUploaderGallery,

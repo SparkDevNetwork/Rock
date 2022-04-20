@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref } from "vue";
-import PaneledBlockTemplate from "@Obsidian/Templates/paneledBlockTemplate";
+import BlockTemplate from "@Obsidian/Templates/blockTemplate";
 import Loading from "@Obsidian/Controls/loading";
 import Alert from "@Obsidian/Controls/alert";
 import { useStore } from "@Obsidian/PageState";
@@ -58,8 +58,8 @@ function sortedAttributeValues(attributeValues: PublicAttributeBag[]): PublicAtt
 export default defineComponent({
     name: "Crm.AttributeValues",
     components: {
-        PaneledBlockTemplate,
         Alert,
+        BlockTemplate,
         Loading,
         JavaScriptAnchor,
         RockForm,
@@ -129,22 +129,17 @@ export default defineComponent({
         };
     },
     template: `
-<PaneledBlockTemplate class="panel-persondetails">
-    <template v-slot:title>
-        <i :class="blockIconCssClass"></i>
-        {{ blockTitle }}
+<BlockTemplate :title="blockTitle">
+    <template #headerActions>
+        <JavaScriptAnchor title="Order Attributes" class="action btn-link edit">
+            <i class="fa fa-bars"></i>
+        </JavaScriptAnchor>
+        <JavaScriptAnchor title="Edit Attributes" class="action btn-link edit" @click="goToEditMode">
+            <i class="fa fa-pencil"></i>
+        </JavaScriptAnchor>
     </template>
-    <template v-slot:titleAside>
-        <div class="actions rollover-item pull-right">
-            <JavaScriptAnchor title="Order Attributes" class="btn-link edit">
-                <i class="fa fa-bars"></i>
-            </JavaScriptAnchor>
-            <JavaScriptAnchor title="Edit Attributes" class="btn-link edit" @click="goToEditMode">
-                <i class="fa fa-pencil"></i>
-            </JavaScriptAnchor>
-        </div>
-    </template>
-    <template v-slot:default>
+
+    <template #default>
         <Loading :isLoading="isLoading">
             <Alert v-if="errorMessage" alertType="warning">{{ errorMessage }}</Alert>
             <AttributeValuesContainer v-if="!isEditMode" :attributeValues="attributeValues" :showEmptyValues="false" />
@@ -157,5 +152,5 @@ export default defineComponent({
             </RockForm>
         </Loading>
     </template>
-</PaneledBlockTemplate>`
+</BlockTemplate>`
 });

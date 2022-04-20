@@ -18,6 +18,7 @@
 import { computed, defineComponent, PropType, ref } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import Alert from "@Obsidian/Controls/alert";
+import StaticFormControl from "@Obsidian/Controls/staticFormControl";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 import { List } from "@Obsidian/Utility/linq";
 import { CampusDetailOptionsBag, CampusBag } from "./types";
@@ -43,6 +44,7 @@ export default defineComponent({
     components: {
         Alert,
         AttributeValuesContainer,
+        StaticFormControl,
         ValueDetailList
     },
 
@@ -58,6 +60,20 @@ export default defineComponent({
         // #region Computed Values
 
         const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
+
+        const topValues = computed((): ValueDetailListItem[] => {
+            const valueBuilder = new ValueDetailListItemBuilder();
+
+            if (!props.modelValue) {
+                return valueBuilder.getValues();
+            }
+
+            if (props.modelValue.description) {
+                valueBuilder.addTextValue("Description", props.modelValue.description);
+            }
+
+            return valueBuilder.getValues();
+        });
 
         const leftSideValues = computed((): ValueDetailListItem[] => {
             const valueBuilder = new ValueDetailListItemBuilder();
@@ -143,7 +159,8 @@ export default defineComponent({
             description,
             isSystem,
             leftSideValues,
-            rightSideValues
+            rightSideValues,
+            topValues
         };
     },
 
@@ -153,7 +170,7 @@ export default defineComponent({
         <strong>Note</strong> Because this campus is used by Rock, editing is not enabled.
     </Alert>
 
-    <p v-if="description" class="description">{{ description }}</p>
+    <ValueDetailList :modelValue="topValues" />
 
     <div class="row">
         <div class="col-md-6">

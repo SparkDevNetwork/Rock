@@ -17,7 +17,7 @@
 
 import { defineComponent, PropType, ref, watch } from "vue";
 import { LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import TreeItemPicker from "./treeItemPicker";
 

@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import bus from "@Obsidian/Utility/bus";
-import PaneledBlockTemplate from "@Obsidian/Templates/paneledBlockTemplate";
+import BlockTemplate from "@Obsidian/Templates/blockTemplate";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { defineComponent, inject } from "vue";
@@ -40,7 +40,7 @@ export default defineComponent({
     name: "Example.PersonDetail",
 
     components: {
-        PaneledBlockTemplate,
+        BlockTemplate,
         RockButton,
         TextBox,
         EmailBox,
@@ -146,8 +146,8 @@ export default defineComponent({
 
         blockTitle(): string {
             return this.person ?
-                `: ${this.person.nickName || this.person.firstName} ${this.person.lastName}` :
-                "";
+                `Edit Yourself: ${this.person.nickName || this.person.firstName} ${this.person.lastName}` :
+                "Edit Yourself";
         },
 
         currentPerson(): Person | null {
@@ -187,12 +187,8 @@ export default defineComponent({
 
     template: `
 <PrimaryBlock :hideSecondaryBlocks="isEditMode">
-    <PaneledBlockTemplate>
-        <template v-slot:title>
-            <i class="fa fa-flask"></i>
-            Edit Yourself{{blockTitle}}
-        </template>
-        <template v-slot:default>
+    <BlockTemplate :title="blockTitle">
+        <template #default>
             <Loading :isLoading="isLoading">
                 <p v-if="!person">
                     There is no person loaded.
@@ -248,6 +244,6 @@ export default defineComponent({
                 </template>
             </Loading>
         </template>
-    </PaneledBlockTemplate>
+    </BlockTemplate>
 </PrimaryBlock>`
 });

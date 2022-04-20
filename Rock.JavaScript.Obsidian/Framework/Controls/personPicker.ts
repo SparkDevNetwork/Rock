@@ -22,6 +22,7 @@ import Panel from "./panel";
 import TextBox from "./textBox";
 import { nextTick } from "vue";
 import { doApiCall } from "@Obsidian/Utility/http";
+import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 const enum AgeClassification {
     Unknown = 0,
@@ -75,12 +76,6 @@ type PersonSearchPhoneNumber = {
     number?: string | null;
 
     isUnlisted?: boolean;
-};
-
-const sleep = (ms: number): Promise<void> => {
-    return new Promise<void>(resolve => {
-        setTimeout(resolve, ms);
-    });
 };
 
 export default defineComponent({
@@ -418,8 +413,8 @@ export default defineComponent({
                 </a>
 
                 <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search">
-                    <template #actionAside>
-                        <span class="panel-action" @click.prevent.stop="onCancel">
+                    <template #headerActions>
+                        <span class="action" @click.prevent.stop="onCancel">
                             <i class="fa fa-times"></i>
                         </span>
                     </template>

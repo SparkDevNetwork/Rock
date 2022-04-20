@@ -20,7 +20,7 @@ import DropDownList from "./dropDownList";
 import TextBox from "./textBox";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { areEqual } from "@Obsidian/Utility/guid";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";

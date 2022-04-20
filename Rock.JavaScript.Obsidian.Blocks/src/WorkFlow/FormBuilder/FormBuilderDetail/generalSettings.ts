@@ -25,7 +25,7 @@ import InlineSwitch from "@Obsidian/Controls/inlineSwitch";
 import TextBox from "@Obsidian/Controls/textBox";
 import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse";
 import { EntityType } from "@Obsidian/SystemGuids";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import EmailSource from "../Shared/emailSource";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
 import { FormGeneral } from "../Shared/types";

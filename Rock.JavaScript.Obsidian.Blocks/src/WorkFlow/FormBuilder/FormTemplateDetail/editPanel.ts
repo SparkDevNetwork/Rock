@@ -22,7 +22,7 @@ import AuditDetail from "@Obsidian/Controls/auditDetail";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import CompletionSettings from "../Shared/completionSettings";
 import ConfirmationEmail from "../Shared/confirmationEmail";

@@ -151,12 +151,12 @@ export default defineComponent({
     Unable to view details of this template.
 </Alert>
 
-<Panel v-else type="block" :title="blockTitle" titleIconClass="fa fa-align-left">
-    <template v-if="isViewMode" #titleAside>
+<Panel v-else type="block" :title="blockTitle" titleIconCssClass="fa fa-align-left">
+    <template v-if="!isEditMode" #headerActions>
         <span v-if="isInactive" class="label label-danger">Inactive</span>
     </template>
 
-    <template v-if="isViewMode" #drawer>
+    <template v-if="!isEditMode" #drawer>
         <AuditDetail v-model="templateAuditDetail" />
     </template>
 
