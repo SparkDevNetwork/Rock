@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, ref } from "vue";
-import BlockTemplate from "@Obsidian/Templates/blockTemplate";
+import Block from "@Obsidian/Templates/block";
 import Loading from "@Obsidian/Controls/loading";
 import Alert from "@Obsidian/Controls/alert";
 import { useStore } from "@Obsidian/PageState";
@@ -59,7 +59,7 @@ export default defineComponent({
     name: "Crm.AttributeValues",
     components: {
         Alert,
-        BlockTemplate,
+        Block,
         Loading,
         JavaScriptAnchor,
         RockForm,
@@ -129,7 +129,7 @@ export default defineComponent({
         };
     },
     template: `
-<BlockTemplate :title="blockTitle">
+<Block :title="blockTitle">
     <template #headerActions>
         <JavaScriptAnchor title="Order Attributes" class="action btn-link edit">
             <i class="fa fa-bars"></i>
@@ -152,5 +152,5 @@ export default defineComponent({
             </RockForm>
         </Loading>
     </template>
-</BlockTemplate>`
+</Block>`
 });

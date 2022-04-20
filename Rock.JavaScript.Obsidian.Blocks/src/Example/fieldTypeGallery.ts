@@ -21,7 +21,7 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import PanelWidget from "@Obsidian/Controls/panelWidget";
 import TextBox from "@Obsidian/Controls/textBox";
 import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids";
-import BlockTemplate from "@Obsidian/Templates/blockTemplate";
+import Block from "@Obsidian/Templates/block";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -346,7 +346,7 @@ export default defineComponent({
     name: "Example.FieldTypeGallery",
 
     components: {
-        BlockTemplate,
+        Block,
         ...galleryComponents
     },
 
@@ -356,10 +356,10 @@ export default defineComponent({
     },
 
     template: `
-<BlockTemplate title="Obsidian Field Type Gallery">
+<Block title="Obsidian Field Type Gallery">
     <template #default>
         ${galleryTemplate}
     </template>
-</BlockTemplate>
+</Block>
 `
 });

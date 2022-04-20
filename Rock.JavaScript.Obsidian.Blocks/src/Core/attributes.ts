@@ -23,7 +23,7 @@ import RockField from "@Obsidian/Controls/rockField";
 import RockForm from "@Obsidian/Controls/rockForm";
 import Alert from "@Obsidian/Controls/alert";
 import DropDownList from "@Obsidian/Controls/dropDownList";
-import BlockTemplate from "@Obsidian/Templates/blockTemplate";
+import Block from "@Obsidian/Templates/block";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { FieldType } from "@Obsidian/SystemGuids";
@@ -86,7 +86,7 @@ export default defineComponent({
     components: {
         Alert,
         AttributeEditor,
-        BlockTemplate,
+        Block,
         DropDownList,
         Modal,
         RockButton,
@@ -417,7 +417,7 @@ export default defineComponent({
     This is an experimental block and should not be used in production.
 </Alert>
 
-<BlockTemplate title="Attribute List">
+<Block title="Attribute List">
     <template #headerActions>
         <div v-if="showEntityTypePicker" class="form-inline panel-labels">
             <DropDownList v-model="entityTypeGuid"
@@ -476,7 +476,7 @@ export default defineComponent({
             Please select an entity to display attributes for.
         </Alert>
     </template>
-</BlockTemplate>
+</Block>
 
 <Modal v-model="showEditAttributeValueModal" :title="editAttributeValueModalTitle">
     <RockForm v-model:submit="submitEditAttributeValue" @submit="saveEditAttributeValue">

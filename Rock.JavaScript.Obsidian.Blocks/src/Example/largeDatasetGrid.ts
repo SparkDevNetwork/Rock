@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import BlockTemplate from "@Obsidian/Templates/blockTemplate";
+import Block from "@Obsidian/Templates/block";
 import { defineComponent } from "vue";
 import GridRow from "@Obsidian/Controls/gridRow";
 import GridColumn from "@Obsidian/Controls/gridColumn";
@@ -26,7 +26,7 @@ import { RowContext } from "@Obsidian/Controls/grid";
 export default defineComponent({
     name: "Example.LargeDatasetGrid",
     components: {
-        BlockTemplate,
+        Block,
         BlockActionSourcedGrid,
         GridColumn,
         GridRow,
@@ -46,7 +46,7 @@ export default defineComponent({
         }
     },
     template: `
-<BlockTemplate title="Large Dataset Grid">
+<Block title="Large Dataset Grid">
     <template #default>
         <div class="grid grid-panel">
             <BlockActionSourcedGrid blockActionName="GetAttributeValues" #default="rowContext" rowItemText="Attribute Values" rowIdKey="Id">
@@ -67,5 +67,5 @@ export default defineComponent({
             </template>
         </Dialog>
     </template>
-</BlockTemplate>`
+</Block>`
 });

@@ -17,7 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import bus from "@Obsidian/Utility/bus";
-import BlockTemplate from "@Obsidian/Templates/blockTemplate";
+import Block from "@Obsidian/Templates/block";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { defineComponent, inject } from "vue";
@@ -40,7 +40,7 @@ export default defineComponent({
     name: "Example.PersonDetail",
 
     components: {
-        BlockTemplate,
+        Block,
         RockButton,
         TextBox,
         EmailBox,
@@ -187,7 +187,7 @@ export default defineComponent({
 
     template: `
 <PrimaryBlock :hideSecondaryBlocks="isEditMode">
-    <BlockTemplate :title="blockTitle">
+    <Block :title="blockTitle">
         <template #default>
             <Loading :isLoading="isLoading">
                 <p v-if="!person">
@@ -244,6 +244,6 @@ export default defineComponent({
                 </template>
             </Loading>
         </template>
-    </BlockTemplate>
+    </Block>
 </PrimaryBlock>`
 });

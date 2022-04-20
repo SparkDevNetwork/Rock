@@ -19,7 +19,7 @@ import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/
 import { defineComponent, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert";
 import RockButton from "@Obsidian/Controls/rockButton";
-import BlockTemplate from "@Obsidian/Templates/blockTemplate";
+import Block from "@Obsidian/Templates/block";
 
 /**
  * Stark Detail
@@ -38,7 +38,7 @@ export default defineComponent({
 
     /** These are the child components that are used by this block component */
     components: {
-        BlockTemplate,
+        Block,
         Alert,
         RockButton
     },
@@ -101,7 +101,7 @@ export default defineComponent({
     /** The template is the markup of the component. Any custom components used within this template,
      *  like <Alert> and <PaneledBlockTemplate> must be included in the "components" option above. */
     template: `
-<BlockTemplate title="Blank Detail Block">
+<Block title="Blank Detail Block">
     <template #headerActions>
         <span class="action label label-info">Vue</span>
     </template>
@@ -149,5 +149,5 @@ export default defineComponent({
             </div>
         </div>
     </template>
-</BlockTemplate>`
+</Block>`
 });

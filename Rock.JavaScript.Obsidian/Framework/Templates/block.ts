@@ -19,7 +19,7 @@ import Panel from "@Obsidian/Controls/panel";
 
 /** Provides a generic Rock Block structure */
 export default defineComponent({
-    name: "BlockTemplate",
+    name: "Block",
 
     components: {
         Panel

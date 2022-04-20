@@ -158,7 +158,7 @@
     <TypeScriptCompile Include="Framework\FieldTypes\urlLinkFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\utils.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonTypeOptions.ts" />
-    <TypeScriptCompile Include="Framework\Templates\detailPanelTemplate.ts" />
+    <TypeScriptCompile Include="Framework\Templates\detailBlock.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\detailPanelMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\panelAction.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\valueDetailListItem.d.ts" />
@@ -322,7 +322,7 @@
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\systemSetting.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\workflowType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\index.d.ts" />
-    <TypeScriptCompile Include="Framework\Templates\blockTemplate.ts" />
+    <TypeScriptCompile Include="Framework\Templates\block.ts" />
     <TypeScriptCompile Include="Framework\Types\index.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\component.ts" />
     <TypeScriptCompile Include="Framework\Utility\dialogs.ts" />

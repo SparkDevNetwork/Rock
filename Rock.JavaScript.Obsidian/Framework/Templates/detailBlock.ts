@@ -32,7 +32,7 @@ declare const Rock: any;
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
-    name: "DetailPanelTemplate",
+    name: "DetailBlock",
 
     components: {
         Panel,

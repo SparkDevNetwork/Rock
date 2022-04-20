@@ -55,7 +55,7 @@ import CheckBoxList from "@Obsidian/Controls/checkBoxList";
 import Rating from "@Obsidian/Controls/rating";
 import Fullscreen from "@Obsidian/Controls/fullscreen";
 import Panel from "@Obsidian/Controls/panel";
-import DetailPanelTemplate from "@Obsidian/Templates/detailPanelTemplate";
+import DetailBlock from "@Obsidian/Templates/detailBlock";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import FileUploader from "@Obsidian/Controls/fileUploader";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
@@ -1663,13 +1663,13 @@ const panelGallery = defineComponent({
 });
 
 /** Demonstrates the detailPanel component. */
-const detailPanelGallery = defineComponent({
-    name: "DetailPanelGallery",
+const detailBlockGallery = defineComponent({
+    name: "DetailBlockGallery",
     components: {
         GalleryAndResult,
         CheckBox,
         CheckBoxList,
-        DetailPanelTemplate
+        DetailBlock
     },
 
     setup() {
@@ -1827,7 +1827,7 @@ const detailPanelGallery = defineComponent({
     template: `
 <GalleryAndResult>
     <template #header>
-        DetailPanelTemplate
+        DetailBlock
     </template>
     <template #gallery>
         <CheckBox v-model="isAuditHidden" label="Is Audit Hidden" />
@@ -1838,7 +1838,7 @@ const detailPanelGallery = defineComponent({
         <CheckBox v-model="isSecurityHidden" label="Is Security Hidden" />
         <CheckBoxList v-model="simulateValues" label="Simulate" :options="simulateOptions" />
 
-        <DetailPanelTemplate name="Sample Group"
+        <DetailBlock name="Sample Group"
             :entityTypeGuid="entityTypeGuid"
             entityTypeName="Group"
             entityKey="1"
@@ -1858,7 +1858,7 @@ const detailPanelGallery = defineComponent({
             </template>
 
             <div v-for="c in colors" :style="{ background: c, height: '1px' }"></div>
-        </DetailPanelTemplate>
+        </DetailBlock>
     </template>
     <template #result>
     </template>
@@ -2047,7 +2047,7 @@ const galleryComponents: Record<string, Component> = {
     urlLinkBoxGallery,
     fullscreenGallery,
     panelGallery,
-    detailPanelGallery,
+    detailBlockGallery,
     personPickerGallery,
     fileUploaderGallery,
     imageUploaderGallery,

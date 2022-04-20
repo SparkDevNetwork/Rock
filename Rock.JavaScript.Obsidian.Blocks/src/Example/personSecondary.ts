@@ -15,7 +15,7 @@
 // </copyright>
 //
 import bus from "@Obsidian/Utility/bus";
-import BlockTemplate from "@Obsidian/Templates/blockTemplate";
+import Block from "@Obsidian/Templates/block";
 import SecondaryBlock from "@Obsidian/Controls/secondaryBlock";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -28,7 +28,7 @@ const store = useStore();
 export default defineComponent({
     name: "Example.PersonSecondary",
     components: {
-        BlockTemplate,
+        Block,
         SecondaryBlock,
         TextBox,
         RockButton
@@ -71,7 +71,7 @@ export default defineComponent({
     },
     template:
 `<SecondaryBlock>
-    <BlockTemplate title="Secondary Block">
+    <Block title="Secondary Block">
         <template #default>
             <div class="row">
                 <div class="col-sm-6">
@@ -94,6 +94,6 @@ export default defineComponent({
                 </div>
             </div>
         </template>
-    </BlockTemplate>
+    </Block>
 </SecondaryBlock>`
 });

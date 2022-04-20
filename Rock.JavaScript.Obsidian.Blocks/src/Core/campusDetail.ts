@@ -17,10 +17,9 @@
 
 import { computed, defineComponent, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert";
-import DetailPanelTemplate from "@Obsidian/Templates/detailPanelTemplate";
+import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { emptyGuid } from "@Obsidian/Utility/guid";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import EditPanel from "./CampusDetail/editPanel";
 import { CampusDetailOptionsBag, CampusBag, DetailBlockBox, NavigationUrlKey } from "./CampusDetail/types";
 import ViewPanel from "./CampusDetail/viewPanel";
@@ -33,7 +32,7 @@ export default defineComponent({
     components: {
         Alert,
         EditPanel,
-        DetailPanelTemplate,
+        DetailBlock,
         ViewPanel
     },
 
@@ -256,7 +255,7 @@ export default defineComponent({
     {{ errorMessage }}
 </Alert>
 
-<DetailPanelTemplate v-if="!blockError"
+<DetailBlock v-if="!blockError"
     v-model:mode="panelMode"
     :name="panelName"
     :labels="panelLabels"
@@ -269,6 +268,6 @@ export default defineComponent({
     @save="onSave">
     <EditPanel v-if="isEditMode" v-model="campusEditBag" :options="options" />
     <ViewPanel v-else :modelValue="campusViewBag" :options="options" />
-</DetailPanelTemplate>
+</DetailBlock>
 `
 });
