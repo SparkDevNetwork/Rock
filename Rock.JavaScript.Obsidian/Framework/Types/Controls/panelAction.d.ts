@@ -25,17 +25,14 @@ export type PanelActionCallback = (event: Event) => void | Promise<void>;
 export type PanelAction = {
     /**
      * The title of the action, this should be a very short (one or two words)
-     * description of the action that will be performed, such as "Delete". It
-     * must be included even if the action doesn't currently show this value since
-     * the display styles may change in the future.
+     * description of the action that will be performed, such as "Delete".
      */
-    title: string;
+    title?: string;
 
     /**
-     * The CSS class for the icon used when displaying this action. It must be
-     * included even when the current display style does not include the icon.
+     * The CSS class for the icon used when displaying this action.
      */
-    iconCssClass: string;
+    iconCssClass?: string;
 
     /** The type of action for styling. */
     type: PanelActionType;

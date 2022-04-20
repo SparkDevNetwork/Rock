@@ -155,13 +155,18 @@ export default defineComponent({
         const isPanelOpen = computed((): boolean => !props.hasCollapse || internalValue.value !== false || isFullscreen.value);
 
         const getHeaderSecondaryActionIconClass = (action: PanelAction): string => {
-            let iconClass = action.iconCssClass;
+            if (action.iconCssClass) {
+                let iconClass = action.iconCssClass;
 
-            if (action.type !== "default" && action.type !== "link") {
-                iconClass += ` text-${action.type}`;
+                if (action.type !== "default" && action.type !== "link") {
+                    iconClass += ` text-${action.type}`;
+                }
+
+                return iconClass;
             }
-
-            return iconClass;
+            else {
+                return "";
+            }
         };
 
         const onIgnoreClick = (): void => { /* Intentionally blank to ignore click. */ };

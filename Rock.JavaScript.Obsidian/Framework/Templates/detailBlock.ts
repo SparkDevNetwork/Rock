@@ -222,7 +222,13 @@ export default defineComponent({
             return actions;
         });
 
-        const isEditMode = computed((): boolean => internalMode.value === DetailPanelMode.Edit || internalMode.value === DetailPanelMode.Add);
+        const isEditMode = computed((): boolean => {
+            return internalMode.value === DetailPanelMode.Edit || internalMode.value === DetailPanelMode.Add;
+        });
+
+        const hasLabels = computed((): boolean => {
+            return !!props.labels && props.labels.length > 0;
+        });
 
         // #endregion
 
@@ -249,6 +255,10 @@ export default defineComponent({
             }
 
             return cssClass;
+        };
+
+        const getActionIconCssClass = (action: PanelAction): string => {
+            return action.iconCssClass || "fa fa-square";
         };
 
         // #endregion
@@ -349,10 +359,12 @@ export default defineComponent({
         });
 
         return {
+            hasLabels,
             internalFooterSecondaryActions,
             internalHeaderSecondaryActions,
             panelTitle,
             panelTitleIconCssClass,
+            getActionIconCssClass,
             getClassForIconAction,
             getClassForLabelAction,
             isEditMode,
@@ -375,16 +387,15 @@ export default defineComponent({
 
     <template #headerActions>
         <span v-for="action in headerActions" :class="getClassForIconAction(action)" :title="action.title" @click="onActionClick(action, $event)">
-            <i :class="action.iconCssClass"></i>
+            <i :class="getActionIconCssClass(action)"></i>
         </span>
     </template>
 
-    <template v-if="!isEditMode" #subheaderLeft>
+    <template v-if="!isEditMode && hasLabels" #subheaderLeft>
         <div class="label-group">
         <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
-            <i :class="action.iconCssClass"></i>
-            &nbsp;
-            {{ action.title }}
+            <template v-if="action.title">{{ action.title }}</template>
+            <i v-else :class="action.iconCssClass"></i>
         </span>
         </div>
     </template>
@@ -409,13 +420,14 @@ export default defineComponent({
         </template>
 
         <RockButton v-for="action in footerActions" :btnType="action.type" @click="onActionClick(action, $event)">
-            {{ action.title }}
+            <template v-if="action.title">{{ action.title }}</template>
+            <i v-else :class="action.iconCssClass"></i>
         </RockButton>
     </template>
 
     <template #footerSecondaryActions>
         <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)">
-            <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
+            <i :class="getActionIconCssClass(action)"></i>
         </RockButton>
     </template>
 
