@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 
-import { ref, Ref, watch, WatchOptions } from "vue";
+import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ref, Ref, watch, WatchOptions } from "vue";
 import { deepEqual } from "./util";
+import { useSuspense } from "./suspense";
+import { newGuid } from "./guid";
 
 type Prop = { [key: string]: unknown };
 type PropKey<T extends Prop> = Extract<keyof T, string>;
@@ -57,4 +59,25 @@ export function updateRefValue<T>(target: Ref<T>, value: T): boolean {
     target.value = value;
 
     return true;
+}
+
+/**
+ * Defines a component that will be loaded asynchronously. This contains logic
+ * to properly work with the RockSuspense control.
+ * 
+ * @param source The function to call to load the component.
+ *
+ * @retunrs The component that was loaded.
+ */
+export function defineAsyncComponent<T extends Component = { new(): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T {
+    return vueDefineAsyncComponent(async () => {
+        const suspense = useSuspense();
+        const operationKey = newGuid();
+
+        suspense?.startAsyncOperation(operationKey);
+        const component = await source();
+        suspense?.completeAsyncOperation(operationKey);
+
+        return component;
+    });
 }

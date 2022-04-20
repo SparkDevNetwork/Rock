@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { App, Component, createApp, defineComponent, h, markRaw, VNode } from "vue";
+import { App, Component, createApp, defineComponent, h, markRaw, onMounted, VNode } from "vue";
 import RockBlock from "./rockBlock.partial";
 import { useStore } from "@Obsidian/PageState";
 import "@Obsidian/ValidationRules";
@@ -23,6 +23,7 @@ import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
 import { BlockConfig } from "@Obsidian/Utility/block";
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
 
 type DebugTimingConfig = {
     elementId: string;
@@ -75,7 +76,57 @@ export async function initializeBlock(config: BlockConfig): Promise<App> {
         components: {
             RockBlock
         },
-        data() {
+        setup() {
+            let isLoaded = false;
+
+            // Create a suspense provider so we can monitor any asynchronous load
+            // operations that should delay the display of the page.
+            const suspense = new BasicSuspenseProvider(undefined);
+            provideSuspense(suspense);
+
+            /** Called to note on the body element that this block is loading. */
+            const startLoading = (): void => {
+                let pendingCount = parseInt(document.body.getAttribute("data-obsidian-pending-blocks") ?? "0");
+                pendingCount++;
+                document.body.setAttribute("data-obsidian-pending-blocks", pendingCount.toString());
+            };
+
+            /** Called to note when this block has finished loading. */
+            const finishedLoading = (): void => {
+                if (isLoaded) {
+                    return;
+                }
+
+                isLoaded = true;
+
+                // Get the number of pending blocks. If this is the last one
+                // then signal the page that all blocks are loaded and ready.
+                let pendingCount = parseInt(document.body.getAttribute("data-obsidian-pending-blocks") ?? "0");
+                if (pendingCount > 0) {
+                    pendingCount--;
+                    document.body.setAttribute("data-obsidian-pending-blocks", pendingCount.toString());
+                    if (pendingCount === 0) {
+                        document.body.classList.remove("obsidian-loading");
+                    }
+                }
+            };
+
+            // Start loading and wait for up to 5 seconds for the block to finish.
+            startLoading();
+            setTimeout(finishedLoading, 5000);
+
+            // Called when all our child components have initialized.
+            onMounted(() => {
+                if (!suspense.hasPendingOperations()) {
+                    finishedLoading();
+                }
+                else {
+                    suspense.addFinishedHandler(() => {
+                        finishedLoading();
+                    });
+                }
+            });
+
             return {
                 config: config,
                 blockComponent: blockComponent ? markRaw(blockComponent) : null,

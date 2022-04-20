@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { Component, defineAsyncComponent } from "vue";
+import { Component } from "vue";
+import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

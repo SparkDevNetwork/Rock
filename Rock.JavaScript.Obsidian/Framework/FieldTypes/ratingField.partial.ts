@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { Component, defineAsyncComponent } from "vue";
+import { Component, } from "vue";
+import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Types/Reporting/comparisonType";
 import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";

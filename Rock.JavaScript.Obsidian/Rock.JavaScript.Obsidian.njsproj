@@ -101,6 +101,7 @@
     <TypeScriptCompile Include="Framework\Controls\header.ts" />
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
     <TypeScriptCompile Include="Framework\Controls\addressControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeEditor.ts" />
@@ -270,6 +271,7 @@
     <TypeScriptCompile Include="Framework\Types\Reporting\comparisonType.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
     <TypeScriptCompile Include="Framework\Utility\promiseUtils.ts" />
+    <TypeScriptCompile Include="Framework\Utility\suspense.ts" />
     <TypeScriptCompile Include="Framework\ValidationRules\index.ts" />
     <TypeScriptCompile Include="Framework\Utility\booleanUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\slidingDateRange.ts" />

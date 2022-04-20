@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { Component, defineAsyncComponent } from "vue";
+import { Component } from "vue";
+import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";

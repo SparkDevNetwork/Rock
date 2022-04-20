@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { Component, defineAsyncComponent } from "vue";
+import { Component } from "vue";
+import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { List } from "@Obsidian/Utility/linq";
 import { FieldTypeBase } from "./fieldType";

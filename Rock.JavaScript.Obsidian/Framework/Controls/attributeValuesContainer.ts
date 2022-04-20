@@ -17,6 +17,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import RockField from "./rockField";
+import RockSuspense from "./rockSuspense";
 import LoadingIndicator from "./loadingIndicator";
 import { List } from "@Obsidian/Utility/linq";
 
@@ -24,7 +25,8 @@ export default defineComponent({
     name: "AttributeValuesContainer",
     components: {
         RockField,
-        LoadingIndicator
+        LoadingIndicator,
+        RockSuspense
     },
     props: {
         modelValue: {
@@ -76,7 +78,7 @@ export default defineComponent({
     },
 
     template: `
-<Suspense>
+<RockSuspense>
     <template #default>
         <div v-for="a in validAttributes">
             <RockField
@@ -88,9 +90,9 @@ export default defineComponent({
                 :showAbbreviatedName="showAbbreviatedName" />
         </div>
     </template>
-    <template #fallback>
+    <template #loading>
         <LoadingIndicator />
     </template>
-</Suspense>
+</RockSuspense>
 `
 });

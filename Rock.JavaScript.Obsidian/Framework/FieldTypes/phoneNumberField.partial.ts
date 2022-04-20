@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { Component, defineAsyncComponent } from "vue";
+import { Component } from "vue";
+import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { formatPhoneNumber } from "@Obsidian/Utility/stringUtils";
 import { FieldTypeBase } from "./fieldType";
 
