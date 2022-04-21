@@ -220,7 +220,7 @@ function doPostBack() {{
             _btnSelectAll = new HyperLink
             {
                 ID = this.ID + "_btnSelectAll",
-                CssClass = "btn btn-link btn-xs js-select-all pl-1 pr-1",
+                CssClass = "btn btn-link btn-xs js-select-all",
                 Text = "Select All"
             };
 
@@ -232,7 +232,7 @@ function doPostBack() {{
                 ID = this.ID + "_cbShowInactiveAccounts",
                 Text = "Show Inactive",
                 CssClass = "picker-show-inactive",
-                ContainerCssClass = "pull-right js-picker-show-inactive",
+                ContainerCssClass = "js-picker-show-inactive",
                 SelectedIconCssClass = "fa fa-check-square-o",
                 UnSelectedIconCssClass = "fa fa-square-o",
                 CausesValidation = false,
@@ -277,12 +277,6 @@ function doPostBack() {{
         /// <param name="writer">The writer.</param>
         public override void RenderCustomPickerActions( HtmlTextWriter writer )
         {
-            writer.Write( @"<style>
-                               .picker-btn {
-                                   margin-right: 6px !important;
-                                }       
-                               </style>" );
-
             if ( EnhanceForLongLists && _hfSearchValue != null )
             {
                 _hfSearchValue.RenderControl( writer );
@@ -300,13 +294,18 @@ function doPostBack() {{
                         
             if ( this.AllowMultiSelect )
             {
-                writer.Write( "<a class='btn btn-xs btn-link picker-preview pr-0' id='btnPreviewSelection_{0}'>Preview Selection</a>", this.ClientID );
-                writer.Write( "<a class='btn btn-xs btn-link picker-treeview pr-0' id='btnTreeView_{0}'>Tree View</a>", this.ClientID );
                 _btnSelectAll.RenderControl( writer );
+
+                writer.Write( "<a class='btn btn-xs btn-link picker-cancel mr-auto' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
+
+                writer.Write( "<a class='btn btn-link btn-xs picker-preview' id='btnPreviewSelection_{0}' title='Preview'><i class='fa fa-list'></i></a>", this.ClientID );
+                writer.Write( "<a class='btn btn-link btn-xs picker-treeview' id='btnTreeView_{0}' title='Tree View'><i class='fa fa-sitemap'></i></a>", this.ClientID );
+            }
+            else
+            {
+                writer.Write( "<a class='btn btn-xs btn-link picker-cancel mr-auto' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
             }
                       
-            //base.RenderCustomPickerActions( writer );
-            writer.Write( "<a class='btn btn-xs btn-link picker-cancel p-0' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
 
             if ( !DisplayActiveOnly )
             {
@@ -345,7 +344,7 @@ function doPostBack() {{
             }
 
             base.IconCssClass = "fa fa-building-o";
-            base.PickerMenuCssClasses = "picker-menu picker-menu-w500 dropdown-menu";
+            base.PickerMenuCssClasses = "picker-menu dropdown-menu picker-menu-w500 styled-scroll";
             CustomDataItems = "[{\"itemKey\":\"glCode\",\"itemValueKey\":\"GlCode\"},{\"itemKey\":\"path\",\"itemValueKey\":\"Path\"}]";
 
             // NOTE: The base ItemPicker.RenderBaseControl will do additional CSS class additions.
