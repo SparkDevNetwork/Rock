@@ -457,6 +457,16 @@ namespace Rock.Model
         public bool EnablePageViewGeoTracking { get; set; }
 
         /// <summary>
+        /// Gets or sets whether predictable Ids are disabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if predictable Ids are disabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        [DefaultValue( false )]
+        public bool DisablePredictableIds { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration mobile file path.
         /// </summary>
         /// <value>

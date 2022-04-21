@@ -145,6 +145,10 @@
     <Compile Include="Migrations\202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.Designer.cs">
       <DependentUpon>202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202204212116590_AddSiteDisablePredictableIds.cs" />
+    <Compile Include="Migrations\202204212116590_AddSiteDisablePredictableIds.Designer.cs">
+      <DependentUpon>202204212116590_AddSiteDisablePredictableIds.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1145,6 +1149,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.resx">
       <DependentUpon>202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202204212116590_AddSiteDisablePredictableIds.resx">
+      <DependentUpon>202204212116590_AddSiteDisablePredictableIds.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
