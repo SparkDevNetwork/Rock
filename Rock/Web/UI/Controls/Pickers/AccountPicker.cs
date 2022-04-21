@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public AccountPicker() : base()
         {
-
+            //Assembly.GetCallingAssembly()
         }
         #endregion Constructors
 
@@ -79,26 +79,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [show active check box].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show active check box]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowActiveCheckBox
-        {
-            get
-            {
-                return ViewState["ShowActiveCheckBox"] as bool? ?? false;
-            }
-
-            set
-            {
-                ViewState["ShowActiveCheckBox"] = value;
-            }
-        }
-
-        /// <summary>
+           /// <summary>
         /// Gets or sets a value indicating whether [display public name].
         /// </summary>
         /// <value>
@@ -240,7 +221,7 @@ function doPostBack() {{
             _btnSelectAll = new HyperLink
             {
                 ID = this.ID + "_btnSelectAll",
-                CssClass = "btn btn-default btn-xs js-select-all pull-right margin-l-sm",
+                CssClass = "btn btn-link btn-xs js-select-all pl-1 pr-1",
                 Text = "Select All"
             };
 
@@ -297,6 +278,12 @@ function doPostBack() {{
         /// <param name="writer">The writer.</param>
         public override void RenderCustomPickerActions( HtmlTextWriter writer )
         {
+            writer.Write( @"<style>
+                               .picker-btn {
+                                   margin-right: 6px !important;
+                                }       
+                               </style>" );
+
             if ( EnhanceForLongLists && _hfSearchValue != null )
             {
                 _hfSearchValue.RenderControl( writer );
@@ -311,23 +298,24 @@ function doPostBack() {{
             {
                 _hfViewMode.RenderControl( writer );
             }
-
-            base.RenderCustomPickerActions( writer );
-
+                        
             if ( this.AllowMultiSelect )
             {
-                writer.Write( "<a class='btn btn-xs btn-link picker-preview' id='btnPreviewSelection_{0}'>Preview Selection</a>", this.ClientID );
-                writer.Write( "<a class='btn btn-xs btn-link picker-treeview' id='btnTreeView_{0}'>Tree View</a>", this.ClientID );
+                writer.Write( "<a class='btn btn-xs btn-link picker-preview pr-0' id='btnPreviewSelection_{0}'>Preview Selection</a>", this.ClientID );
+                writer.Write( "<a class='btn btn-xs btn-link picker-treeview pr-0' id='btnTreeView_{0}'>Tree View</a>", this.ClientID );
                 _btnSelectAll.RenderControl( writer );
             }
+                      
+            //base.RenderCustomPickerActions( writer );
+            writer.Write( "<a class='btn btn-xs btn-link picker-cancel p-0' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
 
-            if ( ShowActiveCheckBox )
+            if ( !DisplayActiveOnly )
             {
                 _cbShowInactiveAccounts.RenderControl( writer );
             }
             else
             {
-                Page.Controls.Remove( _cbShowInactiveAccounts );
+                this.Controls.Remove( _cbShowInactiveAccounts );
             }
         }
 
@@ -539,7 +527,7 @@ function doPostBack() {{
         {
             var activeOnly = this.DisplayActiveOnly;
 
-            if ( !this.DisplayActiveOnly && this.ShowActiveCheckBox )
+            if ( !this.DisplayActiveOnly && _cbShowInactiveAccounts!=null )
             {
                 activeOnly = !_cbShowInactiveAccounts.Checked;
             }

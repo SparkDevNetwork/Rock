@@ -22,26 +22,24 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddNewRoutesForContentPage : Rock.Migrations.RockMigration
+    public partial class AddedAdditionalRoutesForContentPage : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddPageRoute( "117B547B-9D71-4EE9-8047-176676F5DC8C", "web/content/{CategoryGuid}/{ContentChannelGuid}", "6EAA6912-A21B-485A-B4B3-AFD95058A7C0" );
-            RockMigrationHelper.AddPageRoute( "117B547B-9D71-4EE9-8047-176676F5DC8C", "web/content/category/{CategoryGuid}", "51BA3717-E15E-471A-83A6-A2FEC2D23898" );
+            RockMigrationHelper.AddPageRoute( "117B547B-9D71-4EE9-8047-176676F5DC8C", "web/content/category", "BB43E272-C69B-4D75-824A-B6C86A1C9D74" );
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            Sql(@"
-            DELETE FROM PageRoute WHERE Route = 'web/content/{CategoryGuid}/{ContentChannelGuid}'
-            DELETE FROM PageRoute WHERE Route = 'web/content/category/{CategoryGuid}'
-            ");
+            Sql( @"
+                DELETE FROM PageRoute WHERE Route = 'web/content/category'
+            " );
         }
     }
 }

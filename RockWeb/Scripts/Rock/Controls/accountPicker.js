@@ -30,6 +30,7 @@
                         expandedIds: this.options.expandedIds,
                         expandedCategoryIds: this.options.expandedCategoryIds,
                         showSelectChildren: this.options.showSelectChildren,
+                        loadingHtml: null, //prevent a shaking effect when expanding lazy loaded nodes
                         id: this.options.startingId
                     },
 
@@ -223,6 +224,7 @@
                 $control.find('.picker-preview').on('click', function () {
                     $control.find('.picker-preview').hide();
                     $control.find('.picker-treeview').show();
+                    $control.find('.js-select-all').hide();
 
                     self.setViewMode('preview');
                     self.togglePickerElements();
@@ -276,6 +278,8 @@
                             var newSelected = rockTree.selectedNodes.filter(function (fNode) {
                                 return fNode.id !== nodeId;
                             });
+
+                            rockTree.selectedNodes = newSelected;
 
                             // After removing a selection we need to update the hf value
                             var newIds = newSelected.map(function (n) { return n.id });
@@ -513,16 +517,16 @@
                 var $control = $('#' + this.options.controlId);
 
                 if (self.isMenuActive()) {
-                    $control.closest('.picker-label').click();
+                    $control.find('.picker-label').click();
                 }
                 self.setActiveMenu(false);
             },
             setActiveMenu: function (value) {
                 var $control = $('#' + this.options.controlId);
-                if (!value) {
+                if (value === undefined || value===null) {
                     value = true;
                 }
-                $control.closest('.js-picker-showactive-value').val(value.toString());
+                $control.find('.js-picker-showactive-value').val(value.toString());
             },
             isMenuActive: function () {
                 var $control = $('#' + this.options.controlId);
@@ -697,7 +701,7 @@
                                         }
 
                                         listHtml +=
-                                            '<div id="divSearchItem" class="container-fluid">' +
+                                            '<div id="divSearchItem-' + node.id + '" class="container-fluid js-search-item">' +
                                             '      <div class="row">' +
                                             '        <div class="col-xs-1 pr-0 pt-2">' +
                                             inputHtml +
@@ -715,7 +719,6 @@
 
                                     self.updateScrollbar();
 
-                                    // Handle multi item check selection
                                     $control.find('.js-chk-search').off('change').on('change', function () {
                                         var itemIds = [];
                                         var $allChecked = $control.find('.js-chk-search:checked');
@@ -726,7 +729,7 @@
                                         if (checkedVals && checkedVals.length > 0) {
                                             $control.find('.picker-treeview').show();
                                             var checkedNodes = self.findNodes(nodes, checkedVals);
-                                            
+
                                             if (checkedNodes && checkedNodes.length) {
                                                 checkedNodes.forEach(function (n) {
                                                     if (n.length === 0) { return; }
@@ -740,11 +743,28 @@
                                                 $hfItemIds.val(itemIds.join(','));
                                             }
                                         }
-                                        else {
-                                            $control.find('.picker-treeview').hide();
+                                    });
+
+                                    // Handle multi item check selection
+                                    $control.find('.rocktree-node-name-text').css('cursor', 'pointer');
+                                    $control.find('.js-search-item').off('click').on('click', function (e) {
+                                        if (e.target.className !== "rocktree-node-name-text text-color") {
+                                            return;
+                                        }
+                                                                                
+                                        var $chkBox = $(this).find('.js-chk-search').first();
+                                        if ($chkBox.length>0) {
+                                            if (!$chkBox.prop('checked')) {
+                                                $chkBox.prop('checked', true);
+                                                $control.find('.js-chk-search').trigger('change');
+                                            }
+                                            else {
+                                                $chkBox.prop('checked', false);
+                                            }
                                         }
                                     });
 
+                                    
                                     // Handle single item radio selection
                                     $control.find('.js-opt-search').off('change').on('change', function () {
                                         var thisNodeId = $(this).attr('data-id');
@@ -811,7 +831,6 @@
                         var searchKeyword = $searchInputControl.val();
 
                         if (!searchKeyword || searchKeyword.length === 0) {
-
                             $searchValueField.val('');
                             self.setViewMode('clear');
                             self.setActiveMenu(true);
