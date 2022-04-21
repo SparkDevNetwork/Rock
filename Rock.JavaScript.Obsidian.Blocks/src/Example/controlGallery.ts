@@ -68,6 +68,7 @@ import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterG
 import { BinaryFiletype, EntityType, FieldType } from "@Obsidian/SystemGuids";
 import { SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
@@ -465,17 +466,30 @@ const dropDownListGallery = defineComponent({
     name: "DropDownListGallery",
     components: {
         GalleryAndResult,
+        CheckBox,
         DropDownList
     },
-    data () {
+    setup() {
+        const options: ListItemBag[] = [
+            { text: "A Text", value: "a", category: "First" },
+            { text: "B Text", value: "b", category: "First" },
+            { text: "C Text", value: "c", category: "Second" },
+            { text: "D Text", value: "d", category: "Second" }
+        ];
+
+        const loadOptionsAsync = async (): Promise<ListItemBag[]> => {
+            await sleep(5000);
+
+            return options;
+        };
+
         return {
-            value: "a",
-            options: [
-                { text: "A Text", value: "a" },
-                { text: "B Text", value: "b" },
-                { text: "C Text", value: "c" },
-                { text: "D Text", value: "d" }
-            ] as ListItemBag[]
+            enhanceForLongLists: ref(false),
+            //loadOptionsAsync,
+            showBlankItem: ref(true),
+            grouped: ref(false),
+            value: ref("a"),
+            options: options
         };
     },
     template: `
@@ -484,10 +498,12 @@ const dropDownListGallery = defineComponent({
         DropDownList
     </template>
     <template #gallery>
-        <DropDownList label="Select 1" v-model="value" :options="options" />
-        <DropDownList label="Select 2" v-model="value" :options="options" />
-        <DropDownList label="Enhanced Select 1" v-model="value" :options="options" enhanceForLongLists />
-        <DropDownList label="Enhanced Select 2" v-model="value" :options="options" enhanceForLongLists />
+        <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+        <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+        <CheckBox label="Grouped" v-model="grouped" />
+
+        <DropDownList label="Select 1" v-model="value" :options="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" />
+        <DropDownList label="Select 2" v-model="value" :options="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" />
     </template>
     <template #result>
         {{value}}

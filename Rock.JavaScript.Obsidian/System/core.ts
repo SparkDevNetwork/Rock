@@ -27,6 +27,7 @@ const vendorMaps: Record<string, string> = {
     "luxon": "Luxon",
     "mitt": "Mitt",
     "vue": "Vue",
+    "vue-select": "VueSelect",
     "tslib": "TSLib"
 };
 

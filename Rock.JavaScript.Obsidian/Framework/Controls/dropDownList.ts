@@ -14,9 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, nextTick, onMounted, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
+import VueSelect from "vue-select";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
+import { isPromise } from "@Obsidian/Utility/promiseUtils";
+
+const specialGroupValueTag = "THIS IS A GROUP AND NOT AN OPTION";
 
 type OptionGroup = {
     text: string;
@@ -24,11 +28,18 @@ type OptionGroup = {
     options: ListItemBag[];
 };
 
+const deselectComponent = defineComponent({
+    template: `
+<i class="fa fa-times"></i>
+`
+});
+
 export default defineComponent({
     name: "DropDownList",
 
     components: {
-        RockFormField
+        RockFormField,
+        VueSelect
     },
 
     props: {
@@ -40,6 +51,11 @@ export default defineComponent({
         options: {
             type: Array as PropType<ListItemBag[]>,
             default: []
+        },
+
+        optionsSource: {
+            type: Function as PropType<(() => ListItemBag[]) | (() => Promise<ListItemBag[]>)>,
+            required: false
         },
 
         showBlankItem: {
@@ -57,6 +73,7 @@ export default defineComponent({
             default: ""
         },
 
+        /** No longer used. */
         formControlClasses: {
             type: String as PropType<string>,
             default: ""
@@ -74,142 +91,155 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
-        let isMounted = false;
+        const internalValue = ref(props.modelValue ? props.modelValue : null);
+        const isLoading = ref(false);
+        const loadedOptions = ref(props.options);
 
-        const internalValue = ref(props.modelValue);
+        const computedOptions = computed((): ListItemBag[] => {
+            if (props.grouped) {
+                const groupedOptions: ListItemBag[] = [];
+                const groups: OptionGroup[] = [];
 
-        /** The select element that will be used by the chosen plugin. */
-        const theSelect = ref<HTMLElement | null>(null);
+                for (const o of loadedOptions.value) {
+                    if (!o.category) {
+                        groupedOptions.push(o);
+                        continue;
+                    }
 
-        /** The compiled list of CSS classes for the select element. */
-        const compiledFormControlClasses = computed((): string => {
-            if (props.enhanceForLongLists) {
-                return props.formControlClasses + " chosen-select";
-            }
+                    const matchedGroups = groups.filter(g => g.text == o.category);
 
-            return props.formControlClasses;
-        });
-
-        const optionsWithoutGroup = computed((): ListItemBag[] => {
-            return props.options
-                .filter(o => !o.category);
-        });
-
-        const optionGroups = computed((): OptionGroup[] => {
-            const groups: OptionGroup[] = [];
-
-            for (const o of props.options) {
-                if (!o.category) {
-                    continue;
+                    if (matchedGroups.length >= 1) {
+                        matchedGroups[0].options.push(o);
+                    }
+                    else {
+                        groups.push({
+                            text: o.category,
+                            options: [o]
+                        });
+                    }
                 }
 
-                const matchedGroups = groups.filter(g => g.text == o.category);
-
-                if (matchedGroups.length >= 1) {
-                    matchedGroups[0].options.push(o);
-                }
-                else {
-                    groups.push({
-                        text: o.category,
-                        options: [o]
+                for (const g of groups) {
+                    groupedOptions.push({
+                        value: specialGroupValueTag,
+                        text: g.text
                     });
+
+                    groupedOptions.push(...g.options);
                 }
+
+                return groupedOptions;
             }
 
-            return groups;
+            return loadedOptions.value;
         });
 
-        /** Uses jQuery to get the chosen element */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const getChosenJqueryEl = (): any => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const jquery = <any>window[<any>"$"];
-            const $chosenDropDown = jquery(theSelect.value);
+        const isClearable = computed((): boolean => {
+            return props.showBlankItem && !isLoading.value;
+        });
 
-            if (!$chosenDropDown || !$chosenDropDown.length) {
-                return undefined;
-            }
-
-            return $chosenDropDown;
-        };
+        const isDisabled = computed((): boolean => {
+            return isLoading.value;
+        });
 
         /**
-         * Create the destroy the chosen picker in accordance with our current
-         * settings in the properties.
-         */
-        const createOrDestroyChosen = (): void => {
-            if (!isMounted) {
-                return;
-            }
-
-            const $chosenDropDown = getChosenJqueryEl();
-
-            if (props.enhanceForLongLists) {
-                $chosenDropDown
-                    .chosen({
-                        width: "100%",
-                        allow_single_deselect: true,
-                        placeholder_text_multiple: " ",
-                        placeholder_text_single: " "
-                    })
-                    .change((ev: Event) => {
-                        internalValue.value = (ev.target as HTMLSelectElement).value;
-                    });
-            }
-            else {
-                $chosenDropDown.chosen("destroy");
-            }
-        };
-
-        /**
-         * Synchronizes our internal value and then makes sure the chosen
-         * picker, if we have one, is synced up as well.
+         * Synchronizes our internal value.
          */
         const syncInternalValue = (): void => {
-            internalValue.value = props.modelValue;
-            const selectedOption = props.options.find(o => o.value === internalValue.value) || null;
+            let value = props.modelValue;
+
+            const selectedOption = loadedOptions.value.find(o => o.value === value) || null;
 
             if (!selectedOption) {
-                internalValue.value = props.showBlankItem ?
-                    props.blankValue :
-                    (props.options[0]?.value || props.blankValue);
+                value = props.showBlankItem
+                    ? props.blankValue
+                    : (loadedOptions.value[0]?.value || props.blankValue);
             }
 
-            if (props.enhanceForLongLists) {
-                nextTick(() => {
-                    const $chosenDropDown = getChosenJqueryEl();
-                    $chosenDropDown.trigger("chosen:updated");
-                });
+            if (value !== internalValue.value) {
+                internalValue.value = value;
             }
         };
 
-        watch(() => props.modelValue, () => syncInternalValue());
-        watch(() => props.options, () => syncInternalValue());
-        watch(() => props.enhanceForLongLists, () => createOrDestroyChosen());
+        const isItemSelectable = (item: ListItemBag): boolean => {
+            return !(props.grouped && item.value === specialGroupValueTag);
+        };
+
+        const filterItem = (item: ListItemBag, label: string | undefined | null, search: string): boolean => {
+            if (props.grouped && item.value === specialGroupValueTag) {
+                return false;
+            }
+
+            return (label || "").toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) > -1;
+        };
+
+        const loadOptionsFromSource = async (): Promise<void> => {
+            if (props.optionsSource) {
+                isLoading.value = true;
+
+                try {
+                    let options = props.optionsSource();
+
+                    if (isPromise(options)) {
+                        options = await options;
+                    }
+
+                    loadedOptions.value = options;
+                }
+                finally {
+                    isLoading.value = false;
+                }
+            }
+        };
+
+        watch(() => props.modelValue, () => {
+            syncInternalValue();
+        });
+        watch(() => props.options, () => {
+            if (!props.optionsSource) {
+                loadedOptions.value = props.options;
+            }
+        });
+        watch(loadedOptions, () => {
+            syncInternalValue();
+        });
+        watch(() => props.showBlankItem, () => {
+            syncInternalValue();
+        });
+
         watch(internalValue, () => {
-            if (props.modelValue !== internalValue.value) {
-                emit("update:modelValue", internalValue.value);
+            let newValue = internalValue.value;
+
+            if (newValue === null) {
+                newValue = props.showBlankItem
+                    ? props.blankValue
+                    : (loadedOptions[0]?.value || props.blankValue);
+            }
+
+            if (props.modelValue !== newValue) {
+                emit("update:modelValue", newValue);
             }
         });
 
-        onMounted(() => {
-            isMounted = true;
-            createOrDestroyChosen();
-
-            // Fixup issues that may have cropped up during chosen initialization.
-            if (props.modelValue !== internalValue.value) {
-                emit("update:modelValue", internalValue.value);
-            }
-        });
-
-        syncInternalValue();
+        if (props.optionsSource) {
+            loadOptionsFromSource();
+        }
+        else {
+            syncInternalValue();
+        }
 
         return {
-            compiledFormControlClasses,
+            computedOptions,
+            filterItem,
             internalValue,
-            optionGroups,
-            optionsWithoutGroup,
-            theSelect
+            isClearable,
+            isDisabled,
+            isItemSelectable,
+            isLoading,
+            reduceItem: (item: ListItemBag) => item.value,
+            selectComponents: {
+                Deselect: deselectComponent
+            }
         };
     },
 
@@ -220,18 +250,23 @@ export default defineComponent({
     name="dropdownlist">
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
-            <select :id="uniqueId" class="form-control" :class="compiledFormControlClasses" v-bind="field" v-model="internalValue" ref="theSelect">
-                <option v-if="showBlankItem" :value="blankValue"></option>
-
-                <template v-if="grouped">
-                    <option v-for="o in optionsWithoutGroup" :key="o.value" :value="o.value">{{o.text}}</option>
-                    <optgroup v-for="g in optionGroups" :key="g.text" :label="g.text">
-                        <option v-for="o in g.options" :key="o.value" :value="o.value">{{o.text}}</option>
-                    </optgroup>
+            <VueSelect :inputId="uniqueId"
+                v-model="internalValue"
+                v-bind="field"
+                label="text"
+                :options="computedOptions"
+                :reduce="reduceItem"
+                :clearable="isClearable"
+                :searchable="enhanceForLongLists"
+                :selectable="isItemSelectable"
+                :filterBy="filterItem"
+                :disabled="isDisabled"
+                :loading="isLoading"
+                :components="selectComponents">
+                <template #open-indicator>
+                    <i class="fa fa-caret-down"></i>
                 </template>
-
-                <option v-else v-for="o in options" :key="o.value" :value="o.value">{{o.text}}</option>
-            </select>
+            </VueSelect>
         </div>
     </template>
 </RockFormField>`
