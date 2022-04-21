@@ -69,7 +69,7 @@ namespace Rock.Rest.v2.Controllers
             // Get device data
             var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.GetHeader( "X-Rock-DeviceData" ) );
 
-            if ( deviceData.IsNull() )
+            if ( deviceData == null )
             {
                 StatusCode( HttpStatusCode.InternalServerError );
             }
@@ -82,7 +82,7 @@ namespace Rock.Rest.v2.Controllers
             var site = SiteCache.Get( siteId.Value );
 
             // If the site was not found then return 404
-            if ( site.IsNull() )
+            if ( site == null )
             {
                 return NotFound();
             }
@@ -146,7 +146,7 @@ namespace Rock.Rest.v2.Controllers
                         || personalDevice.Model != deviceData.Model
                         || !personalDevice.LastSeenDateTime.HasValue
                         || personalDevice.LastSeenDateTime.Value.AddDays( 1 ) < RockDateTime.Now
-                        || ( person.IsNotNull() && personalDevice.PersonAliasId != person.PrimaryAliasId );
+                        || ( person != null && personalDevice.PersonAliasId != person.PrimaryAliasId );
 
                     if ( hasDeviceChanged )
                     {
@@ -157,7 +157,7 @@ namespace Rock.Rest.v2.Controllers
                         personalDevice.LastSeenDateTime = RockDateTime.Now;
 
                         // Update the person tied to the device, but never blank it out. 
-                        if ( person.IsNotNull() && personalDevice.PersonAliasId != person.PrimaryAliasId )
+                        if ( person != null && personalDevice.PersonAliasId != person.PrimaryAliasId )
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
                         }
@@ -197,7 +197,7 @@ namespace Rock.Rest.v2.Controllers
             var site = SiteCache.Get( applicationId );
 
             // If the site was not found then return 404
-            if ( site.IsNull() )
+            if ( site == null )
             {
                 response.StatusCode = System.Net.HttpStatusCode.NotFound;
                 return response;
@@ -236,7 +236,7 @@ namespace Rock.Rest.v2.Controllers
             var page = PageCache.Get( pageGuid );
 
             // If page is null return 404
-            if ( page.IsNull() )
+            if ( page == null )
             {
                 response.StatusCode = HttpStatusCode.NotFound;
                 return response;
@@ -259,7 +259,7 @@ namespace Rock.Rest.v2.Controllers
                 {
                     case "public":
                         {
-                            var maxAgeInSeconds = cacheParts[1].IsNotNull() ? cacheParts[1].AsInteger() : 777;
+                            var maxAgeInSeconds = cacheParts[1] != null ? cacheParts[1].AsInteger() : 777;
                             response.Headers.CacheControl = new CacheControlHeaderValue()
                             {
                                 Public = true,

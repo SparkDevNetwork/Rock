@@ -509,9 +509,17 @@ namespace RockWeb.Blocks.Connection
                     .Include( ct => ct.ConnectionOpportunities )
                     .FirstOrDefault( ct => ct.Id == connectionTypeId );
 
-            BindDropdownLists( connectionType );
-
-            BindCampusSelector( entitySetId, rockContext );
+            if (connectionType is null)
+            {
+                pnlEntry.Visible = false;
+                ShowNotification( NotificationBoxType.Warning,  "There is no reference to a valid Connection.  Please set this page up under the 'Bulk Update Requests' block settings of the Connection Request Board block, and select the connection requests you would like to edit." );
+            }
+            else
+            {
+                pnlEntry.Visible = true;
+                BindDropdownLists( connectionType );
+                BindCampusSelector( entitySetId, rockContext );
+            }
         }
 
         /// <summary>

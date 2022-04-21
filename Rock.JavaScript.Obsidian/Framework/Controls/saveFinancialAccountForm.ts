@@ -17,13 +17,13 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject, PropType } from "vue";
-import Alert from "../Elements/alert.vue";
-import InlineCheckBox from "../Elements/inlineCheckBox";
-import RockButton from "../Elements/rockButton";
-import TextBox from "../Elements/textBox";
-import { BlockHttp } from "../Util/block";
+import Alert from "./alert";
+import InlineCheckBox from "./inlineCheckBox";
+import RockButton from "./rockButton";
+import TextBox from "./textBox";
+import { BlockHttp } from "@Obsidian/Utility/block";
 import RockForm from "./rockForm";
-import { useStore } from "../Store/index";
+import { useStore } from "@Obsidian/PageState";
 import { Person } from "@Obsidian/ViewModels/Entities/person";
 
 const store = useStore();

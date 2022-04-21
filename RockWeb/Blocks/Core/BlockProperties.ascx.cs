@@ -260,11 +260,11 @@ namespace RockWeb.Blocks.Core
             SiteCache _site = null;
 
             // Get site info from Page -> Layout -> Site
-            if ( _block.Page.IsNotNull() )
+            if ( _block.Page != null )
             {
                 _site = SiteCache.Get( _block.Page.SiteId );
             }
-            else if ( _block.Layout.IsNotNull() )
+            else if ( _block.Layout != null )
             {
                 _site = SiteCache.Get( _block.Layout.SiteId );
             }
@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // Change Pre/Post text labels if this is a mobile block
-            if ( _site.IsNotNull() &&  _site.SiteType == SiteType.Mobile )
+            if ( _site != null &&  _site.SiteType == SiteType.Mobile )
             {
                 cePostHtml.Label = "Post-XAML";
                 cePreHtml.Label = "Pre-XAML";

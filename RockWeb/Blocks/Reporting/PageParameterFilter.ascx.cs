@@ -64,6 +64,16 @@ namespace RockWeb.Blocks.Reporting
 
     The concept and code came from a Bema PR.
 
+    2. Show/Hide Filter Buttons
+    --------------------
+    4/12/2022 - JME
+    This block had some odd block settings. One showed and hid All Filter buttons and another showed
+    and hid just the reset buttons. This was re-written with a bug where you could never hide the reset
+    button as the 'ShowFilterButtons' would make it visible again. While this bug could have been fix,
+    it seemed to make more sense (and clean) to have separate settings for each button. While this is
+    a bit of a breaking change it seems rare that one would have hidden all filter buttons and deemed
+    with it to polish these settings.
+
     ========================================
     */
 
@@ -149,10 +159,10 @@ namespace RockWeb.Blocks.Reporting
         Order = 9 )]
 
     [BooleanField(
-        "Hide Filter Actions",
-        Key = AttributeKey.HideFilterActions,
-        Description = "Hides the filter buttons. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick.",
-        DefaultBooleanValue = false,
+        "Show Filter Button",
+        Key = AttributeKey.ShowFilterButton,
+        Description = "Shows or hides the filter buttons. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick.",
+        DefaultBooleanValue = true,
         Category = "CustomSetting",
         Order = 10 )]
     #endregion
@@ -181,7 +191,7 @@ namespace RockWeb.Blocks.Reporting
             public const string FilterButtonSize = "FilterButtonSize";
             public const string RedirectPage = "RedirectPage";
             public const string DoesSelectionCausePostback = "DoesSelectionCausePostback";
-            public const string HideFilterActions = "HideFilterActions";
+            public const string ShowFilterButton = "ShowFilterButton";
         }
 
         #endregion Attribute Keys
@@ -279,8 +289,6 @@ namespace RockWeb.Blocks.Reporting
             var filterButtonText = GetAttributeValue( AttributeKey.FilterButtonText );
             btnFilter.Text = filterButtonText.IsNotNullOrWhiteSpace() ? filterButtonText : "Filter";
 
-            btnResetFilters.Visible = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
-
             var securityField = gFilters.ColumnsOfType<SecurityField>().FirstOrDefault();
             if ( securityField != null )
             {
@@ -350,8 +358,15 @@ namespace RockWeb.Blocks.Reporting
             {
                 CurrentParameters = this.RockPage.PageParameters();
 
-                var query = new AttributeService( new RockContext() ).Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
-                var attribsWithDefaultValue = query.AsQueryable().Where( a => a.DefaultValue != null && a.DefaultValue != "" ).ToList();
+                // Get list of attributes with default values (4/12/2022 JME replaces code that read
+                // this from the DB with the call below that reads from cache.
+                var attribsWithDefaultValue = AttributeCache.AllForEntityType( _blockTypeEntityId )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "Id"
+                        && a.EntityTypeQualifierValue == _block.Id.ToString()
+                        && a.DefaultValue != null
+                        && a.DefaultValue != string.Empty )
+                    .ToList();
 
                 // If we have any filters with default values, we want to load this block with the page parameters already set.
                 if ( attribsWithDefaultValue.Any() && !this.RockPage.PageParameters().Any() )
@@ -370,9 +385,8 @@ namespace RockWeb.Blocks.Reporting
 
             base.OnLoad( e );
 
-            var hideFilterButtons = GetAttributeValue( AttributeKey.HideFilterActions ).AsBoolean();
-            btnFilter.Visible = !hideFilterButtons;
-            btnResetFilters.Visible = !hideFilterButtons;
+            btnFilter.Visible = GetAttributeValue( AttributeKey.ShowFilterButton ).AsBoolean();
+            btnResetFilters.Visible = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
         }
 
         protected override object SaveViewState()
@@ -396,7 +410,7 @@ namespace RockWeb.Blocks.Reporting
             rtbBlockTitleIconCssClass.Text = GetAttributeValue( AttributeKey.BlockTitleIconCssClass );
             nbFiltersPerRow.Text = GetAttributeValue( AttributeKey.FiltersPerRow );
             cbShowResetFiltersButton.Checked = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
-            cbHideFilterActions.Checked = GetAttributeValue( AttributeKey.HideFilterActions ).AsBoolean();
+            cbShowFilterButton.Checked = GetAttributeValue( AttributeKey.ShowFilterButton ).AsBoolean();
             rtbFilterButtonText.Text = GetAttributeValue( AttributeKey.FilterButtonText );
             ddlFilterButtonSize.SetValue( GetAttributeValue( AttributeKey.FilterButtonSize ).AsInteger() );
             var ppFieldType = new PageReferenceFieldType();
@@ -421,7 +435,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.BlockTitleIconCssClass, rtbBlockTitleIconCssClass.Text );
             SetAttributeValue( AttributeKey.FiltersPerRow, nbFiltersPerRow.Text );
             SetAttributeValue( AttributeKey.ShowResetFiltersButton, cbShowResetFiltersButton.Checked.ToString() );
-            SetAttributeValue( AttributeKey.HideFilterActions, cbHideFilterActions.Checked.ToString() );
+            SetAttributeValue( AttributeKey.ShowFilterButton, cbShowFilterButton.Checked.ToString() );
             SetAttributeValue( AttributeKey.FilterButtonText, rtbFilterButtonText.Text );
             SetAttributeValue( AttributeKey.FilterButtonSize, ddlFilterButtonSize.SelectedValue );
             var ppFieldType = new PageReferenceFieldType();
@@ -447,9 +461,12 @@ namespace RockWeb.Blocks.Reporting
         {
             var rockContext = new RockContext();
             var attributeService = new AttributeService( rockContext );
-            var qry = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
-            qry = qry.OrderBy( a => a.Order );
-            var updatedAttributeIds = attributeService.Reorder( qry.ToList(), e.OldIndex, e.NewIndex );
+
+            var attributes = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() )
+                        .OrderBy( a => a.Order )
+                        .ToList();
+
+            var updatedAttributeIds = attributeService.Reorder( attributes, e.OldIndex, e.NewIndex );
 
             rockContext.SaveChanges();
 
@@ -490,11 +507,14 @@ namespace RockWeb.Blocks.Reporting
             var attributeService = new AttributeService( rockContext );
             var attribute = new AttributeService( rockContext ).Get( e.RowKeyId );
 
-            edtFilter.ReservedKeyNames = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() )
-                 .Where( a => a.Id != e.RowKeyId )
-                 .Select( a => a.Key )
-                 .Distinct()
-                 .ToList();
+            edtFilter.ReservedKeyNames = AttributeCache.AllForEntityType( _blockTypeEntityId )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "Id"
+                        && a.EntityTypeQualifierValue == _block.Id.ToString()
+                        && a.Id != e.RowKeyId )
+                    .Select( a => a.Key )
+                    .Distinct()
+                    .ToList();
 
             edtFilter.SetAttributeProperties( attribute );
   
@@ -541,10 +561,13 @@ namespace RockWeb.Blocks.Reporting
             edtFilter.IsFieldTypeEditable = true;
             edtFilter.SetAttributeFieldType( FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id, null );
 
-            edtFilter.ReservedKeyNames = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() )
-                 .Select( a => a.Key )
-                 .Distinct()
-                 .ToList();
+            edtFilter.ReservedKeyNames = AttributeCache.AllForEntityType( _blockTypeEntityId )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "Id"
+                        && a.EntityTypeQualifierValue == _block.Id.ToString() )
+                    .Select( a => a.Key )
+                    .Distinct()
+                    .ToList();
 
             mdFilter.Title = "Add Filter";
             mdFilter.Show();
@@ -559,16 +582,20 @@ namespace RockWeb.Blocks.Reporting
         {
             Rock.Model.Attribute attribute = null;
 
-            // sets the attribute to use the "CustomSetting" attribute
+            // Sets the attribute to use the "CustomSetting" attribute
             var entityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.ATTRIBUTE ).Id;
             var entityId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.BLOCK ).Id;
 
-            edtFilter.CategoryIds = new CategoryService( new RockContext() ).Queryable().Where( c => c.Name == "CustomSetting" &&
-                                                                                                c.EntityTypeId == entityTypeId &&
-                                                                                                c.EntityTypeQualifierColumn == "EntityTypeId" &&
-                                                                                                c.EntityTypeQualifierValue == entityId.ToString() )
-                                                                                        .Select( c => c.Id );
+            edtFilter.CategoryIds = CategoryCache.All()
+                .Where( c =>
+                    c.Name == "CustomSetting"
+                    && c.EntityTypeId == entityTypeId
+                    && c.EntityTypeQualifierColumn == "EntityTypeId"
+                    && c.EntityTypeQualifierValue == entityId.ToString() )
+                .Select( c => c.Id );
 
+            // ISSUE JME - When adding a new attribute the edtFilter does not load here with it's default value setting.
+            // currently you need to add the attribute then edit it again to add a default value.
             attribute = Helper.SaveAttributeEdits( edtFilter, _blockTypeEntityId, "Id", _block.Id.ToString() );
 
             // Attribute will be null if it was not valid
@@ -691,8 +718,12 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BuildControls()
         {
-            var query = new AttributeService( new RockContext() ).Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
-            var attributes = query.OrderBy( a => a.Order ).ToList();
+            var attributes = AttributeCache.AllForEntityType( _blockTypeEntityId )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "Id"
+                        && a.EntityTypeQualifierValue == _block.Id.ToString() )
+                    .OrderBy( a => a.Order )
+                    .ToList();
 
             var exclusions = new List<string>();
             exclusions.Add( AttributeKey.RedirectPage );
@@ -730,13 +761,18 @@ namespace RockWeb.Blocks.Reporting
 
             NameValueCollection queryString = GenerateQueryString();
 
+            // 4/12/2022 JME
+            // Updated the redirects to set the endResponse = true (was false). This prevents
+            // child blocks from fully loading, redirecting and loading again. The child blocks
+            // are typically SQL so that could mean a very slow initial page load as they would
+            // be run twice. Not sure why these were originally set to false. 
             if ( queryString.AllKeys.Any() )
             {
-                Response.Redirect( $"{Request.UrlProxySafe().AbsolutePath}?{queryString}", false );
+                Response.Redirect( $"{Request.UrlProxySafe().AbsolutePath}?{queryString}", true );
             }
             else
             {
-                Response.Redirect( Request.UrlProxySafe().AbsolutePath, false );
+                Response.Redirect( Request.UrlProxySafe().AbsolutePath, true );
             }
         }
 
@@ -747,6 +783,17 @@ namespace RockWeb.Blocks.Reporting
         private NameValueCollection GenerateQueryString()
         {
             var queryString = HttpUtility.ParseQueryString( String.Empty );
+
+            // Don't create a query string if the block's page does not match the current page. This
+            // would be the case when editing the settings from 'Admin Tools > CMS Settings > Pages'.
+            // Without this check the block would thrown an exception as CurrentParameters would be
+            // null. This may not be the _best_ place for this check, but the correct change may
+            // need a major refactor.
+            if (RockPage.PageId != BlockCache.PageId )
+            {
+                return queryString;
+            }
+
             foreach ( var parameter in CurrentParameters )
             {
                 if ( parameter.Key != "PageId" )
@@ -765,6 +812,12 @@ namespace RockWeb.Blocks.Reporting
                     if ( control != null )
                     {
                         string value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
+
+                        // If there is no value use the attribute's default value
+                        if ( value.IsNullOrWhiteSpace() )
+                        {
+                            value = attribute.Value.DefaultValue;
+                        }
 
                         if ( value.IsNotNullOrWhiteSpace() )
                         {

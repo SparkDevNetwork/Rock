@@ -276,7 +276,13 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "benevolence request missing person", () => RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( dataMap ) );
+            /*
+             * 21-APR-2022 DMV
+             *
+             * Removed the call to this function as this was not the intended behavior.
+             *
+             */
+            // RunCleanupTask( "benevolence request missing person", () => RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( dataMap ) );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
@@ -2280,14 +2286,22 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         /// <returns>System.Int32.</returns>
         private int RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( JobDataMap dataMap )
         {
+            /*
+             * 21-APR-2022 DMV
+             *
+             * Removed the call to this function as this was not the intended behavior.
+             *
+             */
+            return 0;
+
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = commandTimeout;
 
             var maxDays = dataMap.GetIntValue( AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays );
 
             var filter = rockContext.BenevolenceRequests
-                .Where( b => b.RequestedByPersonAliasId == null || b.RequestedByPersonAliasId == 0
-                        & DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays );
+                .Where( b => (b.RequestedByPersonAliasId == null || b.RequestedByPersonAliasId == 0)
+                        && (DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays) );
 
             rockContext.BenevolenceRequests.RemoveRange( filter );
             var removedCount = rockContext.SaveChanges();

@@ -15,11 +15,14 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, ref } from "vue";{% if UseAttributeValues == true %}
-import AttributeValuesContainer from "../../../Controls/attributeValuesContainer";{% endif %}{% if UseIsSystem %}
-import Alert from "../../../Elements/alert";{% endif %}
-import ValueDetailList, { ValueDetailListItems } from "./valueDetailList";
-import { {{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail";
+import { computed, defineComponent, PropType, ref } from "vue";{% if UseIsSystem %}
+import Alert from "@Obsidian/Controls/alert";{% endif %}{% if UseAttributeValues == true %}
+import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}
+import ValueDetailList from "@Obsidian/Controls/valueDetailList";
+import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
+import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
 export default defineComponent({
     name: "Core.{{ EntityName }}Detail.ViewPanel",
@@ -55,24 +58,24 @@ export default defineComponent({
 
         const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);{% endif %}
 
-        const leftSideValues = computed((): ValueDetailListItems => {
-            const values = new ValueDetailListItems();
+        const leftSideValues = computed((): ValueDetailListItem[] => {
+            const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return values;
+                return valueBuilder.getValues();
             }
 
-            return values;
+            return valueBuilder.getValues();
         });
 
-        const rightSideValues = computed((): ValueDetailListItems => {
-            const values = new ValueDetailListItems();
+        const rightSideValues = computed((): ValueDetailListItem[] => {
+            const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return values;
+                return valueBuilder.getValues();
             }
 
-            return values;
+            return valueBuilder.getValues();
         });
 
         // #endregion

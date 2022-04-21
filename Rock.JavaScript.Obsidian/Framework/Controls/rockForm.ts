@@ -15,8 +15,8 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, reactive, ref, watch } from "vue";
-import { FormError, FormState, provideFormState } from "../Util/form";
-import { updateRefValue } from "../Util/util";
+import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import RockValidation from "./rockValidation";
 
 export default defineComponent({

@@ -193,7 +193,7 @@ namespace Rock.Data
 
             var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
             var relatedEntity = relatedEntityService.GetRelatedEntityRecordToSource( entityId, sourceEntityTypeId.Value, relatedEntityTypeId.Value, targetEntity.Id, purposeKey, qualifierValue );
-            if ( relatedEntity.IsNotNull() )
+            if ( relatedEntity != null )
             {
                 relatedEntityService.Delete( relatedEntity );
             }

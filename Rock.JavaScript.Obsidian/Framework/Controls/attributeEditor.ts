@@ -17,15 +17,15 @@
 
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import CheckBox from "../Elements/checkBox";
-import TextBox from "../Elements/textBox";
+import CheckBox from "./checkBox";
+import TextBox from "./textBox";
 import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 import CategoriesPicker from "./categoriesPicker";
 import FieldTypeEditor from "./fieldTypeEditor";
-import StaticFormControl from "../Elements/staticFormControl";
-import PanelWidget from "../Elements/panelWidget";
-import { EntityType } from "../SystemGuids";
+import StaticFormControl from "./staticFormControl";
+import PanelWidget from "./panelWidget";
+import { EntityType } from "@Obsidian/SystemGuids";
 
 export default defineComponent({
     name: "AttributeEditor",

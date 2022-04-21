@@ -15,9 +15,9 @@
 // </copyright>
 //
 import { defineComponent, PropType, ref } from "vue";
-import LoadingIndicator from "../Elements/loadingIndicator";
-import TextBox from "../Elements/textBox";
-import { newGuid } from "../Util/guid";
+import LoadingIndicator from "./loadingIndicator";
+import TextBox from "./textBox";
+import { newGuid } from "@Obsidian/Utility/guid";
 import { GatewayEmitStrings, onSubmitPayment } from "./gatewayControl";
 
 type Settings = {

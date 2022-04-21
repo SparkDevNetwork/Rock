@@ -2108,6 +2108,13 @@ namespace Rock.MyWell
         public QuerySearchInt SearchAmount { get; set; }
 
         /// <summary>
+        /// The Type of transaction to limit the search to
+        /// </summary>
+        /// <value>The type.</value>
+        [JsonProperty( "type", NullValueHandling = NullValueHandling.Ignore )]
+        public QuerySearchTransactionType TransactionTypeSearch { get; set; }
+
+        /// <summary>
         /// Gets or sets the date range (optional).
         /// </summary>
         /// <value>
@@ -2162,6 +2169,23 @@ namespace Rock.MyWell
         [JsonProperty( "value" )]
         public string SearchValue { get; set; }
     }
+
+    /// <summary>
+    /// Searching by <see cref="TransactionType"/>
+    /// </summary>
+    public class QuerySearchTransactionType : QuerySearchString
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="QuerySearchTransactionType"/> class.
+        /// </summary>
+        /// <param name="transactionType">Type of the transaction.</param>
+        public QuerySearchTransactionType( TransactionType transactionType )
+        {
+            this.ComparisonOperator = "=";
+            this.SearchValue = transactionType.ToString();
+        }
+    }
+
 
     /// <summary>
     /// Searching by the Customer property of a record
@@ -2317,6 +2341,16 @@ namespace Rock.MyWell
         /// </value>
         [JsonProperty( "idempotency_time" )]
         public int IdempotencyTime { get; set; }
+
+        /// <summary>
+        /// Gets the type of the transaction.
+        /// </summary>
+        /// <value>The type of the transaction.</value>
+        [JsonIgnore]
+        public TransactionType? TransactionType
+        {
+            get => this.Type.ConvertToEnumOrNull<TransactionType>( MyWell.TransactionType.other );
+        }
 
         /// <summary>
         /// Gets or sets the type.
@@ -3164,25 +3198,47 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// 
+    /// Possible Transaction Types are at https://sandbox.gotnpgateway.com/docs/api/#upload-batch-file
+    /// It is possible there are more, but the documentation doesn't mention any
+    /// But just in case, we'll throw unexpected ones into 'other'
     /// </summary>
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum TransactionType
     {
         /// <summary>
-        /// The sale
+        /// verification
         /// </summary>
-        sale,
+        verification,
 
         /// <summary>
-        /// The authorize
+        /// authorize
         /// </summary>
         authorize,
 
         /// <summary>
-        /// The credit
+        /// capture
         /// </summary>
-        credit
+        capture,
+
+        /// <summary>
+        /// sale
+        /// </summary>
+        sale,
+
+        /// <summary>
+        /// credit
+        /// </summary>
+        credit,
+
+        /// <summary>
+        /// refund
+        /// </summary>
+        refund,
+
+        /// <summary>
+        /// Something we didn't expect
+        /// </summary>
+        other,
     }
 
     /// <summary>

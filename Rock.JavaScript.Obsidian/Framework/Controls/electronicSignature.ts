@@ -16,11 +16,12 @@
 //
 
 import { defineComponent, PropType, ref, watch } from "vue";
-import RockButton from "../Elements/rockButton";
-import TextBox from "../Elements/textBox";
-import { loadJavaScriptAsync } from "../Util/page";
-import { updateRefValue } from "../Util/util";
-import { ElectronicSignatureValue } from "../ViewModels/Controls/electronicSignatureValue";
+import RockButton from "./rockButton";
+import TextBox from "./textBox";
+import EmailBox from "./emailBox";
+import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+import { updateRefValue } from "@Obsidian/Utility/component";
+import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 import RockForm from "./rockForm";
 
 // #region SignaturePad library types.
@@ -56,7 +57,8 @@ export default defineComponent({
     components: {
         RockButton,
         RockForm,
-        TextBox
+        TextBox,
+        EmailBox
     },
 
     props: {
@@ -105,7 +107,7 @@ export default defineComponent({
 
             // If the window is resized, that'll affect the drawing canvas
             // also, if there is an existing signature, it'll get messed up, so clear it and
-            // make them sign it again. See additional details why 
+            // make them sign it again. See additional details why
             // https://github.com/szimek/signature_pad
             let containerWidth = signatureCanvasContainer.value.clientWidth;
             if (containerWidth === 0) {
@@ -113,7 +115,7 @@ export default defineComponent({
             }
 
             // Note the suggestion  https://github.com/szimek/signature_pad#handling-high-dpi-screens
-            // to re-calculate the ratio based on window.devicePixelRatio isn't needed. 
+            // to re-calculate the ratio based on window.devicePixelRatio isn't needed.
             // We can just use the width() of the container and use fixed height of 100.
             const ratio = 1;
             signatureCanvas.value.width = containerWidth * ratio;
@@ -266,7 +268,7 @@ export default defineComponent({
                 label="Please enter your legal name"
                 rules="required" />
 
-            <TextBox v-model="signedByEmail"
+            <EmailBox v-model="signedByEmail"
                 label="Please enter an email address below"
                 rules="required" />
 

@@ -15,11 +15,11 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import RockFormField from "../Elements/rockFormField";
-import DropDownList from "../Elements/dropDownList";
-import RockLabel from "../Elements/rockLabel";
-import TextBox from "../Elements/textBox";
-import { newGuid } from "../Util/guid";
+import RockFormField from "./rockFormField";
+import DropDownList from "./dropDownList";
+import RockLabel from "./rockLabel";
+import TextBox from "./textBox";
+import { newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type AddressControlValue = {

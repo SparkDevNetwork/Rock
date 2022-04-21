@@ -1,5 +1,17 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AccountTreeView.ascx.cs" Inherits="RockWeb.Blocks.Finance.AccountTreeView" %>
 
+<style>
+    .search-results {
+        overflow:auto;
+        max-height:300px;
+    }
+
+    .rocktree-search-result-item:hover  {
+        background-color: #f5f5f5 !important;
+    }
+
+</style>
+
 <asp:UpdatePanel ID="upAccountType" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
         <asp:HiddenField ID="hfInitialAccountId" runat="server" />
@@ -25,6 +37,9 @@
                                     <asp:LinkButton ID="lbAddAccountChild" OnClick="lbAddAccountChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                             </ul>
                         </div>
+                        <button type="button" id="pnlSearchButton" class="btn btn-link btn-xs dropdown-toggle">
+                            <i class="fa fa-search"></i>
+                        </button>
                         <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.js-accounttreeview').find('.js-config-panel').slideToggle()" runat="server">
                             <i class="fa fa-ellipsis-v"></i>
                         </button>
@@ -32,17 +47,27 @@
                 </div>
                 <div class="panel-body">
                     <div class="rocktree-drawer js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
-                        <div class="row">
-                            <div class="col-xs-6">
-                                <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
+                        <div class="d-flex flex-wrap justify-content-between align-items-end">
+                            <div class="mb-1">
+                                <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" FormGroupCssClass="m-0" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
                             </div>
-                            <div class="col-xs-6">
-                                <label for="" class="control-label">&nbsp;</label>
-                                <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs btn-default" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
+                            <div class="mb-1">
+                                <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs btn-default text-wrap" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
                             </div>
                         </div>
-                        </div>
-                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
+                    </div>
+
+                    <div class="rocktree-drawer form-group js-group-search" style="display: none">
+                        <asp:Label runat="server" AssociatedControlID="tbSearch" Text="Search" CssClass="control-label d-none" />
+                        <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
+                            <asp:TextBox ID="tbSearch" runat="server" placeholder="Quick Find" CssClass="form-control input-sm" />
+                            <span class="input-group-btn">
+                                <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm"><i class="fa fa-search"></i></asp:LinkButton>
+                            </span>
+                        </asp:Panel>
+                    </div>
+
+                    <div id="divTreeView" class="treeview-scroll scroll-container scroll-container-horizontal" runat="server">
                         <div class="viewport">
                             <div class="overview">
                                 <div class="treeview-frame">
@@ -58,6 +83,9 @@
                             </div>
                         </div>
                     </div>
+
+                   <div id="divSearchResults" class="container search-results" runat="server">
+                   </div>
                 </div>
             </div>
         </div>
@@ -98,16 +126,20 @@
                 });
 
                 $('#<%=pnlTreeviewContent.ClientID%>')
-                    .on('rockTree:selected', function (e, id) {
+                    .on('rockTree:rendered', function (e, data) {
+                        createSearch();
+                    })
+                    .on('rockTree:selected', function (e, id, expandedIds, reload) {
+
                         var accountSearch = '?AccountId=' + id;
                         var currentItemId = $selectedId.val();
 
-                        if (currentItemId !== id) {
+                        if (currentItemId !== id || reload===true) {
 
                             // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
-                            var expandedDataIds = $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
+                            var expandedDataIds = !expandedIds? $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
                                 return $(this).attr('data-id')
-                            }).get().join(',');
+                            }).get().join(',') : expandedIds;
 
                             var pageRouteTemplate = $('#<%=hfPageRouteTemplate.ClientID%>').val();
                             var locationUrl = "";
@@ -141,18 +173,163 @@
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
                     });
-            });
 
-                function resizeScrollbar(scrollControl) {
-                    var overviewHeight = $(scrollControl).find('.overview').height();
+         function createSearch() {
+             // Handle the input searching
+             var $searchInputControl = $('#<%=tbSearch.ClientID%>');
+             var $btnSearch = $('#<%=btnSearch.ClientID%>')
+             var currentTree = $('#<%=pnlTreeviewContent.ClientID%>').html();
+             var expandedDataIds = $('#<%=pnlTreeviewContent.ClientID%>').find('[node-open=true]').map(function () {
+                 return $(this).attr('data-id');
+             }).get();
 
-                    $(scrollControl).find('.viewport').height(overviewHeight);
+             $('#pnlSearchButton').off('click').on('click', function (e) {
 
-                    if (<%=hfSelectedAccountId.ClientID%>IScroll) {
-                        <%=hfSelectedAccountId.ClientID%>IScroll.refresh();
-                    }
-                }
-        </script>
+                 var $searchPanel = $(this).closest('.js-accounttreeview').find('.js-group-search');
 
-    </ContentTemplate>
+                 $searchPanel.slideToggle(function () {
+                     if ($searchPanel.is(':hidden')) {
+                         $('#<%=divSearchResults.ClientID%>').hide();
+                         $('#<%=divSearchResults.ClientID%>').html('');
+                         $('#<%=divTreeView.ClientID%>').show();
+                         $('#<%=pnlTreeviewContent.ClientID%>').html(currentTree);
+                     }
+                });
+             });
+
+             // If no input then revert the control
+             $searchInputControl.off('keyup').on('keyup', function () {
+
+                 if ($searchInputControl.val().length === 0) {
+                     $('#<%=divSearchResults.ClientID%>').hide();
+                     $('#<%=divSearchResults.ClientID%>').html('');
+                     $('#<%=divTreeView.ClientID%>').show();
+                     $('#<%=pnlTreeviewContent.ClientID%>').html(currentTree);
+                 }
+             });
+
+             //execute ajax search
+            $btnSearch.off('click').on('click', function (e) {
+
+             $('#<%=divTreeView.ClientID%>').hide();
+             $('#<%=divSearchResults.ClientID%>').show();
+
+             var searchKeyword = $searchInputControl.val();
+             if (searchKeyword && searchKeyword.length > 0) {
+                 var restUrl = '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildrenBySearchTerm/")%>'
+                 var restUrlParams = ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false) + '/' + searchKeyword;
+
+                 restUrl = restUrl + restUrlParams;
+
+                 $.getJSON(restUrl, function (data, status) {
+
+                     if (data && status === 'success') {
+                         $('#<%=pnlTreeviewContent.ClientID%>').html('');
+                     }
+                     else {
+                         $('#<%=divSearchResults.ClientID%>').hide();
+                         $('#<%=divTreeView.ClientID%>').show();
+                         return;
+                     }
+
+                     var nodes = [];
+                     for (var i = 0; i < data.length; i++) {
+                         var obj = data[i];
+                         var node = {
+                             nodeId: obj.Id,
+                             parentId: obj.ParentId,
+                             glcode: obj.GlCode,
+                             title: obj.Name + (obj.GlCode ? ' (' + obj.GlCode + ')':''),
+                             name: obj.Name,
+                             hasChildren: obj.HasChildren,
+                             isActive: obj.IsActive,
+                             path: obj.Path
+                             };
+
+                         nodes.push(node);
+                     }
+
+                     if (nodes) {
+                         var listHtml = '';
+                         nodes.forEach(function (v, idx) {
+                                listHtml +=
+                                    '<div id="divSearchItem" class="container-fluid">' +
+                                    '      <div class="row">' +
+                                    '        <div class="col-xs-12 p-0">' +
+                                    '             <li class="rocktree-item rocktree-folder rocktree-search-result-item">' +
+                                '         <a class="search-result-link" data-id="' + v.nodeId +'" href="javascript:void(0);">' +
+                                    '            <span class="rocktree-name">' +
+                                    '              <h5><span class="rocktree-node-name-text text-color">' + v.title + '</span><br/>' +
+                                    '              <span class="text-muted"><small>' + v.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</small></span></h5>' +
+                                    '            </span></a>' +
+                                    '         </li>' +
+                                    '       </div>' +
+                                    ' </div>' +
+                                   '</div>';
+                           });
+
+                         $('#<%=divSearchResults.ClientID%>').html('<ul class="list-unstyled">' +
+                             listHtml +
+                             '</ul>');
+                     }
+
+                     $('.search-result-link').off('click').on('click', function () {
+                         var nodeId = $(this).attr('data-id');
+
+                         // Set the selected id
+                         $selectedId.val(nodeId);
+
+                         restUrl = '<%=ResolveUrl( "~/api/FinancialAccounts/GetParentIds/")%>'
+                         restUrlParams = nodeId;
+                         restUrl = restUrl + restUrlParams;
+
+                         // Get the ancestor ids so the tree will expand
+                         $.getJSON(restUrl, function (data, status) {
+                             if (data && status === 'success') {
+
+                                 data.forEach(function (expId, idx)
+                                 {
+                                     if (!expandedDataIds.find(function (v) {
+                                         return v === expId;
+                                     })) {
+                                         expandedDataIds.push(expId);
+                                     }
+                                 });
+
+                                 triggerSelect(nodeId, expandedDataIds.join(','),true);
+                             }
+                         });
+
+                     });
+                 }); //getJson
+              }
+           });
+         } //createSearch
+
+
+      }); //function()
+
+     // jquery function to ensure HTML is state remains the same each time it is executed
+     $.fn.outerHTML = function (s) {
+         return (s)
+             ? this.before(s).remove()
+             : $("<p>").append(this.eq(0).clone()).html();
+     }
+
+     function triggerSelect(nodeId, expandedIds,reload) {
+         $('#<%=pnlTreeviewContent.ClientID%>').trigger('rockTree:selected', [nodeId, expandedIds, reload] )
+     }
+
+     function resizeScrollbar(scrollControl) {
+         var overviewHeight = $(scrollControl).find('.overview').height();
+
+         $(scrollControl).find('.viewport').height(overviewHeight);
+
+         if (<%=hfSelectedAccountId.ClientID%>IScroll) {
+                <%=hfSelectedAccountId.ClientID%>IScroll.refresh();
+         }
+     }
+ </script>
+
+</ContentTemplate>
 </asp:UpdatePanel>

@@ -15,9 +15,9 @@
 // </copyright>
 //
 import { defineComponent, PropType, ref, watch } from "vue";
-import RockForm from "../Controls/rockForm";
-import RockButton from "../Elements/rockButton";
-import { trackModalState } from "../Util/page";
+import RockForm from "./rockForm";
+import RockButton from "./rockButton";
+import { trackModalState } from "@Obsidian/Utility/page";
 
 export default defineComponent({
     name: "Modal",

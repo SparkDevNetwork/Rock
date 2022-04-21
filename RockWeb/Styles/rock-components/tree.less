@@ -54,7 +54,12 @@ ul.rocktree-children {
     white-space: nowrap;
 
     &.is-inactive {
-      color: lighten(@text-color, 20%);
+      color: lighten(@text-color, 40%);
+    }
+
+    &.is-inactive-not-allowed {
+      cursor: not-allowed;
+      color: lighten(@text-color, 40%);
     }
 
     .select-children {
@@ -109,6 +114,11 @@ ul.rocktree-children {
     &:hover {
       color: @tree-rollover-color;
     }
+
+    &.not-allowed {
+      pointer-events: none;
+    }
+
 
     &::before {
       position: absolute;

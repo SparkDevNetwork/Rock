@@ -148,6 +148,9 @@
     <Reference Include="GreenPipes, Version=2.1.4.118, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
       <HintPath>..\packages\GreenPipes.2.1.4\lib\net452\GreenPipes.dll</HintPath>
     </Reference>
+    <Reference Include="Hashids.net, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hashids.net.1.4.1\lib\net461\Hashids.net.dll</HintPath>
+    </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -1307,6 +1310,7 @@
     <Compile Include="Reporting\DataFilter\ConnectionRequest\PlacementGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DocumentTypeFilter.cs" />
     <Compile Include="Reporting\DataTransform\Person\HeadOfHouseholdTransform.cs" />
+    <Compile Include="Search\Finance\FinancialAccount.cs" />
     <Compile Include="Security\Options\PasswordRequirementOptions.cs" />
     <Compile Include="Security\Password.cs" />
     <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
@@ -1389,6 +1393,7 @@
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
+    <Compile Include="Utility\IdHasher.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -1655,6 +1660,7 @@
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
     <Compile Include="Web\UI\Controls\PDFViewer.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AccountTreeViewItem.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\FinancialStatementTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
@@ -4017,7 +4023,9 @@ if "$(ConfigurationName)" == "Debug" (
  echo "setting VBCSCOMPILER_TTL to 10 seconds"
  call "$(ProjectDir)..\Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
  if Exist "$(ProjectDir)..\.githooks\" (
-  xcopy "$(ProjectDir)..\.githooks\*" "$(ProjectDir)..\.git\hooks\" /S /Y
+  if Exist "$(ProjectDir)..\.git\hooks\" (
+   xcopy "$(ProjectDir)..\.githooks\*" "$(ProjectDir)..\.git\hooks\" /S /Y
+  )
  )
 )
 
@@ -4046,8 +4054,11 @@ if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectD
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>REM Check if the JavaScript projects have been built.
-If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian\dist" (
+If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian\node_modules" (
     "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj" -p:Configuration=$(ConfigurationName)
+)
+If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian.Blocks\node_modules" (
+    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian.Blocks\Rock.JavaScript.Obsidian.Blocks.njsproj" -p:Configuration=$(ConfigurationName)
 )</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -18,10 +18,10 @@
 import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref } from "vue";
 import BasePicker from "./basePicker";
-import RockFormField from "../Elements/rockFormField";
-import { useVModelPassthrough } from "../Util/component";
+import RockFormField from "./rockFormField";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { get } from "../Util/http";
+import { get } from "@Obsidian/Utility/http";
 
 export default defineComponent({
     name: "DefinedTypePicker",

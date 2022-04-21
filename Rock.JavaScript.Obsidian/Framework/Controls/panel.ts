@@ -15,10 +15,14 @@
 // </copyright>
 //
 import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
-import { useVModelPassthrough } from "../Util/component";
-import RockButton from "../Elements/rockButton";
-import Fullscreen from "../Elements/fullscreen";
-import TransitionVerticalCollapse from "../Elements/transitionVerticalCollapse";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import RockButton from "./rockButton";
+import Fullscreen from "./fullscreen";
+import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare function $(element: any): any;
 
 export default defineComponent({
     name: "Panel",
@@ -82,9 +86,15 @@ export default defineComponent({
         },
 
         /** The Icon CSS class to display in the title, will be overridden by slot usage. */
-        titleIconClass: {
+        titleIconCssClass: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /** A list of action items to be included in the ellipsis. */
+        headerSecondaryActions: {
+            type: Array as PropType<PanelAction[]>,
+            required: false
         }
     },
 
@@ -109,6 +119,10 @@ export default defineComponent({
 
         /** True if the collapse action should be shown. */
         const hasCollapseAction = computed((): boolean => props.hasCollapse && !isFullscreen.value);
+
+        const hasHeaderSecondaryActions = computed((): boolean => !!props.headerSecondaryActions && props.headerSecondaryActions.length > 0);
+        const isHelpOpen = ref(false);
+        const headerSecondaryActionMenu = ref<HTMLElement | null>(null);
 
         /** The CSS class names to be applied to the panel. */
         const panelClass = computed((): string[] => {
@@ -140,13 +154,40 @@ export default defineComponent({
         /** True if the panel body should be displayed. */
         const isPanelOpen = computed((): boolean => !props.hasCollapse || internalValue.value !== false || isFullscreen.value);
 
+        const getHeaderSecondaryActionIconClass = (action: PanelAction): string => {
+            if (action.iconCssClass) {
+                let iconClass = action.iconCssClass;
+
+                if (action.type !== "default" && action.type !== "link") {
+                    iconClass += ` text-${action.type}`;
+                }
+
+                return iconClass;
+            }
+            else {
+                return "";
+            }
+        };
+
+        const onIgnoreClick = (): void => { /* Intentionally blank to ignore click. */ };
+
         /** Event handler when the drawer expander is clicked. */
         const onDrawerPullClick = (): void => {
             isDrawerOpen.value = !isDrawerOpen.value;
         };
 
+        const onHelpClick = (): void => {
+            isHelpOpen.value = !isHelpOpen.value;
+        };
+
         /** Event handler when the panel heading is clicked. */
         const onPanelHeadingClick = (): void => {
+            if (props.hasCollapse) {
+                internalValue.value = !isPanelOpen.value;
+            }
+        };
+
+        const onPanelExpandClick = (): void => {
             if (props.hasCollapse) {
                 internalValue.value = !isPanelOpen.value;
             }
@@ -172,6 +213,18 @@ export default defineComponent({
             }
         };
 
+        /** Event handler for when a secondary action is clicked. */
+        const onActionClick = (action: PanelAction, event: Event): void => {
+            // Close the drop down since we are hijacking the click event.
+            if (headerSecondaryActionMenu.value) {
+                $(headerSecondaryActionMenu.value).dropdown("toggle");
+            }
+
+            if (action.handler) {
+                action.handler(event);
+            }
+        };
+
         // Watches for changes to our full screen status and responds accordingly.
         watch(isFullscreen, () => {
             // If we have entered full screen then wait for the UI to update
@@ -181,13 +234,27 @@ export default defineComponent({
             }
         });
 
+        watch(headerSecondaryActionMenu, () => {
+            if (headerSecondaryActionMenu.value) {
+                $(headerSecondaryActionMenu.value).dropdown();
+            }
+        });
+
         return {
+            getHeaderSecondaryActionIconClass,
             hasCollapseAction,
+            hasHeaderSecondaryActions,
+            headerSecondaryActionMenu,
             isDrawerOpen,
             isFullscreen,
+            isHelpOpen,
             isPanelOpen,
+            onActionClick,
             onDrawerPullClick,
             onFullscreenClick,
+            onHelpClick,
+            onIgnoreClick,
+            onPanelExpandClick,
             onPanelHeadingClick,
             onPanelKeyDown,
             panelClass,
@@ -219,24 +286,48 @@ export default defineComponent({
                 flex-grow: 1;
             }
 
-            .panel.panel-flex > .panel-heading > .panel-aside {
+            .panel.panel-flex > .panel-heading > .panel-header-actions {
                 padding: 0px 24px 0px 0px;
-            }
-
-            .panel.panel-flex > .panel-heading > .panel-action {
-                position: relative;
                 display: flex;
-                border-left: 1px solid #ccc;
-                align-self: stretch;
-                align-items: center;
-                width: 48px;
-                justify-content: center;
-                cursor: pointer;
             }
 
-            .panel.panel-flex > .panel-heading > .panel-action .rock-fullscreen-toggle {
-                position: relative;
-                border-left: 0;
+            .panel.panel-flex > .panel-heading > .panel-header-actions > .action {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-left: 12px;
+            }
+
+            .panel.panel-flex > .panel-sub-header {
+                display: flex;
+                padding: 4px 18px;
+                background-color: #f8f8f8;
+                min-height: 34px;
+                border-bottom: 1px solid #dfe0e1;
+            }
+
+            .panel.panel-flex > .panel-sub-header > .panel-sub-header-left {
+                flex-grow: 1;
+            }
+
+            .panel.panel-flex > .panel-body > .actions:last-of-type > .footer-actions {
+                flex-grow: 1;
+            }
+
+            .panel.panel-flex > .panel-body > .actions:last-of-type > .footer-actions > * + * {
+                margin-left: 8px;
+            }
+
+            .panel.panel-flex > .panel-body > .actions:last-of-type > .footer-secondary-actions > * + * {
+                margin-left: 8px;
+            }
+
+            .panel.panel-flex > .panel-help {
+                background-color: #f8f8f8;
+            }
+            .panel.panel-flex > .panel-help > .help-content {
+                padding: 18px;
+                border-bottom: 1px solid #dfe0e1;
             }
 
             .panel.panel-fullscreen {
@@ -286,25 +377,59 @@ export default defineComponent({
             <h1 class="panel-title">
                 <slot v-if="$slots.title" name="title" />
                 <template v-else>
-                    <i v-if="titleIconClass" :class="titleIconClass"></i>
+                    <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
                     {{ title }}
                 </template>
             </h1>
 
-            <div class="panel-aside">
-                <slot name="titleAside" />
+            <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
+                <slot name="headerActions" />
 
-                <template v-if="hasCollapseAction">
-                    <i v-if="isPanelOpen" class="fa fa-chevron-up fa-xs ml-2"></i>
-                    <i v-else class="fa fa-chevron-down fa-xs ml-2"></i>
+                <span v-if="$slots.helpContent" class="action clickable" @click="onHelpClick">
+                    <i class="fa fa-question"></i>
+                </span>
+
+                <span v-if="hasFullscreen" class="action clickable" @click="onFullscreenClick">
+                    <i class="fa fa-expand"></i>
+                </span>
+
+                <template v-if="hasHeaderSecondaryActions">
+                    <span class="action clickable" style="position: relative;">
+                        <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
+                        <ul class="dropdown-menu">
+                            <li v-for="action in headerSecondaryActions">
+                                <a href="#" @click.prevent.stop="onActionClick(action, $event)">
+                                    <i :class="getHeaderSecondaryActionIconClass(action)"></i>
+                                    {{ action.title }}
+                                </a>
+                            </li>
+                        </ul>
+                    </span>
                 </template>
+
+                <span v-if="hasCollapseAction" class="action clickable" @click="onPanelExpandClick">
+                    <i v-if="isPanelOpen" class="fa fa-chevron-up"></i>
+                    <i v-else class="fa fa-chevron-down"></i>
+                </span>
+            </div>
+        </div>
+
+        <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
+            <div class="panel-sub-header-left">
+                <slot name="subheaderLeft" />
             </div>
 
-            <slot name="actionAside" />
+            <div class="panel-sub-header-right">
+                <slot name="subheaderRight" />
+            </div>
+        </div>
 
-            <span v-if="hasFullscreen" class="panel-action" @click.prevent.stop="onFullscreenClick">
-                <div class="rock-fullscreen-toggle"></div>
-            </span>
+        <div v-if="$slots.helpContent" class="panel-help">
+            <TransitionVerticalCollapse>
+                <div v-show="isHelpOpen" class="help-content">
+                    <slot name="helpContent" />
+                </div>
+            </TransitionVerticalCollapse>
         </div>
 
         <div v-if="$slots.drawer" class="panel-drawer rock-panel-drawer" :class="isDrawerOpen ? 'open' : ''">
@@ -322,6 +447,16 @@ export default defineComponent({
         <TransitionVerticalCollapse>
             <div v-show="isPanelOpen" class="panel-body">
                 <slot />
+
+                <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="actions">
+                    <div class="footer-actions">
+                        <slot name="footerActions" />
+                    </div>
+
+                    <div class="footer-secondary-actions">
+                        <slot name="footerSecondaryActions" />
+                    </div>
+                </div>
             </div>
         </TransitionVerticalCollapse>
     </div>

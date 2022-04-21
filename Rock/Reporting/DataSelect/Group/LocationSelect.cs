@@ -141,6 +141,14 @@ namespace Rock.Reporting.DataSelect.Group
             return selectExpression;
         }
 
+        /// <inheritdoc />
+        public override string SortProperties( string selection )
+        {
+            // Sorting is disabled for this field because the return value is not a scalar.
+            // This field returns a Location object because the output requires client-side rendering logic.
+            return string.Empty;
+        }
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
