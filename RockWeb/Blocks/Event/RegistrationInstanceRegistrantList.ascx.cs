@@ -676,8 +676,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
-                    lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
-                        ( SignersPersonAliasIds != null && !SignersPersonAliasIds.Contains( registrant.PersonAlias.PersonId ) ? " <i class='fa fa-edit text-danger'></i>" : string.Empty );
+                    lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed;
                 }
                 else
                 {
@@ -756,16 +755,24 @@ namespace RockWeb.Blocks.Event
                 SetPlacementFieldHtml( registrant, lPlacements );
             }
 
-            if ( registrant.Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
+            if ( registrant.Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue)
             {
-                const string textTemplate = @"
+                var lSignedDocument = e.Row.FindControl( "rlSignedDocument" ) as Literal;
+
+                if ( _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
+                {
+                    const string textTemplate = @"
 <a href='{0}?id={1}' target='_blank' style='color: black;'>
     <i class='fa fa-file-signature'></i>
 </a>
 ";
                 var document = _signatureDocuments[registrant.PersonId.Value];
-                var lSignedDocument = e.Row.FindControl( "rlSignedDocument" ) as Literal;
                 lSignedDocument.Text = string.Format( textTemplate, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                }
+                else
+                {
+                    lSignedDocument.Text = " <i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='Document not signed'></i>";
+                }
             }
 
             if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
