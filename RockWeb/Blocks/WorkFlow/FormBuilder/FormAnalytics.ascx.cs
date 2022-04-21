@@ -403,7 +403,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             }
             else
             {
-                // Group interactions by Start Date rounded to beginning of the month.
+                // Group Steps by Start Date rounded to beginning of the month.
                 groupKeySelector = x => x / 100;
             }
 
@@ -418,7 +418,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 interactionQuery = interactionQuery.Where( x => x.InteractionDateTime >= startDate.Value && x.InteractionDateTime <= endDate.Value );
             }
 
-            var viewedSummary = interactionQuery.Where( x => x.Operation == "View" )
+            var viewedSummary = interactionQuery.Where( x => x.Operation == "Form Viewed" )
                 .Select( x => x.InteractionDateKey )
                 .AsEnumerable()
                 .GroupBy( groupKeySelector )
@@ -429,7 +429,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     value = x.Count()
                 } );
 
-            var completedSummary = interactionQuery.Where( x => x.Operation == "Completed" )
+            var completedSummary = interactionQuery.Where( x => x.Operation == "Form Completed" )
                 .Select( x => x.InteractionDateKey )
                 .AsEnumerable()
                 .GroupBy( groupKeySelector )
