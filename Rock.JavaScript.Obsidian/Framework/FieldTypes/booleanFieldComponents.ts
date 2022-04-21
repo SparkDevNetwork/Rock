@@ -44,28 +44,8 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         // Internal values
-        const internalBooleanValue = ref(false);
-        const internalValue = ref("");
-
-        // Sync internal values and modelValue
-        watch(
-            internalValue,
-            () => emit("update:modelValue", internalValue.value)
-        );
-
-        watch(
-            internalBooleanValue,
-            () => emit("update:modelValue", asTrueFalseOrNull(internalBooleanValue.value) || "")
-        );
-
-        watch(
-            () => props.modelValue,
-            () => {
-                internalValue.value = asTrueFalseOrNull(props.modelValue) || "";
-                internalBooleanValue.value = asBoolean(props.modelValue);
-            },
-            { immediate: true }
-        );
+        const internalBooleanValue = ref(asBoolean(props.modelValue));
+        const internalValue = ref(asTrueFalseOrNull(props.modelValue) || "");
 
         // Which control type should be used for value selection
         const booleanControlType = computed((): BooleanControlType => {
@@ -123,6 +103,24 @@ export const EditComponent = defineComponent({
                 { text: falseText.value, value: falseVal },
                 { text: trueText.value, value: trueVal }
             ] as ListItemBag[];
+        });
+
+        // Sync internal values and modelValue
+        watch(internalValue, () => {
+            if (booleanControlType.value === BooleanControlType.DropDown) {
+                emit("update:modelValue", internalValue.value);
+            }
+        });
+
+        watch(internalBooleanValue, () => {
+            if (booleanControlType.value !== BooleanControlType.DropDown) {
+                emit("update:modelValue", asTrueFalseOrNull(internalBooleanValue.value) || "");
+            }
+        });
+
+        watch(() => props.modelValue, () => {
+            internalValue.value = asTrueFalseOrNull(props.modelValue) || "";
+            internalBooleanValue.value = asBoolean(props.modelValue);
         });
 
         return {

@@ -405,7 +405,7 @@ export default defineComponent({
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i class="fa fa-user fa-fw"></i>
                     <span class="selected-name" v-text="selectedName"></span>
-                    <i class="fa fa-caret-down pull-right"></i>
+                    <b class="fa fa-caret-down pull-right"></b>
                 </a>
 
                 <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
