@@ -149,9 +149,14 @@ namespace RockWeb.Blocks.Finance
 
                 var queryParams = new Dictionary<string, string>();
 
-                var accountId = accounts.First().Id.ToString();
-                queryParams.Add( "AccountId", accountId );
-                queryParams.Add( "ExpandedIds", accountId );
+                var accountId = accounts.First().Id;
+                var parentIds = accountService.GetAllAncestorIds( accountId ).Reverse()?.ToList();
+                if ( parentIds == null )
+                {
+                    parentIds = new List<int>();
+                }
+                queryParams.Add( "AccountId", accountId.ToString() );
+                queryParams.Add( "ExpandedIds", parentIds.Select( v => v.ToString() ).JoinStrings( "," ) );
                 NavigateToPage( Rock.SystemGuid.Page.ACCOUNTS.AsGuid(), queryParams );
             }
             else

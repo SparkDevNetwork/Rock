@@ -131,8 +131,6 @@
                     })
                     .on('rockTree:selected', function (e, id, expandedIds, reload) {
 
-                        console.debug('selected');
-
                         var accountSearch = '?AccountId=' + id;
                         var currentItemId = $selectedId.val();
 
@@ -297,8 +295,6 @@
                                          expandedDataIds.push(expId);
                                      }
                                  });
-
-                                 console.debug(expandedDataIds);
 
                                  triggerSelect(nodeId, expandedDataIds.join(','),true);
                              }
