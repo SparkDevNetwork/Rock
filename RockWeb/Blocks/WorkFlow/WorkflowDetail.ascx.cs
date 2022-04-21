@@ -699,6 +699,12 @@ namespace RockWeb.Blocks.WorkFlow
             hlType.Text = Workflow.WorkflowType.Name;
             hlblWorkflowId.Text = Workflow.WorkflowId;
 
+            if ( Workflow.Campus != null && CampusCache.All( false ).Count > 1 )
+            {
+                hlCampus.Visible = true;
+                hlCampus.Text = Workflow.Campus.Name;
+            }
+
             string quickReturnLava = "{{ Workflow.Name | AddQuickReturn:'Workflows', 70 }}";
             var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             quickReturnMergeFields.Add( "Workflow", Workflow );
