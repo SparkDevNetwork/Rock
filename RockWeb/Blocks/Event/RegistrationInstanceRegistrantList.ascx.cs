@@ -72,6 +72,13 @@ namespace RockWeb.Blocks.Event
 
     public partial class RegistrationInstanceRegistrantList : RegistrationInstanceBlock, ISecondaryBlock, ICustomGridOptions
     {
+        #region Properties
+
+        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}?id={1}' target='_blank' style='color: black;'><i class='fa fa-file-signature'></i></a>";
+        private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='Document not signed'></i>";
+
+        #endregion
+
         #region Attribute Keys
 
         /// <summary>
@@ -755,23 +762,18 @@ namespace RockWeb.Blocks.Event
                 SetPlacementFieldHtml( registrant, lPlacements );
             }
 
-            if ( registrant.Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue)
+            if ( registrant.Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
             {
                 var lSignedDocument = e.Row.FindControl( "rlSignedDocument" ) as Literal;
 
                 if ( _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
                 {
-                    const string textTemplate = @"
-<a href='{0}?id={1}' target='_blank' style='color: black;'>
-    <i class='fa fa-file-signature'></i>
-</a>
-";
-                var document = _signatureDocuments[registrant.PersonId.Value];
-                lSignedDocument.Text = string.Format( textTemplate, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                    var document = _signatureDocuments[registrant.PersonId.Value];
+                    lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
                 }
                 else
                 {
-                    lSignedDocument.Text = " <i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='Document not signed'></i>";
+                    lSignedDocument.Text = SIGNATURE_NOT_SIGNED_INDICATOR;
                 }
             }
 
@@ -1236,6 +1238,8 @@ namespace RockWeb.Blocks.Event
 
                 if ( requiredSignatureDocumentTemplateId.HasValue )
                 {
+                    rlSignedDocument.Visible = true;
+
                     SignersPersonAliasIds = new SignatureDocumentService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( d =>
