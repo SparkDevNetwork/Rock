@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 if ( rowViewModel.Person == null )
                 {
                     int? personLinkColumnIndex = gWorkflows.GetColumnIndex( gWorkflows.Columns.OfType<PersonProfileLinkField>().First() );
-                    if( personLinkColumnIndex.HasValue && personLinkColumnIndex > -1 )
+                    if ( personLinkColumnIndex.HasValue && personLinkColumnIndex > -1 )
                     {
                         var personLinkButton = e.Row.Cells[personLinkColumnIndex.Value].ControlsOfTypeRecursive<HyperLink>().FirstOrDefault();
                         personLinkButton.Visible = false;
@@ -330,17 +330,20 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             AvailableAttributes = new List<AttributeCache>();
             var workflowType = new WorkflowTypeService( rockContext ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
 
-            int entityTypeId = new Workflow().TypeId;
-            foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
-                .Where( a =>
-                    a.EntityTypeId == entityTypeId &&
-                    a.IsGridColumn &&
-                    a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name ) )
+            if ( workflowType != null )
             {
-                AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
+                int entityTypeId = new Workflow().TypeId;
+                foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.IsGridColumn &&
+                        a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
+                {
+                    AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
+                }
             }
         }
 
@@ -381,7 +384,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             // Add PersonLinkField column
             var personLinkField = new PersonProfileLinkField();
             personLinkField.LinkedPageAttributeKey = AttributeKeys.PersonProfilePage;
-            gWorkflows.Columns.Add(personLinkField);
+            gWorkflows.Columns.Add( personLinkField );
 
             // Add delete column
             var deleteField = new DeleteField();
