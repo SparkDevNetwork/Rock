@@ -567,7 +567,9 @@
 
         // Show loading spinner
         showLoading: function ($element) {
-            $element.append(this.options.loadingHtml);
+            if (this.options.loadingHtml && this.options.loadingHtml.length > 0) {
+                $element.append(this.options.loadingHtml);
+            }
         },
 
         // Remove loading spinner

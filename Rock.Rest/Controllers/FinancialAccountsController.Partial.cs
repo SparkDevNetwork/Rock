@@ -216,11 +216,17 @@ namespace Rock.Rest.Controllers
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 
-            var childrenList = Get()
-                .Where( f =>
-                    f.ParentAccountId.HasValue &&
-                    resultIds.Contains( f.ParentAccountId.Value ) )
-                .Select( f => f.ParentAccountId.Value )
+            var childQry = Get()
+            .Where( f =>
+                f.ParentAccountId.HasValue &&
+                resultIds.Contains( f.ParentAccountId.Value ) );
+
+            if ( activeOnly )
+            {
+                childQry = childQry.Where( f => f.IsActive == activeOnly );
+            }
+
+            var childrenList = childQry.Select( f => f.ParentAccountId.Value )
                 .ToList();
 
             foreach ( var accountTreeViewItem in accountTreeViewItems )
@@ -229,7 +235,6 @@ namespace Rock.Rest.Controllers
                 int childrenCount = ( childrenList?.Count( v => v == accountId ) ).GetValueOrDefault( 0 );
 
                 accountTreeViewItem.HasChildren = childrenCount > 0;
-                var lastChildId = ( childrenList?.LastOrDefault() ).GetValueOrDefault( 0 );
 
                 if ( accountTreeViewItem.HasChildren )
                 {
