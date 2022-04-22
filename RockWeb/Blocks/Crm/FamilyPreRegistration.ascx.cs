@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Crm
     [AttributeField(
         "Campus Schedule Attribute",
         Key = AttributeKey.CampusScheduleAttribute,
-        Description = "Allows you select a campus attribute that contains schedules for determining which dates and times for which pre-registration is available. This requries the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. The Lava merge field for this in workflows is 'ScheduleId'.",
+        Description = "Allows you select a campus attribute that contains schedules for determining which dates and times for which pre-registration is available. This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. The Lava merge field for this in workflows is 'ScheduleId'.",
         EntityTypeGuid = Rock.SystemGuid.EntityType.CAMPUS,
         IsRequired = false,
         Order = 3 )]
@@ -606,7 +606,7 @@ namespace RockWeb.Blocks.Crm
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            
+
             SetPanelStyles();
             nbError.Visible = false;
 
@@ -619,7 +619,7 @@ namespace RockWeb.Blocks.Crm
                 GetChildrenData();
             }
         }
-        
+
         /// <summary>
         /// Sets the panel styles.
         /// </summary>
@@ -1287,7 +1287,7 @@ namespace RockWeb.Blocks.Crm
         {
             pnlVisit.Visible = true;
 
-            // Campus 
+            // Campus
             if ( GetAttributeValue( AttributeKey.ShowCampus ).AsBoolean() )
             {
                 var campuses = CampusCache.All( false );
@@ -1300,7 +1300,7 @@ namespace RockWeb.Blocks.Crm
                     cpCampus.ForceVisible = true;
                     cpCampus.SelectedCampusId = campuses.First().Id;
                     pnlCampus.Visible = true;
-                                                         
+
                     SetCampusInfo();
 
                     SetScheduleDateControl();
@@ -1536,7 +1536,8 @@ namespace RockWeb.Blocks.Crm
 
             if ( campusScheduleAttributeValue.IsNullOrWhiteSpace() )
             {
-                nbError.Text = "The selected campus must have a Campus Entity Attribute with the Selected Schedules FieldType set, and the campus must have the schedule attribute value set.";
+                nbError.Title = "Missing Campus Schedule attribute.";
+                nbError.Text = "This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block.";
                 nbError.Visible = true;
                 litCampusTypeIcon.Text = "";
                 return;
