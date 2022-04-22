@@ -218,7 +218,7 @@
                     //cleanup
                     self.setViewMode('clear');
                     self.setActiveMenu(false);
-                    doPostBack();
+                    //doPostBack();
                 });
 
                 // Preview Selection link click
@@ -422,6 +422,8 @@
                         self.updateScrollbar();
                     });
 
+                    self.setViewMode('selected');
+
                     if (!(el && el.originalEvent && el.originalEvent.srcElement === this)) {
                         // if this event was called by something other than the button itself, make sure the execute the href (which is probably javascript)
                         var jsPostback = $(this).attr('href');
@@ -429,8 +431,6 @@
                             window.location = jsPostback;
                         }
                     }
-
-                    self.setViewMode('selected');
                 });
 
                 $control.find('.picker-select-none').on("click", function (e) {
@@ -518,7 +518,7 @@
             },
             setActiveMenu: function (value) {
                 var $control = $('#' + this.options.controlId);
-                if (value === undefined || value===null) {
+                if (value === undefined || value === null) {
                     value = true;
                 }
                 $control.find('.js-picker-showactive-value').val(value.toString());
@@ -618,13 +618,12 @@
                             '		<span class="input-group-btn">' +
                             '			<a id="btnSearch_' + controlId + '" class="btn btn-default btn-sm"><i class="fa fa-search"></i></a>' +
                             '		</span>' +
-                            '	</div>' );
+                            '	</div>');
 
                     // Get all of the current rendered items so we can revert if user leaves search
                     var $pickerMenu = $control.find('.picker-menu');
                     var $treeView = $control.find('.treeview');
                     var $overview = $control.find('.overview');
-                    var $viewport = $control.find('.viewport');
                     var $hfItemIds = $control.find('.js-item-id-value');
 
                     // Added this check to prevent rendering call from duping the element
@@ -636,6 +635,9 @@
                     var $searchInputControl = $('#tbSearch_' + controlId);
 
                     $('#btnSearch_' + controlId).off('click').on('click', function () {
+
+                        var currentSelectedNodeIds = rockTree.selectedNodes.map(function (v) { return v.id; });
+
                         $hfItemIds = $control.find('.js-item-id-value');
 
                         var searchKeyword = $searchInputControl.val();
@@ -735,12 +737,25 @@
                                                     if (!itemIds.find(function (i) { return n.id === i; })) {
                                                         itemIds.push(n.id);
                                                     }
+
                                                 });
                                             }
+                                        }
 
-                                            if (itemIds && itemIds.length) {
-                                                $hfItemIds.val(itemIds.join(','));
+                                        // We need to reselect any selection that were set in the tree but not part of the search results
+                                        if (currentSelectedNodeIds && currentSelectedNodeIds.length > 0) {
+                                            nodes.forEach(function (node) {
+                                                currentSelectedNodeIds = currentSelectedNodeIds.filter(function (current) { return current !== node.id });
+                                            });
+
+                                            if (currentSelectedNodeIds && currentSelectedNodeIds.length > 0) {
+                                                itemIds.push(currentSelectedNodeIds);
                                             }
+                                        }
+
+                                        if (itemIds && itemIds.length) {
+                                            // set the selected items on the server control to handle on postback
+                                            $hfItemIds.val(itemIds.join(','));
                                         }
                                     });
 
@@ -748,7 +763,7 @@
                                     $control.find('.js-search-item').off('click').on('click', function (e) {
 
                                         var $chkBox = $(this).find('.js-chk-search').first();
-                                        if ($chkBox.length>0) {
+                                        if ($chkBox.length > 0) {
                                             if (!$chkBox.prop('checked')) {
                                                 $chkBox.prop('checked', true);
                                                 $control.find('.js-chk-search').trigger('change');
@@ -783,10 +798,11 @@
                                                     }
                                                 });
                                             }
+                                        }
 
-                                            if (itemIds && itemIds.length) {
-                                                $hfItemIds.val(itemIds.join(','));
-                                            }
+                                        if (itemIds && itemIds.length) {
+                                            // set the selected items on the server control to handle on postback
+                                            $hfItemIds.val(itemIds.join(','));
                                         }
                                     });
                                 }
@@ -795,13 +811,13 @@
                                 if (rockTree.selectedNodes && rockTree.selectedNodes.length) {
                                     rockTree.selectedNodes.forEach(function (selectedNode) {
                                         if (self.options.allowMultiSelect && self.options.allowMultiSelect === true) {
-                                            $control.find('[data-id=' + selectedNode.id + '].js-chk-search').attr('checked', true);
+                                            $control.find('[data-id=' + selectedNode.id + '].js-chk-search').prop('checked', true);
                                             var checkedNode = selectedNode;
                                             checkedNode.id = selectedNode.id;
                                             $control.find('[data-id=' + selectedNode.id + '].js-chk-search').trigger('change');
                                         }
                                         else {
-                                            $control.find('[data-id=' + selectedNode.id + '].js-opt-search').attr('checked', true);
+                                            $control.find('[data-id=' + selectedNode.id + '].js-opt-search').prop('checked', true);
                                             var enabledNode = selectedNode;
                                             enabledNode.id = selectedNode.id;
                                             $control.find('[data-id=' + selectedNode.id + '].js-opt-search').trigger('change');
@@ -826,10 +842,7 @@
                         var searchKeyword = $searchInputControl.val();
 
                         if (!searchKeyword || searchKeyword.length === 0) {
-                            $searchValueField.val('');
-                            self.setViewMode('clear');
-                            self.setActiveMenu(true);
-                            doPostBack();
+                            $control.find('.picker-treeview').trigger('click');
                         }
 
                         self.togglePickerElements();
