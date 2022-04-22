@@ -19,6 +19,7 @@ import VueSelect from "vue-select";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
+import { deepEqual } from "@Obsidian/Utility/util";
 
 const specialGroupValueTag = "THIS IS A GROUP AND NOT AN OPTION";
 
@@ -44,7 +45,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: String as PropType<string>,
+            type: Object as PropType<string | string[]>,
             required: true
         },
 
@@ -66,6 +67,11 @@ export default defineComponent({
         blankValue: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         formGroupClasses: {
@@ -94,6 +100,10 @@ export default defineComponent({
         const internalValue = ref(props.modelValue ? props.modelValue : null);
         const isLoading = ref(false);
         const loadedOptions = ref(props.options);
+
+        const computedShowBlankItem = computed((): boolean => {
+            return !props.multiple && props.showBlankItem;
+        });
 
         const computedOptions = computed((): ListItemBag[] => {
             if (props.grouped) {
@@ -135,7 +145,7 @@ export default defineComponent({
         });
 
         const isClearable = computed((): boolean => {
-            return props.showBlankItem && !isLoading.value;
+            return computedShowBlankItem.value && !isLoading.value;
         });
 
         const isDisabled = computed((): boolean => {
@@ -143,20 +153,44 @@ export default defineComponent({
         });
 
         /**
-         * Synchronizes our internal value.
+         * Synchronizes our internal value with the modelValue and current
+         * component property values.
          */
         const syncInternalValue = (): void => {
-            let value = props.modelValue;
+            let value: string | string[] | null = props.modelValue;
 
-            const selectedOption = loadedOptions.value.find(o => o.value === value) || null;
+            // Note: Even though we are converting between single and multiple
+            // value types, this is only for our benefit on initial load. When
+            // the multiple flag changes, the vue-select component clears the
+            // current selection anyway.
+            if (props.multiple) {
+                if (!Array.isArray(value)) {
+                    value = value === "" ? [] : [value];
+                }
 
-            if (!selectedOption) {
-                value = props.showBlankItem
-                    ? props.blankValue
-                    : (loadedOptions.value[0]?.value || props.blankValue);
+                value = value.filter(v => !!loadedOptions.value.find(o => o.value === v));
+            }
+            else {
+                if (Array.isArray(value)) {
+                    value = value.length === 0 ? null : value[0];
+                }
+
+                if (value === null) {
+                    value = computedShowBlankItem.value
+                        ? props.blankValue
+                        : (loadedOptions.value[0]?.value || props.blankValue);
+                }
+
+                const selectedOption = loadedOptions.value.find(o => o.value === value) || null;
+
+                if (!selectedOption) {
+                    value = computedShowBlankItem.value
+                        ? props.blankValue
+                        : (loadedOptions.value[0]?.value || props.blankValue);
+                }
             }
 
-            if (value !== internalValue.value) {
+            if (!deepEqual(value, internalValue.value, true)) {
                 internalValue.value = value;
             }
         };
@@ -192,31 +226,41 @@ export default defineComponent({
             }
         };
 
-        watch(() => props.modelValue, () => {
+        watch([loadedOptions, () => props.modelValue, computedShowBlankItem, () => props.multiple], () => {
             syncInternalValue();
         });
+
         watch(() => props.options, () => {
             if (!props.optionsSource) {
                 loadedOptions.value = props.options;
             }
         });
-        watch(loadedOptions, () => {
-            syncInternalValue();
-        });
-        watch(() => props.showBlankItem, () => {
-            syncInternalValue();
-        });
 
         watch(internalValue, () => {
             let newValue = internalValue.value;
 
-            if (newValue === null) {
-                newValue = props.showBlankItem
-                    ? props.blankValue
-                    : (loadedOptions[0]?.value || props.blankValue);
+            // Note: Even though we are converting between single and multiple
+            // value types, this is only for our benefit on initial load. When
+            // the multiple flag changes, the vue-select component clears the
+            // current selection anyway.
+            if (props.multiple) {
+                if (!Array.isArray(newValue)) {
+                    newValue = newValue === null ? [] : [newValue];
+                }
+            }
+            else {
+                if (Array.isArray(newValue)) {
+                    newValue = newValue.length === 0 ? null : newValue[0];
+                }
+
+                if (newValue === null) {
+                    newValue = computedShowBlankItem.value
+                        ? props.blankValue
+                        : (loadedOptions.value[0]?.value || props.blankValue);
+                }
             }
 
-            if (props.modelValue !== newValue) {
+            if (!deepEqual(props.modelValue, newValue, true)) {
                 emit("update:modelValue", newValue);
             }
         });
@@ -254,6 +298,7 @@ export default defineComponent({
                 v-model="internalValue"
                 v-bind="field"
                 label="text"
+                :multiple="multiple"
                 :options="computedOptions"
                 :reduce="reduceItem"
                 :clearable="isClearable"

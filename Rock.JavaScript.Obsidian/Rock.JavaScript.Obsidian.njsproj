@@ -579,6 +579,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicEditableAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\treeItemBag.d.ts" />
     <TypeScriptCompile Include="System\core.ts" />
+    <TypeScriptCompile Include="System\shims.d.ts" />
     <TypeScriptCompile Include="System\vendor.ts" />
     <TypeScriptCompile Include="Tests\Elements\rockFormFieldHelper.ts" />
     <TypeScriptCompile Include="Tests\Elements\textBox.spec.ts" />

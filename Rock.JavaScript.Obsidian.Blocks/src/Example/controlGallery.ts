@@ -477,6 +477,7 @@ const dropDownListGallery = defineComponent({
             { text: "D Text", value: "d", category: "Second" }
         ];
 
+        // This function can be used to demonstrate lazy loading of items.
         const loadOptionsAsync = async (): Promise<ListItemBag[]> => {
             await sleep(5000);
 
@@ -488,6 +489,7 @@ const dropDownListGallery = defineComponent({
             //loadOptionsAsync,
             showBlankItem: ref(true),
             grouped: ref(false),
+            multiple: ref(false),
             value: ref("a"),
             options: options
         };
@@ -501,9 +503,10 @@ const dropDownListGallery = defineComponent({
         <CheckBox label="Show Blank Item" v-model="showBlankItem" />
         <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
         <CheckBox label="Grouped" v-model="grouped" />
+        <CheckBox label="Multiple" v-model="multiple" />
 
-        <DropDownList label="Select 1" v-model="value" :options="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" />
-        <DropDownList label="Select 2" v-model="value" :options="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" />
+        <DropDownList label="Select 1" v-model="value" :options="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+        <DropDownList label="Select 2" v-model="value" :options="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
     </template>
     <template #result>
         {{value}}
