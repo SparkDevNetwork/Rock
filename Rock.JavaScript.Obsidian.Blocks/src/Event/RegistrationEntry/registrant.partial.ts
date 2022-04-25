@@ -402,10 +402,11 @@ export default defineComponent({
             </div>
         </template>
 
-        <div v-if="isSignatureForm" class="registrant-signature-document">
+        <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
             <h2 class="signature-header">Please sign the {{ signatureDocumentName }} {{ signatureDocumentTerm }} for {{ firstName }}</h2>
-
-            <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" class="signaturedocument-container" border="0" frameborder="0" cellspacing="0" style="width: 100%; height: 450px" :srcdoc="signatureSource"></iframe>
+            <div class="signaturedocument-container">
+                <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
+            </div>
 
             <div class="well">
                 <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="signatureDocumentTerm" />

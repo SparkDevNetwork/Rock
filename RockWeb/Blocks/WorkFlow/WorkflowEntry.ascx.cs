@@ -1545,17 +1545,17 @@ namespace RockWeb.Blocks.WorkFlow
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 
                     /* 2020-11-16 MDP
-                     *  It is possible that the Spouse label could be something other than spouse. So, we won't prevent them 
+                     *  It is possible that the Spouse label could be something other than spouse. So, we won't prevent them
                      *  from changing the Marital status on the two people. However, this should be considered a mis-use of this feature.
-                     *  Unexpected things could happen. 
-                     *  
+                     *  Unexpected things could happen.
+                     *
                      *  Example of what would happen if 'Daughter' was the label for 'Spouse':
                      *  Ted Decker is Person1, and Cindy Decker gets auto-filled as Person2. but since the label is 'Daughter', he changes
                      *  Cindy's information to Alex Decker's information, then sets Marital status to Single.
-                     *  
+                     *
                      *  This would result in Ted Decker no longer having Cindy as his spouse (and vice-versa). This was discussed on 2020-11-13
                      *  and it was decided we shouldn't do anything to prevent this type of problem.
-                     
+
                      */
                     personEntryPersonSpouse.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
                     personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
@@ -2051,7 +2051,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( workflowType.IsPersisted == false && workflowType.IsFormBuilder )
             {
-                /* 3/14/2022 MP 
+                /* 3/14/2022 MP
                  If this is a FormBuilder workflow, the WorkflowType probably has _workflowType.IsPersisted == false.
                  This is because we don't want to persist the workflow until they have submitted.
                  So, in the case of FormBuilder, we'll persist when they submit regardless of the _workflowType.IsPersisted setting
@@ -2254,7 +2254,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else if ( formConfirmationEmailDestination == FormConfirmationEmailDestination.Spouse )
             {
-                // If the RecipientType indicates that we should use the Spouse key. We'll get the attribute from the Workflow 
+                // If the RecipientType indicates that we should use the Spouse key. We'll get the attribute from the Workflow
                 recipientWorkflowAttribute = _workflow.Attributes.GetValueOrNull( "Spouse" );
             }
             else
@@ -2548,6 +2548,8 @@ namespace RockWeb.Blocks.WorkFlow
                 var lavaTemplate = signatureDocumentTemplate.LavaTemplate;
                 this.SignatureDocumentHtml = lavaTemplate?.ResolveMergeFields( mergeFields );
                 iframeSignatureDocumentHTML.Attributes["srcdoc"] = this.SignatureDocumentHtml;
+                iframeSignatureDocumentHTML.Attributes.Add( "onload", "resizeIframe(this)" );
+                iframeSignatureDocumentHTML.Attributes.Add( "onresize", "resizeIframe(this)" );
             }
         }
 
@@ -2622,7 +2624,7 @@ namespace RockWeb.Blocks.WorkFlow
             signatureDocument.SignedName = escElectronicSignatureControl.SignedName;
             signatureDocument.SignedByEmail = escElectronicSignatureControl.SignedByEmail;
 
-            // From System.Web            
+            // From System.Web
             signatureDocument.SignedClientIp = this.GetClientIpAddress();
             signatureDocument.SignedClientUserAgent = Request.UserAgent;
 
@@ -2723,7 +2725,7 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum WorkflowInteractionOperationType
         {
