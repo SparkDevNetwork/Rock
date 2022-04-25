@@ -2,7 +2,10 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
-    <div class="position-relative soft xs-soft-half hard-bottom xs-hard-bottom clearfix">
+    <div class="position-relative">
+        
+        <!-- Breadcrumbs -->
+        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
 
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error no-index" style="display:none">

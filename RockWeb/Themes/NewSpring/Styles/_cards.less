@@ -18,3 +18,16 @@
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 }
+
+.card .full-screen {
+	transition: transform .5s;
+	outline: 1px solid transparent;
+	-webkit-backface-visibility: hidden;
+	transform: translateZ(0);
+	will-change: transform;
+	-webkit-perspective: 1000;
+}
+
+.card .full-screen:hover {
+	transform: scale(1.05);
+}

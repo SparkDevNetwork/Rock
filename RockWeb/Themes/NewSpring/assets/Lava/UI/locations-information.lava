@@ -10,7 +10,39 @@
 {% assign serviceTimes = serviceTimes | Trim %}
 {% assign fuseServiceTimes = fuseServiceTimes | Trim %}
 
-    <div class="page-constrained mx-auto soft-sides xs-soft-half-sides">
+
+<div class="panel" data-column="">
+    <div class="panel-body">
+        <h4 class="flush">Service Times</h4>
+        <p>{{ serviceTimes }}</p>
+
+        <h4 class="flush">Campus Location</h4>
+        {% if location != empty %}
+            <p>
+                {% if getDirections %}<a href="{{ getDirections }}">{% endif %}
+                {{ campus.LocationStreet1 }}<br>
+                {% if campus.LocationStreet2 != empty %}
+                    {{ campus.LocationStreet2 }}<br>
+                {% endif %}
+                {{ campus.LocationCity }}, {{ campus.LocationState }} {{ campus.LocationPostalCode | Slice: 0, 5 }}
+                {% if getDirections %}</a>{% endif %}
+            </p>
+
+            {% assign phoneNumber = campus.PhoneNumber | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' %}
+            <p class="flush"><i class="fas fa-fw fa-phone"></i> <a href="tel:+1{{ phoneNumber }}">({{ phoneNumber | Slice:0,3 }}) {{ phoneNumber | Slice:3,3 }}-{{ phoneNumber | Slice:6,4 }}</a></p>
+            <p><i class="fas fa-fw fa-envelope"></i> <a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a></p>
+        {% endif %}
+
+        <h4 class="flush">Fuse</h4>
+        <p>{{ fuseServiceTimes }}</p>
+
+        <h4 class="flush">Rally</h4>
+        <p>{{ rallyServiceTimes }}</p>
+    </div>
+</div>
+
+{% comment %} <section data-column="">
+    <div class="mx-auto">
         <div class="bg-white soft-double-ends soft-sides hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
             <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-hard-sides">
                 <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
@@ -77,50 +109,7 @@
             </div>
         </div>
     </div>
-
-{% if servicetype != 'Fuse' %}
-    {% assign placesId = campus.GooglePlacesId %}
-    {% assign markerImage = 'Global' | Attribute:'GoogleMapsMarkerImageActive','Url' %}
-    {% if placesId != null and placesId != '' %}
-
-        <script src="https://maps.googleapis.com/maps/api/js?v=3&key={{ 'Global' | Attribute:'GoogleAPIKey' }}&libraries=places"></script>
-
-        <div id="map-canvas" class="ratio ratio-landscape xs-ratio-square push-bottom xs-push-half-bottom overflow-hidden"></div>
-
-        <script>
-        function initialize() {
-            var map = new google.maps.Map(document.getElementById('map-canvas'), {
-                center: new google.maps.LatLng(0, 0),
-                zoom: 16,
-                disableDefaultUI: true
-            });
-
-            var service = new google.maps.places.PlacesService(map);
-
-            service.getDetails({
-                placeId: '{{ placesId }}'
-            }, function (place, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-
-                    // Create marker
-                    var marker = new google.maps.Marker({
-                        map: map,
-                        position: place.geometry.location,
-                        icon: '{{ markerImage }}'
-                    });
-
-                    // Center map on place location
-                    map.setCenter(place.geometry.location);
-
-                }
-            });
-        }
-
-        initialize();
-        </script>
-
-    {% endif %}
-{% endif %}
+</section> {% endcomment %}
 
 
 {% if servicetype == 'NewSpring' %}

@@ -25,11 +25,9 @@ position-relative
 text-white
 bring-forward
 overflow-hidden
-
 d-flex
 justify-content-center
 align-items-{{ contentalignment }}
-
 {% if ratio != null and ratio != '' %}
     ratio-{{ ratio }} hard xs-soft
 {% endif %} flush-sides" style="{% if backgroundcolor != null and backgroundcolor != '' %}background-color: {{ backgroundcolor }};{% endif %}">
@@ -64,7 +62,7 @@ align-items-{{ contentalignment }}
             {% if hideforegroundelements == 'Yes' %}<div class="hidden">{% endif %}
 
                 {% if title != null and title != '' %}
-                    <h1 class="{% if imageoverlayurl and imageoverlayurl != empty %}hidden{% endif %} strongest">{{ title }}</h1>
+                    <h1 class="{% if titlesize and titlesize != empty %}{{ titlesize }}{% endif %} {% if imageoverlayurl and imageoverlayurl != empty %}hidden{% endif %} strongest">{{ title }}</h1>
                 {% endif %}
 
                 {{ content }}

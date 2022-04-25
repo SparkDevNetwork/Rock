@@ -1,3 +1,5 @@
+{% assign servicetype = 'NewSpring' %}
+
 {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
@@ -8,7 +10,7 @@
 {% endif %}
 
 {% if campus.campusStaff != empty %}
-{[ section title:'{{ campus.Name }} Campus Staff' ]}
+
 
     {% if leader != null %}
     <div class="floating floating-left row soft-double-sides push-double-top xs-soft-half-sides xs-push-half-top xs-text-center sm-text-center md-text-left mx-auto" style="max-width: 1200px;">
@@ -25,19 +27,5 @@
     </div>
     {% endif %}
 
-    <div id="staff" class="row soft-double-sides xs-soft-half-sides text-center push-double-top xs-push-half-top">
-        {% assign staff = campus.CampusStaff | GroupBy:'PersonId' %}
-        {% for personId in staff %}{% assign person = personId | Property:'Value' | First %}{% if person.ShowOnWebsite == 'Yes' %}<div class="col-xs-12 col-sm-6 col-md-4 push-bottom  {% if person.FullName == leader.FullName %}hidden{% endif %}">
 
-            {[ user imageurl:'{{ person.StaffImage }}' title:'{{ person.FullName }}' subtitle:'{{ person.StaffTitle | Replace:"'","’" }}' linkurl:'https://newspring.cc/workflows/712?StaffMember={{ person | Property:"PersonId" | PersonById | Property:"PrimaryAlias" | Property:"Guid" }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
-        </div>{% endif %}{% endfor %}
-    </div>
-
-    <style>
-        #staff .ratio-square {
-            margin: 0 auto;
-        }
-    </style>
-
-{[ endsection ]}
 {% endif %}
