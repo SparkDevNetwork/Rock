@@ -455,7 +455,65 @@ namespace Rock.Model
         [DataMember]
         public bool EnablePageViewGeoTracking { get; set; }
 
-        #endregion Entity Properties
+        /// <summary>
+        /// Gets or sets whether predictable Ids are disabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if predictable Ids are disabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        [DefaultValue( false )]
+        public bool DisablePredictableIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mobile file path.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationMobilePhoneFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ConfigurationMobilePhoneBinaryFileId );
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file path.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file path.
+        /// </value>
+        [NotMapped]
+        public string ConfigurationTabletFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ConfigurationMobileTabletBinaryFileId );
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the thumbnail file URL.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file URL.
+        /// </value>
+        [NotMapped]
+        public string ThumbnailFileUrl
+        {
+            get
+            {
+                return Site.GetFileUrl( this.ThumbnailBinaryFileId );
+            }
+            private set { }
+        }
+
+        #endregion
 
         #region Navigation Properties
 

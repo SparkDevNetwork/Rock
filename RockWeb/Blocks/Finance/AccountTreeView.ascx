@@ -1,17 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AccountTreeView.ascx.cs" Inherits="RockWeb.Blocks.Finance.AccountTreeView" %>
 
-<style>
-    .search-results {
-        overflow:auto;
-        max-height:300px;
-    }
-
-    .rocktree-search-result-item:hover  {
-        background-color: #f5f5f5 !important;
-    }
-
-</style>
-
 <asp:UpdatePanel ID="upAccountType" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
         <asp:HiddenField ID="hfInitialAccountId" runat="server" />
@@ -67,25 +55,27 @@
                         </asp:Panel>
                     </div>
 
-                    <div id="divTreeView" class="treeview-scroll scroll-container scroll-container-horizontal" runat="server">
-                        <div class="viewport">
-                            <div class="overview">
-                                <div class="treeview-frame">
-                                    <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                    <div class="treeview-search-parent styled-scroll">
+                        <div id="divTreeView" class="treeview-scroll scroll-container scroll-container-horizontal" runat="server">
+                            <div class="viewport">
+                                <div class="overview">
+                                    <div class="treeview-frame">
+                                        <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="scrollbar">
+                                <div class="track">
+                                    <div class="thumb">
+                                        <div class="end"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="scrollbar">
-                            <div class="track">
-                                <div class="thumb">
-                                    <div class="end"></div>
-                                </div>
-                            </div>
+
+                        <div id="divSearchResults" class="search-results" runat="server" style="display: none;">
                         </div>
                     </div>
-
-                   <div id="divSearchResults" class="container search-results" runat="server">
-                   </div>
                 </div>
             </div>
         </div>
@@ -189,9 +179,8 @@
 
                  $searchPanel.slideToggle(function () {
                      if ($searchPanel.is(':hidden')) {
-                         $('#<%=divSearchResults.ClientID%>').hide();
-                         $('#<%=divSearchResults.ClientID%>').html('');
-                         $('#<%=divTreeView.ClientID%>').show();
+                         $('#<%=divSearchResults.ClientID%>').hide().html('');
+                         $('#<%=divTreeView.ClientID%>').css('visibility', 'visible');
                          $('#<%=pnlTreeviewContent.ClientID%>').html(currentTree);
                      }
                 });
@@ -201,9 +190,8 @@
              $searchInputControl.off('keyup').on('keyup', function () {
 
                  if ($searchInputControl.val().length === 0) {
-                     $('#<%=divSearchResults.ClientID%>').hide();
-                     $('#<%=divSearchResults.ClientID%>').html('');
-                     $('#<%=divTreeView.ClientID%>').show();
+                     $('#<%=divSearchResults.ClientID%>').hide().html('');
+                     $('#<%=divTreeView.ClientID%>').css('visibility', 'visible');
                      $('#<%=pnlTreeviewContent.ClientID%>').html(currentTree);
                  }
              });
@@ -211,7 +199,7 @@
              //execute ajax search
             $btnSearch.off('click').on('click', function (e) {
 
-             $('#<%=divTreeView.ClientID%>').hide();
+             $('#<%=divTreeView.ClientID%>').css('visibility', 'hidden');
              $('#<%=divSearchResults.ClientID%>').show();
 
              var searchKeyword = $searchInputControl.val();
@@ -228,7 +216,7 @@
                      }
                      else {
                          $('#<%=divSearchResults.ClientID%>').hide();
-                         $('#<%=divTreeView.ClientID%>').show();
+                         $('#<%=divTreeView.ClientID%>').css('visibility', 'visible');
                          return;
                      }
 
@@ -252,20 +240,16 @@
                      if (nodes) {
                          var listHtml = '';
                          nodes.forEach(function (v, idx) {
+                             if (v.path === '') {
+                                 v.path = 'Top-Level';
+                             };
                                 listHtml +=
-                                    '<div id="divSearchItem" class="container-fluid">' +
-                                    '      <div class="row">' +
-                                    '        <div class="col-xs-12 p-0">' +
-                                    '             <li class="rocktree-item rocktree-folder rocktree-search-result-item">' +
-                                '         <a class="search-result-link" data-id="' + v.nodeId +'" href="javascript:void(0);">' +
-                                    '            <span class="rocktree-name">' +
-                                    '              <h5><span class="rocktree-node-name-text text-color">' + v.title + '</span><br/>' +
-                                    '              <span class="text-muted"><small>' + v.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</small></span></h5>' +
-                                    '            </span></a>' +
-                                    '         </li>' +
-                                    '       </div>' +
-                                    ' </div>' +
-                                   '</div>';
+                                    '<li id="divSearchItem_' + idx + '" class="preview-item">' +
+                                    '   <a class="search-result-link" data-id="' + v.nodeId +'" href="javascript:void(0);">' +
+                                    '              <span class="title">' + v.title + '</span>' +
+                                    '              <span class="subtitle">' + v.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') +
+                                    '   </span></a>' +
+                                    '</li>';
                            });
 
                          $('#<%=divSearchResults.ClientID%>').html('<ul class="list-unstyled">' +

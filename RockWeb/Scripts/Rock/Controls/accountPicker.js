@@ -204,6 +204,7 @@
                     $(this).toggleClass("active");
                     $control.find('.picker-menu').first().toggle(0, function () {
                         self.scrollToSelectedItem();
+                        $control.find('.js-search-panel input').trigger('focus');
                     });
                 });
 
@@ -217,11 +218,12 @@
                     //cleanup
                     self.setViewMode('clear');
                     self.setActiveMenu(false);
-                    doPostBack();
+                    //doPostBack();
                 });
 
                 // Preview Selection link click
                 $control.find('.picker-preview').on('click', function () {
+                    $control.find('.js-search-panel').hide();
                     $control.find('.picker-preview').hide();
                     $control.find('.picker-treeview').show();
                     $control.find('.js-select-all').hide();
@@ -241,33 +243,25 @@
                         var listHtml = '';
                         rockTree.selectedNodes.forEach(function (node) {
                             if (!node.path) {
-                                node.path = '';
+                                node.path = 'Top-Level';
                             }
 
                             listHtml +=
-                                '<div id="preview-item-' + node.id + '" class="container-fluid js-preview-item">' +
-                                '      <div class="row">' +
-                                '        <div class="col-xs-10">' +
-                                '             <li class="rocktree-item rocktree-folder rocktree-preview-item">' +
-                                '            <span class="rocktree-name" title="' + node.title + '">' +
-                                '              <h5><span class="rocktree-node-name-text text-color">' + node.name + '</span><br/>' +
-                                '              <span class="text-muted"><small>' + node.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</small></span></h5>' +
-                                '            </span>' +
-                                '         </li>' +
-                                '       </div>' +
-                                '       <div class="col-xs-2 pt-2">' +
-                                '         <a id="lnk-remove-preview-' + node.id + '" title="Remove From Preview" class="btn btn-link text-muted js-remove-preview" data-id="' + node.id + '"> <i class="fa fa-times"></i></a>' +
-                                '       </div>' +
-                                ' </div>' +
+                                '<div id="preview-item-' + node.id + '" class="d-flex align-items-center preview-item js-preview-item">' +
+                                '         <div class="flex-fill">' +
+                                '              <span class="text-color d-block">' + node.name + '</span>' +
+                                '              <span class="text-muted text-sm">' + node.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</span>' +
+                                '         </div>' +
+                                '         <a id="lnk-remove-preview-' + node.id + '" title="Remove From Preview" class="btn btn-link text-color btn-xs btn-square ml-auto js-remove-preview" data-id="' + node.id + '"><i class="fa fa-times"></i></a>' +
                                 '</div>';
                         });
 
                         // Display preview list
-                        var listHtmlView = '<ul class="rocktree">' +
+                        var listHtmlView = '<div>' +
                             listHtml +
-                            '</ul>';
+                            '</div>';
 
-                        $viewport.html(listHtmlView);
+                        $control.find('.scroll-container').addClass('scroll-container-native').html(listHtmlView);
                         // Wire up remove event and remove from dataset
 
                         $control.find('.js-remove-preview').on('click', function (e) {
@@ -395,10 +389,10 @@
                                 }
                             });
                         }
-                                                
+
                         return;
                     }
-                                        
+
                     var rockTree = $control.find('.treeview').data('rockTree'),
                         selectedNodes = rockTree.selectedNodes,
                         selectedIds = [],
@@ -428,6 +422,8 @@
                         self.updateScrollbar();
                     });
 
+                    self.setViewMode('selected');
+
                     if (!(el && el.originalEvent && el.originalEvent.srcElement === this)) {
                         // if this event was called by something other than the button itself, make sure the execute the href (which is probably javascript)
                         var jsPostback = $(this).attr('href');
@@ -435,8 +431,6 @@
                             window.location = jsPostback;
                         }
                     }
-
-                    self.setViewMode('selected');
                 });
 
                 $control.find('.picker-select-none').on("click", function (e) {
@@ -494,6 +488,7 @@
                         sPosition = 'relative'
                     }
                     if (self.iScroll) {
+                        console.log(self.iScroll);
                         self.iScroll.refresh();
                     }
                 }
@@ -523,7 +518,7 @@
             },
             setActiveMenu: function (value) {
                 var $control = $('#' + this.options.controlId);
-                if (value === undefined || value===null) {
+                if (value === undefined || value === null) {
                     value = true;
                 }
                 $control.find('.js-picker-showactive-value').val(value.toString());
@@ -570,6 +565,7 @@
                     case 'search': {
                         $control.find('.picker-treeview').show();
                         $control.find('.picker-preview').hide();
+                        $control.find('.js-select-all').hide();
                     }
                         break;
                     default: {
@@ -617,31 +613,31 @@
                     var $searchValueField = $control.find('.js-existing-search-value');
 
                     var $searchControl =
-                        $('<div class="rocktree-drawer form-group js-group-search" style="display: none;">' +
-                            '	<span class="control-label d-none">Search</span>' +
-                            '	<div id="pnlSearch_' + controlId + '" class="input-group js-search-panel" > ' +
-                            '		<input id="tbSearch_' + controlId + '" type="text" placeholder="Quick Find" class="form-control input-sm" />' +
+                        $('	<div id="pnlSearch_' + controlId + '" class="input-group input-group-sm js-search-panel mb-2" > ' +
+                            '		<input id="tbSearch_' + controlId + '" type="text" placeholder="Quick Find" class="form-control" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" />' +
                             '		<span class="input-group-btn">' +
                             '			<a id="btnSearch_' + controlId + '" class="btn btn-default btn-sm"><i class="fa fa-search"></i></a>' +
                             '		</span>' +
-                            '	</div>' +
-                            '</div><div class="mb-5"></div>');
+                            '	</div>');
 
                     // Get all of the current rendered items so we can revert if user leaves search
+                    var $pickerMenu = $control.find('.picker-menu');
                     var $treeView = $control.find('.treeview');
                     var $overview = $control.find('.overview');
-                    var $viewport = $control.find('.viewport');
                     var $hfItemIds = $control.find('.js-item-id-value');
 
                     // Added this check to prevent rendering call from duping the element
-                    if ($viewport.find('.js-search-panel').length === 0) {
+                    if ($pickerMenu.find('.js-search-panel').length === 0) {
                         // Add the search control after rendering
-                        $overview.prepend($searchControl.html());
+                        $pickerMenu.prepend($searchControl);
                     }
 
                     var $searchInputControl = $('#tbSearch_' + controlId);
 
                     $('#btnSearch_' + controlId).off('click').on('click', function () {
+
+                        var currentSelectedNodeIds = rockTree.selectedNodes.map(function (v) { return v.id; });
+
                         $hfItemIds = $control.find('.js-item-id-value');
 
                         var searchKeyword = $searchInputControl.val();
@@ -696,21 +692,26 @@
                                         }
 
                                         var inputHtml = '<input type="radio" data-id="' + node.id + '" class="checkbox js-opt-search"' + disabledCheck + '>';
+                                        var inputType = 'radio';
                                         if (self.options.allowMultiSelect) {
                                             inputHtml = '<input type="checkbox" data-id="' + node.id + '" class="checkbox js-chk-search"' + disabledCheck + '>';
+                                            inputType = 'checkbox';
+                                        }
+
+                                        if (node.path === '') {
+                                            node.path = "Top-Level";
                                         }
 
                                         listHtml +=
-                                            '<div id="divSearchItem-' + node.id + '" class="container-fluid js-search-item">' +
-                                            '      <div class="row">' +
-                                            '        <div class="col-xs-1 pr-0 pt-2">' +
+
+                                            '<div id="divSearchItem-' + node.id + '" class="' + inputType + ' search-item js-search-item">' +
+                                            '      <label>' +
                                             inputHtml +
-                                            '        </div>' +
-                                            '        <div class="col-xs-11 pl-0">' +
-                                            '              <h5><span class="rocktree-node-name-text text-color' + mutedText + '">' + node.title + '</span></br>' +
-                                            '              <span class="text-muted"><small>' + node.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</small></span></h5>' +
-                                            '        </div>' +
-                                            '     </div>' +
+                                            '        <span class="label-text">' +
+                                            '              <span class="text-color d-block' + mutedText + '">' + node.title + '</span>' +
+                                            '              <span class="text-muted text-sm">' + node.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</span>' +
+                                            '        </span>' +
+                                            '     </label>' +
                                             '</div>';
                                     });
 
@@ -736,24 +737,33 @@
                                                     if (!itemIds.find(function (i) { return n.id === i; })) {
                                                         itemIds.push(n.id);
                                                     }
+
                                                 });
                                             }
+                                        }
 
-                                            if (itemIds && itemIds.length) {
-                                                $hfItemIds.val(itemIds.join(','));
+                                        // We need to reselect any selection that were set in the tree but not part of the search results
+                                        if (currentSelectedNodeIds && currentSelectedNodeIds.length > 0) {
+                                            nodes.forEach(function (node) {
+                                                currentSelectedNodeIds = currentSelectedNodeIds.filter(function (current) { return current !== node.id });
+                                            });
+
+                                            if (currentSelectedNodeIds && currentSelectedNodeIds.length > 0) {
+                                                itemIds.push(currentSelectedNodeIds);
                                             }
+                                        }
+
+                                        if (itemIds && itemIds.length) {
+                                            // set the selected items on the server control to handle on postback
+                                            $hfItemIds.val(itemIds.join(','));
                                         }
                                     });
 
                                     // Handle multi item check selection
-                                    $control.find('.rocktree-node-name-text').css('cursor', 'pointer');
                                     $control.find('.js-search-item').off('click').on('click', function (e) {
-                                        if (e.target.className !== "rocktree-node-name-text text-color") {
-                                            return;
-                                        }
-                                                                                
+
                                         var $chkBox = $(this).find('.js-chk-search').first();
-                                        if ($chkBox.length>0) {
+                                        if ($chkBox.length > 0) {
                                             if (!$chkBox.prop('checked')) {
                                                 $chkBox.prop('checked', true);
                                                 $control.find('.js-chk-search').trigger('change');
@@ -764,7 +774,7 @@
                                         }
                                     });
 
-                                    
+
                                     // Handle single item radio selection
                                     $control.find('.js-opt-search').off('change').on('change', function () {
                                         var thisNodeId = $(this).attr('data-id');
@@ -788,10 +798,11 @@
                                                     }
                                                 });
                                             }
+                                        }
 
-                                            if (itemIds && itemIds.length) {
-                                                $hfItemIds.val(itemIds.join(','));
-                                            }
+                                        if (itemIds && itemIds.length) {
+                                            // set the selected items on the server control to handle on postback
+                                            $hfItemIds.val(itemIds.join(','));
                                         }
                                     });
                                 }
@@ -800,13 +811,13 @@
                                 if (rockTree.selectedNodes && rockTree.selectedNodes.length) {
                                     rockTree.selectedNodes.forEach(function (selectedNode) {
                                         if (self.options.allowMultiSelect && self.options.allowMultiSelect === true) {
-                                            $control.find('[data-id=' + selectedNode.id + '].js-chk-search').attr('checked', true);
+                                            $control.find('[data-id=' + selectedNode.id + '].js-chk-search').prop('checked', true);
                                             var checkedNode = selectedNode;
                                             checkedNode.id = selectedNode.id;
                                             $control.find('[data-id=' + selectedNode.id + '].js-chk-search').trigger('change');
                                         }
                                         else {
-                                            $control.find('[data-id=' + selectedNode.id + '].js-opt-search').attr('checked', true);
+                                            $control.find('[data-id=' + selectedNode.id + '].js-opt-search').prop('checked', true);
                                             var enabledNode = selectedNode;
                                             enabledNode.id = selectedNode.id;
                                             $control.find('[data-id=' + selectedNode.id + '].js-opt-search').trigger('change');
@@ -831,10 +842,7 @@
                         var searchKeyword = $searchInputControl.val();
 
                         if (!searchKeyword || searchKeyword.length === 0) {
-                            $searchValueField.val('');
-                            self.setViewMode('clear');
-                            self.setActiveMenu(true);
-                            doPostBack();
+                            $control.find('.picker-treeview').trigger('click');
                         }
 
                         self.togglePickerElements();
