@@ -192,6 +192,7 @@ namespace Rock.Model
             var viewModel = new CategoryBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 Description = model.Description,
                 EntityTypeId = model.EntityTypeId,

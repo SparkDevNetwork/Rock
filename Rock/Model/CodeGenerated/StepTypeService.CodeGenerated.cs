@@ -100,6 +100,7 @@ namespace Rock.Model
             var viewModel = new StepTypeBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AllowManualEditing = model.AllowManualEditing,
                 AllowMultiple = model.AllowMultiple,

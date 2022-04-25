@@ -100,6 +100,7 @@ namespace Rock.Model
             var viewModel = new SiteBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AdditionalSettings = model.AdditionalSettings,
                 AllowedFrameDomains = model.AllowedFrameDomains,
@@ -113,6 +114,7 @@ namespace Rock.Model
                 DefaultPageId = model.DefaultPageId,
                 DefaultPageRouteId = model.DefaultPageRouteId,
                 Description = model.Description,
+                DisablePredictableIds = model.DisablePredictableIds,
                 EnabledForShortening = model.EnabledForShortening,
                 EnableExclusiveRoutes = model.EnableExclusiveRoutes,
                 EnableMobileRedirect = model.EnableMobileRedirect,
@@ -223,6 +225,7 @@ namespace Rock.Model
             target.DefaultPageId = source.DefaultPageId;
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
+            target.DisablePredictableIds = source.DisablePredictableIds;
             target.EnabledForShortening = source.EnabledForShortening;
             target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;

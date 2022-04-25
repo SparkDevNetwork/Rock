@@ -31,6 +31,7 @@ export type FinancialTransactionDetail = IEntity & {
     feeAmount?: number | null;
     feeCoverageAmount?: number | null;
     foreignCurrencyAmount?: number | null;
+    idKey?: string | null;
     summary?: string | null;
     transactionId?: number;
     createdDateTime?: string | null;

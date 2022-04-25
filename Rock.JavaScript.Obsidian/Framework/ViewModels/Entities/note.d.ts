@@ -32,6 +32,7 @@ export type Note = IEntity & {
     editedByPersonAliasId?: number | null;
     editedDateTime?: string | null;
     entityId?: number | null;
+    idKey?: string | null;
     isAlert?: boolean | null;
     isPrivateNote?: boolean;
     isSystem?: boolean;

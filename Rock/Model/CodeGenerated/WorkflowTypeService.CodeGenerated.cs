@@ -142,6 +142,7 @@ namespace Rock.Model
             var viewModel = new WorkflowTypeBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 CategoryId = model.CategoryId,
                 CompletedWorkflowRetentionPeriod = model.CompletedWorkflowRetentionPeriod,

@@ -27,6 +27,7 @@ export type EntityCampusFilter = IEntity & {
     campusId?: number;
     entityId?: number;
     entityTypeId?: number;
+    idKey?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

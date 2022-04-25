@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new NotificationBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 Classification = ( int ) model.Classification,
                 IconCssClass = model.IconCssClass,

@@ -39,6 +39,14 @@ namespace Rock.ViewModels.Utility
         public Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier key of this entity.
+        /// </summary>
+        /// <value>
+        /// The identifier key of this entity.
+        /// </value>
+        public string IdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the attributes.
         /// </summary>
         /// <value>

@@ -32,12 +32,15 @@ export type AchievementType = IEntity & {
     achievementSuccessWorkflowTypeId?: number | null;
     achieverEntityTypeId?: number;
     allowOverAchievement?: boolean;
+    alternateImageBinaryFileId?: number | null;
     badgeLavaTemplate?: string | null;
     categoryId?: number | null;
     componentConfigJson?: string | null;
     componentEntityTypeId?: number;
     customSummaryLavaTemplate?: string | null;
     description?: string | null;
+    highlightColor?: string | null;
+    idKey?: string | null;
     imageBinaryFileId?: number | null;
     isActive?: boolean;
     isPublic?: boolean;

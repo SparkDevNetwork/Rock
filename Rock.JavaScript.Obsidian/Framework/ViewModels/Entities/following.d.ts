@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type Following = IEntity & {
     entityId?: number;
     entityTypeId?: number;
+    idKey?: string | null;
     personAliasId?: number;
     purposeKey?: string | null;
     createdDateTime?: string | null;

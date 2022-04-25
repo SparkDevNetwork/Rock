@@ -84,6 +84,7 @@ namespace Rock.Model
             var viewModel = new CommunicationTemplateBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 BCCEmails = model.BCCEmails,
                 CategoryId = model.CategoryId,

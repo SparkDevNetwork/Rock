@@ -27,6 +27,7 @@ export type InteractionDeviceType = IEntity & {
     application?: string | null;
     clientType?: string | null;
     deviceTypeData?: string | null;
+    idKey?: string | null;
     name?: string | null;
     operatingSystem?: string | null;
     createdDateTime?: string | null;

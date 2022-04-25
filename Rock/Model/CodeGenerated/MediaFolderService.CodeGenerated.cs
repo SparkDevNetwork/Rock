@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new MediaFolderBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 ContentChannelAttributeId = model.ContentChannelAttributeId,
                 ContentChannelId = model.ContentChannelId,

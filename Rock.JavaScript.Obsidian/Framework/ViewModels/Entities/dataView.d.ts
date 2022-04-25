@@ -28,6 +28,7 @@ export type DataView = IEntity & {
     dataViewFilterId?: number | null;
     description?: string | null;
     entityTypeId?: number | null;
+    idKey?: string | null;
     includeDeceased?: boolean;
     isSystem?: boolean;
     lastRunDateTime?: string | null;

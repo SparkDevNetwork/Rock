@@ -36,6 +36,7 @@ export type PrayerRequest = IEntity & {
     firstName?: string | null;
     flagCount?: number | null;
     groupId?: number | null;
+    idKey?: string | null;
     isActive?: boolean | null;
     isApproved?: boolean | null;
     isPublic?: boolean | null;

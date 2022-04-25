@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type BenevolenceWorkflow = IEntity & {
     benevolenceTypeId?: number | null;
+    idKey?: string | null;
     qualifierValue?: string | null;
     triggerType?: number;
     workflowTypeId?: number;

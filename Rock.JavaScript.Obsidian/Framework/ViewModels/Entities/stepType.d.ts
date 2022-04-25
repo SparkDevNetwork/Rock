@@ -33,6 +33,7 @@ export type StepType = IEntity & {
     hasEndDate?: boolean;
     highlightColor?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isDateRequired?: boolean;
     mergeTemplateDescriptor?: string | null;

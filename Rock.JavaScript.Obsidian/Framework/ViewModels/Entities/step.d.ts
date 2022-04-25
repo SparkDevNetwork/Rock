@@ -27,6 +27,7 @@ export type Step = IEntity & {
     campusId?: number | null;
     completedDateTime?: string | null;
     endDateTime?: string | null;
+    idKey?: string | null;
     note?: string | null;
     order?: number;
     personAliasId?: number;

@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type RegistrationRegistrantFee = IEntity & {
     cost?: number;
+    idKey?: string | null;
     option?: string | null;
     quantity?: number;
     registrationRegistrantId?: number;

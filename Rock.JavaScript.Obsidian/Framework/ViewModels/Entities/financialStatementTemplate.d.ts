@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type FinancialStatementTemplate = IEntity & {
     description?: string | null;
     footerSettingsJson?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     logoBinaryFileId?: number | null;
     name?: string | null;

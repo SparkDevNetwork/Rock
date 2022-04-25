@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new ExceptionLogBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 Cookies = model.Cookies,
                 Description = model.Description,

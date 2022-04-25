@@ -28,6 +28,7 @@ export type ConnectionRequestActivity = IEntity & {
     connectionOpportunityId?: number | null;
     connectionRequestId?: number;
     connectorPersonAliasId?: number | null;
+    idKey?: string | null;
     note?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

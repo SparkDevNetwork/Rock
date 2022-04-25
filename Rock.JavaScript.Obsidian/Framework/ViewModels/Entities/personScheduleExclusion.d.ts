@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type PersonScheduleExclusion = IEntity & {
     endDate?: string;
     groupId?: number | null;
+    idKey?: string | null;
     parentPersonScheduleExclusionId?: number | null;
     personAliasId?: number | null;
     startDate?: string;

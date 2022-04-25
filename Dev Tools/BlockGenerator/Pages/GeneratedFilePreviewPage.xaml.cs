@@ -175,7 +175,7 @@ namespace BlockGenerator.Pages
             }
             else
             {
-                MessageBox.Show( "Selected files have been created or updated.\n\nRemember to add any new files to the projects.", "Files Saved" );
+                MessageBox.Show( "Selected files have been created or updated.", "Files Saved" );
             }
         }
 

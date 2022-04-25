@@ -30,6 +30,7 @@ export type InteractionComponent = IEntity & {
     componentData?: string | null;
     componentSummary?: string | null;
     entityId?: number | null;
+    idKey?: string | null;
     interactionChannelId?: number;
     name?: string | null;
     createdDateTime?: string | null;

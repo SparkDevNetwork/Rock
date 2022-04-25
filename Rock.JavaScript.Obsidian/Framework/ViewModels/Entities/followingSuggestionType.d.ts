@@ -27,6 +27,7 @@ export type FollowingSuggestionType = IEntity & {
     description?: string | null;
     entityNotificationFormatLava?: string | null;
     entityTypeId?: number | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     order?: number;

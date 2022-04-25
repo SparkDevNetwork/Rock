@@ -29,6 +29,7 @@ export type WorkflowActionFormAttribute = IEntity & {
     columnSize?: number | null;
     fieldVisibilityRulesJSON?: string | null;
     hideLabel?: boolean;
+    idKey?: string | null;
     isReadOnly?: boolean;
     isRequired?: boolean;
     isVisible?: boolean;

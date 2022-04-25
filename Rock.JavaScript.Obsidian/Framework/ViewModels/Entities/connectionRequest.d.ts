@@ -35,6 +35,7 @@ export type ConnectionRequest = IEntity & {
     connectionStatusId?: number;
     connectorPersonAliasId?: number | null;
     followupDate?: string | null;
+    idKey?: string | null;
     order?: number;
     personAliasId?: number;
     createdDateTime?: string | null;

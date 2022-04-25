@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new GroupRequirementBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 GroupId = model.GroupId,
                 GroupRequirementTypeId = model.GroupRequirementTypeId,

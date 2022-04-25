@@ -30,6 +30,7 @@ export type Interaction = IEntity & {
     channelCustomIndexed1?: string | null;
     content?: string | null;
     entityId?: number | null;
+    idKey?: string | null;
     interactionComponentId?: number;
     interactionData?: string | null;
     interactionDateTime?: string;

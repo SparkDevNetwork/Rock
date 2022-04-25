@@ -53,7 +53,7 @@ namespace BlockGenerator.Pages
         {
             InitializeComponent();
 
-            RockOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( Path.Combine( "Rock", "bin", "Debug", "Rock.dll" ), "Rock" )
+            RockOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Rock.Data.IEntity ).Assembly.Location, "Rock" )
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }

@@ -31,6 +31,7 @@ export type ContentChannel = IEntity & {
     description?: string | null;
     enableRss?: boolean;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isIndexEnabled?: boolean;
     isStructuredContent?: boolean;
     isTaggingEnabled?: boolean;

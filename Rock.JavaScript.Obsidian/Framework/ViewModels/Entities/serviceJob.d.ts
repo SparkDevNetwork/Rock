@@ -30,6 +30,7 @@ export type ServiceJob = IEntity & {
     description?: string | null;
     enableHistory?: boolean;
     historyCount?: number;
+    idKey?: string | null;
     isActive?: boolean | null;
     isSystem?: boolean;
     lastRunDateTime?: string | null;

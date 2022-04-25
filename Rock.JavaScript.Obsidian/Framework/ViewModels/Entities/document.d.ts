@@ -27,6 +27,7 @@ export type Document = IEntity & {
     description?: string | null;
     documentTypeId?: number;
     entityId?: number;
+    idKey?: string | null;
     isSystem?: boolean;
     name?: string | null;
     purposeKey?: string | null;

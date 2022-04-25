@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new FollowingEventNotificationBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 EntityId = model.EntityId,
                 FollowingEventTypeId = model.FollowingEventTypeId,

@@ -28,6 +28,7 @@ export type RegistrationTemplateFee = IEntity & {
     discountApplies?: boolean;
     feeType?: number;
     hideWhenNoneRemaining?: boolean;
+    idKey?: string | null;
     isActive?: boolean;
     isRequired?: boolean;
     name?: string | null;

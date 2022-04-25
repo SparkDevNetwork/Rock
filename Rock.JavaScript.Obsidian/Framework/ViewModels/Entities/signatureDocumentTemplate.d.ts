@@ -28,6 +28,7 @@ export type SignatureDocumentTemplate = IEntity & {
     completionSystemCommunicationId?: number | null;
     description?: string | null;
     documentTerm?: string | null;
+    idKey?: string | null;
     inviteSystemCommunicationId?: number | null;
     isActive?: boolean;
     lavaTemplate?: string | null;

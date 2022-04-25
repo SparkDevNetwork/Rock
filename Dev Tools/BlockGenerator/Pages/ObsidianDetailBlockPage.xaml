@@ -150,7 +150,7 @@
 
                         <controls:Alert x:Name="RockOutOfDateAlert"
                                         Margin="0, 8, 0, 0"
-                                        Text="The Rock.dll is older than the source code files, you might need to recompile." />
+                                        Text="The Rock.dll is older than the source code files, you might need to recompile it and the code generation tool." />
                     </StackPanel>
                 </Border>
             </Grid>

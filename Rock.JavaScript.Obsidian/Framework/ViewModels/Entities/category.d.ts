@@ -30,6 +30,7 @@ export type Category = IEntity & {
     entityTypeQualifierValue?: string | null;
     highlightColor?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isSystem?: boolean;
     name?: string | null;
     order?: number;

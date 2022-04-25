@@ -29,6 +29,7 @@ export type RemoteAuthenticationSession = IEntity & {
     clientIpAddress?: string | null;
     code?: string | null;
     deviceUniqueIdentifier?: string | null;
+    idKey?: string | null;
     sessionAuthenticatedDateTime?: string | null;
     sessionEndDateTime?: string | null;
     sessionStartDateTime?: string | null;

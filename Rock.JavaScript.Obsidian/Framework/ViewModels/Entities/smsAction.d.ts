@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type SmsAction = IEntity & {
     continueAfterProcessing?: boolean;
     expireDate?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     order?: number;

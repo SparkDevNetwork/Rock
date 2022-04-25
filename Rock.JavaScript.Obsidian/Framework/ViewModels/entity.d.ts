@@ -20,6 +20,7 @@ import { PublicAttributeBag } from "./Utility/publicAttributeBag";
 
 export interface IEntity {
     id: number;
+    idKey: string;
     guid: Guid;
     attributes?: Record<string, PublicAttributeBag> | null;
     attributeValues?: Record<string, string> | null;

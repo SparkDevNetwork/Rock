@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new StepBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 CampusId = model.CampusId,
                 CompletedDateTime = model.CompletedDateTime,

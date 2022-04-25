@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new FinancialPersonBankAccountBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AccountNumberMasked = model.AccountNumberMasked,
                 AccountNumberSecured = model.AccountNumberSecured,

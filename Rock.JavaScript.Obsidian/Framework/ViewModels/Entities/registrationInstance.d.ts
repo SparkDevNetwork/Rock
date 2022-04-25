@@ -36,6 +36,7 @@ export type RegistrationInstance = IEntity & {
     endDateTime?: string | null;
     externalGatewayFundId?: number | null;
     externalGatewayMerchantId?: number | null;
+    idKey?: string | null;
     isActive?: boolean;
     maxAttendees?: number | null;
     minimumInitialPayment?: number | null;

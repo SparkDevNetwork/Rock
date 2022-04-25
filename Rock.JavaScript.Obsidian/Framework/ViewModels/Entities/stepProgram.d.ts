@@ -28,6 +28,7 @@ export type StepProgram = IEntity & {
     defaultListView?: number;
     description?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     order?: number;

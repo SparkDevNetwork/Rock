@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type AssetStorageProvider = IEntity & {
     description?: string | null;
     entityTypeId?: number | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     order?: number;

@@ -42,6 +42,7 @@ export type RegistrationTemplate = IEntity & {
     groupMemberRoleId?: number | null;
     groupMemberStatus?: number;
     groupTypeId?: number | null;
+    idKey?: string | null;
     isActive?: boolean;
     isRegistrationMeteringEnabled?: boolean;
     loginRequired?: boolean;

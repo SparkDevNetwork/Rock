@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new ConnectionOpportunityConnectorGroupBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 CampusId = model.CampusId,
                 ConnectionOpportunityId = model.ConnectionOpportunityId,

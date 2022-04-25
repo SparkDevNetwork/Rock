@@ -28,6 +28,7 @@ export type ConnectionStatusAutomation = IEntity & {
     dataViewId?: number | null;
     destinationStatusId?: number;
     groupRequirementsFilter?: number;
+    idKey?: string | null;
     sourceStatusId?: number;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

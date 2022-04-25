@@ -136,7 +136,7 @@ export default defineComponent({
             errorMessage.value = "";
 
             const result = await invokeBlockAction<string>("Delete", {
-                guid: {{ EntityName | CamelCase }}ViewBag.value?.guid
+                key: {{ EntityName | CamelCase }}ViewBag.value?.idKey
             });
 
             if (result.isSuccess && result.data) {
@@ -155,7 +155,7 @@ export default defineComponent({
          */
         const onEdit = async (): Promise<boolean> => {
             const result = await invokeBlockAction<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>("Edit", {
-                guid: {{ EntityName | CamelCase }}ViewBag.value?.guid
+                key: {{ EntityName | CamelCase }}ViewBag.value?.idKey
             });
 
             if (result.isSuccess && result.data && result.data.entity) {

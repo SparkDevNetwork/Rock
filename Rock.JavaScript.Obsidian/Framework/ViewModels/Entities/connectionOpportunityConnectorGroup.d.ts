@@ -27,6 +27,7 @@ export type ConnectionOpportunityConnectorGroup = IEntity & {
     campusId?: number | null;
     connectionOpportunityId?: number;
     connectorGroupId?: number;
+    idKey?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

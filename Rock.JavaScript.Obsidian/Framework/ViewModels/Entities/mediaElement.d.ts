@@ -27,6 +27,7 @@ export type MediaElement = IEntity & {
     description?: string | null;
     durationSeconds?: number | null;
     fileDataJson?: string | null;
+    idKey?: string | null;
     mediaFolderId?: number;
     metricData?: string | null;
     name?: string | null;

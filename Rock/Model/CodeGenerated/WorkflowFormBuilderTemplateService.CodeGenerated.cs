@@ -88,6 +88,7 @@ namespace Rock.Model
             var viewModel = new WorkflowFormBuilderTemplateBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AllowPersonEntry = model.AllowPersonEntry,
                 CompletionSettingsJson = model.CompletionSettingsJson,

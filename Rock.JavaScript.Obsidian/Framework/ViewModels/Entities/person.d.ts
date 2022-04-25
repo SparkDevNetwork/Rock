@@ -44,6 +44,7 @@ export type Person = IEntity & {
     givingGroupId?: number | null;
     givingLeaderId?: number;
     graduationYear?: number | null;
+    idKey?: string | null;
     inactiveReasonNote?: string | null;
     isDeceased?: boolean;
     isEmailActive?: boolean;

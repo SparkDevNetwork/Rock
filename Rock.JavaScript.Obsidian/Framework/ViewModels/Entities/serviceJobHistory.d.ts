@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ServiceJobHistory = IEntity & {
+    idKey?: string | null;
     serviceJobId?: number;
     serviceWorker?: string | null;
     startDateTime?: string | null;

@@ -30,6 +30,7 @@ export type AssessmentType = IEntity & {
     badgeSummaryLava?: string | null;
     description?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isSystem?: boolean;
     minimumDaysToRetake?: number;

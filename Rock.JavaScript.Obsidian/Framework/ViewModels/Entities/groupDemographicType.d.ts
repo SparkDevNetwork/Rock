@@ -27,6 +27,7 @@ export type GroupDemographicType = IEntity & {
     componentEntityTypeId?: number;
     description?: string | null;
     groupTypeId?: number;
+    idKey?: string | null;
     isAutomated?: boolean;
     lastRunDurationSeconds?: number | null;
     name?: string | null;

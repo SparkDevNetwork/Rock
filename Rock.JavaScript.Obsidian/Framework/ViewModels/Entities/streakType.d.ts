@@ -27,6 +27,7 @@ export type StreakType = IEntity & {
     description?: string | null;
     enableAttendance?: boolean;
     firstDayOfWeek?: number | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     occurrenceFrequency?: number;

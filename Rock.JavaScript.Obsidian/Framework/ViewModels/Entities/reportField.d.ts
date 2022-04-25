@@ -27,6 +27,7 @@ export type ReportField = IEntity & {
     columnHeaderText?: string | null;
     columnOrder?: number;
     dataSelectComponentEntityTypeId?: number | null;
+    idKey?: string | null;
     isCommunicationMergeField?: boolean | null;
     isCommunicationRecipientField?: boolean | null;
     reportFieldType?: number;

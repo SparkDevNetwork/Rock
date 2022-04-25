@@ -34,6 +34,7 @@ export type Communication = IEntity & {
     fromEmail?: string | null;
     fromName?: string | null;
     futureSendDateTime?: string | null;
+    idKey?: string | null;
     isBulkCommunication?: boolean;
     listGroupId?: number | null;
     message?: string | null;

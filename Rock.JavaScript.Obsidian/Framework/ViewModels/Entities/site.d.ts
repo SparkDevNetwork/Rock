@@ -36,6 +36,7 @@ export type Site = IEntity & {
     defaultPageId?: number | null;
     defaultPageRouteId?: number | null;
     description?: string | null;
+    disablePredictableIds?: boolean;
     enabledForShortening?: boolean;
     enableExclusiveRoutes?: boolean;
     enableMobileRedirect?: boolean;
@@ -45,6 +46,7 @@ export type Site = IEntity & {
     externalUrl?: string | null;
     favIconBinaryFileId?: number | null;
     googleAnalyticsCode?: string | null;
+    idKey?: string | null;
     indexStartingLocation?: string | null;
     isActive?: boolean;
     isIndexEnabled?: boolean;

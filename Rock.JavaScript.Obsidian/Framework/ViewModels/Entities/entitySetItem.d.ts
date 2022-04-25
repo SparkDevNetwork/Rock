@@ -27,6 +27,7 @@ export type EntitySetItem = IEntity & {
     additionalMergeValuesJson?: string | null;
     entityId?: number;
     entitySetId?: number;
+    idKey?: string | null;
     order?: number;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

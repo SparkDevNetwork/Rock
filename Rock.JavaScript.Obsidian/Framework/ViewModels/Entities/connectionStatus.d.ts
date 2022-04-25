@@ -28,6 +28,7 @@ export type ConnectionStatus = IEntity & {
     connectionTypeId?: number | null;
     description?: string | null;
     highlightColor?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isCritical?: boolean;
     isDefault?: boolean;

@@ -31,6 +31,7 @@ export type Tag = IEntity & {
     entityTypeQualifierColumn?: string | null;
     entityTypeQualifierValue?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isSystem?: boolean;
     name?: string | null;

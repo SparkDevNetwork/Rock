@@ -37,6 +37,7 @@ export type NoteType = IEntity & {
     entityTypeQualifierValue?: string | null;
     fontColor?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isSystem?: boolean;
     maxReplyDepth?: number | null;
     name?: string | null;

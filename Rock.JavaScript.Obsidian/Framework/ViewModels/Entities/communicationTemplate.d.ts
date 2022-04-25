@@ -31,6 +31,7 @@ export type CommunicationTemplate = IEntity & {
     description?: string | null;
     fromEmail?: string | null;
     fromName?: string | null;
+    idKey?: string | null;
     imageFileId?: number | null;
     isActive?: boolean;
     isSystem?: boolean;

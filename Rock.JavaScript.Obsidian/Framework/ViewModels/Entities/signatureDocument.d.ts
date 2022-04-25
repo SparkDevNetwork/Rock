@@ -31,6 +31,7 @@ export type SignatureDocument = IEntity & {
     documentKey?: string | null;
     entityId?: number | null;
     entityTypeId?: number | null;
+    idKey?: string | null;
     inviteCount?: number;
     lastInviteDate?: string | null;
     lastStatusDate?: string | null;

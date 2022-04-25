@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type FollowingEventNotification = IEntity & {
     entityId?: number;
     followingEventTypeId?: number;
+    idKey?: string | null;
     lastNotified?: string;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

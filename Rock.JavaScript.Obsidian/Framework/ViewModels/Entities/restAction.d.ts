@@ -27,6 +27,7 @@ export type RestAction = IEntity & {
     apiId?: string | null;
     cacheControlHeaderSettings?: string | null;
     controllerId?: number;
+    idKey?: string | null;
     method?: string | null;
     path?: string | null;
     createdDateTime?: string | null;

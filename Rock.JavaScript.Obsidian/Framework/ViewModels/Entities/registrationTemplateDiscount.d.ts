@@ -29,6 +29,7 @@ export type RegistrationTemplateDiscount = IEntity & {
     discountAmount?: number;
     discountPercentage?: number;
     endDate?: string | null;
+    idKey?: string | null;
     maxRegistrants?: number | null;
     maxUsage?: number | null;
     minRegistrants?: number | null;

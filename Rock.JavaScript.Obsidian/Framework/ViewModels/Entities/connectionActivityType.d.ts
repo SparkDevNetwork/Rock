@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type ConnectionActivityType = IEntity & {
     connectionTypeId?: number | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     createdDateTime?: string | null;

@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type FinancialTransactionImage = IEntity & {
     binaryFileId?: number;
+    idKey?: string | null;
     order?: number;
     transactionId?: number;
     createdDateTime?: string | null;

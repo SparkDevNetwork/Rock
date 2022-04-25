@@ -30,6 +30,7 @@ export type Metric = IEntity & {
     description?: string | null;
     enableAnalytics?: boolean;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isCumulative?: boolean;
     isSystem?: boolean;
     lastRunDateTime?: string | null;

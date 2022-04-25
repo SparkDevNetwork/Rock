@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type ConnectionRequestWorkflow = IEntity & {
     connectionRequestId?: number;
     connectionWorkflowId?: number;
+    idKey?: string | null;
     triggerQualifier?: string | null;
     triggerType?: number;
     workflowId?: number;

@@ -28,6 +28,7 @@ export type AttributeValueHistorical = IEntity & {
     currentRowIndicator?: boolean;
     effectiveDateTime?: string;
     expireDateTime?: string;
+    idKey?: string | null;
     value?: string | null;
     valueAsBoolean?: boolean | null;
     valueAsDateTime?: string | null;

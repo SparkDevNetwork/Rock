@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type IdentityVerificationCode = IEntity & {
     code?: string | null;
+    idKey?: string | null;
     lastIssueDateTime?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

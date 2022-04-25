@@ -33,6 +33,7 @@ export type ConnectionType = IEntity & {
     enableFutureFollowup?: boolean;
     enableRequestSecurity?: boolean;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     order?: number;

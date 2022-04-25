@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PersonalLinkSectionOrder = IEntity & {
+    idKey?: string | null;
     order?: number;
     personAliasId?: number;
     sectionId?: number;

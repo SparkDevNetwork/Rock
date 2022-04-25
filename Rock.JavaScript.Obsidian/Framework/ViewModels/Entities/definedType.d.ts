@@ -30,6 +30,7 @@ export type DefinedType = IEntity & {
     enableSecurityOnValues?: boolean;
     fieldTypeId?: number | null;
     helpText?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isSystem?: boolean;
     name?: string | null;

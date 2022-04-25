@@ -27,6 +27,7 @@ export type BlockType = IEntity & {
     category?: string | null;
     description?: string | null;
     entityTypeId?: number | null;
+    idKey?: string | null;
     isCommon?: boolean;
     isSystem?: boolean;
     name?: string | null;

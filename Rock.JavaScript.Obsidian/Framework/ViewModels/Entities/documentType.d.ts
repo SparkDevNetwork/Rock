@@ -30,6 +30,7 @@ export type DocumentType = IEntity & {
     entityTypeQualifierColumn?: string | null;
     entityTypeQualifierValue?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isImage?: boolean;
     isSystem?: boolean;
     maxDocumentsPerEntity?: number | null;

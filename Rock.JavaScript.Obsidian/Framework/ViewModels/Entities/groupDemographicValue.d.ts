@@ -27,6 +27,7 @@ import { Guid } from "@Obsidian/Types";
 export type GroupDemographicValue = IEntity & {
     groupDemographicTypeId?: number;
     groupId?: number;
+    idKey?: string | null;
     lastCalculatedDateTime?: string | null;
     relatedEntityId?: number | null;
     relatedEntityTypeId?: number | null;

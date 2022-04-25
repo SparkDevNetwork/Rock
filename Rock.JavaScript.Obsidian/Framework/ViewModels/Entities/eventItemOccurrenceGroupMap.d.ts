@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type EventItemOccurrenceGroupMap = IEntity & {
     eventItemOccurrenceId?: number | null;
     groupId?: number | null;
+    idKey?: string | null;
     publicName?: string | null;
     registrationInstanceId?: number | null;
     urlSlug?: string | null;

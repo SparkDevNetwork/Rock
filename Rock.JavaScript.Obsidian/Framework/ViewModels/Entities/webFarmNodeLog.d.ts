@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type WebFarmNodeLog = IEntity & {
     eventDateTime?: string;
     eventType?: string | null;
+    idKey?: string | null;
     message?: string | null;
     severity?: number;
     webFarmNodeId?: number;

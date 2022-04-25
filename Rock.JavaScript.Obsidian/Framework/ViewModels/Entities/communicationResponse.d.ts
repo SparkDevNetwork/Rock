@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type CommunicationResponse = IEntity & {
     fromPersonAliasId?: number | null;
+    idKey?: string | null;
     isRead?: boolean;
     messageKey?: string | null;
     relatedCommunicationId?: number | null;

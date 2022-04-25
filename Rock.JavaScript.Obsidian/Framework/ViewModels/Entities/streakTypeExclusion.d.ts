@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type StreakTypeExclusion = IEntity & {
     exclusionMap?: (number)[];
+    idKey?: string | null;
     locationId?: number | null;
     streakTypeId?: number;
     createdDateTime?: string | null;

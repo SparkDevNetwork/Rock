@@ -30,6 +30,7 @@ export type WorkflowFormBuilderTemplate = IEntity & {
     description?: string | null;
     formFooter?: string | null;
     formHeader?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isLoginRequired?: boolean;
     name?: string | null;

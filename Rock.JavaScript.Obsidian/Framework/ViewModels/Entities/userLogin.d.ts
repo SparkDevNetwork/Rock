@@ -28,6 +28,7 @@ export type UserLogin = IEntity & {
     entityTypeId?: number | null;
     failedPasswordAttemptCount?: number | null;
     failedPasswordAttemptWindowStartDateTime?: string | null;
+    idKey?: string | null;
     isConfirmed?: boolean | null;
     isLockedOut?: boolean | null;
     isOnLine?: boolean | null;

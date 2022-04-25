@@ -22,7 +22,7 @@ namespace BlockGenerator.Pages
         {
             InitializeComponent();
 
-            RockViewModelsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( Path.Combine( "Rock.ViewModels", "bin", "Debug", "Rock.ViewModels.dll" ), "Rock.ViewModels" )
+            RockViewModelsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Rock.ViewModels.Utility.ListItemBag ).Assembly.Location, "Rock.ViewModels" )
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 

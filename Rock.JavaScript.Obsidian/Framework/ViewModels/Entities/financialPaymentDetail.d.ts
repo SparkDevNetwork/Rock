@@ -32,6 +32,7 @@ export type FinancialPaymentDetail = IEntity & {
     expirationYear?: number | null;
     financialPersonSavedAccountId?: number | null;
     gatewayPersonIdentifier?: string | null;
+    idKey?: string | null;
     nameOnCard?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

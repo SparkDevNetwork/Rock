@@ -37,6 +37,7 @@ export type InteractionChannel = IEntity & {
     componentEntityTypeId?: number | null;
     componentListTemplate?: string | null;
     engagementStrength?: number | null;
+    idKey?: string | null;
     interactionCustom1Label?: string | null;
     interactionCustom2Label?: string | null;
     interactionCustomIndexed1Label?: string | null;

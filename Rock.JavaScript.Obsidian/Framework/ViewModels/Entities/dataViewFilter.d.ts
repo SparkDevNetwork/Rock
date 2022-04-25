@@ -27,6 +27,7 @@ export type DataViewFilter = IEntity & {
     dataViewId?: number | null;
     entityTypeId?: number | null;
     expressionType?: number;
+    idKey?: string | null;
     parentId?: number | null;
     relatedDataViewId?: number | null;
     selection?: string | null;

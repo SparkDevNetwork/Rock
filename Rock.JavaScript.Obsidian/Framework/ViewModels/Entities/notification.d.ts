@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type Notification = IEntity & {
     classification?: number;
     iconCssClass?: string | null;
+    idKey?: string | null;
     message?: string | null;
     sentDateTime?: string;
     title?: string | null;

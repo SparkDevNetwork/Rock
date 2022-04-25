@@ -43,5 +43,7 @@ The /checkinmanager route guid */
     OidcLogout = "5137F15D-61EA-4935-A9E1-16534959AEFA",
     /** The edit person route '/Person/{PersonId}/Edit' */
     EditPersonRoute = "FCC0CCFF-8E18-48D8-A5EB-3D0F81D68280",
+    /** The financial account search 'Account/Search/name/?SearchTerm=' */
+    FinancialAccountSearch = "76A96F05-5B89-407B-A72E-5CB4FA64A11A",
 }
 

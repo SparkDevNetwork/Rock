@@ -27,6 +27,7 @@ export type Block = IEntity & {
     additionalSettings?: string | null;
     blockTypeId?: number;
     cssClass?: string | null;
+    idKey?: string | null;
     isSystem?: boolean;
     layoutId?: number | null;
     name?: string | null;

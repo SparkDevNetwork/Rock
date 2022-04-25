@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type GroupMemberAssignment = IEntity & {
     confirmationSentDateTime?: string | null;
     groupMemberId?: number;
+    idKey?: string | null;
     lastRSVPReminderSentDateTime?: string | null;
     locationId?: number | null;
     scheduleId?: number | null;

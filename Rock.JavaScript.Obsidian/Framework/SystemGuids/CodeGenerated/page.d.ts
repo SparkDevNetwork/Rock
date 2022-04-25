@@ -34,6 +34,9 @@ ParentPage: Accounts */
     /** Gets the Accounts page guid
 ParentPage: Administration */
     Accounts = "2B630A3B-E081-4204-A3E4-17BB3A5F063D",
+    /** The financial account search guid
+ParentPage: Internal Homepage &gt; Finance &gt; Administration */
+    FinancialAccountSearch = "7A36463B-8E63-4394-BE20-ECFC5970080C",
     /** Gets the Achievement Type page guid
 ParentPage:  */
     AchievementTypes = "FCE0D006-F854-4107-9298-667563FA8D77",

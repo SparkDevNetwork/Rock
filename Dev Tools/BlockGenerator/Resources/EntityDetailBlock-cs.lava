@@ -50,8 +50,6 @@ namespace Rock.Blocks.{{ Domain }}
         private static class PageParameterKey
         {
             public const string {{ EntityName }}Id = "{{ EntityName }}Id";
-
-            public const string {{ EntityName }}Guid = "{{ EntityName }}Guid";
         }
 
         private static class NavigationUrlKey
@@ -174,7 +172,8 @@ namespace Rock.Blocks.{{ Domain }}
             return new {{ EntityName }}Bag
             {
                 Guid = entity.Guid,
-                Id = entity.Id{% for property in Properties %},
+                Id = entity.Id,
+                IdKey = entity.IdKey{% for property in Properties %},
                 {{ property.Name }} = entity.{{ property.ConvertToBagCode }}{% endfor %}
             };
         }
@@ -261,7 +260,7 @@ namespace Rock.Blocks.{{ Domain }}
         /// <returns>The <see cref="{{ EntityName }}"/> to be viewed or edited on the page.</returns>
         private {{ EntityName }} GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<{{ EntityName }}, {{ ServiceName }}>( rockContext, PageParameterKey.{{ EntityName }}Id, PageParameterKey.{{ EntityName }}Guid );
+            return GetInitialEntity<{{ EntityName }}, {{ ServiceName }}>( rockContext, PageParameterKey.{{ EntityName }}Id );
         }
 
         /// <summary>
@@ -284,14 +283,14 @@ namespace Rock.Blocks.{{ Domain }}
         /// Gets the box that will contain all the information needed to begin
         /// the edit operation.
         /// </summary>
-        /// <param name="guid">The unique identifier of the entity to be edited.</param>
+        /// <param name="key">The identifier of the entity to be edited.</param>
         /// <returns>A box that contains the entity and any other information required.</returns>
         [BlockAction]
-        public BlockActionResult Edit( Guid guid )
+        public BlockActionResult Edit( string key )
         {
             using ( var rockContext = new RockContext() )
             {
-                var entity = new {{ ServiceName }}( rockContext ).Get( guid );
+                var entity = new {{ ServiceName }}( rockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( entity == null || !{% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
@@ -327,7 +326,7 @@ namespace Rock.Blocks.{{ Domain }}
                 {
                     // If editing an existing entity then load it and make sure it
                     // was found and can still be edited.
-                    entity = entityService.Get( box.Entity.Guid );
+                    entity = entityService.Get( box.Entity.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
 
                     if ( entity == null )
                     {
@@ -391,15 +390,15 @@ namespace Rock.Blocks.{{ Domain }}
         /// <summary>
         /// Deletes the specified entity.
         /// </summary>
-        /// <param name="guid">The unique identifier of the entity to be deleted.</param>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
         /// <returns>A string that contains the URL to be redirected to on success.</returns>
         [BlockAction]
-        public BlockActionResult Delete( Guid guid )
+        public BlockActionResult Delete( string key )
         {
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new {{ ServiceName }}( rockContext );
-                var entity = entityService.Get( guid );
+                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( entity == null )
                 {

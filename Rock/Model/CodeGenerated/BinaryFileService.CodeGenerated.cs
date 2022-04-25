@@ -56,6 +56,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AlternateImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, AchievementType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.ImageBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, AchievementType.FriendlyTypeName );
@@ -232,6 +238,7 @@ namespace Rock.Model
             var viewModel = new BinaryFileBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 BinaryFileTypeId = model.BinaryFileTypeId,
                 ContentLastModified = model.ContentLastModified,

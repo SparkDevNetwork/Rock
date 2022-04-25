@@ -27,6 +27,7 @@ export type DefinedValue = IEntity & {
     categoryId?: number | null;
     definedTypeId?: number;
     description?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isSystem?: boolean;
     order?: number;

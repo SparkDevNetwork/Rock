@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type SmsPipeline = IEntity & {
     description?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     createdDateTime?: string | null;

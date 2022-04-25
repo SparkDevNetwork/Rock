@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type GroupScheduleExclusion = IEntity & {
     endDate?: string | null;
     groupTypeId?: number;
+    idKey?: string | null;
     startDate?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

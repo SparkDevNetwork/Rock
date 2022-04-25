@@ -27,6 +27,7 @@ export type EntitySet = IEntity & {
     entitySetPurposeValueId?: number | null;
     entityTypeId?: number | null;
     expireDateTime?: string | null;
+    idKey?: string | null;
     name?: string | null;
     note?: string | null;
     order?: number;

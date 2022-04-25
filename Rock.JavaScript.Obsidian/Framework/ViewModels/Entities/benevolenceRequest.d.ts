@@ -33,6 +33,7 @@ export type BenevolenceRequest = IEntity & {
     firstName?: string | null;
     governmentId?: string | null;
     homePhoneNumber?: string | null;
+    idKey?: string | null;
     lastName?: string | null;
     locationId?: number | null;
     providedNextSteps?: string | null;

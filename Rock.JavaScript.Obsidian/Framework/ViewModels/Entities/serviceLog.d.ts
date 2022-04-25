@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type ServiceLog = IEntity & {
+    idKey?: string | null;
     input?: string | null;
     logDateTime?: string | null;
     name?: string | null;

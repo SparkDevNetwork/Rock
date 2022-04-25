@@ -28,6 +28,7 @@ export type MediaFolder = IEntity & {
     contentChannelId?: number | null;
     contentChannelItemStatus?: number | null;
     description?: string | null;
+    idKey?: string | null;
     isContentChannelSyncEnabled?: boolean;
     isPublic?: boolean | null;
     mediaAccountId?: number;

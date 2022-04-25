@@ -29,6 +29,7 @@ export type History = IEntity & {
     changeType?: string | null;
     entityId?: number;
     entityTypeId?: number;
+    idKey?: string | null;
     isSensitive?: boolean | null;
     isSystem?: boolean;
     newRawValue?: string | null;

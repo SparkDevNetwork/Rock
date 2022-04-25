@@ -29,6 +29,7 @@ export type Badge = IEntity & {
     entityTypeId?: number | null;
     entityTypeQualifierColumn?: string | null;
     entityTypeQualifierValue?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     order?: number;

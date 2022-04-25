@@ -31,6 +31,7 @@ export type SystemCommunication = IEntity & {
     cssInliningEnabled?: boolean;
     from?: string | null;
     fromName?: string | null;
+    idKey?: string | null;
     isActive?: boolean | null;
     isSystem?: boolean;
     lavaFieldsJson?: string | null;

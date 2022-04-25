@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type RestController = IEntity & {
     className?: string | null;
+    idKey?: string | null;
     name?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

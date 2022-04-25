@@ -35,6 +35,7 @@ export type GroupHistorical = IEntity & {
     groupName?: string | null;
     groupTypeId?: number;
     groupTypeName?: string | null;
+    idKey?: string | null;
     inactiveDateTime?: string | null;
     isActive?: boolean;
     isArchived?: boolean;

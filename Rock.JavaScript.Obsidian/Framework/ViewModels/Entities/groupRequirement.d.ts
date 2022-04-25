@@ -28,6 +28,7 @@ export type GroupRequirement = IEntity & {
     groupRequirementTypeId?: number;
     groupRoleId?: number | null;
     groupTypeId?: number | null;
+    idKey?: string | null;
     mustMeetRequirementToAddMember?: boolean;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

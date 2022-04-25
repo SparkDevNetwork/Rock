@@ -31,6 +31,7 @@ export type AttendanceOccurrence = IEntity & {
     declineReasonValueIds?: string | null;
     didNotOccur?: boolean | null;
     groupId?: number | null;
+    idKey?: string | null;
     locationId?: number | null;
     name?: string | null;
     notes?: string | null;

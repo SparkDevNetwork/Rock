@@ -33,6 +33,7 @@ export type FinancialTransaction = IEntity & {
     financialPaymentDetailId?: number | null;
     foreignCurrencyCodeValueId?: number | null;
     futureProcessingDateTime?: string | null;
+    idKey?: string | null;
     isReconciled?: boolean | null;
     isSettled?: boolean | null;
     mICRStatus?: number | null;

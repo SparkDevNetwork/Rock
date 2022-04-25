@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type FollowingEventSubscription = IEntity & {
     eventTypeId?: number;
+    idKey?: string | null;
     personAliasId?: number;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

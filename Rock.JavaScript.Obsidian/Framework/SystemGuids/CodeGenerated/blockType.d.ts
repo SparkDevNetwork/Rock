@@ -60,6 +60,8 @@ export const enum BlockType {
     EventRegistrationTemplateDetail = "91354899-304E-44C7-BD0D-55F42E6505D3",
     /** The Convert Business Block Type Guid */
     ConvertBusiness = "115A7725-6760-4E86-8171-57F4A3CF6909",
+    /** The financial account search block type */
+    FinancialAccountSearch = "867E32A8-786E-4090-BE2B-6BE780440D44",
     /** The bulk update block type guid */
     BulkUpdate = "A844886D-ED6F-4367-9C6F-667401201ED0",
     /** The assessment list block type guid */
