@@ -18,7 +18,7 @@
 
 <div data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default overflow-hidden {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded-lg">
 
-    {% if video and video != empty and videoinline == 'true' %}
+    {% if video and video != empty %}
         <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
         <div class="position-relative ratio ratio-{{ ratio }}">
             <span class="position-absolute ratio-item wistia_embed wistia_async_{{ video }} popover=true popoverAnimateThumbnail=true" style="display:inline-block;position:relative;width:100%;height:100%;">&nbsp;</span>
