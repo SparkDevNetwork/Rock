@@ -146,7 +146,6 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
-        /// </value>
         [
         Bindable( true ),
         Category( "Behavior" ),
