@@ -73,8 +73,13 @@ namespace Rock.SystemGuid
         public const string EDIT_PERSON_ROUTE = "FCC0CCFF-8E18-48D8-A5EB-3D0F81D68280";
 
         /// <summary>
-        /// The financial account search 'Account/Search/name/?SearchTerm='
+        /// The financial account search route 'Account/Search/name/?SearchTerm='
         /// </summary>
         public const string FINANCIAL_ACCOUNT_SEARCH = "76A96F05-5B89-407B-A72E-5CB4FA64A11A";
+
+        /// <summary>
+        /// The system communication preview route 'Admin/Communications/System/Preview'
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_PREVIEW = "AAC42941-8B2C-4F20-923D-E74146D2E103";
     }
 }
