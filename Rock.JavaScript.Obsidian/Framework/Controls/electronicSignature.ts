@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import RockButton from "./rockButton";
 import TextBox from "./textBox";
 import EmailBox from "./emailBox";
@@ -23,6 +23,7 @@ import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 import RockForm from "./rockForm";
+import { useStore } from "@Obsidian/PageState";
 
 // #region SignaturePad library types.
 
@@ -70,6 +71,11 @@ export default defineComponent({
         isDrawn: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        documentTerm: {
+            type: String as PropType<string>,
+            default: "document"
         }
     },
 
@@ -81,15 +87,25 @@ export default defineComponent({
     setup(props, { emit }) {
         // #region Values
 
+        const store = useStore();
+
         const signatureData = ref(props.modelValue?.signatureData ?? "");
         const signedByName = ref(props.modelValue?.signedByName ?? "");
-        const signedByEmail = ref(props.modelValue?.signedByEmail ?? "");
+        const signedByEmail = ref(props.modelValue?.signedByEmail ?? store.state.currentPerson?.email ?? "");
 
         const signatureCanvas = ref<HTMLCanvasElement | null>(null);
         const signatureCanvasContainer = ref<HTMLElement | null>(null);
         const isSigning = ref(true);
 
         let signaturePad: SignaturePad | null = null;
+
+        // #endregion
+
+        // #region Computed Values
+
+        const signedByEmailLabel = computed((): string => {
+            return `Please enter an email address below where we can send a copy of the ${props.documentTerm.toLowerCase()} to.`;
+        });
 
         // #endregion
 
@@ -147,6 +163,10 @@ export default defineComponent({
             if (isSigning.value) {
                 // "sign" was clicked, move to the complete stage.
                 isSigning.value = false;
+
+                if (!signedByName.value && store.state.currentPerson) {
+                    signedByName.value = store.state.currentPerson.fullName ?? "";
+                }
             }
             else {
                 // "complete" was clicked, store the new value and emit events.
@@ -218,6 +238,7 @@ export default defineComponent({
             signatureCanvas,
             signatureCanvasContainer,
             signedByEmail,
+            signedByEmailLabel,
             signedByName,
             signatureData,
         };
@@ -269,7 +290,7 @@ export default defineComponent({
                 rules="required" />
 
             <EmailBox v-model="signedByEmail"
-                label="Please enter an email address below"
+                :label="signedByEmailLabel"
                 rules="required" />
 
             <div class="text-right">

@@ -408,7 +408,7 @@ export default defineComponent({
             <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" class="signaturedocument-container" border="0" frameborder="0" cellspacing="0" style="width: 100%; height: 450px" :srcdoc="signatureSource"></iframe>
 
             <div class="well">
-                <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" />
+                <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="signatureDocumentTerm" />
             </div>
         </div>
 
