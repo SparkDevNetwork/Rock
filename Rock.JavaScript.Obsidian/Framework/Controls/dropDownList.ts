@@ -297,6 +297,7 @@ export default defineComponent({
             <VueSelect :inputId="uniqueId"
                 v-model="internalValue"
                 v-bind="field"
+                class="form-control"
                 label="text"
                 :multiple="multiple"
                 :options="computedOptions"
