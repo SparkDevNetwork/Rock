@@ -447,7 +447,7 @@ namespace Rock.Model
         public bool EnableExclusiveRoutes { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable page view geo tracking].
+        /// Gets or sets a value indicating whether geo-location lookups should be performed on interactions.
         /// </summary>
         /// <value>
         /// <c>true</c> if [enable page view geo tracking]; otherwise, <c>false</c>.
