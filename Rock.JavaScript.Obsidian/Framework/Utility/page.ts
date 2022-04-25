@@ -37,6 +37,9 @@ export default {
     smoothScrollToTop
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-explicit-any
+declare const Obsidian: any;
+
 
 /*
  * Code to handle working with modals.
@@ -84,10 +87,23 @@ export function trackModalState(state: boolean): void {
  * @param source The source URL of the script to be loaded.
  * @param isScriptLoaded An optional function to call to determine if the script is loaded.
  * @param attributes An optional set of attributes to apply to the script tag.
+ * @param fingerprint If set to false, then a fingerprint will not be added to the source URL. Default is true.
  *
  * @returns A Promise that indicates if the script was loaded or not.
  */
-export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () => boolean, attributes?: Record<string, string>): Promise<boolean> {
+export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () => boolean, attributes?: Record<string, string>, fingerprint?: boolean): Promise<boolean> {
+    let src = source;
+
+    // Add the cache busting fingerprint if we have one.
+    if (fingerprint !== false && Obsidian.options.fingerprint) {
+        if (src.indexOf("?") === -1) {
+            src += `?${Obsidian.options.fingerprint}`;
+        }
+        else {
+            src += `&${Obsidian.options.fingerprint}`;
+        }
+    }
+
     // Check if the script is already loaded. First see if we have a custom
     // function that will do the check. Otherwise fall back to looking for any
     // script tags that have the same source.
@@ -99,7 +115,7 @@ export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () =>
     else {
         const scripts = Array.from(document.getElementsByTagName("script"));
 
-        if (scripts.filter(s => s.src === source).length > 0) {
+        if (scripts.filter(s => s.src === src).length > 0) {
             return true;
         }
     }
@@ -107,7 +123,7 @@ export async function loadJavaScriptAsync(source: string, isScriptLoaded?: () =>
     // Build the script tag that will be dynamically loaded.
     const script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = source;
+    script.src = src;
     if (attributes) {
         for (const key in attributes) {
             script.setAttribute(key, attributes[key]);
