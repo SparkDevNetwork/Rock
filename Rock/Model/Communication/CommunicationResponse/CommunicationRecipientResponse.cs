@@ -149,6 +149,7 @@ namespace Rock.Model
         /// <value>
         /// The binary file unique identifier.
         /// </value>
+        [RockObsolete("1.13")]
         [Obsolete( "Use HasAttachments() or GetBinaryFileGuids() instead" )]
         public List<Guid> BinaryFileGuids { get; set; }
 
