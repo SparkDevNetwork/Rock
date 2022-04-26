@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type BackgroundCheck = IEntity & {
+    idKey?: string | null;
     packageName?: string | null;
     personAliasId?: number;
     processorEntityTypeId?: number | null;

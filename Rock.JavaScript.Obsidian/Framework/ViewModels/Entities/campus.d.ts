@@ -27,6 +27,7 @@ export type Campus = IEntity & {
     campusStatusValueId?: number | null;
     campusTypeValueId?: number | null;
     description?: string | null;
+    idKey?: string | null;
     isActive?: boolean | null;
     isSystem?: boolean;
     leaderPersonAliasId?: number | null;

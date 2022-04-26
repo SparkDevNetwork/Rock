@@ -28,6 +28,7 @@ export type RegistrationTemplatePlacement = IEntity & {
     cost?: number | null;
     groupTypeId?: number;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isInternal?: boolean;
     name?: string | null;
     order?: number;

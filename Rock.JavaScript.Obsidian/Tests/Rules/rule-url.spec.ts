@@ -16,7 +16,7 @@
 //
 
 import assert = require("assert");
-import { validateValue } from "../../Framework/Rules/index";
+import { validateValue } from "../../Framework/ValidationRules/index";
 
 const expectedUrlErrorText = "must be a valid URL";
 
@@ -64,11 +64,12 @@ describe("url Rule", () => {
     it("Rock URL string produces no error", () => {
         const rockUrls = [
             "http://localhost:6229/Person/1/Edit",
-            "https://rock.rocksolidchurchdemo.com/page/12"
+            "https://rock.rocksolidchurchdemo.com/page/12",
+            "ftp://rocksolidchurchdemo.com"
         ];
 
         rockUrls.forEach(value => {
-            const result = validateValue("ftp://rocksolidchurchdemo.com", "url");
+            const result = validateValue(value, "url");
 
             assert.deepStrictEqual(result, []);
         });

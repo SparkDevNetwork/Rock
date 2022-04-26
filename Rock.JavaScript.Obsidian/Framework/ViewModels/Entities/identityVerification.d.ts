@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type IdentityVerification = IEntity & {
     failedMatchAttemptCount?: number | null;
     identityVerificationCodeId?: number;
+    idKey?: string | null;
     issueDateTime?: string;
     referenceNumber?: string | null;
     requestIpAddress?: string | null;

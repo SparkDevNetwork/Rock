@@ -189,8 +189,8 @@ namespace Rock.Blocks.Core
                 .Select( cs => new CampusScheduleBag
                 {
                     Guid = cs.Guid,
-                    Schedule = cs.Schedule.ToListItemPack(),
-                    ScheduleTypeValue = cs.ScheduleTypeValue.ToListItemPack()
+                    Schedule = cs.Schedule.ToListItemBag(),
+                    ScheduleTypeValue = cs.ScheduleTypeValue.ToListItemBag()
                 } )
                 .ToList();
         }
@@ -592,15 +592,15 @@ namespace Rock.Blocks.Core
             return new CampusBag
             {
                 CampusSchedules = ConvertCampusSchedulesToBags( entity.CampusSchedules ),
-                CampusStatusValue = entity.CampusStatusValue.ToListItemPack(),
-                CampusTypeValue = entity.CampusTypeValue.ToListItemPack(),
+                CampusStatusValue = entity.CampusStatusValue.ToListItemBag(),
+                CampusTypeValue = entity.CampusTypeValue.ToListItemBag(),
                 Description = entity.Description,
                 Guid = entity.Guid,
                 Id = entity.Id,
                 IsActive = entity.IsActive,
                 IsSystem = entity.IsSystem,
-                LeaderPersonAlias = entity.LeaderPersonAlias.ToListItemPack(),
-                Location = entity.Location.ToListItemPack(),
+                LeaderPersonAlias = entity.LeaderPersonAlias.ToListItemBag(),
+                Location = entity.Location.ToListItemBag(),
                 Name = entity.Name,
                 PhoneNumber = entity.PhoneNumber,
                 ServiceTimes = ConvertServiceTimesToPack( entity.ServiceTimes ),

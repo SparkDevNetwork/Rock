@@ -28,6 +28,7 @@ export type GroupSync = IEntity & {
     exitSystemCommunicationId?: number | null;
     groupId?: number;
     groupTypeRoleId?: number;
+    idKey?: string | null;
     lastRefreshDateTime?: string | null;
     scheduleIntervalMinutes?: number | null;
     syncDataViewId?: number;

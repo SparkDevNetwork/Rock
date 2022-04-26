@@ -28,6 +28,7 @@ export type ContentChannelType = IEntity & {
     disableContentField?: boolean;
     disablePriority?: boolean;
     disableStatus?: boolean;
+    idKey?: string | null;
     includeTime?: boolean;
     isSystem?: boolean;
     name?: string | null;

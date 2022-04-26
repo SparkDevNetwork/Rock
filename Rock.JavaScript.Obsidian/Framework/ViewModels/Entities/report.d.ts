@@ -29,6 +29,7 @@ export type Report = IEntity & {
     description?: string | null;
     entityTypeId?: number | null;
     fetchTop?: number | null;
+    idKey?: string | null;
     isSystem?: boolean;
     lastRunDateTime?: string | null;
     name?: string | null;

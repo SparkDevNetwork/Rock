@@ -27,6 +27,7 @@ export type FieldType = IEntity & {
     assembly?: string | null;
     class?: string | null;
     description?: string | null;
+    idKey?: string | null;
     isSystem?: boolean;
     name?: string | null;
     createdDateTime?: string | null;

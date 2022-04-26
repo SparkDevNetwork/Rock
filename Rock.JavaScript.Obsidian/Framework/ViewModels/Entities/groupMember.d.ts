@@ -33,6 +33,7 @@ export type GroupMember = IEntity & {
     groupOrder?: number | null;
     groupRoleId?: number;
     guestCount?: number | null;
+    idKey?: string | null;
     inactiveDateTime?: string | null;
     isArchived?: boolean;
     isNotified?: boolean;

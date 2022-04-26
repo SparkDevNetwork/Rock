@@ -27,6 +27,7 @@ export type PersonalDevice = IEntity & {
     deviceRegistrationId?: string | null;
     deviceUniqueIdentifier?: string | null;
     deviceVersion?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     lastSeenDateTime?: string | null;
     lastVerifiedDateTime?: string | null;

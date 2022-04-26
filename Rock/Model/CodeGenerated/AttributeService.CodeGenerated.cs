@@ -94,6 +94,7 @@ namespace Rock.Model
             var viewModel = new AttributeBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,

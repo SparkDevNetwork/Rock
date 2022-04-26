@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type AuthClaim = IEntity & {
+    idKey?: string | null;
     isActive?: boolean;
     isSystem?: boolean;
     name?: string | null;

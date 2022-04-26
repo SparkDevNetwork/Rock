@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type BenevolenceType = IEntity & {
     description?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     requestLavaTemplate?: string | null;

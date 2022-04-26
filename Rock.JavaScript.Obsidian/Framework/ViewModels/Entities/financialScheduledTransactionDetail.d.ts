@@ -29,6 +29,7 @@ export type FinancialScheduledTransactionDetail = IEntity & {
     entityId?: number | null;
     entityTypeId?: number | null;
     feeCoverageAmount?: number | null;
+    idKey?: string | null;
     scheduledTransactionId?: number;
     summary?: string | null;
     createdDateTime?: string | null;

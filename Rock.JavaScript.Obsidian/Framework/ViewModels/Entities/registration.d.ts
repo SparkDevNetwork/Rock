@@ -30,6 +30,7 @@ export type Registration = IEntity & {
     discountPercentage?: number;
     firstName?: string | null;
     groupId?: number | null;
+    idKey?: string | null;
     isTemporary?: boolean;
     lastName?: string | null;
     lastPaymentReminderDateTime?: string | null;

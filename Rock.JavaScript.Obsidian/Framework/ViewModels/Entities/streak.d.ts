@@ -30,6 +30,7 @@ export type Streak = IEntity & {
     engagementMap?: (number)[];
     enrollmentDate?: string;
     exclusionMap?: (number)[];
+    idKey?: string | null;
     inactiveDateTime?: string | null;
     locationId?: number | null;
     longestStreakCount?: number;

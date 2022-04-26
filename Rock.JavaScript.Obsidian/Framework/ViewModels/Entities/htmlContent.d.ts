@@ -30,6 +30,7 @@ export type HtmlContent = IEntity & {
     content?: string | null;
     entityValue?: string | null;
     expireDateTime?: string | null;
+    idKey?: string | null;
     isApproved?: boolean;
     startDateTime?: string | null;
     version?: number;

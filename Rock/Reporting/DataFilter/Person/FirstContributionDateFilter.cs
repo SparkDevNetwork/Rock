@@ -33,7 +33,7 @@ using static Rock.Web.UI.Controls.SlidingDateRangePicker;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people based on the date of their first contribution " )]
     [Export( typeof( DataFilterComponent ) )]
@@ -84,7 +84,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -194,7 +194,7 @@ function() {
             {
                 selectionConfig.AccountGuids = accounts.Select( a => a.Guid ).ToList();
             }
-            
+
             SlidingDateRangePicker slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
             selectionConfig.StartDate = slidingDateRangePicker.DateRangeModeStart;
             selectionConfig.EndDate = slidingDateRangePicker.DateRangeModeEnd;
@@ -218,10 +218,10 @@ function() {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
             var accountPicker = controls[0] as AccountPicker;
-            var accounts = FinancialAccountCache.GetByGuids( selectionConfig.AccountGuids );
+            var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( selectionConfig.AccountGuids );
             if ( accounts != null && accounts.Any() )
             {
-                accountPicker.SetValuesFromCache( accounts );
+                accountPicker.SetValues( accounts );
             }
 
             var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
@@ -446,7 +446,7 @@ function() {
                             // Try to get a DateRange from what we have
                             selectionConfig.DateRangeMode = SlidingDateRangeType.DateRange;
                             selectionConfig.StartDate = dateRangeValues[0].AsDateTime();
-                            
+
                             if ( dateRangeValues.Count() > 1 )
                             {
                                 selectionConfig.EndDate = dateRangeValues[1].AsDateTime();

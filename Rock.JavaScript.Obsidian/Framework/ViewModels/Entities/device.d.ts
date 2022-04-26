@@ -28,6 +28,7 @@ export type Device = IEntity & {
     description?: string | null;
     deviceTypeValueId?: number;
     hasCamera?: boolean;
+    idKey?: string | null;
     iPAddress?: string | null;
     isActive?: boolean;
     kioskType?: number | null;

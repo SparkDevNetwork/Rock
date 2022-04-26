@@ -16,7 +16,7 @@
 //
 
 import assert = require("assert");
-import { defineRule, validateValue, ValidationRuleFunction } from "../../Framework/Rules/index";
+import { defineRule, validateValue, ValidationRuleFunction } from "../../Framework/ValidationRules/index";
 
 // This suite performs tests on normalizeRuleResult function of the rules.
 describe("defineRule Suite", () => {
@@ -30,20 +30,14 @@ describe("defineRule Suite", () => {
     });
 
     it("Duplicate rule does not replace original rule", () => {
+        console.warn = jest.fn();
+
         const fn: ValidationRuleFunction = _value => "custom rule error";
         defineRule("required", fn);
 
         const result = validateValue("", "required");
 
         assert.deepStrictEqual(result, ["is required"]);
-    });
-
-    it("Duplicate rule produces console warning", () => {
-        console.warn = jest.fn();
-
-        const fn: ValidationRuleFunction = _value => "custom rule error";
-        defineRule("required", fn);
-
         expect(console.warn).toHaveBeenCalledWith("Attempt to redefine validation rule required.");
     });
 });

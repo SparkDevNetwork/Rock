@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Utility
             foreach( var objectCacheKey in objectCacheKeys )
             {
                 var cacheItem = RockCache.Get( objectCacheKey.Key, objectCacheKey.Region );
-                if ( cacheItem.IsNotNull() )
+                if ( cacheItem != null )
                 {
                     objectCacheSize += cacheItem.ToJson().Length;
                 }
@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Utility
                 {
                     var value = RockCacheManager<List<string>>.Instance.Get( stringCacheKey.Key, stringCacheKey.Region );
 
-                    if ( value.IsNotNull() )
+                    if ( value != null )
                     {
                         stringCacheSize += value.ToJson().Length;
                     }
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Utility
                 else
                 {
                     var cacheItem = RockCache.Get( stringCacheKey.Key, stringCacheKey.Region );
-                    if ( cacheItem.IsNotNull() )
+                    if ( cacheItem != null )
                     {
                         stringCacheSize += cacheItem.ToJson().Length;
                     }

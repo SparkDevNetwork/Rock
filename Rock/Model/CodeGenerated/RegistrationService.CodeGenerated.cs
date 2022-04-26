@@ -88,6 +88,7 @@ namespace Rock.Model
             var viewModel = new RegistrationBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 ConfirmationEmail = model.ConfirmationEmail,
                 DiscountAmount = model.DiscountAmount,

@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type EventItemOccurrenceChannelItem = IEntity & {
     contentChannelItemId?: number;
     eventItemOccurrenceId?: number;
+    idKey?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

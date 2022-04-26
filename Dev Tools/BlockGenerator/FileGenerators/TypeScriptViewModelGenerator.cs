@@ -114,6 +114,40 @@ namespace BlockGenerator.FileGenerators
             return GenerateTypeScriptFile( imports, sb.ToString() );
         }
 
+        public string GenerateDetailBlockTypeDefinitionFile( Dictionary<string, string> navigationUrlKeys )
+        {
+            var imports = new List<TypeScriptImport>();
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine( $"export const enum NavigationUrlKey {{" );
+
+            var sortedItems = navigationUrlKeys.OrderBy( k => k.Key ).ToList();
+
+            for ( int i = 0; i < sortedItems.Count; i++ )
+            {
+                var item = sortedItems[i];
+
+                if ( i > 0 )
+                {
+                    sb.AppendLine();
+                }
+
+                sb.Append( $"    {item.Key} = \"{item.Value}\"" );
+
+                if ( i + 1 < sortedItems.Count )
+                {
+                    sb.Append( "," );
+                }
+
+                sb.AppendLine();
+            }
+
+            sb.AppendLine( "}" );
+
+            return GenerateTypeScriptFile( imports, sb.ToString(), false );
+        }
+
         private void AppendCommentBlock( StringBuilder sb, MemberInfo memberInfo, int indentationSize )
         {
             var xdoc = _xmlDoc.GetMemberComment( memberInfo )?.StripHtml();

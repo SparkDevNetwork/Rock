@@ -29,6 +29,7 @@ export type GroupTypeRole = IEntity & {
     canView?: boolean;
     description?: string | null;
     groupTypeId?: number | null;
+    idKey?: string | null;
     isLeader?: boolean;
     isSystem?: boolean;
     maxCount?: number | null;

@@ -29,6 +29,7 @@ export type Auth = IEntity & {
     entityId?: number | null;
     entityTypeId?: number;
     groupId?: number | null;
+    idKey?: string | null;
     order?: number;
     personAliasId?: number | null;
     specialRole?: number;

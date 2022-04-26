@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type GroupMemberRequirement = IEntity & {
     groupMemberId?: number;
     groupRequirementId?: number;
+    idKey?: string | null;
     lastRequirementCheckDateTime?: string | null;
     requirementFailDateTime?: string | null;
     requirementMetDateTime?: string | null;

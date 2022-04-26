@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new EntityCampusFilterBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 CampusId = model.CampusId,
                 EntityId = model.EntityId,

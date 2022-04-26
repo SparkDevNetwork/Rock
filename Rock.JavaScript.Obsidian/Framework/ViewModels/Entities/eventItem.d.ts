@@ -28,6 +28,7 @@ export type EventItem = IEntity & {
     approvedOnDateTime?: string | null;
     description?: string | null;
     detailsUrl?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isApproved?: boolean;
     name?: string | null;

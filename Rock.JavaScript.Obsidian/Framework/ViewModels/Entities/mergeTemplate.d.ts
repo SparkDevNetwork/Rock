@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type MergeTemplate = IEntity & {
     categoryId?: number;
     description?: string | null;
+    idKey?: string | null;
     mergeTemplateTypeEntityTypeId?: number;
     name?: string | null;
     personAliasId?: number | null;

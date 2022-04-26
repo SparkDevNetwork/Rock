@@ -1689,7 +1689,7 @@ namespace RockWeb.Blocks.Examples
                                    Type = n.Attribute( "type" ).Value,
                                    Name = n.Attribute( "name" ).Value,
                                    Guid = n.Attribute( "guid" ).Value.AsGuid(),
-                                   IsActive = n.Attribute( "isActive" ).Value.AsBoolean( true ),
+                                   IsActive = n.Attribute( "isActive" ) == null || n.Attribute( "isActive" ).Value.AsBoolean( true ),
                                    ParentLocationGuid = n.Attribute( "parentLocationGuid" ) != null ? n.Attribute( "parentLocationGuid" ).Value : null,
                                };
 

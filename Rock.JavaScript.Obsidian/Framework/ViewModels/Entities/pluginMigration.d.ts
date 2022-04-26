@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PluginMigration = IEntity & {
+    idKey?: string | null;
     migrationName?: string | null;
     migrationNumber?: number;
     pluginAssemblyName?: string | null;

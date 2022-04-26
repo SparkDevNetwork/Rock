@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type Layout = IEntity & {
     description?: string | null;
     fileName?: string | null;
+    idKey?: string | null;
     isSystem?: boolean;
     layoutMobilePhone?: string | null;
     layoutMobileTablet?: string | null;

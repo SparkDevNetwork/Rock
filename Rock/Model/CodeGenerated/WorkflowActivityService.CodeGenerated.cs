@@ -88,6 +88,7 @@ namespace Rock.Model
             var viewModel = new WorkflowActivityBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 ActivatedByActivityId = model.ActivatedByActivityId,
                 ActivatedDateTime = model.ActivatedDateTime,

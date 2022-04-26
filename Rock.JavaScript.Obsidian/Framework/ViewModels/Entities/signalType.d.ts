@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type SignalType = IEntity & {
     description?: string | null;
+    idKey?: string | null;
     name?: string | null;
     order?: number;
     signalColor?: string | null;

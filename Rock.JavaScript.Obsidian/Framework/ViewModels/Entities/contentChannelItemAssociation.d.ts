@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type ContentChannelItemAssociation = IEntity & {
     childContentChannelItemId?: number;
     contentChannelItemId?: number;
+    idKey?: string | null;
     order?: number;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

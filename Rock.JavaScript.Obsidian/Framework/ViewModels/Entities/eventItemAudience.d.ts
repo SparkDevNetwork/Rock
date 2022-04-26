@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type EventItemAudience = IEntity & {
     definedValueId?: number;
     eventItemId?: number;
+    idKey?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

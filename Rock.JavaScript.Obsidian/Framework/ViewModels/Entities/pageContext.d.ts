@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type PageContext = IEntity & {
     entity?: string | null;
+    idKey?: string | null;
     idParameter?: string | null;
     isSystem?: boolean;
     pageId?: number;

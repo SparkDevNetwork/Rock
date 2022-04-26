@@ -53,6 +53,7 @@ export type GroupType = IEntity & {
     groupTypePurposeValueId?: number | null;
     groupViewLavaTemplate?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     ignorePersonInactivated?: boolean;
     inheritedGroupTypeId?: number | null;
     isCapacityRequired?: boolean;

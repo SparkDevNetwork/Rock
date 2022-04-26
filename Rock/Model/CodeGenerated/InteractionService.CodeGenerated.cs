@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new InteractionBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 Campaign = model.Campaign,
                 ChannelCustom1 = model.ChannelCustom1,

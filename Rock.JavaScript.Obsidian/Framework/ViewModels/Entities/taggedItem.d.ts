@@ -27,6 +27,7 @@ import { Guid } from "@Obsidian/Types";
 export type TaggedItem = IEntity & {
     entityGuid?: Guid;
     entityTypeId?: number;
+    idKey?: string | null;
     isSystem?: boolean;
     quantity?: number;
     tagId?: number;

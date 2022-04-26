@@ -36,6 +36,7 @@ export type Location = IEntity & {
     geocodedDateTime?: string | null;
     geoFence?: Record<string, unknown>;
     geoPoint?: Record<string, unknown>;
+    idKey?: string | null;
     imageId?: number | null;
     isActive?: boolean;
     isGeoPointLocked?: boolean | null;

@@ -30,6 +30,7 @@ export type FinancialBatch = IEntity & {
     campusId?: number | null;
     controlAmount?: number;
     controlItemCount?: number | null;
+    idKey?: string | null;
     isAutomated?: boolean;
     name?: string | null;
     note?: string | null;

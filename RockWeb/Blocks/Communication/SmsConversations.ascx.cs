@@ -507,7 +507,7 @@ namespace RockWeb.Blocks.Communication
                     binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderModal.BinaryFileId.Value );
                 }
 
-                photos = binaryFile.IsNotNull() ? new List<BinaryFile> { binaryFile } : null;
+                photos = binaryFile != null ? new List<BinaryFile> { binaryFile } : null;
 
                 var toPrimaryAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( toPersonId );
 

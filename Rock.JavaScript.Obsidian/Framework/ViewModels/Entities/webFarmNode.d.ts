@@ -27,6 +27,7 @@ export type WebFarmNode = IEntity & {
     addedDateTime?: string;
     configuredLeadershipPollingIntervalSeconds?: number | null;
     currentLeadershipPollingIntervalSeconds?: number;
+    idKey?: string | null;
     isActive?: boolean;
     isCurrentJobRunner?: boolean;
     isLeader?: boolean;

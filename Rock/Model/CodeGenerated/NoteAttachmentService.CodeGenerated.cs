@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new NoteAttachmentBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 BinaryFileId = model.BinaryFileId,
                 NoteId = model.NoteId,

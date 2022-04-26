@@ -239,7 +239,7 @@ namespace Rock.UniversalSearch.IndexModels
             var eventItem = new EventItemService( new Data.RockContext() ).Get( ( int ) this.Id );
 
             // Check if item in database has been deleted
-            if ( eventItem.IsNull() )
+            if ( eventItem == null )
             {
                 result.IsViewAllowed = false;
                 return result;

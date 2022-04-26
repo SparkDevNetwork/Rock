@@ -94,6 +94,7 @@ namespace Rock.Model
             var viewModel = new StepStatusBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 IsActive = model.IsActive,
                 IsCompleteStatus = model.IsCompleteStatus,

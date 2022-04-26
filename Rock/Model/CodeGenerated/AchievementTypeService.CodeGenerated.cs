@@ -88,6 +88,7 @@ namespace Rock.Model
             var viewModel = new AchievementTypeBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AchievementFailureWorkflowTypeId = model.AchievementFailureWorkflowTypeId,
                 AchievementIconCssClass = model.AchievementIconCssClass,
@@ -97,12 +98,14 @@ namespace Rock.Model
                 AchievementSuccessWorkflowTypeId = model.AchievementSuccessWorkflowTypeId,
                 AchieverEntityTypeId = model.AchieverEntityTypeId,
                 AllowOverAchievement = model.AllowOverAchievement,
+                AlternateImageBinaryFileId = model.AlternateImageBinaryFileId,
                 BadgeLavaTemplate = model.BadgeLavaTemplate,
                 CategoryId = model.CategoryId,
                 ComponentConfigJson = model.ComponentConfigJson,
                 ComponentEntityTypeId = model.ComponentEntityTypeId,
                 CustomSummaryLavaTemplate = model.CustomSummaryLavaTemplate,
                 Description = model.Description,
+                HighlightColor = model.HighlightColor,
                 ImageBinaryFileId = model.ImageBinaryFileId,
                 IsActive = model.IsActive,
                 IsPublic = model.IsPublic,
@@ -187,6 +190,7 @@ namespace Rock.Model
             target.AchievementSuccessWorkflowTypeId = source.AchievementSuccessWorkflowTypeId;
             target.AchieverEntityTypeId = source.AchieverEntityTypeId;
             target.AllowOverAchievement = source.AllowOverAchievement;
+            target.AlternateImageBinaryFileId = source.AlternateImageBinaryFileId;
             target.BadgeLavaTemplate = source.BadgeLavaTemplate;
             target.CategoryId = source.CategoryId;
             target.ComponentConfigJson = source.ComponentConfigJson;
@@ -195,6 +199,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HighlightColor = source.HighlightColor;
             target.ImageBinaryFileId = source.ImageBinaryFileId;
             target.IsActive = source.IsActive;
             target.IsPublic = source.IsPublic;

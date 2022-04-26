@@ -31,6 +31,7 @@ export type GroupLocationHistorical = IEntity & {
     groupLocationId?: number | null;
     groupLocationTypeName?: string | null;
     groupLocationTypeValueId?: number | null;
+    idKey?: string | null;
     locationId?: number;
     locationModifiedDateTime?: string | null;
     locationName?: string | null;

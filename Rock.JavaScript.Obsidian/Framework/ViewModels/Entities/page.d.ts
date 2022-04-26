@@ -37,6 +37,7 @@ export type Page = IEntity & {
     headerContent?: string | null;
     iconBinaryFileId?: number | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     includeAdminFooter?: boolean;
     internalName?: string | null;
     isSystem?: boolean;

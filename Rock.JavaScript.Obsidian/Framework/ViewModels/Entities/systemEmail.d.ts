@@ -30,6 +30,7 @@ export type SystemEmail = IEntity & {
     cc?: string | null;
     from?: string | null;
     fromName?: string | null;
+    idKey?: string | null;
     isSystem?: boolean;
     subject?: string | null;
     title?: string | null;

@@ -30,6 +30,7 @@ export type WorkflowActionType = IEntity & {
     criteriaComparisonType?: number;
     criteriaValue?: string | null;
     entityTypeId?: number;
+    idKey?: string | null;
     isActionCompletedOnSuccess?: boolean;
     isActivityCompletedOnSuccess?: boolean;
     name?: string | null;

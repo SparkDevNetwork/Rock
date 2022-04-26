@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new ConnectionRequestWorkflowBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 ConnectionRequestId = model.ConnectionRequestId,
                 ConnectionWorkflowId = model.ConnectionWorkflowId,

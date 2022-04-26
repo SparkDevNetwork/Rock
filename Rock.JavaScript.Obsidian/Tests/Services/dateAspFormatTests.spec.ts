@@ -1,5 +1,5 @@
 import assert = require("assert");
-import { RockDateTime } from "../../Framework/Util/rockDateTime";
+import { RockDateTime } from "../../Framework/Utility/rockDateTime";
 
 describe("formatAspDate Suite", () => {
     it("Short Date", () => {

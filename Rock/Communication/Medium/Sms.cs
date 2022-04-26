@@ -313,7 +313,7 @@ namespace Rock.Communication.Medium
             rockContext.SaveChanges();
 
             // Now that we have a communication response ID we can add the attachments
-            if ( attachments.IsNotNull() && attachments.Any() )
+            if ( attachments != null && attachments.Any() )
             {
                 foreach( var attachment in attachments )
                 {
@@ -421,7 +421,7 @@ namespace Rock.Communication.Medium
             rockContext.SaveChanges();
 
             // Now that we have a communication ID we can add the attachments
-            if ( attachments.IsNotNull() && attachments.Any() )
+            if ( attachments != null && attachments.Any() )
             {
                 foreach( var attachment in attachments )
                 {

@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type SiteDomain = IEntity & {
     domain?: string | null;
+    idKey?: string | null;
     isSystem?: boolean;
     order?: number;
     siteId?: number;

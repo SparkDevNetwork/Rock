@@ -28,6 +28,7 @@ export type BinaryFileType = IEntity & {
     cacheToServerFileSystem?: boolean;
     description?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isSystem?: boolean;
     maxHeight?: number | null;
     maxWidth?: number | null;

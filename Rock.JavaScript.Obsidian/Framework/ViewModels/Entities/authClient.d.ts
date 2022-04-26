@@ -29,6 +29,7 @@ export type AuthClient = IEntity & {
     allowUserApiAccess?: boolean;
     clientId?: string | null;
     clientSecretHash?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     postLogoutRedirectUri?: string | null;

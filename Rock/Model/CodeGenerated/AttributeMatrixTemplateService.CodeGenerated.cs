@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new AttributeMatrixTemplateBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 Description = model.Description,
                 FormattedLava = model.FormattedLava,

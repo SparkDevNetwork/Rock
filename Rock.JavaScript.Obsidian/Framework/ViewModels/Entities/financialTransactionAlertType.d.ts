@@ -34,6 +34,7 @@ export type FinancialTransactionAlertType = IEntity & {
     dataViewId?: number | null;
     financialAccountId?: number | null;
     frequencySensitivityScale?: number | null;
+    idKey?: string | null;
     includeChildFinancialAccounts?: boolean;
     maximumDaysSinceLastGift?: number | null;
     maximumGiftAmount?: number | null;

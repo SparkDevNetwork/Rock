@@ -27,6 +27,7 @@ export type LavaShortcode = IEntity & {
     description?: string | null;
     documentation?: string | null;
     enabledLavaCommands?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isSystem?: boolean;
     markup?: string | null;

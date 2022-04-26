@@ -17,11 +17,12 @@
 
 import { computed, defineComponent, PropType, Ref, ref, watch } from "vue";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import RockFormField from "../Elements/rockFormField";
+import RockFormField from "./rockFormField";
 import Panel from "./panel";
-import TextBox from "../Elements/textBox";
+import TextBox from "./textBox";
 import { nextTick } from "vue";
-import { doApiCall } from "../Util/http";
+import { doApiCall } from "@Obsidian/Utility/http";
+import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 const enum AgeClassification {
     Unknown = 0,
@@ -75,12 +76,6 @@ type PersonSearchPhoneNumber = {
     number?: string | null;
 
     isUnlisted?: boolean;
-};
-
-const sleep = (ms: number): Promise<void> => {
-    return new Promise<void>(resolve => {
-        setTimeout(resolve, ms);
-    });
 };
 
 export default defineComponent({
@@ -410,7 +405,7 @@ export default defineComponent({
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i class="fa fa-user fa-fw"></i>
                     <span class="selected-name" v-text="selectedName"></span>
-                    <i class="fa fa-caret-down pull-right"></i>
+                    <b class="fa fa-caret-down pull-right"></b>
                 </a>
 
                 <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
@@ -418,8 +413,8 @@ export default defineComponent({
                 </a>
 
                 <Panel v-if="showPopup" isFullscreen isFullscreenPageOnly title="Person Search">
-                    <template #actionAside>
-                        <span class="panel-action" @click.prevent.stop="onCancel">
+                    <template #headerActions>
+                        <span class="action" @click.prevent.stop="onCancel">
                             <i class="fa fa-times"></i>
                         </span>
                     </template>

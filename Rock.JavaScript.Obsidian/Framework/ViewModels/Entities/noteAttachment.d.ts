@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type NoteAttachment = IEntity & {
     binaryFileId?: number;
+    idKey?: string | null;
     noteId?: number;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

@@ -93,6 +93,8 @@ namespace Rock.WebStartup
         /// </summary>
         internal static void RunApplicationStartup()
         {
+            LogStartupMessage( "Application Starting" );
+
             // Indicate to always log to file during initialization.
             ExceptionLogService.AlwaysLogToFile = true;
 
@@ -106,24 +108,29 @@ namespace Rock.WebStartup
             // In most cases, that'll be when GC is collected. So it won't happen immediately.
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
-            LogStartupMessage( "Application Starting" );
-
+            LogStartupMessage( "Checking for EntityFramework Migrations" );
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
-
             bool hasPendingEFMigrations = runMigrationFileInfo.Exists || HasPendingEFMigrations();
-
             bool ranEFMigrations = MigrateDatabase( hasPendingEFMigrations );
+
+            if ( ranEFMigrations )
+            {
+                LogStartupMessage( "EntityFramework Migrations Were Applied" );
+            }
 
             ShowDebugTimingMessage( "EF Migrations" );
 
+            // Register Entity SaveHooks.
+            LogStartupMessage( "Configuring Entity SaveHooks" );
             ConfigureEntitySaveHooks();
 
             ShowDebugTimingMessage( "Configure Entity SaveHooks" );
 
             // Now that EF Migrations have gotten the Schema in sync with our Models,
-            // get the RockContext initialized (which can take several seconds)
-            // This will help reduce the chances of multiple instances RockWeb causing problems,
-            // like creating duplicate attributes, or running the same migration in parallel
+            // get the RockContext initialized (which can take several seconds).
+            // This will help reduce the chances of multiple RockWeb instances causing problems,
+            // like creating duplicate attributes, or running the same migration in parallel.
+            LogStartupMessage( "Initializing RockContext" );
             using ( var rockContext = new RockContext() )
             {
                 new AttributeService( rockContext ).Get( 0 );
@@ -132,6 +139,7 @@ namespace Rock.WebStartup
 
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
+            LogStartupMessage( "Configuring Date Settings" );
             RockDateTime.FirstDayOfWeek = new AttributeService( new RockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
             InitializeRockGraduationDate();
 
@@ -142,10 +150,17 @@ namespace Rock.WebStartup
                 // fileInfo.Delete() won't do anything if the file doesn't exist (it doesn't throw an exception if it is not there )
                 // but do the fileInfo.Exists to make this logic more readable
                 runMigrationFileInfo.Delete();
+                LogStartupMessage( "Removed Run.Migration File" );
             }
 
             // Run any plugin migrations
+            LogStartupMessage( "Applying Plugin Migrations" );
             bool anyPluginMigrations = MigratePlugins();
+
+            if ( anyPluginMigrations )
+            {
+                LogStartupMessage( "Plugin Migrations Were Applied" );
+            }
 
             ShowDebugTimingMessage( "Plugin Migrations" );
 
@@ -155,14 +170,17 @@ namespace Rock.WebStartup
                So, just in case, clear the cache (which could be Redis) since anything that is in there could be stale
             */
 
+            LogStartupMessage( "Reloading Cache" );
             RockCache.ClearAllCachedItems( false );
 
             using ( var rockContext = new RockContext() )
             {
+                LogStartupMessage( "Loading Cache From Database" );
                 LoadCacheObjects( rockContext );
 
                 ShowDebugTimingMessage( "Load Cache Objects" );
 
+                LogStartupMessage( "Updatating Attributes From Web.Config Settings" );
                 UpdateAttributesFromRockConfig( rockContext );
             }
 
@@ -174,6 +192,7 @@ namespace Rock.WebStartup
             }
 
             // Start the message bus
+            LogStartupMessage( "Starting the Message Bus" );
             RockMessageBus.StartAsync().Wait();
             var busTransportName = RockMessageBus.GetTransportName();
 
@@ -187,13 +206,16 @@ namespace Rock.WebStartup
             }
 
             // Start stage 1 of the web farm
+            LogStartupMessage( "Starting the Web Farm (Stage 1)" );
             RockWebFarm.StartStage1();
             ShowDebugTimingMessage( "Web Farm (stage 1)" );
 
+            LogStartupMessage( "Registering HTTP Modules" );
             RegisterHttpModules();
             ShowDebugTimingMessage( "Register HTTP Modules" );
 
             // Initialize the Lava engine.
+            LogStartupMessage( "Initializing Lava Engine" );
             InitializeLava();
             ShowDebugTimingMessage( $"Initialize Lava Engine ({LavaService.CurrentEngineName})" );
 
@@ -201,11 +223,13 @@ namespace Rock.WebStartup
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
             {
+                LogStartupMessage( "Starting Job Scheduler" );
                 StartJobScheduler();
                 ShowDebugTimingMessage( "Start Job Scheduler" );
             }
 
             // Start stage 2 of the web farm
+            LogStartupMessage( "Starting the Web Farm (Stage 2)" );
             RockWebFarm.StartStage2();
             ShowDebugTimingMessage( "Web Farm (stage 2)" );
         }
@@ -481,8 +505,6 @@ namespace Rock.WebStartup
             // double check if there are migrations to run
             if ( pendingMigrations.Any() )
             {
-                LogStartupMessage( "Migrating Database..." );
-
                 var lastMigration = pendingMigrations.Last();
 
                 // create a logger, and enable the migration output to go to a file

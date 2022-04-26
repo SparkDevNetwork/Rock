@@ -30,6 +30,7 @@ export type Workflow = IEntity & {
     description?: string | null;
     entityId?: number | null;
     entityTypeId?: number | null;
+    idKey?: string | null;
     initiatorPersonAliasId?: number | null;
     isProcessing?: boolean;
     lastProcessedDateTime?: string | null;

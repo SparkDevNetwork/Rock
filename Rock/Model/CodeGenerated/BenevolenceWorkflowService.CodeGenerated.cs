@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new BenevolenceWorkflowBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 BenevolenceTypeId = model.BenevolenceTypeId,
                 QualifierValue = model.QualifierValue,

@@ -38,6 +38,7 @@ export type Group = IEntity & {
     groupSalutation?: string | null;
     groupSalutationFull?: string | null;
     groupTypeId?: number;
+    idKey?: string | null;
     inactiveDateTime?: string | null;
     inactiveReasonNote?: string | null;
     inactiveReasonValueId?: number | null;

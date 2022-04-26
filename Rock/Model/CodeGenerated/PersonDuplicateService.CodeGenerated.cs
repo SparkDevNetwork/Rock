@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new PersonDuplicateBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 Capacity = model.Capacity,
                 DuplicatePersonAliasId = model.DuplicatePersonAliasId,

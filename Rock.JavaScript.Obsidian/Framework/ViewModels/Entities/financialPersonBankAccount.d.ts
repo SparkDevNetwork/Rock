@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type FinancialPersonBankAccount = IEntity & {
     accountNumberMasked?: string | null;
     accountNumberSecured?: string | null;
+    idKey?: string | null;
     personAliasId?: number;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

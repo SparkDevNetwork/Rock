@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type FinancialGateway = IEntity & {
     description?: string | null;
     entityTypeId?: number | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     createdDateTime?: string | null;

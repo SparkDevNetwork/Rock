@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type PageRoute = IEntity & {
+    idKey?: string | null;
     isGlobal?: boolean;
     isSystem?: boolean;
     pageId?: number;

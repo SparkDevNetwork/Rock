@@ -32,6 +32,8 @@ namespace BlockGenerator.Utility
 
         public string ConvertFromBagCode => GetConvertFromBagCode( false );
 
+        public bool IsEntity => typeof( Rock.Data.IEntity ).IsAssignableFrom( PropertyType );
+
         public EntityProperty( PropertyInfo propertyInfo )
         {
             PropertyInfo = propertyInfo;

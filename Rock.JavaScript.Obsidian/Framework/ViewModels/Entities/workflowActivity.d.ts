@@ -30,6 +30,7 @@ export type WorkflowActivity = IEntity & {
     assignedGroupId?: number | null;
     assignedPersonAliasId?: number | null;
     completedDateTime?: string | null;
+    idKey?: string | null;
     lastProcessedDateTime?: string | null;
     workflowId?: number;
     createdDateTime?: string | null;

@@ -27,6 +27,7 @@ export type Assessment = IEntity & {
     assessmentResultData?: string | null;
     assessmentTypeId?: number;
     completedDateTime?: string | null;
+    idKey?: string | null;
     lastReminderDate?: string | null;
     personAliasId?: number;
     requestedDateTime?: string | null;

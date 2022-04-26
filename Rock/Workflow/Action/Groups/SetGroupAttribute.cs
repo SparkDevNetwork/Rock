@@ -104,6 +104,7 @@ namespace Rock.Workflow.Action
                     if ( group.Attributes.ContainsKey( attributeKey ) )
                     {
                         var attribute = group.Attributes[attributeKey];
+                        SetWorkflowAttributeValue( action, attribute.Guid, attributeValue );
                         Rock.Attribute.Helper.SaveAttributeValue( group, attribute, attributeValue, rockContext );
                     }
                     else

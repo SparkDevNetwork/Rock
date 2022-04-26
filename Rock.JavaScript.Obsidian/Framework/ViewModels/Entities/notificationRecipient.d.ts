@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type NotificationRecipient = IEntity & {
+    idKey?: string | null;
     notificationId?: number;
     personAliasId?: number;
     read?: boolean;

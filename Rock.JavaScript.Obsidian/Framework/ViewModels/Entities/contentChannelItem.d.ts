@@ -30,6 +30,7 @@ export type ContentChannelItem = IEntity & {
     contentChannelId?: number;
     contentChannelTypeId?: number;
     expireDateTime?: string | null;
+    idKey?: string | null;
     itemGlobalKey?: string | null;
     order?: number;
     permalink?: string | null;

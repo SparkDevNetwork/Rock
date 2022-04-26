@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type ContentChannelItemSlug = IEntity & {
     contentChannelItemId?: number;
+    idKey?: string | null;
     isPrimary?: boolean;
     slug?: string | null;
     createdDateTime?: string | null;

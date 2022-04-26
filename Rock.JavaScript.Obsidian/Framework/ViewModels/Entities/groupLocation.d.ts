@@ -27,6 +27,7 @@ export type GroupLocation = IEntity & {
     groupId?: number;
     groupLocationTypeValueId?: number | null;
     groupMemberPersonAliasId?: number | null;
+    idKey?: string | null;
     isMailingLocation?: boolean;
     isMappedLocation?: boolean;
     locationId?: number;

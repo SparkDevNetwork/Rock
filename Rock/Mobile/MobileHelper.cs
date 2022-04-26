@@ -295,7 +295,7 @@ namespace Rock.Mobile
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
-            if ( additionalSettings.IsNull() )
+            if ( additionalSettings == null )
             {
                 throw new Exception( "Invalid or non-existing AdditionalSettings property on site." );
             }

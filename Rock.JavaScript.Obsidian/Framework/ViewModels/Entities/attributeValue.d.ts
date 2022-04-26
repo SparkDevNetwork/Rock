@@ -28,6 +28,7 @@ export type AttributeValue = IEntity & {
     attribute?: Attribute | null;
     attributeId?: number;
     entityId?: number | null;
+    idKey?: string | null;
     isSystem?: boolean;
     value?: string | null;
     valueAsNumeric?: number | null;

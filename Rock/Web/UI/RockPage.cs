@@ -1366,12 +1366,18 @@ Rock.settings.initialize({{
 
                         Page.Trace.Warn( "Initializing Obsidian" );
 
+                        var body = ( HtmlGenericControl ) this.Master.FindControl( "body" );
+                        if ( body != null )
+                        {
+                            body.AddCssClass( "obsidian-loading" );
+                        }
+
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
                             var script = $@"
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializePage({{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializePage({{
             executionStartTime: new Date().getTime(),
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
@@ -1691,8 +1697,8 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     {
                         var script = $@"
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializePageTimings({{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializePageTimings({{
             elementId: '{_obsidianPageTimingControlId}',
             debugTimingViewModels: { _debugTimingViewModels.ToCamelCaseJson( false, true ) }
         }});

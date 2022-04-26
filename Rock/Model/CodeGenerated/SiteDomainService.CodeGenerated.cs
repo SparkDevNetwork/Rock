@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new SiteDomainBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 Domain = model.Domain,
                 IsSystem = model.IsSystem,

@@ -29,6 +29,7 @@ export type ExceptionLog = IEntity & {
     exceptionType?: string | null;
     form?: string | null;
     hasInnerException?: boolean | null;
+    idKey?: string | null;
     pageId?: number | null;
     pageUrl?: string | null;
     parentId?: number | null;

@@ -28,6 +28,7 @@ export type FinancialPersonSavedAccount = IEntity & {
     financialPaymentDetailId?: number | null;
     gatewayPersonIdentifier?: string | null;
     groupId?: number | null;
+    idKey?: string | null;
     isDefault?: boolean;
     isSystem?: boolean;
     name?: string | null;

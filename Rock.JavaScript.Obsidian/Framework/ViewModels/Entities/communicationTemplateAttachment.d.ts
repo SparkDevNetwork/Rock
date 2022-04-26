@@ -27,6 +27,7 @@ export type CommunicationTemplateAttachment = IEntity & {
     binaryFileId?: number;
     communicationTemplateId?: number;
     communicationType?: number;
+    idKey?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

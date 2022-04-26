@@ -27,6 +27,7 @@ export type MetricPartition = IEntity & {
     entityTypeId?: number | null;
     entityTypeQualifierColumn?: string | null;
     entityTypeQualifierValue?: string | null;
+    idKey?: string | null;
     isRequired?: boolean;
     label?: string | null;
     metricId?: number;

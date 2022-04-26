@@ -31,6 +31,7 @@ export type FinancialScheduledTransaction = IEntity & {
     financialPaymentDetailId?: number | null;
     foreignCurrencyCodeValueId?: number | null;
     gatewayScheduleId?: string | null;
+    idKey?: string | null;
     inactivateDateTime?: string | null;
     isActive?: boolean;
     lastRemindedDate?: string | null;

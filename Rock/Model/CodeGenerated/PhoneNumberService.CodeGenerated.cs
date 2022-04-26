@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new PhoneNumberBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 CountryCode = model.CountryCode,
                 Description = model.Description,

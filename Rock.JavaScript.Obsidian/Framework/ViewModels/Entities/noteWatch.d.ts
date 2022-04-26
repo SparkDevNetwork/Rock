@@ -27,6 +27,7 @@ export type NoteWatch = IEntity & {
     allowOverride?: boolean;
     entityId?: number | null;
     entityTypeId?: number | null;
+    idKey?: string | null;
     isWatching?: boolean;
     noteId?: number | null;
     noteTypeId?: number | null;

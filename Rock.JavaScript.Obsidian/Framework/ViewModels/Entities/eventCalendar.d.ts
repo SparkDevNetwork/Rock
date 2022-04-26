@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type EventCalendar = IEntity & {
     description?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isIndexEnabled?: boolean;
     name?: string | null;

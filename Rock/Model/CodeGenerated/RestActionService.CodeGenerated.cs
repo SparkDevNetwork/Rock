@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new RestActionBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 ApiId = model.ApiId,
                 CacheControlHeaderSettings = model.CacheControlHeaderSettings,

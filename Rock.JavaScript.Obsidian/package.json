@@ -2,11 +2,12 @@
   "private": true,
   "description": "Project for all Rock Obsidian UI functionality.",
   "scripts": {
-    "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core",
-    "build-framework": "rollup --config Framework/rollup.config.js",
+    "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && npm run copy-webforms-framework",
+    "build-framework": "tsc --build Framework && rollup --config Framework/rollup.config.js",
     "build-core": "webpack --no-color",
-    "watch": "rollup --config Framework/rollup.config.js --watch",
+    "watch": "echo \"Watch is currently not supported.\" && exit 1 && rollup --config Framework/rollup.config.js --watch",
     "copy-webforms-core": "copyfiles -u 1 \"dist/obsidian-core.*\" \"dist/obsidian-vendor.*\" \"../RockWeb/Obsidian/\"",
+    "copy-webforms-framework": "copyfiles -u 2 \"dist/FrameworkBundled/**/*\" \"../RockWeb/Obsidian/\"",
     "clean": "rimraf dist",
     "test": "jest"
   },
@@ -48,6 +49,7 @@
     "luxon": "^2.0.2",
     "mitt": "^2.1.0",
     "systemjs": " ^6.8.3",
-    "vue": "^3.0.7"
+    "vue": "^3.0.7",
+    "vue-select": "4.0.0-beta.3"
   }
 }

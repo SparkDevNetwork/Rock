@@ -36,6 +36,7 @@ export type FinancialTransactionAlert = IEntity & {
     frequencyDifferenceFromMean?: number | null;
     frequencyZScore?: number | null;
     givingId?: string | null;
+    idKey?: string | null;
     personAliasId?: number;
     reasonsKey?: string | null;
     transactionId?: number | null;

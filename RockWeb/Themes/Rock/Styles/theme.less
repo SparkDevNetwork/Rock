@@ -674,10 +674,10 @@ textarea,
 }
 
 .wizard {
-  margin: 0 0 35px;
+  margin: -5px -15px 35px;
 
   @media (min-width: @screen-md-min) {
-    margin: 0 0 35px;
+    margin: -35px -35px 35px;
   }
 }
 
@@ -757,7 +757,7 @@ textarea,
 
   .treeview-actions {
     display: flex;
-    margin: -6px -16px -6px 0 !important;
+    margin: -6px -12px -6px 0 !important;
 
     .btn-link {
       width: 28px;
@@ -766,7 +766,6 @@ textarea,
       font-size: @font-size-sm;
       color: @text-muted;
       border: 0;
-      // height: 19px;
 
       &:hover {
         color: @link-color;
@@ -1381,10 +1380,13 @@ body.nav-open {
         }
       }
 
+      &:hover,
       &.open {
         background-color: @navbarside-sub-bg;
         box-shadow: inset 3px 0 0 0 @brand-primary;
+      }
 
+      &.open {
         @media @sm {
           &::before {
             position: absolute;

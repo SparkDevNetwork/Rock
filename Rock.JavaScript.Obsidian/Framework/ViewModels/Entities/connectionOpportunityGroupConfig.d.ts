@@ -28,6 +28,7 @@ export type ConnectionOpportunityGroupConfig = IEntity & {
     groupMemberRoleId?: number | null;
     groupMemberStatus?: number;
     groupTypeId?: number;
+    idKey?: string | null;
     useAllGroupsOfType?: boolean;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

@@ -33,6 +33,7 @@ export type Attendance = IEntity & {
     deviceId?: number | null;
     didAttend?: boolean | null;
     endDateTime?: string | null;
+    idKey?: string | null;
     isFirstTime?: boolean | null;
     note?: string | null;
     occurrenceId?: number;

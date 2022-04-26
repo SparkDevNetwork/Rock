@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new AchievementTypePrerequisiteBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AchievementTypeId = model.AchievementTypeId,
                 PrerequisiteAchievementTypeId = model.PrerequisiteAchievementTypeId,

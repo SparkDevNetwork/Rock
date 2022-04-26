@@ -27,6 +27,7 @@ export type RegistrationRegistrant = IEntity & {
     cost?: number;
     discountApplies?: boolean;
     groupMemberId?: number | null;
+    idKey?: string | null;
     onWaitList?: boolean;
     personAliasId?: number | null;
     registrationId?: number;

@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import JavaScriptAnchor from "../Elements/javaScriptAnchor";
+import JavaScriptAnchor from "./javaScriptAnchor";
 import { defineComponent, PropType, inject } from "vue";
 import { GridContext, RowContext, SortDirection, SortProperty } from "./grid";
 

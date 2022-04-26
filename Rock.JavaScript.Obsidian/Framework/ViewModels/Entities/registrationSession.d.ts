@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type RegistrationSession = IEntity & {
     clientIpAddress?: string | null;
     expirationDateTime?: string;
+    idKey?: string | null;
     paymentGatewayReference?: string | null;
     registrationCount?: number;
     registrationData?: string | null;

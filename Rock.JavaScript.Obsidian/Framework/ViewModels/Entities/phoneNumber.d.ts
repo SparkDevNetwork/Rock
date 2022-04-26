@@ -27,6 +27,7 @@ export type PhoneNumber = IEntity & {
     countryCode?: string | null;
     description?: string | null;
     extension?: string | null;
+    idKey?: string | null;
     isMessagingEnabled?: boolean;
     isSystem?: boolean;
     isUnlisted?: boolean;

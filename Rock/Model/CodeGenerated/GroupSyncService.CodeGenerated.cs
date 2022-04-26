@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new GroupSyncBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AddUserAccountsDuringSync = model.AddUserAccountsDuringSync,
                 ExitSystemCommunicationId = model.ExitSystemCommunicationId,

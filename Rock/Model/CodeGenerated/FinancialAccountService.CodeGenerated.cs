@@ -124,6 +124,7 @@ namespace Rock.Model
             var viewModel = new FinancialAccountBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 AccountTypeValueId = model.AccountTypeValueId,
                 CampusId = model.CampusId,

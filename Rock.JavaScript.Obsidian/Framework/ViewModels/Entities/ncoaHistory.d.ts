@@ -27,6 +27,7 @@ export type NcoaHistory = IEntity & {
     addressInvalidReason?: number;
     addressStatus?: number;
     familyId?: number;
+    idKey?: string | null;
     locationId?: number | null;
     matchFlag?: number;
     moveDate?: string | null;

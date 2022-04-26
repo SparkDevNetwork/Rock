@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new ServiceLogBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 Input = model.Input,
                 LogDateTime = model.LogDateTime,

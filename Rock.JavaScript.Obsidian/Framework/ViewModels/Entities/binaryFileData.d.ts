@@ -25,6 +25,7 @@ import { IEntity } from "../entity";
 
 export type BinaryFileData = IEntity & {
     content?: (number)[];
+    idKey?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

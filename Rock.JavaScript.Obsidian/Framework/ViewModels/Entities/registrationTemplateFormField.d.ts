@@ -27,6 +27,7 @@ export type RegistrationTemplateFormField = IEntity & {
     attributeId?: number | null;
     fieldSource?: number;
     fieldVisibilityRulesJSON?: string | null;
+    idKey?: string | null;
     isGridField?: boolean;
     isInternal?: boolean;
     isRequired?: boolean;

@@ -27,6 +27,7 @@ export type FinancialPledge = IEntity & {
     accountId?: number | null;
     endDate?: string;
     groupId?: number | null;
+    idKey?: string | null;
     personAliasId?: number | null;
     pledgeFrequencyValueId?: number | null;
     startDate?: string;

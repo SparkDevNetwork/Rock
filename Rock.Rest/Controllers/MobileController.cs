@@ -176,7 +176,7 @@ namespace Rock.Rest.Controllers
                         || personalDevice.NotificationsEnabled != ( notificationsEnabled ?? true )
                         || !personalDevice.LastSeenDateTime.HasValue
                         || personalDevice.LastSeenDateTime.Value.AddDays( 1 ) < RockDateTime.Now
-                        || ( person.IsNotNull() && personalDevice.PersonAliasId != person.PrimaryAliasId );
+                        || ( person != null && personalDevice.PersonAliasId != person.PrimaryAliasId );
 
                     if ( hasDeviceChanged )
                     {
@@ -192,7 +192,7 @@ namespace Rock.Rest.Controllers
                         }
 
                         // Update the person tied to the device, but never blank it out. 
-                        if ( person.IsNotNull() && personalDevice.PersonAliasId != person.PrimaryAliasId )
+                        if ( person != null && personalDevice.PersonAliasId != person.PrimaryAliasId )
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
                         }

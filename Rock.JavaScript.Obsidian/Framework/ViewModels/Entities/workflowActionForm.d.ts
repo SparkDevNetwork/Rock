@@ -31,6 +31,7 @@ export type WorkflowActionForm = IEntity & {
     allowPersonEntry?: boolean;
     footer?: string | null;
     header?: string | null;
+    idKey?: string | null;
     includeActionsInNotification?: boolean;
     notificationSystemCommunicationId?: number | null;
     personEntryAddressEntryOption?: number;

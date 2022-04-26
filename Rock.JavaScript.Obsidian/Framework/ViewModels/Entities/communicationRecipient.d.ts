@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type CommunicationRecipient = IEntity & {
     additionalMergeValuesJson?: string | null;
     communicationId?: number;
+    idKey?: string | null;
     mediumEntityTypeId?: number | null;
     openedClient?: string | null;
     openedDateTime?: string | null;

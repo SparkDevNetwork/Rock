@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type FollowingSuggested = IEntity & {
     entityId?: number;
     entityTypeId?: number;
+    idKey?: string | null;
     lastPromotedDateTime?: string | null;
     personAliasId?: number;
     status?: number;

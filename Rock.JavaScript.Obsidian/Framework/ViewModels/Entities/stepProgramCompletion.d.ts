@@ -26,6 +26,7 @@ import { IEntity } from "../entity";
 export type StepProgramCompletion = IEntity & {
     campusId?: number | null;
     endDateTime?: string | null;
+    idKey?: string | null;
     personAliasId?: number;
     startDateTime?: string;
     stepProgramId?: number;

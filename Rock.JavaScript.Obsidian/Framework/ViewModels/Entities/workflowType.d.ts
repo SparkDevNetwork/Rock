@@ -32,6 +32,7 @@ export type WorkflowType = IEntity & {
     formEndDateTime?: string | null;
     formStartDateTime?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean | null;
     isFormBuilder?: boolean;
     isLoginRequired?: boolean;

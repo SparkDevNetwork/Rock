@@ -24,6 +24,7 @@
 import { IEntity } from "../entity";
 
 export type RegistrationTemplateForm = IEntity & {
+    idKey?: string | null;
     name?: string | null;
     order?: number;
     registrationTemplateId?: number;

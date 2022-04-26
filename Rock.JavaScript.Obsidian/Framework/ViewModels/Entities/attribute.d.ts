@@ -39,6 +39,7 @@ export type Attribute = IEntity & {
     fieldTypeGuid?: Guid;
     fieldTypeId?: number;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     isAnalytic?: boolean;
     isAnalyticHistory?: boolean;

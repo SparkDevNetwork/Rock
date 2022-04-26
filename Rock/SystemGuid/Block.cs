@@ -135,5 +135,10 @@ namespace Rock.SystemGuid
         /// The workflow configuration change log notes block
         /// </summary>
         public const string WORKFLOW_CONFIGURATION_CHANGE_LOG_NOTES = "2194F555-1261-4D23-B5E0-F19380DFB10A";
+
+        /// <summary>
+        /// The financial account search block
+        /// </summary>
+        public const string FINANCIAL_ACCOUNT_SEARCH = "21B7618B-47DD-4936-ABB5-81BDB4D56C6A";
     }
 }

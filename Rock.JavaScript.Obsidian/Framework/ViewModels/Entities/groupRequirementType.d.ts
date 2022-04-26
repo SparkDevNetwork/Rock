@@ -29,6 +29,7 @@ export type GroupRequirementType = IEntity & {
     dataViewId?: number | null;
     description?: string | null;
     expireInDays?: number | null;
+    idKey?: string | null;
     name?: string | null;
     negativeLabel?: string | null;
     positiveLabel?: string | null;

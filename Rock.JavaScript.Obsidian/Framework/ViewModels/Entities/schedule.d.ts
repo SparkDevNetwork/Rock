@@ -32,6 +32,7 @@ export type Schedule = IEntity & {
     effectiveEndDate?: string | null;
     effectiveStartDate?: string | null;
     iCalendarContent?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     order?: number;

@@ -75,6 +75,7 @@
     <Compile Include="CodeGenerated\BenevolenceWorkflowViewModel.cs" />
     <Compile Include="CodeGenerated\CampusTopicViewModel.cs" />
     <Compile Include="CodeGenerated\ConnectionStatusAutomationViewModel.cs" />
+    <Compile Include="CodeGenerated\InteractionSessionLocationViewModel.cs" />
     <Compile Include="CodeGenerated\RemoteAuthenticationSessionViewModel.cs" />
     <Compile Include="CodeGenerated\WorkflowActionFormSectionViewModel.cs" />
     <Compile Include="CodeGenerated\WorkflowFormBuilderTemplateViewModel.cs" />

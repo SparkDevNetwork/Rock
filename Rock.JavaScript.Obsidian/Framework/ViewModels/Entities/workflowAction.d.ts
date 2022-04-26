@@ -28,6 +28,7 @@ export type WorkflowAction = IEntity & {
     activityId?: number;
     completedDateTime?: string | null;
     formAction?: string | null;
+    idKey?: string | null;
     lastProcessedDateTime?: string | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;

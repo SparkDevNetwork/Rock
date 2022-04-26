@@ -11,10 +11,11 @@
 
             <div class="panel-body">
 
+                <Rock:NotificationBox ID="nbBulkUpdateNotification" runat="server" Visible="false"></Rock:NotificationBox>
+
                 <asp:Panel ID="pnlEntry" runat="server">
 
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-                    <Rock:NotificationBox ID="nbBulkUpdateNotification" runat="server" Visible="false"></Rock:NotificationBox>
 
                     <div class="row mb-3">
                         <div class="col-md-12">

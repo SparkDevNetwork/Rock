@@ -27,6 +27,7 @@ export type ConnectionOpportunity = IEntity & {
     connectionTypeId?: number;
     description?: string | null;
     iconCssClass?: string | null;
+    idKey?: string | null;
     isActive?: boolean;
     name?: string | null;
     order?: number;

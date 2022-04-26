@@ -125,7 +125,7 @@ namespace Rock.Workflow.Action
                     var updatePrimaryEmail = GetAttributeValue( action, UPDATE_PRIMARY_EMAIL ).AsBooleanOrNull() ?? true; // Default "true" to preserve functionality before this setting was added
                     person = personService.FindPerson( personQuery, updatePrimaryEmail );
 
-                    if ( person.IsNotNull() )
+                    if ( person != null )
                     {
                         personAlias = person.PrimaryAlias;
                     }

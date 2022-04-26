@@ -29,6 +29,7 @@ export type FinancialAccount = IEntity & {
     description?: string | null;
     endDate?: string | null;
     glCode?: string | null;
+    idKey?: string | null;
     imageBinaryFileId?: number | null;
     isActive?: boolean;
     isPublic?: boolean | null;

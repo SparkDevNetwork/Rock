@@ -30,6 +30,7 @@ export type BinaryFile = IEntity & {
     fileName?: string | null;
     fileSize?: number | null;
     height?: number | null;
+    idKey?: string | null;
     isSystem?: boolean;
     isTemporary?: boolean;
     mimeType?: string | null;
