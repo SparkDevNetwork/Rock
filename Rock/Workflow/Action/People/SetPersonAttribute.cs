@@ -105,6 +105,7 @@ namespace Rock.Workflow.Action
                                             person.LoadAttributes();
                                             string originalValue = person.GetAttributeValue( attribute.Key );
 
+                                            SetWorkflowAttributeValue( action, attribute.Guid, updateValue );
                                             Rock.Attribute.Helper.SaveAttributeValue( person, attribute, updateValue, rockContext );
 
                                             action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, updateValue ) );

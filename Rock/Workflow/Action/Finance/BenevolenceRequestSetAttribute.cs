@@ -82,6 +82,7 @@ namespace Rock.Workflow.Action
             {
                 benevolenceRequest.LoadAttributes();
 
+                SetWorkflowAttributeValue( action, attribute.Guid, attributeValue );
                 Rock.Attribute.Helper.SaveAttributeValue( benevolenceRequest, attribute, attributeValue, rockContext );
                 action.AddLogEntry( $"Updated benevolence attribute '{attribute.Name}' to '{attributeValue}'." );
             }
