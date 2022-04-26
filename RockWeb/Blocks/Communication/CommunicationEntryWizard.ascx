@@ -820,7 +820,7 @@
                                         </div>
 
                                         <div class="form-group">
-                                            <label class="control-label" for="component-button-buttonurl">Url</label>
+                                            <label class="control-label" for="component-button-buttonurl">URL</label>
                                             <div class="input-group">
                                                 <span class="input-group-addon"><i class="fa fa-link"></i></span>
                                                 <input class="form-control" id="component-button-buttonurl" placeholder="http://yourlink.com">
