@@ -56,6 +56,12 @@ namespace Rock.Jobs
         DefaultIntegerValue = 50000,
         Order = 2,
         Key = AttributeKey.HowManyRecords )]
+    [IntegerField(
+        "Command Timeout",
+        AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of Interactions, this could take several hours or more.",
+        IsRequired = false,
+        DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
     [DisallowConcurrentExecution]
     public class PopulateInteractionSessionData : IJob
     {
@@ -80,6 +86,19 @@ namespace Rock.Jobs
             /// How Many Records
             /// </summary>
             public const string HowManyRecords = "HowManyRecords";
+
+            /// <summary>
+            /// Command Timeout
+            /// </summary>
+            public const string CommandTimeout = "CommandTimeout";
+        }
+
+        /// <summary>
+        /// Default Values for Attributes
+        /// </summary>
+        private static class AttributeDefaultValue
+        {
+            public const int CommandTimeout = 60 * 60;
         }
 
         #endregion Keys
@@ -89,6 +108,8 @@ namespace Rock.Jobs
         private List<string> _errors;
 
         private List<Exception> _exceptions;
+
+        private int? _commandTimeout = null;
 
         #endregion
 
@@ -113,9 +134,13 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void Execute( IJobExecutionContext context )
         {
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
             _errors = new List<string>();
             _exceptions = new List<Exception>();
             StringBuilder results = new StringBuilder();
+            // get the configured timeout, or default to 20 minutes if it is blank
+            _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+
             var result = ProcessInteractionSessionForIP( context );
             results.AppendLine( result );
 
@@ -147,12 +172,13 @@ namespace Rock.Jobs
             {
                 var recordsTobeUpdated = 0;
                 var rockContext = new RockContext();
+                rockContext.Database.CommandTimeout = _commandTimeout;
                 var startDate = RockDateTime.Now.AddDays( -1 );
                 var take = howManyRecords < maxSessionRecords ? howManyRecords : maxSessionRecords;
                 var interactionSessionQuery = new InteractionSessionService( rockContext )
                     .Queryable( "Interactions" )
                     .Where( a => a.CreatedDateTime >= startDate &&
-                                 ( !a.DurationLastCalculatedDateTime.HasValue || a.Interactions.Any( b => b.CreatedDateTime > a.DurationLastCalculatedDateTime ) ) )
+                                 !( a.DurationLastCalculatedDateTime.HasValue && !a.Interactions.Any( b => b.InteractionDateTime > a.DurationLastCalculatedDateTime ) ) )
 
                     .Take( take );
 
@@ -162,7 +188,7 @@ namespace Rock.Jobs
                 {
                     recordsTobeUpdated += 1;
                     interactionSession.InteractionCount = interactionSession.Interactions.Count();
-                    interactionSession.DurationSeconds = ( int ) ( interactionSession.Interactions.Max( b => b.CreatedDateTime.Value ) - interactionSession.Interactions.Min( b => b.CreatedDateTime.Value ) ).TotalSeconds;
+                    interactionSession.DurationSeconds = ( int ) ( interactionSession.Interactions.Max( b => b.InteractionDateTime ) - interactionSession.Interactions.Min( b => b.InteractionDateTime ) ).TotalSeconds;
                     interactionSession.DurationLastCalculatedDateTime = RockDateTime.Now;
                 }
 
@@ -180,6 +206,7 @@ namespace Rock.Jobs
         private string ProcessInteractionSessionForIP( IJobExecutionContext jobContext )
         {
             JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
+            _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
             var lookbackMaximumInDays = dataMap.GetString( AttributeKey.LookbackMaximumInDays ).AsInteger();
             var startDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );
             var anyRemaining = true;
@@ -188,6 +215,11 @@ namespace Rock.Jobs
             var ipAddressSessionKeyValue = new Dictionary<string, List<int>>();
             var channelIdsWithGeoTracking = GetInteractionChannelsWithGeoTracking();
             var componentIds = InteractionComponentCache.All().Where( a => channelIdsWithGeoTracking.Contains( a.InteractionChannelId ) ).Select( a => a.Id ).ToList();
+            if ( !componentIds.Any() )
+            {
+                return $"Processing Interaction Session : No Interaction Session found.";
+            }
+
             var filterOnComponentQueryable = false;
             if ( componentIds.Count > 5000 )
             {
@@ -202,6 +234,7 @@ namespace Rock.Jobs
                 try
                 {
                     var rockContext = new RockContext();
+                    rockContext.Database.CommandTimeout = _commandTimeout;
                     var currentDateTime = RockDateTime.Now;
                     var interactionComponentQry = new InteractionComponentService( rockContext )
                         .Queryable()
@@ -339,6 +372,7 @@ namespace Rock.Jobs
         {
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = _commandTimeout;
             var siteWithEnableGeoTracking = new SiteService( rockContext ).Queryable().Where( a => a.EnablePageViewGeoTracking );
             return new InteractionChannelService( rockContext )
                 .Queryable()

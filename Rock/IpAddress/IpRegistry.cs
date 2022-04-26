@@ -87,13 +87,13 @@ namespace Rock.IpAddress
                 if ( response.StatusCode == HttpStatusCode.OK )
                 {
                     var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Root ) ) as Root;
-                    var rockContext = new RockContext();
-                    var interactionSessionLocationService = new InteractionSessionLocationService( rockContext );
-                    var interactionSessionService = new InteractionSessionService( rockContext );
-                    var countryDefinedValues = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ).DefinedValues;
-                    var regionDefinedValues = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ).DefinedValues;
+                    var countryDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES );
+                    var regionDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE );
                     foreach ( var result in responseContent.Results.Where( a => ipAddressesWithSessionIds.ContainsKey( a.IP ) ) )
                     {
+                        var rockContext = new RockContext();
+                        var interactionSessionLocationService = new InteractionSessionLocationService( rockContext );
+                        var interactionSessionService = new InteractionSessionService( rockContext );
                         var interactionSessions = interactionSessionService.GetByIds( ipAddressesWithSessionIds[result.IP] );
                         if ( result.Location != null )
                         {
@@ -109,7 +109,7 @@ namespace Rock.IpAddress
                             if ( regionCode.IsNotNullOrWhiteSpace() )
                             {
                                 interactionSessionLocation.RegionCode = regionCode.Left( 2 );
-                                var regionDefinedValue = regionDefinedValues.Where( a => a.Value == regionCode ).FirstOrDefault();
+                                var regionDefinedValue = regionDefinedType.GetDefinedValueFromValue( regionCode );
                                 if ( regionDefinedValue != null )
                                 {
                                     interactionSessionLocation.RegionValueId = regionDefinedValue.Id;
@@ -119,7 +119,7 @@ namespace Rock.IpAddress
                             if ( result.Location.Country.Code.IsNotNullOrWhiteSpace() )
                             {
                                 interactionSessionLocation.CountryCode = result.Location.Country.Code;
-                                var countryDefinedValue = countryDefinedValues.Where( a => a.Value == result.Location.Country.Code ).FirstOrDefault();
+                                var countryDefinedValue = countryDefinedType.GetDefinedValueFromValue( result.Location.Country.Code );
                                 if ( countryDefinedValue != null )
                                 {
                                     interactionSessionLocation.CountryValueId = countryDefinedValue.Id;
@@ -133,13 +133,9 @@ namespace Rock.IpAddress
 
                             interactionSessionLocation.GeoPoint = Rock.Model.Location.GetGeoPoint( result.Location.Latitude, result.Location.Longitude );
                             interactionSessionLocationService.Add( interactionSessionLocation );
-                            foreach ( var interactionSession in interactionSessions )
-                            {
-                                lookupResult.SuccessCount += 1;
-                                interactionSessionLocation.InteractionSessions.Add( interactionSession );
-                            }
-                            
                             rockContext.SaveChanges();
+                            var updateCount = rockContext.BulkUpdate( interactionSessions, a => new InteractionSession { InteractionSessionLocationId = interactionSessionLocation.Id } );
+                            lookupResult.SuccessCount += updateCount;
                         }
                     }
 
