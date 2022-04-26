@@ -129,9 +129,6 @@ export default defineComponent({
                 this.errorMessage = result.errorMessage || "An unknown error occurred communicating with the server";
             }
             catch (e) {
-                // ts-ignore-line
-                console.log(JSON.stringify(e.response, null, 2));
-
                 if (typeof e === "string") {
                     this.errorMessage = e;
                 }

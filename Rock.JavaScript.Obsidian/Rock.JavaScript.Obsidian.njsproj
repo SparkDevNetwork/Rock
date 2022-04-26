@@ -49,6 +49,7 @@
     <Content Include="Framework\ValidationRules\tsconfig.json" />
     <Content Include="System\.eslintrc.js" />
     <Content Include="System\tsconfig.json" />
+    <Content Include="System\vendor.less" />
     <Content Include="Tests\tsconfig.json" />
     <Content Include="Framework\tsconfig.json" />
     <Content Include="Framework\Utility\aspDateFormat.ts" />

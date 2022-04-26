@@ -68,23 +68,34 @@ export async function doApiCall<T>(method: HttpMethod, url: string, params: Http
         } as HttpResult<T>;
     }
     catch (e) {
-        if (e?.response?.data?.Message ?? e?.response?.data?.message) {
+        if (axios.isAxiosError(e)) {
+            if (e.response?.data?.Message || e?.response?.data?.message) {
+                return {
+                    data: null,
+                    isError: true,
+                    isSuccess: false,
+                    statusCode: e.response.status,
+                    errorMessage: e?.response?.data?.Message ?? e.response.data.message
+                } as HttpResult<T>;
+            }
+
             return {
                 data: null,
                 isError: true,
                 isSuccess: false,
-                statusCode: e.response.status,
-                errorMessage: e?.response?.data?.Message ?? e.response.data.message
+                statusCode: e.response?.status ?? 0,
+                errorMessage: null
             } as HttpResult<T>;
         }
-
-        return {
-            data: null,
-            isError: true,
-            isSuccess: false,
-            statusCode: e.response.status,
-            errorMessage: null
-        } as HttpResult<T>;
+        else {
+            return {
+                data: null,
+                isError: true,
+                isSuccess: false,
+                statusCode: 0,
+                errorMessage: null
+            } as HttpResult<T>;
+        }
     }
 }
 
