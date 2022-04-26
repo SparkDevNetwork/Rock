@@ -104,7 +104,7 @@ export default defineComponent({
             immediate: true,
             handler(): void {
                 if (this.modelValue !== this.internalNumberValue) {
-                    this.internalValue = asFormattedString(this.modelValue, this.internalDecimalCount ?? undefined);
+                    this.internalValue = asFormattedString(this.modelValue, this.internalDecimalCount ?? undefined, { useGrouping: false });
                 }
             }
         }

@@ -18,6 +18,8 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { PublicAttribute } from "../ViewModels";
 import RockField from "./rockField";
 import LoadingIndicator from "../Elements/loadingIndicator";
+import { PublicAttributeValueCategory } from "../ViewModels/publicAttributeValueCategory";
+
 import { List } from "../Util/linq";
 
 export default defineComponent({
@@ -46,6 +48,14 @@ export default defineComponent({
         showAbbreviatedName: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        displayAsTabs: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        showCategoryLabel: {
+            type: Boolean as PropType<boolean>,
+            default: true
         }
     },
 
@@ -57,6 +67,22 @@ export default defineComponent({
         });
 
         const values = ref({ ...props.modelValue });
+
+        const attributeCategories = computed(() => {
+            const categoryList: PublicAttributeValueCategory[] = [];
+
+            validAttributes.value.forEach(attr => {
+                attr.categories.forEach(newCat => {
+                    if (!categoryList.some(oldCat => oldCat.guid == newCat.guid)) {
+                        categoryList.push(newCat);
+                    }
+                });
+            });
+
+            categoryList.sort((a, b) => a.order - b.order);
+
+            return categoryList;
+        });
 
         const onUpdateValue = (key: string, value: string): void => {
             values.value[key] = value;
@@ -71,7 +97,8 @@ export default defineComponent({
         return {
             onUpdateValue,
             validAttributes,
-            values
+            values,
+            attributeCategories
         };
     },
 

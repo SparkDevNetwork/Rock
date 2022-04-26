@@ -114,16 +114,37 @@ const attributeValuesContainerGallery = defineComponent({
         CheckBox
     },
     setup() {
-        const isEditMode = ref(true);
+        const isEditMode = ref(false);
 
-        const showEmptyValues = ref(false);
+        const showEmptyValues = ref(true);
 
         const showAbbreviatedName = ref(false);
+
+        const categories = [{
+            guid: newGuid(),
+            name: "Cat A",
+            order: 1
+        },
+        {
+            guid: newGuid(),
+            name: "Cat B",
+            order: 2
+        },
+        {
+            guid: newGuid(),
+            name: "Cat C",
+            order: 3
+        },
+        {
+            guid: newGuid(),
+            name: "Cat D",
+            order: 4
+        }];
 
         const attributes = ref<Record<string, PublicAttribute>>({
             text: {
                 attributeGuid: newGuid(),
-                categories: [],
+                categories: [categories[0]],
                 description: "A text attribute.",
                 fieldTypeGuid: FieldType.Text,
                 isRequired: false,
@@ -132,9 +153,42 @@ const attributeValuesContainerGallery = defineComponent({
                 order: 2,
                 configurationValues: {}
             },
+            text2: {
+                attributeGuid: newGuid(),
+                categories: [categories[2]],
+                description: "A text attribute.",
+                fieldTypeGuid: FieldType.Text,
+                isRequired: false,
+                key: "text",
+                name: "Text Attribute",
+                order: 4,
+                configurationValues: {}
+            },
+            text3: {
+                attributeGuid: newGuid(),
+                categories: [categories[1]],
+                description: "A text attribute.",
+                fieldTypeGuid: FieldType.Text,
+                isRequired: false,
+                key: "text",
+                name: "Text Attribute",
+                order: 3,
+                configurationValues: {}
+            },
+            text4: {
+                attributeGuid: newGuid(),
+                categories: [categories[3]],
+                description: "A text attribute.",
+                fieldTypeGuid: FieldType.Text,
+                isRequired: false,
+                key: "text",
+                name: "Text Attribute",
+                order: 5,
+                configurationValues: {}
+            },
             single: {
                 attributeGuid: newGuid(),
-                categories: [],
+                categories: [categories[1], categories[2]],
                 description: "A single select attribute.",
                 fieldTypeGuid: FieldType.SingleSelect,
                 isRequired: false,
@@ -149,7 +203,7 @@ const attributeValuesContainerGallery = defineComponent({
 
         const attributeValues = ref<Record<string, string>>({
             "text": "Default text value",
-            single: ""
+            single: "1"
         });
 
         return {
@@ -161,7 +215,7 @@ const attributeValuesContainerGallery = defineComponent({
         };
     },
     template: `
-<GalleryAndResult :splitWidth="false">
+<GalleryAndResult>
     <template #header>
         AttributeValuesContainer
     </template>
@@ -171,12 +225,13 @@ const attributeValuesContainerGallery = defineComponent({
         <CheckBox v-model="showAbbreviatedName" label="Show Abbreviated Name" />
 
         <CheckBox v-model="showEmptyValues" label="Show Empty Values" />
-
+    </template>
+    <template #result>
         <AttributeValuesContainer v-model="attributeValues"
-            :attributes="attributes"
-            :isEditMode="isEditMode"
-            :showAbbreviatedName="showAbbreviatedName"
-            :showEmptyValues="showEmptyValues" />
+        :attributes="attributes"
+        :isEditMode="isEditMode"
+        :showAbbreviatedName="showAbbreviatedName"
+        :showEmptyValues="showEmptyValues" />
     </template>
 </GalleryAndResult>`
 });
@@ -191,7 +246,7 @@ const filterRules = defineComponent({
         TextBox
     },
     setup() {
-        
+
         const sourcesText = ref(`[
             {
                 "guid": "2a50d342-3a0b-4da3-83c1-25839c75615c",
@@ -387,7 +442,7 @@ const filterRules = defineComponent({
 
         const usePrefilled = ref(false);
         const value = ref(clean());
-        
+
         watch(usePrefilled, () => {
             value.value = usePrefilled.value ? prefilled() : clean();
         });
