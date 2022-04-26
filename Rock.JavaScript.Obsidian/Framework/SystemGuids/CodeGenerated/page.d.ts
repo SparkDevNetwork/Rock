@@ -1043,5 +1043,7 @@ ParentPage: System Dialogs */
     FinancialSettings = "90723727-56EC-494D-9708-E188869D900C",
     /** The Contribution Statement Page on the stock external site */
     ContributionStatementPage = "98EBADAF-CCA9-4893-9DD3-D8201D8BD7FA",
+    /** The system communication preview internal page. */
+    SystemCommunicationPreview = "FD8E0C71-9543-4CAB-9918-76A67EFE5093",
 }
 

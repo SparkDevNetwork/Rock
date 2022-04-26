@@ -141,11 +141,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// Gets or sets a value indicating whether this <see cref="IRockControl" /> is required.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
+        /// <value><c>true</c> if required; otherwise, <c>false</c>.</value>
         [
         Bindable( true ),
         Category( "Behavior" ),

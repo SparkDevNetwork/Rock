@@ -156,6 +156,14 @@
     <Compile Include="Migrations\202204252023447_NewPreviewButtonSystemCommunicationsList.Designer.cs">
       <DependentUpon>202204252023447_NewPreviewButtonSystemCommunicationsList.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202204261805314_Rollup_20220426.cs" />
+    <Compile Include="Migrations\202204261805314_Rollup_20220426.Designer.cs">
+      <DependentUpon>202204261805314_Rollup_20220426.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202204261825224_CodeGenerated_20220426.cs" />
+    <Compile Include="Migrations\202204261825224_CodeGenerated_20220426.Designer.cs">
+      <DependentUpon>202204261825224_CodeGenerated_20220426.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1162,6 +1170,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202204252023447_NewPreviewButtonSystemCommunicationsList.resx">
       <DependentUpon>202204252023447_NewPreviewButtonSystemCommunicationsList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202204261805314_Rollup_20220426.resx">
+      <DependentUpon>202204261805314_Rollup_20220426.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202204261825224_CodeGenerated_20220426.resx">
+      <DependentUpon>202204261825224_CodeGenerated_20220426.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
