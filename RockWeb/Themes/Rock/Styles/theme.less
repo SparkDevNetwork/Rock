@@ -14,6 +14,16 @@
 @import "_variable-overrides.less";
 @import "_root.less";
 
+.inline-fa-svg {
+  line-height: 1;
+}
+
+.inline-fa-svg svg {
+  height: 1em;
+  font-size: inherit;
+  fill: currentColor;
+}
+
 /*
   Rock Theme Styles
   1. HTML Overrides
@@ -757,7 +767,7 @@ textarea,
 
   .treeview-actions {
     display: flex;
-    margin: -6px -12px -6px 0 !important;
+    margin: -6px -16px -6px 0 !important;
 
     .btn-link {
       width: 28px;
@@ -766,6 +776,7 @@ textarea,
       font-size: @font-size-sm;
       color: @text-muted;
       border: 0;
+      // height: 19px;
 
       &:hover {
         color: @link-color;
@@ -1380,13 +1391,10 @@ body.nav-open {
         }
       }
 
-      &:hover,
       &.open {
         background-color: @navbarside-sub-bg;
         box-shadow: inset 3px 0 0 0 @brand-primary;
-      }
 
-      &.open {
         @media @sm {
           &::before {
             position: absolute;

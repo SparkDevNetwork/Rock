@@ -24,15 +24,42 @@
 @import "_rock-mixins.less";
 @import "./FontAwesome/mixins.less";
 @import "./FontAwesome/variables.less";
-@import "./FontAwesome/_rock-upgrade-map-variables.less";
-@import "./FontAwesome/_rock-fa-mixins.less";
+// @import "./FontAwesome/_rock-upgrade-map-variables.less";
+// @import "./FontAwesome/_rock-fa-mixins.less";
 @import "./JCrop/jcrop.less";
 @import "./chosen/bootstrap-chosen-variables.less";
 @import "./chosen/bootstrap-chosen.less";
 
-.fa-font-face( @fa-theme-weight-name, @fa-edition );
-// Single quotes are required for LESS compilation in Rock
-.fa-font-face( 'brands' );
+// .fa-font-face( @fa-theme-weight-name, @fa-edition );
+// // Single quotes are required for LESS compilation in Rock
+// .fa-font-face( 'brands' );
+
+@fa-font-face: 'nope';
+@fa-var-times: '\f00d';
+@fa-var-search: '\f002';
+@fa-var-circle: '\f111';
+@fa-var-sort: '\f0dc';
+@fa-var-sort-down: '\f0dd';
+@fa-var-sort-up: '\f0de';
+@fa-var-chevron-up: '\f077';
+@fa-var-chevron-down: '\f078';
+@fa-var-chevron-right: '\f054';
+@fa-var-expand: '\f065';
+@fa-var-compress: '\f066';
+@fa-var-cubes: '\f1b3';
+@fa-var-cube: '\f1b2';
+@fa-var-phone-square: '\f098';
+@fa-var-square: '\f0c8';
+@fa-var-check-square: '\f14a';
+@fa-var-check-circle: '\f058';
+@fa-var-upload: '\f093';
+@fa-var-files-o: '\f0c5';
+@fa-var-file-alt: '\f15c';
+@fa-var-folder-open: '\f07c';
+@fa-var-star: '\f005';
+@fa-var-facebook: '\f09a';
+@fa-var-google: '\f1a0';
+@fa-var-twitter: '\f099';
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.min.css";
