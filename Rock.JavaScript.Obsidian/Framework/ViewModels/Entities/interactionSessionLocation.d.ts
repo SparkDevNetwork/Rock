@@ -27,6 +27,7 @@ export type InteractionSessionLocation = IEntity & {
     countryCode?: string | null;
     countryValueId?: number | null;
     geoPoint?: Record<string, unknown>;
+    idKey?: string | null;
     ipAddress?: string | null;
     iSP?: string | null;
     location?: string | null;

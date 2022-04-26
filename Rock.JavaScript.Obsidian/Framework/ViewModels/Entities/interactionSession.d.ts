@@ -27,6 +27,7 @@ export type InteractionSession = IEntity & {
     deviceTypeId?: number | null;
     durationLastCalculatedDateTime?: string | null;
     durationSeconds?: number | null;
+    idKey?: string | null;
     interactionCount?: number | null;
     interactionMode?: string | null;
     interactionSessionLocationId?: number | null;
