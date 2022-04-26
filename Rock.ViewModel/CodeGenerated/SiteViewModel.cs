@@ -128,6 +128,14 @@ namespace Rock.ViewModel
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the DisablePredictableIds.
+        /// </summary>
+        /// <value>
+        /// The DisablePredictableIds.
+        /// </value>
+        public bool DisablePredictableIds { get; set; }
+
+        /// <summary>
         /// Gets or sets the EnabledForShortening.
         /// </summary>
         /// <value>

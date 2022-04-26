@@ -27,15 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for GroupMemberAssignment that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for InteractionSessionLocation that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class GroupMemberAssignmentEntity
+    public partial class InteractionSessionLocationEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public DateTime? ConfirmationSentDateTime { get; set; }
+        public string CountryCode { get; set; }
+
+        /// <summary />
+        public int? CountryValueId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -44,13 +47,19 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int GroupMemberId { get; set; }
+        public object GeoPoint { get; set; }
 
         /// <summary />
-        public DateTime? LastRSVPReminderSentDateTime { get; set; }
+        public string IpAddress { get; set; }
 
         /// <summary />
-        public int? LocationId { get; set; }
+        public string ISP { get; set; }
+
+        /// <summary />
+        public string Location { get; set; }
+
+        /// <summary />
+        public DateTime LookupDateTime { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -58,7 +67,13 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int? ScheduleId { get; set; }
+        public string PostalCode { get; set; }
+
+        /// <summary />
+        public string RegionCode { get; set; }
+
+        /// <summary />
+        public int? RegionValueId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -87,20 +102,25 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source GroupMemberAssignment object
+        /// Copies the base properties from a source InteractionSessionLocation object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( GroupMemberAssignment source )
+        public void CopyPropertiesFrom( InteractionSessionLocation source )
         {
             this.Id = source.Id;
-            this.ConfirmationSentDateTime = source.ConfirmationSentDateTime;
+            this.CountryCode = source.CountryCode;
+            this.CountryValueId = source.CountryValueId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.GroupMemberId = source.GroupMemberId;
-            this.LastRSVPReminderSentDateTime = source.LastRSVPReminderSentDateTime;
-            this.LocationId = source.LocationId;
+            this.GeoPoint = source.GeoPoint;
+            this.IpAddress = source.IpAddress;
+            this.ISP = source.ISP;
+            this.Location = source.Location;
+            this.LookupDateTime = source.LookupDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.ScheduleId = source.ScheduleId;
+            this.PostalCode = source.PostalCode;
+            this.RegionCode = source.RegionCode;
+            this.RegionValueId = source.RegionValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -112,15 +132,18 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for GroupMemberAssignment that includes all the fields that are available for GETs. Use this for GETs (use GroupMemberAssignmentEntity for POST/PUTs)
+    /// Client model for InteractionSessionLocation that includes all the fields that are available for GETs. Use this for GETs (use InteractionSessionLocationEntity for POST/PUTs)
     /// </summary>
-    public partial class GroupMemberAssignment : GroupMemberAssignmentEntity
+    public partial class InteractionSessionLocation : InteractionSessionLocationEntity
     {
         /// <summary />
-        public Location Location { get; set; }
+        public DefinedValue CountryValue { get; set; }
 
         /// <summary />
-        public Schedule Schedule { get; set; }
+        public ICollection<InteractionSession> InteractionSessions { get; set; }
+
+        /// <summary />
+        public DefinedValue RegionValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

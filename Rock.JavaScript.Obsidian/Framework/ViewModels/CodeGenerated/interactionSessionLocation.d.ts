@@ -23,16 +23,17 @@
 
 import { IEntity } from "../entity";
 
-export type InteractionSession = IEntity & {
-    deviceTypeId?: number | null;
-    durationLastCalculatedDateTime?: string | null;
-    durationSeconds?: number | null;
-    interactionCount?: number | null;
-    interactionMode?: string | null;
-    interactionSessionLocationId?: number | null;
+export type InteractionSessionLocation = IEntity & {
+    countryCode?: string | null;
+    countryValueId?: number | null;
+    geoPoint?: Record<string, unknown>;
     ipAddress?: string | null;
-    sessionData?: string | null;
-    sessionStartDateKey?: number | null;
+    iSP?: string | null;
+    location?: string | null;
+    lookupDateTime?: string;
+    postalCode?: string | null;
+    regionCode?: string | null;
+    regionValueId?: number | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

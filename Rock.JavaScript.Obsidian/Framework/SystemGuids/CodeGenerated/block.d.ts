@@ -68,5 +68,7 @@ export const enum Block {
     OidcClientDetail = "19B3433E-4C40-44D3-9974-5B2373F8AF8A",
     /** The workflow configuration change log notes block */
     WorkflowConfigurationChangeLogNotes = "2194F555-1261-4D23-B5E0-F19380DFB10A",
+    /** The financial account search block */
+    FinancialAccountSearch = "21B7618B-47DD-4936-ABB5-81BDB4D56C6A",
 }
 
