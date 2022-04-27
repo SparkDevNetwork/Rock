@@ -237,13 +237,8 @@ export default defineComponent({
 
             return this.viewModel.familyMembers.find(fm => areEqual(fm.guid, personGuid)) || null;
         },
-
-        signatureDocumentName(): string {
-            return this.viewModel.signatureDocumentTemplateName ?? "";
-        },
-
         signatureDocumentTerm(): string {
-            return this.viewModel.signatureDocumentTerm ?? "";
+            return StringFilter.toTitleCase(this.viewModel.signatureDocumentTerm || "Release");
         }
     },
     methods: {
@@ -403,7 +398,7 @@ export default defineComponent({
         </template>
 
         <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
-            <h2 class="signature-header">Please sign the {{ signatureDocumentName }} {{ signatureDocumentTerm }} for {{ firstName }}</h2>
+            <h2 class="signature-header">Please Sign the {{ signatureDocumentTerm }} for {{ firstName }}</h2>
             <div class="signaturedocument-container">
                 <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
             </div>
