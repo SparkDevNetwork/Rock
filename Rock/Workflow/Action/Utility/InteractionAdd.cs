@@ -59,7 +59,7 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Interaction DateTime", "Interaction DateTime",
         "An optional date time to use when adding the interaction. <span class='tip tip-lava'></span>",
         false, "", "", 8, AttributeKey.InteractionDateTime, new string[] { "Rock.Field.Types.DateTimeFieldType" } )]
-    [WorkflowAttribute( "ResultInteractionId", "When set, the created Interaction record's Id will be put into this optional text field attribute.",
+    [WorkflowAttribute( "Result Interaction Id", "When set, the created Interaction record's Id will be put into this optional text field attribute.",
         false, "", "", 9, AttributeKey.ResultInteractionId, new string[] { "Rock.Field.Types.TextFieldType" } )]
     public class InteractionAdd : ActionComponent
     {
