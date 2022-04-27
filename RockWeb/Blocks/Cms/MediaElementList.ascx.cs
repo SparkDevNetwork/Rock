@@ -306,7 +306,11 @@ namespace RockWeb.Blocks.Cms
 
             // Use AsNoTracking() since these records won't be modified, and therefore don't need to be tracked by the EF change tracker
             var qry = mediaElementService.Queryable().AsNoTracking().Where( a => a.MediaFolderId == _mediaFolder.Id );
-
+            var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
+            var watchCountQry = new InteractionService( rockContext )
+                .Queryable()
+                .Where( a => a.Operation == "Watch" );
+            var interactionComponentQry = new InteractionComponentService( rockContext ).Queryable().Where( c => c.InteractionChannelId == interactionChannelId );
             // name filter
             string nameFilter = gfFilter.GetUserPreference( UserPreferenceKey.Name );
             if ( !string.IsNullOrEmpty( nameFilter ) )
@@ -314,19 +318,31 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.Where( a => a.Name.Contains( nameFilter ) );
             }
 
+            rockContext.SqlLogging( true );
+
+            var selectQry = qry
+               .Select( a => new
+               {
+                   a.Id,
+                   a.Name,
+                   a.DurationSeconds,
+                   WatchCount = watchCountQry.Where( b => interactionComponentQry.Where( c => a.Id == c.EntityId && b.InteractionComponentId == c.Id ).Any() ).Count()
+               } );
+
             var sortProperty = gElementList.SortProperty;
             if ( gElementList.AllowSorting && sortProperty != null )
             {
-                qry = qry.Sort( sortProperty );
+                selectQry = selectQry.Sort( sortProperty );
             }
             else
             {
-                qry = qry.OrderBy( a => a.Name );
+                selectQry = selectQry.OrderBy( a => a.Name );
             }
 
             gElementList.EntityTypeId = EntityTypeCache.GetId<MediaElement>();
-            gElementList.DataSource = qry.ToList();
+            gElementList.DataSource = selectQry.ToList();
             gElementList.DataBind();
+            rockContext.SqlLogging( false );
         }
 
         /// <summary>
