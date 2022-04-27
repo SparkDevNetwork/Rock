@@ -814,7 +814,7 @@ namespace Rock.Rest.Controllers
                         IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
                         IsDeceased = a.IsDeceased,
                         RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Get( a.RecordStatusValueId.Value ).Value : string.Empty,
-                        Age = Person.GetAge( a.BirthDate ) ?? -1,
+                        Age = Person.GetAge( a.BirthDate, a.DeceasedDate ) ?? -1,
                         FormattedAge = a.FormatAge(),
                         SpouseNickName = spouse?.NickName,
                         SpouseName = spouse != null

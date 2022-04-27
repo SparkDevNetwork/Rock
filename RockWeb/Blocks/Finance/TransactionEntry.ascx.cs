@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Finance
 
     [BooleanField( "Only Public Accounts In URL",
         Key = AttributeKey.OnlyPublicAccountsInURL,
-        Description = "Set to true if using the 'Allow Account Options In Url' option to prevent non-public accounts to be specified.",
+        Description = "Set to true if using the 'Allow Account Options In URL' option to prevent non-public accounts to be specified.",
         DefaultBooleanValue = true,
         Category = CategoryKey.Advanced,
         Order = 2 )]
