@@ -164,6 +164,10 @@
     <Compile Include="Migrations\202204261825224_CodeGenerated_20220426.Designer.cs">
       <DependentUpon>202204261825224_CodeGenerated_20220426.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202204271322510_UpdateAttendanceAnalyticsQuerySP.cs" />
+    <Compile Include="Migrations\202204271322510_UpdateAttendanceAnalyticsQuerySP.Designer.cs">
+      <DependentUpon>202204271322510_UpdateAttendanceAnalyticsQuerySP.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1177,6 +1181,9 @@
     <EmbeddedResource Include="Migrations\202204261825224_CodeGenerated_20220426.resx">
       <DependentUpon>202204261825224_CodeGenerated_20220426.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202204271322510_UpdateAttendanceAnalyticsQuerySP.resx">
+      <DependentUpon>202204271322510_UpdateAttendanceAnalyticsQuerySP.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
     </EmbeddedResource>
@@ -1905,6 +1912,12 @@
     </Content>
     <Content Include="Migrations\202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>202204271322510_UpdateAttendanceAnalyticsQuerySP.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>202204271322510_UpdateAttendanceAnalyticsQuerySP.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 13.0\Version 1.13.0\202108251744427_Rollups_20210825_kpilinkshortcode.sql">
       <DependentUpon>202108251744427_Rollups_20210825.cs</DependentUpon>

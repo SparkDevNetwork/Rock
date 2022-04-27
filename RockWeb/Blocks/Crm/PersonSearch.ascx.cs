@@ -486,6 +486,7 @@ namespace RockWeb.Blocks.Crm
                     NickName = p.NickName,
                     LastName = p.LastName,
                     BirthDate = p.BirthDate,
+                    DeceasedDate = p.DeceasedDate,
                     BirthYear = p.BirthYear,
                     BirthMonth = p.BirthMonth,
                     BirthDay = p.BirthDay,
@@ -693,6 +694,14 @@ namespace RockWeb.Blocks.Crm
         public DateTime? BirthDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the deceased date.
+        /// </summary>
+        /// <value>
+        /// The deceased date.
+        /// </value>
+        public DateTime? DeceasedDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the birth year.
         /// </summary>
         /// <value>
@@ -764,7 +773,7 @@ namespace RockWeb.Blocks.Crm
         {
             get
             {
-                return Person.GetAge( BirthDate );
+                return Person.GetAge( BirthDate, DeceasedDate );
             }
 
             private set { }
