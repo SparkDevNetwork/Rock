@@ -81,7 +81,7 @@
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="PublicName" />
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                             <Rock:DataTextBox ID="tbUrl" runat="server"
-                                SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Url" />
+                                SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Url" Label="URL" />
                         </div>
                         <div class="col-md-6">                
                             <Rock:DataTextBox ID="tbGLCode" runat="server"
