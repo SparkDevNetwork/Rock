@@ -318,8 +318,6 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.Where( a => a.Name.Contains( nameFilter ) );
             }
 
-            rockContext.SqlLogging( true );
-
             var selectQry = qry
                .Select( a => new
                {
@@ -342,7 +340,6 @@ namespace RockWeb.Blocks.Cms
             gElementList.EntityTypeId = EntityTypeCache.GetId<MediaElement>();
             gElementList.DataSource = selectQry.ToList();
             gElementList.DataBind();
-            rockContext.SqlLogging( false );
         }
 
         /// <summary>
