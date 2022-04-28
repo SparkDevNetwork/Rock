@@ -100,7 +100,7 @@ namespace Rock.Field.Types
             controls.Add( cbEnhancedForLongLists );
             cbEnhancedForLongLists.AutoPostBack = true;
             cbEnhancedForLongLists.CheckedChanged += OnQualifierUpdated;
-            cbEnhancedForLongLists.Checked = false;
+            cbEnhancedForLongLists.Checked = true;
             cbEnhancedForLongLists.Label = "Enhanced For Long Lists";
             cbEnhancedForLongLists.Text = "Yes";
             cbEnhancedForLongLists.Help = "When set, allows a searching for items.";
@@ -119,7 +119,7 @@ namespace Rock.Field.Types
             configurationValues.Add( DISPLAY_PUBLIC_NAME, new ConfigurationValue( "Display Public Name", "When set, public name will be displayed.", "True" ) );
             configurationValues.Add( DISPLAY_CHILD_ITEM_COUNTS, new ConfigurationValue( "Display Child Item Counts", "When set, child item counts will be displayed.", "False" ) );
             configurationValues.Add( DISPLAY_ACTIVE_ONLY, new ConfigurationValue( "Display Active Items Only", "When set, only active item will be displayed.", "False" ) );
-            configurationValues.Add( ENHANCED_FOR_LONG_LISTS, new ConfigurationValue( "Enhanced For Long Lists", "When set, allows a searching for items.", "False" ) );
+            configurationValues.Add( ENHANCED_FOR_LONG_LISTS, new ConfigurationValue( "Enhanced For Long Lists", "When set, allows a searching for items.", "True" ) );
 
             if ( controls != null && controls.Count >= 4 )
             {
@@ -244,7 +244,7 @@ namespace Rock.Field.Types
             bool displayPublicName = true;
             bool displayChildItemCounts = false;
             bool displayActiveOnly = false;
-            bool enhancedForLongLists = false;
+            bool enhancedForLongLists = true;
             if ( configurationValues != null )
             {
                 if ( configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
