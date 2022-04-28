@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, reactive, ref } from "vue";
 import { toDecimalPlaces } from "../Services/number";
 
 export type FlowNode = {
@@ -40,7 +40,7 @@ type Path = { sourcePoint: Point, targetPoint: Point, thickness: number };
 type FlowDiagramInFlow = FlowEdge & Path;
 
 type FlowDiagramLevelNode = FlowNode & Rectangle & {
-    level: number;
+    totalUnits: number;
     inFlows: FlowDiagramInFlow[];
 };
 
@@ -70,12 +70,104 @@ const defaultSettings = {
     chartHeight: 900
 };
 
+function round(num: number): number {
+    return toDecimalPlaces(num, 2);
+}
+
+/**
+ * Component for displaying a whole level's nodes and flows in the diagram.
+ * Used by the FlowNodeDiagram component defined below it.
+ */
+const FlowNodeDiagramLevel = defineComponent({ // eslint-disable-line @typescript-eslint/naming-convention
+    name: "FlowNodeDiagramLevel",
+
+    props: {
+        levelData: {
+            type: Array as PropType<FlowDiagramLevel>,
+            required: true
+        },
+        levelNumber: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    },
+
+    events: {
+        showTooltip: (_html?: string, _e?: MouseEvent) => true
+    },
+
+    setup(props, { emit }) {
+        // Construct path dimensions and coordinates for a flow
+        function flowPoints ({sourcePoint, targetPoint, thickness}: FlowDiagramInFlow): string {
+            const oneThirdX = round((targetPoint.x - sourcePoint.x) / 3) + sourcePoint.x;
+            const twoThirdsX = round((targetPoint.x - sourcePoint.x) * 2 / 3) + sourcePoint.x;
+            const sourceBottom = sourcePoint.y + thickness;
+            const targetBottom = targetPoint.y + thickness;
+
+            const start = `M${sourcePoint.x} ${sourcePoint.y}`;
+            const curve1 = `C${oneThirdX} ${sourcePoint.y} ${twoThirdsX} ${targetPoint.y} ${targetPoint.x} ${targetPoint.y}`;
+            const vertical1 = `V${targetBottom}`;
+            const curve2 = `C${twoThirdsX} ${targetBottom} ${oneThirdX} ${sourceBottom} ${sourcePoint.x} ${sourceBottom}`;
+            const vertical2 = `V${sourcePoint.y}`;
+            const end = "Z";
+
+            return start + curve1 + vertical1 + curve2 + vertical2 + end;
+        }
+
+        // Calculate the rotation transformation for the text label of the given node
+        function textTransform ({x, y}: Point): string {
+            return `rotate(-90, ${x - 6}, ${y})`;
+        }
+
+        function onHover (flow: FlowDiagramInFlow, e: MouseEvent): void {
+            emit("showTooltip", flow.tooltip, e);
+        }
+
+        function onUnHover (): void {
+            emit("showTooltip");
+        }
+
+        return {
+            flowPoints,
+            textTransform,
+            onHover,
+            onUnHover
+        };
+    },
+
+    template: `
+<g v-if="levelNumber == 1">
+    <text v-for="node in levelData" key="node.id + 'text'" :x="node.x - 6" :y="node.y" :transform="textTransform(node)" dx="-3" font-size="12" text-anchor="end">
+        {{ node.name }}
+    </text>
+</g>
+<g v-if="levelNumber > 1">
+    <template v-for="node in levelData" key="node.id + 'flows'">
+        <path
+            v-for="(flow, index) in node.inFlows"
+            key="node.id + 'flow' + index"
+            :d="flowPoints(flow)"
+            fill="#AAAAAA"
+            :fill-opacity="0.6"
+            @mousemove="onHover(flow, $event)"
+            @mouseout="onUnHover"
+        ></path>
+    </template>
+</g>
+<g>
+    <rect v-for="node in levelData" key="node.id" :x="node.x" :y="node.y" :width="node.width" :height="node.height" :fill="node.color"></rect>
+</g>
+`
+});
+
 
 /**
  * Displays a Flow Node (or maybe better know as Sankey) Diagram as an SVG.
  */
 export default defineComponent({
     name: "FlowNodeDiagram",
+
+    components: { FlowNodeDiagramLevel },
 
     props: {
         // Details about the nodes that are being "flowed" between.
@@ -109,35 +201,147 @@ export default defineComponent({
         const levelsCount = computed(() => props.flowEdges.reduce((count, edge) => Math.max(count, edge.level), 0));
         const chartWidth = computed(() => {
             // 24 is the left margin before the first level nodes so we have room for labels and a bit of padding.
-            return 24 +
-                // nodes
-                (settings.value.nodeWidth * nodeCount.value) +
-                // flows
-                (settings.value.nodeHorizontalSpacing * (levelsCount.value - 1));
+            const calculated = 24 + /* nodes */ (settings.value.nodeWidth * nodeCount.value) + /* flows */ (settings.value.nodeHorizontalSpacing * (levelsCount.value - 1));
+
+            // Want to make sure it always has a minimum size so we can display "loading" while we have no data
+            return Math.max(calculated, 200);
         });
+        // Set the chart height based on settings if we have chart data, otherwise set it to a minimal value
+        const chartHeight = computed(() => nodeCount.value > 0 ? settings.value.chartHeight : 50);
+        // Nodes have a certain order, so let's make sure they're in order
 
         const diagramData = computed<FlowDiagramData>(() => {
+            type FlowPosition = {
+                id: number;
+                nextLeftY: number;
+                nextRightY: number;
+            };
+
+            // Make sure nodes are in order
+            const orderedNodes = [...props.flowNodes].sort((nodeA, nodeB) => nodeA.order - nodeB.order);
+
             if (levelsCount.value == 0) {
-                return [];
+                return [] as FlowDiagramData;
             }
 
             const data: FlowDiagramData = [];
-            let useableHeight = settings.value.chartHeight - settings.value.nodeVerticalSpacing * (nodeCount.value - 1);
+            const { nodeWidth, nodeHorizontalSpacing, nodeVerticalSpacing, chartHeight } = settings.value;
+            const totalNodeVerticalGap = nodeVerticalSpacing * (nodeCount.value - 1);
+            let previousTotalUnits = 0;
+            let useableHeight = chartHeight - totalNodeVerticalGap;
             let previousX = 0;
-            let currentX = 24;
+            let currentX = 24; // start with enough room for text labels
+
+            // Hold data about Y positioning of flows on a node
+            const flowPositionData: FlowPosition[][] = [[]];
 
             for (let level = 1; level <= levelsCount.value; level++) {
-                // TODO HERE
-                // get flows for level, grouped by node, add up data going into each node
-                // use data to calculate node heights (% of chartHeight - space*nodes-1)
-                // use heights to determine
-            }
+                // Set up an element for this level
+                flowPositionData.push([]);
+
+                // Get everything flowing into the nodes at this level.
+                const levelFlows = props.flowEdges.filter(flow => flow.level == level);
+
+                // Total number of units flowing into this level.
+                const totalLevelUnits = levelFlows.reduce((tot, {units}) => tot + units, 0);
+
+                if (level > 1) {
+                    useableHeight = round(totalLevelUnits / previousTotalUnits * useableHeight);
+                }
+
+                // The starting Y position for the next node
+                let currentY = (chartHeight - (useableHeight + totalNodeVerticalGap)) / 2;
+
+                // Construct the base diagram nodes, which we'll fill in calculations for later.
+                const levelNodes: FlowDiagramLevel = orderedNodes.map(node => {
+                    // Get the flows coming into this node and order them by the order of the source nodes
+                    const nodeInFlows: FlowEdge[] = levelFlows.filter(flow => flow.targetId == node.id).sort((flowA, flowB): number => {
+                        const nodeOrderA = orderedNodes.findIndex(node => node.id == flowA.sourceId);
+                        const nodeOrderB = orderedNodes.findIndex(node => node.id == flowB.sourceId);
+
+                        return nodeOrderA - nodeOrderB;
+                    });
+
+                    // Calculate size of the node
+                    const totalUnits = nodeInFlows.reduce((total, flow) => total + flow.units, 0);
+                    const height = round(totalUnits / totalLevelUnits * useableHeight);
+
+                    const nodeFlowPosition = {
+                        id: node.id,
+                        nextLeftY: currentY,
+                        nextRightY: currentY
+                    };
+
+                    flowPositionData[level].push(nodeFlowPosition);
+
+                    // Calculate the incoming flows' path points and store on the flow object
+                    const inFlows: FlowDiagramInFlow[] = nodeInFlows.map(flow => {
+                        const sourcePoint: Point = { x: previousX + nodeWidth, y: 0 };
+                        const targetPoint: Point = { x: currentX, y: nodeFlowPosition.nextLeftY };
+                        const thickness = round(flow.units / totalUnits * height);
+
+                        nodeFlowPosition.nextLeftY += thickness;
+
+                        if (level > 1) {
+                            const prevNodeFlowPosition = flowPositionData[level - 1].find(node => node.id == flow.sourceId);
+
+                            if (prevNodeFlowPosition) {
+                                sourcePoint.y = prevNodeFlowPosition.nextRightY;
+                                prevNodeFlowPosition.nextRightY += thickness;
+                            }
+                        }
+
+                        return {
+                            ...flow,
+                            sourcePoint,
+                            targetPoint,
+                            thickness
+                        };
+                    });
+
+                    const levelNode = {
+                        ...node,
+                        x: currentX,
+                        y: currentY,
+                        width: nodeWidth,
+                        height,
+                        totalUnits,
+                        inFlows
+                    };
+
+                    // Set up for the next node
+                    currentY += height + nodeVerticalSpacing;
+
+                    return levelNode;
+                });
+
+                // Set up for the next level
+                previousTotalUnits = totalLevelUnits;
+                previousX = currentX;
+                currentX += nodeWidth + nodeHorizontalSpacing;
+
+                data.push(levelNodes);
+            } // End for each level
 
             return data;
         });
 
-        function round(num: number): number {
-            return toDecimalPlaces(num, 2);
+        const tooltip = reactive({
+            isShown: false,
+            html: "",
+            x: 0,
+            y: 0
+        });
+
+        function showTooltip (html: string, e: MouseEvent): void {
+            if (html && e) {
+                tooltip.isShown = true;
+                tooltip.html = html;
+                // console.log(html, e);
+            }
+            else {
+                tooltip.isShown = false;
+            }
         }
 
         return {
@@ -145,8 +349,10 @@ export default defineComponent({
             nodeCount,
             levelsCount,
             chartWidth,
+            chartHeight,
             diagramData,
-            round
+            tooltip,
+            showTooltip
         };
     },
 
@@ -154,13 +360,34 @@ export default defineComponent({
 <v-style>
 .flow-node-diagram-container {
     position: relative;
-    width: 100%;
-    height: {{settings.chartHeight}}px;
-    background: rgba(0,0,0,.05);
+    width: max-content;
+    max-width: 100%;
 }
 
-.loadingContainer {
+.flow-node-diagram-container .flow-tooltip {
     position: absolute;
+    background: white;
+    right: {{ tooltip.x }};
+    top: {{ tooltip.y }};
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1rem;
+}
+
+.flow-node-diagram-container svg {
+    width: {{ chartWidth }}px;
+    max-width: 100%;
+    height: auto;
+    min-height: 50px;
+}
+
+.flow-node-diagram-container svg path:hover {
+    fill-opacity: .8;
+}
+
+.flow-node-diagram-container .loadingContainer {
+    position: absolute;
+    z-index: 0;
     top: 0;
     left: 0;
     right: 0;
@@ -168,33 +395,41 @@ export default defineComponent({
     display: flex;
     justify-content: center;
     align-items: center;
+    background: rgba(255,255,255,.75);
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.flow-node-diagram-container .loadingContainer h3 {
+    margin: 0;
+}
+
+.flow-node-diagram-container .fade-enter-from,
+.flow-node-diagram-container .fade-leave-to {
     opacity: 0;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity .1s ease-in-out;
+.flow-node-diagram-container .fade-enter-active,
+.flow-node-diagram-container .fade-leave-active {
+    transition: opacity .2s ease-in-out;
 }
 </v-style>
 
 <div class="flow-node-diagram-container">
-    <transition name="fade" mode="out-in" appear>
+    <div class="flow-tooltip" v-html="tooltip.html" v-if="tooltip.isShown" />
 
+    <svg :width="chartWidth" :height="chartHeight" :viewBox="'0 0 ' + chartWidth + ' ' + chartHeight">
+        <FlowNodeDiagramLevel
+            v-for="(level, levelNum) in diagramData"
+            key="levelNum"
+            :levelData="level"
+            :levelNumber="levelNum + 1"
+            @showTooltip="showTooltip"
+        />
+    </svg>
+
+    <transition name="fade" appear>
         <div v-if="isLoading" class="loadingContainer">
             <h3>Loading...</h3>
         </div>
-
-        <svg v-else :width="chartWidth" :height="settings.chartHeight" :viewBox="'0 0 ' + chartWidth + ' ' + settings.chartHeight">
-            <text x="20" y="0" font-size="12" text-anchor="end" transform="rotate(-90, 20, 2)" dx="-3">Baptism</text>
-            <rect x="26" y="0" height="200" width="12" fill="purple"></rect>
-            <path d="M38 0 C105 0 171 100 238 100 V 180 C171 180 105 80 38 80V0Z" fill="#AAAAAA" fill-opacity="0.6"></path>
-            <rect x="238" y="100" height="120" width="12" fill="purple"></rect>
-        </svg>
-
     </transition>
 </div>
 `
