@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Security
         "Username Field Label",
         Key = AttributeKey.UsernameFieldLabel,
         Description = "The label to use for the username field.  For example, this allows an organization to customize it to 'Username / Email' in cases where both are supported.",
-        IsRequired =false,
+        IsRequired = false,
         DefaultValue = "Username",
         Order = 1 )]
 
@@ -235,6 +235,14 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         DefaultValue = "Campus",
         Order = 23 )]
+
+    [BooleanField( "Save Communication History",
+        Key = AttributeKey.CreateCommunicationRecord,
+        Description = "Should a record of communication from this block be saved to the recipient's profile?",
+        DefaultBooleanValue = false,
+        ControlType = Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Order = 24 )]
+
     #endregion
 
     public partial class AccountEntry : Rock.Web.UI.RockBlock
@@ -265,6 +273,7 @@ namespace RockWeb.Blocks.Security
             public const string PhoneTypesRequired = "PhoneTypesRequired";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
+            public const string CreateCommunicationRecord = "CreateCommunicationRecord";
         }
 
         #region Fields
@@ -314,9 +323,10 @@ namespace RockWeb.Blocks.Security
             rPhoneNumbers.ItemDataBound += rPhoneNumbers_ItemDataBound;
 
             var regexString = ValidateUsernameAsEmail ? @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
-            var usernameValidCaption = ValidateUsernameAsEmail ? "" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" );
+            var usernameValidCaption = ValidateUsernameAsEmail ? string.Empty : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" );
 
-            var script = string.Format( @" Sys.Application.add_load(function () {{
+            var script = string.Format(
+@" Sys.Application.add_load(function () {{
 var availabilityMessageRow = $('#availabilityMessageRow');
 var usernameUnavailable = $('#availabilityMessage');
 var usernameTextbox = $('#{0}');
@@ -367,11 +377,10 @@ usernameTextbox.blur(function () {{
     }});
 }});
 ",
-                tbUserName.ClientID, //0
-                regexString, //1
-                usernameValidCaption, //2
-                tbUserName.Label //3 
-                );
+                tbUserName.ClientID,     // 0
+                regexString,             // 1
+                usernameValidCaption,    // 2
+                tbUserName.Label );      // 3 
 
             ScriptManager.RegisterStartupScript( this, GetType(), "AccountEntry_" + this.ClientID, script, true );
         }
@@ -412,7 +421,7 @@ usernameTextbox.blur(function () {{
                         cpCampus.Campuses = CampusCache.All( false );
                     }
                 }
-                
+
                 // set birthday picker required if minimum age > 0
                 if ( GetAttributeValue( AttributeKey.MinimumAge ).AsInteger() > 0 )
                 {
@@ -914,7 +923,7 @@ usernameTextbox.blur(function () {{
                 emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeObjects ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                emailMessage.CreateCommunicationRecord = false;
+                emailMessage.CreateCommunicationRecord = GetAttributeValue( AttributeKey.CreateCommunicationRecord ).AsBoolean();
                 emailMessage.Send();
             }
             else
@@ -953,7 +962,7 @@ usernameTextbox.blur(function () {{
                 emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeObjects ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                emailMessage.CreateCommunicationRecord = false;
+                emailMessage.CreateCommunicationRecord = GetAttributeValue( AttributeKey.CreateCommunicationRecord ).AsBoolean();
                 emailMessage.Send();
 
                 ShowPanel( 4 );
@@ -997,7 +1006,7 @@ usernameTextbox.blur(function () {{
                         emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeObjects ) );
                         emailMessage.AppRoot = ResolveRockUrl( "~/" );
                         emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                        emailMessage.CreateCommunicationRecord = false;
+                        emailMessage.CreateCommunicationRecord = GetAttributeValue( AttributeKey.CreateCommunicationRecord ).AsBoolean();
                         emailMessage.Send();
                     }
                     catch ( SystemException ex )
