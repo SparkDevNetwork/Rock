@@ -134,7 +134,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["EnhanceForLongLists"] as bool? ?? false;
+                return ViewState["EnhanceForLongLists"] as bool? ?? true;
             }
 
             set
