@@ -362,9 +362,30 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
-            using ( var personEntryRockContext = new RockContext() )
+            /* 
+                04/27/2022 CWR
+
+                The only Form Action that should not get PersonEntry values is "Cancel",
+                but to avoid a string comparison, we will check the Action's "Causes Validation".
+                "Cancel" should be the only Form Action that does not cause validation.
+                If the Form Action exists, complete the Form Action, regardless of the Form Action validation.
+            */
+            var formUserActions = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
+            var formUserAction = formUserActions.FirstOrDefault( x => x.ActionName == eventArgument );
+            var hasActivateActivity = formUserAction != null && formUserAction.ActivateActivityTypeGuid != string.Empty;
+
+            if ( formUserAction != null && !formUserAction.CausesValidation && !hasActivateActivity )
             {
-                GetWorkflowFormPersonEntryValues( personEntryRockContext );
+                // Out if the action does not cause validation and does not have an Activate Activity.
+                return;
+            }
+
+            if ( formUserAction != null && formUserAction.CausesValidation )
+            {
+                using ( var personEntryRockContext = new RockContext() )
+                {
+                    GetWorkflowFormPersonEntryValues( personEntryRockContext );
+                }
             }
 
             SetWorkflowFormAttributeValues();
@@ -2019,17 +2040,19 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         _workflow.CampusId = this.CurrentPerson?.PrimaryCampusId;
                     }
+
                     break;
                 case CampusSetFrom.WorkflowPerson:
                     {
                         Person personEntryPerson;
                         Person personEntrySpouse;
                         _action.GetPersonEntryPeople( new RockContext(), CurrentPersonId, out personEntryPerson, out personEntrySpouse );
-                        if (personEntryPerson != null)
+                        if ( personEntryPerson != null )
                         {
                             _workflow.CampusId = personEntryPerson.PrimaryCampusId;
                         }
                     }
+
                     break;
                 case CampusSetFrom.QueryString:
                     {
@@ -2039,11 +2062,12 @@ namespace RockWeb.Blocks.WorkFlow
                         {
                             _workflow.CampusId = campusIdFromUrl;
                         }
-                        else if (campusGuidFromUrl.HasValue )
+                        else if ( campusGuidFromUrl.HasValue )
                         {
                             _workflow.CampusId = CampusCache.GetId( campusGuidFromUrl.Value );
                         }
                     }
+
                     break;
                 default:
                     break;
@@ -2222,7 +2246,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     if ( completionActionSettings.Type == FormCompletionActionType.Redirect )
                     {
-                        // if this is a FormBuilder and has a completion action of Redirect, navigate to thw specified URL
+                        // if this is a FormBuilder and has a completion action of Redirect, navigate to the specified URL
                         Response.Redirect( completionActionSettings.RedirectUrl, false );
                         Context.ApplicationInstance.CompleteRequest();
                     }
@@ -2349,7 +2373,6 @@ namespace RockWeb.Blocks.WorkFlow
 
                     recipients.Add( RockEmailMessageRecipient.CreateAnonymous( campusTopicEmail, workflowMergeFields ) );
                 }
-
             }
             else
             {
