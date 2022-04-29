@@ -349,14 +349,24 @@ export default defineComponent({
             isShown: false,
             html: "",
             x: 0,
-            y: 0
+            y: 0,
+            side: "left"
         });
 
         function showTooltip (html: string, e: MouseEvent): void {
             if (html && e) {
                 tooltip.isShown = true;
                 tooltip.html = html;
-                // console.log(html, e);
+                tooltip.x = e.offsetX + 15;
+                tooltip.y = e.offsetY + 15;
+
+                if (e.clientX + 250 /* magic number... approx max width of a tooltip */ > document.documentElement.clientWidth) {
+                    tooltip.x = 0;
+                    tooltip.side = "right";
+                }
+                else {
+                    tooltip.side = "left";
+                }
             }
             else {
                 tooltip.isShown = false;
@@ -386,8 +396,9 @@ export default defineComponent({
 .flow-node-diagram-container .flow-tooltip {
     position: absolute;
     background: white;
-    right: {{ tooltip.x }};
-    top: {{ tooltip.y }};
+    {{ tooltip.side }}: {{ tooltip.x }}px;
+    top: {{ tooltip.y }}px;
+    width: max-content;
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 1rem;
