@@ -1312,6 +1312,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantNext_Click( object sender, EventArgs e )
         {
+            if ( !ValidateControls( phRegistrantControls.Controls) )
+            {
+                return;
+            }
+
             if ( CurrentPanel == PanelIndex.PanelRegistrant )
             {
                 _saveNavigationHistory = true;
@@ -1324,6 +1329,39 @@ namespace RockWeb.Blocks.Event
             }
 
             hfTriggerScroll.Value = "true";
+        }
+
+        protected bool ValidateControls( ControlCollection controls )
+        {
+            var isValid = true;
+
+            foreach( Control control in controls )
+            {
+                if ( control is FieldVisibilityWrapper )
+                {
+                    isValid = ValidateControls( control.Controls );
+                }
+
+                if ( isValid == false )
+                {
+                    break;
+                }
+
+                var irockControl = control as IRockControl;
+                if ( irockControl == null || irockControl.ValidationGroup.IsNullOrWhiteSpace() || !control.Visible )
+                {
+                    continue;
+                }
+
+                if ( !irockControl.IsValid )
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            // If no invalid controls encountered then return true;
+            return isValid;
         }
 
         /// <summary>
