@@ -25,6 +25,7 @@ using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -398,7 +399,10 @@ namespace RockWeb.Blocks.Steps
             var dataContext = new RockContext();
 
             var stepProgramsQry = new StepProgramService( dataContext )
-                .Queryable();
+                .Queryable()
+                .AsNoTracking()
+                .Include( a => a.Category)
+                .Include( a => a.StepTypes );
 
             // Filter by: Category
             if ( _categoryGuids.Any() )
@@ -436,18 +440,20 @@ namespace RockWeb.Blocks.Steps
 
             var completedStepsQry = stepService.Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus && x.StepType.IsActive );
 
-            var stepPrograms = stepProgramsQry.Select( x =>
-                new StepProgramListItemViewModel
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    IconCssClass = x.IconCssClass,
-                    Category = x.Category.Name,
-                    StepTypeCount = x.StepTypes.Count( m => m.IsActive ),
-                    StepCompletedCount = completedStepsQry.Count( y => y.StepType.StepProgramId == x.Id )
-                } )
+            var stepPrograms = stepProgramsQry
+                .AsEnumerable()
+                .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                .Select( x =>
+                    new StepProgramListItemViewModel
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        IconCssClass = x.IconCssClass,
+                        Category = x.Category?.Name,
+                        StepTypeCount = x.StepTypes.Count( m => m.IsActive ),
+                        StepCompletedCount = completedStepsQry.Count( y => y.StepType.StepProgramId == x.Id )
+                    } )
                 .ToList();
-
             gStepProgram.DataSource = stepPrograms;
 
             gStepProgram.DataBind();
