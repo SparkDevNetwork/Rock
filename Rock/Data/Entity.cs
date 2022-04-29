@@ -62,7 +62,6 @@ namespace Rock.Data
         /// <value>The hashed identifier key.</value>
         [DataMember]
         [NotMapped]
-        [IncludeForReporting]
         public string IdKey
         {
             get
