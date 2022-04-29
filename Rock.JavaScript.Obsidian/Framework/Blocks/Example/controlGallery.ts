@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldVisibilityRulesEditor from "../../Controls/fieldFilterEditor";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
 import TextBox from "../../Elements/textBox";
 import EmailBox from "../../Elements/emailBox";
 import CurrencyBox from "../../Elements/currencyBox";
-import PanelWidget from "../../Elements/panelWidget";
 import DatePicker from "../../Elements/datePicker";
 import DateRangePicker from "../../Elements/dateRangePicker";
 import DateTimePicker from "../../Elements/dateTimePicker";

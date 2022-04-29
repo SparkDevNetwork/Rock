@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, reactive, ref } from "vue";
+import { computed, defineComponent, PropType, reactive } from "vue";
 import { toDecimalPlaces } from "../Services/number";
 
 export type FlowNode = {
