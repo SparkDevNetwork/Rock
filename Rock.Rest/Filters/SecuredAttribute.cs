@@ -73,7 +73,7 @@ namespace Rock.Rest.Filters
                         if ( userLogin.EntityTypeId != null )
                         {
                             var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
-                            if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication.EntityType.Id )
+                            if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication?.EntityType?.Id )
                             {
                                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
                                 return;
