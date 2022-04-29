@@ -119,6 +119,14 @@ const FlowNodeDiagramLevel = defineComponent({ // eslint-disable-line @typescrip
             return `rotate(-90, ${x - 6}, ${y})`;
         }
 
+        function nodeClass(node: FlowDiagramLevelNode): string {
+            return `node node-${node.id} level-${props.levelNumber}`;
+        }
+
+        function flowClass(flow: FlowDiagramInFlow): string {
+            return `edge node-${flow.sourceId} node-${flow.targetId} level-${props.levelNumber - 1}_${props.levelNumber}`;
+        }
+
         function onHover (flow: FlowDiagramInFlow, e: MouseEvent): void {
             emit("showTooltip", flow.tooltip, e);
         }
@@ -130,6 +138,8 @@ const FlowNodeDiagramLevel = defineComponent({ // eslint-disable-line @typescrip
         return {
             flowPoints,
             textTransform,
+            nodeClass,
+            flowClass,
             onHover,
             onUnHover
         };
@@ -151,11 +161,20 @@ const FlowNodeDiagramLevel = defineComponent({ // eslint-disable-line @typescrip
             :fill-opacity="0.6"
             @mousemove="onHover(flow, $event)"
             @mouseout="onUnHover"
+            :class="flowClass(flow)"
         ></path>
     </template>
 </g>
 <g>
-    <rect v-for="node in levelData" key="node.id" :x="node.x" :y="node.y" :width="node.width" :height="node.height" :fill="node.color"></rect>
+    <rect
+        v-for="node in levelData"
+        key="node.id" :x="node.x"
+        :y="node.y"
+        :width="node.width"
+        :height="node.height"
+        :fill="node.color"
+        :class="nodeClass(node)"
+    ></rect>
 </g>
 `
 });
@@ -379,10 +398,6 @@ export default defineComponent({
     max-width: 100%;
     height: auto;
     min-height: 50px;
-}
-
-.flow-node-diagram-container svg path:hover {
-    fill-opacity: .8;
 }
 
 .flow-node-diagram-container .loadingContainer {
