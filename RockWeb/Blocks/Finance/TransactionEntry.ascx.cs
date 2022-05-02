@@ -3128,16 +3128,7 @@ namespace RockWeb.Blocks.Finance
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
 
-            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
-            {
-                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.PaymentCommentTemplate ) )
-                    ? string.Format( "{0}: {1}", GetAttributeValue( AttributeKey.PaymentCommentTemplate ), txtCommentEntry.Text )
-                    : txtCommentEntry.Text;
-            }
-            else
-            {
-                paymentInfo.Comment1 = GetAttributeValue( AttributeKey.PaymentCommentTemplate );
-            }
+            SetPaymentComment( paymentInfo, txtCommentEntry.Text );
 
             var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
             if ( transactionAlreadyExists != null )
@@ -3219,31 +3210,7 @@ namespace RockWeb.Blocks.Finance
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
 
-            // get the payment comment
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
-
-            if ( paymentInfo != null )
-            {
-                mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
-            }
-            if ( SelectedAccounts != null )
-            {
-                mergeFields.Add( "TransactionAccountDetails", SelectedAccounts.Where( a => a.Amount != 0 ).ToList() );
-            }
-
-            string paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
-
-            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
-            {
-                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( paymentComment )
-                    ? string.Format( "{0}: {1}", paymentComment, txtCommentEntry.Text )
-                    : txtCommentEntry.Text;
-            }
-            else
-            {
-                paymentInfo.Comment1 = paymentComment;
-            }
+            SetPaymentComment( paymentInfo, txtCommentEntry.Text );
 
             errorMessage = string.Empty;
             return paymentInfo;
@@ -3753,6 +3720,46 @@ namespace RockWeb.Blocks.Finance
                     txtAccountAmount.Enabled = false;
                     txtAccountAmount.AddCssClass( "hidden" );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sets the comment field for a payment, incorporating the Lava template specified in the block settings if appropriate.
+        /// </summary>
+        /// <param name="paymentInfo"></param>
+        /// <param name="userComment"></param>
+        private void SetPaymentComment( PaymentInfo paymentInfo, string userComment )
+        {
+            // Create a payment comment using the Lava template specified in this block.
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
+
+            if ( paymentInfo != null )
+            {
+                mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
+            }
+            if ( SelectedAccounts != null )
+            {
+                mergeFields.Add( "TransactionAccountDetails", SelectedAccounts.Where( a => a.Amount != 0 ).ToList() );
+            }
+
+            var paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
+
+            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
+            {
+                if ( paymentComment.IsNotNullOrWhiteSpace() )
+                {
+                    // Append user comments to the block-specified payment comment.
+                    paymentInfo.Comment1 = string.Format( "{0}: {1}", paymentComment, userComment );
+                }
+                else
+                {
+                    paymentInfo.Comment1 = userComment;
+                }
+            }
+            else
+            {
+                paymentInfo.Comment1 = paymentComment;
             }
         }
 
