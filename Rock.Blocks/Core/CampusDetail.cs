@@ -90,6 +90,7 @@ namespace Rock.Blocks.Core
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable );
+                box.SecurityGrantToken = GetSecurityGrantToken();
 
                 return box;
             }
@@ -734,7 +735,7 @@ namespace Rock.Blocks.Core
         /// <returns>The <see cref="Campus"/> to be viewed or edited on the page.</returns>
         private Campus GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<Campus, CampusService>( rockContext, PageParameterKey.CampusId, PageParameterKey.CampusGuid );
+            return GetInitialEntity<Campus, CampusService>( rockContext, PageParameterKey.CampusId );
         }
 
         /// <summary>
@@ -750,5 +751,18 @@ namespace Rock.Blocks.Core
         }
 
         #endregion
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        private string GetSecurityGrantToken()
+        {
+            return new Rock.Security.SecurityGrant()
+                .AddRule( new Rock.Security.SecurityGrantRules.EntityTypeSecurityGrantRule( 10 ) )
+                .ToToken();
+        }
     }
 }

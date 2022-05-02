@@ -18,7 +18,7 @@
 import { computed, defineComponent, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
-import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { useConfigurationValues, useInvokeBlockAction, useSecurityGrantToken } from "@Obsidian/Utility/block";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import EditPanel from "./CampusDetail/editPanel";
 import { CampusDetailOptionsBag, CampusBag, DetailBlockBox, NavigationUrlKey } from "./CampusDetail/types";
@@ -39,6 +39,7 @@ export default defineComponent({
     setup() {
         const config = useConfigurationValues<DetailBlockBox<CampusBag, CampusDetailOptionsBag>>();
         const invokeBlockAction = useInvokeBlockAction();
+        const securityGrant = useSecurityGrantToken(config.securityGrantToken);
 
         // #region Values
 

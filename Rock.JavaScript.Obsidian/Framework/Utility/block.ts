@@ -17,7 +17,8 @@
 
 import { Guid } from "@Obsidian/Types";
 import { HttpBodyData, HttpResult, HttpUrlParams } from "./http";
-import { inject } from "vue";
+import { inject, ref, Ref } from "vue";
+import { RockDateTime } from "./rockDateTime";
 
 export type ConfigurationValues = Record<string, unknown>;
 
@@ -71,4 +72,69 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
     }
 
     return result;
+}
+
+/**
+ * Use a security grant token value provided by the server. This returns a reference
+ * to the actual value and will automatically handle renewing the token and updating
+ * the value.
+ * 
+ * @param token The token provided by the server.
+ *
+ * @returns A reference to the token that will be updated automatically when it has been renewed.
+ */
+export function useSecurityGrantToken(token: string | null | undefined): { token: Ref<string | null> } {
+    // Use || so that an empty string gets converted to null.
+    const tokenRef = ref(token || null);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // Internal function to renew the token and re-schedule renewal.
+    const renewToken = async (): Promise<void> => {
+        const result = await invokeBlockAction<string>("RenewSecurityGrantToken");
+
+        if (result.isSuccess && result.data) {
+            tokenRef.value = result.data;
+
+            scheduleRenewal();
+        }
+    };
+
+    // Internal function to schedule renewal based on the expiration date in
+    // the existing token. Renewal happens 15 minutes before expiration.
+    const scheduleRenewal = (): void => {
+        // No token, nothing to do.
+        if (tokenRef.value === null) {
+            return;
+        }
+
+        const segments = tokenRef.value?.split(";");
+
+        // Token not in expected format.
+        if (segments.length !== 3 || segments[0] !== "1") {
+            return;
+        }
+
+        const expiresDateTime = RockDateTime.parseISO(segments[1]);
+
+        // Could not parse expiration date and time.
+        if (expiresDateTime === null) {
+            return;
+        }
+
+        const renewTimeout = expiresDateTime.addMinutes(-15).toMilliseconds() - RockDateTime.now().toMilliseconds();
+
+        // Renewal request would be in the past, ignore.
+        if (renewTimeout < 0) {
+            return;
+        }
+
+        // Schedule the renewal task to happen 15 minutes before expiration.
+        setTimeout(renewToken, renewTimeout);
+    };
+
+    scheduleRenewal();
+
+    return {
+        token: tokenRef
+    };
 }

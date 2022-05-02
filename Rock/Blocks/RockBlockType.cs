@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Net;
 using Rock.Web.Cache;
@@ -69,6 +70,15 @@ namespace Rock.Blocks
 
         /// <inheritdoc/>
         public abstract object GetBlockInitialization( RockClientType clientType );
+
+        /// <summary>
+        /// Renews the security grant token that should be used by controls with this block.
+        /// </summary>
+        /// <returns>A string that contains the security grant token.</returns>
+        protected virtual string RenewSecurityGrantToken()
+        {
+            return string.Empty;
+        }
 
         /// <summary>
         /// Gets the attribute value.
@@ -245,6 +255,21 @@ namespace Rock.Blocks
             {
                 Error = message
             };
+        }
+
+        #endregion
+
+        #region Standard Block Actions
+
+        /// <summary>
+        /// Requests the renewal of the security grant token.
+        /// </summary>
+        /// <returns>A response that contains the new security grant token or an empty string.</returns>
+        [BlockAction( "RenewSecurityGrantToken" )]
+        [RockInternal]
+        public BlockActionResult RenewSecurityGrantTokenAction()
+        {
+            return ActionOk( RenewSecurityGrantToken() );
         }
 
         #endregion

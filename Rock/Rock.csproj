@@ -793,6 +793,7 @@
     <Compile Include="ElectronicSignature\GetSignatureInformationHtmlOptions.cs" />
     <Compile Include="Field\ConfigurationValueUsage.cs" />
     <Compile Include="Field\FieldTypeUsage.cs" />
+    <Compile Include="Field\ISecurityGrantFieldType.cs" />
     <Compile Include="Field\Types\CategorizedDefinedValueFieldType.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Field\Types\SignatureDocumentTemplateFieldType.cs" />
@@ -1313,6 +1314,10 @@
     <Compile Include="Search\Finance\FinancialAccount.cs" />
     <Compile Include="Security\Options\PasswordRequirementOptions.cs" />
     <Compile Include="Security\Password.cs" />
+    <Compile Include="Security\SecurityGrant.cs" />
+    <Compile Include="Security\SecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\EntitySecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\EntityTypeSecurityGrantRule.cs" />
     <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
     <Compile Include="Storage\Provider\AzureBlobStorage.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
@@ -1393,6 +1398,7 @@
     <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
     <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\ExtensionMethods\RockBlockTypeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\IdHasher.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />

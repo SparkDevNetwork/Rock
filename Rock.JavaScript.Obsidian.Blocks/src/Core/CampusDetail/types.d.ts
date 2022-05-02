@@ -80,6 +80,8 @@ export type DetailBlockBox<TPacket, TOptions> = {
     validProperties?: string[] | null;
 
     options?: TOptions | null;
+
+    securityGrantToken?: string | null;
 };
 
 // #endregion

@@ -388,16 +388,20 @@ namespace RockWeb.Blocks.Administration
             nbStartDayOfWeekSaveMessage.Title = string.Empty;
             nbStartDayOfWeekSaveMessage.Text = "This is an experimental setting. Saving this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'.";
             dowpStartingDayOfWeek.SelectedDayOfWeek = RockDateTime.FirstDayOfWeek;
+
+            nbSecurityGrantTokenDuration.IntegerValue = Math.Max( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.DEFAULT_SECURITY_GRANT_TOKEN_DURATION )?.AsIntegerOrNull() ?? 4320, 60 );
         }
 
         #endregion
 
+        #region Event Handlers
+
         /// <summary>
-        /// Handles the Click event of the btnSaveStartDayOfWeek control.
+        /// Handles the Click event of the btnSaveExperimental control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnSaveStartDayOfWeek_Click( object sender, EventArgs e )
+        protected void btnSaveExperimental_Click( object sender, EventArgs e )
         {
             if ( dowpStartingDayOfWeek.SelectedDayOfWeek != RockDateTime.FirstDayOfWeek )
             {
@@ -418,6 +422,25 @@ namespace RockWeb.Blocks.Administration
                 nbStartDayOfWeekSaveMessage.Title = string.Empty;
                 nbStartDayOfWeekSaveMessage.Text = string.Format( "Start Day of Week is now set to <strong>{0}</strong>. ", dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToString() );
             }
+
+            var oldSecurityGrantTokenDuration = Math.Max( Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.DEFAULT_SECURITY_GRANT_TOKEN_DURATION ).AsInteger(), 60 );
+            var newSecurityGrantTokenDuration = Math.Max( nbSecurityGrantTokenDuration.IntegerValue ?? 0, 60 );
+
+            if ( oldSecurityGrantTokenDuration != newSecurityGrantTokenDuration )
+            {
+                Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.DEFAULT_SECURITY_GRANT_TOKEN_DURATION, newSecurityGrantTokenDuration.ToString() );
+                nbSecurityGrantTokenDurationSaveMessage.Text = "Security grant token duration has been successfully updated.";
+                nbSecurityGrantTokenDurationSaveMessage.Visible = true;
+            }
         }
+
+        protected void btnRevokeSecurityGrants_Click( object sender, EventArgs e )
+        {
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.SECURITY_GRANT_TOKEN_EARLIEST_DATE, RockDateTime.Now.ToString( "O" ) );
+            nbSecurityGrantTokenDurationSaveMessage.Text = "All existing security grant tokens have been revoked.";
+            nbSecurityGrantTokenDurationSaveMessage.Visible = true;
+        }
+
+        #endregion
     }
 }
