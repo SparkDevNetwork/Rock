@@ -70,6 +70,9 @@ import { SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/sl
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 
+import SectionContainer from "@Obsidian/Controls/sectionContainer";
+import SectionHeader from "@Obsidian/Controls/sectionHeader";
+
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -105,7 +108,6 @@ const GalleryAndResult = defineComponent({
     </template>
 </Panel>`
 });
-
 
 /** Demonstrates an attribute values container. */
 const attributeValuesContainerGallery = defineComponent({
@@ -193,7 +195,7 @@ const filterRules = defineComponent({
         TextBox
     },
     setup() {
-        
+
         const sourcesText = ref(`[
             {
                 "guid": "2a50d342-3a0b-4da3-83c1-25839c75615c",
@@ -389,7 +391,7 @@ const filterRules = defineComponent({
 
         const usePrefilled = ref(false);
         const value = ref(clean());
-        
+
         watch(usePrefilled, () => {
             value.value = usePrefilled.value ? prefilled() : clean();
         });
@@ -2028,6 +2030,85 @@ const slidingDateRangePickerGallery = defineComponent({
 });
 
 
+/** Demonstrates the SectionHeader and SectionContainer components */
+const sectionHeaderGallery = defineComponent({
+    name: "SectionHeaderGallery",
+    components: {
+        GalleryAndResult,
+        SectionContainer,
+        SectionHeader,
+        CheckBox
+    },
+    setup() {
+        const showSeparator = ref(true);
+        const showDescription = ref(true);
+        const showActionBar = ref(true);
+        const showContentToggle = ref(false);
+        const showContent = ref(true);
+
+        const description = computed(() => {
+            return showDescription.value
+                ? "You can use a SectionHeader by itself, or you can use a SectionContainer in order to use it in a collapsible container."
+                : "";
+        });
+
+        return {
+            showSeparator,
+            showDescription,
+            showActionBar,
+            showContentToggle,
+            showContent,
+            description
+        };
+    },
+    template: `
+<GalleryAndResult :splitWidth="false">
+    <template #header>
+        Section Header Container
+    </template>
+    <template #gallery>
+        <div class="row">
+            <CheckBox formGroupClasses="col-xs-3" v-model="showSeparator" label="Show Separator" />
+            <CheckBox formGroupClasses="col-xs-3" v-model="showDescription" label="Show Description" />
+            <CheckBox formGroupClasses="col-xs-3" v-model="showActionBar" label="Show Action Bar" />
+            <CheckBox formGroupClasses="col-xs-3" v-model="showContentToggle" label="Show Content Toggle" />
+        </div>
+        <hr>
+    </template>
+    <template #result>
+        <SectionHeader
+            title="This is a SectionHeader"
+            :description="description"
+            :isSeparatorHidden="!showSeparator"
+        >
+            <template v-if="showActionBar" #actions>
+                <div>
+                    <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+                    <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+                    <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
+                </div>
+            </template>
+        </SectionHeader>
+        <SectionContainer
+            title="This is a SectionContainer"
+            :description="description"
+            v-model="showContent"
+            :toggleText="showContentToggle ? 'Show' : ''"
+        >
+            <template v-if="showActionBar" #actions>
+                <div>
+                    <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+                    <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+                    <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
+                </div>
+            </template>
+            Here's some content to put in here.
+        </SectionContainer>
+    </template>
+</GalleryAndResult>`
+});
+
+
 const galleryComponents: Record<string, Component> = {
     attributeValuesContainerGallery,
     filterRules,
@@ -2070,7 +2151,8 @@ const galleryComponents: Record<string, Component> = {
     personPickerGallery,
     fileUploaderGallery,
     imageUploaderGallery,
-    slidingDateRangePickerGallery
+    slidingDateRangePickerGallery,
+    sectionHeaderGallery
 };
 
 const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");

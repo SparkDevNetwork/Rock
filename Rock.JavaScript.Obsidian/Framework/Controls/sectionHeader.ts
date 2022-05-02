@@ -33,6 +33,11 @@ export default defineComponent({
         description: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        isSeparatorHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -47,8 +52,17 @@ export default defineComponent({
 
     template: `
 <div class="rock-header">
-    <h3 v-if="title" class="title">{{ title }}</h3>
-    <p v-if="description" class="description">{{ description }}</p>
+    <div class="d-flex flex-wrap justify-content-between">
+        <div>
+            <h3 v-if="title" class="title">{{ title }}</h3>
+            <p v-if="description" class="description">{{ description }}</p>
+        </div>
+        <div v-if="$slots.actions" class="section-header-actions align-self-end">
+            <slot name="actions" />
+        </div>
+    </div>
+
+    <hr v-if="!isSeparatorHidden" class="section-header-hr">
 </div>
 `
 });
