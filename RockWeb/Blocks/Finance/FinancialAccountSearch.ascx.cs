@@ -39,6 +39,14 @@ namespace RockWeb.Blocks.Finance
     {
         #region Base Control Methods
 
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+            BlockUpdated += Block_BlockUpdated;
+            gAccounts.GridRebind += gAccounts_GridRebind;
+        }
+
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -46,6 +54,21 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
+            {
+                BindGrid();
+            }
+        }
+
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            var pageParams = PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
+            NavigateToCurrentPage( pageParams );
+        }
+
+        private void gAccounts_GridRebind( object sender, GridRebindEventArgs e )
+        {
             BindGrid();
         }
 
@@ -98,7 +121,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     queryParams.Add( "AccountId", accountId );
-                    queryParams.Add( "ExpandedIds", parentIds.Select( v => v.ToString() ).JoinStrings( "," ));
+                    queryParams.Add( "ExpandedIds", parentIds.Select( v => v.ToString() ).JoinStrings( "," ) );
                     NavigateToPage( Rock.SystemGuid.Page.ACCOUNTS.AsGuid(), queryParams );
                 }
             }
@@ -174,26 +197,31 @@ namespace RockWeb.Blocks.Finance
                         Path = accountService.GetDelimitedAccountHierarchy( act, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )?.Replace( "^", " > " )
                     } )
                     .ToList();
+
                 gAccounts.DataBind();
-            }
 
-            foreach ( DataControlField dcf in gAccounts.Columns )
-            {
-                var rtf = dcf as RockTemplateField;
-                var rtfAccountDescription = dcf as RockTemplateField;
-
-                if ( rtf != null )
+                foreach ( DataControlField dcf in gAccounts.Columns )
                 {
-                    if ( rtf.ID == "rtfAccountType" )
+                    var rtf = dcf as RockTemplateField;
+                    var rtfAccountDescription = dcf as RockTemplateField;
+
+                    if ( rtf != null )
                     {
-                        rtf.Visible = this.GetAttributeValue( AttributeKey.ShowAccountType ).AsBoolean();
+                        if ( rtf.ID == "rtfAccountType" )
+                        {
+                            rtf.Visible = this.GetAttributeValue( AttributeKey.ShowAccountType ).AsBoolean();
+                        }
                     }
 
-                    if ( rtf.ID == "rtfAccountDescription" )
+                    if ( rtfAccountDescription != null )
                     {
-                        rtf.Visible = this.GetAttributeValue( AttributeKey.ShowAccountDescription ).AsBoolean();
+                        if ( rtfAccountDescription.ID == "rtfAccountDescription" )
+                        {
+                            rtfAccountDescription.Visible = this.GetAttributeValue( AttributeKey.ShowAccountDescription ).AsBoolean();
+                        }
                     }
                 }
+
             }
         }
 

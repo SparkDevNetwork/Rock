@@ -138,6 +138,7 @@ namespace Rock.CheckIn.Registration
 
                 familyPersonState.AlternateID = person.GetPersonSearchKeys().Where( a => a.SearchTypeValueId == _personSearchAlternateValueId ).Select( a => a.SearchValue ).FirstOrDefault();
                 familyPersonState.BirthDate = person.BirthDate;
+                familyPersonState.DeceasedDate = person.DeceasedDate;
                 familyPersonState.ChildRelationshipToAdult = childRelationshipToAdult;
                 familyPersonState.InPrimaryFamily = inPrimaryFamily;
                 familyPersonState.Email = person.Email;
@@ -308,7 +309,7 @@ namespace Rock.CheckIn.Registration
             /// <value>
             /// The age.
             /// </value>
-            public int? Age => Person.GetAge( this.BirthDate );
+            public int? Age => Person.GetAge( this.BirthDate, this.DeceasedDate );
 
             /// <summary>
             /// Gets the grade formatted.
@@ -373,6 +374,14 @@ namespace Rock.CheckIn.Registration
             /// The birth date.
             /// </value>
             public DateTime? BirthDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the deceased date.
+            /// </summary>
+            /// <value>
+            /// The deceased date.
+            /// </value>
+            public DateTime? DeceasedDate { get; set; }
 
             /// <summary>
             /// Gets or sets the email.
@@ -523,6 +532,11 @@ namespace Rock.CheckIn.Registration
                 if ( familyPersonState.BirthDate.HasValue || saveEmptyValues )
                 {
                     person.SetBirthDate( familyPersonState.BirthDate );
+                }
+
+                if ( familyPersonState.DeceasedDate.HasValue || saveEmptyValues )
+                {
+                    person.DeceasedDate = familyPersonState.DeceasedDate;
                 }
 
                 if ( familyPersonState.Email.IsNotNullOrWhiteSpace() || saveEmptyValues )

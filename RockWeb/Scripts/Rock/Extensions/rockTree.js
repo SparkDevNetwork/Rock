@@ -452,7 +452,7 @@
 
                     var isActive = (!node.hasOwnProperty('isActive') || node.isActive);
 
-                    $li.attr('id', 'node-item-' + node.id);
+                    $li.attr('id', 'node-item-' + Rock.utility.dashify(node.id));
 
                     $li.addClass('rocktree-item')
                         .addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
@@ -534,7 +534,8 @@
                         }
                     }
 
-                    $('#node-item-' + node.id).attr('node-open', node.isOpen);
+                    $('#node-item-' + Rock.utility.dashify(node.id)).attr('node-open', node.isOpen);
+
                 };
 
             // Clear tree and prepare to re-render

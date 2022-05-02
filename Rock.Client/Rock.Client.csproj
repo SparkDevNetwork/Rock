@@ -222,6 +222,7 @@
     <Compile Include="CodeGenerated\InteractionImport.cs" />
     <Compile Include="CodeGenerated\InteractionImportInteraction.cs" />
     <Compile Include="CodeGenerated\InteractionSession.cs" />
+    <Compile Include="CodeGenerated\InteractionSessionLocation.cs" />
     <Compile Include="CodeGenerated\InteractionsImport.cs" />
     <Compile Include="CodeGenerated\LavaShortcode.cs" />
     <Compile Include="CodeGenerated\Layout.cs" />

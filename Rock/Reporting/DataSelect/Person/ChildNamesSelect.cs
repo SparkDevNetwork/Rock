@@ -120,6 +120,8 @@ namespace Rock.Reporting.DataSelect.Person
 
             public DateTime? BirthDate { get; set; }
 
+            public DateTime? DeceasedDate { get; set; }
+
             public int? GraduationYear { get; set; }
         }
 
@@ -153,7 +155,7 @@ namespace Rock.Reporting.DataSelect.Person
                             formattedGenderAgeGrade = person.Gender == Gender.Female ? "F" : "M";
                         }
 
-                        int? age = Rock.Model.Person.GetAge( person.BirthDate );
+                        int? age = Rock.Model.Person.GetAge( person.BirthDate, person.DeceasedDate );
 
                         if ( includeAge && age.HasValue )
                         {
@@ -247,6 +249,7 @@ namespace Rock.Reporting.DataSelect.Person
                         SuffixValueId = m.Person.SuffixValueId,
                         Gender = m.Person.Gender,
                         BirthDate = m.Person.BirthDate,
+                        DeceasedDate = m.Person.DeceasedDate,
                         GraduationYear = m.Person.GraduationYear
                     }).AsEnumerable() );
 

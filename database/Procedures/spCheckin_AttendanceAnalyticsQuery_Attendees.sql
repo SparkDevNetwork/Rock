@@ -69,7 +69,8 @@ BEGIN
             P.[GivingId],
 		    P.[BirthDate],
             P.[ConnectionStatusValueId],
-			P.[GraduationYear]
+			P.[GraduationYear],
+			P.[DeceasedDate]
 	    FROM (
 		    SELECT DISTINCT PA.[PersonId]
 			FROM (
@@ -116,13 +117,15 @@ BEGIN
                 C.[BirthDate],
                 C.[ConnectionStatusValueId],
 				C.[GraduationYear],
+				C.[DeceasedDate],
                 A.[Id] AS [ParentId],
                 A.[NickName] AS [ParentNickName],
                 A.[LastName] AS [ParentLastName],
                 A.[Email] AS [ParentEmail],
                 A.[GivingId] as [ParentGivingId],
                 A.[BirthDate] AS [ParentBirthDate],
-				A.[Gender] AS [ParentGender]
+				A.[Gender] AS [ParentGender],
+				A.[DeceasedDate] AS [ParentDeceasedDate]
 	        FROM (
 				SELECT DISTINCT PA.[PersonId]
 				FROM (
@@ -171,6 +174,7 @@ BEGIN
                 A.[GivingId],
                 A.[BirthDate],
                 A.[ConnectionStatusValueId],
+				A.[DeceasedDate],
                 C.[Id] AS [ChildId],
                 C.[NickName] AS [ChildNickName],
                 C.[LastName] AS [ChildLastName],
@@ -178,7 +182,8 @@ BEGIN
                 C.[GivingId] as [ChildGivingId],
                 C.[BirthDate] AS [ChildBirthDate],
 				C.[Gender] as [ChildGender],
-				C.[GraduationYear] as [ChildGraduationYear]
+				C.[GraduationYear] as [ChildGraduationYear],
+				C.[DeceasedDate] AS [ChildDeceasedDate]
 	        FROM (
 				SELECT DISTINCT PA.[PersonId]
 				FROM (
