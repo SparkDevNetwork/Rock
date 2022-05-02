@@ -19,8 +19,13 @@ import { PublicAttribute } from "../ViewModels";
 import RockField from "./rockField";
 import LoadingIndicator from "../Elements/loadingIndicator";
 import { PublicAttributeValueCategory } from "../ViewModels/publicAttributeValueCategory";
-
 import { List } from "../Util/linq";
+
+
+type CategorizedAttributes = PublicAttributeValueCategory & {
+    attributes: PublicAttribute[]
+};
+
 
 export default defineComponent({
     name: "AttributeValuesContainer",
@@ -55,7 +60,7 @@ export default defineComponent({
         },
         showCategoryLabel: {
             type: Boolean as PropType<boolean>,
-            default: true
+            default: false
         }
     },
 
@@ -69,17 +74,43 @@ export default defineComponent({
         const values = ref({ ...props.modelValue });
 
         const attributeCategories = computed(() => {
-            const categoryList: PublicAttributeValueCategory[] = [];
+            const categoryList: CategorizedAttributes[] = [{
+                guid: "0",
+                name: "Attributes",
+                order: 0,
+                attributes: []
+            }];
 
             validAttributes.value.forEach(attr => {
-                attr.categories.forEach(newCat => {
-                    if (!categoryList.some(oldCat => oldCat.guid == newCat.guid)) {
-                        categoryList.push(newCat);
-                    }
-                });
+                console.log("Attr:", {name: attr.key, cats: attr.categories.map(cat => cat.name).join(",")});
+                if (attr.categories.length > 0) {
+                    const categories = [...attr.categories]; // copy, so sort doesn't cause updates
+                    console.log("Categories:", categories);
+                    categories.sort((a, b) => a.order - b.order).forEach((cat, i) => {
+                        console.log("Category", i, cat.name);
+                        const newCat: CategorizedAttributes = {attributes: [], ...cat}; // copy
+
+                        // Make sure we only have 1 copy of any category in the list
+                        if (!categoryList.some(oldCat => oldCat.guid == newCat.guid)) {
+                            console.log("Add Category to list", cat.name);
+                            categoryList.push(newCat);
+                        }
+
+                        if (i == 0) {
+                            console.log("Add Attr to Category");
+                            categoryList.find(cat => cat.guid == newCat.guid)?.attributes.push(attr);
+                        }
+                    });
+                }
+                else {
+                    console.log("No Categories, add to default");
+                    categoryList[0].attributes.push(attr);
+                }
             });
 
             categoryList.sort((a, b) => a.order - b.order);
+
+
 
             return categoryList;
         });

@@ -133,11 +133,6 @@ const attributeValuesContainerGallery = defineComponent({
             guid: newGuid(),
             name: "Cat C",
             order: 3
-        },
-        {
-            guid: newGuid(),
-            name: "Cat D",
-            order: 4
         }];
 
         const attributes = ref<Record<string, PublicAttribute>>({
@@ -156,38 +151,38 @@ const attributeValuesContainerGallery = defineComponent({
                 attributeGuid: newGuid(),
                 categories: [categories[2]],
                 description: "A text attribute.",
-                fieldTypeGuid: FieldType.Text,
+                fieldTypeGuid: FieldType.Color,
                 isRequired: false,
-                key: "text",
-                name: "Text Attribute",
+                key: "color",
+                name: "Random Color",
                 order: 4,
                 configurationValues: {}
             },
             text3: {
                 attributeGuid: newGuid(),
-                categories: [categories[1]],
-                description: "A text attribute.",
-                fieldTypeGuid: FieldType.Text,
+                categories: [],
+                description: "Are you foo?",
+                fieldTypeGuid: FieldType.Boolean,
                 isRequired: false,
-                key: "text",
+                key: "bool",
                 name: "Text Attribute",
                 order: 3,
                 configurationValues: {}
             },
             text4: {
                 attributeGuid: newGuid(),
-                categories: [categories[3]],
+                categories: [categories[1]],
                 description: "A text attribute.",
                 fieldTypeGuid: FieldType.Text,
                 isRequired: false,
-                key: "text",
+                key: "text4",
                 name: "Text Attribute",
                 order: 5,
                 configurationValues: {}
             },
             single: {
                 attributeGuid: newGuid(),
-                categories: [categories[1], categories[2]],
+                categories: [categories[2], categories[1]],
                 description: "A single select attribute.",
                 fieldTypeGuid: FieldType.SingleSelect,
                 isRequired: false,
@@ -202,6 +197,9 @@ const attributeValuesContainerGallery = defineComponent({
 
         const attributeValues = ref<Record<string, string>>({
             "text": "Default text value",
+            "color": "#336699",
+            "bool": "N",
+            "text4": "Default text value",
             single: "1"
         });
 
@@ -219,11 +217,11 @@ const attributeValuesContainerGallery = defineComponent({
         AttributeValuesContainer
     </template>
     <template #gallery>
-        <CheckBox v-model="isEditMode" label="Is Editable" />
+        <CheckBox v-model="isEditMode" text="Is Editable" />
 
-        <CheckBox v-model="showAbbreviatedName" label="Show Abbreviated Name" />
+        <CheckBox v-model="showAbbreviatedName" text="Show Abbreviated Name" />
 
-        <CheckBox v-model="showEmptyValues" label="Show Empty Values" />
+        <CheckBox v-model="showEmptyValues" text="Show Empty Values" />
     </template>
     <template #result>
         <AttributeValuesContainer v-model="attributeValues"
