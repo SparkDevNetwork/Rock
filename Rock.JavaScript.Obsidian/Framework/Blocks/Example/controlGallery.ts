@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-import PaneledBlockTemplate from "../../Templates/paneledBlockTemplate";
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
 import FieldVisibilityRulesEditor from "../../Controls/fieldFilterEditor";
 import AttributeValuesContainer from "../../Controls/attributeValuesContainer";
 import TextBox from "../../Elements/textBox";
 import EmailBox from "../../Elements/emailBox";
 import CurrencyBox from "../../Elements/currencyBox";
-import PanelWidget from "../../Elements/panelWidget";
 import DatePicker from "../../Elements/datePicker";
 import DateRangePicker from "../../Elements/dateRangePicker";
 import DateTimePicker from "../../Elements/dateTimePicker";
@@ -67,6 +65,7 @@ import { newGuid } from "../../Util/guid";
 import { FieldFilterGroup } from "../../ViewModels/Reporting/fieldFilterGroup";
 import { BinaryFiletype, FieldType } from "../../SystemGuids";
 import { SlidingDateRange, slidingDateRangeToString } from "../../Services/slidingDateRange";
+import FlowNodeDiagram, { FlowEdge, FlowNode } from "../../Controls/flowNodeDiagram";
 
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
@@ -191,7 +190,7 @@ const filterRules = defineComponent({
         TextBox
     },
     setup() {
-        
+
         const sourcesText = ref(`[
             {
                 "guid": "2a50d342-3a0b-4da3-83c1-25839c75615c",
@@ -387,7 +386,7 @@ const filterRules = defineComponent({
 
         const usePrefilled = ref(false);
         const value = ref(clean());
-        
+
         watch(usePrefilled, () => {
             value.value = usePrefilled.value ? prefilled() : clean();
         });
@@ -1677,8 +1676,430 @@ const slidingDateRangePickerGallery = defineComponent({
 });
 
 
+/** Demonstrates a Flow Node diagram */
+const flowNodeDiagram = defineComponent({
+    name: "FlowNodeDiagramGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        FlowNodeDiagram
+    },
+    setup() {
+        const flowNodes: FlowNode[] = [
+            {
+                "id": 10,
+                "name": "First-time Guest",
+                "color": "#BCE17C",
+                "order": 1
+            },
+            {
+                "id": 14,
+                "name": "Renewal",
+                "color": "#F89487",
+                "order": 2
+            },
+            {
+                "id": 12,
+                "name": "Baptism",
+                "color": "#7EB0D5",
+                "order": 3
+            },
+            {
+                "id": 13,
+                "name": "Salvation",
+                "color": "#C593C6",
+                "order": 4
+            }
+        ];
 
+        const flowEdges: FlowEdge[] = [
+            {
+                targetId: 10,
+                sourceId: null,
+                level: 1,
+                units: 154320,
+                tooltip: "Avg days between tasks: <br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: null,
+                level: 1,
+                units: 44422,
+                tooltip: "Avg days between tasks: <br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: null,
+                level: 1,
+                units: 37326,
+                tooltip: "Avg days between tasks: <br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: null,
+                level: 1,
+                units: 21100,
+                tooltip: "Avg days between tasks: <br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 12,
+                level: 2,
+                units: 2791,
+                tooltip: "Avg days between tasks: 828<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 12,
+                level: 2,
+                units: 474,
+                tooltip: "Avg days between tasks: 679<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 12,
+                level: 2,
+                units: 2307,
+                tooltip: "Avg days between tasks: 785<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 14,
+                level: 2,
+                units: 3112,
+                tooltip: "Avg days between tasks: 420<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 10,
+                level: 2,
+                units: 34452,
+                tooltip: "Avg days between tasks: 282<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 10,
+                level: 2,
+                units: 34184,
+                tooltip: "Avg days between tasks: 182<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 14,
+                level: 2,
+                units: 8282,
+                tooltip: "Avg days between tasks: 67<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 13,
+                level: 2,
+                units: 936,
+                tooltip: "Avg days between tasks: 867<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 14,
+                level: 2,
+                units: 3178,
+                tooltip: "Avg days between tasks: 753<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 10,
+                level: 2,
+                units: 4186,
+                tooltip: "Avg days between tasks: 504<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 13,
+                level: 2,
+                units: 3062,
+                tooltip: "Avg days between tasks: 385<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 13,
+                level: 2,
+                units: 7400,
+                tooltip: "Avg days between tasks: 64<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 10,
+                level: 2,
+                units: 1738,
+                tooltip: "Avg days between tasks: 746<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 12,
+                level: 2,
+                units: 278,
+                tooltip: "Avg days between tasks: 1200<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 14,
+                level: 2,
+                units: 3207,
+                tooltip: "Avg days between tasks: 876<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 13,
+                level: 2,
+                units: 5877,
+                tooltip: "Avg days between tasks: 829<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 12,
+                level: 3,
+                units: 145,
+                tooltip: "Avg days between tasks: 613<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 14,
+                level: 3,
+                units: 709,
+                tooltip: "Avg days between tasks: 382<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 10,
+                level: 3,
+                units: 1302,
+                tooltip: "Avg days between tasks: 306<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 13,
+                level: 3,
+                units: 3664,
+                tooltip: "Avg days between tasks: 345<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 12,
+                level: 3,
+                units: 2563,
+                tooltip: "Avg days between tasks: 675<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 14,
+                level: 3,
+                units: 3272,
+                tooltip: "Avg days between tasks: 583<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 10,
+                level: 3,
+                units: 175,
+                tooltip: "Avg days between tasks: 594<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 14,
+                level: 3,
+                units: 4964,
+                tooltip: "Avg days between tasks: 773<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 13,
+                level: 3,
+                units: 624,
+                tooltip: "Avg days between tasks: 485<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 10,
+                level: 3,
+                units: 2629,
+                tooltip: "Avg days between tasks: 610<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 13,
+                level: 3,
+                units: 1093,
+                tooltip: "Avg days between tasks: 891<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 14,
+                level: 3,
+                units: 3153,
+                tooltip: "Avg days between tasks: 317<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 12,
+                level: 3,
+                units: 1213,
+                tooltip: "Avg days between tasks: 600<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 12,
+                level: 3,
+                units: 58,
+                tooltip: "Avg days between tasks: 972<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 13,
+                level: 3,
+                units: 8238,
+                tooltip: "Avg days between tasks: 789<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 10,
+                level: 3,
+                units: 1142,
+                tooltip: "Avg days between tasks: 442<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 14,
+                level: 4,
+                units: 865,
+                tooltip: "Avg days between tasks: 614<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 12,
+                level: 4,
+                units: 44,
+                tooltip: "Avg days between tasks: 942<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 14,
+                level: 4,
+                units: 2745,
+                tooltip: "Avg days between tasks: 691<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 10,
+                level: 4,
+                units: 486,
+                tooltip: "Avg days between tasks: 427<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 13,
+                level: 4,
+                units: 1492,
+                tooltip: "Avg days between tasks: 837<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 10,
+                level: 4,
+                units: 103,
+                tooltip: "Avg days between tasks: 461<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 14,
+                level: 4,
+                units: 323,
+                tooltip: "Avg days between tasks: 251<br>Here's another line of text"
+            },
+            {
+                targetId: 14,
+                sourceId: 12,
+                level: 4,
+                units: 2234,
+                tooltip: "Avg days between tasks: 733<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 13,
+                level: 4,
+                units: 695,
+                tooltip: "Avg days between tasks: 383<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 12,
+                level: 4,
+                units: 541,
+                tooltip: "Avg days between tasks: 627<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 14,
+                level: 4,
+                units: 1407,
+                tooltip: "Avg days between tasks: 292<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 10,
+                level: 4,
+                units: 25,
+                tooltip: "Avg days between tasks: 460<br>Here's another line of text"
+            },
+            {
+                targetId: 10,
+                sourceId: 13,
+                level: 4,
+                units: 187,
+                tooltip: "Avg days between tasks: 305<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 13,
+                level: 4,
+                units: 304,
+                tooltip: "Avg days between tasks: 818<br>Here's another line of text"
+            },
+            {
+                targetId: 12,
+                sourceId: 12,
+                level: 4,
+                units: 46,
+                tooltip: "Avg days between tasks: 901<br>Here's another line of text"
+            },
+            {
+                targetId: 13,
+                sourceId: 10,
+                level: 4,
+                units: 222,
+                tooltip: "Avg days between tasks: 173<br>Here's another line of text"
+            }
+        ];
 
+        const isLoading = ref(false);
+
+        return {
+            flowNodes,
+            flowEdges,
+            isLoading
+        };
+    },
+    template: `
+<GalleryAndResult :splitWidth="false">
+    <template #header>
+        Flow Node Diagram
+    </template>
+    <template #gallery>
+        <CheckBox v-model="isLoading" label="" text="Show Loading State" />
+    </template>
+    <template #result>
+        <FlowNodeDiagram :flowNodes="flowNodes" :flowEdges="flowEdges" :isLoading="isLoading" />
+    </template>
+</GalleryAndResult>`
+});
 
 const galleryComponents: Record<string, Component> = {
     attributeValuesContainerGallery,
@@ -1720,7 +2141,8 @@ const galleryComponents: Record<string, Component> = {
     personPickerGallery,
     fileUploaderGallery,
     imageUploaderGallery,
-    slidingDateRangePickerGallery
+    slidingDateRangePickerGallery,
+    flowNodeDiagram,
 };
 
 const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");

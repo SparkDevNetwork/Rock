@@ -124,10 +124,10 @@
                         var accountSearch = '?AccountId=' + id;
                         var currentItemId = $selectedId.val();
 
-                        if (currentItemId !== id || reload===true) {
+                        if (currentItemId !== id || reload === true) {
 
                             // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
-                            var expandedDataIds = !expandedIds? $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
+                            var expandedDataIds = !expandedIds ? $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
                                 return $(this).attr('data-id')
                             }).get().join(',') : expandedIds;
 
@@ -164,55 +164,58 @@
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
                     });
 
-         function createSearch() {
-             // Handle the input searching
-             var $searchInputControl = $('#<%=tbSearch.ClientID%>');
-             var $btnSearch = $('#<%=btnSearch.ClientID%>')
-             var currentTree = $('#<%=pnlTreeviewContent.ClientID%>').html();
-             var expandedDataIds = $('#<%=pnlTreeviewContent.ClientID%>').find('[node-open=true]').map(function () {
-                 return $(this).attr('data-id');
-             }).get();
+                function createSearch() {
+                    // Handle the input searching
+                    var $searchInputControl = $('#<%=tbSearch.ClientID%>');
+                var $btnSearch = $('#<%=btnSearch.ClientID%>')
+                var currentTree = $('#<%=pnlTreeviewContent.ClientID%>').html();
+                var expandedDataIds = $('#<%=pnlTreeviewContent.ClientID%>').find('[node-open=true]').map(function () {
+                    return $(this).attr('data-id');
+                }).get();
 
-             $('#pnlSearchButton').off('click').on('click', function (e) {
+                var $searchPanel = $('#pnlSearchButton').closest('.js-accounttreeview').find('.js-group-search');
 
-                 var $searchPanel = $(this).closest('.js-accounttreeview').find('.js-group-search');
+                $('#pnlSearchButton').off('click').on('click', function (e) {
 
-                 $searchPanel.slideToggle(function () {
-                     if ($searchPanel.is(':hidden')) {
-                         $('#<%=divSearchResults.ClientID%>').hide().html('');
-                         $('#<%=divTreeView.ClientID%>').css('visibility', 'visible');
-                         $('#<%=pnlTreeviewContent.ClientID%>').html(currentTree);
-                     }
+                    $searchPanel.slideToggle(function () {
+                        if ($searchPanel.is(':hidden')) {
+                            $('#<%=divSearchResults.ClientID%>').hide().html('');
+                        $('#<%=divTreeView.ClientID%>').css('visibility', 'visible');
+                        $('#<%=pnlTreeviewContent.ClientID%>').html(currentTree);
+                    }
                 });
+
              });
 
-             // If no input then revert the control
-             $searchInputControl.off('keyup').on('keyup', function () {
+                // Default to showing the search panel.
+                $searchPanel.show();
 
-                 if ($searchInputControl.val().length === 0) {
-                     $('#<%=divSearchResults.ClientID%>').hide().html('');
+                // If no input then revert the control
+                $searchInputControl.off('keyup').on('keyup', function () {
+                    if ($searchInputControl.val().length === 0) {
+                        $('#<%=divSearchResults.ClientID%>').hide().html('');
                      $('#<%=divTreeView.ClientID%>').css('visibility', 'visible');
                      $('#<%=pnlTreeviewContent.ClientID%>').html(currentTree);
                  }
              });
 
-             //execute ajax search
-            $btnSearch.off('click').on('click', function (e) {
+                //execute ajax search
+                $btnSearch.off('click').on('click', function (e) {
 
-             $('#<%=divTreeView.ClientID%>').css('visibility', 'hidden');
-             $('#<%=divSearchResults.ClientID%>').show();
+                    $('#<%=divTreeView.ClientID%>').css('visibility', 'hidden');
+                 $('#<%=divSearchResults.ClientID%>').show();
 
-             var searchKeyword = $searchInputControl.val();
-             if (searchKeyword && searchKeyword.length > 0) {
-                 var restUrl = '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildrenBySearchTerm/")%>'
-                 var restUrlParams = ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false) + '/' + searchKeyword;
+                 var searchKeyword = $searchInputControl.val();
+                 if (searchKeyword && searchKeyword.length > 0) {
+                     var restUrl = '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildrenBySearchTerm/")%>'
+                    var restUrlParams = ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false) + "/" + ($('#<%=hfUsePublicName.ClientID%>').val() || false) + '/' + searchKeyword;
 
-                 restUrl = restUrl + restUrlParams;
+                    restUrl = restUrl + restUrlParams;
 
-                 $.getJSON(restUrl, function (data, status) {
+                    $.getJSON(restUrl, function (data, status) {
 
-                     if (data && status === 'success') {
-                         $('#<%=pnlTreeviewContent.ClientID%>').html('');
+                        if (data && status === 'success') {
+                            $('#<%=pnlTreeviewContent.ClientID%>').html('');
                      }
                      else {
                          $('#<%=divSearchResults.ClientID%>').hide();
@@ -227,12 +230,12 @@
                              nodeId: obj.Id,
                              parentId: obj.ParentId,
                              glcode: obj.GlCode,
-                             title: obj.Name + (obj.GlCode ? ' (' + obj.GlCode + ')':''),
+                             title: obj.Name + (obj.GlCode ? ' (' + obj.GlCode + ')' : ''),
                              name: obj.Name,
                              hasChildren: obj.HasChildren,
                              isActive: obj.IsActive,
                              path: obj.Path
-                             };
+                         };
 
                          nodes.push(node);
                      }
@@ -243,14 +246,14 @@
                              if (v.path === '') {
                                  v.path = 'Top-Level';
                              };
-                                listHtml +=
-                                    '<li id="divSearchItem_' + idx + '" class="preview-item">' +
-                                    '   <a class="search-result-link" data-id="' + v.nodeId +'" href="javascript:void(0);">' +
-                                    '              <span class="title">' + v.title + '</span>' +
-                                    '              <span class="subtitle">' + v.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') +
-                                    '   </span></a>' +
-                                    '</li>';
-                           });
+                             listHtml +=
+                                 '<li id="divSearchItem_' + idx + '" class="preview-item">' +
+                                 '   <a class="search-result-link" data-id="' + v.nodeId + '" href="javascript:void(0);">' +
+                                 '              <span class="title">' + v.title + '</span>' +
+                                 '              <span class="subtitle">' + v.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') +
+                                 '   </span></a>' +
+                                 '</li>';
+                         });
 
                          $('#<%=divSearchResults.ClientID%>').html('<ul class="list-unstyled">' +
                              listHtml +
@@ -271,8 +274,7 @@
                          $.getJSON(restUrl, function (data, status) {
                              if (data && status === 'success') {
 
-                                 data.forEach(function (expId, idx)
-                                 {
+                                 data.forEach(function (expId, idx) {
                                      if (!expandedDataIds.find(function (v) {
                                          return v === expId;
                                      })) {
@@ -280,40 +282,40 @@
                                      }
                                  });
 
-                                 triggerSelect(nodeId, expandedDataIds.join(','),true);
+                                 triggerSelect(nodeId, expandedDataIds.join(','), true);
                              }
                          });
 
                      });
                  }); //getJson
-              }
-           });
-         } //createSearch
+                 }
+             });
+                } //createSearch
 
 
-      }); //function()
+            }); //function()
 
-     // jquery function to ensure HTML is state remains the same each time it is executed
-     $.fn.outerHTML = function (s) {
-         return (s)
-             ? this.before(s).remove()
-             : $("<p>").append(this.eq(0).clone()).html();
-     }
+            // jquery function to ensure HTML is state remains the same each time it is executed
+            $.fn.outerHTML = function (s) {
+                return (s)
+                    ? this.before(s).remove()
+                    : $("<p>").append(this.eq(0).clone()).html();
+            }
 
-     function triggerSelect(nodeId, expandedIds,reload) {
-         $('#<%=pnlTreeviewContent.ClientID%>').trigger('rockTree:selected', [nodeId, expandedIds, reload] )
-     }
+            function triggerSelect(nodeId, expandedIds, reload) {
+                $('#<%=pnlTreeviewContent.ClientID%>').trigger('rockTree:selected', [nodeId, expandedIds, reload])
+            }
 
-     function resizeScrollbar(scrollControl) {
-         var overviewHeight = $(scrollControl).find('.overview').height();
+            function resizeScrollbar(scrollControl) {
+                var overviewHeight = $(scrollControl).find('.overview').height();
 
-         $(scrollControl).find('.viewport').height(overviewHeight);
+                $(scrollControl).find('.viewport').height(overviewHeight);
 
-         if (<%=hfSelectedAccountId.ClientID%>IScroll) {
+                if (<%=hfSelectedAccountId.ClientID%>IScroll) {
                 <%=hfSelectedAccountId.ClientID%>IScroll.refresh();
-         }
-     }
- </script>
+                }
+            }
+        </script>
 
-</ContentTemplate>
+    </ContentTemplate>
 </asp:UpdatePanel>

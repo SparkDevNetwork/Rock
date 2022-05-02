@@ -46,7 +46,7 @@ namespace Rock.Model
             .AsNoTracking()
             .Where ( e => e.PersonAlias.PersonId == personId )
             .Where ( e => e.GroupId == groupId || e.GroupId == null )
-            .Where( e => e.StartDate >= DbFunctions.TruncateTime( date ) && e.EndDate <= DbFunctions.TruncateTime( date )  )
+            .Where( e => e.StartDate <= DbFunctions.TruncateTime( date ) && e.EndDate >= DbFunctions.TruncateTime( date )  )
             .Select( e => e.Id )
             .ToList();
 
