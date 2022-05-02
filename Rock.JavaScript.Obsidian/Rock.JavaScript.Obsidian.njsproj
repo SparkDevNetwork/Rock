@@ -91,7 +91,7 @@
     <Folder Include="Framework\ViewModels\Utility\" />
     <Folder Include="System\" />
     <Folder Include="Tests\" />
-    <Folder Include="Tests\Elements\" />
+    <Folder Include="Tests\Controls\" />
     <Folder Include="Tests\Rules\" />
     <Folder Include="Tests\Services\" />
   </ItemGroup>
@@ -99,7 +99,6 @@
     <TypeScriptCompile Include="Build\build.ts" />
     <TypeScriptCompile Include="Framework\Controls\definedValuePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\electronicSignature.ts" />
-    <TypeScriptCompile Include="Framework\Controls\header.ts" />
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
@@ -129,6 +128,7 @@
     <TypeScriptCompile Include="Framework\Controls\personPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockAttributeFilter.ts" />
+    <TypeScriptCompile Include="Framework\Controls\sectionHeader.ts" />
     <TypeScriptCompile Include="Framework\Controls\slidingDateRangePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\treeItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\valueDetailList.ts" />
@@ -582,8 +582,10 @@
     <TypeScriptCompile Include="System\core.ts" />
     <TypeScriptCompile Include="System\shims.d.ts" />
     <TypeScriptCompile Include="System\vendor.ts" />
-    <TypeScriptCompile Include="Tests\Elements\rockFormFieldHelper.ts" />
-    <TypeScriptCompile Include="Tests\Elements\textBox.spec.ts" />
+    <TypeScriptCompile Include="Tests\Controls\numberRangeBox.spec.ts" />
+    <TypeScriptCompile Include="Tests\Controls\rockButton.spec.ts" />
+    <TypeScriptCompile Include="Tests\Controls\rockFormFieldHelper.ts" />
+    <TypeScriptCompile Include="Tests\Controls\textBox.spec.ts" />
     <TypeScriptCompile Include="Tests\Rules\defineRule.spec.ts" />
     <TypeScriptCompile Include="Tests\Rules\normalizeRuleResult.spec.ts" />
     <TypeScriptCompile Include="Tests\Rules\normalizeRules.spec.ts" />
