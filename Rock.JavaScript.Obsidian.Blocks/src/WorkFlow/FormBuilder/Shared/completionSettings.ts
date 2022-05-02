@@ -123,7 +123,7 @@ export default defineComponent({
     description="The settings below determine the actions to take after an individual completes the form."
     :toggleText="sectionToggleText">
     <SegmentedPicker v-model="type"
-        :options="typeOptions" />
+        :items="typeOptions" />
 
     <div v-if="isTypeDisplayMessage">
         <TextBox v-model="message"

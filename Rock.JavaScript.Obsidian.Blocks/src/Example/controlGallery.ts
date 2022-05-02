@@ -59,13 +59,15 @@ import DetailBlock from "@Obsidian/Templates/detailBlock";
 import PersonPicker from "@Obsidian/Controls/personPicker";
 import FileUploader from "@Obsidian/Controls/fileUploader";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
+import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-import { BinaryFiletype, EntityType, FieldType } from "@Obsidian/SystemGuids";
+import { BinaryFiletype, DefinedType, EntityType, FieldType } from "@Obsidian/SystemGuids";
 import { SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
@@ -507,8 +509,8 @@ const dropDownListGallery = defineComponent({
         <CheckBox label="Grouped" v-model="grouped" />
         <CheckBox label="Multiple" v-model="multiple" />
 
-        <DropDownList label="Select 1" v-model="value" :options="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
-        <DropDownList label="Select 2" v-model="value" :options="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+        <DropDownList label="Select 1" v-model="value" :items="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
+        <DropDownList label="Select 2" v-model="value" :items="options" :optionsSource="loadOptionsAsync" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
     </template>
     <template #result>
         {{value}}
@@ -549,8 +551,8 @@ const radioButtonListGallery = defineComponent({
     <template #gallery>
         <NumberUpDown label="Horizontal Columns" v-model="repeatColumns" :min="0" />
         <Toggle label="Horizontal" v-model="isHorizontal" />
-        <RadioButtonList label="Radio List 1" v-model="value" :options="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
-        <RadioButtonList label="Radio List 2" v-model="value" :options="options" />
+        <RadioButtonList label="Radio List 1" v-model="value" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
+        <RadioButtonList label="Radio List 2" v-model="value" :items="options" />
     </template>
     <template #result>
         Value: {{value}}
@@ -725,8 +727,8 @@ const checkBoxListGallery = defineComponent({
         CheckBoxList
     </template>
     <template #gallery>
-        <CheckBoxList label="CheckBoxList 1" v-model="items" :options="options" />
-        <CheckBoxList label="CheckBoxList 2" v-model="items" :options="options" />
+        <CheckBoxList label="CheckBoxList 1" v-model="items" :items="options" />
+        <CheckBoxList label="CheckBoxList 2" v-model="items" :items="options" />
     </template>
     <template #result>
         Items: {{JSON.stringify(items, null, 2)}}
@@ -758,10 +760,10 @@ const listBoxGallery = defineComponent({
         ListBox
     </template>
     <template #gallery>
-        <ListBox label="Select 1" v-model="value" :options="options" />
-        <ListBox label="Select 2" v-model="value" :options="options" />
-        <ListBox label="Enhanced Select 1" v-model="value" :options="options" enhanceForLongLists />
-        <ListBox label="Enhanced Select 2" v-model="value" :options="options" enhanceForLongLists />
+        <ListBox label="Select 1" v-model="value" :items="options" />
+        <ListBox label="Select 2" v-model="value" :items="options" />
+        <ListBox label="Enhanced Select 1" v-model="value" :items="options" enhanceForLongLists />
+        <ListBox label="Enhanced Select 2" v-model="value" :items="options" enhanceForLongLists />
     </template>
     <template #result>
         {{value}}
@@ -1377,7 +1379,7 @@ const toggleGallery = defineComponent({
     <template #gallery>
         <TextBox label="True Text" v-model="trueText" />
         <TextBox label="False Text" v-model="falseText" />
-        <DropDownList label="Button Size" v-model="btnSize" :options="sizeOptions" />
+        <DropDownList label="Button Size" v-model="btnSize" :items="sizeOptions" />
 
        <Toggle label="Toggle 1" v-model="value" :trueText="trueText" :falseText="falseText" :btnSize="btnSize" />
        <Toggle label="Toggle 2" v-model="value" :trueText="trueText" :falseText="falseText" :btnSize="btnSize" />
@@ -1634,7 +1636,7 @@ const panelGallery = defineComponent({
         <CheckBox v-model="value" label="Panel Open" />
         <CheckBox v-model="hasFullscreen" label="Has Fullscreen" />
         <CheckBox v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
-        <CheckBoxList v-model="simulateValues" label="Simulate" :options="simulateOptions" />
+        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
 
         <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsableValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
             <template v-if="simulateHelp" #helpContent>
@@ -1857,7 +1859,7 @@ const detailBlockGallery = defineComponent({
         <CheckBox v-model="isEditVisible" label="Is Edit Visible" />
         <CheckBox v-model="isFollowVisible" label="Is Follow Visible" />
         <CheckBox v-model="isSecurityHidden" label="Is Security Hidden" />
-        <CheckBoxList v-model="simulateValues" label="Simulate" :options="simulateOptions" />
+        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" />
 
         <DetailBlock name="Sample Group"
             :entityTypeGuid="entityTypeGuid"
@@ -2029,6 +2031,68 @@ const slidingDateRangePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates defined value picker */
+const definedValuePickerGallery = defineComponent({
+    name: "DefinedValuePickerGallery",
+    components: {
+        GalleryAndResult,
+        DefinedValuePicker,
+        TextBox
+    },
+    setup() {
+        return {
+            definedTypeGuid: ref(DefinedType.PersonConnectionStatus),
+            value: ref({ "value": "b91ba046-bc1e-400c-b85d-638c1f4e0ce2", "text": "Visitor" })
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        DefinedValuePicker
+    </template>
+    <template #gallery>
+        <TextBox label="Defined Type" v-model="definedTypeGuid" />
+        <DefinedValuePicker label="Defined Value 1" v-model="value" :definedTypeGuid="definedTypeGuid" />
+        <DefinedValuePicker label="Defined Value 2" v-model="value" :definedTypeGuid="definedTypeGuid" />
+    </template>
+    <template #result>
+        {{ value }}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates entity type picker */
+const entityTypePickerGallery = defineComponent({
+    name: "EntityTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        EntityTypePicker
+    },
+    setup() {
+        return {
+            includeGlobalOption: ref(false),
+            multiple: ref(false),
+            value: ref({ value: EntityType.Person, text: "Default Person" })
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        EntityTypePicker
+    </template>
+    <template #gallery>
+        <CheckBox label="Multiple" v-model="multiple" />
+        <CheckBox label="Include Global Option" v-model="includeGlobalOption" />
+        <EntityTypePicker label="Entity Type 1" v-model="value" :multiple="multiple" :includeGlobalOption="includeGlobalOption" />
+        <EntityTypePicker label="Entity Type 2" v-model="value" :multiple="multiple" :includeGlobalOption="includeGlobalOption" />
+    </template>
+    <template #result>
+        {{ value }}
+    </template>
+</GalleryAndResult>`
+});
+
 
 /** Demonstrates the SectionHeader and SectionContainer components */
 const sectionHeaderGallery = defineComponent({
@@ -2152,6 +2216,8 @@ const galleryComponents: Record<string, Component> = {
     fileUploaderGallery,
     imageUploaderGallery,
     slidingDateRangePickerGallery,
+    definedValuePickerGallery,
+    entityTypePickerGallery,
     sectionHeaderGallery
 };
 

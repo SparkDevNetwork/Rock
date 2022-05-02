@@ -306,7 +306,7 @@ export default defineComponent({
                     label="Show Heading Separator" />
                 <DropDownList v-model="sectionType"
                     label="Type"
-                    :options="sectionTypeOptions"
+                    :items="sectionTypeOptions"
                     :showBlankItem="false" />
             </Panel>
             <Panel title="Conditionals" v-model="conditionalPanelOpen" :hasCollapse="true">

@@ -136,7 +136,7 @@ export const EditComponent = defineComponent({
     template: `
 <Toggle v-if="isToggle" v-model="internalBooleanValue" v-bind="toggleOptions" />
 <CheckBox v-else-if="isCheckBox" v-model="internalBooleanValue" />
-<DropDownList v-else v-model="internalValue" :options="dropDownListOptions" />
+<DropDownList v-else v-model="internalValue" :items="dropDownListOptions" />
 `
 });
 
@@ -194,7 +194,7 @@ export const FilterComponent = defineComponent({
         };
     },
     template: `
-<DropDownList v-model="internalValue" :options="dropDownListOptions" />
+<DropDownList v-model="internalValue" :items="dropDownListOptions" />
 `
 });
 
@@ -292,7 +292,7 @@ export const ConfigurationComponent = defineComponent({
 <div>
     <TextBox v-model="trueText" label="True Text" help="The text to display when value is true" />
     <TextBox v-model="falseText" label="False Text" help="The text to display when value is false" />
-    <DropDownList v-model="controlType" label="Control Type" help="The type of control to use when editing the value" :options="controlTypeOptions" :show-blank-item="false" />
+    <DropDownList v-model="controlType" label="Control Type" help="The type of control to use when editing the value" :items="controlTypeOptions" :show-blank-item="false" />
 </div>
 `
 });

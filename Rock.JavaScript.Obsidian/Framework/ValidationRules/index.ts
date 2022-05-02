@@ -122,6 +122,18 @@ export function normalizeRules(rules: ValidationRule | ValidationRule[]): Valida
 }
 
 /**
+ * Checks if any of the specified rules indicates a rule that requires the value
+ * to be filled in.
+ * 
+ * @param rules The rules to be checked.
+ *
+ * @returns True if any of the rules is considered a required rule; otherwise false.
+ */
+export function containsRequiredRule(rules: ValidationRule | ValidationRule[]): boolean {
+    return normalizeRules(rules).some(r => r === "string");
+}
+
+/**
  * Normalizes rules to callable functions. This is used to translate string
  * and reference rules to their final function that will be called.
  * 

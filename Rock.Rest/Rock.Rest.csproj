@@ -141,8 +141,10 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
     <Compile Include="v2\Controls\DefinedValuePickerController.cs" />
+    <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\Controls\LocationPickerController.cs" />
-    <Compile Include="v2\Controls\TvController.cs" />
+    <Compile Include="v2\Options\EntityTypePickerGetEntityTypesOptions.cs" />
+    <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />

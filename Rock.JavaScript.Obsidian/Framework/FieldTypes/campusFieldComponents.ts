@@ -67,7 +67,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<DropDownList v-model="internalValue" :options="options" />
+<DropDownList v-model="internalValue" :items="options" />
 `
 });
 
@@ -104,7 +104,7 @@ export const FilterComponent = defineComponent({
     },
 
     template: `
-<CheckBoxList v-model="internalValue" :options="options" />
+<CheckBoxList v-model="internalValue" :items="options" />
 `
 });
 
@@ -280,18 +280,18 @@ export const ConfigurationComponent = defineComponent({
     <CheckBoxList v-model="filterCampusTypes"
         label="Filter Campus Types"
         help="When set this will filter the campuses displayed in the list to the selected Types. Setting a filter will cause the campus picker to display even if 0 campuses are in the list."
-        :options="campusTypeOptions"
+        :items="campusTypeOptions"
         horizontal />
 
     <CheckBoxList v-model="filterCampusStatus"
         label="Filter Campus Status"
         help="When set this will filter the campuses displayed in the list to the selected Status. Setting a filter will cause the campus picker to display even if 0 campuses are in the list."
-        :options="campusStatusOptions"
+        :items="campusStatusOptions"
         horizontal />
 
     <CheckBoxList v-model="selectableCampuses"
         label="Selectable Campuses"
-        :options="allCampusOptions"
+        :items="allCampusOptions"
         horizontal />
 </div>
 `

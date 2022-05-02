@@ -135,7 +135,7 @@ export const FieldFilterRuleRow = defineComponent({
         <div class="flex-fill">
             <div class="row form-row">
                 <div class="filter-rule-comparefield col-md-4">
-                    <DropDownList :options="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
+                    <DropDownList :items="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
                 </div>
                 <div class="filter-rule-fieldfilter col-md-8">
                     <RockAttributeFilter :attribute="currentAttribute" v-model="comparisonValue" :filter-mode="1" required />

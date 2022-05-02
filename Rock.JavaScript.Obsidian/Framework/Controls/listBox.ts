@@ -30,9 +30,9 @@ export default defineComponent({
             default: []
         },
 
-        options: {
+        items: {
             type: Array as PropType<ListItemBag[]>,
-            required: true
+            default: []
         },
 
         formControlClasses: {
@@ -126,7 +126,7 @@ export default defineComponent({
             }
         },
 
-        options: {
+        items: {
             immediate: true,
             handler() {
                 this.syncValue();
@@ -156,7 +156,7 @@ export default defineComponent({
         <div class="control-wrapper">
             <select :id="uniqueId" class="form-control" :class="compiledFormControlClasses" v-bind="field" v-model="internalValue" ref="theSelect" multiple>
                 <option v-if="showBlankItem" :value="blankValue"></option>
-                <option v-for="o in options" :key="o.value" :value="o.value">{{o.text}}</option>
+                <option v-for="item in items" :key="item.value" :value="item.value">{{item.text}}</option>
             </select>
         </div>
     </template>

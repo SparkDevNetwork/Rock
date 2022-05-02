@@ -301,7 +301,7 @@ export const ConfigurationComponent = defineComponent({
     <DropDownList v-model="definedType"
         label="Defined Type"
         help="Optional Defined Type to select values from, otherwise values will be free-form text fields."
-        :options="definedTypeOptions" />
+        :items="definedTypeOptions" />
 
     <TextBox v-model="customValues"
         label="Custom Values"

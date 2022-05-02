@@ -206,7 +206,7 @@ export default defineComponent({
                     :label="(registrar.nickName || 'Person') + ' is in the same immediate family as'"
                     rules='required:{"allowEmptyString": true}'
                     v-model="registrar.familyGuid"
-                    :options="familyOptions"
+                    :items="familyOptions"
                     validationTitle="Family" />
             </div>
         </div>

@@ -372,11 +372,11 @@ export default defineComponent({
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
                 <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
-                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :options="familyOptions" validationTitle="Family" />
+                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :items="familyOptions" validationTitle="Family" />
                 </div>
                 <div v-if="familyMemberOptions.length" class="row">
                     <div class="col-md-6">
-                        <DropDownList v-model="currentRegistrant.personGuid" :options="familyMemberOptions" label="Family Member to Register" />
+                        <DropDownList v-model="currentRegistrant.personGuid" :items="familyMemberOptions" label="Family Member to Register" />
                     </div>
                 </div>
             </template>

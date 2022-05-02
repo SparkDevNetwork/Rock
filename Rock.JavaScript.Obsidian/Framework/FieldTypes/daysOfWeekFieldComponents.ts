@@ -76,7 +76,7 @@ export const EditComponent = defineComponent({
         }
     },
     template: `
-<CheckBoxList v-model="internalValue" :options="options()" />
+<CheckBoxList v-model="internalValue" :items="options()" />
 `
 });
 

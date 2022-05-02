@@ -18,9 +18,9 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { Select as AntSelect } from "ant-design-vue";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
-import { isPromise } from "@Obsidian/Utility/promiseUtils";
 import { deepEqual } from "@Obsidian/Utility/util";
 import { updateRefValue } from "@Obsidian/Utility/component";
+import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
 
 /** The type definition for a select option, since the ones from the library are wrong. */
 type SelectOption = {
@@ -31,12 +31,36 @@ type SelectOption = {
     options?: SelectOption[];
 };
 
+/**
+ * The default compare value function. This checks if both values are GUIDs
+ * and if so does a case-insensitive compare, otherwise it does a case-sensitive
+ * compare of the two values.
+ * 
+ * @param value The value selected in the UI.
+ * @param itemValue The item value to be compared against.
+ *
+ * @returns true if the two values are considered equal; otherwise false.
+ */
+function defaultCompareValue(value: string, itemValue: string): boolean {
+    const guidValue = toGuidOrNull(value);
+    const guidItemValue = toGuidOrNull(itemValue);
+
+    if (guidValue !== null && guidItemValue !== null) {
+        return areEqual(guidValue, guidItemValue);
+    }
+
+    return value === itemValue;
+}
+
 export default defineComponent({
     name: "DropDownList",
 
     components: {
         AntSelect,
-        RockFormField
+        RockFormField,
+        VNodes: (_, { attrs }) => {
+            return attrs.vnodes;
+        }
     },
 
     props: {
@@ -45,14 +69,9 @@ export default defineComponent({
             required: true
         },
 
-        options: {
+        items: {
             type: Array as PropType<ListItemBag[]>,
             default: []
-        },
-
-        optionsSource: {
-            type: Function as PropType<(() => ListItemBag[]) | (() => Promise<ListItemBag[]>)>,
-            required: false
         },
 
         showBlankItem: {
@@ -94,6 +113,16 @@ export default defineComponent({
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        loading: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        compareValue: {
+            type: Function as PropType<((value: string, itemValue: string) => boolean)>,
+            default: defaultCompareValue
         }
     },
 
@@ -106,8 +135,6 @@ export default defineComponent({
         // #region Values
 
         const internalValue = ref(props.modelValue ? props.modelValue : null);
-        const isLoading = ref(false);
-        const loadedOptions = ref(props.options);
         const controlWrapper = ref<HTMLElement | null>(null);
 
         // #endregion
@@ -126,7 +153,7 @@ export default defineComponent({
             // If we are not showing grouped items then simply map our item bags
             // into a format that can be used by the picker.
             if (!props.grouped) {
-                return loadedOptions.value.map((o): SelectOption => {
+                return props.items.map((o): SelectOption => {
                     return {
                         value: o.value ?? "",
                         label: o.text ?? ""
@@ -138,7 +165,7 @@ export default defineComponent({
 
             // Loop through all the options and group everything that has a
             // category together.
-            for (const o of loadedOptions.value) {
+            for (const o of props.items) {
                 // If no category then just include it as a regular item.
                 if (!o.category) {
                     groupedOptions.push({
@@ -172,6 +199,11 @@ export default defineComponent({
             return groupedOptions;
         });
 
+        /** Determines if the control is currently in a loading state. */
+        const computedLoading = computed((): boolean => {
+            return props.loading;
+        });
+
         /** The mode for the Ant Select control to operate in. */
         const mode = computed((): "multiple" | undefined => {
             return props.multiple ? "multiple" : undefined;
@@ -189,12 +221,12 @@ export default defineComponent({
 
         /** Determines if the clear icon should be visible. */
         const isClearable = computed((): boolean => {
-            return computedShowBlankItem.value && !isLoading.value && hasValue.value;
+            return computedShowBlankItem.value && !computedLoading.value && hasValue.value;
         });
 
         /** Determines if the control should be in a disabled state. */
         const isDisabled = computed((): boolean => {
-            return props.disabled || isLoading.value;
+            return props.disabled;
         });
 
         // #endregion
@@ -215,8 +247,12 @@ export default defineComponent({
                     value = value === "" ? [] : [value];
                 }
 
-                // Ensure they are all valid values.
-                value = value.filter(v => !!loadedOptions.value.find(o => o.value === v));
+                // Ensure they are all valid values and make sure they are the
+                // correct matching value from the item rather than what was
+                // originally provided.
+                value = props.items
+                    .filter(o => (value as string[]).some(v => props.compareValue(v, o.value ?? "")))
+                    .map(o => o.value ?? "");
             }
             else {
                 // We are in single mode, if our value is an array of values then
@@ -230,17 +266,20 @@ export default defineComponent({
                 if (value === null) {
                     value = computedShowBlankItem.value
                         ? props.blankValue
-                        : (loadedOptions.value[0]?.value || props.blankValue);
+                        : (props.items[0]?.value || props.blankValue);
                 }
 
                 // Ensure it is a valid value, if not then set it to either the
                 // blank value or the first value in the list.
-                const selectedOption = loadedOptions.value.find(o => o.value === value) || null;
+                const selectedOption = props.items.find(o => props.compareValue(value as string, o.value ?? "")) || null;
 
                 if (!selectedOption) {
                     value = computedShowBlankItem.value
                         ? props.blankValue
-                        : (loadedOptions.value[0]?.value || props.blankValue);
+                        : (props.items[0]?.value || props.blankValue);
+                }
+                else {
+                    value = selectedOption.value ?? "";
                 }
             }
 
@@ -271,34 +310,11 @@ export default defineComponent({
             return controlWrapper.value ?? document.body;
         };
 
-        const loadOptionsFromSource = async (): Promise<void> => {
-            if (props.optionsSource) {
-                isLoading.value = true;
-
-                try {
-                    let options = props.optionsSource();
-
-                    if (isPromise(options)) {
-                        options = await options;
-                    }
-
-                    loadedOptions.value = options;
-                }
-                finally {
-                    isLoading.value = false;
-                }
-            }
-            else {
-                loadedOptions.value = props.options;
-            }
-        };
-
         // #endregion
 
         // #region Event Handlers
 
         const onDropdownVisibleChange = (open: boolean): void => {
-            console.log("open", open);
             if (open) {
                 emit("open");
             }
@@ -306,21 +322,8 @@ export default defineComponent({
 
         // #endregion
 
-        watch([loadedOptions, () => props.modelValue, computedShowBlankItem, () => props.multiple, () => props.options], () => {
-            // Update the loaded options if the value changed. This needs to
-            // happen as part of this larger watch so that if the options
-            // and modelValue both change at the same time we ensure that we
-            // update the loadedOptions before trying to sync the value. Otherwise
-            // the value gets cleared by syncInternalValue.
-            if (!props.optionsSource) {
-                loadedOptions.value = props.options;
-            }
-
+        watch([() => props.modelValue, computedShowBlankItem, () => props.multiple, () => props.items], () => {
             syncInternalValue();
-        });
-
-        watch(() => props.optionsSource, () => {
-            loadOptionsFromSource();
         });
 
         // Watch for changes to the selection made in the UI and then make
@@ -346,7 +349,7 @@ export default defineComponent({
                 if (newValue === null) {
                     newValue = computedShowBlankItem.value
                         ? props.blankValue
-                        : (loadedOptions.value[0]?.value || props.blankValue);
+                        : (props.items[0]?.value || props.blankValue);
                 }
             }
 
@@ -359,21 +362,16 @@ export default defineComponent({
             }
         });
 
-        if (props.optionsSource) {
-            loadOptionsFromSource();
-        }
-        else {
-            syncInternalValue();
-        }
+        syncInternalValue();
 
         return {
+            computedLoading,
             computedOptions,
             controlWrapper,
             filterItem,
             internalValue,
             isClearable,
             isDisabled,
-            isLoading,
             getPopupContainer,
             mode,
             onDropdownVisibleChange
@@ -392,7 +390,7 @@ export default defineComponent({
                 v-bind="field"
                 class="form-control"
                 :allowClear="isClearable"
-                :loading="isLoading"
+                :loading="computedLoading"
                 :disabled="isDisabled"
                 :options="computedOptions"
                 :showSearch="enhanceForLongLists"
@@ -403,9 +401,15 @@ export default defineComponent({
                 <template #clearIcon>
                     <i class="fa fa-times"></i>
                 </template>
+
                 <template #suffixIcon>
-                    <i v-if="!isLoading" class="fa fa-caret-down"></i>
+                    <i v-if="!computedLoading" class="fa fa-caret-down"></i>
                     <i v-else class="fa fa-spinner fa-spin"></i>
+                </template>
+
+                <template #dropdownRender="{ menuNode: menu }">
+                    <div v-if="computedLoading" class="text-center"><i class="fa fa-spinner fa-spin"></i> Data is loading...</div>
+                    <v-nodes v-else :vnodes="menu" />
                 </template>
             </AntSelect>
         </div>

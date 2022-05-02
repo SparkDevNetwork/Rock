@@ -174,11 +174,11 @@ export default defineComponent({
 <div class="filtervisibilityrules-container">
     <div class="filtervisibilityrules-rulesheader">
         <div class="filtervisibilityrules-type form-inline form-inline-all">
-            <DropDownList v-model="showHide" :options="showHideOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
+            <DropDownList v-model="showHide" :items="showHideOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
             <div class="form-control-static margin-r-sm">
                 <span class="filtervisibilityrules-fieldname">{{ title }}</span><span class="filtervisibilityrules-if"> if</span>
             </div>
-            <DropDownList v-model="allAny" :options="allAnyOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
+            <DropDownList v-model="allAny" :items="allAnyOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
             <span class="form-control-static">of the following match:</span>
         </div>
     </div>

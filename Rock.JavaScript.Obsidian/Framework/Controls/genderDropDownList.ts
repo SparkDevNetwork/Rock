@@ -61,6 +61,6 @@ export default defineComponent({
     },
 
     template: `
-<DropDownList label="Gender" :options="options" :showBlankItem="true" :blankValue="blankValue" :rules="computedRules" />
+<DropDownList label="Gender" :items="options" :showBlankItem="true" :blankValue="blankValue" :rules="computedRules" />
 `
 });

@@ -152,7 +152,7 @@ export default defineComponent({
     toggleText="Enable"
     title="Notification Email"
     description="Notification emails can be sent to specified individuals when each form is completed.">
-    <SegmentedPicker v-model="destination" :options="destinationOptions" />
+    <SegmentedPicker v-model="destination" :items="destinationOptions" />
 
     <div v-if="isDestinationSpecificIndividual">
         <div class="row">
@@ -181,7 +181,7 @@ export default defineComponent({
                 <DropDownList v-model="campusTopicGuid"
                     label="Topic"
                     rules="required"
-                    :options="campusTopicOptions" />
+                    :items="campusTopicOptions" />
             </div>
         </div>
     </div>

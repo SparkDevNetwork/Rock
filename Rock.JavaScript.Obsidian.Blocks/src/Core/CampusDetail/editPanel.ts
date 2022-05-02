@@ -196,7 +196,7 @@ export default defineComponent({
                 v-model="timeZoneId"
                 label="Time Zone"
                 help="The time zone you want certain time calculations of the Campus to operate in. Leave this blank to use the default Rock TimeZone."
-                :options="timeZoneOptions" />
+                :items="timeZoneOptions" />
 
             <PersonPicker v-model="leaderPersonAlias"
                 label="Campus Leader" />

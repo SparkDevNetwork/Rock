@@ -97,8 +97,10 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Build\build.ts" />
+    <TypeScriptCompile Include="Framework\Controls\baseAsyncPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\definedValuePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\electronicSignature.ts" />
+    <TypeScriptCompile Include="Framework\Controls\entityTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
@@ -135,7 +137,6 @@
     <TypeScriptCompile Include="Framework\Core\Controls\valueDetailListItemBuilder.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
     <TypeScriptCompile Include="Framework\Controls\auditDetail.ts" />
-    <TypeScriptCompile Include="Framework\Controls\basePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\fieldFilterContainer.ts" />
     <TypeScriptCompile Include="Framework\Controls\fileUploader.ts" />
     <TypeScriptCompile Include="Framework\Controls\fullscreen.ts" />
@@ -160,6 +161,7 @@
     <TypeScriptCompile Include="Framework\FieldTypes\utils.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonTypeOptions.ts" />
     <TypeScriptCompile Include="Framework\Templates\detailBlock.ts" />
+    <TypeScriptCompile Include="Framework\Types\Controls\controlLazyMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\detailPanelMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\panelAction.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\valueDetailListItem.d.ts" />

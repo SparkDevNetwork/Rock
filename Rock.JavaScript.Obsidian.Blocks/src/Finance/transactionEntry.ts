@@ -309,8 +309,8 @@ export default defineComponent({
         <template v-for="account in accounts">
             <CurrencyBox :label="account.publicName" v-model="args.accountAmounts[account.guid]" />
         </template>
-        <DropDownList label="Campus" v-model="args.campusGuid" :showBlankItem="false" :options="campuses" />
-        <DropDownList label="Frequency" v-model="args.frequencyValueGuid" :showBlankItem="false" :options="frequencies" />
+        <DropDownList label="Campus" v-model="args.campusGuid" :showBlankItem="false" :items="campuses" />
+        <DropDownList label="Frequency" v-model="args.frequencyValueGuid" :showBlankItem="false" :items="frequencies" />
         <DatePicker label="Process Gift On" v-model="args.giftDate" />
         <Alert alertType="validation" v-if="page1Error">{{page1Error}}</Alert>
         <RockButton btnType="primary" @click="onPageOneSubmit">Give Now</RockButton>

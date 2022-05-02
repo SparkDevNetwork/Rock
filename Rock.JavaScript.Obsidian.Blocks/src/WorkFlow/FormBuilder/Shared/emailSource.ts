@@ -120,7 +120,7 @@ export default defineComponent({
     template: `
 <div>
     <SegmentedPicker v-model="type"
-        :options="emailSourceOptions" />
+        :items="emailSourceOptions" />
 
     <div v-if="isTemplateType">
         <div class="row">
@@ -128,7 +128,7 @@ export default defineComponent({
                 <DropDownList v-model="template"
                     label="Email Template"
                     rules="required"
-                    :options="templateOptions" />
+                    :items="templateOptions" />
             </div>
         </div>
     </div>
