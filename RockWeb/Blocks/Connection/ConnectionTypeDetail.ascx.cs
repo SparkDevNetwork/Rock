@@ -1149,7 +1149,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             var isConnectionStatusDuplicate = StatusesState
-                                                .Where( m => m.Name != null && m.Name.Equals( tbConnectionStatusName.Text, StringComparison.OrdinalIgnoreCase ) )
+                                                .Where( m => m.Name != null && m.Name.Equals( tbConnectionStatusName.Text, StringComparison.OrdinalIgnoreCase ) && m.Guid != connectionStatus.Guid )
                                                 .Any();
             if ( isConnectionStatusDuplicate )
             {
