@@ -69,19 +69,19 @@
                                 <li><a href="tel:717-928-8811">717-928-8811</a></li>
                             </ul>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 add_flex_to_socials">
                             <ul class="list-inline mb-0 text-white">
-                                <li><a href="https://www.youtube.com/lcbcchurch" title="Visit us on Youtube" target="_blank" class="u-ph--"><i class="icon-youtube"></i></a></li>
-                                <li><a href="https://www.facebook.com/lcbcchurch" title="Visit us on Facebook" target="_blank" class="u-ph--"><i class="icon-facebook"></i></a></li>
-                                <li><a href="https://www.twitter.com/lcbcchurch" title="Visit us on Twitter" target="_blank" class="u-ph--"><i class="icon-twitter"></i></a></li>
-                                <li><a href="https://www.instagram.com/lcbcchurch" title="Visit us on Instagram" target="_blank" class="u-ph--"><i class="icon-instagram"></i></a></li>
+                                <li><a href="https://www.youtube.com/lcbcchurch" title="Visit us on Youtube" target="_blank" class="u-ph--"><i class="fab fa-youtube"></i></a></li>
+                                <li><a href="https://www.facebook.com/lcbcchurch" title="Visit us on Facebook" target="_blank" class="u-ph--"><i class="fab fa-facebook"></i></a></li>
+                                <li><a href="https://www.twitter.com/lcbcchurch" title="Visit us on Twitter" target="_blank" class="u-ph--"><i class="fab fa-twitter"></i></a></li>
+                                <li><a href="https://www.instagram.com/lcbcchurch" title="Visit us on Instagram" target="_blank" class="u-ph--"><i class="fab fa-instagram"></i></a></li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
             <footer class="footer py-5">
-                <div class="container footer__collapse visuallyhidden--palm">
+                <div class="container footer__collapse visuallyhidden--palm add_space_to_footer">
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:Zone Name="Footer" runat="server" />
@@ -168,6 +168,26 @@
                             </ul>
                         </div>
                     </div>
+                </div>
+                <div id="credit_footer">
+                    <ul id="make_footer_flex">
+                    <li class="flex_to_one_line"><p class="footer_txt">© 2022 LCBC </p>
+                        <ul class="cred_footer_links">
+                            <li><a href="https://lcbcchurch.com/careers" target="_blank">Careers</a></li>
+                            <li><a href="https://lcbcchurch.com/app"target="_blank">LCBC App</a></li>
+                            <li><a href="https://outlook.office.com/mail/"target="_blank">Staff Login</a></li>
+                            <li><a href="https://lcbcchurch.com/privacy-policy"target="_blank">Privacy</a> </li>
+                            <li><a href="https://lcbcchurch.com/terms-of-use"target="_blank">Terms of Use</a></li>
+                        </ul>
+                    </li>
+                    <li class="flex_to_one_line make_line_closer"><p class="footer_txt">Made with <span class="heart_icon">♥</span> in Lancaster, PA</p>
+                        <ul class="cred_footer_links put_at_start">
+                            <a href="#body">
+                                back to top ↑
+                            </a>
+                        </ul>
+                    </li>
+                    </ul>
                 </div>
             </footer>
             <%-- controls for scriptmanager and update panel --%>
