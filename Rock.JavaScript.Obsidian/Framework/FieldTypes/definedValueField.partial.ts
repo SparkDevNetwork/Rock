@@ -68,6 +68,9 @@ export const enum ConfigurationValueKey {
     /** Contains "True" if in-active values should be included. */
     IncludeInactive = "includeInactive",
 
+    /** A comma separated list of selectable value identifiers. */
+    SelectableValues = "selectableValues",
+
     /** Contains "True" if adding new values is permitted. */
     AllowAddingNewValues = "AllowAddingNewValues",
 

@@ -51,6 +51,7 @@ namespace Rock.Field.Types
         private const string REPEAT_COLUMNS_KEY = "RepeatColumns";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValuesId";
         private const string VALUES_PUBLIC_KEY = "values";
+        private const string SELECTABLE_VALUES_PUBLIC_KEY = "selectableValues";
 
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
         private const string DEFINED_VALUES_PROPERTY_KEY = "definedValues";
@@ -140,12 +141,9 @@ namespace Rock.Field.Types
                 publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
             }
 
-            // Convert the selectable values from integer identifiers to unique
-            // identifiers that are safe for public use.
+            // This will be converted later if needed.
             if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
             {
-                var selectableValues = ConvertDelimitedIdsToGuids( publicConfigurationValues[SELECTABLE_VALUES_KEY], id => DefinedValueCache.Get( id )?.Guid );
-                publicConfigurationValues[VALUES_PUBLIC_KEY] = selectableValues;
                 publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
             }
 
@@ -158,6 +156,17 @@ namespace Rock.Field.Types
                 }
 
                 publicConfigurationValues[DEFINED_TYPE_KEY] = definedType?.Guid.ToString();
+            }
+
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                // If in configure mode, get the selectable value options that
+                // have been set.
+                if ( privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
+                {
+                    var selectableValues = ConvertDelimitedIdsToGuids( privateConfigurationValues[SELECTABLE_VALUES_KEY], id => DefinedValueCache.Get( id )?.Guid );
+                    publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = selectableValues;
+                }
             }
 
             // Get the list of values that can be selected.
@@ -199,16 +208,10 @@ namespace Rock.Field.Types
 
             // Convert the selectable values from unique identifiers into
             // integer identifiers that can be stored in the database.
-            var selectableValues = publicConfigurationValues.GetValueOrDefault( VALUES_PUBLIC_KEY, string.Empty )
-                .SplitDelimitedValues()
-                .AsGuidList()
-                .Select( v => DefinedValueCache.Get( v ) )
-                .Where( v => v != null )
-                .Select( v => v.Id.ToString() )
-                .ToList();
+            var selectableValues = publicConfigurationValues.GetValueOrDefault( SELECTABLE_VALUES_PUBLIC_KEY, string.Empty );
+            selectableValues = ConvertDelimitedGuidsToIds( selectableValues, v => DefinedValueCache.Get( v )?.Id );
 
-            privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectableValues.JoinStrings( "," );
-            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+            privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectableValues;
 
             // Convert the defined type value from a guid to an integer.
             var definedTypeGuid = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();

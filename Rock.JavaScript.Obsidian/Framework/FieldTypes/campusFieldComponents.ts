@@ -189,7 +189,9 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {};
+            const newValue: Record<string, string> = {
+                ...props.modelValue
+            };
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
@@ -197,12 +199,14 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.FilterCampusTypes] = filterCampusTypes.value.join(",");
             newValue[ConfigurationValueKey.FilterCampusStatus] = filterCampusStatus.value.join(",");
             newValue[ConfigurationValueKey.SelectableCampuses] = selectableCampuses.value.join(",");
+            newValue[ConfigurationValueKey.Values] = JSON.stringify(campusOptions.value);
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive] ?? "False")
                 || newValue[ConfigurationValueKey.FilterCampusTypes] !== (props.modelValue[ConfigurationValueKey.FilterCampusTypes] ?? "")
                 || newValue[ConfigurationValueKey.FilterCampusStatus] !== (props.modelValue[ConfigurationValueKey.FilterCampusStatus] ?? "")
-                || newValue[ConfigurationValueKey.SelectableCampuses] !== (props.modelValue[ConfigurationValueKey.SelectableCampuses] ?? "");
+                || newValue[ConfigurationValueKey.SelectableCampuses] !== (props.modelValue[ConfigurationValueKey.SelectableCampuses] ?? "")
+                || newValue[ConfigurationValueKey.Values] !== (props.modelValue[ConfigurationValueKey.Values] ?? "[]");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
