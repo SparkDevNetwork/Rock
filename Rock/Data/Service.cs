@@ -857,6 +857,20 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the query using data view.
+        /// </summary>
+        /// <param name="dataview">The dataview.</param>
+        /// <returns>IQueryable&lt;T&gt;.</returns>
+        public IQueryable<T> GetQueryUsingDataView( Rock.Model.DataView dataview)
+        {
+            var paramExpression = this.ParameterExpression;
+            var whereExpression = dataview.GetExpression( this, paramExpression );
+
+            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, paramExpression );
+            return this.Queryable().Where( lambda );
+        }
+
+        /// <summary>
         /// Anies the specified parameter expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
