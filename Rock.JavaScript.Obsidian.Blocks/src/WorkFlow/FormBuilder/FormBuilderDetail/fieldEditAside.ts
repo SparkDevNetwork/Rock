@@ -33,7 +33,7 @@ import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { FormError } from "@Obsidian/Utility/form";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { List } from "@Obsidian/Utility/linq";
-import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
@@ -147,7 +147,7 @@ export default defineComponent({
         const visibilityRule = ref(props.modelValue.visibilityRule ?? null);
 
         /** The value used by the FieldTypeEditor for editing the field configuration. */
-        const fieldTypeValue = ref<FieldTypeConfigurationBag>({
+        const fieldTypeValue = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
             fieldTypeGuid: props.modelValue.fieldTypeGuid,
             configurationValues: props.modelValue.configurationValues ?? {},
             defaultValue: props.modelValue.defaultValue ?? ""
@@ -293,7 +293,7 @@ export default defineComponent({
          *
          * @param value The value that contains the changed information.
          */
-        const onFieldTypeModelValueUpdate = (value: FieldTypeConfigurationBag): void => {
+        const onFieldTypeModelValueUpdate = (value: FieldTypeEditorUpdateAttributeConfigurationOptionsBag): void => {
             emit("update:modelValue", {
                 ...props.modelValue,
                 configurationValues: value.configurationValues,
