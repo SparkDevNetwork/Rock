@@ -167,6 +167,21 @@ namespace RockWeb.Blocks.Reporting
             gList.DataBind();
         }
 
+        /// <summary>
+        /// Formats the value as a human friendly duration.
+        /// </summary>
+        /// <param name="minutesValue">The interval value to convert.</param>
+        /// <returns>a human readable value</returns>
+        protected string FormatFriendlyMinutesDuration( int? minutesValue )
+        {
+            if ( !minutesValue.HasValue )
+            {
+                return string.Empty;
+            }
+
+            return ( minutesValue * 60 ).ToFriendlyDuration();
+        }
+
         #endregion
     }
 }
