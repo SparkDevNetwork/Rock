@@ -172,6 +172,12 @@ export function zeroPad(num: number, length: number): string {
     return str;
 }
 
+export function toDecimalPlaces(num: number, decimalPlaces: number): number {
+    decimalPlaces = Math.floor(decimalPlaces); // ensure it's an integer
+
+    return Math.round(num * 10 ** decimalPlaces) / 10 ** decimalPlaces;
+}
+
 export default {
     toOrdinal,
     toOrdinalSuffix,

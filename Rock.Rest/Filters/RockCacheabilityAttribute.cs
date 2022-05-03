@@ -51,11 +51,14 @@ namespace Rock.Rest.Filters
 
             var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out RockGuidAttribute rockGuid );
             var restActionCache = RestActionCache.Get( apiId, rockGuid?.Guid ?? Guid.Empty );
-            var cacheControl = restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() ? restActionCache.CacheControlHeader : "no-store";
-
-            if ( restActionCache != null && restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() )
+            if ( restActionCache != null )
             {
-                actionExecutedContext.Response.Headers.Add( "Cache-Control", cacheControl );
+                var cacheControl = restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() ? restActionCache.CacheControlHeader : "no-store";
+
+                if ( restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() )
+                {
+                    actionExecutedContext.Response.Headers.Add( "Cache-Control", cacheControl );
+                }
             }
         }
     }

@@ -452,6 +452,8 @@
 
                     var isActive = (!node.hasOwnProperty('isActive') || node.isActive);
 
+                    $li.attr('id', 'node-item-' + Rock.utility.dashify(node.id));
+
                     $li.addClass('rocktree-item')
                         .addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
                         .addClass(isActive ? '' : 'is-inactive-not-allowed')
@@ -531,6 +533,9 @@
                             renderNode($childUl, node.children[i], node.id);
                         }
                     }
+
+                    $('#node-item-' + Rock.utility.dashify(node.id)).attr('node-open', node.isOpen);
+
                 };
 
             // Clear tree and prepare to re-render

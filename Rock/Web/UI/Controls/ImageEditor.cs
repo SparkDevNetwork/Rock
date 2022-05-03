@@ -938,18 +938,9 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // We only show the Modal/Editor if the delete button is enabled and
-            // we have a file already.
-            if ( ShowDeleteButton && ( BinaryFileId ?? 0 ) > 0 )
-            {
-                _lbShowModal.Style[HtmlTextWriterStyle.Display] = string.Empty;
-                _lbUploadImage.Style[HtmlTextWriterStyle.Display] = "none";
-            }
-            else
-            {
-                _lbShowModal.Style[HtmlTextWriterStyle.Display] = "none";
-                _lbUploadImage.Style[HtmlTextWriterStyle.Display] = string.Empty;
-            }
+            // Always show the UploadImage button so we can pick and edit a new file.
+            _lbShowModal.Style[HtmlTextWriterStyle.Display] = "none";
+            _lbUploadImage.Style[HtmlTextWriterStyle.Display] = string.Empty;
 
             _lbShowModal.RenderControl( writer );
             _lbUploadImage.Text = this.ButtonText;

@@ -57,6 +57,12 @@ namespace Rock.Model
             var config = GlobalConfiguration.Configuration;
             var explorer = config.Services.GetApiExplorer();
 
+            if ( !explorer.ApiDescriptions.Any() )
+            {
+                // Just in case ApiDescriptions wasn't populated, exit and don't do anything
+                return;
+            }
+
             foreach ( var apiDescription in explorer.ApiDescriptions )
             {
                 var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) apiDescription.ActionDescriptor;
@@ -100,6 +106,12 @@ namespace Rock.Model
                 controller.Actions.Add( restAction );
             }
 
+            if ( !discoveredControllers.Any() )
+            {
+                // Just in case discoveredControllers somehow is empty, exit and don't do anything
+                return;
+            }
+
             var actionService = new RestActionService( rockContext );
             foreach ( var discoveredController in discoveredControllers )
             {
@@ -112,6 +124,7 @@ namespace Rock.Model
                     controller = new RestController { Name = discoveredController.Name };
                     restControllerService.Add( controller );
                 }
+
                 controller.ClassName = discoveredController.ClassName;
 
                 if ( discoveredController.GuidSetFromRockGuidAttribute &&

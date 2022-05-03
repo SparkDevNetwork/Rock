@@ -14,13 +14,28 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Model;
 
 namespace Rock.Tasks
 {
+    /*
+     05-02-2022 MDP
+
+     We changed this back to use Rock.Transactions.RegisterControllersTransaction instead.
+     This is because RestControllerService.RegisterControllers has a dependancy on having
+     all the Routes configured. The Bus message approach would sometimes result
+     in RegisterControllers happening before Routes would be configured, which would cause
+     RestController and RestAction records to get deleted.
+     */
+
+
     /// <summary>
     /// Calls <see cref="RestControllerService.RegisterControllers"/>
     /// </summary>
+    [RockObsolete("1.13")]
+    [Obsolete( "Use Rock.Transactions.RegisterControllersTransaction instead" )]
     public sealed class RegisterRestControllers : BusStartedTask<RegisterRestControllers.Message>
     {
         /// <summary>
