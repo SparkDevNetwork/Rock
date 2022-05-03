@@ -147,7 +147,7 @@ export default defineComponent({
             };
 
             // Make the API call to get the search results.
-            const result = await doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPicker/Search", undefined, params);
+            const result = await doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPickerSearch", undefined, params);
 
             // Check again if we have been cancelled before we do the update.
             if (cancellationToken.value) {

@@ -2038,12 +2038,15 @@ const definedValuePickerGallery = defineComponent({
     name: "DefinedValuePickerGallery",
     components: {
         GalleryAndResult,
+        CheckBox,
         DefinedValuePicker,
         TextBox
     },
     setup() {
         return {
             definedTypeGuid: ref(DefinedType.PersonConnectionStatus),
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
             value: ref({ "value": "b91ba046-bc1e-400c-b85d-638c1f4e0ce2", "text": "Visitor" })
         };
     },
@@ -2054,8 +2057,10 @@ const definedValuePickerGallery = defineComponent({
     </template>
     <template #gallery>
         <TextBox label="Defined Type" v-model="definedTypeGuid" />
-        <DefinedValuePicker label="Defined Value 1" v-model="value" :definedTypeGuid="definedTypeGuid" />
-        <DefinedValuePicker label="Defined Value 2" v-model="value" :definedTypeGuid="definedTypeGuid" />
+        <CheckBox label="Multiple" v-model="multiple" />
+        <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+        <DefinedValuePicker label="Defined Value 1" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" />
+        <DefinedValuePicker label="Defined Value 2" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" />
     </template>
     <template #result>
         {{ value }}

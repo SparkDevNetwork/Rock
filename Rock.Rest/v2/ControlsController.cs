@@ -121,6 +121,48 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Defined Value Picker
+
+        /// <summary>
+        /// Gets the child items that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which defined values to load.</param>
+        /// <returns>A collection of view models that represent the defined values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
+        [Authenticate]
+        [RockGuid( "1e4a1812-8a2c-4266-8f39-3004c1debc9f" )]
+        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptions options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v => ( v.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Authorization.VIEW ) == true )
+                        && ( options.IncludeInactive || v.IsActive ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Guid.ToString(),
+                        Text = v.Value
+                    } )
+                    .ToList();
+
+                return Ok( definedValues );
+            }
+        }
+
+        #endregion
+
         #region Entity Type Picker
 
         /// <summary>
@@ -234,6 +276,29 @@ namespace Rock.Rest.v2
 
                 return Ok( locationNameList );
             }
+        }
+
+        #endregion
+
+        #region Person Picker
+
+        /// <summary>
+        /// Searches for people that match the given search options and returns
+        /// those matches.
+        /// </summary>
+        /// <param name="options">The options that describe how the search should be performed.</param>
+        /// <returns>A collection of <see cref="Rock.Rest.Controllers.PersonSearchResult"/> objects.</returns>
+        [Authenticate]
+        [Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PersonPickerSearch" )]
+        [RockGuid( "1947578d-b28f-4956-8666-dcc8c0f2b945" )]
+        public IQueryable<Rock.Rest.Controllers.PersonSearchResult> PersonPickerSearch( [FromBody] PersonPickerSearchOptions options )
+        {
+            var rockContext = new RockContext();
+
+            // Chain to the v1 controller.
+            return Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
         }
 
         #endregion

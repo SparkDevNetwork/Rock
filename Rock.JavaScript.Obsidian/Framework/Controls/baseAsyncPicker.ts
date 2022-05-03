@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { updateRefValue } from "@Obsidian/Utility/component";
+import { standardAsyncPickerProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
 import { useSuspense } from "@Obsidian/Utility/suspense";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -62,25 +62,12 @@ export default defineComponent({
             default: false
         },
 
-        showBlankItem: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        lazyMode: {
-            type: String as PropType<ControlLazyModeType>,
-            default: ControlLazyMode.OnDemand
-        },
-
-        multiple: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
         items: {
             type: Object as PropType<ListItemBag[] | Promise<ListItemBag[]> | (() => ListItemBag[] | Promise<ListItemBag[]>) | null>,
             required: false
-        }
+        },
+
+        ...standardAsyncPickerProps
     },
 
     emits: {
@@ -94,6 +81,7 @@ export default defineComponent({
         const loadedItems = ref<ListItemBag[] | null>(null);
         const isLoading = ref(false);
         const hasPickerBeenOpened = ref(false);
+        const standardProps = useStandardRockFormFieldProps(props);
 
         // #endregion
 
@@ -238,17 +226,19 @@ export default defineComponent({
             actualItems,
             internalValue,
             isLoading,
-            onOpen
+            onOpen,
+            standardProps
         };
     },
 
     template: `
 <DropDownList v-model="internalValue"
+    v-bind="standardProps"
     :enhanceForLongLists="enhanceForLongLists"
     :grouped="grouped"
     :loading="isLoading"
-    :multiple="multiple"
     :items="actualItems"
+    :multiple="multiple"
     :showBlankItem="showBlankItem"
     @open="onOpen" />
 `

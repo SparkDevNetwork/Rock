@@ -15,11 +15,12 @@
 // </copyright>
 //
 
-import { computed, defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
-import { newGuid } from "@Obsidian/Utility/guid";
-import RockLabel from "./rockLabel";
+import { standardRockFormFieldProps } from "@Obsidian/Utility/component";
 import { useFormState } from "@Obsidian/Utility/form";
-import { normalizeRules, rulesPropType, validateValue } from "@Obsidian/ValidationRules";
+import { newGuid } from "@Obsidian/Utility/guid";
+import { normalizeRules, validateValue } from "@Obsidian/ValidationRules";
+import { computed, defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
+import RockLabel from "./rockLabel";
 
 export default defineComponent({
     name: "RockFormField",
@@ -38,27 +39,13 @@ export default defineComponent({
         modelValue: {
             required: true
         },
+
         name: {
             type: String as PropType<string>,
             required: true
         },
-        label: {
-            type: String as PropType<string>,
-            default: ""
-        },
-        help: {
-            type: String as PropType<string>,
-            default: ""
-        },
-        rules: rulesPropType,
-        formGroupClasses: {
-            type: String as PropType<string>,
-            default: ""
-        },
-        validationTitle: {
-            type: String as PropType<string>,
-            default: ""
-        },
+
+        ...standardRockFormFieldProps
     },
 
     setup(props) {

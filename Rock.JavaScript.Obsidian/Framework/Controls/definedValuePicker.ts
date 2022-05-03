@@ -16,16 +16,15 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import { get } from "@Obsidian/Utility/http";
-import { containsRequiredRule, rulesPropType } from "@Obsidian/ValidationRules";
+import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+import { post } from "@Obsidian/Utility/http";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { defineComponent, PropType, ref, watch } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
-    name: "DefinedTypePicker",
+    name: "DefinedValuePicker",
 
     components: {
         BaseAsyncPicker,
@@ -38,26 +37,16 @@ export default defineComponent({
             required: false
         },
 
+        ...standardAsyncPickerProps,
+
         definedTypeGuid: {
             type: String as PropType<Guid>,
             required: false
         },
 
-        rules: rulesPropType,
-
-        securityKey: {
+        securityGrantToken: {
             type: String as PropType<string>,
             required: false
-        },
-
-        multiple: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        showBlankItem: {
-            type: Boolean as PropType<boolean>,
-            default: false
         }
     },
 
@@ -68,14 +57,15 @@ export default defineComponent({
     setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
         const itemsSource = ref<(() => Promise<ListItemBag[]>) | null>(null);
-
-        const computedShowBlankItem = computed((): boolean => {
-            return props.showBlankItem || containsRequiredRule(props.rules);
-        });
+        const standardProps = useStandardAsyncPickerProps(props);
 
         const loadItems = async (): Promise<ListItemBag[]> => {
-            const url = `/api/v2/Controls/DefinedValuePicker/definedValues/${props.definedTypeGuid}`;
-            const result = await get<ListItemBag[]>(url);
+            const options = {
+                definedTypeGuid: props.definedTypeGuid,
+                securityGrantToken: props.securityGrantToken
+            };
+            const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
+            const result = await post<ListItemBag[]>(url, undefined, options);
 
             if (result.isSuccess && result.data) {
                 return result.data;
@@ -94,16 +84,14 @@ export default defineComponent({
         itemsSource.value = () => loadItems();
 
         return {
-            computedShowBlankItem,
             internalValue,
-            itemsSource
+            itemsSource,
+            standardProps
         };
     },
     template: `
 <BaseAsyncPicker v-model="internalValue"
-    :items="itemsSource"
-    :multiple="multiple"
-    :rules="rules"
-    :showBlankItem="computedShowBlankItem" />
+    v-bind="standardProps"
+    :items="itemsSource" />
 `
 });

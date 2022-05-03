@@ -19,7 +19,7 @@ import { Select as AntSelect } from "ant-design-vue";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
 import { deepEqual } from "@Obsidian/Utility/util";
-import { updateRefValue } from "@Obsidian/Utility/component";
+import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
 
 /** The type definition for a select option, since the ones from the library are wrong. */
@@ -89,11 +89,6 @@ export default defineComponent({
             default: false
         },
 
-        formGroupClasses: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
         /** No longer used. */
         formControlClasses: {
             type: String as PropType<string>,
@@ -123,7 +118,9 @@ export default defineComponent({
         compareValue: {
             type: Function as PropType<((value: string, itemValue: string) => boolean)>,
             default: defaultCompareValue
-        }
+        },
+
+        ...standardRockFormFieldProps
     },
 
     emits: {
@@ -136,6 +133,7 @@ export default defineComponent({
 
         const internalValue = ref(props.modelValue ? props.modelValue : null);
         const controlWrapper = ref<HTMLElement | null>(null);
+        const standardFieldProps = useStandardRockFormFieldProps(props);
 
         // #endregion
 
@@ -374,12 +372,14 @@ export default defineComponent({
             isDisabled,
             getPopupContainer,
             mode,
-            onDropdownVisibleChange
+            onDropdownVisibleChange,
+            standardFieldProps
         };
     },
 
     template: `
 <RockFormField
+    v-bind="standardFieldProps"
     :modelValue="internalValue"
     :formGroupClasses="'rock-drop-down-list ' + formGroupClasses"
     name="dropdownlist">

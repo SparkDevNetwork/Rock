@@ -140,11 +140,12 @@
     <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
-    <Compile Include="v2\Controls\DefinedValuePickerController.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\Options\CategoryPickerChildTreeItemsOptions.cs" />
+    <Compile Include="v2\Options\DefinedValuePickerGetDefinedValuesOptions.cs" />
     <Compile Include="v2\Options\EntityTypePickerGetEntityTypesOptions.cs" />
     <Compile Include="v2\Options\LocationPickerGetActiveChildrenOptions.cs" />
+    <Compile Include="v2\Options\PersonPickerSearchOptions.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
@@ -252,7 +253,6 @@
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
-    <Compile Include="v2\Controls\PersonPickerController.cs" />
     <Compile Include="v2\Controls\SaveFinancialAccountFormsController.cs" />
     <Compile Include="Filters\RockCacheabilityAttribute.cs" />
     <Compile Include="Handler\RockAssembliesResolver.cs" />
