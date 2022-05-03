@@ -79,7 +79,7 @@ BEGIN
     DECLARE @SundayExitAttendanceDurationShort DATETIME = DATEADD(DAY, (7 * @ExitAttendanceDurationShortWeeks * - 1), @SundayDateStart)
     DECLARE @SundayExitAttendanceDurationLong DATETIME = DATEADD(DAY, (7 * @ExitAttendanceDurationLongWeeks * - 1), @SundayDateStart)
     DECLARE @TempFinancialTransactionByDateAndGivingId TABLE (
- DistinctCount INT
+        DistinctCount INT
         ,GivingId NVARCHAR(50)
         ,TransactionDateTime DATETIME
        )
@@ -243,16 +243,18 @@ BEGIN
     -- Insert missing IsEra Attribute --
 	MERGE [AttributeValue] AS TARGET
 	USING @TempIsEraFamilyMembers AS SOURCE
-	ON (TARGET.EntityId = SOURCE.PersonId AND TARGET.value = 'True' AND TARGET.AttributeId = @IsEraAttributeId)
+	ON (TARGET.EntityId = SOURCE.PersonId AND TARGET.AttributeId = @IsEraAttributeId)
 	WHEN NOT MATCHED BY TARGET
-	THEN INSERT (EntityId, AttributeId, Value, IsSystem, Guid, CreatedDateTime) VALUES (SOURCE.PersonId, @IsEraAttributeId, 'True', 0, NEWID(), @StartDate);
+	THEN INSERT (EntityId, AttributeId, Value, IsSystem, Guid, CreatedDateTime) VALUES (SOURCE.PersonId, @IsEraAttributeId, 'True', 0, NEWID(), @StartDate)
+	WHEN MATCHED THEN UPDATE SET Value = 'True';
 
     -- Insert missing EraStartDate --
 	MERGE [AttributeValue] AS TARGET
 	USING @TempIsEraFamilyMembers AS SOURCE
 	ON (TARGET.EntityId = SOURCE.PersonId AND TARGET.AttributeId = @EraStartDateAttributeId)
 	WHEN NOT MATCHED BY TARGET
-	THEN INSERT (EntityId, AttributeId, Value, IsSystem, Guid, CreatedDateTime) VALUES (SOURCE.PersonId, @EraStartDateAttributeId, @StartDate, 0, NEWID(), @StartDate);
+	THEN INSERT (EntityId, AttributeId, Value, IsSystem, Guid, CreatedDateTime) VALUES (SOURCE.PersonId, @EraStartDateAttributeId, @StartDate, 0, NEWID(), @StartDate)
+    WHEN MATCHED THEN UPDATE SET Value = @StartDate;
 
 	SELECT [FamilyId]
         ,MAX([EntryGiftCountDurationShort]) AS [EntryGiftCountDurationShort]
