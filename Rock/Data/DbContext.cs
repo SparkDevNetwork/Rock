@@ -98,7 +98,7 @@ namespace Rock.Data
 
         /// <summary>
         /// If <see cref="WrapTransaction(Action)"/> is in progress, this will return a task that will return completed
-        /// after the transaction is committed. Oherwise, it will return a completed task immediately.
+        /// after the transaction is committed. Otherwise, it will return a completed task immediately.
         /// </summary>
         /// <value>
         /// The wrapped transaction completed.
@@ -616,7 +616,30 @@ namespace Rock.Data
 
                 if ( item.Entity is ICacheable cacheable )
                 {
-                    cacheable.UpdateCache( item.PreSaveStateLegacy, this );
+                    /* 04/14/2022 MDP
+
+                     If we are in WrapTransaction, some other thread could update the cached item from the
+                     database before we have committed the transaction. That could cause the cache to have the
+                     previous value instead of the new value. To prevent that from happening,
+                     we'll use the ContinueWith on WrappedTransactionCompletedTask take care of flushing the
+                     cache after the data is committed to the database.
+
+                     Using the TaskContinuationOptions.ExecuteSynchronously option so that it runs in the same thread
+                     as WrapTransaction.
+
+                    */
+
+                    WrappedTransactionCompletedTask.ContinueWith( ( task ) =>
+                    {
+                        var commitedSuccessfully = task.Result;
+                        if ( commitedSuccessfully )
+                        {
+                            using ( var rockContextUpdateCache = new RockContext() )
+                            {
+                                cacheable.UpdateCache( item.PreSaveStateLegacy, rockContextUpdateCache );
+                            }
+                        };
+                    }, TaskContinuationOptions.ExecuteSynchronously );
                 }
             }
 
