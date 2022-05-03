@@ -17,11 +17,13 @@
 
 using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Rest.v2.Options;
 using Rock.Security;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -196,6 +198,80 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Field Type Editor
+
+        /// <summary>
+        /// Gets the available field types for the current person.
+        /// </summary>
+        /// <param name="options">The options that provide details about the request.</param>
+        /// <returns>A collection <see cref="ListItemBag"/> that represents the field types that are available.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FieldTypeEditorGetAvailableFieldTypes" )]
+        [Authenticate]
+        [RockGuid( "fedef3f7-fcb0-4538-9629-177c7d2ae06f" )]
+        public IHttpActionResult FieldTypeEditorGetAvailableFieldTypes( [FromBody] FieldTypeEditorGetAvailableFieldTypesOptionsBag options )
+        {
+            var fieldTypes = FieldTypeCache.All()
+                .Where( f => f.Platform.HasFlag( Rock.Utility.RockPlatform.Obsidian ) )
+                .ToList();
+
+            var fieldTypeItems = fieldTypes
+                .Select( f => new ListItemBag
+                {
+                    Text = f.Name,
+                    Value = f.Guid.ToString()
+                } )
+                .ToList();
+
+            return Ok( fieldTypeItems );
+        }
+
+        /// <summary>
+        /// Gets the attribute configuration information provided and returns a new
+        /// set of configuration data. This is used by the attribute editor control
+        /// when a field type makes a change that requires new data to be retrieved
+        /// in order for it to continue editing the attribute.
+        /// </summary>
+        /// <param name="options">The view model that contains the update request.</param>
+        /// <returns>An instance of <see cref="FieldTypeEditorUpdateAttributeConfigurationResultBag"/> that represents the state of the attribute configuration.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FieldTypeEditorUpdateAttributeConfiguration" )]
+        [Authenticate]
+        [RockGuid( "afdf0ec4-5d17-4278-9fa6-3f859f38e3b5" )]
+        public IHttpActionResult FieldTypeEditorUpdateAttributeConfiguration( [FromBody] FieldTypeEditorUpdateAttributeConfigurationOptionsBag options )
+        {
+            var fieldType = Rock.Web.Cache.FieldTypeCache.Get( options.FieldTypeGuid )?.Field;
+
+            if ( fieldType == null )
+            {
+                return BadRequest( "Unknown field type." );
+            }
+
+            // Convert the public configuration options into our private
+            // configuration options (values).
+            var configurationValues = fieldType.GetPrivateConfigurationValues( options.ConfigurationValues );
+
+            // Convert the default value from the public value into our
+            // private internal value.
+            var privateDefaultValue = fieldType.GetPrivateEditValue( options.DefaultValue, configurationValues );
+
+            // Get the new configuration properties from the currently selected
+            // options.
+            var configurationProperties = fieldType.GetPublicEditConfigurationProperties( configurationValues );
+
+            // Get the public configuration options from the internal options (values).
+            var publicConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
+
+            return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
+            {
+                ConfigurationProperties = configurationProperties,
+                ConfigurationValues = publicConfigurationValues,
+                DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
+            } );
+        }
+
+        #endregion
+
         #region Location Picker
 
         /// <summary>
@@ -299,6 +375,172 @@ namespace Rock.Rest.v2
 
             // Chain to the v1 controller.
             return Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+        }
+
+        #endregion
+
+        #region Save Financial Account Form
+
+        /// <summary>
+        /// Saves the financial account.
+        /// </summary>
+        /// <param name="options">The options that describe what account should be saved.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [HttpPost]
+        [System.Web.Http.Route( "SaveFinancialAccountFormSaveAccount" )]
+        [RockGuid( "544b6302-a9e0-430e-a1c1-7bcbc4a6230c" )]
+        public SaveFinancialAccountFormSaveAccountResult SaveFinancialAccountFormSaveAccount( [FromBody] SaveFinancialAccountFormSaveAccountOptions options )
+        {
+            // Validate the arguments
+            if ( options?.TransactionCode.IsNullOrWhiteSpace() != false )
+            {
+                return new SaveFinancialAccountFormSaveAccountResult
+                {
+                    Title = "Sorry",
+                    Detail = "The account information cannot be saved as there's not a valid transaction code to reference",
+                    IsSuccess = false
+                };
+            }
+
+            if ( options.SavedAccountName.IsNullOrWhiteSpace() )
+            {
+                return new SaveFinancialAccountFormSaveAccountResult
+                {
+                    Title = "Missing Account Name",
+                    Detail = "Please enter a name to use for this account",
+                    IsSuccess = false
+                };
+            }
+
+            var currentPerson = GetPerson();
+            var isAnonymous = currentPerson == null;
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( isAnonymous )
+                {
+                    if ( options.Username.IsNullOrWhiteSpace() || options.Password.IsNullOrWhiteSpace() )
+                    {
+                        return new SaveFinancialAccountFormSaveAccountResult
+                        {
+                            Title = "Missing Information",
+                            Detail = "A username and password are required when saving an account",
+                            IsSuccess = false
+                        };
+                    }
+
+                    var userLoginService = new UserLoginService( rockContext );
+
+                    if ( userLoginService.GetByUserName( options.Username ) != null )
+                    {
+                        return new SaveFinancialAccountFormSaveAccountResult
+                        {
+                            Title = "Invalid Username",
+                            Detail = "The selected Username is already being used. Please select a different Username",
+                            IsSuccess = false
+                        };
+                    }
+
+                    if ( !UserLoginService.IsPasswordValid( options.Password ) )
+                    {
+                        return new SaveFinancialAccountFormSaveAccountResult
+                        {
+                            Title = "Invalid Password",
+                            Detail = UserLoginService.FriendlyPasswordRules(),
+                            IsSuccess = false
+                        };
+                    }
+                }
+
+                // Load the gateway from the database
+                var financialGatewayService = new FinancialGatewayService( rockContext );
+                var financialGateway = financialGatewayService.Get( options.GatewayGuid );
+                var gateway = financialGateway?.GetGatewayComponent();
+
+                if ( gateway is null )
+                {
+                    return new SaveFinancialAccountFormSaveAccountResult
+                    {
+                        Title = "Invalid Gateway",
+                        Detail = "Sorry, the financial gateway information is not valid.",
+                        IsSuccess = false
+                    };
+                }
+
+                // Load the transaction from the database
+                var financialTransactionService = new FinancialTransactionService( rockContext );
+                var transaction = financialTransactionService.GetByTransactionCode( financialGateway.Id, options.TransactionCode );
+                var transactionPersonAlias = transaction?.AuthorizedPersonAlias;
+                var transactionPerson = transactionPersonAlias?.Person;
+                var paymentDetail = transaction?.FinancialPaymentDetail;
+
+                if ( transactionPerson is null || paymentDetail is null )
+                {
+                    return new SaveFinancialAccountFormSaveAccountResult
+                    {
+                        Title = "Invalid Transaction",
+                        Detail = "Sorry, the account information cannot be saved as there's not a valid transaction to reference",
+                        IsSuccess = false
+                    };
+                }
+
+                // Create the login if needed
+                if ( isAnonymous )
+                {
+                    var user = UserLoginService.Create(
+                        rockContext,
+                        transactionPerson,
+                        AuthenticationServiceType.Internal,
+                        EntityTypeCache.Get( SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                        options.Username,
+                        options.Password,
+                        false );
+
+                    var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
+                    // TODO mergeFields.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+                    mergeFields.Add( "Person", transactionPerson );
+                    mergeFields.Add( "User", user );
+
+                    var emailMessage = new RockEmailMessage( SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT.AsGuid() );
+                    emailMessage.AddRecipient( new RockEmailMessageRecipient( transactionPerson, mergeFields ) );
+                    // TODO emailMessage.AppRoot = ResolveRockUrl( "~/" );
+                    // TODO emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
+                    emailMessage.CreateCommunicationRecord = false;
+                    emailMessage.Send();
+                }
+
+                var savedAccount = new FinancialPersonSavedAccount
+                {
+                    PersonAliasId = transactionPersonAlias.Id,
+                    ReferenceNumber = options.TransactionCode,
+                    GatewayPersonIdentifier = options.GatewayPersonIdentifier,
+                    Name = options.SavedAccountName,
+                    TransactionCode = options.TransactionCode,
+                    FinancialGatewayId = financialGateway.Id,
+                    FinancialPaymentDetail = new FinancialPaymentDetail
+                    {
+                        AccountNumberMasked = paymentDetail.AccountNumberMasked,
+                        CurrencyTypeValueId = paymentDetail.CurrencyTypeValueId,
+                        CreditCardTypeValueId = paymentDetail.CreditCardTypeValueId,
+                        NameOnCard = paymentDetail.NameOnCard,
+                        ExpirationMonth = paymentDetail.ExpirationMonth,
+                        ExpirationYear = paymentDetail.ExpirationYear,
+                        BillingLocationId = paymentDetail.BillingLocationId
+                    }
+                };
+
+                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
+                financialPersonSavedAccountService.Add( savedAccount );
+                rockContext.SaveChanges();
+
+                return new SaveFinancialAccountFormSaveAccountResult
+                {
+                    Title = "Success",
+                    Detail = "The account has been saved for future use",
+                    IsSuccess = true
+                };
+            }
         }
 
         #endregion

@@ -15,12 +15,15 @@
 // </copyright>
 //
 
-namespace Rock.Rest.v2.Controls
+namespace Rock.ViewModels.Controls
 {
     /// <summary>
-    /// Endpoints used by Rock UI Controls
+    /// The options that can be passed to the GetAvailableFieldTypes API action
+    /// for the FieldTypeEditor control.
     /// </summary>
-    public abstract class ControlsControllerBase : ApiControllerBase
+    public class FieldTypeEditorGetAvailableFieldTypesOptionsBag
     {
+        /* Intentionally left blank to allow future options to be added. */
     }
+
 }

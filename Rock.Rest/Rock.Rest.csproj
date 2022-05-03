@@ -146,6 +146,8 @@
     <Compile Include="v2\Options\EntityTypePickerGetEntityTypesOptions.cs" />
     <Compile Include="v2\Options\LocationPickerGetActiveChildrenOptions.cs" />
     <Compile Include="v2\Options\PersonPickerSearchOptions.cs" />
+    <Compile Include="v2\Options\SaveFinancialAccountFormSaveAccountOptions.cs" />
+    <Compile Include="v2\Options\SaveFinancialAccountFormSaveAccountResult.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
@@ -233,8 +235,6 @@
     <Compile Include="Controllers\CodeGenerated\WebFarmNodesController.CodeGenerated.cs" />
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
-    <Compile Include="v2\Controls\FieldTypeEditorController.cs" />
-    <Compile Include="v2\Controls\ControlsControllerBase.cs" />
     <Compile Include="Controllers\DocumentsController.partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
@@ -253,7 +253,6 @@
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
-    <Compile Include="v2\Controls\SaveFinancialAccountFormsController.cs" />
     <Compile Include="Filters\RockCacheabilityAttribute.cs" />
     <Compile Include="Handler\RockAssembliesResolver.cs" />
     <Compile Include="HeaderTokens.cs" />

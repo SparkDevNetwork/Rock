@@ -23,7 +23,7 @@ namespace Rock.ViewModels.Controls
     /// Describes a field type configuration state. This provides the information
     /// required to edit a field type on a remote system.
     /// </summary>
-    public class FieldTypeConfigurationPropertiesBag
+    public class FieldTypeEditorUpdateAttributeConfigurationResultBag
     {
         /// <summary>
         /// Gets or sets the configuration properties that contain information

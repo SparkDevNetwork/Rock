@@ -25,8 +25,8 @@ import { get, post } from "@Obsidian/Utility/http";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
-import { FieldTypeConfigurationPropertiesBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationPropertiesBag";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
+import { FieldTypeEditorUpdateAttributeConfigurationResultBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationResultBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { deepEqual } from "@Obsidian/Utility/util";
 
@@ -42,7 +42,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<FieldTypeConfigurationBag | null>,
+            type: Object as PropType<FieldTypeEditorUpdateAttributeConfigurationOptionsBag | null>,
             default: null
         },
 
@@ -153,7 +153,7 @@ export default defineComponent({
                 return;
             }
 
-            const newValue: FieldTypeConfigurationBag = {
+            const newValue: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
                 fieldTypeGuid: fieldTypeValue.value,
                 configurationValues: configurationValues.value,
                 defaultValue: defaultValue.value ?? ""
@@ -192,13 +192,13 @@ export default defineComponent({
                 return;
             }
 
-            const update: FieldTypeConfigurationBag = {
+            const update: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
                 fieldTypeGuid: fieldTypeValue.value,
                 configurationValues: configurationValues.value,
                 defaultValue: currentDefaultValue
             };
 
-            post<FieldTypeConfigurationPropertiesBag>("/api/v2/Controls/FieldTypeEditor/fieldTypeConfiguration", null, update)
+            post<FieldTypeEditorUpdateAttributeConfigurationResultBag>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfiguration", null, update)
                 .then(result => {
                     resetToDefaults();
                     console.debug("got configuration", result.data);
@@ -271,7 +271,7 @@ export default defineComponent({
         });
 
         // Get all the available field types that the user is allowed to edit.
-        get<ListItemBag[]>("/api/v2/Controls/FieldTypeEditor/availableFieldTypes")
+        post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, {})
             .then(result => {
                 if (result.isSuccess && result.data) {
                     fieldTypeOptions.value = result.data;
