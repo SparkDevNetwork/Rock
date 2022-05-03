@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, reactive } from "vue";
-import { toDecimalPlaces } from "../Services/number";
+import { toDecimalPlaces } from "@Obsidian/Utility/numberUtils";
 
 export type FlowNode = {
     id: number;
