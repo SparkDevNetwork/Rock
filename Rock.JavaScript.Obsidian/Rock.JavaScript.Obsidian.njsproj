@@ -107,7 +107,6 @@
     <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
     <TypeScriptCompile Include="Framework\Controls\addressControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeEditor.ts" />
-    <TypeScriptCompile Include="Framework\Controls\categoriesPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\categoryPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\fieldTypeEditor.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeValuesContainer.ts" />

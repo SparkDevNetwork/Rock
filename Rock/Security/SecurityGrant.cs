@@ -96,6 +96,11 @@ namespace Rock.Security
         /// <returns>A new instance of <see cref="SecurityGrant"/> that represents the information in the token.</returns>
         public static SecurityGrant FromToken( string token )
         {
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             var segments = token.Split( ';' );
 
             var json = Encryption.DecryptString( segments[2] );

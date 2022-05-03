@@ -62,6 +62,8 @@ import ImageUploader from "@Obsidian/Controls/imageUploader";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
+import CategoryPicker from "@Obsidian/Controls/categoryPicker";
+import LocationPicker from "@Obsidian/Controls/locationPicker";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -2093,7 +2095,6 @@ const entityTypePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-
 /** Demonstrates the SectionHeader and SectionContainer components */
 const sectionHeaderGallery = defineComponent({
     name: "SectionHeaderGallery",
@@ -2172,6 +2173,69 @@ const sectionHeaderGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates category picker */
+const categoryPickerGallery = defineComponent({
+    name: "CategoryPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        CategoryPicker,
+        TextBox
+    },
+    setup() {
+        return {
+            entityTypeGuid: ref(EntityType.DefinedType),
+            multiple: ref(false),
+            value: ref(null)
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        CategoryPicker
+    </template>
+    <template #gallery>
+        <CheckBox label="Multiple" v-model="multiple" />
+        <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+        <CategoryPicker label="Category Picker 1" v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" />
+        <CategoryPicker label="Category Picker 2" v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" />
+    </template>
+    <template #result>
+        {{ value }}
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates location picker */
+const locationPickerGallery = defineComponent({
+    name: "LocationPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        LocationPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null)
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        LocationPicker
+    </template>
+    <template #gallery>
+        <CheckBox label="Multiple" v-model="multiple" />
+        <LocationPicker label="Location Picker 1" v-model="value" :multiple="multiple" />
+        <LocationPicker label="Location Picker 2" v-model="value" :multiple="multiple" />
+    </template>
+    <template #result>
+        {{ value }}
+    </template>
+</GalleryAndResult>`
+});
+
 
 const galleryComponents: Record<string, Component> = {
     attributeValuesContainerGallery,
@@ -2218,7 +2282,9 @@ const galleryComponents: Record<string, Component> = {
     slidingDateRangePickerGallery,
     definedValuePickerGallery,
     entityTypePickerGallery,
-    sectionHeaderGallery
+    sectionHeaderGallery,
+    categoryPickerGallery,
+    locationPickerGallery
 };
 
 const galleryTemplate = Object.keys(galleryComponents).sort().map(g => `<${g} />`).join("");
