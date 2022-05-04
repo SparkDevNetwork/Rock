@@ -30,7 +30,7 @@ namespace Rock.Model
     public partial class CommunicationService
     {
         /// <summary>
-        /// Creates the email communication 
+        /// Creates the email communication
         /// </summary>
         /// <param name="recipientEmails">A list of email addresses to use for finding which people to send the email to</param>
         /// <param name="fromName">From name.</param>
@@ -124,7 +124,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public sealed class CreateEmailCommunicationArgs
         {
@@ -239,9 +239,22 @@ namespace Rock.Model
             var recipientsWithPersonIds = recipients.Where( a => a.PersonId.HasValue ).Select( a => a.PersonId ).ToList();
             var recipientEmailsUnknownPersons = recipients.Where( a => a.PersonId == null ).Select( a => a.EmailAddress );
 
+            /*
+             * 4-MAY-2022 DMV
+             *
+             * In tracking down alleged duplicate communications we discovered
+             * that duplicates could be sent to the same person if they are in the
+             * recipient list more that once with mulitple Person Alias IDs.
+             * This could have occured through a person merge or other data changes
+             * in Rock. This code removes those duplicates from the list before
+             * sending the communication.
+             *
+             */
+
             var recipientPersonList = new PersonService( ( RockContext ) Context )
                 .Queryable()
                 .Where( p => recipientsWithPersonIds.Contains( p.Id ) )
+                .Where( pa => pa.Id == pa.PrimaryAliasId ) // Only the primary alias.
                 .ToList();
 
             if ( !recipientPersonList.Any() && recipientEmailsUnknownPersons.Any( a => a != null ) )
@@ -325,7 +338,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public sealed class CreateSMSCommunicationArgs
         {
@@ -473,7 +486,7 @@ namespace Rock.Model
             }
             else
             {
-                // Also limit to communications that are Approved 
+                // Also limit to communications that are Approved
                 queuedQry = queuedQry.Where( c => c.Status == CommunicationStatus.Approved );
             }
 
