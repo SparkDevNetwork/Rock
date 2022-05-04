@@ -16,6 +16,7 @@
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { PublicAttribute } from "../ViewModels";
+import TabbedContent from "./tabbedContent";
 import RockField from "./rockField";
 import LoadingIndicator from "../Elements/loadingIndicator";
 import { PublicAttributeValueCategory } from "../ViewModels/publicAttributeValueCategory";
@@ -31,7 +32,8 @@ export default defineComponent({
     name: "AttributeValuesContainer",
     components: {
         RockField,
-        LoadingIndicator
+        LoadingIndicator,
+        TabbedContent,
     },
     props: {
         modelValue: {
@@ -60,7 +62,15 @@ export default defineComponent({
         },
         showCategoryLabel: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: true
+        },
+        numberOfColumns: {
+            type: Number as PropType<number>,
+            default: 1
+        },
+        entityTypeName: {
+            type: String as PropType<string>,
+            default: ""
         }
     },
 
@@ -74,6 +84,7 @@ export default defineComponent({
         const values = ref({ ...props.modelValue });
 
         const attributeCategories = computed(() => {
+            // Initialize the category list with a "default" category
             const categoryList: CategorizedAttributes[] = [{
                 guid: "0",
                 name: "Attributes",
@@ -82,37 +93,70 @@ export default defineComponent({
             }];
 
             validAttributes.value.forEach(attr => {
-                console.log("Attr:", {name: attr.key, cats: attr.categories.map(cat => cat.name).join(",")});
+                // Skip empty attributes if we are not set to display empty values or we're not editing values
+                if (!props.showEmptyValues && !props.isEditMode && (props.modelValue[attr.key] ?? "") == "") {
+                    return;
+                }
+
                 if (attr.categories.length > 0) {
                     const categories = [...attr.categories]; // copy, so sort doesn't cause updates
-                    console.log("Categories:", categories);
+
                     categories.sort((a, b) => a.order - b.order).forEach((cat, i) => {
-                        console.log("Category", i, cat.name);
-                        const newCat: CategorizedAttributes = {attributes: [], ...cat}; // copy
+                        const newCat: CategorizedAttributes = {attributes: [], ...cat}; // copy and convert to CategorizedAttributes
 
                         // Make sure we only have 1 copy of any category in the list
                         if (!categoryList.some(oldCat => oldCat.guid == newCat.guid)) {
-                            console.log("Add Category to list", cat.name);
                             categoryList.push(newCat);
                         }
 
+                        // Add this attribute to the first (in order) category it is in
                         if (i == 0) {
-                            console.log("Add Attr to Category");
                             categoryList.find(cat => cat.guid == newCat.guid)?.attributes.push(attr);
                         }
                     });
                 }
                 else {
-                    console.log("No Categories, add to default");
+                    // Put in "default" category
                     categoryList[0].attributes.push(attr);
                 }
             });
 
-            categoryList.sort((a, b) => a.order - b.order);
+            // Clear out any categories that don't have any attributes assigned to them, then sort the list by category order
+            return categoryList.filter(cat => cat.attributes.length > 0).sort((a, b) => a.order - b.order);
+        });
 
+        const actuallyDisplayAsTabs = computed<boolean>(() => {
+            const hasCategories = attributeCategories.value.length > 1 || attributeCategories.value[0].guid !== "0";
 
+            return hasCategories && props.displayAsTabs && !props.isEditMode;
+        });
 
-            return categoryList;
+        const defaultCategoryHeading = computed<string>(() => {
+            if (actuallyDisplayAsTabs.value || !props.entityTypeName) {
+                return "Attributes";
+            }
+
+            return props.entityTypeName + " Attributes";
+        });
+
+        const columnClass = computed(() => {
+            let numColumns = props.numberOfColumns;
+
+            // Need to make the columns divisible by 12
+            if (numColumns < 1) {
+                numColumns = 1;
+            }
+            else if (numColumns == 5) {
+                numColumns = 4;
+            }
+            else if (numColumns > 6 && numColumns < 12) {
+                numColumns = 6;
+            }
+            else if (numColumns > 12) {
+                numColumns = 12;
+            }
+
+            return `col-md-${12 / numColumns}`;
         });
 
         const onUpdateValue = (key: string, value: string): void => {
@@ -127,28 +171,53 @@ export default defineComponent({
 
         return {
             onUpdateValue,
+            log: (...a: any[]) => console.log(...a),
             validAttributes,
             values,
-            attributeCategories
+            attributeCategories,
+            actuallyDisplayAsTabs,
+            defaultCategoryHeading,
+            columnClass
         };
     },
 
     template: `
-<Suspense>
-    <template #default>
-        <div v-for="a in validAttributes">
-            <RockField
-                :isEditMode="isEditMode"
-                :attribute="a"
-                :modelValue="values[a.key]"
-                @update:modelValue="onUpdateValue(a.key, $event)"
-                :showEmptyValue="showEmptyValues"
-                :showAbbreviatedName="showAbbreviatedName" />
-        </div>
-    </template>
-    <template #fallback>
-        <LoadingIndicator />
-    </template>
-</Suspense>
+        <TabbedContent v-if="actuallyDisplayAsTabs" :tabList="attributeCategories">
+            <template #tab="{item}">
+                {{ item.name }}
+            </template>
+            <template #tabpane="{item}">
+                <div v-for="a in item.attributes" :key="a.attributeGuid">
+                    <RockField
+                        :isEditMode="isEditMode"
+                        :attribute="a"
+                        :modelValue="values[a.key]"
+                        @update:modelValue="onUpdateValue(a.key, $event)"
+                        :showEmptyValue="showEmptyValues"
+                        :showAbbreviatedName="showAbbreviatedName"
+                    />
+                </div>
+            </template>
+        </TabbedContent>
+
+        <template v-else>
+            <div v-for="cat in attributeCategories" key="cat.guid">
+                <h4 v-if="showCategoryLabel && cat.guid == '0' && !isEditMode">{{defaultCategoryHeading}}</h4>
+                <h4 v-else-if="showCategoryLabel && cat.guid != '0'">{{cat.name}}</h4>
+
+                <div class="attribute-value-container-display row">
+                    <div :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid">
+                        <RockField
+                            :isEditMode="isEditMode"
+                            :attribute="a"
+                            :modelValue="values[a.key]"
+                            @update:modelValue="onUpdateValue(a.key, $event)"
+                            :showEmptyValue="showEmptyValues"
+                            :showAbbreviatedName="showAbbreviatedName"
+                        />
+                    </div>
+                </div>
+            </div>
+        </template>
 `
 });
