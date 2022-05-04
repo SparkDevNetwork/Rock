@@ -183,13 +183,3 @@
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>
-
-<script>
-    $(function () {
-        $(".js-releasenote").on("click", function (event) {
-            var $top = $(event.target).closest(".releasenotes");
-            $top.find("i").toggleClass("fa-caret-up").toggleClass("fa-caret-down");
-            $top.find(".releasenotes-body").slideToggle(500);
-        });
-    });
-</script>
