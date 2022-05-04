@@ -1334,7 +1334,7 @@ namespace Rock.Model
                         } )
                 } );
 
-                // if using thes filters, limit to people that have ScheduleTemplates that would include the scheduled date
+                // if using these filters, limit to people that have ScheduleTemplates that would include the scheduled date
                 if ( schedulerResourceParameters.GroupMemberFilterType == SchedulerResourceGroupMemberFilterType.ShowMatchingPreference
                     || schedulerResourceParameters.ResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingPreference
                     || schedulerResourceParameters.ResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingAssignment )
@@ -1821,7 +1821,7 @@ namespace Rock.Model
 
             // create a lookup so we can find out which role the person has in the occurrence group (if they are a member)
             var attendanceOccurrenceGroupMemberLookupQuery = new GroupMemberService( rockContext )
-                .Queryable().Where( a => a.GroupId == attendanceOccurrenceGroupId );
+                .Queryable().Where( a => a.GroupId == attendanceOccurrenceGroupId && a.GroupMemberStatus == GroupMemberStatus.Active );
 
             Dictionary<int, IEnumerable<MemberLookupValue>> attendanceOccurrenceGroupMemberLookup;
 
@@ -1835,7 +1835,8 @@ namespace Rock.Model
                 else if ( personIds.Count < 1000 )
                 {
                     // if there are less than 1000, just get the member records for people that are scheduled, otherwise the SQL will get too complex
-                    attendanceOccurrenceGroupMemberLookupQuery = attendanceOccurrenceGroupMemberLookupQuery.Where( a => personIds.Contains( a.PersonId ) );
+                    attendanceOccurrenceGroupMemberLookupQuery = attendanceOccurrenceGroupMemberLookupQuery
+                        .Where( a => personIds.Contains( a.PersonId ) );
                 }
 
                 var attendanceOccurrenceGroupGroupTypeId = new GroupService( rockContext ).GetSelect( attendanceOccurrenceGroupId, s => s.GroupTypeId );
@@ -1881,11 +1882,14 @@ namespace Rock.Model
                     var personExclusionDateRange = new DateRange( a.BlackoutDateRanges.Min( d => d.StartDate ), a.BlackoutDateRanges.Max( d => d.EndDate ) );
                     personBlackoutDates = scheduleOccurrenceDateList.Where( d => personExclusionDateRange.Contains( d ) ).ToList();
                 }
-
-                var attendanceOccurrenceGroupMemberInfo = attendanceOccurrenceGroupMemberLookup
+                
+                var groupMemberLookupValues = attendanceOccurrenceGroupMemberLookup
                     ?.GetValueOrNull( a.PersonId )
-                    ?.OrderBy( x => x.GroupRole?.Order ?? int.MaxValue )
-                    ?.FirstOrDefault();
+                    ?.OrderBy( x => x.GroupRole?.Order ?? int.MaxValue );
+
+                var attendanceOccurrenceGroupMemberInfo = groupMemberLookupValues?.FirstOrDefault();
+
+                var attendanceOccurrenceGroupMemberRoles = groupMemberLookupValues?.Select( t => t.GroupRole?.Name ).ToList().AsDelimited( ", " );
 
                 var memberAssignments = attendanceOccurrenceGroupMemberInfo?.MemberAssignments;
                 ScheduledAttendanceItemMatchesPreference matchesPreference = ScheduledAttendanceItemMatchesPreference.NoPreference;
@@ -1934,7 +1938,7 @@ namespace Rock.Model
                     DeclinedReason = DefinedValueCache.GetValue( a.DeclineReasonValueId ).EncodeHtml(),
 
                     GroupMemberId = attendanceOccurrenceGroupMemberInfo?.MemberId,
-                    GroupRole = attendanceOccurrenceGroupMemberInfo?.GroupRole,
+                    GroupRoleName = attendanceOccurrenceGroupMemberRoles,
 
                     // not needed for resource that is getting listed in an occurrence
                     ResourcePreferenceList = null,
@@ -3141,7 +3145,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the group role.
         /// </value>
-        public string GroupRoleName => GroupRole?.Name;
+        public string GroupRoleName { get; set; }
 
         /// <summary>
         /// Gets the resource's Preferences (from <seealso cref="GroupMemberAssignment"/>) for t
