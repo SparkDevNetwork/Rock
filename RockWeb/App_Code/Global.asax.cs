@@ -453,6 +453,16 @@ namespace RockWeb
                                 context.Response.StatusCode = 404;
                                 return;
                             }
+
+                            // Check for client\remote host disconnection error specifically SignalR or web-socket connections
+                            // Ignore this error as it indicates the server it trying to write a response to a disconnected client.
+                            if(httpEx.Message.Contains( "The remote host closed the connection." ) &&
+                                httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                            {
+                                context.ClearError();
+                                context.Response.StatusCode = 200;
+                                return;
+                            }
                         }
                     }
                     catch
@@ -477,7 +487,7 @@ namespace RockWeb
                             ex = newEx;
                         }
                     }
-
+                                      
                     if ( !( ex is HttpRequestValidationException ) )
                     {
                         SendNotification( ex );

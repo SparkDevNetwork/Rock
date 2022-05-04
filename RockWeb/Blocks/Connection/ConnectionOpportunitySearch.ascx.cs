@@ -384,21 +384,24 @@ namespace RockWeb.Blocks.Connection
                         tbSearchName.Text = searchSelections["tbSearchName"];
                     }
 
-                    if ( searchSelections.ContainsKey( "cblCampus" ) )
+                    var selectedCampusIds = new List<int>();
+                    if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
                     {
-                        var selectedItems = searchSelections["cblCampus"].SplitDelimitedValues().AsIntegerList();
-                        cblCampus.SetValues( selectedItems );
-                    }
-                }
-                else if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
-                {
-                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
-                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+                        var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
+                        var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-                    if ( contextCampus != null )
-                    {
-                        cblCampus.SetValue( contextCampus.Id.ToString() );
+                        if ( contextCampus != null )
+                        {
+                            selectedCampusIds.Add( contextCampus.Id );
+                        }
                     }
+
+                    if ( !selectedCampusIds.Any() && searchSelections.ContainsKey( "cblCampus" ) )
+                    {
+                        selectedCampusIds.AddRange( searchSelections["cblCampus"].SplitDelimitedValues().AsIntegerList() );
+                    }
+
+                    cblCampus.SetValues( selectedCampusIds );
                 }
 
                 if ( GetAttributeValue( AttributeKey.DisplayAttributeFilters ).AsBoolean() )

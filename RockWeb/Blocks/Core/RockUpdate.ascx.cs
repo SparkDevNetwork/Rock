@@ -69,6 +69,12 @@ namespace RockWeb.Blocks.Core
                     btn.button('loading');
                     location = location.href;
                 });
+
+                $('.js-releasenote').on('click', function (event) {
+                    var $top = $(event.target).closest('.releasenotes');
+                    $top.find('i').toggleClass('fa-caret-up').toggleClass('fa-caret-down');
+                    $top.find('.releasenotes-body').slideToggle(500);
+                });
             ";
 
             ScriptManager.RegisterStartupScript( pnlUpdateSuccess, pnlUpdateSuccess.GetType(), "restart-script", script, true );
@@ -483,6 +489,8 @@ namespace RockWeb.Blocks.Core
 
         protected void mdConfirmInstall_SaveClick( object sender, EventArgs e )
         {
+            nbCompileThreadsIssue.Visible = false;
+
             if ( Global.CompileThemesThread.IsAlive || Global.BlockTypeCompilationThread.IsAlive )
             {
                 // Show message here and return
@@ -490,7 +498,6 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            nbCompileThreadsIssue.Visible = false;
             mdConfirmInstall.Hide();
             Update( hdnInstallVersion.Value );
         }
