@@ -176,6 +176,10 @@
     <Compile Include="Migrations\202205041841344_AddStepFlowSP.Designer.cs">
       <DependentUpon>202205041841344_AddStepFlowSP.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.cs" />
+    <Compile Include="Migrations\202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.Designer.cs">
+      <DependentUpon>202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1197,6 +1201,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202205041841344_AddStepFlowSP.resx">
       <DependentUpon>202205041841344_AddStepFlowSP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.resx">
+      <DependentUpon>202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>

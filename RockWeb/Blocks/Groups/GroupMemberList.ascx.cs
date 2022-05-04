@@ -467,9 +467,10 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( _groupMemberIdsPersonInMultipleRoles.Contains( groupMember.Id ) )
                     {
-                    sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='This person has multiple roles in this group. This is an unsupported configuration for groups with Group Scheduling enabled. The system does not support scheduling the same person with different roles.'>" +
-                        "<i class='fa fa-exclamation-circle text-warning'></i>" +
-                        "</span>" );
+                        sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title=" +
+                            "'This person has multiple roles in this group. This is an unsupported configuration for groups with Group Scheduling enabled. The system does not support scheduling the same person with different roles.'>" +
+                            "<i class='fa fa-exclamation-circle text-warning'></i>" +
+                            "</span>" );
                     }
                 }
 
@@ -1456,10 +1457,13 @@ namespace RockWeb.Blocks.Groups
             _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( groupService.GroupMembersNotMeetingRequirements( _group, false, true ).Select( a => a.Key.Id ).ToList().Distinct() );
             _groupMemberIdsWithWarnings = groupService.GroupMemberIdsWithRequirementWarnings( _group );
 
-            // Get a collection of group member Ids that are in the group more than once (because they have multiple roles in the group).
-            _groupMemberIdsPersonInMultipleRoles = _group.Members
-                .Where( gm => _group.Members.Where( m => m.GroupMemberStatus ==  GroupMemberStatus.Active).GroupBy( m => m.PersonId ).Where( g => g.Count() > 1 ).Select( g => g.Key ).Contains( gm.PersonId ) )
-                .Select( m => m.Id ).ToList();
+            // Get a collection of group member Ids that are in the group more than once (because they have multiple roles in the group) if this group allows scheduling.
+            if ( _allowGroupScheduling )
+            {
+                _groupMemberIdsPersonInMultipleRoles = _group.Members
+                    .Where( gm => _group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).GroupBy( m => m.PersonId ).Where( g => g.Count() > 1 ).Select( g => g.Key ).Contains( gm.PersonId ) )
+                    .Select( m => m.Id ).ToList();
+            }
 
             gGroupMembers.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
