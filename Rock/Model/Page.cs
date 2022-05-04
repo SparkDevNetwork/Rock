@@ -675,7 +675,7 @@ namespace Rock.Model
                 new AddPageRenameInteraction.Message()
                 {
                     PageGuid = Guid
-                }.Send();
+                }.SendWhen( dbContext.WrappedTransactionCompletedTask );
             }
         }
 
