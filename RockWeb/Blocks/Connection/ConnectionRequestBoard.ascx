@@ -466,7 +466,7 @@
                             <asp:Literal ID="lRequestModalViewModeBadgeBar" runat="server" />
                             <div class="row">
                                 <div class="col-md-12">
-                                    <Rock:AttributeValuesContainer ID="avcRequestModalViewModeAttributesReadOnly" runat="server" DisplayAsTabs="true" NumberOfColumns="3" />
+                                    <Rock:AttributeValuesContainer ID="avcRequestModalViewModeAttributesReadOnly" runat="server" DisplayAsTabs="true" NumberOfColumns="2" />
                                 </div>
                                 <div id="divRequestModalViewModeWorkflows" runat="server" class="col-md-6">
                                     <Rock:ModalAlert ID="mdWorkflowLaunched" runat="server" />
