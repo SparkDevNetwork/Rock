@@ -531,6 +531,21 @@ namespace RockWeb.Blocks.Connection
                 {
                     rockContext.SaveChanges();
 
+                    connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
+                    connectionWorkflow.ConnectionTypeId = connectionTypeId;
+                }
+
+                if ( !connectionType.IsValid )
+                {
+                    // Controls will render the error messages
+                    return;
+                }
+
+                // need WrapTransaction due to Attribute saves
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+
                     foreach ( var connectionStatusState in StatusesState )
                     {
                         ConnectionStatus connectionStatus = connectionType.ConnectionStatuses.Where( a => a.Guid == connectionStatusState.Guid ).FirstOrDefault();
