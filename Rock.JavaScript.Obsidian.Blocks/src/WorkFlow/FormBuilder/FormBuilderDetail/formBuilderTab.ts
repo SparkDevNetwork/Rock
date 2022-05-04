@@ -171,7 +171,7 @@ function getFieldReorderDragSourceOptions(sections: FormSection[]): IDragSourceO
     return {
         id: newGuid(),
         copyElement: false,
-        handleSelector: ".zone-actions > .zone-action-move > .fa",
+        handleSelector: ".zone-actions > .zone-action-move",
         dragOver(operation) {
             if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
                 operation.targetContainer.closest(".zone-section")?.classList.add("highlight");
