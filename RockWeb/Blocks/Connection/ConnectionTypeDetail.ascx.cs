@@ -516,30 +516,22 @@ namespace RockWeb.Blocks.Connection
                         connectionWorkflowState.Guid = connectionWorkflow.Guid;
                     }
 
-                    connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
-                    connectionWorkflow.ConnectionTypeId = connectionTypeId;
+                    // need WrapTransaction due to Attribute saves
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+
+                        connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
+                        connectionWorkflow.ConnectionTypeId = connectionTypeId;
+                    } );
                 }
 
                 if ( !connectionType.IsValid )
                 {
                     // Controls will render the error messages
                     return;
-                }
-
-                // need WrapTransaction due to Attribute saves
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-
-                    connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
-                    connectionWorkflow.ConnectionTypeId = connectionTypeId;
-                }
-
-                if ( !connectionType.IsValid )
-                {
-                    // Controls will render the error messages
-                    return;
-                }
+                }           
+                                
 
                 // need WrapTransaction due to Attribute saves
                 rockContext.WrapTransaction( () =>
