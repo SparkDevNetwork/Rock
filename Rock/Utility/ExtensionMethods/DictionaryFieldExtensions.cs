@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Rock.Field;
 
 namespace Rock
@@ -56,6 +57,23 @@ namespace Rock
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Converts Dictionary to a NameValueCollection.
+        /// </summary>
+        /// <typeparam name="tValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <returns></returns>
+        public static NameValueCollection ToNameValueCollection<tValue>( this IDictionary<string, tValue> dictionary )
+        {
+            // From: https://stackoverflow.com/questions/7230383/c-convert-dictionary-to-namevaluecollection
+            var collection = new NameValueCollection();
+            foreach ( var pair in dictionary )
+            {
+                collection.Add( pair.Key, pair.Value.ToString() );
+            }
+            return collection;
         }
     }
 }
