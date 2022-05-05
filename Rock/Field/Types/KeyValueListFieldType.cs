@@ -300,6 +300,15 @@ namespace Rock.Field.Types
                             nameAndValue[1] = definedValue.Value;
                         }
                     }
+                    else
+                    {
+                        var customValues = GetCustomValues( configurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
+                        if ( customValues.ContainsKey( nameAndValue[1] ) )
+                        {
+                            nameAndValue[1] = customValues[nameAndValue[1]];
+                        }
+                    }
+
                     values.Add( string.Format( "{0}: {1}", nameAndValue[0], nameAndValue[1] ) );
                 }
                 else

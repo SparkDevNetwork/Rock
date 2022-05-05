@@ -4362,9 +4362,7 @@ namespace RockWeb.Blocks.Event
                         pnlRegistrantFields.Visible = true;
                         pnlDigitalSignature.Visible = false;
                         lbRegistrantNext.Visible = true;
-
                         ddlFamilyMembers.Items.Clear();
-                        var preselectFamilyMember = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes;
 
                         if ( CurrentFormIndex == 0 && RegistrationState != null && RegistrationTemplate.ShowCurrentFamilyMembers )
                         {
@@ -4397,7 +4395,7 @@ namespace RockWeb.Blocks.Event
                                     foreach ( var familyMember in familyMembers )
                                     {
                                         ListItem listItem = new ListItem( familyMember.FullName, familyMember.Id.ToString() );
-                                        listItem.Selected = familyMember.Id == registrant.PersonId && preselectFamilyMember;
+                                        listItem.Selected = familyMember.Id == registrant.PersonId;
                                         ddlFamilyMembers.Items.Add( listItem );
                                     }
                                 }
@@ -4900,6 +4898,10 @@ namespace RockWeb.Blocks.Event
                                 "None of the above" );
                             rblFamilyOptions.DataSource = familyOptions;
                             rblFamilyOptions.DataBind();
+
+                            // If this is the first registrant and there is a logged in person then select that as the default.
+                            rblFamilyOptions.SelectedIndex = CurrentRegistrantIndex == 0 && CurrentPerson != null ? 0 : -1;
+
                             pnlFamilyOptions.Visible = true;
                         }
                         else
