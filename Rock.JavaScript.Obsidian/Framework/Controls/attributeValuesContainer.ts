@@ -102,7 +102,7 @@ export default defineComponent({
                     const categories = [...attr.categories]; // copy, so sort doesn't cause updates
 
                     categories.sort((a, b) => a.order - b.order).forEach((cat, i) => {
-                        const newCat: CategorizedAttributes = {attributes: [], ...cat}; // copy and convert to CategorizedAttributes
+                        const newCat: CategorizedAttributes = { attributes: [], ...cat }; // copy and convert to CategorizedAttributes
 
                         // Make sure we only have 1 copy of any category in the list
                         if (!categoryList.some(oldCat => oldCat.guid == newCat.guid)) {
@@ -182,6 +182,8 @@ export default defineComponent({
     },
 
     template: `
+<Suspense>
+    <template #default>
         <TabbedContent v-if="actuallyDisplayAsTabs" :tabList="attributeCategories">
             <template #tab="{item}">
                 {{ item.name }}
@@ -219,5 +221,10 @@ export default defineComponent({
                 </div>
             </div>
         </template>
+    </template>
+    <template #fallback>
+        <LoadingIndicator />
+    </template>
+</Suspense>
 `
 });
