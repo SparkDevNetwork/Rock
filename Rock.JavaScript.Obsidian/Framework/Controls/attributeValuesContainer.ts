@@ -171,7 +171,6 @@ export default defineComponent({
 
         return {
             onUpdateValue,
-            log: (...a: any[]) => console.log(...a),
             validAttributes,
             values,
             attributeCategories,
