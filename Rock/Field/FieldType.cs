@@ -507,17 +507,17 @@ namespace Rock.Field
                 if ( !compareControl.Visible )
                 {
                     col1Class = string.Empty;
-                    col2Class = "col-md-12";
+                    col2Class = "col-xs-12 col-md-12";
                 }
                 else if ( compareControl is Label )
                 {
-                    col1Class = "col-md-2";
-                    col2Class = "col-md-10";
+                    col1Class = "col-xs-12 col-md-2";
+                    col2Class = "col-xs-12 col-md-10";
                 }
                 else
                 {
-                    col1Class = "col-md-4";
-                    col2Class = "col-md-8";
+                    col1Class = "col-xs-12 col-md-4";
+                    col2Class = "col-xs-12 col-md-8";
                 }
 
                 col1.AddCssClass( col1Class );

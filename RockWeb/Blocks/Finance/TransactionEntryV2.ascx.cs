@@ -2774,9 +2774,17 @@ mission. We are so grateful for your commitment.</p>
             {
                 FinancialPersonSavedAccount financialPersonSavedAccount = new FinancialPersonSavedAccountService( rockContext ).Get( savedAccountId.Value );
 
-                if ( financialPersonSavedAccount != null && financialPersonSavedAccount.ReferenceNumber.IsNotNullOrWhiteSpace() )
+                if ( financialPersonSavedAccount != null )
                 {
-                    paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.ReferenceNumber;
+                    if ( financialPersonSavedAccount.ReferenceNumber.IsNotNullOrWhiteSpace() )
+                    {
+                        paymentInfo.ReferenceNumber = financialPersonSavedAccount.ReferenceNumber;
+                    }
+
+                    if ( financialPersonSavedAccount.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+                    {
+                        paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.GatewayPersonIdentifier;
+                    }
                 }
             }
 

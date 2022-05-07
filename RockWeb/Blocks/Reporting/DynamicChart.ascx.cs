@@ -104,7 +104,8 @@ Example:
 
             var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
-            pageReference.QueryString.Add( this.Request.QueryString );
+            pageReference.QueryString.Add( this.CurrentPageReference.QueryString ); // Add paramters from the url querystring parameters
+            pageReference.QueryString.Add( this.CurrentPageReference.Parameters.ToNameValueCollection() ); // Add paramters from the routes parameters
             pageReference.QueryString.Add( "GetChartData", "true" );
             pageReference.QueryString.Add( "GetChartDataBlockId", this.BlockId.ToString() );
             pageReference.QueryString.Add( "TimeStamp", RockDateTime.Now.ToJavascriptMilliseconds().ToString() );
