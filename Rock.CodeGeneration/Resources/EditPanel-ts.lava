@@ -19,7 +19,7 @@ import { defineComponent, PropType, ref, watch } from "vue";{% if UseAttributeVa
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}{% if UseIsActive == true %}
 import CheckBox from "@Obsidian/Controls/checkBox";{% endif %}{% if UseDescription == true or UseName == true %}
 import TextBox from "@Obsidian/Controls/textBox";{% endif %}
-import { updateRefValue } from "@Obsidian/Utility/util";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
 import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
@@ -51,7 +51,7 @@ export default defineComponent({
     setup(props, { emit }) {
         // #region Values
 {% if UseAttributeValues == true %}
-        const attributes = ref(props.modelValue.attributes ?? []);
+        const attributes = ref(props.modelValue.attributes ?? {});
         const attributeValues = ref(props.modelValue.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
         const description = ref(props.modelValue.description ?? "");{% endif %}{% if UseIsActive == true %}
         const isActive = ref(props.modelValue.isActive ?? false);{% endif %}{% if UseName == true %}

@@ -128,7 +128,11 @@ export default defineComponent({
         });
 
         const actuallyDisplayAsTabs = computed<boolean>(() => {
-            const hasCategories = attributeCategories.value.length > 1 || attributeCategories.value[0].guid !== "0";
+            if (attributeCategories.value.length === 0) {
+                return false;
+            }
+
+            const hasCategories = attributeCategories.value.length > 1 || attributeCategories.value[0].guid !== emptyGuid;
 
             return hasCategories && props.displayAsTabs && !props.isEditMode;
         });

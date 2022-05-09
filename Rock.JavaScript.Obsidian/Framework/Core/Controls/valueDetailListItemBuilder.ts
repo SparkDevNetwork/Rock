@@ -53,11 +53,11 @@ export class ValueDetailListItemBuilder {
     }
 
     /**
-     * Gets the current values to be displayed.
+     * Builds the values to be displayed.
      *
      * @returns An array of ValueDetailListItem objects containing the items to display.
      */
-    public getValues(): ValueDetailListItem[] {
+    public build(): ValueDetailListItem[] {
         return [...this.values.map(v => ({ ...v }))];
     }
 }

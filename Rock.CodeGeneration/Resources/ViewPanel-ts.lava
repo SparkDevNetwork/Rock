@@ -48,7 +48,7 @@ export default defineComponent({
     setup(props) {
         // #region Values
 {% if UseAttributeValues == true %}
-        const attributes = ref(props.modelValue?.attributes ?? []);
+        const attributes = ref(props.modelValue?.attributes ?? {});
         const attributeValues = ref(props.modelValue?.attributeValues ?? {});{% endif %}
 
         // #endregion
@@ -66,7 +66,7 @@ export default defineComponent({
             }{% if UseDescription == true %}
 
             if (props.modelValue.description) {
-                props.addTextValue("Description", props.modelValue.description);
+                valueBuilder.addTextValue("Description", props.modelValue.description);
             }{% endif %}
 
             return valueBuilder.build();

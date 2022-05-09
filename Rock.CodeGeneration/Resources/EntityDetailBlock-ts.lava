@@ -65,8 +65,8 @@ export default defineComponent({
             return {{ EntityName | CamelCase }}ViewBag.value?.name ?? "";
         });
 
-        const entityKey = computed((): string => {
-            return {{ EntityName | CamelCase }} Viewbag.value?.idKey ?? null;
+        const entityKey = computed((): string | null => {
+            return {{ EntityName | CamelCase }}ViewBag.value?.idKey ?? null;
         });
 
         /**
@@ -253,22 +253,22 @@ export default defineComponent({
     :entityTypeGuid="entityTypeGuid"
     entityTypeName="{{ EntityName }}"
     :isAuditHidden="false"
-    :isBadgesVisible="false"
+    :isBadgesVisible="true"
     :isDeleteVisible="isEditable"
     :isEditVisible="isEditable"
-    :isFollowVisible="false"
+    :isFollowVisible="true"
     :isSecurityHidden="false"
     @cancelEdit="onCancelEdit"
     @delete="onDelete"
     @edit="onEdit"
     @save="onSave">
-    <slot #view>
+    <template #view>
         <ViewPanel :modelValue="{{ EntityName | CamelCase }}ViewBag" :options="options" />
-    </slot>
+    </template>
 
-    <slot #edit>
+    <template #edit>
         <EditPanel v-model="{{ EntityName | CamelCase }}EditBag" :options="options" />
-    </slot>
+    </template>
 </DetailBlock>
 `
 });

@@ -65,21 +65,21 @@ export default defineComponent({
             const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return valueBuilder.getValues();
+                return valueBuilder.build();
             }
 
             if (props.modelValue.description) {
                 valueBuilder.addTextValue("Description", props.modelValue.description);
             }
 
-            return valueBuilder.getValues();
+            return valueBuilder.build();
         });
 
         const leftSideValues = computed((): ValueDetailListItem[] => {
             const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return valueBuilder.getValues();
+                return valueBuilder.build();
             }
 
             if (props.modelValue.campusStatusValue?.text) {
@@ -114,14 +114,14 @@ export default defineComponent({
                 valueBuilder.addTextValue("Campus Schedules", props.modelValue.campusSchedules.map(s => s.schedule?.text ?? "").join(", "));
             }
 
-            return valueBuilder.getValues();
+            return valueBuilder.build();
         });
 
         const rightSideValues = computed((): ValueDetailListItem[] => {
             const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return valueBuilder.getValues();
+                return valueBuilder.build();
             }
 
             if (props.modelValue.campusTypeValue?.text) {
@@ -140,7 +140,7 @@ export default defineComponent({
                 valueBuilder.addTextValue("Location", props.modelValue.location.text);
             }
 
-            return valueBuilder.getValues();
+            return valueBuilder.build();
         });
 
         // #endregion

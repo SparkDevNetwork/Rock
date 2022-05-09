@@ -22,6 +22,7 @@ import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
 import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RockForm from "@Obsidian/Controls/rockForm";
+import RockSuspense from "@Obsidian/Controls/rockSuspense";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { confirmDelete } from "@Obsidian/Utility/dialogs";
 
@@ -37,7 +38,8 @@ export default defineComponent({
     components: {
         Panel,
         RockButton,
-        RockForm
+        RockForm,
+        RockSuspense
     },
 
     props: {
@@ -156,8 +158,10 @@ export default defineComponent({
 
         const internalMode = useVModelPassthrough(props, "mode", emit);
         const isFormSubmitting = ref(false);
+        const isEditModeLoading = ref(false);
 
-        let formSubmissionSource: PromiseCompletionSource | null;
+        let formSubmissionSource: PromiseCompletionSource | null = null;
+        let editModeReadyCompletionSource: PromiseCompletionSource | null = null;
 
         // #endregion
 
@@ -222,8 +226,16 @@ export default defineComponent({
             return actions;
         });
 
+        const isViewMode = computed((): boolean => {
+            return internalMode.value === DetailPanelMode.View;
+        });
+
         const isEditMode = computed((): boolean => {
             return internalMode.value === DetailPanelMode.Edit || internalMode.value === DetailPanelMode.Add;
+        });
+
+        const isEditModeVisible = computed((): boolean => {
+            return isEditMode.value || isEditModeLoading.value;
         });
 
         const hasLabels = computed((): boolean => {
@@ -298,7 +310,19 @@ export default defineComponent({
                 }
             }
 
+            isEditModeLoading.value = true;
+
+            editModeReadyCompletionSource = new PromiseCompletionSource();
+            await editModeReadyCompletionSource.promise;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
             internalMode.value = props.entityKey ? DetailPanelMode.Edit : DetailPanelMode.Add;
+            isEditModeLoading.value = false;
+            editModeReadyCompletionSource = null;
+        };
+
+        const onEditSuspenseReady = (): void => {
+            editModeReadyCompletionSource?.resolve();
         };
 
         const onSaveClick = async (): Promise<void> => {
@@ -368,11 +392,14 @@ export default defineComponent({
             getClassForIconAction,
             getClassForLabelAction,
             isEditMode,
+            isEditModeVisible,
             isFormSubmitting,
+            isViewMode,
             onActionClick,
             onDeleteClick,
             onEditCancelClick,
             onEditClick,
+            onEditSuspenseReady,
             onSaveClick,
             onSaveSubmit
         };
@@ -393,10 +420,10 @@ export default defineComponent({
 
     <template v-if="!isEditMode && hasLabels" #subheaderLeft>
         <div class="label-group">
-        <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
-            <template v-if="action.title">{{ action.title }}</template>
-            <i v-else :class="action.iconCssClass"></i>
-        </span>
+            <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
+                <template v-if="action.title">{{ action.title }}</template>
+                <i v-else :class="action.iconCssClass"></i>
+            </span>
         </div>
     </template>
 
@@ -438,9 +465,13 @@ export default defineComponent({
             }
         </v-style>
 
-        <RockForm @submit="onSaveSubmit" v-model:submit="isFormSubmitting">
-            <slot />
+        <RockForm v-if="isEditModeVisible" v-show="isEditMode" @submit="onSaveSubmit" v-model:submit="isFormSubmitting">
+            <RockSuspense @ready="onEditSuspenseReady">
+                <slot name="edit" />
+            </RockSuspense>
         </RockForm>
+
+        <slot v-if="isViewMode" name="view" />
     </template>
 </Panel>
 `
