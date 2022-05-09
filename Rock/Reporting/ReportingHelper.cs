@@ -242,6 +242,10 @@ namespace Rock.Reporting
                     boundField.SortExpression = boundField.DataField;
                     reportFieldSortExpressions.AddOrReplace( reportField.Guid, boundField.SortExpression );
                     boundField.Visible = reportField.ShowInGrid;
+                    if ( entityField.FieldType.Guid.Equals( SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
+                    {
+                        boundField.DataFormatString = "{0:g}";
+                    }
                     gReport.Columns.Add( boundField );
 
                     if ( isMergeField )
