@@ -307,6 +307,7 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Utility\AuditDetailBag.cs" />
+    <Compile Include="Utility\PublicAttributeCategoryBag.cs" />
     <Compile Include="Utility\PublicComparisonValueBag.cs" />
     <Compile Include="Utility\PublicAttributeBag.cs" />
     <Compile Include="Controls\BirthdayPickerBag.cs" />

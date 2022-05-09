@@ -583,6 +583,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Utility\debugTiming.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\listItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicAttributeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\publicAttributeCategoryBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicComparisonValueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicEditableAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\treeItemBag.d.ts" />
