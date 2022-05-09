@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -84,6 +85,7 @@ namespace Rock.Model
         /// StartDate. More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] EngagementMap { get; set; }
 
         /// <summary>
@@ -91,6 +93,7 @@ namespace Rock.Model
         /// of the StreakType's StartDate. More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] ExclusionMap { get; set; }
 
         #endregion Entity Properties

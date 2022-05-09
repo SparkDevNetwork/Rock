@@ -84,7 +84,6 @@ namespace Rock.Model
                 Id = model.Id,
                 IdKey = model.IdKey,
                 Guid = model.Guid,
-                Content = model.Content,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,

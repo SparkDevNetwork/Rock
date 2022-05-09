@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -54,6 +55,7 @@ namespace Rock.Model
         /// More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] ExclusionMap { get; set; }
 
         #endregion Entity Properties

@@ -993,7 +993,7 @@ namespace Rock.Web.Cache
         public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeCache model, AttributeBag viewModel, Person currentPerson = null, bool loadAttributes = true )
         {
             viewModel.FieldTypeGuid = FieldTypeCache.Get( model.FieldTypeId ).Guid;
-            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToArray();
+            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToList();
             viewModel.QualifierValues = model.QualifierValues.ToDictionary(
                 kvp => kvp.Key,
                 kvp => kvp.Value.Value );

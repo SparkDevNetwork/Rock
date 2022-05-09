@@ -25,7 +25,7 @@ import TextBox from "@Obsidian/Controls/textBox";
 import { getRegistrantBasicInfo,  } from "./utils.partial";
 import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel, RegistrantBasicInfo, RegistrationEntryState, RegistrationEntryBlockArgs } from "./types";
 import { useStore } from "@Obsidian/PageState";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 const store = useStore();
@@ -58,7 +58,7 @@ export default defineComponent({
         },
 
         /** The person that is currently authenticated */
-        currentPerson (): Person | null {
+        currentPerson (): PersonBag | null {
             return store.state.currentPerson;
         },
 

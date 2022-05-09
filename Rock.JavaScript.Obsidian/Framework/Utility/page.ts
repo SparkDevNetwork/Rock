@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { IEntity } from "@Obsidian/ViewModels/entity";
 
 export type PageConfig = {
@@ -24,7 +24,7 @@ export type PageConfig = {
     pageId: number;
     pageGuid: Guid;
     pageParameters: Record<string, unknown>;
-    currentPerson: Person | null;
+    currentPerson: PersonBag | null;
     contextEntities: Record<string, IEntity>;
     loginUrlWithReturnUrl: string;
 };

@@ -90,7 +90,6 @@ namespace Rock.Model
                 IsActive = model.IsActive,
                 Name = model.Name,
                 OccurrenceFrequency = ( int ) model.OccurrenceFrequency,
-                OccurrenceMap = model.OccurrenceMap,
                 RequiresEnrollment = model.RequiresEnrollment,
                 StartDate = model.StartDate,
                 StructureEntityId = model.StructureEntityId,

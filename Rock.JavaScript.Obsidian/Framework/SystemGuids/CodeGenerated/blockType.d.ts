@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Blocks.  NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const enum BlockType {
     /** Gets the Badges display block guid */
     Badges = "FC8AF928-C4AF-40C7-A667-4B24390F03A1",
@@ -143,4 +144,3 @@ export const enum BlockType {
     /** The contribution statement lava (Legacy) */
     ContributionStatementLavaLegacy = "AF986B72-ADD9-4E05-971F-1DE4EBED8667",
 }
-

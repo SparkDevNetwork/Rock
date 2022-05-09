@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Static Guids used by the Rock application */
 export const enum DefinedValue {
     /** The block template for mobile answer to prayer block. */
     BlockTemplateMobileAnswerToPrayer = "D13256E3-D9ED-45C2-8EF7-C4AABCF4B2B7",
@@ -150,8 +151,10 @@ export const enum DefinedValue {
     TransactionTypeContribution = "2D607262-52D6-4724-910D-5C6E8FB89ACC",
     /** An Event Registration Transaction */
     TransactionTypeEventRegistration = "33CB96DD-8752-4BEE-A142-88DB7DE538F0",
-    /** A Transaction Type of Receipt
-NOTE: This is not a core transaction type. It'll get created if needed when importing transactions from Slingshot */
+    /**
+     * A Transaction Type of Receipt
+     * NOTE: This is not a core transaction type. It'll get created if needed when importing transactions from Slingshot
+     */
     TransactionTypeReceipt = "F57AAF36-F208-4A85-A078-E2B1F91798EB",
     /** The financial source of bank check */
     FinancialSourceTypeBankCheck = "61E46A46-7399-4817-A6EC-3D8495E2316E",
@@ -173,8 +176,10 @@ NOTE: This is not a core transaction type. It'll get created if needed when impo
     GroupLocationTypePrevious = "853D98F1-6E08-4321-861B-520B4106CFE0",
     /** Meeting Location Type */
     GroupLocationTypeMeetingLocation = "96D540F5-071D-4BBD-9906-28F0A64D39C4",
-    /** Some other type of Group Location
-NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slingshot. */
+    /**
+     * Some other type of Group Location
+     * NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slingshot.
+     */
     GroupLocationTypeOther = "D49965C7-5254-4D2D-BC77-F390375F0C44",
     /** Group Type Purpose of Check-in Template (Weekly Service Check-in, etc) */
     GrouptypePurposeCheckinTemplate = "4A406CB0-495B-4795-B788-52BDFDE00B01",
@@ -471,4 +476,3 @@ NOTE: This is not a core group location type. It'll get created if needed when i
     /** Translation Languages - Spanish */
     LanguageSpanish = "C93CB430-8554-E599-4F49-D7F3CED2B2C7",
 }
-

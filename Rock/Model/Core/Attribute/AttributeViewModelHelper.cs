@@ -38,7 +38,7 @@ namespace Rock.Model
             var attributeCache = AttributeCache.Get( model.Id );
 
             viewModel.FieldTypeGuid = FieldTypeCache.Get( attributeCache.FieldTypeId ).Guid;
-            viewModel.CategoryGuids = attributeCache.Categories.Select( c => c.Guid ).ToArray();
+            viewModel.CategoryGuids = attributeCache.Categories.Select( c => c.Guid ).ToList();
             viewModel.QualifierValues = attributeCache.QualifierValues
                 .ToDictionary(
                 kvp => kvp.Key,

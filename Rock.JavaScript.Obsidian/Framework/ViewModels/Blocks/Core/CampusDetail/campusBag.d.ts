@@ -61,6 +61,9 @@ export type CampusBag = {
     /** Gets or sets the Guid. */
     guid?: Guid | null;
 
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 

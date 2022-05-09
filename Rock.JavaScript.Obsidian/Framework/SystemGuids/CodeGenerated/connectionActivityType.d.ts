@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System file types. */
 export const enum ConnectionActivityType {
     /** The assigned activity type */
     Assigned = "DB4C6D25-211C-4995-B194-9FEF7551F26B",
@@ -33,4 +34,3 @@ export const enum ConnectionActivityType {
     /** The Bulk Update activity type */
     BulkUpdate = "10104830-5AFC-491F-9885-747521A2AA75",
 }
-

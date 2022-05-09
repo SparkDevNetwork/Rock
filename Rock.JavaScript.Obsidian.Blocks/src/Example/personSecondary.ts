@@ -21,7 +21,7 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { defineComponent } from "vue";
 import { useStore } from "@Obsidian/PageState";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 
 const store = useStore();
 
@@ -53,7 +53,7 @@ export default defineComponent({
         }
     },
     computed: {
-        currentPerson(): Person | null {
+        currentPerson(): PersonBag | null {
             return store.state.currentPerson;
         },
         currentPersonName(): string {

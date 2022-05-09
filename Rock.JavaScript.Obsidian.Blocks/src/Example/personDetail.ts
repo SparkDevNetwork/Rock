@@ -32,7 +32,7 @@ import DatePicker from "@Obsidian/Controls/datePicker";
 import AddressControl, { getDefaultAddressControlModel } from "@Obsidian/Controls/addressControl";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 
 const store = useStore();
 
@@ -60,8 +60,8 @@ export default defineComponent({
 
     data() {
         return {
-            person: null as Person | null,
-            personForEditing: null as Person | null,
+            person: null as PersonBag | null,
+            personForEditing: null as PersonBag | null,
             isEditMode: false,
             messageToPublish: "",
             receivedMessage: "",
@@ -150,12 +150,12 @@ export default defineComponent({
                 "Edit Yourself";
         },
 
-        currentPerson(): Person | null {
+        currentPerson(): PersonBag | null {
             return store.state.currentPerson;
         },
 
         currentPersonGuid(): Guid | null {
-            return this.currentPerson ? this.currentPerson.guid : null;
+            return this.currentPerson?.guid ?? null;
         }
     },
     watch: {
@@ -175,7 +175,7 @@ export default defineComponent({
 
                 // Sync the person with the guid
                 this.isLoading = true;
-                this.person = (await this.invokeBlockAction<Person>("GetPersonViewModel")).data;
+                this.person = (await this.invokeBlockAction<PersonBag>("GetPersonViewModel")).data;
                 this.isLoading = false;
             }
         }

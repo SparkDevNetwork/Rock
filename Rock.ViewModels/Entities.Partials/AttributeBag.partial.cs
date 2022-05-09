@@ -31,7 +31,7 @@ namespace Rock.ViewModels.Entities
         /// <value>
         /// The category Guids.
         /// </value>
-        public Guid[] CategoryGuids { get; set; }
+        public List<Guid> CategoryGuids { get; set; }
 
         /// <summary>
         /// Gets or sets the field type unique identifier.

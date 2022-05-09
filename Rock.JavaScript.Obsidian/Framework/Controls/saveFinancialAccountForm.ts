@@ -24,7 +24,7 @@ import TextBox from "./textBox";
 import { BlockHttp } from "@Obsidian/Utility/block";
 import RockForm from "./rockForm";
 import { useStore } from "@Obsidian/PageState";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 
 const store = useStore();
 
@@ -91,7 +91,7 @@ const SaveFinancialAccountForm = defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson (): Person | null {
+        currentPerson (): PersonBag | null {
             return store.state.currentPerson;
         },
 

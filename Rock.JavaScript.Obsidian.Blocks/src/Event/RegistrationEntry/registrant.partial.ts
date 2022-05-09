@@ -32,7 +32,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import FeeField from "./feeField.partial";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
@@ -148,7 +148,7 @@ export default defineComponent({
                     slotName: f.guid
                 }));
         },
-        currentPerson (): Person | null {
+        currentPerson (): PersonBag | null {
             return store.state.currentPerson;
         },
         pluralFeeTerm (): string {

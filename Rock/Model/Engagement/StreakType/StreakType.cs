@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -115,6 +116,7 @@ namespace Rock.Model
         /// representative of the StartDate. More significant bits (going left) are more recent dates.
         /// </summary>
         [DataMember]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] OccurrenceMap { get; set; }
 
         /// <summary>

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Email Templates */
 export const enum EntityType {
     /** The achievement attempt */
     AchievementAttempt = "5C144B51-3D2E-4BC2-B6C7-7E4CB890E15F",
@@ -279,4 +280,3 @@ export const enum EntityType {
     /** The EntityType Guid for   */
     InteractionSourcedAchievementComponent = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67",
 }
-

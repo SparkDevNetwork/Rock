@@ -19,6 +19,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -47,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public byte[] Content { get; set; }
 
         #endregion

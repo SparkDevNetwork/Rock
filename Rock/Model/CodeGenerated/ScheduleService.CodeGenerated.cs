@@ -140,7 +140,6 @@ namespace Rock.Model
                 Name = model.Name,
                 Order = model.Order,
                 WeeklyDayOfWeek = ( int? ) model.WeeklyDayOfWeek,
-                WeeklyTimeOfDay = model.WeeklyTimeOfDay,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,

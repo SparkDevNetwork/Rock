@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -114,6 +115,7 @@ namespace Rock.Model
         /// The weekly time of day.
         /// </value>
         [DataMember]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public TimeSpan? WeeklyTimeOfDay { get; set; }
 
         /// <summary>
