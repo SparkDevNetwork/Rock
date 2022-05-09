@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -168,17 +169,40 @@ namespace Rock.CodeGeneration.Pages
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private async void Preview_Click( object sender, RoutedEventArgs e )
         {
-            var files = new List<GeneratedFile>();
+            var button = sender as Button;
 
-            // Generate the file for each selected enum type.
-            var generator = new TypeScriptViewModelGenerator();
-            foreach ( var type in GetSelectedTypes() )
+            button.IsEnabled = false;
+
+            try
             {
-                var source = generator.GenerateViewModelForEnum( type );
-                files.Add( new GeneratedFile( GetFileNameForType( type ), GetPathForType( type ), source ) );
-            }
+                var selectedTypes = GetSelectedTypes();
+                var files = new List<GeneratedFile>();
 
-            await this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );
+                PreviewProgressBar.Maximum = selectedTypes.Count;
+                PreviewProgressBar.Value = 0;
+                PreviewProgressBar.IsIndeterminate = false;
+                PreviewProgressBar.Visibility = Visibility.Visible;
+
+                await Task.Run( () =>
+                {
+                    // Generate the file for each selected enum type.
+                    var generator = new TypeScriptViewModelGenerator();
+                    foreach ( var type in GetSelectedTypes() )
+                    {
+                        var source = generator.GenerateViewModelForEnum( type );
+                        files.Add( new GeneratedFile( GetFileNameForType( type ), GetPathForType( type ), source ) );
+
+                        Dispatcher.Invoke( () => PreviewProgressBar.Value += 1 );
+                    }
+                } );
+
+                await this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );
+            }
+            finally
+            {
+                PreviewProgressBar.Visibility = Visibility.Collapsed;
+                button.IsEnabled = true;
+            }
         }
 
         #endregion

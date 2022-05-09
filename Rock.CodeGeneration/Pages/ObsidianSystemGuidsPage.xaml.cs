@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -129,22 +130,47 @@ namespace Rock.CodeGeneration.Pages
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private async void Preview_Click( object sender, RoutedEventArgs e )
         {
-            var files = new List<GeneratedFile>();
+            var button = sender as Button;
 
-            // Generate each file that will provide SystemGuid
-            // information to Obsidian.
-            var generator = new TypeScriptViewModelGenerator();
-            foreach ( var type in GetSelectedTypes() )
+            button.IsEnabled = false;
+
+            try
             {
-                var source = generator.GenerateSystemGuidForType( type );
-                files.Add( new GeneratedFile( GetFileNameForType( type ), GetPath(), source ) );
+                var selectedTypes = GetSelectedTypes();
+                var files = new List<GeneratedFile>();
+
+                PreviewProgressBar.Maximum = selectedTypes.Count + 1;
+                PreviewProgressBar.Value = 0;
+                PreviewProgressBar.IsIndeterminate = false;
+                PreviewProgressBar.Visibility = Visibility.Visible;
+
+                await Task.Run( () =>
+                {
+                    // Generate each file that will provide SystemGuid
+                    // information to Obsidian.
+                    var generator = new TypeScriptViewModelGenerator();
+                    foreach ( var type in GetSelectedTypes() )
+                    {
+                        var source = generator.GenerateSystemGuidForType( type );
+                        files.Add( new GeneratedFile( GetFileNameForType( type ), GetPath(), source ) );
+
+                        Dispatcher.Invoke( () => PreviewProgressBar.Value += 1 );
+                    }
+
+                    // Generate an index file that references all the types.
+                    var indexSource = generator.GenerateSystemGuidIndexForTypes( GetSystemGuidTypes() );
+                    files.Add( new GeneratedFile( "generated-index.d.ts", GetPath(), indexSource ) );
+
+                    Dispatcher.Invoke( () => PreviewProgressBar.Value += 1 );
+                } );
+
+                await this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );
             }
-
-            // Generate an index file that references all the types.
-            var indexSource = generator.GenerateSystemGuidIndexForTypes( GetSystemGuidTypes() );
-            files.Add( new GeneratedFile( "generated-index.d.ts", GetPath(), indexSource ) );
-
-            await this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );
+            finally
+            {
+                PreviewProgressBar.Visibility = Visibility.Collapsed;
+                button.IsEnabled = true;
+            }
         }
 
         #endregion

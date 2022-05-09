@@ -42,19 +42,9 @@
                 </StackPanel>
             </Button>
 
-            <Button Name="ObsidianDetailBlock"
-                Grid.Row="0"
-                Grid.Column="1"
-                Click="ObsidianDetailBlock_Click">
-                <StackPanel>
-                    <fa:IconBlock Icon="Th" />
-                    <TextBlock Text="Obsidian Detail Block" />
-                </StackPanel>
-            </Button>
-
             <Button Name="ObsidianViewModelsButton"
                 Grid.Row="0"
-                Grid.Column="2"
+                Grid.Column="1"
                 Click="ObsidianViewModelsButton_Click">
                 <StackPanel>
                     <fa:IconBlock Icon="Js" />
@@ -63,8 +53,8 @@
             </Button>
 
             <Button Name="ObsidianEnumsButton"
-                Grid.Row="1"
-                Grid.Column="0"
+                Grid.Row="0"
+                Grid.Column="2"
                 Click="ObsidianEnumsButton_Click">
                 <StackPanel>
                     <fa:IconBlock Icon="ListOl" />
@@ -74,11 +64,21 @@
 
             <Button Name="ObsidianSystemGuidsButton"
                 Grid.Row="1"
-                Grid.Column="1"
+                Grid.Column="0"
                 Click="ObsidianSystemGuidsButton_Click">
                 <StackPanel>
                     <fa:IconBlock Icon="Fingerprint" />
                     <TextBlock Text="Obsidian System Guids" />
+                </StackPanel>
+            </Button>
+
+            <Button Name="ObsidianDetailBlock"
+                Grid.Row="1"
+                Grid.Column="1"
+                Click="ObsidianDetailBlock_Click">
+                <StackPanel>
+                    <fa:IconBlock Icon="Th" />
+                    <TextBlock Text="Obsidian Detail Block" />
                 </StackPanel>
             </Button>
         </Grid>

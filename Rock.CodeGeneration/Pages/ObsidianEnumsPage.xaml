@@ -121,6 +121,12 @@
             <StackPanel Orientation="Horizontal">
                 <Button Content="Preview"
                         Click="Preview_Click"/>
+
+                <ProgressBar x:Name="PreviewProgressBar"
+                             Margin="8,0,0,0"
+                             Width="200"
+                             IsIndeterminate="True"
+                             Visibility="Collapsed" />
             </StackPanel>
         </Border>
     </Grid>

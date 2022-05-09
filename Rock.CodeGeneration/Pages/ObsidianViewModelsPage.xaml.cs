@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -249,22 +250,45 @@ namespace Rock.CodeGeneration.Pages
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private async void Preview_Click( object sender, RoutedEventArgs e )
         {
-            var files = new List<GeneratedFile>();
+            var button = sender as Button;
 
-            // Generate each file that was selected to be exported.
-            var generator = new TypeScriptViewModelGenerator();
-            foreach ( var type in GetSelectedTypes() )
+            button.IsEnabled = false;
+
+            try
             {
-                var source = generator.GenerateViewModelForType( type );
-                files.Add( new GeneratedFile( GetFileNameForType( type ), GetPathForType( type ), source ) );
+                var selectedTypes = GetSelectedTypes();
+                var files = new List<GeneratedFile>();
+
+                PreviewProgressBar.Maximum = selectedTypes.Count;
+                PreviewProgressBar.Value = 0;
+                PreviewProgressBar.IsIndeterminate = false;
+                PreviewProgressBar.Visibility = Visibility.Visible;
+
+                await Task.Run( () =>
+                {
+                    // Generate each file that was selected to be exported.
+                    var generator = new TypeScriptViewModelGenerator();
+                    foreach ( var type in GetSelectedTypes() )
+                    {
+                        var source = generator.GenerateViewModelForType( type );
+                        files.Add( new GeneratedFile( GetFileNameForType( type ), GetPathForType( type ), source ) );
+
+                        Dispatcher.Invoke( () => PreviewProgressBar.Value += 1 );
+                    }
+                } );
+
+                var previewPage = new GeneratedFilePreviewPage( files )
+                {
+                    PostSaveAction = ProcessPostSaveFiles
+                };
+
+                await this.Navigation().PushPageAsync( previewPage );
             }
-
-            var previewPage = new GeneratedFilePreviewPage( files )
+            finally
             {
-                PostSaveAction = ProcessPostSaveFiles
-            };
-
-            await this.Navigation().PushPageAsync( previewPage );
+                PreviewProgressBar.Visibility = Visibility.Collapsed;
+                button.IsEnabled = true;
+            }
         }
 
         #endregion

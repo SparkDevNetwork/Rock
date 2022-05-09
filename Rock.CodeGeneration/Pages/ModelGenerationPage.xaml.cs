@@ -24,11 +24,6 @@ using Rock;
 using Rock.Data;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows;
-using System.Threading.Tasks;
-using System.ComponentModel;
 
 namespace Rock.CodeGeneration.Pages
 {
