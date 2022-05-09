@@ -21,20 +21,9 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
-/** Provides the details about a category that an attribute belongs to. */
-export type PublicAttributeCategoryBag = {
-    /** Gets or sets the unique identifier of the category. */
-    guid?: Guid | null;
-
-    /** Gets or sets the name of the category. */
-    name?: string | null;
-
-    /**
-     * Gets or sets the order of the category. This provides ordering
-     * information when multiple attributes need to be grouped by
-     * category and then order the categories for display.
-     */
-    order: number;
+/**
+ * The options that can be passed to the GetAvailableFieldTypes API action
+ * for the FieldTypeEditor control.
+ */
+export type FieldTypeEditorGetAvailableFieldTypesOptionsBag = {
 };

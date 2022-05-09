@@ -347,6 +347,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\addressControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\birthdayPickerBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\electronicSignatureValue.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorGetAvailableFieldTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\gatewayControlBag.d.ts" />
