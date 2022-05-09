@@ -5,18 +5,31 @@ using System.Reflection;
 
 using LoxSmoke.DocXml;
 
-using Rock;
-
 namespace Rock.CodeGeneration.Utility
 {
+    /// <summary>
+    /// Reads from multiple XML documentation documents.
+    /// </summary>
     public class MultiDocReader
     {
+        #region Fields
+
+        /// <summary>
+        /// The XML document readers to read from.
+        /// </summary>
         private readonly List<DocXmlReader> _xmlDocReaders = new List<DocXmlReader>();
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MultiDocReader"/> class.
+        /// </summary>
         public MultiDocReader()
         {
             // Read the XML documentation for the Rock assembly.
-            var assemblyFileName = new FileInfo( new Uri( typeof( Rock.Data.IEntity ).Assembly.CodeBase ).LocalPath ).FullName;
+            var assemblyFileName = new FileInfo( new Uri( typeof( Data.IEntity ).Assembly.CodeBase ).LocalPath ).FullName;
 
             try
             {
@@ -42,7 +55,7 @@ namespace Rock.CodeGeneration.Utility
             }
 
             // Read the XML documentation for the Rock.Enums assembly.
-            assemblyFileName = new FileInfo( new Uri( typeof( Rock.Enums.Reporting.FieldFilterSourceType ).Assembly.CodeBase ).LocalPath ).FullName;
+            assemblyFileName = new FileInfo( new Uri( typeof( Enums.Reporting.FieldFilterSourceType ).Assembly.CodeBase ).LocalPath ).FullName;
 
             try
             {
@@ -55,6 +68,16 @@ namespace Rock.CodeGeneration.Utility
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the comments from the first reader that finds it.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result expected.</typeparam>
+        /// <param name="selector">The selector to get the data from the reader.</param>
+        /// <returns>A <typeparamref name="TResult"/> that represents the comment; or the default value if it wasn't found.</returns>
         private TResult GetCommentsFromReaders<TResult>( Func<DocXmlReader, TResult> selector )
             where TResult : CommonComments
         {
@@ -71,6 +94,11 @@ namespace Rock.CodeGeneration.Utility
             return default;
         }
 
+        /// <summary>
+        /// Gets the plain text string from the first reader that finds it.
+        /// </summary>
+        /// <param name="selector">The selector to get the data from the reader.</param>
+        /// <returns>A string that contains the comment; or <c>null</c> if it wasn't found.</returns>
         private string GetTextFromReaders( Func<DocXmlReader, string> selector )
         {
             foreach ( var reader in _xmlDocReaders )
@@ -86,14 +114,26 @@ namespace Rock.CodeGeneration.Utility
             return default;
         }
 
+        /// <summary>
+        /// Gets the comment associated with the type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>A <see cref="TypeComments"/> instance that represents the XML documentation; or <c>null</c> if it wasn't found.</returns>
         public TypeComments GetTypeComments( Type type )
         {
             return GetCommentsFromReaders( reader => reader.GetTypeComments( type ) );
         }
 
+        /// <summary>
+        /// Gets the comment associated with the member.
+        /// </summary>
+        /// <param name="memberInfo">The member information.</param>
+        /// <returns>A string that represents the text from the XML documentation; or <c>null</c> if it wasn't found.</returns>
         public string GetMemberComment( MemberInfo memberInfo )
         {
             return GetTextFromReaders( reader => reader.GetMemberComment( memberInfo ) );
         }
+
+        #endregion
     }
 }

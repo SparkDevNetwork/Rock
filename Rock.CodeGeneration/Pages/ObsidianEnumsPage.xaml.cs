@@ -18,32 +18,40 @@ namespace Rock.CodeGeneration.Pages
     /// </summary>
     public partial class ObsidianEnumsPage : Page
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ObsidianEnumsPage"/> class.
+        /// </summary>
         public ObsidianEnumsPage()
         {
             InitializeComponent();
 
-            RockEnumsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Rock.Model.Gender ).Assembly.Location, "Rock.Enums" )
+            // Check if the Rock.Enums DLL is up to date or if it needs
+            // to be built.
+            RockEnumsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Model.Gender ).Assembly.Location, "Rock.Enums" )
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
-            var types = GetEnumTypes();
-
-            var typeItems = types.Select( t => new TypeItem( t ) )
+            var typeItems = GetEnumTypes()
+                .Select( t => new TypeItem( t ) )
                 .ToList();
 
             foreach ( var item in typeItems )
             {
+                // An enum is considered unsupported if it isn't in the Rock.Enums
+                // namespace and does not have a EnumDomainAttribute applied to it.
                 var unsupported = !item.Type.FullName.StartsWith( "Rock.Enums." )
                     && item.Type.GetCustomAttributes().FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" ) == null;
 
                 if ( unsupported )
                 {
-                    item.IsInvalid = true;
                     item.IsExporting = false;
                     item.InvalidReason = $"This enum is not in the correct namespace and cannot be exported.";
                 }
             }
 
+            // Sort the items so that invalid items are at the top.
             typeItems = typeItems
                 .OrderBy( t => !t.IsInvalid )
                 .ThenBy( t => t.Name )
@@ -52,17 +60,33 @@ namespace Rock.CodeGeneration.Pages
             EnumsListBox.ItemsSource = typeItems;
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the enum types that should be considered for exporting.
+        /// </summary>
+        /// <returns>A collection of Type objects that represent the enums.</returns>
         private List<Type> GetEnumTypes()
         {
-            return typeof( Rock.Enums.Reporting.FieldFilterSourceType ).Assembly
+            return typeof( Enums.Reporting.FieldFilterSourceType ).Assembly
                 .GetExportedTypes()
                 .Where( t => t.IsEnum )
                 .ToList();
         }
 
+        /// <summary>
+        /// Gets the path to use for where the file should be written.
+        /// </summary>
+        /// <param name="type">The type that will be written to a file.</param>
+        /// <returns>A string that represents the directory that will contain the file.</returns>
+        /// <exception cref="Exception">Attempt to export an enum with an invalid namespace, this shouldn't happen.</exception>
         private string GetPathForType( Type type )
         {
-            if ( type.Namespace.StartsWith( "Rock.Model" ) )
+            // If the type isn't in the Rock.Enums namespace then use the
+            // EnumDomain attribute to determine the actual domain it's in.
+            if ( !type.Namespace.StartsWith( "Rock.Enums" ) )
             {
                 var domainAttribute = type.GetCustomAttributes()
                     .FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" );
@@ -82,11 +106,20 @@ namespace Rock.CodeGeneration.Pages
             return Path.Combine( "Rock.JavaScript.Obsidian", "Framework", "Enums", string.Join( "\\", components ) );
         }
 
+        /// <summary>
+        /// Gets the file name that should be used when writing the type.
+        /// </summary>
+        /// <param name="type">The type to be written.</param>
+        /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
             return $"{type.Name.Split( '`' )[0].CamelCase()}.d.ts";
         }
 
+        /// <summary>
+        /// Gets the selected types.
+        /// </summary>
+        /// <returns>A collection of types that have been selected for export.</returns>
         private IList<Type> GetSelectedTypes()
         {
             return EnumsListBox.ItemsSource
@@ -96,6 +129,15 @@ namespace Rock.CodeGeneration.Pages
                 .ToList();
         }
 
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Handles the Click event of the SelectAll control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectAll_Click( object sender, RoutedEventArgs e )
         {
             EnumsListBox.ItemsSource
@@ -105,6 +147,11 @@ namespace Rock.CodeGeneration.Pages
                 .ForEach( i => i.IsExporting = true );
         }
 
+        /// <summary>
+        /// Handles the Click event of the SelectNone control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectNone_Click( object sender, RoutedEventArgs e )
         {
             EnumsListBox.ItemsSource
@@ -114,10 +161,16 @@ namespace Rock.CodeGeneration.Pages
                 .ForEach( i => i.IsExporting = false );
         }
 
+        /// <summary>
+        /// Handles the Click event of the Preview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private async void Preview_Click( object sender, RoutedEventArgs e )
         {
             var files = new List<GeneratedFile>();
 
+            // Generate the file for each selected enum type.
             var generator = new TypeScriptViewModelGenerator();
             foreach ( var type in GetSelectedTypes() )
             {
@@ -128,14 +181,42 @@ namespace Rock.CodeGeneration.Pages
             await this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );
         }
 
-        private class TypeItem : IComparable, INotifyPropertyChanged
+        #endregion
+
+        #region Support Classes
+
+        /// <summary>
+        /// An item that will be used to represent the type in the listbox.
+        /// </summary>
+        private class TypeItem : INotifyPropertyChanged
         {
+            #region Events
+
+            /// <summary>
+            /// Occurs when a property value changes.
+            /// </summary>
             public event PropertyChangedEventHandler PropertyChanged;
 
+            #endregion
+
+            #region Properties
+
+            /// <summary>
+            /// Gets or sets the type represented by this item.
+            /// </summary>
+            /// <value>The type represented by this item.</value>
             public Type Type { get; set; }
 
-            public string Name { get; set; }
+            /// <summary>
+            /// Gets or sets the name to display for this type.
+            /// </summary>
+            /// <value>The name to display for this type.</value>
+            public string Name { get; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether this item is selected for export.
+            /// </summary>
+            /// <value><c>true</c> if this item is selected for export; otherwise, <c>false</c>.</value>
             public bool IsExporting
             {
                 get => _isExporting;
@@ -147,10 +228,26 @@ namespace Rock.CodeGeneration.Pages
             }
             private bool _isExporting;
 
-            public bool IsInvalid { get; set; }
+            /// <summary>
+            /// Gets a value indicating whether this item is invalid.
+            /// </summary>
+            /// <value><c>true</c> if this item is invalid; otherwise, <c>false</c>.</value>
+            public bool IsInvalid => InvalidReason.IsNotNullOrWhiteSpace();
 
+            /// <summary>
+            /// Gets or sets the reason this item is invalid.
+            /// </summary>
+            /// <value>The reason this item is invalid.</value>
             public string InvalidReason { get; set; }
 
+            #endregion
+
+            #region Constructors
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TypeItem"/> class.
+            /// </summary>
+            /// <param name="type">The type to be represented by this item.</param>
             public TypeItem( Type type )
             {
                 Type = type;
@@ -163,15 +260,22 @@ namespace Rock.CodeGeneration.Pages
                 }
             }
 
+            #endregion
+
+            #region Methods
+
+            /// <summary>
+            /// Called when a property value has changed.
+            /// </summary>
+            /// <param name="propertyName">The name of the property.</param>
             protected virtual void OnPropertyChanged( [CallerMemberName] string propertyName = null )
             {
                 PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
             }
 
-            public int CompareTo( object obj )
-            {
-                return Type.AssemblyQualifiedName.CompareTo( obj );
-            }
+            #endregion
         }
+
+        #endregion
     }
 }

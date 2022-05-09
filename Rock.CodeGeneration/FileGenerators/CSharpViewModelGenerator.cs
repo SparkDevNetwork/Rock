@@ -7,8 +7,19 @@ using Rock.CodeGeneration.Utility;
 
 namespace Rock.CodeGeneration.FileGenerators
 {
+    /// <summary>
+    /// Provides methods for generating specific C# files.
+    /// </summary>
     public class CSharpViewModelGenerator : Generator
     {
+        #region Methods
+
+        /// <summary>
+        /// Generates an empty options bag.
+        /// </summary>
+        /// <param name="bagName">Name of the bag.</param>
+        /// <param name="bagNamespace">The namespace the bag will be placed in.</param>
+        /// <returns>A string that contains the contents of the file.</returns>
         public string GenerateOptionsBag( string bagName, string bagNamespace )
         {
             var sb = new StringBuilder();
@@ -19,6 +30,13 @@ namespace Rock.CodeGeneration.FileGenerators
             return GenerateCSharpFile( new string[0], bagNamespace, sb.ToString(), false );
         }
 
+        /// <summary>
+        /// Generates the entity bag from a set of properties.
+        /// </summary>
+        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="bagNamespace">The namespace the bag will be placed in.</param>
+        /// <param name="properties">The properties that will be contained in the bag.</param>
+        /// <returns>A string that contains the contents of the file.</returns>
         public string GenerateEntityBag( string entityName, string bagNamespace, List<EntityProperty> properties )
         {
             var usings = new List<string>
@@ -32,6 +50,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
             var sortedProperties = properties.OrderBy( p => p.Name ).ToList();
 
+            // Loop through the sorted list of properties and emit each one.
             for ( int i = 0; i < sortedProperties.Count; i++ )
             {
                 var property = sortedProperties[i];
@@ -52,10 +71,17 @@ namespace Rock.CodeGeneration.FileGenerators
             return GenerateCSharpFile( usings, bagNamespace, sb.ToString(), false );
         }
 
+        /// <summary>
+        /// Gets the C# property type declaration.
+        /// </summary>
+        /// <param name="type">The type that will need to be declared.</param>
+        /// <returns>a <see cref="PropertyDeclaration"/> that represents the property.</returns>
         private static PropertyDeclaration GetCSharpPropertyTypeDeclaration( Type type )
         {
-            var entityType = typeof( Rock.Data.IEntity );
+            var entityType = typeof( Data.IEntity );
 
+            // If the type is a collection of entities then use a collection
+            // of ListItemBag objects.
             if ( type.IsGenericType && type.GenericTypeArguments.Length == 1 )
             {
                 var genericArg = type.GenericTypeArguments[0];
@@ -67,12 +93,16 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
             }
 
+            // If the type is an entity then use a ListItemBag object.
             if ( entityType.IsAssignableFrom( type ) )
             {
                 return new PropertyDeclaration( $"ListItemBag", new[] { "Rock.ViewModels.Utility" } );
             }
 
+            // Try for a primitive property type.
             return type.GetCSharpPropertyDeclaration();
         }
+
+        #endregion
     }
 }

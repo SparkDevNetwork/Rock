@@ -167,10 +167,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Resources\EditPanel-ts.lava" />
-    <None Include="Resources\EntityDetailBlock-cs.lava" />
-    <None Include="Resources\EntityDetailBlock-ts.lava" />
-    <None Include="Resources\ViewPanel-ts.lava" />
+    <EmbeddedResource Include="Resources\EditPanel-ts.lava" />
+    <EmbeddedResource Include="Resources\EntityDetailBlock-cs.lava" />
+    <EmbeddedResource Include="Resources\EntityDetailBlock-ts.lava" />
+    <EmbeddedResource Include="Resources\ViewPanel-ts.lava" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

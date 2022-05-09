@@ -7,6 +7,8 @@ namespace Rock.CodeGeneration.Utility
     /// </summary>
     public static class SupportTools
     {
+        #region Methods
+
         /// <summary>
         /// Determines whether the source files are newer than the binary file for
         /// a given C# project directory.
@@ -50,5 +52,7 @@ namespace Rock.CodeGeneration.Utility
 
             return null;
         }
+
+        #endregion
     }
 }

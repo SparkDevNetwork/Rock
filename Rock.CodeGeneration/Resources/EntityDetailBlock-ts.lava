@@ -17,7 +17,9 @@
 
 import { computed, defineComponent, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert";
-import PaneledDetailBlockTemplate from "@Obsidian/Templates/paneledDetailBlockTemplate";
+import { EntityType } from "@Obsidian/SystemGuids";
+import DetailBlock from "@Obsidian/Templates/detailBlock";
+import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
 import EditPanel from "./{{ EntityName }}Detail/editPanel";
 import ViewPanel from "./{{ EntityName }}Detail/viewPanel";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -34,7 +36,7 @@ export default defineComponent({
     components: {
         Alert,
         EditPanel,
-        PaneledDetailBlockTemplate,
+        DetailBlock,
         ViewPanel
     },
 
@@ -50,28 +52,21 @@ export default defineComponent({
         const {{ EntityName | CamelCase }}ViewBag = ref(config.entity);
         const {{ EntityName | CamelCase }}EditBag = ref<{{ EntityName }}Bag | null>(null);
 
-        const isEditMode = ref(false);
+        const panelMode = ref(DetailPanelMode.View);
 
         // #endregion
 
         // #region Computed Values
 
         /**
-         * The title to display in the block panel depending on the current state.
+         * The entity name to display in the block panel.
          */
-        const blockTitle = computed((): string => {
-            if ({{ EntityName | CamelCase }}ViewBag.value?.guid === emptyGuid) {
-                return "Add {{ EntityName | SplitCase }}";
-            }
-            else if (!isEditMode.value) {
-                return {{ EntityName | CamelCase }}ViewBag.value?.name ?? "";
-            }
-            else if ({{ EntityName | CamelCase }}EditBag.value?.name) {
-                return `Edit ${{ '{' }}{{ EntityName | CamelCase }}EditBag.value.name}`;
-            }
-            else {
-                return "Edit {{ EntityName | SplitCase }}";
-            }
+        const panelName = computed((): string => {
+            return {{ EntityName | CamelCase }}ViewBag.value?.name ?? "";
+        });
+
+        const entityKey = computed((): string => {
+            return {{ EntityName | CamelCase }} Viewbag.value?.idKey ?? null;
         });
 
         /**
@@ -80,22 +75,22 @@ export default defineComponent({
         const blockLabels = computed((): ListItemBag[] => {
             const labels: ListItemBag[] = [];
 
-            if (isEditMode.value) {
+            if (panelMode.value !== DetailPanelMode.View) {
                 return labels;
-            }
+            }{% if UseIsActive %}
 
             if ({{ EntityName | CamelCase }}ViewBag.value?.isActive === true) {
                 labels.push({ value: "success", text: "Active" });
             }
             else {
                 labels.push({ value: "danger", text: "Inactive" });
-            }
+            }{% endif %}
 
             return labels;
         });
 
         const isEditable = computed((): boolean => {
-            return config.isEditable === true && {{ EntityName | CamelCase }}ViewBag.value?.isSystem !== true;
+            return config.isEditable === true{% if UseIsSystem == true %} && {{ EntityName | CamelCase }}ViewBag.value?.isSystem !== true{% endif %};
         });
 
         const options = computed((): {{ EntityName }}DetailOptionsBag => {
@@ -217,9 +212,9 @@ export default defineComponent({
         else if (!config.entity) {
             blockError.value = "The specified {{ EntityName | SplitCase | Downcase }} could not be viewed.";
         }
-        else if (config.entity.guid === emptyGuid) {
+        else if (!config.entity.idKey) {
             {{ EntityName | CamelCase }}EditBag.value = config.entity;
-            isEditMode.value = true;
+            panelMode.value = DetailPanelMode.Add;
         }
 
         return {
@@ -227,15 +222,17 @@ export default defineComponent({
             {{ EntityName | CamelCase }}EditBag,
             blockError,
             blockLabels,
-            blockTitle,
+            entityKey,
+            entityTypeGuid: EntityType.{{ EntityName }},
             errorMessage,
             isEditable,
-            isEditMode,
             onCancelEdit,
             onDelete,
             onEdit,
             onSave,
-            options
+            options,
+            panelMode,
+            panelName
         };
     },
 
@@ -248,20 +245,30 @@ export default defineComponent({
 
 <Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
-<PaneledDetailBlockTemplate v-if="!blockError"
-    v-model:isEditMode="isEditMode"
-    :title="blockTitle"
-    iconClass="fa fa-building-o"
+<DetailBlock v-if="!blockError"
+    v-model:mode="panelMode"
+    :name="panelName"
     :labels="blockLabels"
-    entityTitle="{{ EntityName }}"
-    :isEditAllowed="isEditable"
-    :isDeleteAllowed="isEditable"
+    :entityKey="entityKey"
+    :entityTypeGuid="entityTypeGuid"
+    entityTypeName="{{ EntityName }}"
+    :isAuditHidden="false"
+    :isBadgesVisible="false"
+    :isDeleteVisible="isEditable"
+    :isEditVisible="isEditable"
+    :isFollowVisible="false"
+    :isSecurityHidden="false"
     @cancelEdit="onCancelEdit"
     @delete="onDelete"
     @edit="onEdit"
     @save="onSave">
-    <EditPanel v-if="isEditMode" v-model="{{ EntityName | CamelCase }}EditBag" :options="options" />
-    <ViewPanel v-else :modelValue="{{ EntityName | CamelCase }}ViewBag" :options="options" />
-</PaneledDetailBlockTemplate>
+    <slot #view>
+        <ViewPanel :modelValue="{{ EntityName | CamelCase }}ViewBag" :options="options" />
+    </slot>
+
+    <slot #edit>
+        <EditPanel v-model="{{ EntityName | CamelCase }}EditBag" :options="options" />
+    </slot>
+</DetailBlock>
 `
 });

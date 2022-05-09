@@ -18,67 +18,84 @@ namespace Rock.CodeGeneration.Pages
     /// </summary>
     public partial class ObsidianViewModelsPage : Page
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ObsidianViewModelsPage"/> class.
+        /// </summary>
         public ObsidianViewModelsPage()
         {
             InitializeComponent();
 
+            // Check if the Rock.ViewModels DLL is up to date or if it needs
+            // to be built.
             RockViewModelsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Rock.ViewModels.Utility.ListItemBag ).Assembly.Location, "Rock.ViewModels" )
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
+            // Get the view model types and the items to represent them.
             var types = GetViewModelTypes();
-
             var typeItems = types.Select( t => new TypeItem( t ) ).ToList();
 
+            // Check for any type that is invalid.
             foreach ( var item in typeItems )
             {
                 var unsupported = GetUnsupportedProperties( item.Type, types );
 
                 if ( unsupported.Any() )
                 {
-                    item.IsUnsupported = true;
-                    item.UnsupportedReason = $"The following properties are not supported: {string.Join( ", ", unsupported.Select( p => p.Name ) )}";
+                    item.InvalidReason = $"The following properties are not supported: {string.Join( ", ", unsupported.Select( p => p.Name ) )}";
                 }
             }
 
-            typeItems = typeItems.OrderByDescending( t => t.IsUnsupported )
+            // Sort the items so taht invalid ones are at the top.
+            typeItems = typeItems.OrderByDescending( t => t.IsInvalid )
                 .ThenBy( t => t.Name )
                 .ToList();
 
             ViewModelsListBox.ItemsSource = typeItems;
         }
 
-        private List<string> GetDuplicateTypeNames( IList<Type> types )
-        {
-            return types.Select( t => t.FullName.Split( '`' )[0] )
-                .GroupBy( t => t )
-                .Where( t => t.Count() > 1 )
-                .Select( t => t.Key )
-                .ToList();
-        }
+        #endregion
 
-        private List<PropertyInfo> GetUnsupportedProperties( Type type, IList<Type> viewModelTypes )
+        #region Methods
+
+        /// <summary>
+        /// Gets the unsupported properties that exist on the type.
+        /// </summary>
+        /// <param name="type">The type to be checked for unsupported properties.</param>
+        /// <param name="validTypes">The additional types that will be considered as valid types.</param>
+        /// <returns>A collection of properties that are not supported.</returns>
+        private List<PropertyInfo> GetUnsupportedProperties( Type type, IList<Type> validTypes )
         {
             return type.GetProperties()
-                .Where( p => !IsSupportedPropertyType( p.PropertyType, viewModelTypes ) )
+                .Where( p => !IsSupportedPropertyType( p.PropertyType, validTypes ) )
                 .ToList();
         }
 
-        private bool IsSupportedPropertyType( Type type, IList<Type> viewModelTypes )
+        /// <summary>
+        /// Determines whether the type is supported as a property type in
+        /// a view model.
+        /// </summary>
+        /// <param name="type">The type to be checked.</param>
+        /// <param name="validTypes">The additional types that are considered valid.</param>
+        /// <returns><c>true</c> if the type is supported; otherwise, <c>false</c>.</returns>
+        private bool IsSupportedPropertyType( Type type, IList<Type> validTypes )
         {
+            // Check if it is a well known supported property type.
             if ( EntityProperty.IsSupportedPropertyType( type ) )
             {
                 return true;
             }
 
-            // If type is one of the types we will be generating then it is supported.
-            if ( viewModelTypes.Contains( type ) )
+            // Check if type is one of the types that is known to be supported.
+            if ( validTypes.Contains( type ) )
             {
                 return true;
             }
 
             // If type is in the Rock.Enums assembly, it's supported.
-            if ( type.IsEnum && type.Assembly == typeof( Rock.Enums.Reporting.FieldFilterSourceType ).Assembly )
+            if ( type.IsEnum && type.Assembly == typeof( Enums.Reporting.FieldFilterSourceType ).Assembly )
             {
                 return true;
             }
@@ -93,7 +110,7 @@ namespace Rock.CodeGeneration.Pages
                         return false;
                     }
 
-                    return IsSupportedPropertyType( type.GetGenericArguments()[1], viewModelTypes );
+                    return IsSupportedPropertyType( type.GetGenericArguments()[1], validTypes );
                 }
             }
 
@@ -103,11 +120,18 @@ namespace Rock.CodeGeneration.Pages
                 return true;
             }
 
+            // Otherwise, we will accept a generic object.
             return type == typeof( object );
         }
 
+        /// <summary>
+        /// Gets the view model types that should be considered as available
+        /// options for exporting.
+        /// </summary>
+        /// <returns>A collection of types that represent the view models.</returns>
         private List<Type> GetViewModelTypes()
         {
+            // We only include types that end in "Bag" or "Box".
             return typeof( Rock.ViewModels.Utility.IViewModel ).Assembly
                 .GetExportedTypes()
                 .Where( t => t.Name.Split( '`' )[0].EndsWith( "Bag" ) || t.Name.Split( '`' )[0].EndsWith( "Box" ) )
@@ -115,6 +139,11 @@ namespace Rock.CodeGeneration.Pages
                 .ToList();
         }
 
+        /// <summary>
+        /// Gets the path to the directory that the type file will be placed in.
+        /// </summary>
+        /// <param name="type">The type to be exported.</param>
+        /// <returns>A string that represents the directory path.</returns>
         private string GetPathForType( Type type )
         {
             var components = type.Namespace.Replace( "Rock.ViewModels", string.Empty ).Trim( '.' ).Split( '.' );
@@ -122,11 +151,20 @@ namespace Rock.CodeGeneration.Pages
             return Path.Combine( "Rock.JavaScript.Obsidian", "Framework", "ViewModels", string.Join( "\\", components ) );
         }
 
+        /// <summary>
+        /// Gets the file name to use for the type.
+        /// </summary>
+        /// <param name="type">The type to be exported.</param>
+        /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
             return $"{type.Name.Split( '`' )[0].CamelCase()}.d.ts";
         }
 
+        /// <summary>
+        /// Gets the selected types to be exported.
+        /// </summary>
+        /// <returns>A collection of types that should be exported.</returns>
         private IList<Type> GetSelectedTypes()
         {
             return ViewModelsListBox.ItemsSource
@@ -136,54 +174,84 @@ namespace Rock.CodeGeneration.Pages
                 .ToList();
         }
 
-        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> exportedFiles, IReadOnlyList<GeneratedFile> failedFiles )
+        /// <summary>
+        /// Performs post-processing of any exported files.
+        /// </summary>
+        /// <param name="exportedFiles">The files that were successfully exported.</param>
+        /// <param name="skippedFiles">The files that were skipped.</param>
+        /// <param name="failedFiles">The files that failed to be exported.</param>
+        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> exportedFiles, IReadOnlyList<GeneratedFile> skippedFiles, IReadOnlyList<GeneratedFile> failedFiles )
         {
             var solutionPath = SupportTools.GetSolutionPath();
             var solutionFileName = Path.Combine( solutionPath, "Rock.sln" );
 
-            if ( solutionFileName != null )
+            if ( solutionFileName == null )
             {
-                using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+                return;
+            }
+
+            using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+            {
+                // Loop through each exported file and make sure it exists in
+                // the appropriate project file.
+                foreach ( var file in exportedFiles )
                 {
-                    foreach ( var file in exportedFiles )
+                    var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
+
+                    if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
                     {
-                        var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
+                        var projectName = file.SolutionRelativePath.Split( '\\' )[0];
 
-                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
-                        {
-                            var projectName = file.SolutionRelativePath.Split( '\\' )[0];
-
-                            solution.AddCompileFileToProject( projectName, filename );
-                        }
+                        solution.AddCompileFileToProject( projectName, filename );
                     }
-
-                    solution.Save();
                 }
+
+                solution.Save();
             }
         }
 
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Handles the Click event of the SelectAll control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectAll_Click( object sender, RoutedEventArgs e )
         {
             ViewModelsListBox.ItemsSource
                 .Cast<TypeItem>()
-                .Where( t => !t.IsUnsupported )
+                .Where( t => !t.IsInvalid )
                 .ToList()
                 .ForEach( i => i.IsExporting = true );
         }
 
+        /// <summary>
+        /// Handles the Click event of the SelectNone control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectNone_Click( object sender, RoutedEventArgs e )
         {
             ViewModelsListBox.ItemsSource
                 .Cast<TypeItem>()
-                .Where( t => !t.IsUnsupported )
+                .Where( t => !t.IsInvalid )
                 .ToList()
                 .ForEach( i => i.IsExporting = false );
         }
 
+        /// <summary>
+        /// Handles the Click event of the Preview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private async void Preview_Click( object sender, RoutedEventArgs e )
         {
             var files = new List<GeneratedFile>();
 
+            // Generate each file that was selected to be exported.
             var generator = new TypeScriptViewModelGenerator();
             foreach ( var type in GetSelectedTypes() )
             {
@@ -199,14 +267,42 @@ namespace Rock.CodeGeneration.Pages
             await this.Navigation().PushPageAsync( previewPage );
         }
 
-        private class TypeItem : IComparable, INotifyPropertyChanged
+        #endregion
+
+        #region Support Classes
+
+        /// <summary>
+        /// An item that represents a type to be shown in the list box.
+        /// </summary>
+        private class TypeItem : INotifyPropertyChanged
         {
+            #region Events
+
+            /// <summary>
+            /// Occurs when a property value changes.
+            /// </summary>
             public event PropertyChangedEventHandler PropertyChanged;
 
-            public Type Type { get; set; }
+            #endregion
 
-            public string Name { get; set; }
+            #region Properties
 
+            /// <summary>
+            /// Gets the type represented by this item.
+            /// </summary>
+            /// <value>The type represented by this item.</value>
+            public Type Type { get; }
+
+            /// <summary>
+            /// Gets the name to display in the listbox.
+            /// </summary>
+            /// <value>The name to display in the listbox.</value>
+            public string Name { get; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this item is selected for export.
+            /// </summary>
+            /// <value><c>true</c> if this item is selected for export; otherwise, <c>false</c>.</value>
             public bool IsExporting
             {
                 get => _isExporting;
@@ -218,10 +314,26 @@ namespace Rock.CodeGeneration.Pages
             }
             private bool _isExporting;
 
-            public bool IsUnsupported { get; set; }
+            /// <summary>
+            /// Gets a value indicating whether this item is invalid.
+            /// </summary>
+            /// <value><c>true</c> if this item is invalid; otherwise, <c>false</c>.</value>
+            public bool IsInvalid => InvalidReason.IsNotNullOrWhiteSpace();
 
-            public string UnsupportedReason { get; set; }
+            /// <summary>
+            /// Gets or sets the reason this item is invalid.
+            /// </summary>
+            /// <value>The reason this item is invalid.</value>
+            public string InvalidReason { get; set; }
 
+            #endregion
+
+            #region Constructors
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TypeItem"/> class.
+            /// </summary>
+            /// <param name="type">The type to be represented by this item.</param>
             public TypeItem( Type type )
             {
                 Type = type;
@@ -234,15 +346,22 @@ namespace Rock.CodeGeneration.Pages
                 }
             }
 
+            #endregion
+
+            #region Methods
+
+            /// <summary>
+            /// Called when a property value has changed.
+            /// </summary>
+            /// <param name="propertyName">Name of the property.</param>
             protected virtual void OnPropertyChanged( [CallerMemberName] string propertyName = null )
             {
                 PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
             }
 
-            public int CompareTo( object obj )
-            {
-                return Type.AssemblyQualifiedName.CompareTo( obj );
-            }
+            #endregion
         }
+
+        #endregion
     }
 }

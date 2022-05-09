@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Design.PluralizationServices;
@@ -13,13 +14,15 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Xml;
 
-using LoxSmoke.DocXml;
-
 using Rock;
-using Rock.Utility;
 using Rock.Data;
+using Rock.Utility;
 using Rock.ViewModels.Utility;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -30,15 +33,13 @@ using System.ComponentModel;
 namespace Rock.CodeGeneration.Pages
 {
     /// <summary>
-    ///
+    /// Logic for the Model Generation page.
     /// </summary>
     public partial class ModelGenerationPage : Page, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
         #region Private Fields
-
-        private DocXmlReader _rockXmlDoc;
 
         private readonly List<CheckedItem<Type>> _modelItems = new List<CheckedItem<Type>>();
 
@@ -282,8 +283,6 @@ namespace Rock.CodeGeneration.Pages
                     }
                 }
             }
-
-            _rockXmlDoc = new DocXmlReader( assemblyFileName.Substring( 0, assemblyFileName.Length - 4 ) + ".xml" );
 
             CheckAllItems( true );
 

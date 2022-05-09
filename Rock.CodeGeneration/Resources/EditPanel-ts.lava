@@ -71,7 +71,7 @@ export default defineComponent({
 
         // #endregion
 
-        // Watch for changes in our model value and update all our values.
+        // Watch for parental changes in our model value and update all our values.
         watch(() => props.modelValue, () => {{ '{' }}{% if UseAttributeValues == true %}
             updateRefValue(attributes, props.modelValue.attributes ?? []);
             updateRefValue(attributeValues, props.modelValue.attributeValues ?? []);{% endif %}{% if UseDescription == true %}
@@ -80,6 +80,8 @@ export default defineComponent({
             updateRefValue(name, props.modelValue.name ?? "");{% endif %}
         });
 
+        // Determines which values we want to track changes on (defined in the
+        // array) and then emit a new object defined as newValue.
         {% assign propNames = '' -%}
         {% if UseAttributeValues == true %}{% assign propNames = propNames | AddToArray:'attributeValues' %}{% endif -%}
         {% if UseDescription == true %}{% assign propNames = propNames | AddToArray:'description' %}{% endif -%}
@@ -125,7 +127,7 @@ export default defineComponent({
         label="Description"
         textMode="multiline" />{% endif %}{% if UseAttributeValues == true %}
 
-    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode />{% endif %}
+    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />{% endif %}
 </fieldset>
 `
 });

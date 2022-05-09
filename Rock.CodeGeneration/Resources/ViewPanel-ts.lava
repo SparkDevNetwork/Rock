@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { computed, defineComponent, PropType, ref } from "vue";{% if UseIsSystem %}
+import { computed, defineComponent, PropType, ref } from "vue";{% if UseIsSystem == true %}
 import Alert from "@Obsidian/Controls/alert";{% endif %}{% if UseAttributeValues == true %}
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
@@ -39,7 +39,7 @@ export default defineComponent({
         }
     },
 
-    components: {{ '{' }}{% if UseIsSystem %}
+    components: {{ '{' }}{% if UseIsSystem == true %}
         Alert,{% endif %}{% if UseAttributeValues == true %}
         AttributeValuesContainer,{% endif %}
         ValueDetailList
@@ -49,8 +49,7 @@ export default defineComponent({
         // #region Values
 {% if UseAttributeValues == true %}
         const attributes = ref(props.modelValue?.attributes ?? []);
-        const attributeValues = ref(props.modelValue?.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
-        const description = ref(props.modelValue?.description ?? "");{% endif %}
+        const attributeValues = ref(props.modelValue?.attributeValues ?? {});{% endif %}
 
         // #endregion
 
@@ -58,24 +57,41 @@ export default defineComponent({
 
         const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);{% endif %}
 
+        /** The values to display full-width at the top of the block. */
+        const topValues = computed((): ValueDetailListItem[] => {
+            const valueBuilder = new ValueDetailListItemBuilder();
+
+            if (!props.modelValue) {
+                return valueBuilder.build();
+            }{% if UseDescription == true %}
+
+            if (props.modelValue.description) {
+                props.addTextValue("Description", props.modelValue.description);
+            }{% endif %}
+
+            return valueBuilder.build();
+        });
+
+        /** The values to display at half-width on the left side of the block. */
         const leftSideValues = computed((): ValueDetailListItem[] => {
             const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return valueBuilder.getValues();
+                return valueBuilder.build();
             }
 
-            return valueBuilder.getValues();
+            return valueBuilder.build();
         });
 
+        /** The values to display at half-width on the left side of the block. */
         const rightSideValues = computed((): ValueDetailListItem[] => {
             const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return valueBuilder.getValues();
+                return valueBuilder.build();
             }
 
-            return valueBuilder.getValues();
+            return valueBuilder.build();
         });
 
         // #endregion
@@ -90,11 +106,11 @@ export default defineComponent({
 
         return {{ '{' }}{% if UseAttributeValues == true %}
             attributes,
-            attributeValues,{% endif %}
-            description,{% if UseIsSystem %}
+            attributeValues,{% endif %}{% if UseIsSystem == true %}
             isSystem,{% endif %}
             leftSideValues,
-            rightSideValues
+            rightSideValues,
+            topValues
         };
     },
 
@@ -102,9 +118,9 @@ export default defineComponent({
 <fieldset>{% if UseIsSystem == true %}
     <Alert v-if="isSystem" alertType="info">
         <strong>Note</strong> Because this {{ EntityName | SplitCase | Downcase }} is used by Rock, editing is not enabled.
-    </Alert>{% endif %}{% if UseDescription == true %}
+    </Alert>{% endif %}
 
-    <p v-if="description" class="description">{% raw %}{{ description }}{% endraw %}</p>{% endif %}
+    <ValueDetailList :modelValue="topValues" />
 
     <div class="row">
         <div class="col-md-6">
@@ -116,7 +132,7 @@ export default defineComponent({
         </div>
     </div>{% if UseAttributeValues == true %}
 
-    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" />{% endif %}
+    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />{% endif %}
 </fieldset>
 `
 });

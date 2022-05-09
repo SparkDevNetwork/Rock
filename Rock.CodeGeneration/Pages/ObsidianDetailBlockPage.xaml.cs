@@ -10,12 +10,11 @@ using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 
+using Rock;
 using Rock.CodeGeneration.Dialogs;
 using Rock.CodeGeneration.FileGenerators;
 using Rock.CodeGeneration.Lava;
 using Rock.CodeGeneration.Utility;
-
-using Rock;
 
 namespace Rock.CodeGeneration.Pages
 {
@@ -24,10 +23,21 @@ namespace Rock.CodeGeneration.Pages
     /// </summary>
     public partial class ObsidianDetailBlockPage : Page
     {
+        #region Fields
+
+        /// <summary>
+        /// The currently selected entity type in the UI.
+        /// </summary>
         private Type _selectedEntityType;
 
+        /// <summary>
+        /// The properties for the currently selected entity type.
+        /// </summary>
         private List<PropertyItem> _propertyItems;
 
+        /// <summary>
+        /// The properties that are considered system level and always excluded.
+        /// </summary>
         private static readonly string[] _systemProperties = new[]
         {
             "Attributes",
@@ -36,6 +46,10 @@ namespace Rock.CodeGeneration.Pages
             "Id"
         };
 
+        /// <summary>
+        /// The properties that are considered advanced and will only show up
+        /// if they are specifically requested.
+        /// </summary>
         private static readonly string[] _advancedProperties = new[]
         {
             "CreatedByPersonAlias",
@@ -49,15 +63,31 @@ namespace Rock.CodeGeneration.Pages
             "ModifiedDateTime"
         };
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ObsidianDetailBlockPage"/> class.
+        /// </summary>
         public ObsidianDetailBlockPage()
         {
             InitializeComponent();
 
+            // Check if the Rock project is out of date and needs to be built.
             RockOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Rock.Data.IEntity ).Assembly.Location, "Rock" )
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Sets the currently selected entity.
+        /// </summary>
+        /// <param name="entityType">Type of the entity that will now be selected.</param>
         private void SetEntity( Type entityType )
         {
             _selectedEntityType = entityType;
@@ -66,15 +96,19 @@ namespace Rock.CodeGeneration.Pages
             UpdateEntityProperties();
         }
 
+        /// <summary>
+        /// Updates the list of entity properties for the selected entity.
+        /// </summary>
         private void UpdateEntityProperties()
         {
             _propertyItems = GetEntityProperties( _selectedEntityType )
                 .Select( p => new PropertyItem( p ) )
                 .ToList();
 
+            // Check all the properties and see if any of them are unsupported.
             foreach ( var item in _propertyItems )
             {
-                if ( !ValidatePropertyTypes( new[] { item.Property }, out var invalidProperties ) )
+                if ( !IsValidPropertyType( item.Property ) )
                 {
                     item.InvalidReason = $"Property type {item.Property.PropertyType.GetFriendlyName()} is not supported.";
                 }
@@ -83,10 +117,16 @@ namespace Rock.CodeGeneration.Pages
             PropertiesListBox.ItemsSource = _propertyItems;
         }
 
+        /// <summary>
+        /// Gets the properties that exist on the specified entity type. This automatically
+        /// handles filtering out system and advanced properties.
+        /// </summary>
+        /// <param name="entityType">Type of the entity whose properties are to be enumerated.</param>
+        /// <returns>An enumeration of the valid properties that match the filtering options.</returns>
         private IEnumerable<PropertyInfo> GetProperties( Type entityType )
         {
             return entityType?.GetProperties( BindingFlags.Public | BindingFlags.Instance )
-                .Where( p => p.GetCustomAttribute<DataMemberAttribute>() != null || typeof( Rock.Data.IEntity ).IsAssignableFrom( p.PropertyType ) )
+                .Where( p => p.GetCustomAttribute<DataMemberAttribute>() != null || typeof( Data.IEntity ).IsAssignableFrom( p.PropertyType ) )
                 .Where( p => p.GetCustomAttribute<NotMappedAttribute>() == null )
                 .Where( p => !_systemProperties.Contains( p.Name ) )
                 .Where( p => ShowAdvancedPropertiesCheckBox.IsChecked == true || !_advancedProperties.Contains( p.Name ) )
@@ -94,6 +134,11 @@ namespace Rock.CodeGeneration.Pages
                 ?? new List<PropertyInfo>();
         }
 
+        /// <summary>
+        /// Gets all the entity properties without applying any filtering.
+        /// </summary>
+        /// <param name="entityType">Type of the entity whose properties should be enumerated.</param>
+        /// <returns>An enumeration of all the entity's properties.</returns>
         private IEnumerable<PropertyInfo> GetEntityProperties( Type entityType )
         {
             return GetProperties( entityType )
@@ -101,84 +146,96 @@ namespace Rock.CodeGeneration.Pages
                 .ToList();
         }
 
-        private static bool ValidatePropertyTypes( IEnumerable<PropertyInfo> properties, out PropertyInfo[] invalidProperties )
+        /// <summary>
+        /// Determines if the property has a valid type that can be used during
+        /// automatic code generation.
+        /// </summary>
+        /// <param name="property">The property to be validated.</param>
+        /// <returns><c>true</c> if the property type is known and valid, <c>false</c> otherwise.</returns>
+        private static bool IsValidPropertyType( PropertyInfo property )
         {
-            invalidProperties = properties.Where( p => !EntityProperty.IsSupportedPropertyType( p.PropertyType ) ).ToArray();
-
-            return invalidProperties.Length == 0;
+            return EntityProperty.IsSupportedPropertyType( property.PropertyType );
         }
 
-        private IList<GeneratedFile> GenerateFiles( DetailBlockParameters parameters )
+        /// <summary>
+        /// Generates all the files required to make a skeleton detail block
+        /// for the selected entity type.
+        /// </summary>
+        /// <param name="options">The options that describe all the options to use when generating code.</param>
+        /// <returns>A collection of <see cref="GeneratedFile"/> objects that represent the files to be created or updated.</returns>
+        private IList<GeneratedFile> GenerateFiles( DetailBlockOptions options )
         {
             var files = new List<GeneratedFile>();
-            var domain = parameters.EntityType.GetCustomAttribute<Rock.Data.RockDomainAttribute>()?.Name ?? "Unknown";
-            var bagPath = $"Rock.ViewModels\\Blocks\\{domain}\\{parameters.EntityType.Name}Detail";
+            var domain = options.EntityType.GetCustomAttribute<Data.RockDomainAttribute>()?.Name ?? "Unknown";
+            var bagPath = $"Rock.ViewModels\\Blocks\\{domain}\\{options.EntityType.Name}Detail";
             var blockPath = $"Rock.Blocks\\{domain}";
             var typeScriptBlockPath = $"Rock.JavaScript.Obsidian.Blocks\\src\\{domain}";
-            var bagNamespace = $"Rock.ViewModels.Blocks.{domain}.{parameters.EntityType.Name}Detail";
+            var bagNamespace = $"Rock.ViewModels.Blocks.{domain}.{options.EntityType.Name}Detail";
             var generator = new CSharpViewModelGenerator();
             var tsGenerator = new TypeScriptViewModelGenerator();
 
+            // Create the standard merge fields that will be used by the Lava engine
+            // when generating all the files.
             var mergeFields = new Dictionary<string, object>
             {
-                ["EntityName"] = parameters.EntityType.Name,
-                ["ServiceName"] = parameters.ServiceType.Name,
+                ["EntityName"] = options.EntityType.Name,
+                ["ServiceName"] = options.ServiceType.Name,
                 ["Domain"] = domain,
-                ["Properties"] = parameters.Properties,
-                ["UseAttributeValues"] = parameters.UseAttributeValues,
-                ["UseDescription"] = parameters.Properties.Any( p => p.Name == "Description" ),
-                ["UseEntitySecurity"] = parameters.UseEntitySecurity,
-                ["UseIsActive"] = parameters.Properties.Any( p => p.Name == "IsActive" ),
-                ["UseIsSystem"] = parameters.Properties.Any( p => p.Name == "IsSystem" ),
-                ["UseName"] = parameters.Properties.Any( p => p.Name == "Name" )
+                ["Properties"] = options.Properties,
+                ["UseAttributeValues"] = options.UseAttributeValues,
+                ["UseDescription"] = options.Properties.Any( p => p.Name == "Description" ),
+                ["UseEntitySecurity"] = options.UseEntitySecurity,
+                ["UseIsActive"] = options.Properties.Any( p => p.Name == "IsActive" ),
+                ["UseIsSystem"] = options.Properties.Any( p => p.Name == "IsSystem" ),
+                ["UseName"] = options.Properties.Any( p => p.Name == "Name" )
             };
 
-            // Generate the entity bag.
-            var content = generator.GenerateEntityBag( parameters.EntityType.Name, bagNamespace, parameters.Properties );
-            files.Add( new GeneratedFile( $"{parameters.EntityType.Name}Bag.cs", bagPath, content ) );
+            // Generate the <Entity>Bag.cs file.
+            var content = generator.GenerateEntityBag( options.EntityType.Name, bagNamespace, options.Properties );
+            files.Add( new GeneratedFile( $"{options.EntityType.Name}Bag.cs", bagPath, content ) );
 
-            // Generate the custom options.
-            content = generator.GenerateOptionsBag( $"{parameters.EntityType.Name}DetailOptionsBag", bagNamespace );
-            files.Add( new GeneratedFile( $"{parameters.EntityType.Name}DetailOptionsBag.cs", bagPath, content ) );
+            // Generate the <Entity>DetailOptionsBag.cs file.
+            content = generator.GenerateOptionsBag( $"{options.EntityType.Name}DetailOptionsBag", bagNamespace );
+            files.Add( new GeneratedFile( $"{options.EntityType.Name}DetailOptionsBag.cs", bagPath, content ) );
 
             // Generate the main <Entity>Detail.cs file.
-            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "BlockGenerator.Resources.EntityDetailBlock-cs.lava" ) ) )
+            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EntityDetailBlock-cs.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{parameters.EntityType.Name}Detail.cs", blockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name}Detail.cs", blockPath, result ) );
             }
 
             // Generate the Obsidian <entity>Detail.ts file.
-            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "BlockGenerator.Resources.EntityDetailBlock-ts.lava" ) ) )
+            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EntityDetailBlock-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"{parameters.EntityType.Name.CamelCase()}Detail.ts", typeScriptBlockPath, result ) );
+                files.Add( new GeneratedFile( $"{options.EntityType.Name.CamelCase()}Detail.ts", typeScriptBlockPath, result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\viewPanel.ts file.
-            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "BlockGenerator.Resources.ViewPanel-ts.lava" ) ) )
+            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.ViewPanel-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"viewPanel.ts", $"{typeScriptBlockPath}\\{parameters.EntityType.Name}Detail", result ) );
+                files.Add( new GeneratedFile( $"viewPanel.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\editPanel.ts file.
-            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "BlockGenerator.Resources.EditPanel-ts.lava" ) ) )
+            using ( var reader = new StreamReader( GetType().Assembly.GetManifestResourceStream( "Rock.CodeGeneration.Resources.EditPanel-ts.lava" ) ) )
             {
                 var lavaTemplate = reader.ReadToEnd();
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"editPanel.ts", $"{typeScriptBlockPath}\\{parameters.EntityType.Name}Detail", result ) );
+                files.Add( new GeneratedFile( $"editPanel.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\types.d.ts file.
@@ -186,37 +243,56 @@ namespace Rock.CodeGeneration.Pages
             {
                 ["ParentPage"] = "ParentPage"
             } );
-            files.Add( new GeneratedFile( "types.d.ts", $"{typeScriptBlockPath}\\{parameters.EntityType.Name}Detail", content ) );
+            files.Add( new GeneratedFile( "types.d.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", content ) );
 
             return files;
         }
 
-        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> exportedFiles, IReadOnlyList<GeneratedFile> failedFiles )
+        /// <summary>
+        /// Performs any post-processing actions for files that were generated.
+        /// </summary>
+        /// <param name="exportedFiles">The files that were exported.</param>
+        /// <param name="skippedFiles">The files that were intentionally not exported.</param>
+        /// <param name="failedFiles">The files that failed to be exported.</param>
+        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> exportedFiles, IReadOnlyList<GeneratedFile> skippedFiles, IReadOnlyList<GeneratedFile> failedFiles )
         {
             var solutionPath = SupportTools.GetSolutionPath();
             var solutionFileName = Path.Combine( solutionPath, "Rock.sln" );
 
-            if ( solutionFileName != null )
+            if ( solutionFileName == null )
             {
-                using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+                return;
+            }
+
+            using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+            {
+                // For each file that was actually exported, make sure it
+                // has been added to the project file automatically.
+                foreach ( var file in exportedFiles )
                 {
-                    foreach ( var file in exportedFiles )
+                    var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
+
+                    if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
                     {
-                        var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
+                        var projectName = file.SolutionRelativePath.Split( '\\' )[0];
 
-                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
-                        {
-                            var projectName = file.SolutionRelativePath.Split( '\\' )[0];
-
-                            solution.AddCompileFileToProject( projectName, filename );
-                        }
+                        solution.AddCompileFileToProject( projectName, filename );
                     }
-
-                    solution.Save();
                 }
+
+                solution.Save();
             }
         }
 
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Handles the Click event of the SelectEntity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectEntity_Click( object sender, RoutedEventArgs e )
         {
             var dialog = new SelectEntityDialog
@@ -230,19 +306,31 @@ namespace Rock.CodeGeneration.Pages
             }
         }
 
+        /// <summary>
+        /// Handles the CheckChanged event of the ShowAdvancedPropertiesCheckBox control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void ShowAdvancedPropertiesCheckBox_CheckChanged( object sender, RoutedEventArgs e )
         {
             UpdateEntityProperties();
         }
 
+        /// <summary>
+        /// Handles the Click event of the Preview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Preview_Click( object sender, RoutedEventArgs e )
         {
+            // Get the properties that should be included in the detail block.
             var selectedProperties = _propertyItems
                 .Where( p => p.IsSelected )
                 .Select( p => p.Property )
                 .ToList();
 
-            var serviceType = Reflection.FindTypes( typeof( Rock.Data.Service<> ).MakeGenericType( _selectedEntityType ) )
+            // Find the entity service object type.
+            var serviceType = Reflection.FindTypes( typeof( Data.Service<> ).MakeGenericType( _selectedEntityType ) )
                 .Select( kvp => kvp.Value )
                 .FirstOrDefault();
 
@@ -251,7 +339,8 @@ namespace Rock.CodeGeneration.Pages
                 MessageBox.Show( Window.GetWindow( this ), $"Cannot determine the service instance for {_selectedEntityType.Name}.", "Invalid service" );
             }
 
-            var parameters = new DetailBlockParameters
+            // Build the list of files the need to be written to disk.
+            var options = new DetailBlockOptions
             {
                 EntityType = _selectedEntityType,
                 ServiceType = serviceType,
@@ -260,13 +349,23 @@ namespace Rock.CodeGeneration.Pages
                 UseEntitySecurity = SecurityFromEntityRadioButton.IsChecked == true
             };
 
-            var files = GenerateFiles( parameters );
-            var previewPage = new GeneratedFilePreviewPage( files );
-            previewPage.PostSaveAction = ProcessPostSaveFiles;
+            var files = GenerateFiles( options );
+
+            // Show the preview page so the user can verify all the generated
+            // data and write it to disk.
+            var previewPage = new GeneratedFilePreviewPage( files )
+            {
+                PostSaveAction = ProcessPostSaveFiles
+            };
 
             this.Navigation().PushPageAsync( previewPage );
         }
 
+        /// <summary>
+        /// Handles the Click event of the SelectAll control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectAll_Click( object sender, RoutedEventArgs e )
         {
             _propertyItems
@@ -275,6 +374,11 @@ namespace Rock.CodeGeneration.Pages
                 .ForEach( i => i.IsSelected = true );
         }
 
+        /// <summary>
+        /// Handles the Click event of the SelectNone control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectNone_Click( object sender, RoutedEventArgs e )
         {
             _propertyItems
@@ -283,14 +387,44 @@ namespace Rock.CodeGeneration.Pages
                 .ForEach( i => i.IsSelected = false );
         }
 
+        #endregion
+
+        #region Support Classes
+
+        /// <summary>
+        /// An item that can be displayed in the listbox and handles tracking
+        /// the IsChecked state.
+        /// </summary>
+        /// <seealso cref="INotifyPropertyChanged" />
         private class PropertyItem : INotifyPropertyChanged
         {
+            #region Events
+
+            /// <summary>
+            /// Occurs when a property value changes.
+            /// </summary>
             public event PropertyChangedEventHandler PropertyChanged;
 
+            #endregion
+
+            #region Properties
+
+            /// <summary>
+            /// Gets the property that is being displayed.
+            /// </summary>
+            /// <value>The property that is being displayed.</value>
             public PropertyInfo Property { get; }
 
+            /// <summary>
+            /// Gets the name of the property.
+            /// </summary>
+            /// <value>The name of the property.</value>
             public string Name => Property.Name;
 
+            /// <summary>
+            /// Gets or sets a value indicating whether this property is selected.
+            /// </summary>
+            /// <value><c>true</c> if this property is selected; otherwise, <c>false</c>.</value>
             public bool IsSelected
             {
                 get => _isSelected;
@@ -302,32 +436,85 @@ namespace Rock.CodeGeneration.Pages
             }
             private bool _isSelected;
 
+            /// <summary>
+            /// Gets a value indicating whether this instance is invalid.
+            /// </summary>
+            /// <value><c>true</c> if this instance is invalid; otherwise, <c>false</c>.</value>
             public bool IsInvalid => InvalidReason.IsNotNullOrWhiteSpace();
 
+            /// <summary>
+            /// Gets or sets the invalid reason.
+            /// </summary>
+            /// <value>The invalid reason.</value>
             public string InvalidReason { get; set; }
 
+            #endregion
+
+            #region Constructors
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PropertyItem"/> class.
+            /// </summary>
+            /// <param name="propertyInfo">The property information.</param>
             public PropertyItem( PropertyInfo propertyInfo )
             {
                 Property = propertyInfo;
             }
 
+            #endregion
+
+            #region Methods
+
+            /// <summary>
+            /// Called when a property value has changed.
+            /// </summary>
+            /// <param name="propertyName">The name of the property.</param>
             protected void OnPropertyChanged( [CallerMemberName] string propertyName = null )
             {
                 PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
             }
+
+            #endregion
         }
 
-        private class DetailBlockParameters
+        /// <summary>
+        /// Contains the options to use when generating the detail block files.
+        /// </summary>
+        private class DetailBlockOptions
         {
+            /// <summary>
+            /// Gets or sets the type of the entity that will be edited by the block.
+            /// </summary>
+            /// <value>The type of the entity taht will be edited by the block.</value>
             public Type EntityType { get; set; }
 
+            /// <summary>
+            /// Gets or sets the type of the service that will handle database access.
+            /// </summary>
+            /// <value>The type of the service that will handle database access.</value>
             public Type ServiceType { get; set; }
 
+            /// <summary>
+            /// Gets or sets the properties to be included in the block.
+            /// </summary>
+            /// <value>The properties to be included in the block.</value>
             public List<EntityProperty> Properties { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether code for working with
+            /// attribute values should be included.
+            /// </summary>
+            /// <value><c>true</c> if attribute values should be included; otherwise, <c>false</c>.</value>
             public bool UseAttributeValues { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether entity security should
+            /// be used instead of CMS security.
+            /// </summary>
+            /// <value><c>true</c> if entity security should be used; otherwise, <c>false</c>.</value>
             public bool UseEntitySecurity { get; set; }
         }
+
+        #endregion
     }
 }
