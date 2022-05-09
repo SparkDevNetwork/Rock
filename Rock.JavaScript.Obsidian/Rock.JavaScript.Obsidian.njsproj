@@ -105,6 +105,8 @@
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
+    <TypeScriptCompile Include="Framework\Controls\flowNodeDiagram.ts" />
+    <TypeScriptCompile Include="Framework\Controls\header.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
     <TypeScriptCompile Include="Framework\Controls\addressControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeEditor.ts" />
@@ -132,6 +134,7 @@
     <TypeScriptCompile Include="Framework\Controls\rockAttributeFilter.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionHeader.ts" />
     <TypeScriptCompile Include="Framework\Controls\slidingDateRangePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\tabbedContent.ts" />
     <TypeScriptCompile Include="Framework\Controls\treeItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\valueDetailList.ts" />
     <TypeScriptCompile Include="Framework\Core\Controls\valueDetailListItemBuilder.ts" />

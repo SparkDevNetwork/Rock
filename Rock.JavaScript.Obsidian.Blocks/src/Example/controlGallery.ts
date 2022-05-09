@@ -119,25 +119,78 @@ const attributeValuesContainerGallery = defineComponent({
     components: {
         GalleryAndResult,
         AttributeValuesContainer,
-        CheckBox
+        CheckBox,
+        NumberBox,
+        TextBox
     },
     setup() {
-        const isEditMode = ref(true);
-
-        const showEmptyValues = ref(false);
-
+        const isEditMode = ref(false);
+        const showEmptyValues = ref(true);
         const showAbbreviatedName = ref(false);
+        const displayAsTabs = ref(false);
+        const showCategoryLabel = ref(true);
+        const numberOfColumns = ref(2);
+        const entityName = ref("Foo Entity");
+
+        const categories = [{
+            guid: newGuid(),
+            name: "Cat A",
+            order: 1
+        },
+        {
+            guid: newGuid(),
+            name: "Cat B",
+            order: 2
+        },
+        {
+            guid: newGuid(),
+            name: "Cat C",
+            order: 3
+        }];
 
         const attributes = ref<Record<string, PublicAttributeBag>>({
             text: {
                 attributeGuid: newGuid(),
-                categories: [],
+                categories: [categories[0]],
                 description: "A text attribute.",
                 fieldTypeGuid: FieldType.Text,
                 isRequired: false,
                 key: "text",
                 name: "Text Attribute",
                 order: 2,
+                configurationValues: {}
+            },
+            color: {
+                attributeGuid: newGuid(),
+                categories: [categories[0], categories[2]],
+                description: "Favorite color? Or just a good one?",
+                fieldTypeGuid: FieldType.Color,
+                isRequired: false,
+                key: "color",
+                name: "Random Color",
+                order: 4,
+                configurationValues: {}
+            },
+            bool: {
+                attributeGuid: newGuid(),
+                categories: [categories[2]],
+                description: "Are you foo?",
+                fieldTypeGuid: FieldType.Boolean,
+                isRequired: false,
+                key: "bool",
+                name: "Boolean Attribute",
+                order: 3,
+                configurationValues: {}
+            },
+            textagain: {
+                attributeGuid: newGuid(),
+                categories: [categories[1]],
+                description: "Another text attribute.",
+                fieldTypeGuid: FieldType.Text,
+                isRequired: false,
+                key: "textAgain",
+                name: "Some Text",
+                order: 5,
                 configurationValues: {}
             },
             single: {
@@ -157,7 +210,10 @@ const attributeValuesContainerGallery = defineComponent({
 
         const attributeValues = ref<Record<string, string>>({
             "text": "Default text value",
-            single: ""
+            "color": "#336699",
+            "bool": "N",
+            "textAgain": "",
+            single: "1"
         });
 
         return {
@@ -165,26 +221,45 @@ const attributeValuesContainerGallery = defineComponent({
             attributeValues,
             isEditMode,
             showAbbreviatedName,
-            showEmptyValues
+            showEmptyValues,
+            displayAsTabs,
+            showCategoryLabel,
+            numberOfColumns,
+            entityName
         };
     },
     template: `
-<GalleryAndResult :splitWidth="false">
+<GalleryAndResult>
     <template #header>
         AttributeValuesContainer
     </template>
     <template #gallery>
-        <CheckBox v-model="isEditMode" label="Is Editable" />
-
-        <CheckBox v-model="showAbbreviatedName" label="Show Abbreviated Name" />
-
-        <CheckBox v-model="showEmptyValues" label="Show Empty Values" />
-
-        <AttributeValuesContainer v-model="attributeValues"
+        <div class="row">
+            <CheckBox formGroupClasses="col-sm-6" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
+            <CheckBox formGroupClasses="col-sm-6" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
+        </div>
+        <div class="row">
+            <CheckBox formGroupClasses="col-sm-6" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
+            <CheckBox formGroupClasses="col-sm-6" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
+        </div>
+        <CheckBox v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: false; Only applies when not displaying tabs." />
+        <div class="row">
+            <NumberBox formGroupClasses="col-sm-6" v-model="numberOfColumns" label="Number of Columns" help="Default: 1; Only applies when not displaying tabs." />
+            <TextBox formGroupClasses="col-sm-6" v-model="entityName" label="Entity Type" help="Default: ''; Appears in the heading when category labels are showing." />
+        </div>
+    </template>
+    <template #result>
+        <AttributeValuesContainer
+            v-model="attributeValues"
             :attributes="attributes"
             :isEditMode="isEditMode"
             :showAbbreviatedName="showAbbreviatedName"
-            :showEmptyValues="showEmptyValues" />
+            :showEmptyValues="showEmptyValues"
+            :displayAsTabs="displayAsTabs"
+            :showCategoryLabel="showCategoryLabel"
+            :numberOfColumns="numberOfColumns"
+            :entityTypeName="entityName"
+        />
     </template>
 </GalleryAndResult>`
 });
