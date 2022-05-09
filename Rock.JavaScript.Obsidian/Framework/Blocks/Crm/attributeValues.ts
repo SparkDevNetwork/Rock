@@ -146,9 +146,9 @@ export default defineComponent({
     <template v-slot:default>
         <Loading :isLoading="isLoading">
             <Alert v-if="errorMessage" alertType="warning">{{ errorMessage }}</Alert>
-            <AttributeValuesContainer v-if="!isEditMode" :attributeValues="attributeValues" :showEmptyValues="false" />
+            <AttributeValuesContainer v-if="!isEditMode" :attributeValues="attributeValues" :showEmptyValues="false" :showCategoryLabel="false" />
             <RockForm v-else @submit="doSave">
-                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showAbbreviatedName="useAbbreviatedNames" :showCategoryLabel="false" />
                 <div class="actions">
                     <RockButton btnType="primary" btnSize="xs" type="submit">Save</RockButton>
                     <RockButton btnType="link" btnSize="xs" @click="goToViewMode">Cancel</RockButton>

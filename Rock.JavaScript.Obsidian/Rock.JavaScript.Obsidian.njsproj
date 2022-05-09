@@ -137,6 +137,7 @@
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\FormBuilderDetail\sectionZone.ts" />
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\Shared\segmentedPicker.ts" />
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\FormBuilderDetail\settingsTab.ts" />
+    <TypeScriptCompile Include="Framework\Controls\flowNodeDiagram.ts" />
     <TypeScriptCompile Include="Framework\Controls\header.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
     <TypeScriptCompile Include="Framework\Blocks\WorkFlow\FormBuilder\FormBuilderDetail\types.d.ts" />
@@ -173,6 +174,7 @@
     <TypeScriptCompile Include="Framework\Controls\primaryBlock.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockAttributeFilter.ts" />
     <TypeScriptCompile Include="Framework\Controls\slidingDateRangePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\tabbedContent.ts" />
     <TypeScriptCompile Include="Framework\Controls\treeItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
     <TypeScriptCompile Include="Framework\Elements\auditDetail.ts" />
@@ -372,6 +374,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroup.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRule.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\treeItem.d.ts" />
+    <TypeScriptCompile Include="Tests\Elements\numberRangeBox.spec.ts" />
     <TypeScriptCompile Include="Tests\Elements\rockFormFieldHelper.ts" />
     <TypeScriptCompile Include="Tests\Elements\textBox.spec.ts" />
     <TypeScriptCompile Include="Tests\Rules\defineRule.spec.ts" />

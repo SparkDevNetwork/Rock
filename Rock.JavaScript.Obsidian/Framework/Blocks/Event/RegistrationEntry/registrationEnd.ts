@@ -78,7 +78,7 @@ export default defineComponent({
     template: `
 <div class="registrationentry-registration-attributes">
     <RockForm @submit="onNext">
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode />
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
 
         <div class="actions row">
             <div class="col-xs-6">
