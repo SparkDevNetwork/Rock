@@ -21,17 +21,10 @@ import LoadingIndicator from "./loadingIndicator";
 import { List } from "@Obsidian/Utility/linq";
 import TabbedContent from "./tabbedContent";
 import RockField from "./rockField";
-// import { PublicAttributeValueCategory } from "@Obsidian/ViewModels/Utility/publicAttributeValueCategory";
+import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
 import { emptyGuid } from "@Obsidian/Utility/guid";
-import { Guid } from "@Obsidian/Types";
 
-type PublicAttributeValueCategory = {
-    guid: Guid,
-    name: string,
-    order: number,
-};
-
-type CategorizedAttributes = PublicAttributeValueCategory & {
+type CategorizedAttributes = PublicAttributeCategoryBag & {
     attributes: PublicAttributeBag[]
 };
 
@@ -108,7 +101,7 @@ export default defineComponent({
                 }
 
                 if (attr.categories && attr.categories.length > 0) {
-                    const categories = [...attr.categories] as PublicAttributeValueCategory[]; // copy, so sort doesn't cause updates
+                    const categories = [...attr.categories] as PublicAttributeCategoryBag[]; // copy, so sort doesn't cause updates
 
                     categories.sort((a, b) => a.order - b.order).forEach((cat, i) => {
                         const newCat: CategorizedAttributes = { attributes: [], ...cat }; // copy and convert to CategorizedAttributes
