@@ -554,7 +554,7 @@ namespace RockWeb.Blocks.Finance
 
             tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
-            tbLastName.Text = rFilter.GetUserPreference( "Government ID" );
+            tbGovernmentId.Text = rFilter.GetUserPreference( "Government ID" );
 
             Guid groupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuid();
             var listData = new GroupMemberService( new RockContext() ).Queryable( "Person, Group" )
