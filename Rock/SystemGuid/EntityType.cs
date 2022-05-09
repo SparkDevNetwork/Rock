@@ -587,6 +587,11 @@ namespace Rock.SystemGuid
         public const string STORAGE_ASSETSTORAGE_FILESYSTEM = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A";
 
         /// <summary>
+        /// The EntityType Guid for Tag.
+        /// </summary>
+        public const string TAG = "d34258d0-d366-4efb-aa76-84b059fb5434";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.Workflow"/>
         /// </summary>
         public const string WORKFLOW = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93";

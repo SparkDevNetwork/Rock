@@ -251,6 +251,8 @@ export const enum EntityType {
     StorageAssetstorageGooglecloud = "71344FA8-4210-4B6C-ADC1-9F63C4CA15CA",
     /** The asset storage file-system component (Rock.Storage.AssetStorage.FileSystemComponent) */
     StorageAssetstorageFilesystem = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A",
+    /** The EntityType Guid for Tag. */
+    Tag = "d34258d0-d366-4efb-aa76-84b059fb5434",
     /** The EntityType Guid for  */
     Workflow = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93",
     /** The EntityType Guid for  */
