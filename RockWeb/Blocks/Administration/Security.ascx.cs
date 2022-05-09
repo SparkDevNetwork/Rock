@@ -78,6 +78,17 @@ namespace RockWeb.Blocks.Administration
             string entityTypeName = string.Empty;
             Type type = null;
 
+            // If we didn't find it by Id, check if it is a Guid and translate.
+            if ( !entityTypeId.HasValue )
+            {
+                var entityTypeGuid = PageParameter( "EntityTypeId" ).AsGuidOrNull();
+
+                if ( entityTypeGuid.HasValue )
+                {
+                    entityTypeId = EntityTypeCache.GetId( entityTypeGuid.Value );
+                }
+            }
+
             // Get Entity Type
             if ( entityTypeId.HasValue )
             {
@@ -89,19 +100,14 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Get Entity Id
-            int entityId = PageParameter( "EntityId" ).AsIntegerOrNull() ?? 0;
-
             // Get object type
             if ( type != null )
             {
-                if ( entityId == 0 )
+                iSecured = Rock.Reflection.GetIEntityForEntityType( type, PageParameter( "EntityId" ) ) as ISecured;
+
+                if ( iSecured == null )
                 {
                     iSecured = ( ISecured ) Activator.CreateInstance( type );
-                }
-                else
-                {
-                    iSecured = Rock.Reflection.GetIEntityForEntityType( type, entityId ) as ISecured;
                 }
 
                 var block = iSecured as Rock.Model.Block;
