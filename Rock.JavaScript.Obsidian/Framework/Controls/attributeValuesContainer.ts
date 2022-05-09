@@ -21,6 +21,7 @@ import RockField from "./rockField";
 import LoadingIndicator from "../Elements/loadingIndicator";
 import { PublicAttributeValueCategory } from "../ViewModels/publicAttributeValueCategory";
 import { List } from "../Util/linq";
+import { emptyGuid } from "../Util/guid";
 
 
 type CategorizedAttributes = PublicAttributeValueCategory & {
@@ -86,7 +87,7 @@ export default defineComponent({
         const attributeCategories = computed(() => {
             // Initialize the category list with a "default" category
             const categoryList: CategorizedAttributes[] = [{
-                guid: "0",
+                guid: emptyGuid,
                 name: "Attributes",
                 order: 0,
                 attributes: []
@@ -98,7 +99,7 @@ export default defineComponent({
                     return;
                 }
 
-                if (attr.categories.length > 0) {
+                if (attr.categories && attr.categories.length > 0) {
                     const categories = [...attr.categories]; // copy, so sort doesn't cause updates
 
                     categories.sort((a, b) => a.order - b.order).forEach((cat, i) => {
@@ -136,7 +137,7 @@ export default defineComponent({
                 return "Attributes";
             }
 
-            return props.entityTypeName + " Attributes";
+            return `${props.entityTypeName} Attributes`;
         });
 
         const columnClass = computed(() => {
