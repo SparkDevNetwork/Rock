@@ -157,6 +157,16 @@ namespace Rock.Security
         /// </summary>
         public const string DELETE_ATTENDANCE = "DeleteAttendance";
 
+        /// <summary>
+        /// Authorization is allowed for the permission object.
+        /// </summary>
+        public const char ALLOW = 'A';
+
+        /// <summary>
+        /// Authorization is denied for the permission object.
+        /// </summary>
+        public const char DENY = 'D';
+
         #endregion
 
         #region Public Methods
@@ -391,7 +401,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, SpecialRole specialRole )
         {
-            return ItemAuthorized( entity, action, specialRole, true, true ) ?? entity.IsAllowedByDefault( action );
+            return ItemAuthorized( entity, action, specialRole, entity ) ?? entity.IsAllowedByDefault( action );
         }
 
         /// <summary>
@@ -404,7 +414,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, Person person )
         {
-            return ItemAuthorized( entity, action, person, true, true ) ?? entity.IsAllowedByDefault( action );
+            return ItemAuthorized( entity, action, person, entity ) ?? entity.IsAllowedByDefault( action );
         }
 
         /// <summary>
@@ -442,10 +452,10 @@ namespace Rock.Security
             var secondRule = authorizations[entity.TypeId][entity.Id][action][1];
 
             // If first rule allows current user, and second rule denies all other users then entity is private
-            if ( firstRule.AllowOrDeny == 'A' &&
+            if ( firstRule.AllowOrDeny == ALLOW &&
                  firstRule.SpecialRole == SpecialRole.None &&
                  firstRule.PersonId == person.Id &&
-                 secondRule.AllowOrDeny == 'D' &&
+                 secondRule.AllowOrDeny == DENY &&
                  secondRule.SpecialRole == SpecialRole.AllUsers )
             {
                 return true;
@@ -920,7 +930,7 @@ namespace Rock.Security
         /// <returns></returns>
         public static bool? AuthorizedForEntity( ISecured entity, string action, Person person, bool checkParentAuthority )
         {
-            return ItemAuthorized( entity, action, person, true, checkParentAuthority );
+            return ItemAuthorized( entity, action, person, entity );
         }
 
         /// <summary>
@@ -947,8 +957,22 @@ namespace Rock.Security
         /// <param name="specialRole">The special role.</param>
         /// <param name="isRootEntity">if set to <c>true</c> [is root entity].</param>
         /// <param name="checkParentAuthority">if set to <c>true</c> [check parent authority].</param>
-        /// <returns></returns>
+        [RockObsolete( "1.14" )]
+        [System.Obsolete( "Use the method with the 'startingEntity' parameter instead." )]
         private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole, bool isRootEntity, bool checkParentAuthority )
+        {
+            return ItemAuthorized( entity, action, specialRole, entity );
+        }
+
+        /// <summary>
+        /// Checks to see if a special role is authorized
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="startingEntity">Starting entity is used to prevent circular references.</param>
+        /// <returns></returns>
+        private static bool? ItemAuthorized( ISecured entity, string action, SpecialRole specialRole, ISecured startingEntity )
         {
             var entityTypeId = entity.TypeId;
 
@@ -973,7 +997,7 @@ namespace Rock.Security
                     }
 
                     matchFound = true;
-                    authorized = authRule.AllowOrDeny == 'A';
+                    authorized = authRule.AllowOrDeny == ALLOW;
                     break;
                 }
             }
@@ -988,19 +1012,26 @@ namespace Rock.Security
             // parent authority return the default authorization
             bool? parentAuthorized = null;
 
-            if ( !checkParentAuthority )
+            if ( entity.ParentAuthorityPre != null )
             {
-                return null;
-            }
+                // Prevent circular references using anchored recursion.
+                if ( entity.ParentAuthorityPre.Id == startingEntity.Id)
+                {
+                    return null;
+                }
 
-            if ( isRootEntity && entity.ParentAuthorityPre != null )
-            {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole, false, false );
+                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, specialRole, startingEntity );
             }
 
             if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole, false, true );
+                // Prevent circular references using anchored recursion.
+                if ( entity.ParentAuthority.Id == startingEntity.Id)
+                {
+                    return null;
+                }
+
+                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, specialRole, startingEntity );
             }
 
             return parentAuthorized;
@@ -1015,7 +1046,22 @@ namespace Rock.Security
         /// <param name="isRootEntity">if set to <c>true</c> [is root entity].</param>
         /// <param name="checkParentAuthority">if set to <c>true</c> [check parent].</param>
         /// <returns></returns>
+        [RockObsolete( "1.14" )]
+        [System.Obsolete( "Use the method with the 'startingEntity' parameter instead." )]
         private static bool? ItemAuthorized( ISecured entity, string action, Person person, bool isRootEntity, bool checkParentAuthority )
+        {
+            return ItemAuthorized( entity, action, person, entity );
+        }
+
+        /// <summary>
+        /// Checks to see if a person is authorized
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="startingEntity">Starting entity is used to prevent circular references.</param>
+        /// <returns></returns>
+        private static bool? ItemAuthorized( ISecured entity, string action, Person person, ISecured startingEntity )
         {
             var entityTypeId = entity.TypeId;
 
@@ -1060,7 +1106,7 @@ namespace Rock.Security
                     if ( authRule.SpecialRole == SpecialRole.AllUsers )
                     {
                         matchFound = true;
-                        authorized = authRule.AllowOrDeny == 'A';
+                        authorized = authRule.AllowOrDeny == ALLOW;
                         break;
                     }
 
@@ -1068,7 +1114,7 @@ namespace Rock.Security
                     if ( authRule.SpecialRole == SpecialRole.AllAuthenticatedUsers && personGuid.HasValue )
                     {
                         matchFound = true;
-                        authorized = authRule.AllowOrDeny == 'A';
+                        authorized = authRule.AllowOrDeny == ALLOW;
                         break;
                     }
 
@@ -1076,7 +1122,7 @@ namespace Rock.Security
                     if ( authRule.SpecialRole == SpecialRole.AllUnAuthenticatedUsers && !personGuid.HasValue )
                     {
                         matchFound = true;
-                        authorized = authRule.AllowOrDeny == 'A';
+                        authorized = authRule.AllowOrDeny == ALLOW;
                         break;
                     }
 
@@ -1090,7 +1136,7 @@ namespace Rock.Security
                     if ( authRule.PersonId.HasValue && authRule.PersonId.Value == person.Id )
                     {
                         matchFound = true;
-                        authorized = authRule.AllowOrDeny == 'A';
+                        authorized = authRule.AllowOrDeny == ALLOW;
                         break;
                     }
 
@@ -1111,7 +1157,7 @@ namespace Rock.Security
 
                     // At this point, the rule is for a group/role that user belongs to
                     matchFound = true;
-                    authorized = authRule.AllowOrDeny == 'A';
+                    authorized = authRule.AllowOrDeny == ALLOW;
                     break;
                 }
             }
@@ -1125,19 +1171,27 @@ namespace Rock.Security
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the default authorization
             bool? parentAuthorized = null;
-            if ( !checkParentAuthority )
-            {
-                return null;
-            }
 
-            if ( isRootEntity && entity.ParentAuthorityPre != null )
+            if ( entity.ParentAuthorityPre != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person, false, false );
+                // Prevent circular references using anchored recursion.
+                if ( entity.ParentAuthorityPre.Id == startingEntity.Id )
+                {
+                    return null;
+                }
+
+                parentAuthorized = ItemAuthorized( entity.ParentAuthorityPre, action, person, startingEntity );
             }
 
             if ( !parentAuthorized.HasValue && entity.ParentAuthority != null )
             {
-                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person, false, true );
+                // Prevent circular references using anchored recursion.
+                if ( entity.ParentAuthority.Id == startingEntity.Id )
+                {
+                    return null;
+                }
+
+                parentAuthorized = ItemAuthorized( entity.ParentAuthority, action, person, startingEntity );
             }
 
             return parentAuthorized;
@@ -1595,7 +1649,7 @@ namespace Rock.Security
         {
             Id = id;
             EntityId = entityId;
-            AllowOrDeny = allowOrDeny == "A" ? 'A' : 'D';
+            AllowOrDeny = allowOrDeny == "A" ? Authorization.ALLOW : Authorization.DENY;
             SpecialRole = specialRole;
             PersonId = personId;
             PersonAliasId = personAliasId;
@@ -1611,7 +1665,7 @@ namespace Rock.Security
         {
             Id = auth.Id;
             EntityId = auth.EntityId;
-            AllowOrDeny = auth.AllowOrDeny == "A" ? 'A' : 'D';
+            AllowOrDeny = auth.AllowOrDeny == "A" ? Authorization.ALLOW : Authorization.DENY;
             SpecialRole = auth.SpecialRole;
             PersonId = auth.PersonAlias?.PersonId;
             PersonAliasId = auth.PersonAliasId;
