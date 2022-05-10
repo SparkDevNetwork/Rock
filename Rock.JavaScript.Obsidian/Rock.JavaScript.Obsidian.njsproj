@@ -106,7 +106,6 @@
     <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
     <TypeScriptCompile Include="Framework\Controls\flowNodeDiagram.ts" />
-    <TypeScriptCompile Include="Framework\Controls\header.ts" />
     <TypeScriptCompile Include="Framework\Controls\sectionContainer.ts" />
     <TypeScriptCompile Include="Framework\Controls\addressControl.ts" />
     <TypeScriptCompile Include="Framework\Controls\attributeEditor.ts" />
