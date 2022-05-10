@@ -607,8 +607,12 @@
     <Compile Include="Blocks\Types\Mobile\Connection\ConnectionTypeList.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Search.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleSignUp.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.WebForms.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleToolbox.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleUnavailability.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />

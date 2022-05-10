@@ -315,6 +315,26 @@ namespace Rock.SystemGuid
         public const string MOBILE_GROUPS_GROUP_REGISTRATION = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912";
 
         /// <summary>
+        /// The mobile groups <see cref="Rock.Blocks.Types.Mobile.Groups.GroupSchedulePreference">Group Schedule Preference</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE = "F6D0A258-F97E-4561-B881-ACBF985F89DC";
+
+        /// <summary>
+        /// The mobile groups <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleSignUp">Group Schedule Sign Up</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_SIGNUP = "CA27CB14-22FD-4DE6-9C3B-0EAA0AA84708";
+
+        /// <summary>
+        /// The mobile groups <see cref="Rock.Blocks.Types.Mobile.Groups.GroupSchedulePreference">Group Schedule Preference</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_TOOLBOX = "E00F3C6D-D007-4408-8A41-AD2A6AB29D6E";
+
+        /// <summary>
+        /// The mobile groups <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleUnavailability">Group Schedule Unavailability</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_UNAVAILABILITY = "AEFF246D-A514-4D46-801E-D717E1D1D209";
+
+        /// <summary>
         /// The mobile Groups &gt; <see cref="Rock.Blocks.Types.Mobile.Groups.GroupFinder">Group Finder</see> block type.
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_FINDER = "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C";
