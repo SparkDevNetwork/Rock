@@ -184,6 +184,14 @@ export const enum EntityType {
     MobileGroupsGroupMemberViewBlockType = "3213DCBC-C5EC-4DD2-BB78-19B3636AE842",
     /** The GUID for the entity  */
     MobileGroupsGroupRegistrationBlockType = "E0664BDC-9583-44F2-AC8D-23AE48603EAB",
+    /** The GUID for entity  */
+    MobileGroupsGroupSchedulePreference = "36B341A9-07FC-43A1-970A-E5D4CDB83E6A",
+    /** The GUID for entity  */
+    MobileGroupsGroupScheduleSignup = "DE3893A7-C353-4D19-A3FA-8B8EA99984F9",
+    /** The GUID for entity  */
+    MobileGroupsGroupScheduleToolbox = "DCC6C7C8-1040-4F0E-94ED-90450E2E9610",
+    /** The GUID for entity  */
+    MobileGroupsGroupScheduleUnavailability = "300E3105-A9C9-4C86-8BD1-CC041B6953C6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupView */
     MobileGroupsGroupViewBlockType = "564C4D86-C9DF-48D0-84B6-DD3FCC1A5158",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails */

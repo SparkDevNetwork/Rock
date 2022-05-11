@@ -123,7 +123,7 @@ namespace Rock.Client
 
         /// <summary />
         public string GroupViewLavaTemplate { get; set; } = @"{% if Group.GroupType.GroupCapacityRule != 'None' and Group.GroupCapacity != '' %}
-		{% assign warningLevel = ''warning'' %}
+		{% assign warningLevel = 'warning' %}
 
 		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
 			{% assign warningLevel = 'danger' %}
