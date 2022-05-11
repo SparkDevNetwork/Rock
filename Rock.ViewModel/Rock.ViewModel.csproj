@@ -46,6 +46,14 @@
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
+    <Compile Include="Blocks\Groups\GroupSchedulePreference\AssignmentScheduleAndLocationBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleSignup\PersonScheduleSignupDataBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleSignup\PersonScheduleSignupBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleToolbox\ConfirmDeclineBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleToolbox\ContentBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleUnavailability\ContentBag.cs" />
+    <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
+    <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FieldFilterGroupViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FieldFilterRuleViewModel.cs" />

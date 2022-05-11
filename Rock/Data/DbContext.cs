@@ -651,8 +651,8 @@ namespace Rock.Data
                     var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
                     if ( indexingEnabled )
                     {
-                        processEntityTypeIndexMsgs.ForEach( t => t.Send() );
-                        deleteEntityTypeIndexMsgs.ForEach( t => t.Send() );
+                        processEntityTypeIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
+                        deleteEntityTypeIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
                 } );
             }
