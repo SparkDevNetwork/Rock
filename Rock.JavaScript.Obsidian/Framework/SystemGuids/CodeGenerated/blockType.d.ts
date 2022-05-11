@@ -129,6 +129,14 @@ export const enum BlockType {
     MobileCoreSearch = "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
     /** The mobile Groups &gt; Group Registration block type. */
     MobileGroupsGroupRegistration = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912",
+    /** The mobile groups Group Schedule Preference block type. */
+    MobileGroupsGroupSchedulePreference = "F6D0A258-F97E-4561-B881-ACBF985F89DC",
+    /** The mobile groups Group Schedule Sign Up block type. */
+    MobileGroupsGroupScheduleSignup = "CA27CB14-22FD-4DE6-9C3B-0EAA0AA84708",
+    /** The mobile groups Group Schedule Preference block type. */
+    MobileGroupsGroupScheduleToolbox = "E00F3C6D-D007-4408-8A41-AD2A6AB29D6E",
+    /** The mobile groups Group Schedule Unavailability block type. */
+    MobileGroupsGroupScheduleUnavailability = "AEFF246D-A514-4D46-801E-D717E1D1D209",
     /** The mobile Groups &gt; Group Finder block type. */
     MobileGroupsGroupFinder = "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C",
     /** The mobile Prayer &gt; Prayer Card View block type. */
