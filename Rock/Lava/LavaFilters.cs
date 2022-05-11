@@ -3586,6 +3586,34 @@ namespace Rock.Lava
             return stepQuery;
         }
 
+        /// <summary>
+        /// Determines whether [is in security role] [the specified context].
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupId">The role Id.</param>
+        /// <returns>
+        ///   <c>true</c> if [is in security role] [the specified context]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsInSecurityRole( ILavaRenderContext context, object input, int groupId )
+        {
+            var person = GetPerson( input, context );
+            var role = RoleCache.Get( groupId );
+
+            if ( person == null || role == null )
+            {
+                return false;
+            }
+
+            if ( !role.IsSecurityTypeGroup )
+            {
+                ExceptionLogService.LogException( $"LavaFilter.IsInSecurityRole group with Id: {groupId} is not a SecurityRole" );
+                return false;
+            }
+
+            return role.IsPersonInRole( person.Guid );
+        }
+
         #endregion Person Filters
 
         #region Group Filters
