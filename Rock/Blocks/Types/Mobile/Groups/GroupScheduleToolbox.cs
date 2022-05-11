@@ -24,8 +24,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModel.Blocks.Groups.GroupScheduleToolbox;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.Groups.GroupScheduleToolbox;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Groups
@@ -138,14 +138,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Loads the decline reasons from the DefinedTypeCache.
         /// </summary>
         /// <returns>A list of defined value cache items.</returns>
-        private List<ListItemViewModel> LoadDeclineReasons()
+        private List<ListItemBag> LoadDeclineReasons()
         {
             // Get the list of decline reasons from defined types.
             var defineTypeGroupScheduleReason = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_SCHEDULE_DECLINE_REASON );
 
             // Pass the values into a list.
             var definedValues = defineTypeGroupScheduleReason.DefinedValues
-                .Select( x => new ListItemViewModel
+                .Select( x => new ListItemBag
                 {
                     Text = x.Value.ToStringSafe(),
                     Value = x.Guid.ToStringSafe()

@@ -15,23 +15,16 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
-namespace Rock.ViewModel.Blocks.Groups.GroupScheduleSignup
+namespace Rock.ViewModels.Blocks.Groups.GroupScheduleToolbox
 {
     /// <summary>
-    /// A class representing the schedule data to pass down to mobile.
+    /// The class representing the XAML content to display in mobile.
     /// </summary>
-    public class PersonScheduleSignupBag
+    public class ContentBag
     {
         /// <summary>
-        /// Gets or sets a string representing the group name.
+        /// Gets or sets the view content (XAML).
         /// </summary>
-        public string GroupName { get; set; }
-
-        /// <summary>
-        /// Gets or sets a list of <see cref="PersonScheduleSignupDataBag"/> to pass down to mobile.
-        /// </summary>
-        public List<PersonScheduleSignupDataBag> PersonScheduleSignups { get; set; }
+        public string Content { get; set; }
     }
 }

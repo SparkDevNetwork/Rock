@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-using System;
-
-namespace Rock.ViewModel.Blocks.Groups
+namespace Rock.ViewModels.Blocks.Groups.GroupScheduleToolbox
 {
     /// <summary>
-    /// A class representing the content we need to pass into mobile.
+    /// Gets the specific view model for the confirmation modal on mobile.
     /// </summary>
-    public class LandingPageContentBag
+    public class ConfirmDeclineBag
     {
         /// <summary>
         /// Gets or sets the XAML content.
@@ -30,13 +28,8 @@ namespace Rock.ViewModel.Blocks.Groups
         public string Content { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean representing whether or not to skip the landing page.
+        /// Gets or sets a boolean that states whether or not a decline reason is required.
         /// </summary>
-        public bool SkipPage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the selected group Guid, only used if SkipPage is true.
-        /// </summary>
-        public Guid? GroupGuid { get; set; }
+        public bool DeclineReasonRequired { get; set; }
     }
 }

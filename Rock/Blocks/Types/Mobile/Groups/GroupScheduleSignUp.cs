@@ -24,9 +24,9 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.Blocks.Groups;
-using Rock.ViewModel.Blocks.Groups.GroupScheduleSignup;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.Groups;
+using Rock.ViewModels.Blocks.Groups.GroupScheduleSignup;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {
@@ -353,7 +353,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var locations = new LocationService( rockContext ).GetByGroupSchedule( groupSchedule.Id, group.Id )
                     .OrderBy( a => a.Name )
                     .ToList()
-                    .Select( a => new ListItemViewModel
+                    .Select( a => new ListItemBag
                     {
                         Text = a.Name,
                         Value = a.Guid.ToStringSafe()

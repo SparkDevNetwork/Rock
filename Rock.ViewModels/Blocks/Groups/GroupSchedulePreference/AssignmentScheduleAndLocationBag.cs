@@ -15,32 +15,29 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-using Rock.ViewModel.NonEntities;
+using System;
+using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModel.Blocks.Groups.GroupScheduleUnavailability
+namespace Rock.ViewModels.Blocks.Groups.GroupSchedulePreference
 {
     /// <summary>
-    /// Gets the content bag to be passed into mobile.
+    /// Gets or sets a class representing data to pass cleanly into mobile.
     /// </summary>
-    public class ContentBag
+    public class AssignmentScheduleAndLocationBag
     {
-        // Gets or sets the XAML.
-        public string Content { get; set; }
+        /// <summary>
+        /// Gets or sets a guid representing the group member assignment ID.
+        /// </summary>
+        public Guid GroupMemberAssignmentGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets a list containing group member names and Guids
+        /// Gets or sets a list of schedule keys and values.
         /// </summary>
-        public List<ListItemViewModel> GroupInformation { get; set; }
+        public ListItemBag ScheduleListItem { get; set; }
 
         /// <summary>
-        /// Gets or sets a list containing family member's names and Guids
+        /// Gets or sets a list of location keys and values.
         /// </summary>
-        public List<ListItemViewModel> FamilyMemberInformation { get; set; }
-
-        /// <summary>
-        /// Gets or sets a boolean representing whether or not a description is required.
-        /// </summary>
-        public bool IsDescriptionRequired { get; set; }
+        public ListItemBag LocationListItem { get; set; }
     }
 }

@@ -15,16 +15,28 @@
 // </copyright>
 //
 
-namespace Rock.ViewModel.Blocks.Groups.GroupScheduleToolbox
+using System;
+
+namespace Rock.ViewModels.Blocks.Groups
 {
     /// <summary>
-    /// The class representing the XAML content to display in mobile.
+    /// A class representing the content we need to pass into mobile.
     /// </summary>
-    public class ContentBag
+    public class LandingPageContentBag
     {
         /// <summary>
-        /// Gets or sets the view content (XAML).
+        /// Gets or sets the XAML content.
         /// </summary>
         public string Content { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean representing whether or not to skip the landing page.
+        /// </summary>
+        public bool SkipPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected group Guid, only used if SkipPage is true.
+        /// </summary>
+        public Guid? GroupGuid { get; set; }
     }
 }

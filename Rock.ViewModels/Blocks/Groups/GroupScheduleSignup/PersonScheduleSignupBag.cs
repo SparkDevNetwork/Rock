@@ -15,29 +15,23 @@
 // </copyright>
 //
 
-using System;
-using Rock.ViewModel.NonEntities;
+using System.Collections.Generic;
 
-namespace Rock.ViewModel.Blocks.Groups.GroupSchedulePreference
+namespace Rock.ViewModels.Blocks.Groups.GroupScheduleSignup
 {
     /// <summary>
-    /// Gets or sets a class representing data to pass cleanly into mobile.
+    /// A class representing the schedule data to pass down to mobile.
     /// </summary>
-    public class AssignmentScheduleAndLocationBag
+    public class PersonScheduleSignupBag
     {
         /// <summary>
-        /// Gets or sets a guid representing the group member assignment ID.
+        /// Gets or sets a string representing the group name.
         /// </summary>
-        public Guid GroupMemberAssignmentGuid { get; set; }
+        public string GroupName { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of schedule keys and values.
+        /// Gets or sets a list of <see cref="PersonScheduleSignupDataBag"/> to pass down to mobile.
         /// </summary>
-        public ListItemViewModel ScheduleListItem { get; set; }
-
-        /// <summary>
-        /// Gets or sets a list of location keys and values.
-        /// </summary>
-        public ListItemViewModel LocationListItem { get; set; }
+        public List<PersonScheduleSignupDataBag> PersonScheduleSignups { get; set; }
     }
 }

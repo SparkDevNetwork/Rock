@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Rock.ViewModel.Blocks.Groups.GroupScheduleSignup
+namespace Rock.ViewModels.Blocks.Groups.GroupScheduleSignup
 {
     /// <summary>
     /// Gets or sets a class representing the schedule sign up information.

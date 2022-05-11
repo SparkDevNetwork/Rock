@@ -17,9 +17,9 @@
 
 using System;
 using System.Collections.Generic;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModel.Blocks.Groups.GroupSchedulePreference
+namespace Rock.ViewModels.Blocks.Groups.GroupSchedulePreference
 {
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.ViewModel.Blocks.Groups.GroupSchedulePreference
         /// <summary>
         /// Gets or sets a list of schedule keys and values. 
         /// </summary>
-        public List<ListItemViewModel> ListItems { get; set; }
+        public List<ListItemBag> ListItems { get; set; }
 
         /// <summary>
         /// Gets or sets a list of schedule assignments and locations.
