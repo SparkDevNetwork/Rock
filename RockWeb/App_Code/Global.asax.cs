@@ -442,7 +442,8 @@ namespace RockWeb
 
                             // Check for client\remote host disconnection error specifically SignalR or web-socket connections
                             // Ignore this error as it indicates the server it trying to write a response to a disconnected client.
-                            if(httpEx.Message.Contains( "The remote host closed the connection." ) &&
+                            if( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
+                                httpEx.Message.Contains( "The remote host closed the connection." ) &&
                                 httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
                             {
                                 context.ClearError();
