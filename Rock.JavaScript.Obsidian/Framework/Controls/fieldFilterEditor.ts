@@ -116,7 +116,7 @@ export default defineComponent({
         /**
          * Event handler for when a single rule has been updated. Replace the
          * rule in our array with the new rule.
-         * 
+         *
          * @param rule The new rule information.
          */
         const onUpdateRule = (rule: FieldFilterRuleBag): void => {
@@ -133,7 +133,7 @@ export default defineComponent({
         /**
          * Event handler for when a rule has requested that it be removed from
          * the list of rules.
-         * 
+         *
          * @param rule The rule to be removed.
          */
         function onRemoveRule(rule: FieldFilterRuleBag): void {
@@ -168,7 +168,7 @@ export default defineComponent({
             showHide,
             showHideOptions
         };
-    }, 
+    },
 
     template: `
 <div class="filtervisibilityrules-container">

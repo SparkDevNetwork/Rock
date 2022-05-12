@@ -162,6 +162,8 @@
     <TypeScriptCompile Include="Framework\FieldTypes\urlLinkFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\utils.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonTypeOptions.ts" />
+    <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\followingEventType.d.ts" />
+    <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\signatureDocumentTemplate.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\detailBlock.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\controlLazyMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\detailPanelMode.d.ts" />

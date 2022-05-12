@@ -47,8 +47,8 @@ export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E ext
 
 /**
  * Updates the Ref value, but only if the new value is actually different than
- * the current value. A strict comparison is performed.
- * 
+ * the current value. A deep comparison is performed.
+ *
  * @param target The target Ref object to be updated.
  * @param value The new value to be assigned to the target.
  *
@@ -67,10 +67,10 @@ export function updateRefValue<T>(target: Ref<T>, value: T): boolean {
 /**
  * Defines a component that will be loaded asynchronously. This contains logic
  * to properly work with the RockSuspense control.
- * 
+ *
  * @param source The function to call to load the component.
  *
- * @retunrs The component that was loaded.
+ * @returns The component that was loaded.
  */
 export function defineAsyncComponent<T extends Component = { new(): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T {
     return vueDefineAsyncComponent(async () => {
@@ -142,7 +142,7 @@ export const standardRockFormFieldProps: StandardRockFormFieldProps = {
 /**
  * Copies the known properties for the standard rock form field props from
  * the source object to the destination object.
- * 
+ *
  * @param source The source object to copy the values from.
  * @param destination The destination object to copy the values to.
  */
@@ -158,7 +158,7 @@ function copyStandardRockFormFieldProps(source: ExtractPropTypes<StandardRockFor
  * Configures the basic properties that should be passed to the RockFormField
  * component. The value returned by this function should be used with v-bind on
  * the RockFormField in order to pass all the defined prop values to it.
- * 
+ *
  * @param props The props of the component that will be using the RockFormField.
  *
  * @returns An object of prop values that can be used with v-bind.
@@ -233,7 +233,7 @@ export const standardAsyncPickerProps: StandardAsyncPickerProps = {
 /**
  * Copies the known properties for the standard async picker props from
  * the source object to the destination object.
- * 
+ *
  * @param source The source object to copy the values from.
  * @param destination The destination object to copy the values to.
  */
@@ -250,7 +250,7 @@ function copyStandardAsyncPickerProps(source: ExtractPropTypes<StandardAsyncPick
  * Configures the basic properties that should be passed to the BaseAsyncPicker
  * component. The value returned by this function should be used with v-bind on
  * the BaseAsyncPicker in order to pass all the defined prop values to it.
- * 
+ *
  * @param props The props of the component that will be using the BaseAsyncPicker.
  *
  * @returns An object of prop values that can be used with v-bind.
