@@ -251,10 +251,10 @@ namespace Rock.Model
              *
              */
 
-            var recipientPersonList = new PersonService( ( RockContext ) Context )
-                .Queryable()
-                .Where( p => recipientsWithPersonIds.Contains( p.Id ) )
-                .Where( pa => pa.Id == pa.PrimaryAliasId ) // Only the primary alias.
+            var recipientPersonList = new PersonAliasService( ( RockContext ) Context )
+                .GetPrimaryAliasQuery()
+                .Where( pa => recipientsWithPersonIds.Contains( pa.PersonId ) )
+                .Select( a => a.Person )
                 .ToList();
 
             if ( !recipientPersonList.Any() && recipientEmailsUnknownPersons.Any( a => a != null ) )
