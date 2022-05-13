@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,8 +40,8 @@ namespace Rock.Rest.v2
     /// Provides API endpoints for the Controls controller.
     /// </summary>
     [RoutePrefix( "api/v2/Controls" )]
-    [RockGuid( "815b51f0-b552-47fd-8915-c653eedd5b67" )]
-    public class ControlsController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67")]
+    public class ControlsController : ApiControllerBase 
     {
         #region Category Picker
 
@@ -56,7 +56,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "CategoryPickerChildTreeItems" )]
         [Authenticate]
-        [RockGuid( "a1d07211-6c50-463b-98ed-1622dc4d73dd" )]
+        [Rock.SystemGuid.RestActionGuid( "A1D07211-6C50-463B-98ED-1622DC4D73DD" )]
         public IHttpActionResult CategoryPickerChildTreeItems( [FromBody] CategoryPickerChildTreeItemsOptions options )
         {
             using ( var rockContext = new RockContext() )
@@ -134,7 +134,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
         [Authenticate]
-        [RockGuid( "1e4a1812-8a2c-4266-8f39-3004c1debc9f" )]
+        [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
         public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptions options )
         {
             using ( var rockContext = new RockContext() )
@@ -175,7 +175,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTypePickerGetEntityTypes" )]
         [Authenticate]
-        [RockGuid( "afdd3d40-5856-478b-a41a-0539127f0631" )]
+        [Rock.SystemGuid.RestActionGuid( "AFDD3D40-5856-478B-A41A-0539127F0631" )]
         public IHttpActionResult EntityTypePickerGetEntityTypes( [FromBody] EntityTypePickerGetEntityTypesOptions options )
         {
             using ( var rockContext = new RockContext() )
@@ -208,7 +208,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "FieldTypeEditorGetAvailableFieldTypes" )]
         [Authenticate]
-        [RockGuid( "fedef3f7-fcb0-4538-9629-177c7d2ae06f" )]
+        [Rock.SystemGuid.RestActionGuid( "FEDEF3F7-FCB0-4538-9629-177C7D2AE06F" )]
         public IHttpActionResult FieldTypeEditorGetAvailableFieldTypes( [FromBody] FieldTypeEditorGetAvailableFieldTypesOptionsBag options )
         {
             var fieldTypes = FieldTypeCache.All()
@@ -237,7 +237,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "FieldTypeEditorUpdateAttributeConfiguration" )]
         [Authenticate]
-        [RockGuid( "afdf0ec4-5d17-4278-9fa6-3f859f38e3b5" )]
+        [Rock.SystemGuid.RestActionGuid( "AFDF0EC4-5D17-4278-9FA6-3F859F38E3B5" )]
         public IHttpActionResult FieldTypeEditorUpdateAttributeConfiguration( [FromBody] FieldTypeEditorUpdateAttributeConfigurationOptionsBag options )
         {
             var fieldType = Rock.Web.Cache.FieldTypeCache.Get( options.FieldTypeGuid )?.Field;
@@ -282,7 +282,7 @@ namespace Rock.Rest.v2
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "LocationPickerGetActiveChildren" )]
-        [RockGuid( "e57312ec-92a7-464c-aa7e-5320ddfaef3d" )]
+        [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
         public IHttpActionResult LocationPickerGetActiveChildren( [FromBody] LocationPickerGetActiveChildrenOptions options )
         {
             IQueryable<Location> qry;
@@ -368,7 +368,7 @@ namespace Rock.Rest.v2
         [Secured]
         [HttpPost]
         [System.Web.Http.Route( "PersonPickerSearch" )]
-        [RockGuid( "1947578d-b28f-4956-8666-dcc8c0f2b945" )]
+        [Rock.SystemGuid.RestActionGuid( "1947578D-B28F-4956-8666-DCC8C0F2B945" )]
         public IQueryable<Rock.Rest.Controllers.PersonSearchResult> PersonPickerSearch( [FromBody] PersonPickerSearchOptions options )
         {
             var rockContext = new RockContext();
@@ -389,7 +389,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "SaveFinancialAccountFormSaveAccount" )]
-        [RockGuid( "544b6302-a9e0-430e-a1c1-7bcbc4a6230c" )]
+        [Rock.SystemGuid.RestActionGuid( "544B6302-A9E0-430E-A1C1-7BCBC4A6230C" )]
         public SaveFinancialAccountFormSaveAccountResult SaveFinancialAccountFormSaveAccount( [FromBody] SaveFinancialAccountFormSaveAccountOptions options )
         {
             // Validate the arguments

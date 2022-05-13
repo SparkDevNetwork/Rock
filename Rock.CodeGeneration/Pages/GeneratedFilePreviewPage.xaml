@@ -91,7 +91,7 @@
                            Grid.Row="1"
                            Grid.Column="1"
                            Visibility="Hidden"
-                           OldTextHeader="Old Contnet"
+                           OldTextHeader="Old Content"
                            NewTextHeader="New Content" />
         </Grid>
 

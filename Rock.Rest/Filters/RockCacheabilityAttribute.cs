@@ -49,8 +49,17 @@ namespace Rock.Rest.Filters
             var actionMethod = actionExecutedContext.Request.Method.Method;
             var controller = actionExecutedContext.ActionContext.ActionDescriptor.ControllerDescriptor;
 
-            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out RockGuidAttribute rockGuid );
-            var restActionCache = RestActionCache.Get( apiId, rockGuid?.Guid ?? Guid.Empty );
+            RestActionCache restActionCache;
+            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out Guid? restActionGuid );
+            if ( restActionGuid.HasValue )
+            {
+                restActionCache = RestActionCache.Get( restActionGuid.Value );
+            }
+            else
+            {
+                restActionCache = RestActionCache.Get( apiId );
+            }
+
             if ( restActionCache != null )
             {
                 var cacheControl = restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() ? restActionCache.CacheControlHeader : "no-store";

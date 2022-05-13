@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,8 +43,8 @@ namespace Rock.Rest.v2.Controllers
     /// Provides API interfaces for TV applications to use when communicating with Rock.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
-    [RockGuid( "38541064-21b0-4614-a97c-5c9231ebcb4e" )]
-    public class TvController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "38541064-21B0-4614-A97C-5C9231EBCB4E")]
+    public class TvController : ApiControllerBase 
     {
         // Used for creating random strings
         private static Random random = new Random();
@@ -59,7 +59,7 @@ namespace Rock.Rest.v2.Controllers
         /// <seealso cref="Rock.Rest.ApiControllerBase" />
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/apple/GetLaunchPacket" )]
-        [RockGuid( "55d648cd-0533-4fe6-99b1-ce301728db73" )]
+        [Rock.SystemGuid.RestActionGuid( "55D648CD-0533-4FE6-99B1-CE301728DB73" )]
         public IHttpActionResult GetLaunchPacket()
         {
             // Read site Id from the request header
@@ -188,7 +188,7 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/apple/GetApplicationJavaScript/{applicationId}" )]
-        [RockGuid( "a3792a52-0f64-4f55-9c9c-7e02aa96d0f9" )]
+        [Rock.SystemGuid.RestActionGuid( "A3792A52-0F64-4F55-9C9C-7E02AA96D0F9" )]
         public HttpResponseMessage GetApplicationScript( int applicationId )
         {
             var response = new HttpResponseMessage();
@@ -226,7 +226,7 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/apple/GetTvmlForPage/{pageGuid}" )]
-        [RockGuid( "ae76f738-7380-48eb-85bd-c42102e2a4a0" )]
+        [Rock.SystemGuid.RestActionGuid( "AE76F738-7380-48EB-85BD-C42102E2A4A0" )]
         public HttpResponseMessage GetTvmlForPage( Guid pageGuid )
         {
             var response = new HttpResponseMessage();
@@ -357,7 +357,7 @@ namespace Rock.Rest.v2.Controllers
         [System.Web.Http.Route( "api/v2/tv/SaveInteractions/{personalDeviceGuid}" )]
         [HttpPost]
         [Authenticate]
-        [RockGuid( "624cdfbb-4688-4312-bccd-4aeaabb49523" )]
+        [Rock.SystemGuid.RestActionGuid( "624CDFBB-4688-4312-BCCD-4AEAABB49523" )]
         public IHttpActionResult PostInteractions( [FromBody] List<TvInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
             var person = GetPerson();
@@ -555,7 +555,7 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/StartAuthenticationSession/{siteId}" )]
-        [RockGuid( "0747d3bf-8bcf-4c4d-a022-4158694ddb1b" )]
+        [Rock.SystemGuid.RestActionGuid( "0747D3BF-8BCF-4C4D-A022-4158694DDB1B" )]
         public HttpResponseMessage StartAuthenicationSession( int siteId )
         {
             var response = new HttpResponseMessage();
@@ -652,7 +652,7 @@ namespace Rock.Rest.v2.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/v2/tv/CheckAuthenticationSession/{siteId}/{code}" )]
-        [RockGuid( "35c60489-936f-42f9-8617-18c959abdb0c" )]
+        [Rock.SystemGuid.RestActionGuid( "35C60489-936F-42F9-8617-18C959ABDB0C" )]
         public HttpResponseMessage CheckAuthenicationSession( int siteId, string code )
         {
             var response = new HttpResponseMessage();

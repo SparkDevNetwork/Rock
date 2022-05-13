@@ -24,6 +24,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Data;
+using Rock.SystemGuid;
 
 namespace Rock.Security
 {
@@ -48,7 +49,7 @@ namespace Rock.Security
         /// <summary>
         /// Gets the unique rule identifier.
         /// </summary>
-        /// <remarks>This is calculated automatically from the <see cref="RockGuidAttribute"/>.</remarks>
+        /// <remarks>This is calculated automatically from the <see cref="SecurityGrantRuleGuidAttribute"/>.</remarks>
         /// <value>The unique rule identifier.</value>
         [JsonProperty( "_id" )]
         public Guid RuleId
@@ -57,7 +58,7 @@ namespace Rock.Security
             {
                 if ( !_ruleId.HasValue )
                 {
-                    var rockGuid = GetType().GetCustomAttribute<RockGuidAttribute>();
+                    var rockGuid = GetType().GetCustomAttribute<SecurityGrantRuleGuidAttribute>();
 
                     _ruleId = rockGuid != null ? rockGuid.Guid : Guid.Empty;
                 }

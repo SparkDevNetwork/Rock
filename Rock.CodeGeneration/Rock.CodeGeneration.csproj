@@ -93,6 +93,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CodeGenHelpers.cs" />
     <Compile Include="Controls\Alert.xaml.cs">
       <DependentUpon>Alert.xaml</DependentUpon>
     </Compile>
@@ -136,6 +137,7 @@
       <DependentUpon>ObsidianViewModelsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RockGuidCodeGenerator.cs" />
     <Compile Include="Utility\AlertType.cs" />
     <Compile Include="Utility\BindingBase.cs" />
     <Compile Include="Utility\EntityProperty.cs" />
@@ -186,6 +188,9 @@
     </PackageReference>
     <PackageReference Include="LoxSmoke.DocXml">
       <Version>3.4.5</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core">
+      <Version>5.2.3</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>

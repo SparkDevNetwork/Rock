@@ -30,9 +30,12 @@ namespace Rock.Communication.Medium
     [Description( "A push notification communication" )]
     [Export( typeof( MediumComponent ))]
     [ExportMetadata( "ComponentName", "Push Notification")]
-    class PushNotification : MediumComponent
+    public class PushNotification : MediumComponent
     {
-
+        /// <summary>
+        /// Gets the type of the communication.
+        /// </summary>
+        /// <value>The type of the communication.</value>
         public override CommunicationType CommunicationType { get { return CommunicationType.PushNotification; } }
 
         /// <summary>

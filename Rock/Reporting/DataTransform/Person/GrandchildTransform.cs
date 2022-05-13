@@ -29,18 +29,15 @@ namespace Rock.Reporting.DataTransform.Person
     /// <summary>
     /// Person Grandparent Transformation
     /// </summary>
-    /// 
     [Description( "Transform result to Grandchild" )]
     [Export( typeof( DataTransformComponent ) )]
     [ExportMetadata( "ComponentName", "Person Grandchild Transformation" )]
-    class GrandchildTransform : DataTransformComponent<Rock.Model.Person>
+    public class GrandchildTransform : DataTransformComponent<Rock.Model.Person>
     {
         /// <summary>
         /// Gets the title.
         /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
+        /// <value>The title.</value>
         public override string Title
         {
             get { return "Grandchild"; }
@@ -49,9 +46,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <summary>
         /// Gets the name of the transformed entity type.
         /// </summary>
-        /// <value>
-        /// The name of the transformed entity type.
-        /// </value>
+        /// <value>The name of the transformed entity type.</value>
         public override string TransformedEntityTypeName
         {
             get { return "Rock.Model.Person"; }
@@ -63,7 +58,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
-        /// <returns></returns>
+        /// <returns>Expression.</returns>
         public override Expression GetExpression( IService serviceInstance, ParameterExpression parameterExpression, Expression whereExpression )
         {
             IQueryable<int> idQuery = serviceInstance.GetIds( parameterExpression, whereExpression );
@@ -76,7 +71,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="personQueryable">The person queryable.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns>
+        /// <returns>Expression.</returns>
         public override Expression GetExpression( IService serviceInstance, IQueryable<Rock.Model.Person> personQueryable, ParameterExpression parameterExpression )
         {
             return BuildExpression( serviceInstance, personQueryable.Select( p => p.Id ), parameterExpression );
@@ -88,7 +83,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="idQuery">The id query.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <returns></returns> 
+        /// <returns>Expression.</returns>
         private Expression BuildExpression( IService serviceInstance, IQueryable<int> idQuery, ParameterExpression parameterExpression )
         {
             var groupeType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );

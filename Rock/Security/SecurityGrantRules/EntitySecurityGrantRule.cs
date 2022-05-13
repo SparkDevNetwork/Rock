@@ -27,7 +27,7 @@ namespace Rock.Security.SecurityGrantRules
     /// and its entity identifier.
     /// </summary>
     /// <seealso cref="Rock.Security.SecurityGrantRule" />
-    [RockGuid( "7da622dc-3d38-4941-8ca0-179752c8e43d" )]
+    [Rock.SystemGuid.SecurityGrantRuleGuid( "7da622dc-3d38-4941-8ca0-179752c8e43d" )]
     internal class EntitySecurityGrantRule : SecurityGrantRule
     {
         #region Properties

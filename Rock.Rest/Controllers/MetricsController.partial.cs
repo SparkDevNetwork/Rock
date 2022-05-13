@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,7 +30,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "0e1fcfe1-8a82-48ca-a548-3940ce650d83" )]
     public partial class MetricsController
     {
         /// <summary>
@@ -41,7 +40,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/Metrics/GetHtmlForBlock/{blockId}" )]
-        [RockGuid( "b67ed75b-94ab-49b7-9e36-84b845fb20d3" )]
+        [Rock.SystemGuid.RestActionGuid( "B67ED75B-94AB-49B7-9E36-84B845FB20D3" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
             RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();

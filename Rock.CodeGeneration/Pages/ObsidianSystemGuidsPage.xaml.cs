@@ -53,10 +53,7 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A collection of types in the <see cref="SystemGuid"/> namespace.</returns>
         private List<Type> GetSystemGuidTypes()
         {
-            return typeof( SystemGuid.DefinedType ).Assembly
-                .GetExportedTypes()
-                .Where( t => t.Namespace == "Rock.SystemGuid" )
-                .ToList();
+            return CodeGenHelpers.GetSystemGuidTypes( typeof( SystemGuid.DefinedType ).Assembly );
         }
 
         /// <summary>

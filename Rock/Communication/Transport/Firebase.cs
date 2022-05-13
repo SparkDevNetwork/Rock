@@ -36,7 +36,7 @@ namespace Rock.Communication.Transport
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Firebase" )]
     [TextField( "ServerKey", "The server key for your firebase account", true, "", "", 1 )]
-    class Firebase : TransportComponent
+    public class Firebase : TransportComponent
     {
 
         /// <summary>

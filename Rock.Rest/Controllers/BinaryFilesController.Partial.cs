@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,7 +32,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "7e9a3f70-c569-42c0-aa26-e7367f2bd607" )]
     public partial class BinaryFilesController
     {
         /// <summary>
@@ -43,7 +42,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/BinaryFiles/Upload" )]
-        [RockGuid( "966630a2-9a43-4cd9-80b9-663b0a8d4d24" )]
+        [Rock.SystemGuid.RestActionGuid( "966630A2-9A43-4CD9-80B9-663B0A8D4D24" )]
         public HttpResponseMessage Upload( Guid binaryFileTypeGuid )
         {
             try
@@ -79,7 +78,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/BinaryFiles/Upload" )]
-        [RockGuid( "0419e557-b417-42a1-82cd-e72640858386" )]
+        [Rock.SystemGuid.RestActionGuid( "0419E557-B417-42A1-82CD-E72640858386" )]
         public HttpResponseMessage Upload( int binaryFileTypeId )
         {
             try

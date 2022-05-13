@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,7 +28,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "8a8ff948-147e-4783-8c08-202f6e402caa" )]
     public partial class FinancialAccountsController
     {
         /// <summary>
@@ -40,7 +39,7 @@ namespace Rock.Rest.Controllers
         /// <returns>IQueryable&lt;AccountTreeViewItem&gt;.</returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildrenBySearchTerm/{activeOnly}/{displayPublicName}/{searchTerm}" )]
-        [RockGuid( "21BF6409-CC65-4562-BD1A-F9FEEC1634F3" )]
+        [Rock.SystemGuid.RestActionGuid( "21BF6409-CC65-4562-BD1A-F9FEEC1634F3" )]
         public IQueryable<AccountTreeViewItem> GetChildrenBySearchTerm( bool activeOnly, bool displayPublicName, string searchTerm )
         {
             return GetSearchTermData( activeOnly, displayPublicName, searchTerm );
@@ -53,7 +52,7 @@ namespace Rock.Rest.Controllers
         /// <returns>IOrderedEnumerable&lt;System.Int32&gt;.</returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetParentIds/{id}" )]
-        [RockGuid( "1E007DCA-3785-4EFF-A09D-8F9A034450AA" )]
+        [Rock.SystemGuid.RestActionGuid( "1E007DCA-3785-4EFF-A09D-8F9A034450AA" )]
         public IEnumerable<int> GetParentIds( int id )
         {
             var accountService = new FinancialAccountService( new Data.RockContext() );
@@ -67,7 +66,7 @@ namespace Rock.Rest.Controllers
         /// <returns>Dictionary&lt;System.String, System.String&gt;.</returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetParentIdsCollection" )]
-        [RockGuid( "1858BC66-D4BA-48CE-9866-154B902AE7A4" )]
+        [Rock.SystemGuid.RestActionGuid( "1858BC66-D4BA-48CE-9866-154B902AE7A4" )]
         public Dictionary<string, List<string>> GetParentIds( [FromUri] IEnumerable<string> ids )
         {
             var accountService = new FinancialAccountService( new Data.RockContext() );
@@ -97,7 +96,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
-        [RockGuid( "5c21d8b8-5c68-42ca-bf19-80050c8ff2a4" )]
+        [Rock.SystemGuid.RestActionGuid( "5C21D8B8-5C68-42CA-BF19-80050C8FF2A4" )]
         public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly )
         {
             return GetChildrenData( id, activeOnly, true );
@@ -112,7 +111,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}/{displayPublicName}" )]
-        [RockGuid( "976bdf2a-92e6-4902-a84d-be7cb25a3824" )]
+        [Rock.SystemGuid.RestActionGuid( "976BDF2A-92E6-4902-A84D-BE7CB25A3824" )]
         public IQueryable<AccountTreeViewItem> GetChildren( int id, bool activeOnly, bool displayPublicName )
         {
             return GetChildrenData( id, activeOnly, displayPublicName );
@@ -125,7 +124,7 @@ namespace Rock.Rest.Controllers
         /// <returns>IQueryable&lt;TreeViewItem&gt;.</returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialAccounts/GetInactive/{displayPublicName}" )]
-        [RockGuid( "4B08E38F-0C6A-41B1-9C52-DEB40028927F" )]
+        [Rock.SystemGuid.RestActionGuid( "4B08E38F-0C6A-41B1-9C52-DEB40028927F" )]
         public IQueryable<AccountTreeViewItem> GetInactive( bool displayPublicName )
         {
             var financialAccountService = new FinancialAccountService( new Data.RockContext() );

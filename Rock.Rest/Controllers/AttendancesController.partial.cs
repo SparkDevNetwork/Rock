@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,7 +31,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "4fb7e1c9-b57e-4fa4-bdd6-61fd81746ac4" )]
     public partial class AttendancesController
     {
         /// <summary>
@@ -40,7 +39,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/GetChartData" )]
-        [RockGuid( "7611d15b-55cd-4d84-96b5-1a11340d8d8a" )]
+        [Rock.SystemGuid.RestActionGuid( "7611D15B-55CD-4D84-96B5-1A11340D8D8A" )]
         public IEnumerable<IChartData> GetChartData( ChartGroupBy groupBy = ChartGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null, string scheduleIds = null, int? dataViewId = null )
         {
             return new AttendanceService( new RockContext() ).GetChartData( groupBy, graphBy, startDate, endDate, groupIds, campusIds, dataViewId, scheduleIds );
@@ -59,7 +58,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/AddAttendance" )]
         [HttpPut]
-        [RockGuid( "68ff77eb-7a7c-4763-a090-0f917cc2e033" )]
+        [Rock.SystemGuid.RestActionGuid( "68FF77EB-7A7C-4763-A090-0F917CC2E033" )]
         public Attendance AddAttendance( int groupId, int locationId, int scheduleId, DateTime occurrenceDate, int? personId = null, int? personAliasId = null )
         {
             using ( var rockContext = new RockContext() )
@@ -97,7 +96,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/GetSchedulerResources" )]
         [HttpPost]
-        [RockGuid( "ddbddbe0-7032-49b2-82e7-08dba28f1fc1" )]
+        [Rock.SystemGuid.RestActionGuid( "DDBDDBE0-7032-49B2-82E7-08DBA28F1FC1" )]
         public IEnumerable<SchedulerResource> GetSchedulerResources( [FromBody] SchedulerResourceParameters schedulerResourceParameters )
         {
             var rockContext = new RockContext();
@@ -114,7 +113,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/GetSchedulerResource" )]
         [HttpPost]
-        [RockGuid( "082bc954-89ca-4d73-a971-72446b84e92c" )]
+        [Rock.SystemGuid.RestActionGuid( "082BC954-89CA-4D73-A971-72446B84E92C" )]
         public SchedulerResource GetSchedulerResource( [FromBody] SchedulerResourceParameters schedulerResourceParameters, int personId )
         {
             var rockContext = new RockContext();
@@ -132,7 +131,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/GetAttendingSchedulerResources" )]
         [HttpGet]
-        [RockGuid( "cde17f35-da0a-47d9-80ef-994def9fb946" )]
+        [Rock.SystemGuid.RestActionGuid( "CDE17F35-DA0A-47D9-80EF-994DEF9FB946" )]
         public IEnumerable<SchedulerResourceAttend> GetAttendingSchedulerResources( int attendanceOccurrenceId )
         {
             var rockContext = new RockContext();
@@ -148,7 +147,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonRemove" )]
         [HttpPut]
-        [RockGuid( "5621a903-ef18-49d7-91de-73e27e5d2b5a" )]
+        [Rock.SystemGuid.RestActionGuid( "5621A903-EF18-49D7-91DE-73E27E5D2B5A" )]
         public void ScheduledPersonRemove( int attendanceId )
         {
             var rockContext = new RockContext();
@@ -168,7 +167,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Attendances/CanSchedulePerson" )]
-        [RockGuid( "3b23b14a-9d00-4d73-95bf-c6c22c1d07f8" )]
+        [Rock.SystemGuid.RestActionGuid( "3B23B14A-9D00-4D73-95BF-C6C22C1D07F8" )]
         public virtual HttpResponseMessage CanSchedulePerson( int personId, int attendanceOccurrenceId, int? fromAttendanceOccurrenceId = null )
         {
             var rockContext = new RockContext();
@@ -236,7 +235,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonAddPending" )]
         [HttpPut]
-        [RockGuid( "12ab7295-caea-4308-a63c-934e7afd8605" )]
+        [Rock.SystemGuid.RestActionGuid( "12AB7295-CAEA-4308-A63C-934E7AFD8605" )]
         public Attendance ScheduledPersonAddPending( int personId, int attendanceOccurrenceId )
         {
             var rockContext = new RockContext();
@@ -259,7 +258,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonAddConfirmed" )]
         [HttpPut]
-        [RockGuid( "5517065d-0c65-4fd4-95cc-c676aaba64fe" )]
+        [Rock.SystemGuid.RestActionGuid( "5517065D-0C65-4FD4-95CC-C676AABA64FE" )]
         public Attendance ScheduledPersonAddConfirmed( int personId, int attendanceOccurrenceId )
         {
             var rockContext = new RockContext();
@@ -285,7 +284,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonPending" )]
         [HttpPut]
-        [RockGuid( "27304d4e-58f7-4b27-861d-e505ff010579" )]
+        [Rock.SystemGuid.RestActionGuid( "27304D4E-58F7-4B27-861D-E505FF010579" )]
         public void ScheduledPersonPending( int attendanceId )
         {
             var rockContext = new RockContext();
@@ -302,7 +301,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonConfirm" )]
         [HttpPut]
-        [RockGuid( "35e8d73c-5783-40ab-b874-cd4a63d14caa" )]
+        [Rock.SystemGuid.RestActionGuid( "35E8D73C-5783-40AB-B874-CD4A63D14CAA" )]
         public void ScheduledPersonConfirm( int attendanceId )
         {
             var rockContext = new RockContext();
@@ -319,7 +318,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonDecline" )]
         [HttpPut]
-        [RockGuid( "f9c2e4cb-a3b5-4caf-a678-0c543774f736" )]
+        [Rock.SystemGuid.RestActionGuid( "F9C2E4CB-A3B5-4CAF-A678-0C543774F736" )]
         public void ScheduledPersonDecline( int attendanceId )
         {
             var rockContext = new RockContext();
@@ -338,7 +337,7 @@ namespace Rock.Rest.Controllers
         [HttpPut]
         [Obsolete( "Use ScheduledPersonSendConfirmationCommunication instead." )]
         [RockObsolete( "1.13" )]
-        [RockGuid( "8531ed24-d82a-4ffb-8f5c-3848fcc04a44" )]
+        [Rock.SystemGuid.RestActionGuid( "8531ED24-D82A-4FFB-8F5C-3848FCC04A44" )]
         public void ScheduledPersonSendConfirmationEmail( int attendanceId )
         {
             var rockContext = new RockContext();
@@ -356,7 +355,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonSendConfirmationCommunication" )]
         [HttpPut]
-        [RockGuid( "b126e3e7-5b54-4a91-8214-2006bb4d3deb" )]
+        [Rock.SystemGuid.RestActionGuid( "B126E3E7-5B54-4A91-8214-2006BB4D3DEB" )]
         public void ScheduledPersonSendConfirmationCommunication( int attendanceId )
         {
             var rockContext = new RockContext();
@@ -383,7 +382,7 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         [Obsolete( "Use the method which accepts a List<string> parameter instead." )]
         [RockObsolete( "1.10.4" )]
-        [RockGuid( "5a9f9da7-d669-4d0d-8914-1dc1f21bb0fa" )]
+        [Rock.SystemGuid.RestActionGuid( "5A9F9DA7-D669-4D0D-8914-1DC1F21BB0FA" )]
         public void RegisterRSVPRecipients( int occurrenceId, string personIds )
         {
             new AttendanceService( new RockContext() )
@@ -398,7 +397,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/RegisterRSVPRecipients" )]
         [HttpPost]
-        [RockGuid( "e3c50a1c-df4e-4828-a0d0-a0bed27edbe1" )]
+        [Rock.SystemGuid.RestActionGuid( "E3C50A1C-DF4E-4828-A0D0-A0BED27EDBE1" )]
         public void RegisterRSVPRecipients( int occurrenceId, [FromBody] List<string> personIds )
         {
             var personIdList = personIds.Select( int.Parse ).ToList();
@@ -421,7 +420,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Attendances/Import" )]
-        [RockGuid( "19fb3aa7-5e40-4186-aa25-e4978ffcefc4" )]
+        [Rock.SystemGuid.RestActionGuid( "19FB3AA7-5E40-4186-AA25-E4978FFCEFC4" )]
         public void AttendanceImport( Rock.BulkImport.AttendancesImport attendancesImport )
         {
             if ( attendancesImport == null )

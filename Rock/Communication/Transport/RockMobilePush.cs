@@ -39,7 +39,7 @@ namespace Rock.Communication.Transport
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Rock Mobile Push" )]
     [TextField( "ServerKey", "The server key for your firebase account", true, "", "", 1 )]
-    class RockMobilePush : TransportComponent, IRockMobilePush
+    public class RockMobilePush : TransportComponent, IRockMobilePush
     {
         /// <summary>
         /// The keys that can be present in the notification payload data.

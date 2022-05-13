@@ -13,41 +13,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 
-namespace Rock.Data
+namespace Rock.SystemGuid
 {
     /// <summary>
-    /// Used to decorate items in Rock with well-known GUID attributes.
+    /// Base class for attributes that decorate items in Rock with well-known GUID attributes.
+    /// When applying these, the Guids must be unique or an exception will occur.
     /// </summary>
     /// <seealso cref="System.Attribute" />
-    [System.AttributeUsage( System.AttributeTargets.Class | System.AttributeTargets.Method, Inherited=false )]
-    public class RockGuidAttribute : System.Attribute
+    public abstract class RockGuidAttribute : System.Attribute
     {
         /// <summary>
         /// Gets the unique identifier.
         /// </summary>
         /// <value>The unique identifier.</value>
-        public Guid Guid { get; private set; }
+        public readonly Guid Guid;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Rock.RockGuidAttribute" /> class from the specified  <see cref="string"/>.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
-        /// <exception cref="System.ArgumentNullException" />
-        /// <exception cref="System.FormatException" />
-        /// <exception cref="System.OverflowException" />
         public RockGuidAttribute( string guid )
+            : this( new Guid( guid ) )
         {
-            this.Guid = new Guid( guid );
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Rock.RockGuidAttribute" /> class from the specified <see cref="System.Guid"/>.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
-        public RockGuidAttribute( Guid guid )
+        private RockGuidAttribute( Guid guid )
         {
             this.Guid = guid;
         }

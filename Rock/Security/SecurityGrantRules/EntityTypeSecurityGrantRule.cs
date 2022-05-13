@@ -26,7 +26,7 @@ namespace Rock.Security.SecurityGrantRules
     /// Grants permission to all entities of a entity type.
     /// </summary>
     /// <seealso cref="Rock.Security.SecurityGrantRule" />
-    [RockGuid( "9d81709f-a1d3-4f0b-8b69-e81f4fc82e20" )]
+    [Rock.SystemGuid.SecurityGrantRuleGuid( "9d81709f-a1d3-4f0b-8b69-e81f4fc82e20" )]
     internal class EntityTypeSecurityGrantRule : SecurityGrantRule
     {
         #region Properties

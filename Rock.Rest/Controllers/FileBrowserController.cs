@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,8 +32,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "a62c14d8-af2e-400d-af2e-546157913014" )]
-    public class FileBrowserController : ApiController
+    [Rock.SystemGuid.RestControllerGuid( "A62C14D8-AF2E-400D-AF2E-546157913014")]
+    public class FileBrowserController : ApiController 
     {
         /// <summary>
         /// Gets the file thumbnail
@@ -47,7 +47,7 @@ namespace Rock.Rest.Controllers
         /// </example>
         [HttpGet]
         [System.Web.Http.Route( "api/FileBrowser/GetFileThumbnail" )]
-        [RockGuid( "11495fa9-a0e6-4439-80c6-bf804cb0a584" )]
+        [Rock.SystemGuid.RestActionGuid( "11495FA9-A0E6-4439-80C6-BF804CB0A584" )]
         public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
         {
             string physicalFilePath = HttpContext.Current.Request.MapPath( relativeFilePath );

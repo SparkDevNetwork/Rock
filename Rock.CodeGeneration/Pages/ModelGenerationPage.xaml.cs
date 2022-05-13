@@ -21,7 +21,6 @@ using System.Windows.Input;
 using System.Xml;
 
 using Rock;
-using Rock.Data;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
 
@@ -198,6 +197,17 @@ namespace Rock.CodeGeneration.Pages
         }
         private bool _isDatabaseProcsChecked = true;
 
+        public bool IsRockGuidsChecked
+        {
+            get => _isRockGuidsChecked;
+            set
+            {
+                _isRockGuidsChecked = value;
+                OnPropertyChanged();
+            }
+        }
+        private bool _isRockGuidsChecked = true;
+
         public bool IsReportObsoleteChecked
         {
             get => _isReportObsoleteChecked;
@@ -283,7 +293,7 @@ namespace Rock.CodeGeneration.Pages
 
             var projectName = Path.GetFileNameWithoutExtension( assemblyFileName );
 
-            SqlConnection sqlconn = GetSqlConnection( RootFolder().FullName );
+            SqlConnection sqlconn = CodeGenHelpers.GetSqlConnection( RootFolder().FullName );
 
             if ( sqlconn != null )
             {
@@ -432,6 +442,11 @@ namespace Rock.CodeGeneration.Pages
                             WriteDatabaseProcsScripts( DatabaseFolder, projectName );
                         }
 
+                        if ( IsRockGuidsChecked )
+                        {
+                            RockGuidCodeGenerator.EnsureRockGuidAttributes( rootFolder.FullName );
+                        }
+
                         if ( IsEnsureCopyrightHeadersChecked )
                         {
                             EnsureCopyrightHeaders( rootFolder.FullName );
@@ -470,7 +485,7 @@ namespace Rock.CodeGeneration.Pages
                     } );
                 }
 
-                Dispatcher.Invoke( () => GenerateButton.IsEnabled = false );
+                Dispatcher.Invoke( () => GenerateButton.IsEnabled = true );
             } );
 
         }
@@ -528,17 +543,27 @@ namespace Rock.CodeGeneration.Pages
                         }
                     }
 
-                    /* See if class has RockGuid */
-                    var typeRockGuidAttribute = type.GetCustomAttribute<RockGuidAttribute>();
-                    if ( null != typeRockGuidAttribute )
+                    /* See if there are any duplicate RockGuids */
+                    List<Rock.SystemGuid.RockGuidAttribute> rockGuidAttributes;
+                    try
                     {
-                        if ( typeRockGuidAttribute.Guid.IsEmpty() )
+                        rockGuidAttributes = type.GetCustomAttributes<SystemGuid.RockGuidAttribute>().ToList();
+                    }
+                    catch ( FormatException )
+                    {
+                        rockGuidWarnings.AppendLine( $"Invalid RockGuid on {type}" );
+                        rockGuidAttributes = new List<SystemGuid.RockGuidAttribute>();
+                    }
+
+                    foreach ( var rockGuidAttribute in rockGuidAttributes )
+                    {
+                        if ( rockGuidAttribute.Guid.IsEmpty() )
                         {
                             rockGuidWarnings.AppendLine( $" - EMPTY,{type}" );
                         }
                         else
                         {
-                            var rockGuid = typeRockGuidAttribute.Guid.ToString();
+                            var rockGuid = rockGuidAttribute.Guid.ToString();
                             if ( !rockGuids.ContainsKey( rockGuid ) )
                             {
                                 rockGuids.Add( rockGuid, $"{type}" );
@@ -555,21 +580,6 @@ namespace Rock.CodeGeneration.Pages
                         .GetMembers( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static )
                         .OrderBy( a => a.Name )
                         .ToList();
-
-                    if ( null == typeRockGuidAttribute )
-                    {
-                        /* API Controllers should have assigned RockGuidAttribute */
-                        if ( typeof( Rock.Rest.ApiControllerBase ).IsAssignableFrom( type ) &&
-                             // Ignore the generic definition class(es)
-                             !type.IsGenericTypeDefinition &&
-                             // Ignore the base class
-                             !type.Equals( typeof( Rock.Rest.ApiControllerBase ) ) &&
-                             // Does the class have methods, otherwise it is likely just a code-gen file?
-                             memberList.Count( m => m.MemberType == MemberTypes.Method && m.DeclaringType == type ) > 0 )
-                        {
-                            rockGuidWarnings.AppendLine( $" - MISSING CLASS,{type}" );
-                        }
-                    }
 
                     foreach ( MemberInfo member in memberList )
                     {
@@ -596,44 +606,6 @@ namespace Rock.CodeGeneration.Pages
                                     }
 
                                     obsoleteReportList.Add( $"{messagePrefix}{memberRockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
-                                }
-                            }
-
-                            /* See if member has RockGuidAttribute */
-                            var memberRockGuidAttribute = member.GetCustomAttribute<RockGuidAttribute>();
-                            if ( null != memberRockGuidAttribute )
-                            {
-                                if ( memberRockGuidAttribute.Guid.IsEmpty())
-                                {
-                                    rockGuidWarnings.AppendLine( $" - EMPTY,{member.DeclaringType}.{member}" );
-                                }
-                                else
-                                {
-                                    var rockGuid = memberRockGuidAttribute.Guid.ToString();
-                                    if ( !rockGuids.ContainsKey( rockGuid ) )
-                                    {
-                                        rockGuids.Add( rockGuid, $"{member.DeclaringType}.{member}" );
-                                    }
-                                    else
-                                    {
-                                        rockGuidWarnings.AppendLine( $" - DUPLICATE,{type.Name} {member},{rockGuid},{rockGuids[rockGuid]}" );
-                                    }
-                                }
-                            }
-
-                            /* Active public API methods should have assigned RockGuidAttribute */
-                            if ( null == memberObsoleteAttribute && null == memberRockObsolete && null == memberRockGuidAttribute &&
-                                 typeof( Rock.Rest.ApiControllerBase ).IsAssignableFrom( type ) &&
-                                 // Ignore the generic definition class(es)
-                                 !type.IsGenericTypeDefinition &&
-                                 // Ignore the base class
-                                 !type.Equals( typeof( Rock.Rest.ApiControllerBase ) ) )
-                            {
-                                if ( member.MemberType == MemberTypes.Method &&
-                                     ( ( MethodInfo ) member ).IsPublic &&
-                                     !( ( MethodInfo ) member ).IsSpecialName )
-                                {
-                                    rockGuidWarnings.AppendLine( $" - MISSING METHOD,{type.Name} {member}" );
                                 }
                             }
                         }
@@ -805,7 +777,7 @@ namespace Rock.CodeGeneration.Pages
                 "sp_renamediagram",
                 "sp_upgraddiagrams" };
 
-            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo( databaseRootFolder ).Parent.FullName );
+            SqlConnection sqlconn = CodeGenHelpers.GetSqlConnection( new DirectoryInfo( databaseRootFolder ).Parent.FullName );
             sqlconn.Open();
             var qryProcs = sqlconn.CreateCommand();
             qryProcs.CommandType = System.Data.CommandType.Text;
@@ -1452,7 +1424,7 @@ namespace Rock.ViewModels.Entities
         private string GetCanDeleteCode( string serviceFolder, Type type )
         {
 
-            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo( serviceFolder ).Parent.FullName );
+            SqlConnection sqlconn = CodeGenHelpers.GetSqlConnection( new DirectoryInfo( serviceFolder ).Parent.FullName );
             if ( sqlconn == null )
             {
                 return string.Empty;
@@ -1609,22 +1581,6 @@ namespace Rock.ViewModels.Entities
 
         }
 
-        private static SqlConnection GetSqlConnection( string rootFolder )
-        {
-            var file = new FileInfo( Path.Combine( rootFolder, @"RockWeb\web.ConnectionStrings.config" ) );
-            if ( !file.Exists )
-            {
-                return null;
-            }
-
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load( file.FullName );
-            XmlNode root = xmlDoc.DocumentElement;
-            XmlNode node = root.SelectNodes( "add[@name = \"RockContext\"]" )[0];
-            SqlConnection sqlconn = new SqlConnection( node.Attributes["connectionString"].Value );
-            return sqlconn;
-        }
-
         public string PluralizeTypeName( Type type )
         {
             // This uses PluralizationService (Entity Framework) , which is designed to pluralize the names of types (not necessarily real worlds)
@@ -1650,6 +1606,8 @@ namespace Rock.ViewModels.Entities
             }
         }
 
+        private Dictionary<string, Guid> _restControllerGuidLookup = null;
+
         /// <summary>
         /// Writes the REST file for a given type
         /// </summary>
@@ -1657,12 +1615,19 @@ namespace Rock.ViewModels.Entities
         /// <param name="type"></param>
         private void WriteRESTFile( string rootFolder, Type type )
         {
+            if ( _restControllerGuidLookup == null )
+            {
+                _restControllerGuidLookup = RockGuidCodeGenerator.GetDatabaseGuidLookup( RootFolder().FullName, $"SELECT [Guid], [ClassName] FROM [RestController]", "ClassName" ).Value;
+            }
+
             string pluralizedName = PluralizeTypeName( type );
             string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
             string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
 
             var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
             var rockObsolete = type.GetCustomAttribute<RockObsolete>();
+            var fullClassName = $"{restNamespace}.{pluralizedName}Controller";
+            var restControllerGuid = _restControllerGuidLookup.GetValueOrNull( fullClassName );
 
             var sb = new StringBuilder();
 
@@ -1691,6 +1656,7 @@ namespace Rock.ViewModels.Entities
             sb.AppendLine( "" );
 
             sb.AppendLine( $"using {type.Namespace};" );
+            sb.AppendLine( $"using Rock.SystemGuid;" );
             sb.AppendLine( "" );
 
             sb.AppendLine( $"namespace {restNamespace}" );
@@ -1709,6 +1675,7 @@ namespace Rock.ViewModels.Entities
                 sb.AppendLine( $"    [System.Obsolete( \"{obsolete.Message}\" )]" );
             }
 
+            sb.AppendLine( $"    [RestControllerGuid( \"{ restControllerGuid.ToString().ToUpper()}\" )]" );
             sb.AppendLine( $"    public partial class {pluralizedName}Controller : Rock.Rest.ApiController<{type.Namespace}.{type.Name}>" );
             sb.AppendLine( "    {" );
             sb.AppendLine( "        /// <summary>" );
@@ -2077,7 +2044,9 @@ namespace Rock.ViewModels.Entities
             sb.AppendLine( "{" );
             sb.AppendLine( "    #pragma warning disable CS1591" );
 
-            foreach ( var systemGuidType in rockAssembly.GetTypes().Where( a => a.Namespace == "Rock.SystemGuid" ).OrderBy( a => a.Name ) )
+            var systemGuidTypes = CodeGenHelpers.GetSystemGuidTypes( rockAssembly );
+
+            foreach ( var systemGuidType in systemGuidTypes )
             {
                 sb.AppendLine( "    /// <summary>" );
                 sb.AppendLine( "    /// </summary>" );
