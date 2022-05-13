@@ -930,6 +930,30 @@
 
 // 4. Electronic Signatures
 
+.icon-property {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    color: @text-muted;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+  }
+
+  .property {
+    display: flex;
+    flex-direction: column;
+    margin-left: 8px;
+  }
+}
+
 .registrant-signature-document{
   margin-top: 32px;
 }
@@ -939,9 +963,9 @@
   height: 450px;
   margin-bottom: 20px;
   overflow: auto;
+  background: #fff;
   border: 1px solid @panel-border;
   border-radius: @border-radius-base;
-  background: #ffffff;
 }
 
 .signaturedocument-iframe {

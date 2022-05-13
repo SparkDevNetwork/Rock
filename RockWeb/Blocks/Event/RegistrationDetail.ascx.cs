@@ -2681,17 +2681,14 @@ namespace RockWeb.Blocks.Event
                 rlDocumentLink.Label = documentTemplate.Name;
 
                 const string htmlFormat = @"
-<div class='col-xs-6' style='padding-left: 0px;'>
-    <div style='display: flex; flex-direction: row; align-items: center;'>
-        <div style='display: flex; border: 1px solid {0}; height: 40px; width: 40px; border-radius: 50%; background: {1}; color: {0}; justify-content: center; align-items: center;'>
+    <div class='icon-property'>
+        <div class='icon' style='background: {1}; color: {0};'>
             <i class='fa fa-signature'></i>
         </div>
-        <div style='display: flex; flex-direction: column; margin-left: 10px;'>
+        <div class='property'>
             {2}
-        </div>  
-    </div>
-</div>
-";
+        </div>
+    </div>";
                 string borderColor = string.Empty;
                 string backgroundColor = string.Empty;
                 string links = string.Empty;
@@ -2710,7 +2707,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    links = "<p>Not yet Signed</p>";
+                    links = "<span>Not yet Signed</span>";
                     borderColor = "#737475";
                     backgroundColor = "#DFE0E1";
                 }
