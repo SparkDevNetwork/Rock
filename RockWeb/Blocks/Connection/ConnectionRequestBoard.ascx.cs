@@ -971,6 +971,12 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            var title = connectionRequest.ToString();
+            string quickReturnLava = "{{ Title | AddQuickReturn:'ConnectionRequests', 60 }}";
+            var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            quickReturnMergeFields.Add( "Title", title );
+            quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
+
             // Add the lava header
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );

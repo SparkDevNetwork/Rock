@@ -31,6 +31,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using Humanizer;
 using Humanizer.Localisation;
@@ -5163,14 +5164,28 @@ namespace Rock.Lava
                  */
 
                 input = input.EscapeQuotes();
-                var quickReturnScript = "" +
-                    $"$( document ).ready( function () {{" + Environment.NewLine +
+
+                input = input.EscapeQuotes();
+                if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
+                {
+                    var quickReturnScript = "" +
+                    $"Sys.Application.add_load( function () {{" + Environment.NewLine +
                     $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
                     $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
                     $"  }}" + Environment.NewLine +
                     $"}});";
-
-                RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
+                    ScriptManager.RegisterStartupScript( rockPage, rockPage.GetType(), "AddQuickReturn", quickReturnScript, true );
+                }
+                else
+                {
+                    var quickReturnScript = "" +
+                  $"$( document ).ready( function () {{" + Environment.NewLine +
+                  $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
+                  $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
+                  $"  }}" + Environment.NewLine +
+                  $"}});";
+                    RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
+                }
             }
         }
 
