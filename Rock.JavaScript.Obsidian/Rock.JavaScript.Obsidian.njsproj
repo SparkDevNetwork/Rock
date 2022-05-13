@@ -98,6 +98,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="Build\build.ts" />
     <TypeScriptCompile Include="Framework\Controls\baseAsyncPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\copyButton.ts" />
     <TypeScriptCompile Include="Framework\Controls\definedValuePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\electronicSignature.ts" />
     <TypeScriptCompile Include="Framework\Controls\entityTypePicker.ts" />

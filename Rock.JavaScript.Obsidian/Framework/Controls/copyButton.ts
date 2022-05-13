@@ -33,6 +33,10 @@ export default defineComponent({
         tooltip: {
             type: String as PropType<string>,
             default: "Copy"
+        },
+        tooltipPlacement: {
+            type: String as PropType<"auto" | "top" | "right" | "bottom" | "left">,
+            default: "auto"
         }
     },
 
@@ -73,7 +77,8 @@ export default defineComponent({
     :onClick="copy"
     data-trigger="hover"
     data-toggle="tooltip"
-    data-placement="auto"
+    :data-placement="tooltipPlacement"
+    data-container="body"
     :data-original-title="tooltip"
     ref="el"
 ><i class="fa fa-clipboard"></i></RockButton>

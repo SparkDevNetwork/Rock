@@ -107,7 +107,8 @@ export const GalleryAndResult = defineComponent({
     components: {
         Switch,
         SectionHeader,
-        TransitionVerticalCollapse
+        TransitionVerticalCollapse,
+        CopyButton
     },
     props: {
         // The value passed into/controlled by the component, if any
@@ -182,6 +183,34 @@ export const GalleryAndResult = defineComponent({
     max-height: 300px;
     overflow: auto;
 }
+
+.galleryContent-codeSampleWrapper {
+    position: relative;
+}
+
+.galleryContent-codeSample {
+    padding-right: 3rem;
+    overflow-x: auto;
+}
+
+.galleryContent-codeCopyButton {
+    position: absolute;
+    top: 1.4rem;
+    transform: translateY(-50%);
+    right: .5rem;
+    z-index: 1;
+}
+
+.galleryContent-codeCopyButton::before {
+    content: "";
+    position: absolute;
+    top: -0.3rem;
+    right: -0.5rem;
+    bottom: -0.3rem;
+    left: -0.5rem;
+    background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
+    z-index: -1;
+}
 </v-style>
 
 <SectionHeader :title="componentName" :description="description" />
@@ -219,9 +248,15 @@ export const GalleryAndResult = defineComponent({
     <h4 class="mt-0 mb-3">Usage Notes</h4>
     <slot name="usage">
         <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
-        <pre v-if="importCode">{{ importCode }}</pre>
+        <div v-if="importCode" class="galleryContent-codeSampleWrapper">
+            <pre class="galleryContent-codeSample">{{ importCode }}</pre>
+            <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
+        </div>
         <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
-        <pre v-if="exampleCode">{{ exampleCode }}</pre>
+        <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
+            <pre class="galleryContent-codeSample">{{ exampleCode }}</pre>
+            <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
+        </div>
     </slot>
 </div>
 
@@ -367,7 +402,9 @@ const attributeValuesContainerGallery = defineComponent({
             displayAsTabs,
             showCategoryLabel,
             numberOfColumns,
-            entityName
+            entityName,
+            importCode: getControlImportPath("attributeValuesContainer"),
+            exampleCode: `<AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="false" :showAbbreviatedName="false" :showEmptyValues="true" :displayAsTabs="false" :showCategoryLabel="true" :numberOfColumns="1" :entityTypeName="entityName" />`
         };
     },
     template: `
