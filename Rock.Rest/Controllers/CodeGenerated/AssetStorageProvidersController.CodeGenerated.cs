@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AssetStorageProviders REST API
     /// </summary>
+    [RestControllerGuid( "485FA8F3-5804-47B8-A84C-9813F2E16B2E" )]
     public partial class AssetStorageProvidersController : Rock.Rest.ApiController<Rock.Model.AssetStorageProvider>
     {
         /// <summary>

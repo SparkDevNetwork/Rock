@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// RegistrationTemplateFormFields REST API
     /// </summary>
+    [RestControllerGuid( "AAB81684-A8C8-491B-8E7A-D3D76F397736" )]
     public partial class RegistrationTemplateFormFieldsController : Rock.Rest.ApiController<Rock.Model.RegistrationTemplateFormField>
     {
         /// <summary>

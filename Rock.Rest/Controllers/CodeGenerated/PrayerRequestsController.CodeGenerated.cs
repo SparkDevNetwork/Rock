@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PrayerRequests REST API
     /// </summary>
+    [RestControllerGuid( "717FB517-C412-4654-962F-E67E6B4B613B" )]
     public partial class PrayerRequestsController : Rock.Rest.ApiController<Rock.Model.PrayerRequest>
     {
         /// <summary>

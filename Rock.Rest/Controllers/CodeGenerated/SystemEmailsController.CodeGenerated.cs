@@ -22,6 +22,7 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
@@ -30,6 +31,7 @@ namespace Rock.Rest.Controllers
     /// </summary>
     [RockObsolete( "1.10" )]
     [System.Obsolete( "Use SystemCommunication instead." )]
+    [RestControllerGuid( "9BE35DA2-9F8C-41D4-BE02-65BE24DA0F7A" )]
     public partial class SystemEmailsController : Rock.Rest.ApiController<Rock.Model.SystemEmail>
     {
         /// <summary>

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Badges REST API
     /// </summary>
+    [RestControllerGuid( "DE5B9D27-4A72-45AF-BF78-75888CC9A554" )]
     public partial class BadgesController : Rock.Rest.ApiController<Rock.Model.Badge>
     {
         /// <summary>

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// MediaAccounts REST API
     /// </summary>
+    [RestControllerGuid( "E9811376-C13B-4C64-9783-1536E444A11D" )]
     public partial class MediaAccountsController : Rock.Rest.ApiController<Rock.Model.MediaAccount>
     {
         /// <summary>

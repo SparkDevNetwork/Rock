@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AnalyticsDimPersonHistoricals REST API
     /// </summary>
+    [RestControllerGuid( "53877FCC-2304-4FC6-87BB-38A678BE7C41" )]
     public partial class AnalyticsDimPersonHistoricalsController : Rock.Rest.ApiController<Rock.Model.AnalyticsDimPersonHistorical>
     {
         /// <summary>

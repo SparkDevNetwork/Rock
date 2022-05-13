@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// InteractionSessionLocations REST API
     /// </summary>
+    [RestControllerGuid( "" )]
     public partial class InteractionSessionLocationsController : Rock.Rest.ApiController<Rock.Model.InteractionSessionLocation>
     {
         /// <summary>

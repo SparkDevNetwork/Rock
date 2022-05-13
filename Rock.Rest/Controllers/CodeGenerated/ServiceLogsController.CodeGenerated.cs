@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ServiceLogs REST API
     /// </summary>
+    [RestControllerGuid( "3A5C77E0-0AB8-4ADC-A22A-CA00BE979EC5" )]
     public partial class ServiceLogsController : Rock.Rest.ApiController<Rock.Model.ServiceLog>
     {
         /// <summary>

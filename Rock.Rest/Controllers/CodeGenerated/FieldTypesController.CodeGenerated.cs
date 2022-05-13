@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// FieldTypes REST API
     /// </summary>
+    [RestControllerGuid( "819D4914-ABCE-4EFA-90D9-E411868498F7" )]
     public partial class FieldTypesController : Rock.Rest.ApiController<Rock.Model.FieldType>
     {
         /// <summary>

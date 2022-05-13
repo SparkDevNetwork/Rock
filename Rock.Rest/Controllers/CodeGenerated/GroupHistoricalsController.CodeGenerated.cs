@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// GroupHistoricals REST API
     /// </summary>
+    [RestControllerGuid( "D8B5DBE6-A01E-4C97-B21E-F22E3BF5E067" )]
     public partial class GroupHistoricalsController : Rock.Rest.ApiController<Rock.Model.GroupHistorical>
     {
         /// <summary>

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// DefinedTypes REST API
     /// </summary>
+    [RestControllerGuid( "F473CC7B-B696-47A1-A560-966C484D4D6A" )]
     public partial class DefinedTypesController : Rock.Rest.ApiController<Rock.Model.DefinedType>
     {
         /// <summary>

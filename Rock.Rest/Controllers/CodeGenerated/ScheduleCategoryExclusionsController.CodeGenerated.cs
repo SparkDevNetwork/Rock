@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ScheduleCategoryExclusions REST API
     /// </summary>
+    [RestControllerGuid( "D21F5B48-D4EF-4022-9644-FC4820464C57" )]
     public partial class ScheduleCategoryExclusionsController : Rock.Rest.ApiController<Rock.Model.ScheduleCategoryExclusion>
     {
         /// <summary>
