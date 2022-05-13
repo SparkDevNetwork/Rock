@@ -357,7 +357,7 @@ namespace Rock.Security.ExternalAuthentication
 
         private JwtSecurityToken GetValidatedIdToken( string idToken, string masterNonce )
         {
-            var authServer = GetAttributeValue( AttributeKey.AuthenticationServer ).EnsureTrailingForwardslash();
+            var authServer = GetAttributeValue( AttributeKey.AuthenticationServer );
             var config = GetOpenIdConnectConfiguration();
 
             TokenValidationParameters validationParameters = new TokenValidationParameters
