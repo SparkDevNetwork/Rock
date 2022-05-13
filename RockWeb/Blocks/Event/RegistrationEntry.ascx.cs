@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -129,6 +129,7 @@ namespace RockWeb.Blocks.Event
         DefaultBooleanValue = true,
         Order = 11 )]
     #endregion BlockAttributes
+    [Rock.SystemGuid.BlockTypeGuid( "CABD2BFB-DFFF-42CD-BF1A-14F3BEE583DD" )]
     public partial class RegistrationEntry : RockBlock
     {
         private static class AttributeKey

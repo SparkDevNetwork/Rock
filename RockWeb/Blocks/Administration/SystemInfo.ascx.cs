@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "System Information" )]
     [Category( "Administration" )]
     [Description( "Displays system information on the installed version of Rock." )]
+    [Rock.SystemGuid.BlockTypeGuid( "DE08EFD7-4CF9-4BD5-9F72-C0151FD08523" )]
     public partial class SystemInfo : Rock.Web.UI.RockBlock
     {
         #region Fields

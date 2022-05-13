@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Mobile
     [Description( "Edits and configures the settings of a mobile application." )]
     [LinkedPage( "Layout Detail", "", true )]
     [LinkedPage( "Page Detail", "", true )]
+    [Rock.SystemGuid.BlockTypeGuid( "1D001ED9-F711-4820-BED0-92150D069BA2" )]
     public partial class MobileApplicationDetail : RockBlock
     {
         /// <summary>

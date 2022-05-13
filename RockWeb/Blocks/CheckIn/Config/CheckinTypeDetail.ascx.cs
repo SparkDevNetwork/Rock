@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.CheckIn.Config
     [Description( "Displays the details of a particular Check-in Type." )]
 
     [LinkedPage( "Schedule Page", "Page used to manage schedules for the check-in type." )]
+    [Rock.SystemGuid.BlockTypeGuid( "6CB1416A-3B25-41FD-8E60-1B94F4A64AE6" )]
     public partial class CheckinTypeDetail : RockBlock
     {
         #region Control Methods

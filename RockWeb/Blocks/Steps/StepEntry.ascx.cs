@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "8D78BC55-6E67-40AB-B453-994D69503838" )]
     public partial class StepEntry : RockBlock
     {
         #region Keys

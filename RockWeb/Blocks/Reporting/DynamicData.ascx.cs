@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -230,6 +230,7 @@ namespace RockWeb.Blocks.Reporting
         Category = "CustomSetting",
         Key = AttributeKey.GridFooterContent )]
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126" )]
     public partial class DynamicData : RockBlockCustomSettings
     {
         #region Keys

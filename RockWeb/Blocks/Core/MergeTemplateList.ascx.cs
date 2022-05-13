@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
         DefaultValue = "Personal",
         Key = AttributeKey.MergeTemplatesOwnership )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "DA102F02-6DBB-42E6-BFEE-360E137B1411" )]
     public partial class MergeTemplateList : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

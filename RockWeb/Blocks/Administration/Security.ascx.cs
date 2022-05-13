@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Security" )]
     [Category( "Administration" )]
     [Description( "Displays security settings for a specific entity." )]
+    [Rock.SystemGuid.BlockTypeGuid( "20474B3D-0DE7-4B63-B7B9-E042DBEF788C" )]
     public partial class Security : RockBlock
     {
         #region Fields

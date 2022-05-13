@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -144,6 +144,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Key = AttributeKey.ScheduleUnavailabilityButtonText )]
 
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "18A6DCE3-376C-4A62-B1DD-5E5177C11595" )]
     public partial class GroupScheduleToolboxV2 : RockBlock
     {
         #region Keys

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Finance
          Order = 2,
         Key = AttributeKey.ShowAccountDescription,
         IsRequired = true )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.FINANCIAL_ACCOUNT_SEARCH )]
     public partial class FinancialAccountSearch : RockBlock
     {
         #region Base Control Methods

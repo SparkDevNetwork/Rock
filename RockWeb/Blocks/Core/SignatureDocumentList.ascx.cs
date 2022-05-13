@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.DetailPage )]
 
     [ContextAware( typeof( Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "256F6FDB-B241-4DE6-9C38-0E9DA0270A22" )]
     public partial class SignatureDocumentList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         public static class AttributeKey

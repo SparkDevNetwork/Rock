@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -101,6 +101,7 @@ namespace RockWeb.Blocks.Connection
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "A7961C9C-2EF5-44DF-BEA5-C334B42A90E2" )]
     public partial class ConnectionRequestDetail : PersonBlock
     {
         #region Attribute Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Binary File Type Detail" )]
     [Category( "Core" )]
     [Description( "Displays all details of a binary file type." )]
+    [Rock.SystemGuid.BlockTypeGuid( "02D0A037-446B-403B-9719-5EF7D98239EF" )]
     public partial class BinaryFileTypeDetail : RockBlock
     {
         #region Fields

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -276,6 +276,7 @@ ORDER BY [Text]",
     #endregion Messages Block Attribute Settings
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.ATTENDANCE_SELF_ENTRY )]
     public partial class AttendanceSelfEntry : RockBlock
     {
         #region Keys

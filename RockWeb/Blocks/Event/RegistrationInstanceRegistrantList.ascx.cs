@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -70,6 +70,7 @@ namespace RockWeb.Blocks.Event
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "4D4FBC7B-068C-499A-8BA4-C9209CA9BB6E" )]
     public partial class RegistrationInstanceRegistrantList : RegistrationInstanceBlock, ISecondaryBlock, ICustomGridOptions
     {
         #region Properties

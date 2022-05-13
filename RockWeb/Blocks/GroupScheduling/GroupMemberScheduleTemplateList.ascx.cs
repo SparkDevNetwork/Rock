@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.GroupScheduling
     [Description( "Lists group member schedule templates." )]
 
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "D930E08B-ACD3-4ADD-9FAC-3B61C021D0F7" )]
     public partial class GroupMemberScheduleTemplateList : RockBlock, ICustomGridColumns
     {
         #region Base Control Methods

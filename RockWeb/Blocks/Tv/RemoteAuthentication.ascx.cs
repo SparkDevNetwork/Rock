@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Tv
         AttributeKey.CodeExpirationDuration)]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "3080C707-4594-4DDD-95B5-DEF82141DE6A" )]
     public partial class RemoteAuthentication : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

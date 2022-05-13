@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Crm
         DefaultIntegerValue = 20,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "877156AE-8D61-4BD9-8E77-0A7FAD9AEACD" )]
     public partial class PersonPageViews : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -80,6 +80,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.IncludeRSSLink )]
 
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "F7898E47-8496-4D70-9594-4D1F616928F5" )]
     public partial class RSSFeedItem : RockBlock
     {
         #region Attribute Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -126,6 +126,7 @@ namespace RockWeb.Blocks.Finance
         Description = "Determines if the email address field should be shown.",
         Order = 9 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "1A8BEE2A-E5BE-4BA5-AFDB-E9C9278419BA" )]
     public partial class TransactionMatching : RockBlock
     {
         #region Attribute Keys

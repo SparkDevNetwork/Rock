@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -108,6 +108,7 @@ namespace RockWeb.Blocks.WorkFlow
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY )]
     public partial class WorkflowEntry : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Attribute Keys

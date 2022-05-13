@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -438,6 +438,7 @@ namespace RockWeb.Blocks.Finance
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "74EE3481-3E5A-4971-A02E-D463ABB45591" )]
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
     {
         #region Block Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Crm
         "Detail Page",
         Key = AttributeKey.DetailPage,
         Order = 0 )]
+    [Rock.SystemGuid.BlockTypeGuid( "D8CCD577-2200-44C5-9073-FD16F174D364" )]
     public partial class BadgeList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

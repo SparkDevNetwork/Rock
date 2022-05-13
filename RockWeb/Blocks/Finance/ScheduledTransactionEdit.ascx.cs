@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -108,6 +108,7 @@ achieve our mission.  We are so grateful for your commitment.
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "5171C4E5-7698-453E-9CC8-088D362296DE" )]
     public partial class ScheduledTransactionEdit : RockBlock
     {
         /// <summary>

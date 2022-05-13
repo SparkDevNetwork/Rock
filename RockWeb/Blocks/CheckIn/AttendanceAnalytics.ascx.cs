@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -185,6 +185,7 @@ namespace RockWeb.Blocks.CheckIn
         DefaultIntegerValue = 180,
         Order = 15 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3CD3411C-C076-4344-A9D5-8F3B4F01E31D" )]
     public partial class AttendanceAnalytics : RockBlock
     {
         private static class AttributeKeys

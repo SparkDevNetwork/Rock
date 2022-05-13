@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the statement template." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "78DB9184-97CF-4FC4-BD71-8F3ABE4100BA" )]
     public partial class FinancialStatementTemplateDetail : RockBlock
     {
         #region Page Parameter Keys

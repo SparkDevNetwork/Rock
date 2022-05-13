@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -109,6 +109,7 @@ namespace RockWeb.Blocks.Communication
         DefaultIntegerValue = 180,
         Order = 8 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3497603B-3BE6-4262-B7E9-EC01FC7140EB" )]
     public partial class SmsConversations : RockBlock
     {
         #region Attribute Keys

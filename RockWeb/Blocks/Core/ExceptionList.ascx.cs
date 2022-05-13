@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -89,6 +89,7 @@ namespace RockWeb.Blocks.Administration
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "6302B319-9830-4BE3-A402-17801C88F7E4" )]
     public partial class ExceptionList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

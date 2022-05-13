@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Campus Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular campus." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E30354A1-A1B8-4BE5-ADCE-43EEDDEF6C65" )]
     public partial class CampusDetail : RockBlock
     {
         #region PageParameterKeys

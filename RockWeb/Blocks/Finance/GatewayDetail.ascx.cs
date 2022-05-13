@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Gateway Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial gateway." )]
+    [Rock.SystemGuid.BlockTypeGuid( "B4D8CBCA-00F6-4D81-B8B6-170373D28128" )]
     public partial class GatewayDetail : RockBlock
     {
         #region Constants

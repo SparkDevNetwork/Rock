@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -78,6 +78,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
     </div>
 {% endif %}", "", 3 )]
     [LinkedPage( "Export Workflows Page", "Page used to export workflows.", false, "", "", 4 )]
+    [Rock.SystemGuid.BlockTypeGuid( "E1FF677D-5E52-4259-90C7-5560ECBBD82B" )]
     public partial class WorkflowTypeDetail : RockBlock
     {
         protected static class AuthorizationMisc

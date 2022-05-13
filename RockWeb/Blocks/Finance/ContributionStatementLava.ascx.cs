@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -177,6 +177,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Allow Person Querystring", "Determines if any person other than the currently logged in person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5 )]
 
     [RockObsolete( "12.4" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTRIBUTION_STATEMENT_LAVA_LEGACY )]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

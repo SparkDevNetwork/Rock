@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace RockWeb.Blocks.Bus
     [Category( "Bus" )]
     [Description( "Displays the details of the given Queue for editing." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "8D6C81EB-2FFE-41CB-9A2B-FB70857E5761" )]
     public partial class QueueDetail : RockBlock
     {
         #region Keys

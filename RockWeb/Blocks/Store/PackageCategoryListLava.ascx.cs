@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Store
     [Description( "Lists categories for Rock Store pages." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the categories", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PackageCategoryListSidebar.lava' %}", "", 2 )]
     [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
+    [Rock.SystemGuid.BlockTypeGuid( "470C6EFF-091C-4593-848C-49547D0EBEEE" )]
     public partial class PackageCategoryListLava : Rock.Web.UI.RockBlock
     {
         #region Fields

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -85,6 +85,7 @@ namespace RockWeb.Blocks.Finance
         DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "34275D0E-BC7E-4A9C-913E-623D086159A1" )]
     public partial class BenevolenceRequestDetailView : RockBlock
     {
         #region ViewState Keys

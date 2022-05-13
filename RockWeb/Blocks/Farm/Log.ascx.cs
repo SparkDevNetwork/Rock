@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Farm
     [Category( "Farm" )]
     [Description( "Shows a list of Web Farm logs." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "63ADDB5A-75D6-4E86-A031-98B3451C49A3" )]
     public partial class Log : RockBlock, ISecondaryBlock
     {
         #region Keys

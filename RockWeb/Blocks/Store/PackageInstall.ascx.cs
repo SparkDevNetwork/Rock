@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Store
     [Category( "Store" )]
     [Description( "Installs a package." )]
     [LinkedPage( "Link Organization Page", "Page to allow the user to link an organization to the store.", false, "", "")]
+    [Rock.SystemGuid.BlockTypeGuid( "EA60C1AB-ADAB-4EDF-94F8-B0FE214B6F15" )]
     public partial class PackageInstall : Rock.Web.UI.RockBlock
     {
         #region Fields

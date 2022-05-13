@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -186,6 +186,7 @@ namespace RockWeb.Blocks.Cms
         Category = "CustomSetting",
         Key = AttributeKey.EnableArchiveSummary )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW )]
     public partial class ContentChannelView : RockBlockCustomSettings
     {
 

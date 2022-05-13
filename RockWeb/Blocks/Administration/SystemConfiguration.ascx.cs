@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "System Configuration" )]
     [Category( "Administration" )]
     [Description( "Used for making configuration changes to configurable items in the web.config." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E2D423B8-10F0-49E2-B2A6-D62892379429" )]
     public partial class SystemConfiguration : Rock.Web.UI.RockBlock
     {
         #region Defaults

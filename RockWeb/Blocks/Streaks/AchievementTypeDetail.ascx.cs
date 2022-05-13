@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Achievements" )]
     [Description( "Displays the details of the given Achievement Type for editing." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "4C4A46CD-1622-4642-A655-11585C5D3D31" )]
     public partial class AchievementTypeDetail : RockBlock
     {
         #region Keys

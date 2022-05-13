@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Core
         DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK,
         Key = AttributeKey.MapStyle )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "8CD3C212-B9EE-4258-904C-91BA3570EE11" )]
     public partial class DeviceDetail : RockBlock
     {
         public static class AttributeKey

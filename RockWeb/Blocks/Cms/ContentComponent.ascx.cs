@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.FilterId )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_COMPONENT )]
     public partial class ContentComponent : RockBlock
     {
         #region Attribute Keys

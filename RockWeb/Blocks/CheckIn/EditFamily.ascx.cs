@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Edit Family" )]
     [Category( "Check-in" )]
     [Description( "Block to Add or Edit a Family during the Check-in Process." )]
+    [Rock.SystemGuid.BlockTypeGuid( "06DF448A-684E-4B64-8E1B-EA1727BA9233" )]
     public partial class EditFamily : CheckInEditFamilyBlock
     {
         #region private fields

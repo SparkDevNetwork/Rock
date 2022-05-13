@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Cms
         Order = 1 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "0BFD74A8-1888-4407-9102-D3FCEABF3095" )]
     public partial class PersonalLinkSectionList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

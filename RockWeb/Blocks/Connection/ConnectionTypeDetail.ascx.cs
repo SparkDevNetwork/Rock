@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Type Detail" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given Connection Type for editing." )]
+    [Rock.SystemGuid.BlockTypeGuid( "6CB76282-DD57-4AC1-85EF-05A5E65CF6D6" )]
     public partial class ConnectionTypeDetail : RockBlock
     {
         #region Properties

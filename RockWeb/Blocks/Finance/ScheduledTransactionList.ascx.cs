@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -71,6 +71,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.PersonTokenUsageLimit )]
 
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "694FF260-8C6F-4A59-93C9-CF3793FE30E6" )]
     public partial class ScheduledTransactionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Keys

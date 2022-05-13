@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Core
         Order = 3,
         Key = AttributeKey.EnableHierarchy )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "620FC4A2-6587-409F-8972-22065919D9AC" )]
     public partial class Categories : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

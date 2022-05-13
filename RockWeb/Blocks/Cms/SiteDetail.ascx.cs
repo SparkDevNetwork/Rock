@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Cms
         Category = "",
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "2AC06C36-869F-45F7-8C14-802781C5F70E" )]
     public partial class SiteDetail : RockBlock
     {
         #region Attribute Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Lava Shortcode Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a Lava Shortcode." )]
+    [Rock.SystemGuid.BlockTypeGuid( "092BFC5F-A291-4472-B737-0C69EA33D08A" )]
     public partial class LavaShortcodeDetail : RockBlock
     {
         #region Control Methods

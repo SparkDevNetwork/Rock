@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Event
     [IntegerField( "Max Results", "The maximum number of results to display.", false, 5, order: 3 )]
     [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Previous, Last, Current, Next, Upcoming, DateRange", order: 7 )]
     [BooleanField("Limit to registrations where money is still owed", "", true, "", 8, "LimitToOwed")]
+    [Rock.SystemGuid.BlockTypeGuid( "92E4BFE8-DF80-49D7-819D-417E579E282D" )]
     public partial class RegistrationListLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

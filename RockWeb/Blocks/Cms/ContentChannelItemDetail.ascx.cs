@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.ContentChannel )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "5B99687B-5FE9-4EE2-8679-5040CAEB9E2E" )]
     public partial class ContentChannelItemDetail : RockBlock
     {
         #region Attribute Keys

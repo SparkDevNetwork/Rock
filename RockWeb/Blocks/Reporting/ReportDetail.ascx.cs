@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         Order = 3 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "E431DBDF-5C65-45DC-ADC5-157A02045CCD" )]
     public partial class ReportDetail : RockBlock
     {
         #region Attribute Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -140,6 +140,7 @@ namespace RockWeb.Blocks.Communication
         Order = 13 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD )]
     public partial class CommunicationEntryWizard : RockBlock
     {
         #region Attribute Keys

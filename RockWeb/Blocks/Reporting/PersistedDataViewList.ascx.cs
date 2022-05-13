@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Reporting
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "6FBE0419-5404-4866-85A1-135542D33725" )]
     public partial class PersistedDataViewList : RockBlock
     {
         #region Attribute Keys

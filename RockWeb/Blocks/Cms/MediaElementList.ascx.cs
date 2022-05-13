@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.AddPage,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "28D6F57B-59D9-4DA6-A8DC-6DBD3E157554" )]
     public partial class MediaElementList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Attribute Keys

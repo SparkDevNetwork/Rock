@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Tag Report" )]
     [Category( "Core" )]
     [Description( "Block for viewing entities with a selected tag" )]
+    [Rock.SystemGuid.BlockTypeGuid( "005E5980-E2D2-4958-ACB6-BECBC6D1F5C4" )]
     public partial class TagReport : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
         #region Properties

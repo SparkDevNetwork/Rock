@@ -1,4 +1,4 @@
-﻿// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
     #endregion Rock Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "778EFA7B-56BC-4ABB-B86D-FFD87B97691F" )]
     public partial class FormAnalytics : RockBlock
     {
         #region Attribute Keys

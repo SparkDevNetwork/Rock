@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -168,6 +168,7 @@ namespace RockWeb.Blocks.Connection
     #endregion Block Attributes
 
     [ContextAware( typeof( Person ), IsConfigurable = false )]
+    [Rock.SystemGuid.BlockTypeGuid( "28DBE708-E99B-4879-A64D-656C030D25B5" )]
     public partial class ConnectionRequestBoard : ContextEntityBlock
     {
         /*

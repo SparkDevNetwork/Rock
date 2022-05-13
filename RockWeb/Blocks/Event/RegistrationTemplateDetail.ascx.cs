@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -357,6 +357,7 @@ namespace RockWeb.Blocks.Event
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 5 )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.EVENT_REGISTRATION_TEMPLATE_DETAIL )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
         #region Attribute Keys
