@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Search.Person
     [Description( "Person Phone Search" )]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Phone")]
+    [Rock.SystemGuid.EntityTypeGuid( "5F92ECC3-4EBD-4C41-A691-C03F1DA4F7BF")]
     public class Phone : SearchComponent
     {
 

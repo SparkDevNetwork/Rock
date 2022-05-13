@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Calculates and updates the LastCheckIn property on check-in objects" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Calculate Last Attended" )]
+    [Rock.SystemGuid.EntityTypeGuid( "A2216790-9699-4213-8EB2-DDDCA54F2C03")]
     public class CalculateLastAttended : CheckInActionComponent
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Search.Person
     [Description( "Person Birthdate Search" )]
     [Export( typeof( SearchComponent ) )]
     [ExportMetadata( "ComponentName", "Person Birthdate" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E35EA0C8-D3FB-4E5C-8BDF-9CC7615359AC")]
     public class BirthDate : SearchComponent
     {
         /// <summary>

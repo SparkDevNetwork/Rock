@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace Rock.Security.ExternalAuthentication
     [TextField( "Consumer Key", "The Twitter Consumer Key" )]
     [TextField( "Consumer Secret", "The Twitter Consumer Secret" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "CE5C0844-4020-45E8-9777-1EE13CB890BF")]
     public class Twitter : AuthenticationComponent
     {
         /// <summary>

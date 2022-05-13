@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Communication.Transport
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Rock Mobile Push" )]
     [TextField( "ServerKey", "The server key for your firebase account", true, "", "", 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "AB86881F-4A9C-4138-A0B4-252B4E00C145")]
     public class RockMobilePush : TransportComponent, IRockMobilePush
     {
         /// <summary>

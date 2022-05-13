@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Communication.Transport
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Firebase" )]
     [TextField( "ServerKey", "The server key for your firebase account", true, "", "", 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "3D051BA9-1A85-433C-B4B9-9A430348BCBB")]
     public class Firebase : TransportComponent
     {
 

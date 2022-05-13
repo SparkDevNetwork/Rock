@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they are in not the specified group or groups" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Not In Group(s) Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "C5F2E726-D16F-4E4A-8273-35CAC2ED7762")]
     public class NotInGroupFilter : InGroupFilter
     {
         #region Public Methods

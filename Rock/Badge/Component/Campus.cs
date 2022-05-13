@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Badge.Component
     [Description( "Campus Badge" )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Campus" )]
+    [Rock.SystemGuid.EntityTypeGuid( "D4B2BA9B-4F2C-47CB-A5BB-F3FF53A68F39")]
     public class Campus : HighlightLabelBadge
     {
         /// <summary>

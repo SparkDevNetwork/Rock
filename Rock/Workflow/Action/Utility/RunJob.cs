@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Job Run" )]
 
     [CustomDropdownListField( "Job", "The job to run.", "SELECT j.[Guid] AS [Value], j.[Name] AS [Text] From [ServiceJob] j ORDER BY j.[Name]", true, "", "", 0)]
+    [Rock.SystemGuid.EntityTypeGuid( "9269DD7C-027B-4032-9F4C-9A3CAB6FF841")]
     public class RunJob : ActionComponent
     {
         /// <summary>

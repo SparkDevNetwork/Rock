@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Filter By Grade" )]
 
     [BooleanField( "Remove", "Select 'Yes' if group types should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [Rock.SystemGuid.EntityTypeGuid( "BA1D77F3-CC92-4C1F-8DC5-AEBADF114E74")]
     public class FilterByGrade : CheckInActionComponent
     {
         /// <summary>

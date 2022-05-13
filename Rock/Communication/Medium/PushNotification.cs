@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Communication.Medium
     [Description( "A push notification communication" )]
     [Export( typeof( MediumComponent ))]
     [ExportMetadata( "ComponentName", "Push Notification")]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION )]
     public class PushNotification : MediumComponent
     {
         /// <summary>

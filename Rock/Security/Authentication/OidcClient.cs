@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -73,6 +73,7 @@ namespace Rock.Security.ExternalAuthentication
         IsRequired = false,
         Key = AttributeKey.RequestedScopes,
         Order = 6 )]
+    [Rock.SystemGuid.EntityTypeGuid( "2C964ABD-3F4D-43F8-B170-21A2A210EB30")]
     public class OidcClient : AuthenticationComponent
     {
         /// <summary>

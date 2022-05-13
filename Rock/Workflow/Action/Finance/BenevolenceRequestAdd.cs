@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", false, "", "", 6, null,
         new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "22B3C308-2333-4A11-8AEC-1AA7A201B5BB")]
     public class BenevolenceRequestAdd : ActionComponent
     {
         /// <summary>

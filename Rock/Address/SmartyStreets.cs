@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Address
     [TextField( "Auth Token", "The Smarty Streets Authorization Token. NOTE: This can be left blank and will be ignored if 'Use Managed API Key' is enabled.", false, "", "", 3 )]
     [TextField( "Acceptable DPV Codes", "The Smarty Streets Delivery Point Validation (DPV) match code values that are considered acceptable levels of standardization (see http://smartystreets.com/kb/liveaddress-api/field-definitions#dpvmatchcode for details).", false, "Y,S,D", "", 4 )]
     [TextField( "Acceptable Precisions", "The Smarty Streets latitude & longitude precision values that are considered acceptable levels of geocoding (see http://smartystreets.com/kb/liveaddress-api/field-definitions#precision for details).", false, "Zip7,Zip8,Zip9", "", 5 )]
+    [Rock.SystemGuid.EntityTypeGuid( "4278E7EF-221B-45E6-B9C6-5D11884389EF")]
     public class SmartyStreets : VerificationComponent
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", false, "", "", 4, "AttributeValue" )]
     
+    [Rock.SystemGuid.EntityTypeGuid( "5A0885C7-2D6F-4F04-BBE1-78AE61108C51")]
     public class SetGroupMemberAttribute : ActionComponent
     {
         /// <summary>

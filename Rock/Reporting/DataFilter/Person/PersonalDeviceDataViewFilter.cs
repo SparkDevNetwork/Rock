@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select people that are represented in the Personal Device entries returned by a specified Data View" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Personal Device Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "24529313-A794-4734-9C85-4AC9E6E8B894")]
     public class PersonalDeviceDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.PersonalDevice>
     {
         #region Overrides

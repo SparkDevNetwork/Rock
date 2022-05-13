@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -68,6 +68,7 @@ namespace Rock.Workflow.Action
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( "7EDCCA06-C539-4B5B-B6E4-400A19655898")]
     public class CreateAssessmentRequest : ActionComponent
     {
         #region Workflow Attributes

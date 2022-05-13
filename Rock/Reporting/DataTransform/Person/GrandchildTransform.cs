@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Reporting.DataTransform.Person
     [Description( "Transform result to Grandchild" )]
     [Export( typeof( DataTransformComponent ) )]
     [ExportMetadata( "ComponentName", "Person Grandchild Transformation" )]
+    [Rock.SystemGuid.EntityTypeGuid( "A475DB35-8DFF-448E-A295-BD9EEC3CC022")]
     public class GrandchildTransform : DataTransformComponent<Rock.Model.Person>
     {
         /// <summary>

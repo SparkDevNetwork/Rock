@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action
 
     [CodeEditorField( "HTML", "The HTML to show. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, true, "", "", 0 )]
     [BooleanField( "Hide Status Message", "Whether or not to hide the built-in status message.", false, "", 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "FDDAE78D-B7B3-4DA2-9A92-CC129AAF15DE")]
     public class ShowHtml : ActionComponent
     {
         /// <summary>

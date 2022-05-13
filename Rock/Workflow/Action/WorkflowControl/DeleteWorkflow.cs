@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Delete" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "0E79AF40-4FB0-49D7-AB0E-E95BD828C62D")]
     public class DeleteWorkflow : ActionComponent
     {
         /// <summary>

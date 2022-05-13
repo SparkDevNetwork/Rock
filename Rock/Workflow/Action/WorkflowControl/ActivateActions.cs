@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Actions" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "699756EF-28EB-444B-BD28-15F0A167E614")]
     public class ActivateActions : ActionComponent
     {
         /// <summary>

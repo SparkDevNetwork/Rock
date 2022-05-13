@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Address
     [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "MelissaData" )]
     [TextField( "Customer Id", "The Melissa Data Customer ID", true, "", "Security" )]
+    [Rock.SystemGuid.EntityTypeGuid( "25590809-DFEA-42B4-B556-67E311AC331A")]
     public class MelissaData : VerificationComponent
     {
 

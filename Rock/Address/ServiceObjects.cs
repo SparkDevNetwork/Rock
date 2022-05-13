@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Address
     [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "ServiceObjects" )]
     [TextField( "License Key", "The Service Objects License Key" )]
+    [Rock.SystemGuid.EntityTypeGuid( "FDBE662A-51F8-436B-ACEC-890EE4CDE124")]
     public class ServiceObjects : VerificationComponent
     {
 

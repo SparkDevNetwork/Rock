@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Workflow.Action
     [MemoField( "Note", "The note to add <span class='tip tip-lava'></span>", true, "", "", 0 )]
     [NoteTypeField( "Note Type", "The type of note to add.", false, "Rock.Model.Workflow", "", "", true, Rock.SystemGuid.NoteType.WORKFLOW_NOTE, "", 1 )]
     [BooleanField( "Is Alert", "Should this note be flagged as an alert", false, "", 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "A186BDF7-B489-47FE-B11E-1953B0C500F9")]
     public class AddWorkflowNote : ActionComponent
     {
         /// <summary>

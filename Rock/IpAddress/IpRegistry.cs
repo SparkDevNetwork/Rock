@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace Rock.IpAddress
         IsRequired = true,
         Order = 0,
         Key = AttributeKey.APIKey )]
+    [Rock.SystemGuid.EntityTypeGuid( "7AFE6DFA-5FC4-4554-98D2-5BD4C909558B")]
     public class IpRegistry : IpAddressLookupComponent
     {
         #region Keys

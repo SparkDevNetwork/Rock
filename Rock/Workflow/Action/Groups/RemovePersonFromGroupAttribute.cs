@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute( "Group", "Workflow Attribute that contains the group to remove the person from.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "0F32A101-63E3-4345-B307-5DCEBE31009F")]
     public class RemovePersonFromGroupAttribute : ActionComponent
     {
         /// <summary>

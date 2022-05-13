@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace Rock.Workflow.Action.CheckIn
         Description = "Select 'Yes' if a person a should be removed from a group's scheduled location if they don't meet the 'Attendance Record Required For Check-in' requirement for the group. Select 'No' if they should just be marked as excluded.",
         DefaultBooleanValue = true,
         Order = 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "24A7E196-B50B-4BD6-A347-07CFC5ABEF9E")]
     public class LoadSchedules : CheckInActionComponent
     {
         /// <summary>

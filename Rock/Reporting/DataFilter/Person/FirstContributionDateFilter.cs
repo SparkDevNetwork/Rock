@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on the date of their first contribution " )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "First Contribution Date Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "B4B70487-E620-4BC1-8983-124578118BC0")]
     public class FirstContributionDateFilter : DataFilterComponent
     {
         #region Properties

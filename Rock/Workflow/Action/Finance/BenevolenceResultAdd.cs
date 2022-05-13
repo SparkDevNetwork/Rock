@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -53,6 +53,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, 2 )]
 
 
+    [Rock.SystemGuid.EntityTypeGuid( "A0E1945F-DE59-4D53-927C-F432C30039F4")]
     public class BenevolenceResultAdd : ActionComponent
     {
         /// <summary>
