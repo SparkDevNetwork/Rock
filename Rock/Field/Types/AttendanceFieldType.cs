@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// Stored as Attendance.Guid
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "45F2BE0A-43C2-40D6-9888-68A2E72ACD06")]
     public class AttendanceFieldType : FieldType, IEntityFieldType
     {
         #region Formatting

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// Stored as "Channel.Guid|Component.Guid"
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "299F8444-BB47-4B6C-B523-235156BF96DC")]
     public class InteractionChannelInteractionComponentFieldType : FieldType
     {
         #region Keys

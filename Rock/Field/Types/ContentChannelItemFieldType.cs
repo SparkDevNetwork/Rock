@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) content channel item filtered by a selected content channel
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNEL_ITEM )]
     public class ContentChannelItemFieldType : FieldType, IEntityFieldType
     {
         #region Configuration

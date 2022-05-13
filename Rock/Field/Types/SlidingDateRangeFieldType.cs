@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// Field used to save a sliding date range. Last X (Hours, Days, etc)
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SLIDING_DATE_RANGE )]
     public class SlidingDateRangeFieldType : FieldType
     {
         #region Configuration
