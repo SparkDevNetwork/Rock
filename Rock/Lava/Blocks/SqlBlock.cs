@@ -109,16 +109,16 @@ namespace Rock.Lava.Blocks
                             sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
                         }
 
-                        using ( var rockContext = LavaHelper.GetRockContextFromLavaContext( context ) )
-                        {
-                            if ( sqlTimeout != null )
-                            {
-                                rockContext.Database.CommandTimeout = sqlTimeout;
-                            }
-                            int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+                        var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
-                            context.SetMergeField( parms["return"], numOfRowsAffected );
+                        if ( sqlTimeout != null )
+                        {
+                            rockContext.Database.CommandTimeout = sqlTimeout;
                         }
+                        int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+
+                        context.SetMergeField( parms["return"], numOfRowsAffected );
+
                         break;
                     default:
                         break;
