@@ -613,7 +613,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !report.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -747,7 +747,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class FieldTypeSelection
         {
@@ -1301,17 +1301,16 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.DataView != null )
             {
-                lbDataView.Visible = UserCanEdit;
+                hlDataView.Visible = UserCanEdit;
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", report.DataViewId.ToString() );
-                lbDataView.NavigateUrl = LinkedPageUrl( AttributeKey.DataViewPage, queryParams );
-
-                lbDataView.ToolTip = report.DataView.Name;
+                hlDataView.Text = $"Data View: <a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>{report.DataView.Name.Truncate(30, true)}</a>";
+                hlDataView.ToolTip = (report.DataView.Name.Length > 30) ? report.DataView.Name : null;
             }
             else
             {
-                lbDataView.Visible = false;
+                hlDataView.Visible = false;
             }
 
             BindGrid( report, false );
@@ -1676,7 +1675,7 @@ namespace RockWeb.Blocks.Reporting
         #region ReportFieldInfo Class
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [Serializable]
         protected class ReportFieldInfo
@@ -1700,7 +1699,7 @@ namespace RockWeb.Blocks.Reporting
             public ReportFieldType ReportFieldType { get; set; }
 
             /// <summary>
-            /// Gets or sets the field selection. 
+            /// Gets or sets the field selection.
             /// </summary>
             /// <value>
             /// The selection.

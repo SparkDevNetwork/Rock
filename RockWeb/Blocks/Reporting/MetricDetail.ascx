@@ -152,6 +152,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
+                        	<Rock:HighlightLabel ID="hlDataView" runat="server" />
                             <Rock:ModalAlert ID="mdManualRunInfo" runat="server" />
                             <asp:LinkButton ID="btnManualRun" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnManualRun_Click" ToolTip="Run Now"><i class="fa fa-play"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
