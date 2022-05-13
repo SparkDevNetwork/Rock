@@ -63,6 +63,7 @@ import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
+import CopyButton from "@Obsidian/Controls/copyButton";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -682,7 +683,7 @@ const phoneNumberBoxGallery = defineComponent({
     <PhoneNumberBox label="Phone 1" v-model="phoneNumber" />
 
     <template #settings>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -770,7 +771,7 @@ const dropDownListGallery = defineComponent({
         </div>
 
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -817,7 +818,7 @@ const radioButtonListGallery = defineComponent({
             <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
             <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
         </div>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -848,7 +849,7 @@ const checkBoxGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1061,7 +1062,7 @@ const datePickerGallery = defineComponent({
                 <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
             </div>
         </div>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1090,7 +1091,7 @@ const dateRangePickerGallery = defineComponent({
     <DateRangePicker label="Date Range" v-model="date" />
 
     <template #settings>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1131,7 +1132,7 @@ const dateTimePickerGallery = defineComponent({
                 <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
             </div>
         </div>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1169,7 +1170,7 @@ const datePartsPickerGallery = defineComponent({
     <template #settings>
         <Toggle label="Show Year" v-model="showYear" />
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1200,7 +1201,7 @@ const textBoxGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1230,7 +1231,7 @@ const colorPickerGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1280,7 +1281,7 @@ const numberBoxGallery = defineComponent({
         <TextBox label="Maximum Value" v-model="maximumValue" />
 
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1310,7 +1311,7 @@ const numberRangeBoxGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1340,7 +1341,7 @@ const genderDropDownListGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1370,7 +1371,7 @@ const socialSecurityNumberBoxGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1400,7 +1401,7 @@ const timePickerGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1432,7 +1433,7 @@ const ratingGallery = defineComponent({
 
     <template #settings>
         <NumberBox label="Maximum Rating" v-model="maximumValue" />
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1462,7 +1463,7 @@ const switchGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1524,7 +1525,7 @@ const currencyBoxGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code> and <code>Number Box</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1554,7 +1555,7 @@ const emailBoxGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1584,7 +1585,7 @@ const numberUpDownGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1680,7 +1681,7 @@ const toggleGallery = defineComponent({
         <TextBox label="False Text" v-model="falseText" />
         <DropDownList label="Button Size" v-model="btnSize" :items="sizeOptions" />
 
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -1801,7 +1802,7 @@ const urlLinkBoxGallery = defineComponent({
 
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2046,7 +2047,7 @@ const personPickerGallery = defineComponent({
     <PersonPicker v-model="value" label="Person" />
     <template #settings>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2096,7 +2097,7 @@ const fileUploaderGallery = defineComponent({
             <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
         </div>
 
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2146,7 +2147,7 @@ const imageUploaderGallery = defineComponent({
                 <TextBox formGroupClasses="col-sm-8" v-model="uploadButtonText" label="Upload Button Text" />
             </div>
 
-            <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
         </template>
     </GalleryAndResult>`
 });
@@ -2179,7 +2180,7 @@ const slidingDateRangePickerGallery = defineComponent({
     <SlidingDateRangePicker v-model="value" label="Sliding Date Range" />
 
     <template #settings>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2415,7 +2416,7 @@ const categoryPickerGallery = defineComponent({
         <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
 
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
-        <p>Additional props match that of a <code>Rock Form Field</code>.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2449,6 +2450,49 @@ const locationPickerGallery = defineComponent({
         <CheckBox label="Multiple" v-model="multiple" />
 
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates location picker */
+const copyButtonGallery = defineComponent({
+    name: "CopyButtonGallery",
+    components: {
+        GalleryAndResult,
+        TextBox,
+        DropDownList,
+        CopyButton,
+    },
+    setup() {
+        return {
+            tooltip: ref("Copy"),
+            value: ref("To God Be The Glory"),
+            buttonSize: ref("md"),
+            sizeOptions: [
+                { value: "lg", text: "Large" },
+                { value: "md", text: "Medium" },
+                { value: "sm", text: "Small" },
+                { value: "xs", text: "Extra Small" },
+            ],
+            importCode: getControlImportPath("copyButton"),
+            exampleCode: `<CopyButton :value="value" tooltip="Copy" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+>
+    <CopyButton :value="value" :tooltip="tooltip" :btnSize="buttonSize" />
+
+    <template #settings>
+        <div class="row">
+            <TextBox formGroupClasses="col-sm-4" v-model="value" label="Value to Copy to Clipboard" />
+            <TextBox formGroupClasses="col-sm-4" v-model="tooltip" label="Tooltip" />
+            <DropDownList formGroupClasses="col-sm-4" label="Button Size" v-model="buttonSize" :items="sizeOptions" />
+        </div>
+
+        <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2500,7 +2544,8 @@ const galleryComponents: Record<string, Component> = [
     sectionHeaderGallery,
     sectionContainerGallery,
     categoryPickerGallery,
-    locationPickerGallery
+    locationPickerGallery,
+    copyButtonGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
