@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "CampusTopic" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "0FFDCB0B-B435-4E66-9085-2750534E706A")]
     public class CampusTopic : Model<CampusTopic>
     {
         #region Entity Properties

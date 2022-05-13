@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventItemOccurrenceGroupMap" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "1479D2B7-65C0-4E98-9E70-0848422FA00C")]
     public partial class EventItemOccurrenceGroupMap : Model<EventItemOccurrenceGroupMap>
     {
         #region Entity Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialPaymentDetail" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "F3659077-43FD-4805-BC42-BC8A3F9C3008")]
     public partial class FinancialPaymentDetail : Model<FinancialPaymentDetail>
     {
         #region Entity Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Model
     [Table( "Person" )]
     [DataContract]
     [Analytics( true, true )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON )]
     public partial class Person : Model<Person>, IRockIndexable
     {
         #region Constants

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [Table( "FinancialTransactionAlertType" )]
     [DataContract]
     [System.Diagnostics.DebuggerDisplay( "Name:{Name}, AlertType:{AlertType}, AmountSensitivityScale:{AmountSensitivityScale}, FrequencySensitivityScale:{FrequencySensitivityScale}" )]
+    [Rock.SystemGuid.EntityTypeGuid( "2E237B04-5B2A-40F1-8CD3-52673C104305")]
     public partial class FinancialTransactionAlertType : Model<FinancialTransactionAlertType>, IOrdered
     {
         #region Entity Properties

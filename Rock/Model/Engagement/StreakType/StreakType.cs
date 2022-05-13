@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StreakType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "66203975-2A7A-4000-870E-76457DF3C920")]
     public partial class StreakType : Model<StreakType>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties

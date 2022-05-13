@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Layout" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "9DACC861-FED4-47FC-946D-D6A120FF6D56")]
     public partial class Layout : Model<Layout>, ICacheable
     {
         #region Entity Properties

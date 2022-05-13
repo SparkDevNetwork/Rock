@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "Metric" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "1C5489C6-82F9-4967-8425-52545CE8AF90")]
     public partial class Metric : Model<Metric>
     {
         #region Entity Properties

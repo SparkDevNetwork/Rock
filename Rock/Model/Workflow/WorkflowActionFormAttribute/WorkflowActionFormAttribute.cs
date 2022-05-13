@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionFormAttribute" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "E147611F-D1AB-4C34-A1F8-84A118BAFDE3")]
     public partial class WorkflowActionFormAttribute : Model<WorkflowActionFormAttribute>, IOrdered, ICacheable
     {
         #region Entity Properties

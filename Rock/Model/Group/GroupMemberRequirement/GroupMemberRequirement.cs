@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberRequirement" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "FF1B2C4B-0F2D-4D9B-9E85-7336CCC24A62")]
     public partial class GroupMemberRequirement : Model<GroupMemberRequirement>
     {
         #region Entity Properties

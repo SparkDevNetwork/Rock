@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "Report" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "F1F22D3E-FEFA-4C84-9FFA-9E8ACE60FCE7")]
     public partial class Report : Model<Report>, ICategorized
     {
         #region Entity Properties

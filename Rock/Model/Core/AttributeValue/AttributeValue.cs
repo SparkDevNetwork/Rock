@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Model
     [Table( "AttributeValue" )]
     [DataContract]
     [JsonConverter( typeof( Rock.Utility.AttributeValueJsonConverter ) )]
+    [Rock.SystemGuid.EntityTypeGuid( "D2BDCCF0-D3F4-4F29-B286-DA5B7BFA41C6")]
     public partial class AttributeValue : Model<AttributeValue>, ICacheable
     {
         #region Entity Properties

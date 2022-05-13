@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "ServiceLog" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "B5C26A04-E374-495A-AEC6-171C2D2CBD60")]
     public partial class ServiceLog : Model<ServiceLog>
     {
         #region Entity Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "AchievementType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ACHIEVEMENT_TYPE )]
     public partial class AchievementType : Model<AchievementType>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties

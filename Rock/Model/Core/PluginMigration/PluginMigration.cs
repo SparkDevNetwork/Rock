@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "PluginMigration" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "F239557E-C7A8-4D1F-82CC-55CDD0ACA3C8")]
     public partial class PluginMigration : Model<PluginMigration>
     {
         #region Entity Properties

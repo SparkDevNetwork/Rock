@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "MediaFolder" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "B28FC79F-9FEE-4BE4-801D-96B9246E6043")]
     public partial class MediaFolder : Model<MediaFolder>
     {
         #region Entity Properties
