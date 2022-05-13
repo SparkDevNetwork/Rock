@@ -111,11 +111,17 @@ namespace Rock.Lava.Blocks
 
                         var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
+                        // Save the orginal command timeout as we're about to change it
+                        var originalCommandTimeout = rockContext.Database.CommandTimeout;
+
                         if ( sqlTimeout != null )
                         {
                             rockContext.Database.CommandTimeout = sqlTimeout;
                         }
                         int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+
+                        // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
+                        rockContext.Database.CommandTimeout = originalCommandTimeout;
 
                         context.SetMergeField( parms["return"], numOfRowsAffected );
 
