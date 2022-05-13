@@ -243,6 +243,13 @@ namespace RockWeb.Blocks.Security
         ControlType = Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
         Order = 24 )]
 
+    [BooleanField(
+        "Show Gender",
+        Key = AttributeKey.ShowGender,
+        Description = "Determines if the gender selection field should be shown.",
+        DefaultBooleanValue = true,
+        Order = 23 )]
+
     #endregion
 
     public partial class AccountEntry : Rock.Web.UI.RockBlock
@@ -274,6 +281,7 @@ namespace RockWeb.Blocks.Security
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
             public const string CreateCommunicationRecord = "CreateCommunicationRecord";
+            public const string ShowGender = "ShowGender";
         }
 
         #region Fields
@@ -319,7 +327,7 @@ namespace RockWeb.Blocks.Security
             lSentLoginCaption.Text = GetAttributeValue( AttributeKey.SentLoginCaption );
             lConfirmCaption.Text = GetAttributeValue( AttributeKey.ConfirmCaption );
             cpCampus.Label = GetAttributeValue( AttributeKey.CampusSelectorLabel );
-
+            
             rPhoneNumbers.ItemDataBound += rPhoneNumbers_ItemDataBound;
 
             var regexString = ValidateUsernameAsEmail ? @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
@@ -352,12 +360,12 @@ usernameTextbox.blur(function () {{
                 success: function (getData, status, xhr) {{
 
                     if (getData) {{
-                        usernameUnavailable.html('That ' + usernameFieldLabel + ' is available.');
+                        usernameUnavailable.html('The selected ' + usernameFieldLabel.toLowerCase() + ' is available.');
                         usernameUnavailable.addClass('alert-success');
                         usernameUnavailable.removeClass('alert-warning');
                     }} else {{
                         availabilityMessageRow.show();
-                        usernameUnavailable.html('That ' + usernameFieldLabel + ' is already taken.');
+                        usernameUnavailable.html('The ' + usernameFieldLabel.toLowerCase() + ' you selected is already in use.');
                         usernameUnavailable.addClass('alert-warning');
                         usernameUnavailable.removeClass('alert-success');
                     }}
@@ -411,6 +419,9 @@ usernameTextbox.blur(function () {{
                 pnlAddress.Visible = GetAttributeValue( AttributeKey.ShowAddress ).AsBoolean();
                 pnlPhoneNumbers.Visible = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
                 acAddress.Required = GetAttributeValue( AttributeKey.AddressRequired ).AsBoolean();
+
+                // show/hide gender
+                ddlGender.Visible = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean();
 
                 // show/hide campus selector
                 if ( CampusCache.All( false ).Count() > 1 )
@@ -526,7 +537,7 @@ usernameTextbox.blur(function () {{
                     var match = System.Text.RegularExpressions.Regex.Match( tbUserName.Text, @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" );
                     if ( !match.Success )
                     {
-                        ShowErrorMessage( "User name must be a valid email address." );
+                        ShowErrorMessage( "Username must be a valid email address." );
                         return;
                     }
                 }
@@ -552,7 +563,7 @@ usernameTextbox.blur(function () {{
                     }
                     else
                     {
-                        ShowErrorMessage( "That " + GetAttributeValue( AttributeKey.UsernameFieldLabel ) + " is already taken." );
+                        ShowErrorMessage( "The " + GetAttributeValue( AttributeKey.UsernameFieldLabel ).ToLower() + " you selected is already in use." );
                     }
                 }
                 else
