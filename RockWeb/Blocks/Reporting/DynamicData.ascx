@@ -83,6 +83,7 @@
                                     <Rock:RockTextBox ID="tbUrlMask" runat="server" Label="Selection URL" CssClass="input-large"
                                         Help="The URL to redirect user to when they click on a row in the grid.  Any column's value can be used in the URL by including it in braces.  For example if the grid includes an 'Id' column that contains Person Ids, you can link to the Person view, by specifying a value here of '~/Person/{Id}" />
                                     <Rock:Switch ID="cbShowGridFilter" runat="server" Text="Show Grid Filter" TextAlign="Right" />
+                                    <Rock:Switch ID="cbEnableStickyHeaderOnGrid" runat="server" Text="Enable Sticky Header on Grid" TextAlign="Right" />
                                     <Rock:Switch ID="swWrapInPanel" runat="server" Text="Wrap in Panel" CssClass="js-checkbox-wrap-in-panel" />
                                 </div>
                                 <div class="col-md-6">
