@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -92,6 +92,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_ATTENDANCE_ENTRY_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "08AE409C-9E4C-42D1-A93C-A554A3EEA0C3")]
     public class GroupAttendanceEntry : RockMobileBlockType
     {
         #region Block Attributes

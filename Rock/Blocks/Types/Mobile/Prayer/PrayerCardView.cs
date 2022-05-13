@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -151,6 +151,8 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PRAYER_PRAYER_CARD_VIEW_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_PRAYER_PRAYER_CARD_VIEW )]
     public class PrayerCardView : RockMobileBlockType
     {
         #region Page Parameters
