@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -41,6 +40,7 @@ namespace Rock.Field.Types
         private const string COLOR_KEY = "color";
         private const string TEXT_TEMPLATE = "texttemplate";
         private const string BASEURL = "baseurl";
+        private const string BASEURL_ALIASES = "baseurlaliases";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -54,6 +54,7 @@ namespace Rock.Field.Types
             configKeys.Add( COLOR_KEY );
             configKeys.Add( TEXT_TEMPLATE );
             configKeys.Add( BASEURL );
+            configKeys.Add( BASEURL_ALIASES );
             return configKeys;
         }
 
@@ -89,7 +90,12 @@ namespace Rock.Field.Types
             var ulBaseUrl = new UrlLinkBox();
             controls.Add( ulBaseUrl );
             ulBaseUrl.Label = "Base URL";
-            textTemplate.Help = "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.";
+            ulBaseUrl.Help = "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.";
+
+            var tbBaseUrlAliases = new RockTextBox();
+            controls.Add( tbBaseUrlAliases );
+            tbBaseUrlAliases.Label = "Base URL Aliases";
+            tbBaseUrlAliases.Help = "A comma-delimited list of URL prefixes that are considered valid aliases for the Base URL. If any of these values are detected in the input, they will be replaced by the Base URL.";
 
             return controls;
         }
@@ -107,6 +113,7 @@ namespace Rock.Field.Types
             configurationValues.Add( COLOR_KEY, new ConfigurationValue( "Color", "The color to use for making buttons for the social media network.", "" ) );
             configurationValues.Add( TEXT_TEMPLATE, new ConfigurationValue( "Text Template", "Lava template to use to create a formatted version for the link. Primarily used for making the link text.", "" ) );
             configurationValues.Add( BASEURL, new ConfigurationValue( "Base URL", "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.", "" ) );
+            configurationValues.Add( BASEURL_ALIASES, new ConfigurationValue( "Base URL Aliases", "A comma-delimited list of URL prefixes that are considered valid aliases for the Base URL. If any of these values are detected in the input, they will be replaced by the Base URL.", "" ) );
 
             if ( controls != null )
             {
@@ -138,6 +145,11 @@ namespace Rock.Field.Types
                         configurationValues[BASEURL].Value = baseUri.AbsoluteUri;
                     }
                 }
+                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockTextBox )
+                {
+                    configurationValues[BASEURL_ALIASES].Value = ( ( RockTextBox ) controls[5] ).Text;
+                }
+
             }
 
             return configurationValues;
@@ -171,6 +183,10 @@ namespace Rock.Field.Types
                 if ( controls.Count > 4 && controls[4] != null && controls[4] is UrlLinkBox && configurationValues.ContainsKey( BASEURL ) )
                 {
                     ( ( UrlLinkBox ) controls[4] ).Text = configurationValues[BASEURL].Value;
+                }
+                if ( controls.Count > 5 && controls[5] != null && controls[5] is RockTextBox && configurationValues.ContainsKey( BASEURL_ALIASES ) )
+                {
+                    ( ( RockTextBox ) controls[5] ).Text = configurationValues[BASEURL_ALIASES].Value;
                 }
             }
         }
@@ -253,7 +269,28 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new RockTextBox { ID = id };
+            var linkBox = new UrlLinkBox
+            {
+                ID = id,
+                ValidationDisplay = ValidatorDisplay.None
+            };
+
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( NAME_KEY ) )
+                {
+                    linkBox.Label = configurationValues[NAME_KEY].Value;
+                }
+                if ( configurationValues.ContainsKey( BASEURL ) )
+                {
+                    linkBox.BaseUrl = configurationValues[BASEURL].Value;
+                }
+                if ( configurationValues.ContainsKey( BASEURL_ALIASES ) )
+                {
+                    linkBox.BaseUrlAliases = configurationValues[BASEURL_ALIASES].Value;
+                }
+            }
+            return linkBox;
         }
 
         /// <summary>
@@ -264,23 +301,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var editControl = control as TextBox;
-            if ( editControl != null )
-            {
-                if ( configurationValues != null && configurationValues.ContainsKey( "baseurl" ) )
-                {
-                    string value = editControl.Text;
-                    if ( !value.StartsWith( configurationValues[BASEURL].Value ) && !string.IsNullOrEmpty( value ) )
-                    {
-                        return string.Format( "{0}{1}", configurationValues[BASEURL].Value, value );
-                    }
-                    else
-                    {
-                        return value;
-                    }
-                }
-            }
-            return null;
+            var editControl = control as UrlLinkBox;
+            return editControl?.Url;
         }
 
         /// <summary>
@@ -291,24 +313,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var editControl = control as TextBox;
+            var editControl = control as UrlLinkBox;
             if ( editControl != null )
             {
-                if ( string.IsNullOrEmpty( value ) )
-                {
-                    editControl.Text = value;
-                }
-                else
-                {
-                    try
-                    {
-                        editControl.Text = new Uri( value ).Segments.Last();
-                    }
-                    catch
-                    {
-                        editControl.Text = value;
-                    }
-                }
+                editControl.Url = value;
             }
         }
 
