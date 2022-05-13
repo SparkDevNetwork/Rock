@@ -34,6 +34,11 @@ export default defineComponent({
             type: String as PropType<string>,
             default: "Copy"
         },
+        /**
+         * The direction from the button that the tooltip pops up on. NOTE: This is not reactive.
+         * If it is changed after initialized, the tooltip will still show up wherever you
+         * originally told it to show up.
+         */
         tooltipPlacement: {
             type: String as PropType<"auto" | "top" | "right" | "bottom" | "left">,
             default: "auto"
@@ -42,14 +47,13 @@ export default defineComponent({
 
     setup(props) {
         const el = ref<ComponentPublicInstance | null>(null);
-        let jquery;
+        let jEl;
 
         function copy(e: MouseEvent): void {
             e.preventDefault();
             navigator.clipboard.writeText(props.value);
 
-            jquery(el.value?.$el)
-                .attr("data-original-title", "Copied")
+            jEl.attr("data-original-title", "Copied")
                 .tooltip("show")
                 .attr("data-original-title", props.tooltip);
 
@@ -61,8 +65,8 @@ export default defineComponent({
             }
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            jquery = <any>window[<any>"$"];
-            jquery(el.value?.$el).tooltip();
+            const jquery = <any>window[<any>"$"];
+            jEl = jquery(el.value?.$el).tooltip();
         });
 
         return {
@@ -75,7 +79,6 @@ export default defineComponent({
 <RockButton
     class="btn-copy-to-clipboard"
     :onClick="copy"
-    data-trigger="hover"
     data-toggle="tooltip"
     :data-placement="tooltipPlacement"
     data-container="body"

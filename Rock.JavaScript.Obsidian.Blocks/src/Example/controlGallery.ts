@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { Component, computed, defineComponent, getCurrentInstance, PropType, ref, useAttrs, watch } from "vue";
+import { Component, computed, defineComponent, getCurrentInstance, onMounted, onUnmounted, PropType, ref, useAttrs, watch } from "vue";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -2601,9 +2601,25 @@ export default defineComponent({
     },
 
     setup() {
-        const hash = location.hash ? location.hash.replace("#", "") : "";
-        const componentFromHash = hash ? galleryComponents[hash] : null;
-        const currentComponent = ref<Component>(componentFromHash || Object.values(galleryComponents)[0]);
+        const currentComponent = ref<Component>(Object.values(galleryComponents)[0]);
+
+        function getComponentFromHash(): void {
+            const component = galleryComponents[new URL(document.URL).hash.replace("#", "")];
+
+            if (component) {
+                currentComponent.value = component;
+            }
+        }
+
+        onMounted(() => {
+            getComponentFromHash();
+
+            window.addEventListener("hashchange", getComponentFromHash);
+        });
+
+        onUnmounted(() => {
+            window.removeEventListener("hashchange", getComponentFromHash);
+        });
 
         return {
             currentComponent,
