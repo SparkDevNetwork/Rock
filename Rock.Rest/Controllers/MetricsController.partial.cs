@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -180,6 +180,7 @@ namespace Rock.Rest.Controllers
     ///
     /// </summary>
     [RockDomain( "Reporting" )]
+    [Rock.SystemGuid.EntityTypeGuid( "7C878AFD-DF74-4CDF-8491-31671559BD30" )]
     public class MetricYTDData : Metric
     {
         /// <summary>
