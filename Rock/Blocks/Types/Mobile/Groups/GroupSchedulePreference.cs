@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -244,7 +244,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Returns an individual's unique assignment schedule list.
         /// </summary>
         /// <param name="groupGuid"></param>
-        /// <returns>A list of <see cref="ListItemViewModel"/> to be passed into mobile.</returns>
+        /// <returns>A list of <see cref="ListItemBag"/> to be passed into mobile.</returns>
         private List<ListItemBag> GetSpecificAssignmentScheduleList( Guid groupGuid )
         {
             using ( var rockContext = new RockContext() )
