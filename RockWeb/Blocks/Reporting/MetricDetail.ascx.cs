@@ -1223,7 +1223,7 @@ The Lava can include Lava merge fields:";
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", metric.DataViewId.ToString() );
-                hlDataView.Text = $"Data View: <a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>{metric.DataView.Name.Truncate(30, true)}</a>";
+                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {metric.DataView.Name.Truncate(30, true)}</a>";
                 hlDataView.ToolTip = (metric.DataView.Name.Length > 30) ? metric.DataView.Name : null;
             }
             else

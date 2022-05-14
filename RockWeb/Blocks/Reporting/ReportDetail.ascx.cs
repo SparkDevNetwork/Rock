@@ -1293,7 +1293,7 @@ namespace RockWeb.Blocks.Reporting
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", report.DataViewId.ToString() );
-                hlDataView.Text = $"Data View: <a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>{report.DataView.Name.Truncate(30, true)}</a>";
+                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {report.DataView.Name.Truncate(30, true)}</a>";
                 hlDataView.ToolTip = (report.DataView.Name.Length > 30) ? report.DataView.Name : null;
             }
             else
