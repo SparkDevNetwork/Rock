@@ -78,6 +78,41 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Private reference to the collection created by ConfigurationControls().  This is used to
+        /// dynamically update control state across postbacks (see <see cref="OnControlTypeChanged"/>
+        /// for details).
+        /// </summary>
+        private List<Control> _configurationControls;
+
+        /// <summary>
+        /// This event handler is triggerend when the Control Type is modified to show or hide related
+        /// options ('Future Years' or 'Display Current Option').
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnControlTypeChanged( object sender, EventArgs e )
+        {
+            // Reset the visibility of the nbFutureYearCount control when the Control Type changes.
+            var controls = _configurationControls;
+            if ( controls != null && controls.Count >= 5 )
+            {
+                var ddlDatePickerMode = controls[2] as RockDropDownList;
+                var cbDisplayCurrent = controls[3] as RockCheckBox;
+                var nbFutureYearCount = controls[4] as NumberBox;
+
+                DatePickerControlType datePickerControlType = ddlDatePickerMode.SelectedValue.ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
+
+                // only support the 'Use Current' option of they are using the DatePicker
+                cbDisplayCurrent.Visible = datePickerControlType == DatePickerControlType.DatePicker;
+
+                // only support the 'Future Years' option of they are using the DatePartsPicker
+                nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
+            }
+
+            OnQualifierUpdated( sender, e );
+        }
+
+        /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
         /// <returns></returns>
@@ -104,7 +139,7 @@ namespace Rock.Field.Types
             ddlDatePickerMode.Label = "Control Type";
             ddlDatePickerMode.Help = "Select 'Date Picker' to use a DatePicker, or 'Date Parts Picker' to select Month, Day and Year individually";
             ddlDatePickerMode.AutoPostBack = true;
-            ddlDatePickerMode.SelectedIndexChanged += OnQualifierUpdated;
+            ddlDatePickerMode.SelectedIndexChanged += OnControlTypeChanged;
 
             var cbDisplayCurrent = new RockCheckBox();
             controls.Add( cbDisplayCurrent );
@@ -130,7 +165,8 @@ namespace Rock.Field.Types
                 cbDisplayCurrent.Help = "Include option to specify value as the current time.";
             }
 
-            return controls;
+            _configurationControls = controls;
+            return _configurationControls;
         }
 
         /// <summary>
@@ -181,6 +217,7 @@ namespace Rock.Field.Types
                     nbFutureYearCount.Text = configurationValues["futureYearCount"].Value;
                 }
 
+                // only support the 'Future Years' option of they are using the DatePartsPicker
                 nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
             }
         }
