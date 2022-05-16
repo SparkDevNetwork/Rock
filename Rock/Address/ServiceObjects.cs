@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
@@ -25,15 +26,16 @@ namespace Rock.Address
     /// <summary>
     /// Geocoder service from <a href="http://www.serviceobjects.com">ServiceObjects</a>
     /// </summary>
-    [Description("Service Objects Geocoding service")]
+    [Obsolete( "The Service Objects 'location services' are being deprecated and will be removed in Rock v14.  Please use SmartyStreets or Bing instead." )]
+    [RockObsolete( "1.13.5" )]
+    [Description( "Service Objects Geocoding service" )]
     [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "ServiceObjects" )]
     [TextField( "License Key", "The Service Objects License Key" )]
     public class ServiceObjects : VerificationComponent
     {
-
         /// <summary>
-        /// Gets a value indicating whether Melissa Data supports geocoding.
+        /// Gets a value indicating whether Service Objects supports geocoding.
         /// </summary>
         public override bool SupportsStandardization
         {
@@ -53,13 +55,14 @@ namespace Rock.Address
             VerificationResult result = VerificationResult.None;
             resultMsg = string.Empty;
 
-            string licenseKey = GetAttributeValue("LicenseKey");
+            string licenseKey = GetAttributeValue( "LicenseKey" );
 
             var client = new DOTSGeoCoderSoapClient();
             Location_V3 location_match = client.GetBestMatch_V3(
-                string.Format("{0} {1}",
+                string.Format(
+                    "{0} {1}",
                     location.Street1,
-                    location.Street2),
+                    location.Street2 ),
                 location.City,
                 location.State,
                 location.PostalCode,
