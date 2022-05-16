@@ -99,9 +99,7 @@ namespace Rock.Model
 
             var viewModel = new FinancialPaymentDetailBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AccountNumberMasked = model.AccountNumberMasked,
                 BillingLocationId = model.BillingLocationId,
                 CreditCardTypeValueId = model.CreditCardTypeValueId,

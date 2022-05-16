@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new BadgeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 BadgeComponentEntityTypeId = model.BadgeComponentEntityTypeId,
                 Description = model.Description,
                 EntityTypeId = model.EntityTypeId,

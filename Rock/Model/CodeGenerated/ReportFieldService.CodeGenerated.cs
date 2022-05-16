@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ReportFieldBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ColumnHeaderText = model.ColumnHeaderText,
                 ColumnOrder = model.ColumnOrder,
                 DataSelectComponentEntityTypeId = model.DataSelectComponentEntityTypeId,

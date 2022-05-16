@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new WorkflowActionTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ActivityTypeId = model.ActivityTypeId,
                 CriteriaAttributeGuid = model.CriteriaAttributeGuid,
                 CriteriaComparisonType = ( int ) model.CriteriaComparisonType,

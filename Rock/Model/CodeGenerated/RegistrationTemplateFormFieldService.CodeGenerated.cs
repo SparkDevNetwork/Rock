@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationTemplateFormFieldBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AttributeId = model.AttributeId,
                 FieldSource = ( int ) model.FieldSource,
                 FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON,

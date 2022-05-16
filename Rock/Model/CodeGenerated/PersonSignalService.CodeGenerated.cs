@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PersonSignalBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ExpirationDate = model.ExpirationDate,
                 Note = model.Note,
                 OwnerPersonAliasId = model.OwnerPersonAliasId,

@@ -135,9 +135,7 @@ namespace Rock.Model
 
             var viewModel = new PageBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AdditionalSettings = model.AdditionalSettings,
                 AllowIndexing = model.AllowIndexing,
                 BodyCssClass = model.BodyCssClass,

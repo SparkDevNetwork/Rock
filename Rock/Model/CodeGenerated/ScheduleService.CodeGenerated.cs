@@ -125,9 +125,7 @@ namespace Rock.Model
 
             var viewModel = new ScheduleBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AutoInactivateWhenComplete = model.AutoInactivateWhenComplete,
                 CategoryId = model.CategoryId,
                 CheckInEndOffsetMinutes = model.CheckInEndOffsetMinutes,

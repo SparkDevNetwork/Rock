@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RemoteAuthenticationSessionBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AuthenticationIpAddress = model.AuthenticationIpAddress,
                 AuthorizedPersonAliasId = model.AuthorizedPersonAliasId,
                 ClientIpAddress = model.ClientIpAddress,

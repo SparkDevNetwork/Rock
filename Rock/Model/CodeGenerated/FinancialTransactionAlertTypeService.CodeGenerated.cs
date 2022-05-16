@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new FinancialTransactionAlertTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AccountParticipantSystemCommunicationId = model.AccountParticipantSystemCommunicationId,
                 AlertSummaryNotificationGroupId = model.AlertSummaryNotificationGroupId,
                 AlertType = ( int ) model.AlertType,

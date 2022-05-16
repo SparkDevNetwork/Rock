@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PrayerRequestBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AllowComments = model.AllowComments,
                 Answer = model.Answer,
                 ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,

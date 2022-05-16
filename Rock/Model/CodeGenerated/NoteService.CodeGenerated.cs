@@ -83,9 +83,7 @@ namespace Rock.Model
 
             var viewModel = new NoteBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ApprovalsSent = model.ApprovalsSent,
                 ApprovalStatus = ( int ) model.ApprovalStatus,
                 ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,

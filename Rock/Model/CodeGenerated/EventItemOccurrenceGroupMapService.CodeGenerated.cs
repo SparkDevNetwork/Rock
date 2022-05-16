@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new EventItemOccurrenceGroupMapBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 EventItemOccurrenceId = model.EventItemOccurrenceId,
                 GroupId = model.GroupId,
                 PublicName = model.PublicName,

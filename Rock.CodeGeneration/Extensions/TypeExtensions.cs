@@ -97,6 +97,14 @@ namespace Rock.CodeGeneration
             {
                 return new PropertyDeclaration( "DateTime?", new[] { "System" } );
             }
+            else if ( type == typeof( DateTimeOffset ) )
+            {
+                return new PropertyDeclaration( "DateTimeOffset", new[] { "System" } );
+            }
+            else if ( type == typeof( DateTimeOffset ) )
+            {
+                return new PropertyDeclaration( "DateTimeOffset?", new[] { "System" } );
+            }
             else
             {
                 throw new Exception( $"Unable to convert {type.GetFriendlyName()} to CSharp declaration." );

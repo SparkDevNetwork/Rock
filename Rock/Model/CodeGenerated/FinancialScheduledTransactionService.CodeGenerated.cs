@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new FinancialScheduledTransactionBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AuthorizedPersonAliasId = model.AuthorizedPersonAliasId,
                 CardReminderDate = model.CardReminderDate,
                 EndDate = model.EndDate,

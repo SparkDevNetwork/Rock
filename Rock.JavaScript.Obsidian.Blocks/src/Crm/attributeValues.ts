@@ -72,7 +72,7 @@ export default defineComponent({
         const invokeBlockAction = useInvokeBlockAction();
         const attributes = ref(configurationValues.attributes);
         const attributeValues = ref(configurationValues.values);
-        const personGuid = computed(() => store.personContext?.guid || null);
+        const personKey = computed(() => store.personContext?.idKey || null);
         const isLoading = ref(false);
         const isEditMode = ref(false);
         const errorMessage = ref("");
@@ -99,7 +99,7 @@ export default defineComponent({
             //}
 
             //const result = await invokeBlockAction<PublicAttributeValue[]>("SaveAttributeValues", {
-            //    personGuid: personGuid.value,
+            //    personKey: personKey.value,
             //    keyValueMap
             //});
 

@@ -83,6 +83,11 @@
     <Folder Include="Framework\ViewModels\Blocks\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Groups\" />
+    <Folder Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\" />
+    <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleSignup\" />
+    <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\" />
+    <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\" />
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
     <Folder Include="Framework\ViewModels\Entities\" />
@@ -345,6 +350,14 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\assignmentScheduleAndLocationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\preferencePageContentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleSignup\personScheduleSignupBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleSignup\personScheduleSignupDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\confirmDeclineBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleToolbox\contentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\contentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\landingPageContentBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Connection\connectionRequestCountsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\addressControlBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\birthdayPickerBag.d.ts" />

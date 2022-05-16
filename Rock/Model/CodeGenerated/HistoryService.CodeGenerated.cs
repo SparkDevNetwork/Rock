@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new HistoryBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Caption = model.Caption,
                 CategoryId = model.CategoryId,
                 ChangeType = model.ChangeType,

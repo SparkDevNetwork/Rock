@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new LayoutBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Description = model.Description,
                 FileName = model.FileName,
                 IsSystem = model.IsSystem,

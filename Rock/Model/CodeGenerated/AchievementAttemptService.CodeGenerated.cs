@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AchievementAttemptBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AchievementAttemptEndDateTime = model.AchievementAttemptEndDateTime,
                 AchievementAttemptStartDateTime = model.AchievementAttemptStartDateTime,
                 AchievementTypeId = model.AchievementTypeId,

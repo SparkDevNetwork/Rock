@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { CampusScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusScheduleBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -54,12 +53,6 @@ export type CampusBag = {
     campusStatusValue?: ListItemBag | null;
 
     campusTypeValue?: ListItemBag | null;
-
-    /** Gets or sets the Id. */
-    id: number;
-
-    /** Gets or sets the Guid. */
-    guid?: Guid | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

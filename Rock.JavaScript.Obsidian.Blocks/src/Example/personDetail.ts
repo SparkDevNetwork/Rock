@@ -154,21 +154,21 @@ export default defineComponent({
             return store.state.currentPerson;
         },
 
-        currentPersonGuid(): Guid | null {
-            return this.currentPerson?.guid ?? null;
+        currentPersonKey(): Guid | null {
+            return this.currentPerson?.idKey ?? null;
         }
     },
     watch: {
-        currentPersonGuid: {
+        currentPersonKey: {
             immediate: true,
             async handler(): Promise<void> {
-                if (!this.currentPersonGuid) {
+                if (!this.currentPersonKey) {
                     // Set the person empty to match the guid
                     this.person = null;
                     return;
                 }
 
-                if (this.person && this.person.guid === this.currentPersonGuid) {
+                if (this.person && this.person.idKey === this.currentPersonKey) {
                     // Already loaded
                     return;
                 }

@@ -21,7 +21,7 @@ import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import { defineComponent, inject } from "vue";
 import DatePicker from "@Obsidian/Controls/datePicker";
 import RockButton from "@Obsidian/Controls/rockButton";
-import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+import { newGuid } from "@Obsidian/Utility/guid";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import Alert from "@Obsidian/Controls/alert";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
@@ -43,7 +43,7 @@ export type ProcessTransactionArgs = {
     email: string;
     phoneNumber: string;
     phoneCountryCode: string;
-    accountAmounts: Record<Guid, number>;
+    accountAmounts: Record<string, number>;
     street1: string;
     street2: string;
     city: string;
@@ -134,8 +134,8 @@ export default defineComponent({
         totalAmount(): number {
             let total = 0;
 
-            for (const accountGuid in this.args.accountAmounts) {
-                total += this.args.accountAmounts[accountGuid];
+            for (const accountKey in this.args.accountAmounts) {
+                total += this.args.accountAmounts[accountKey];
             }
 
             return total;
@@ -188,8 +188,8 @@ export default defineComponent({
         accountAndCampusString(): string {
             const accountNames = [] as string[];
 
-            for (const accountGuid in this.args.accountAmounts) {
-                const account = this.accounts.find(a => areEqual(accountGuid, a.guid));
+            for (const accountKey in this.args.accountAmounts) {
+                const account = this.accounts.find(a => a.idKey === accountKey);
 
                 if (!account || !account.publicName) {
                     continue;

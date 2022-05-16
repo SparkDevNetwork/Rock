@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new MetricPartitionBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 EntityTypeId = model.EntityTypeId,
                 EntityTypeQualifierColumn = model.EntityTypeQualifierColumn,
                 EntityTypeQualifierValue = model.EntityTypeQualifierValue,

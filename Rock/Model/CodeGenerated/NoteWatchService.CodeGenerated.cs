@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new NoteWatchBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AllowOverride = model.AllowOverride,
                 EntityId = model.EntityId,
                 EntityTypeId = model.EntityTypeId,

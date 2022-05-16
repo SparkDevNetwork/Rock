@@ -123,9 +123,7 @@ namespace Rock.Model
 
             var viewModel = new PageRouteBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 IsGlobal = model.IsGlobal,
                 IsSystem = model.IsSystem,
                 PageId = model.PageId,

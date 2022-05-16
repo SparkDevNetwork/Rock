@@ -34,7 +34,9 @@ namespace Rock.CodeGeneration.Utility
             typeof( Guid ),
             typeof( Guid? ),
             typeof( DateTime ),
-            typeof( DateTime? )
+            typeof( DateTime? ),
+            typeof( DateTimeOffset ),
+            typeof( DateTimeOffset? )
         };
 
         #endregion
@@ -220,6 +222,10 @@ namespace Rock.CodeGeneration.Utility
                 return true;
             }
             else if ( type == typeof( DateTime ) || type == typeof( DateTime? ) )
+            {
+                return true;
+            }
+            else if ( type == typeof( DateTimeOffset ) || type == typeof( DateTimeOffset? ) )
             {
                 return true;
             }

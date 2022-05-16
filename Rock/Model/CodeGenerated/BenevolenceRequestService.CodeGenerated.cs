@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new BenevolenceRequestBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 BenevolenceTypeId = model.BenevolenceTypeId,
                 CampusId = model.CampusId,
                 CaseWorkerPersonAliasId = model.CaseWorkerPersonAliasId,

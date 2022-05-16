@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new EntitySetBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 EntitySetPurposeValueId = model.EntitySetPurposeValueId,
                 EntityTypeId = model.EntityTypeId,
                 ExpireDateTime = model.ExpireDateTime,

@@ -416,11 +416,11 @@ namespace Rock.Blocks.Core
                 Campus entity;
 
                 // Determine if we are editing an existing entity or creating a new one.
-                if ( box.Entity.Id != 0 )
+                if ( box.Entity.IdKey.IsNotNullOrWhiteSpace() )
                 {
                     // If editing an existing entity then load it and make sure it
                     // was found and can still be edited.
-                    entity = entityService.Get( box.Entity.Guid );
+                    entity = entityService.Get( box.Entity.IdKey );
 
                     if ( entity == null )
                     {
@@ -469,7 +469,7 @@ namespace Rock.Blocks.Core
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                     {
-                        [PageParameterKey.CampusId] = entity.Id.ToString()
+                        [PageParameterKey.CampusId] = entity.IdKey
                     } ) );
                 }
 
@@ -484,15 +484,15 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Deletes the specified entity.
         /// </summary>
-        /// <param name="guid">The unique identifier of the entity to be deleted.</param>
+        /// <param name="key">The identifier key of the entity to be deleted.</param>
         /// <returns>A string that contains the URL to be redirected to on success.</returns>
         [BlockAction]
-        public BlockActionResult Delete( Guid guid )
+        public BlockActionResult Delete( string key )
         {
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new CampusService( rockContext );
-                var entity = new CampusService( rockContext ).Get( guid );
+                var entity = new CampusService( rockContext ).Get( key );
 
                 if ( entity == null )
                 {
@@ -596,8 +596,7 @@ namespace Rock.Blocks.Core
                 CampusStatusValue = entity.CampusStatusValue.ToListItemBag(),
                 CampusTypeValue = entity.CampusTypeValue.ToListItemBag(),
                 Description = entity.Description,
-                Guid = entity.Guid,
-                Id = entity.Id,
+                IdKey = entity.IdKey,
                 IsActive = entity.IsActive,
                 IsSystem = entity.IsSystem,
                 LeaderPersonAlias = entity.LeaderPersonAlias.ToListItemBag(),

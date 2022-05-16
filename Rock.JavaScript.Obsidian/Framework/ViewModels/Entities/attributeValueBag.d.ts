@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { AttributeBag } from "@Obsidian/ViewModels/Entities/attributeBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -56,12 +55,6 @@ export type AttributeValueBag = {
 
     /** Gets or sets the attribute. */
     attribute?: AttributeBag | null;
-
-    /** Gets or sets the Id. */
-    id: number;
-
-    /** Gets or sets the Guid. */
-    guid?: Guid | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

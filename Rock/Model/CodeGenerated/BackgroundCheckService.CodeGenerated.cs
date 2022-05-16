@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new BackgroundCheckBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 PackageName = model.PackageName,
                 PersonAliasId = model.PersonAliasId,
                 ProcessorEntityTypeId = model.ProcessorEntityTypeId,

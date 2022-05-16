@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new FinancialPledgeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AccountId = model.AccountId,
                 EndDate = model.EndDate,
                 GroupId = model.GroupId,

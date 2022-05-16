@@ -19,7 +19,6 @@ import { computed, defineComponent, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { useConfigurationValues, useInvokeBlockAction, useSecurityGrantToken } from "@Obsidian/Utility/block";
-import { emptyGuid } from "@Obsidian/Utility/guid";
 import EditPanel from "./CampusDetail/editPanel";
 import { CampusDetailOptionsBag, CampusBag, DetailBlockBox, NavigationUrlKey } from "./CampusDetail/types";
 import ViewPanel from "./CampusDetail/viewPanel";
@@ -113,7 +112,7 @@ export default defineComponent({
          * @returns true if the panel should leave edit mode; otherwise false.
          */
         const onCancelEdit = async (): Promise<boolean> => {
-            if (campusEditBag.value?.guid === emptyGuid) {
+            if (!campusEditBag.value?.idKey) {
                 if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                     window.location.href = config.navigationUrls[NavigationUrlKey.ParentPage];
                 }
@@ -132,7 +131,7 @@ export default defineComponent({
             errorMessage.value = "";
 
             const result = await invokeBlockAction<string>("Delete", {
-                guid: campusViewBag.value?.guid
+                key: campusViewBag.value?.idKey
             });
 
             if (result.isSuccess && result.data) {
@@ -151,7 +150,7 @@ export default defineComponent({
          */
         const onEdit = async (): Promise<boolean> => {
             const result = await invokeBlockAction<DetailBlockBox<CampusBag, CampusDetailOptionsBag>>("Edit", {
-                guid: campusViewBag.value?.guid
+                key: campusViewBag.value?.idKey
             });
 
             if (result.isSuccess && result.data && result.data.entity) {
@@ -224,7 +223,7 @@ export default defineComponent({
         else if (!config.entity) {
             blockError.value = "The specified campus could not be viewed.";
         }
-        else if (config.entity.guid === emptyGuid) {
+        else if (config.entity.idKey === "") {
             campusEditBag.value = config.entity;
             panelMode.value = DetailPanelMode.Add;
         }

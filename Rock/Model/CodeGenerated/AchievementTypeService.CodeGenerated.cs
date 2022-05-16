@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new AchievementTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AchievementFailureWorkflowTypeId = model.AchievementFailureWorkflowTypeId,
                 AchievementIconCssClass = model.AchievementIconCssClass,
                 AchievementStartWorkflowTypeId = model.AchievementStartWorkflowTypeId,

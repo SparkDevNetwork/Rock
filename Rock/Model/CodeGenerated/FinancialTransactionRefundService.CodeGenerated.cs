@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new FinancialTransactionRefundBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 OriginalTransactionId = model.OriginalTransactionId,
                 RefundReasonSummary = model.RefundReasonSummary,
                 RefundReasonValueId = model.RefundReasonValueId,

@@ -99,9 +99,7 @@ namespace Rock.Model
 
             var viewModel = new SiteBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AdditionalSettings = model.AdditionalSettings,
                 AllowedFrameDomains = model.AllowedFrameDomains,
                 AllowIndexing = model.AllowIndexing,

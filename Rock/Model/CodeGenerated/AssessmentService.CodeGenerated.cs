@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AssessmentBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AssessmentResultData = model.AssessmentResultData,
                 AssessmentTypeId = model.AssessmentTypeId,
                 CompletedDateTime = model.CompletedDateTime,

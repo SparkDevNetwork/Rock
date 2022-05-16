@@ -89,9 +89,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationInstanceBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AccountId = model.AccountId,
                 AdditionalConfirmationDetails = model.AdditionalConfirmationDetails,
                 AdditionalReminderDetails = model.AdditionalReminderDetails,

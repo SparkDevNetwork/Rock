@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new StreakBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 CurrentStreakCount = model.CurrentStreakCount,
                 CurrentStreakStartDate = model.CurrentStreakStartDate,
                 EngagementCount = model.EngagementCount,

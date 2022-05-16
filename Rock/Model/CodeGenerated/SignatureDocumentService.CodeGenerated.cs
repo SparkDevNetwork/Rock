@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new SignatureDocumentBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AppliesToPersonAliasId = model.AppliesToPersonAliasId,
                 AssignedToPersonAliasId = model.AssignedToPersonAliasId,
                 BinaryFileId = model.BinaryFileId,

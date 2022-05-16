@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new ConnectionTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ConnectionRequestDetailPageId = model.ConnectionRequestDetailPageId,
                 ConnectionRequestDetailPageRouteId = model.ConnectionRequestDetailPageRouteId,
                 DaysUntilRequestIdle = model.DaysUntilRequestIdle,

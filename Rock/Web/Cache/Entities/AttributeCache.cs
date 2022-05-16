@@ -947,8 +947,7 @@ namespace Rock.Web.Cache
 
             var viewModel = new AttributeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.Id != 0 ? Utility.IdHasher.Instance.GetHash( model.Id ) : string.Empty,
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,
                 ConfigurationValues = model.ConfigurationValues,

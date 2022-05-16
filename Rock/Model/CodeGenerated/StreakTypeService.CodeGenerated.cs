@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new StreakTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Description = model.Description,
                 EnableAttendance = model.EnableAttendance,
                 FirstDayOfWeek = ( int? ) model.FirstDayOfWeek,

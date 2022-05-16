@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new GroupDemographicValueBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 GroupDemographicTypeId = model.GroupDemographicTypeId,
                 GroupId = model.GroupId,
                 LastCalculatedDateTime = model.LastCalculatedDateTime,

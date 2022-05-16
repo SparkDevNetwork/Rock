@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new InteractionDeviceTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Application = model.Application,
                 ClientType = model.ClientType,
                 DeviceTypeData = model.DeviceTypeData,

@@ -1011,9 +1011,7 @@ using Rock.Web.Cache;
 
             var viewModel = new {type.Name}Bag
             {{
-                Id = model.Id,
-                IdKey = model.IdKey,
-                Guid = model.Guid," );
+                IdKey = model.IdKey," );
 
                 foreach ( var property in viewModelProperties )
                 {

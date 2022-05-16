@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** NcoaHistory View Model */
@@ -115,12 +114,6 @@ export type NcoaHistoryBag = {
 
     /** Gets or sets the ModifiedByPersonAliasId. */
     modifiedByPersonAliasId?: number | null;
-
-    /** Gets or sets the Id. */
-    id: number;
-
-    /** Gets or sets the Guid. */
-    guid?: Guid | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

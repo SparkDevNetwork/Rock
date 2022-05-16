@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PluginMigrationBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 MigrationName = model.MigrationName,
                 MigrationNumber = model.MigrationNumber,
                 PluginAssemblyName = model.PluginAssemblyName,
