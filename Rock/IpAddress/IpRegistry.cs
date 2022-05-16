@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -106,18 +106,21 @@ namespace Rock.IpAddress
                                 LookupDateTime = RockDateTime.Now
                             };
 
-                            var regionCode = result.Location.Region.Code.Split( '-' ).LastOrDefault();
-                            if ( regionCode.IsNotNullOrWhiteSpace() )
+                            if ( result.Location.Region != null && result.Location.Region.Code.IsNotNullOrWhiteSpace() )
                             {
-                                interactionSessionLocation.RegionCode = regionCode.Left( 2 );
-                                var regionDefinedValue = regionDefinedType.GetDefinedValueFromValue( regionCode );
-                                if ( regionDefinedValue != null )
+                                var regionCode = result.Location.Region.Code.Split( '-' ).LastOrDefault();
+                                if ( regionCode.IsNotNullOrWhiteSpace() )
                                 {
-                                    interactionSessionLocation.RegionValueId = regionDefinedValue.Id;
+                                    interactionSessionLocation.RegionCode = regionCode.Left( 2 );
+                                    var regionDefinedValue = regionDefinedType.GetDefinedValueFromValue( regionCode );
+                                    if ( regionDefinedValue != null )
+                                    {
+                                        interactionSessionLocation.RegionValueId = regionDefinedValue.Id;
+                                    }
                                 }
                             }
 
-                            if ( result.Location.Country.Code.IsNotNullOrWhiteSpace() )
+                            if ( result.Location.Country != null && result.Location.Country.Code.IsNotNullOrWhiteSpace() )
                             {
                                 interactionSessionLocation.CountryCode = result.Location.Country.Code;
                                 var countryDefinedValue = countryDefinedType.GetDefinedValueFromValue( result.Location.Country.Code );
