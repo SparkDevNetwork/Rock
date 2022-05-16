@@ -32,7 +32,7 @@ namespace Rock.Rest.Controllers
     public partial class AttendanceOccurrencesController
     {
         /// <summary>
-        /// Gets all the occurrences for a group for the selected dates, location and schedule.
+        /// Gets all the occurrences for a group for the selected dates, location and schedule, sorted by occurrence data in ascending order.
         /// </summary>
         /// <returns></returns>
         [Authenticate, Secured]
