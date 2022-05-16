@@ -695,7 +695,7 @@ btnCopyToClipboard.ClientID );
             var resourceListSourceType = ( GroupSchedulerResourceListSourceType ) hfSchedulerResourceListSourceType.Value.AsInteger();
             var groupMemberFilterType = ( SchedulerResourceGroupMemberFilterType ) hfResourceGroupMemberFilterType.Value.AsInteger();
 
-            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = Enum.GetValues( typeof( GroupSchedulerResourceListSourceType ) ).OfType<GroupSchedulerResourceListSourceType>().ToList();
+            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = typeof( GroupSchedulerResourceListSourceType ).GetOrderedValues<GroupSchedulerResourceListSourceType>().ToList();
 
             if ( selectedGroup != null && selectedGroup.SchedulingMustMeetRequirements )
             {
