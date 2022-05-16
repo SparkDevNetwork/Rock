@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -78,13 +78,6 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Private reference to the collection created by ConfigurationControls().  This is used to
-        /// dynamically update control state across postbacks (see <see cref="OnControlTypeChanged"/>
-        /// for details).
-        /// </summary>
-        private List<Control> _configurationControls;
-
-        /// <summary>
         /// This event handler is triggerend when the Control Type is modified to show or hide related
         /// options ('Future Years' or 'Display Current Option').
         /// </summary>
@@ -92,8 +85,15 @@ namespace Rock.Field.Types
         /// <param name="e"></param>
         private void OnControlTypeChanged( object sender, EventArgs e )
         {
+            var senderControl = ( sender as Control );
+            if ( senderControl == null || senderControl.Parent == null )
+            {
+                OnQualifierUpdated( sender, e );
+                return;
+            }
+
             // Reset the visibility of the nbFutureYearCount control when the Control Type changes.
-            var controls = _configurationControls;
+            var controls = senderControl.Parent.Controls;
             if ( controls != null && controls.Count >= 5 )
             {
                 var ddlDatePickerMode = controls[2] as RockDropDownList;
@@ -165,8 +165,7 @@ namespace Rock.Field.Types
                 cbDisplayCurrent.Help = "Include option to specify value as the current time.";
             }
 
-            _configurationControls = controls;
-            return _configurationControls;
+            return controls;
         }
 
         /// <summary>
