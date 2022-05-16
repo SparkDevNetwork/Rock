@@ -23,7 +23,7 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-using NuGet;
+//using NuGet;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -228,6 +228,7 @@ namespace RockWeb.Blocks.Connection
             public const string ConnectionRequestId = "ConnectionRequestId";
             public const string ConnectionRequestGuid = "ConnectionRequestGuid";
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+            public const string CampusId = "CampusId";
         }
 
         /// <summary>
@@ -2451,11 +2452,12 @@ namespace RockWeb.Blocks.Connection
                     .Queryable()
                     .AsNoTracking()
                     .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id );
+                var campuses = CampusCache.All().Where( c => c.IsActive ?? true ).ToList();
 
                 // Grant edit access to any of those in a non campus-specific connector group
                 userCanEditConnectionRequest = qryConnectionOpportunityConnectorGroups
                     .Any( g =>
-                        !g.CampusId.HasValue &&
+                        ( campuses.Count == 1 || !g.CampusId.HasValue ) &&
                         g.ConnectorGroup != null &&
                         g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
@@ -4207,7 +4209,15 @@ namespace RockWeb.Blocks.Connection
                     .AsNoTracking()
                     .Where( o => o.Id == opportunity.Id )
                     .SelectMany( o => o.ConnectionOpportunityGroups )
-                    .Select( cog => cog.Group );
+                    .Select( cog => cog.Group )
+                    .Where( g => g.IsActive && !g.IsArchived ) //Filter early
+                    .Select( g => new GroupViewModel           //Strip out unnecessary data
+                    {
+                        Id = g.Id,
+                        Name = g.Name,
+                        CampusId = g.CampusId,
+                        CampusName = g.Campus.Name
+                    } );
 
                 // Then get any groups that are configured with 'all groups of type'
                 var allGroupsOfTypeQuery = service.Queryable()
@@ -4216,17 +4226,17 @@ namespace RockWeb.Blocks.Connection
                     .SelectMany( o => o.ConnectionOpportunityGroupConfigs )
                     .Where( gc => gc.UseAllGroupsOfType )
                     .Select( gc => gc.GroupType )
-                    .SelectMany( gt => gt.Groups );
-
-                _availablePlacementGroups = specificConfigQuery.Union( allGroupsOfTypeQuery )
-                    .Where( g => g.IsActive && !g.IsArchived )
-                    .Select( g => new GroupViewModel
+                    .SelectMany( gt => gt.Groups )
+                    .Where( g => g.IsActive && !g.IsArchived ) //Filter early
+                    .Select( g => new GroupViewModel           //Strip out unnecessary data
                     {
                         Id = g.Id,
                         Name = g.Name,
                         CampusId = g.CampusId,
                         CampusName = g.Campus.Name
-                    } )
+                    } );
+
+                _availablePlacementGroups = specificConfigQuery.Union( allGroupsOfTypeQuery )
                     .ToList();
             }
 
@@ -4459,6 +4469,7 @@ namespace RockWeb.Blocks.Connection
             // Check for a connection request or opportunity id param. The request takes priority since it is more specific
             var connectionRequestIdParam = PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
             var connectionOpportunityIdParam = PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull();
+            var campusIdParam = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
 
             if ( !ConnectionOpportunityId.HasValue && connectionRequestIdParam.HasValue )
             {
@@ -4495,6 +4506,10 @@ namespace RockWeb.Blocks.Connection
                 ViewAllActivities = false;
                 IsRequestModalAddEditMode = false;
                 RequestModalViewModeSubMode = RequestModalViewModeSubMode_View;
+                if ( campusIdParam.HasValue )
+                {
+                    SaveSettingByConnectionType( UserPreferenceKey.CampusFilter, campusIdParam.ToString() );
+                }
             }
 
             // If the opportunity is not yet set by the request or opportunity id params, then set it from preference

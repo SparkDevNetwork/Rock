@@ -2224,7 +2224,6 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 var selectedKeys = SelectedKeys.ToList();
                 for ( int i = 0; i < dataItems.Count; i++ )
                 {
-                    rowCounter++;
                     var dataItem = dataItems[i];
                     var gridViewRow = gridViewRows[i];
 
@@ -2238,6 +2237,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         }
                     }
 
+                    rowCounter++;
                     var args = new RockGridViewRowEventArgs( gridViewRow, true );
                     gridViewRow.DataItem = dataItem;
                     this.OnRowDataBound( args );
@@ -2445,6 +2445,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
                 // Grid column headings
                 var boundPropNames = new List<string>();
+                var addedHeaderNames = new List<string>();
 
                 // Array provides slight performance improvement here over a list
                 var orderedVisibleFields = visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ).ToArray();
@@ -2457,7 +2458,13 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     }
                     else
                     {
-                        worksheet.Cells[rowCounter, columnCounter].Value = dataField.HeaderText;
+                        var headerText = dataField.HeaderText;
+                        if ( addedHeaderNames.Contains( dataField.HeaderText, StringComparer.InvariantCultureIgnoreCase ) )
+                        {
+                            headerText = string.Format( "{0} {1}", dataField.HeaderText, i );
+                        }
+                        worksheet.Cells[rowCounter, columnCounter].Value = headerText;
+                        addedHeaderNames.Add( headerText );
                     }
 
                     var boundField = dataField as BoundField;
@@ -2491,7 +2498,20 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         lavaDataFields.AddOrIgnore( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
                     }
 
-                    worksheet.Cells[rowCounter, columnCounter].Value = prop.Name.SplitCase();
+                    var headerText = prop.Name.SplitCase();
+                    if ( addedHeaderNames.Contains( headerText, StringComparer.InvariantCultureIgnoreCase ) )
+                    {
+                        var lastInt = 0;
+                        do
+                        {
+                            lastInt += 1;
+                            headerText = string.Format( "{0} {1}", prop.Name.SplitCase(), lastInt );
+                        }
+                        while ( addedHeaderNames.Contains( headerText, StringComparer.InvariantCultureIgnoreCase ) );
+                    }
+
+                    addedHeaderNames.Add( headerText );
+                    worksheet.Cells[rowCounter, columnCounter].Value = headerText;
                     worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( prop.PropertyType );
 
                     columnCounter++;

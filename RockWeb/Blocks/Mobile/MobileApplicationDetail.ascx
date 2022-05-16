@@ -29,7 +29,7 @@
                     <asp:Literal ID="ltAppName" runat="server" />
                 </h3>
                 <div class="panel-labels">
-                    <span class="label label-default">Site Id: <asp:Literal ID="lSiteId" runat="server" /></span>
+                    <span class="label label-default">Site Id:<asp:Literal ID="lSiteId" runat="server" /></span>
                     <asp:Literal ID="lLastDeployDate" runat="server" />
                 </div>
             </div>
@@ -95,7 +95,7 @@
                                             <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." />
                                         </div>
                                         <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar."/>
+                                            <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar." />
                                         </div>
                                         <div class="col-md-4">
                                             <Rock:ColorPicker ID="cpEditActivityIndicatorColor" runat="server" Label="Activity Indicator Color" Help="Defines the color that will be used when displaying an activity indicator, these alert the user that something is happening in the background." />
@@ -156,7 +156,7 @@
 
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <Rock:NumberBox ID="nbRadiusBase" runat="server" NumberType="Integer" Label="Radius Base" Help="" ></Rock:NumberBox>
+                                        <Rock:NumberBox ID="nbRadiusBase" runat="server" NumberType="Integer" Label="Radius Base" Help=""></Rock:NumberBox>
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Navigation Bar Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
@@ -165,11 +165,11 @@
 
                                 <div class="clearfix">
                                     <div class="pull-right">
-                                        <a href="#" class="btn btn-xs btn-link js-show-advanced-style-fields" >Show Advanced Fields</a>
+                                        <a href="#" class="btn btn-xs btn-link js-show-advanced-style-fields">Show Advanced Fields</a>
                                     </div>
                                 </div>
 
-                                <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" style="display:none">
+                                <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" Style="display: none">
                                     <div class="row">
 
                                         <div class="col-md-4">
@@ -269,7 +269,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <Rock:CategoryPicker ID="cpEditPersonAttributeCategories" runat="server" Label="Person Attribute Categories" Help="All attributes in selected categories will be sent to the client and made available remotely."  AllowMultiSelect="true" />
+                            <Rock:CategoryPicker ID="cpEditPersonAttributeCategories" runat="server" Label="Person Attribute Categories" Help="All attributes in selected categories will be sent to the client and made available remotely." AllowMultiSelect="true" />
                         </div>
                     </div>
 
@@ -297,8 +297,9 @@
                                 <Rock:RockTextBox ID="tbEditPushTokenUpdateValue" runat="server" Label="Force Push Token Update" Help="Setting or changing this value will force all clients to update their push token. Use with caution." />
                             </div>
                         </div>
-                    </Rock:PanelWidget>
 
+                        <Rock:CodeEditor ID="ceToastXaml" runat="server" Label="Toast XAML" Help="The XAML template to use for when a Toast is displayed." EditorMode="Xml" Required="false" />
+                    </Rock:PanelWidget>
                     <div class="actions margin-t-md">
                         <asp:LinkButton ID="lbEditSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbEditSave_Click" AccessKey="s" ToolTip="Alt+s" />
                         <asp:LinkButton ID="lbEditCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbEditCancel_Click" CausesValidation="false" AccessKey="c" ToolTip="Alt+c" />

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -209,11 +209,14 @@ namespace Rock.Plugin.HotFixes
                 "standard-template.svg",
                 "image/svg+xml" );
 
-            RockMigrationHelper.UpdateNoteType(
+            RockMigrationHelper.AddOrUpdateNoteTypeByMatchingNameAndEntityType(
                 "Structured Content User Value",
                 "Rock.Model.ContentChannelItem",
                 false,
-                Rock.SystemGuid.NoteType.CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE );
+                Rock.SystemGuid.NoteType.CONTENT_CHANNEL_ITEM_STRUCTURED_CONTENT_USER_VALUE,
+                true,
+                null,
+                false );
         }
 
         /// <summary>

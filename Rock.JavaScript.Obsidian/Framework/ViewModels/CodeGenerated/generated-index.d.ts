@@ -148,6 +148,7 @@ import { InteractionChannel } from "./interactionChannel";
 import { InteractionComponent } from "./interactionComponent";
 import { InteractionDeviceType } from "./interactionDeviceType";
 import { InteractionSession } from "./interactionSession";
+import { InteractionSessionLocation } from "./interactionSessionLocation";
 import { LavaShortcode } from "./lavaShortcode";
 import { Layout } from "./layout";
 import { Location } from "./location";
@@ -371,6 +372,7 @@ export {
     InteractionComponent,
     InteractionDeviceType,
     InteractionSession,
+    InteractionSessionLocation,
     LavaShortcode,
     Layout,
     Location,

@@ -94,7 +94,7 @@ namespace Rock.Lava
         {
             const string stringElement = @"(('|"")[^'""]*('|""))+";
 
-            string lineCommentElement = LavaTokenLineComment + @"(.*?)\r?\n";
+            string lineCommentElement = LavaTokenLineComment + @"(.*?)\r?(\n|$)";
 
             var blockCommentElement = Regex.Escape( LavaTokenBlockCommentStart ) + @"(.*?)" + Regex.Escape( LavaTokenBlockCommentEnd );
 

@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -29,7 +30,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowFormBuilderTemplate" )]
     [DataContract]
-    public partial class WorkflowFormBuilderTemplate : Model<WorkflowFormBuilderTemplate>, IHasActiveFlag
+    public partial class WorkflowFormBuilderTemplate : Model<WorkflowFormBuilderTemplate>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
 

@@ -259,6 +259,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<InteractionSessionLocation>( Context ).Queryable().Any( a => a.CountryValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, InteractionSessionLocation.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractionSessionLocation>( Context ).Queryable().Any( a => a.RegionValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, InteractionSessionLocation.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Location>( Context ).Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Location.FriendlyTypeName );

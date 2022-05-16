@@ -50,6 +50,15 @@ namespace Rock.Migrations
             //   EntityType:Rock.Blocks.Core.Attributes
             RockMigrationHelper.UpdateMobileBlockType("Attributes", "Allows for the managing of attributes.", "Rock.Blocks.Core.Attributes", "Obsidian > Core", "5B31B69F-306B-4540-8261-EBB1F353F0EF");
 
+            /*
+                 3/10/2022 - N.A.
+
+                 This next UpdateMobileBlockType will not work because the "Rock.Blocks.Workflow.FormBuilder.FormBuilderDetail" EntityType has not been
+                 manually registered at this point.  Because of the way UpdateMobildBlockType works, it just silently returns in this situation.
+
+                 Reason: Auto-registration has not happened yet.  Therefore we will rewrite this in a later migration.
+            */
+
             // Add/Update Obsidian Block Type
             //   Name:Form Builder Detail
             //   Category:Obsidian > Workflow > Form Builder

@@ -119,12 +119,15 @@
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.1.5\lib\net451\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
@@ -143,7 +146,10 @@
     <Compile Include="Communications\Transport\MailgunTests.cs" />
     <Compile Include="Communications\Transport\SMTPTests.cs" />
     <Compile Include="Communications\Transport\TwilioTests.cs" />
+    <Compile Include="Connections\ConnectionOpportunityTests.cs" />
+    <Compile Include="Core\AttributeTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
+    <Compile Include="Field.Types\AddressFieldTypeTests.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
     <Compile Include="Jobs\GivingAutomationClassificationTests.cs" />
     <Compile Include="Jobs\GivingJourneyHelperTests.cs" />
@@ -185,6 +191,7 @@
     <Compile Include="Lava\Engine\MockTemplateCacheService.cs" />
     <Compile Include="Model\EventTests.cs" />
     <Compile Include="Model\BinaryFileTests.cs" />
+    <Compile Include="Model\IdKeyTests.cs" />
     <Compile Include="Model\LocationTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
@@ -197,6 +204,7 @@
     <Compile Include="Model\UserLoginTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rest\ControllersTests\AuthControllerTests.cs" />
+    <Compile Include="Rest\SecuredAttributeTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
     <Compile Include="Rock.Oidc\RockSigningCredentialsTests.cs" />
     <Compile Include="Rock.Security\OidcClientTests.cs" />
@@ -314,6 +322,10 @@
       <Project>{d8de32c9-25da-4897-a750-7dd8755b3d45}</Project>
       <Name>Rock.Tests.Shared</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.WebStartup\Rock.WebStartup.csproj">
+      <Project>{515e22e4-4b9b-4886-8477-e5b312b75eb4}</Project>
+      <Name>Rock.WebStartup</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
       <Name>Rock</Name>
@@ -325,6 +337,18 @@
   <ItemGroup>
     <Content Include="TestData\test.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestData\BinaryFileWidthTests\test_mH.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestData\BinaryFileWidthTests\test_mHgtMw.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestData\BinaryFileWidthTests\test_mW.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestData\BinaryFileWidthTests\test_mWgtMh.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestData\TextDoc.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

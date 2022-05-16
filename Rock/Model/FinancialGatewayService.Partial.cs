@@ -48,6 +48,18 @@ namespace Rock.Model
             }
             return false;
         }
+
+        /// <summary>
+        /// Gets the registration templates for provided FinancialGateway ID
+        /// </summary>
+        /// <param name="gatewayId">The gateway identifier.</param>
+        /// <param name="includeInactiveRegistrations">if set to <c>true</c> [include inactive registrations].</param>
+        /// <returns>IEnumerable&lt;RegistrationTemplate&gt;.</returns>
+        public IEnumerable<RegistrationTemplate> GetRegistrationTemplatesForGateway( int gatewayId, bool includeInactiveRegistrations )
+        {
+            var rockContext = this.Context as RockContext;
+            return new RegistrationTemplateService( rockContext ).Queryable().Where( r => r.FinancialGatewayId == gatewayId && ( includeInactiveRegistrations || r.IsActive == true ) );
+        }
     }
 
     /// <summary>

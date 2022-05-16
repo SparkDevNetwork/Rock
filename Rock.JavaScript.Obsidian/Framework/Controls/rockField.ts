@@ -15,21 +15,21 @@
 // </copyright>
 //
 import { getFieldType } from "../Fields/index";
-import { computed, defineComponent, PropType, provide } from "vue";
+import { computed, defineComponent, PropType, provide, ref } from "vue";
 import { TextFieldType } from "../Fields/textField";
-import { PublicAttributeValue, PublicEditableAttributeValue } from "../ViewModels";
+import { PublicAttribute } from "../ViewModels";
 
 const textField = new TextFieldType();
-
-function instanceOfEditable(value: PublicAttributeValue): value is PublicEditableAttributeValue {
-    return (<PublicEditableAttributeValue>value).key !== undefined;
-}
 
 export default defineComponent({
     name: "RockField",
     props: {
-        attributeValue: {
-            type: Object as PropType<PublicAttributeValue | PublicEditableAttributeValue>,
+        modelValue: {
+            type: String as PropType<string>,
+            required: false
+        },
+        attribute: {
+            type: Object as PropType<PublicAttribute>,
             required: true
         },
         showEmptyValue: {
@@ -39,44 +39,53 @@ export default defineComponent({
         isEditMode: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        showLabel: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+        isCondensed: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
     setup(props, { emit }) {
         const field = computed(() => {
-            const fieldType = getFieldType(props.attributeValue.fieldTypeGuid);
+            const fieldType = getFieldType(props.attribute.fieldTypeGuid);
 
             return fieldType ?? textField;
         });
 
         /** True if the read-only value should be displayed. */
-        const showValue = computed(() => props.showEmptyValue || field.value.getTextValue(props.attributeValue) !== "");
+        const showValue = computed(() => props.showEmptyValue || field.value.getTextValue(props.modelValue ?? "", props.attribute.configurationValues ?? {}) !== "");
 
         /** True if this field is required and must be filled in. */
-        const isRequired = computed(() => instanceOfEditable(props.attributeValue) && props.attributeValue.isRequired);
+        const isRequired = computed(() => props.attribute.isRequired);
 
         /** Indicates to the editor component if this field is required or not. */
         const rules = computed(() => isRequired.value ? "required" : "");
 
         /** True if we are currently in edit mode. */
-        const isEditMode = computed(() => props.isEditMode && instanceOfEditable(props.attributeValue));
+        const isEditMode = computed(() => props.isEditMode);
 
         /** The label to display above the value or editor. */
-        const label = computed(() => props.attributeValue.name);
+        const label = computed(() => props.attribute.name);
 
         /** The help text to display in the help bubble when in edit mode. */
-        const helpText = computed(() => instanceOfEditable(props.attributeValue) ? props.attributeValue.description : "");
+        const helpText = computed(() => props.attribute.description);
 
         /** The read-only component to use to display the value. */
         const valueComponent = computed(() => {
             // This is here to cause the component to update reactively if
             // the value changes.
-            const _ignored = props.attributeValue.value;
+            // Commented out on 3/14/2022 by DSH. If no issues show up it can be removed
+            // at a later point in time (maybe 6 months later). I do not believe this
+            // is needed anymore after the refactoring that was performed.
+            //const _ignored = props.attributeValue.value;
 
-            // TODO: Remove me, this is a temporary hack for DateField needing
-            // to make an async call.
-            const _ignored2 = props.attributeValue.textValue;
-
-            return field.value.getFormattedComponent(props.attributeValue);
+            return props.isCondensed
+                ? field.value.getCondensedFormattedComponent()
+                : field.value.getFormattedComponent();
         });
 
         /** The edit component to use to display the value. */
@@ -84,26 +93,15 @@ export default defineComponent({
 
         /** The value to display or edit. */
         const value = computed({
-            get: () => props.attributeValue.value || "",
+            get: () => props.modelValue || "",
             set(newValue) {
-                props.attributeValue.value = newValue;
-
-                if (instanceOfEditable(props.attributeValue)) {
-                    props.attributeValue.textValue = field.value.getTextValueFromConfiguration(props.attributeValue.value, props.attributeValue.configurationValues ?? {});
-                }
-
-                emit("update:attributeValue", props.attributeValue);
+                emit("update:modelValue", newValue);
             }
         });
 
         /** The configuration values for the editor component. */
         const configurationValues = computed(() => {
-            if (instanceOfEditable(props.attributeValue)) {
-                return props.attributeValue.configurationValues;
-            }
-            else {
-                return {};
-            }
+            return props.attribute.configurationValues ?? {};
         });
 
         provide("isRequired", isRequired);
@@ -121,24 +119,27 @@ export default defineComponent({
         };
     },
     template: `
-<template v-if="!isEditMode">
-    <div v-if="showValue" class="form-group static-control">
-        <label class="control-label">
-            {{ label }}
-        </label>
-        <div class="control-wrapper">
-            <div class="form-control-static">
-                <component :is="valueComponent" />
+<div v-if="!isEditMode">
+    <template v-if="showLabel">
+        <div v-if="showValue" class="form-group static-control">
+            <label class="control-label">
+                {{ label }}
+            </label>
+            <div class="control-wrapper">
+                <div class="form-control-static">
+                    <component :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+                </div>
             </div>
         </div>
-    </div>
-</template>
-<template v-else>
+    </template>
+    <component v-else :is="valueComponent" :modelValue="value" :configurationValues="configurationValues" />
+</div>
+<div v-else>
     <component :is="editComponent"
         v-model="value"
         :label="label"
         :help="helpText"
         :configurationValues="configurationValues"
         :rules="rules" />
-</template>`
+</div>`
 });

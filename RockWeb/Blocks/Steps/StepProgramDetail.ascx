@@ -53,7 +53,7 @@
                                 <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
                                     runat="server"
                                     EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
-                                    EnabledSlidingDateRangeUnits="Week, Month, Year"
+                                    EnabledSlidingDateRangeUnits="Week, Month, Year, Day, Hour"
                                     SlidingDateRangeMode="Current"
                                     TimeUnit="Year"
                                     Label=""

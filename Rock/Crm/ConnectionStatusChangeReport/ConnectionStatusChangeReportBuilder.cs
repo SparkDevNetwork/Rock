@@ -317,6 +317,7 @@ namespace Rock.Crm.ConnectionStatusChangeReport
                             PhotoId = x.PhotoId,
                             Gender = x.Gender,
                             BirthDate = x.BirthDate,
+                            DeceasedDate = x.DeceasedDate,
                             RecordTypeValueGuid = x.RecordTypeValue.Guid
                         } );
 
@@ -344,7 +345,7 @@ namespace Rock.Crm.ConnectionStatusChangeReport
                 changeEvent.CampusName = this.GetCampusNameById( changeEvent.CampusId );
 
                 // Set Age
-                changeEvent.Age = Person.GetAge( changeEvent.BirthDate );
+                changeEvent.Age = Person.GetAge( changeEvent.BirthDate, changeEvent.DeceasedDate );
             }
         }
 

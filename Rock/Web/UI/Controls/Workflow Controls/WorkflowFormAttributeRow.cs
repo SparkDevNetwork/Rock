@@ -196,11 +196,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
+                _tbPreHtml.DisableTextTrim = true;
                 return _tbPreHtml.Text;
             }
             set
             {
                 EnsureChildControls();
+                _tbPreHtml.DisableTextTrim = true;
                 _tbPreHtml.Text = value;
                 _cbPreHtml.Checked = !string.IsNullOrWhiteSpace( value );
             }
@@ -217,11 +219,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
+                _tbPostHtml.DisableTextTrim = true;
                 return _tbPostHtml.Text;
             }
             set
             {
                 EnsureChildControls();
+                _tbPostHtml.DisableTextTrim = true;
                 _tbPostHtml.Text = value;
                 _cbPostHtml.Checked = !string.IsNullOrWhiteSpace( value );
             }

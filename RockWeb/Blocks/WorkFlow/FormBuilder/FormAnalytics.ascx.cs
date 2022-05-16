@@ -7,6 +7,7 @@
 using DocumentFormat.OpenXml.Wordprocessing;
 using Rock;
 using Rock.Attribute;
+using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -15,8 +16,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Globalization;
 using System.Linq;
+using System.Linq.Dynamic;
+using System.Web.UI;
 
 namespace RockWeb.Blocks.WorkFlow.FormBuilder
 {
@@ -24,26 +26,21 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
     /// Shows the interaction and analytics data for the given WorkflowTypeId.
     /// </summary>
     [DisplayName( "Form Analytics" )]
-    [Category( "WorkFlow > FormAnalytics" )]
+    [Category( "WorkFlow > FormBuilder" )]
     [Description( "Shows the interaction and analytics data for the given WorkflowTypeId." )]
 
     #region Rock Attributes
 
     [LinkedPage(
-        "FormSubmission List Page",
-        Description = "Page to show a list forms submitted for a given FormBuilder form.",
+        "Submissions Page",
+        Description = "The page that shows the submissions for this form.",
         Order = 0,
-        Key = AttributeKeys.FormSubmissionListPage )]
+        Key = AttributeKeys.SubmissionsPage )]
     [LinkedPage(
-        "FormBuilder Detail Page",
-        Description = "Page to edit using the form builder.",
+        "Form Builder Page",
+        Description = "The page that has the form builder editor.",
         Order = 1,
         Key = AttributeKeys.FormBuilderDetailPage )]
-    [LinkedPage(
-        "Analytics Detail Page",
-        Description = "Page used to view the analytics for this form.",
-        Order = 2,
-        Key = AttributeKeys.AnalyticsDetailPage )]
 
     #endregion Rock Attributes
 
@@ -56,11 +53,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private static class AttributeKeys
         {
-            public const string FormBuilderDetailPage = "FormBuilderDetailPage";
-            public const string FormSubmissionListPage = "FormSubmissionListPage";
-            public const string AnalyticsDetailPage = "AnalyticsDetailPage";
-            public const string CommunicationsDetailPage = "CommunicationsDetailPage";
-            public const string SettingsDetailPage = "SettingsDetailPage";
+            public const string FormBuilderDetailPage = "FormBuilderPage";
+            public const string SubmissionsPage = "SubmissionsPage";
         }
 
         #endregion Attribute Keys
@@ -99,13 +93,12 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         #endregion User Preference Keys
 
-        #region Properties
+        #region Constants
 
-        public string ViewsJSON { get; set; }
-        public string CompletionsJSON { get; set; }
-        public string LabelsJSON { get; set; }
+        private const string VIEWS_DATASET_NAME = "Views";
+        private const string COMPLETIONS_DATASET_NAME = "Completions";
 
-        #endregion Properties
+        #endregion Constants
 
         #region Base Control Methods
 
@@ -122,7 +115,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             InitializeChartScripts();
-            InitializeAnalyticsPanelControls();
         }
 
         /// <summary>
@@ -133,8 +125,17 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             if ( !Page.IsPostBack )
             {
-                LoadSettings();
-                InitializeAnalyticsPanel();
+                var workflowType = new WorkflowTypeService( new RockContext() ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+                if ( workflowType != null )
+                {
+                    lTitle.Text = $"{workflowType} Form";
+                    LoadSettings();
+                    InitializeAnalyticsPanel();
+                }
+                else
+                {
+                    pnlView.Visible = false;
+                }
             }
 
             base.OnLoad( e );
@@ -152,7 +153,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <exception cref="System.NotImplementedException"></exception>
         private void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
+            SaveSettings();
+            InitializeAnalyticsPanel();
         }
 
         /// <summary>
@@ -162,7 +164,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkSubmissions_Click( object sender, EventArgs e )
         {
-            NavigateToCurrentPage( GetQueryString( PageParameterKeys.SubmissionsTab ) );
+            NavigateToLinkedPage( AttributeKeys.SubmissionsPage, GetQueryString( PageParameterKeys.SubmissionsTab ) );
         }
 
         /// <summary>
@@ -182,7 +184,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkComminucations_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.CommunicationsDetailPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderDetailPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
         }
 
         /// <summary>
@@ -192,7 +194,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkSettings_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.SettingsDetailPage, GetQueryString( PageParameterKeys.SettingsTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderDetailPage, GetQueryString( PageParameterKeys.SettingsTab ) );
         }
 
         /// <summary>
@@ -202,15 +204,15 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkAnalytics_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.AnalyticsDetailPage, GetQueryString( PageParameterKeys.AnalyticsTab ) );
+            NavigateToCurrentPage( GetQueryString( PageParameterKeys.AnalyticsTab ) );
         }
 
         /// <summary>
-        /// Handles the SelectedDateRangeChanged event of the drpSlidingDateRange control.
+        /// Handles the Click event of the btnRefreshChart control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void drpSlidingDateRange_SelectedDateRangeChanged( object sender, EventArgs e )
+        protected void btnRefreshChart_Click( object sender, EventArgs e )
         {
             SaveSettings();
             InitializeAnalyticsPanel();
@@ -227,19 +229,20 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             const string kpiLava = @"
 {[kpis style:'card' columncount:'3']}
-  [[ kpi icon:'fa fa-user' value:'{{TotalViews | Format:'N0' }}' label:'Total Views' color:'green-500']][[ endkpi ]]
-  [[ kpi icon:'fa-check-circle' value:'{{Completions | Format:'N0' }}' label:'Completions' color:'blue-500']][[ endkpi ]]
+  [[ kpi icon:'fa fa-user' value:'{{TotalViews | Format:'N0' }}' label:'Total Views' color:'blue-500' ]][[ endkpi ]]
+  [[ kpi icon:'fa-check-circle' value:'{{Completions | Format:'N0' }}' label:'Completions' color:'green-500' ]][[ endkpi ]]
   [[ kpi icon:'fa fa-percentage' value:'{{ConversionRate | Format:'P0' }}' label:'Conversion Rate' color:'indigo-500' ]][[ endkpi ]]
 {[endkpis]}";
 
-            int completionsCount = completions.Count( m => m > 0 );
-            int viewsCount = views.Count( m => m > 0 );
+            int completionsCount = completions.Sum();
+            int viewsCount = views.Sum();
+            double conversionRate = ( double ) completionsCount / viewsCount;
 
             var mergeFields = new Dictionary<string, object>
             {
                 { "TotalViews", viewsCount },
                 { "Completions", completionsCount  },
-                { "ConversionRate", (completionsCount/viewsCount) * 100  }
+                { "ConversionRate", double.IsNaN(conversionRate) ? 0 : conversionRate }
             };
 
             lKPIHtml.Text = kpiLava.ResolveMergeFields( mergeFields );
@@ -270,16 +273,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         }
 
         /// <summary>
-        /// Initializes the analytics panel controls.
-        /// </summary>
-        private void InitializeAnalyticsPanelControls()
-        {
-            ViewsJSON = "[]";
-            CompletionsJSON = "[]";
-            LabelsJSON = "[]";
-        }
-
-        /// <summary>
         /// Initializes the analytics panel.
         /// </summary>
         private void InitializeAnalyticsPanel()
@@ -304,9 +297,16 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         private void ShowAnalytics( int workflowTypeId )
         {
             nbWorkflowIdNullMessage.Visible = false;
-            List<SummaryInfo> summary = GetSummary( workflowTypeId );
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
 
-            if ( summary.Count == 0 )
+            List<SummaryInfo> summary = GetSummary( workflowTypeId, reportPeriod );
+
+            var views = summary.Where( m => m.DatasetName == VIEWS_DATASET_NAME ).Select( m => m.value );
+            var completions = summary.Where( m => m.DatasetName == COMPLETIONS_DATASET_NAME ).Select( m => m.value );
+
+            ShowKpis( views, completions );
+
+            if ( views.Sum() == 0 && completions.Sum() == 0 )
             {
                 nbViewsAndCompletionsEmptyMessage.Visible = true;
                 dvCharts.Visible = false;
@@ -316,59 +316,132 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 nbViewsAndCompletionsEmptyMessage.Visible = false;
                 dvCharts.Visible = true;
 
-                var labels = summary.Select( m => m.Month );
-                var views = summary.Select( m => m.ViewsCounts );
-                var completions = summary.Select( m => m.CompletionCounts );
+                ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> chartFactory = this.GetChartJsFactory( summary, reportPeriod );
 
-                ShowKpis( views, completions );
+                InitializeChartScripts();
 
-                CompletionsJSON = completions.ToJson();
-                LabelsJSON = labels.ToJson();
-                ViewsJSON = views.ToJson();
+                var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
+                {
+                    SizeToFitContainerWidth = true,
+                    MaintainAspectRatio = false,
+                    LineTension = 0.4m,
+                    DisplayLegend = true
+                } );
+
+                string script = string.Format( @"
+                var barCtx = $('#{0}')[0].getContext('2d');
+                var barChart = new Chart(barCtx, {1});",
+                                    viewsAndCompletionsCanvas.ClientID,
+                                    chartDataJson );
+
+                ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "formAnalyticsChartScript", script, true );
             }
         }
 
-        private List<SummaryInfo> GetSummary( int workflowTypeId )
+        /// <summary>
+        /// Gets a configured factory that creates the data required for the chart.
+        /// </summary>
+        /// <param name="summary">The summary.</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( List<SummaryInfo> summary, TimePeriod timePeriod )
+        {
+            var dateRange = timePeriod.GetDateRange();
+            ChartJsTimeSeriesTimeScaleSpecifier chartTimeScale = timePeriod.TimeUnit == TimePeriodUnitSpecifier.Year ? ChartJsTimeSeriesTimeScaleSpecifier.Month : ChartJsTimeSeriesTimeScaleSpecifier.Day;
+
+            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
+
+            factory.TimeScale = chartTimeScale;
+            factory.StartDateTime = dateRange.Start;
+            factory.EndDateTime = dateRange.End;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+            factory.ChartColors = new List<string> { "#2ECC71", "#3498DB" };
+
+            var viewsSummary = summary.Where( m => m.DatasetName == VIEWS_DATASET_NAME );
+            var completionSummary= summary.Where( m => m.DatasetName == COMPLETIONS_DATASET_NAME );
+
+            var viewedDataset = new ChartJsTimeSeriesDataset();
+            viewedDataset.Name = VIEWS_DATASET_NAME;
+            viewedDataset.DataPoints = viewsSummary
+                .Select( m => new ChartJsTimeSeriesDataPoint { DateTime = m.InterationDateTime, Value = m.value } )
+                .Cast<IChartJsTimeSeriesDataPoint>()
+                .ToList();
+
+            var completionDataset = new ChartJsTimeSeriesDataset();
+            completionDataset.Name = COMPLETIONS_DATASET_NAME;
+            completionDataset.DataPoints = completionSummary
+                .Select( m => new ChartJsTimeSeriesDataPoint { DateTime = m.InterationDateTime, Value = m.value } )
+                .Cast<IChartJsTimeSeriesDataPoint>()
+                .ToList();
+
+            factory.Datasets.Add( completionDataset );
+            factory.Datasets.Add( viewedDataset );
+
+            return factory;
+        }
+
+        private List<SummaryInfo> GetSummary( int workflowTypeId, TimePeriod timePeriod )
         {
             var context = new RockContext();
+            var dateRange = timePeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
 
-            var workflowService = new WorkflowService( context );
-            var workflows = workflowService.Queryable().Where( m => m.WorkflowTypeId == workflowTypeId ).ToList();
-            var summaries = new List<SummaryInfo>();
-
-            foreach ( var workflow in workflows )
+            if ( startDate.HasValue )
             {
-                var interactionService = new InteractionService( context );
-                var interactionQuery = interactionService.Queryable()
-                                        .AsNoTracking()
-                                        .Where( x => x.InteractionComponent.EntityId == workflow.Id );
-
-                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-                if ( dateRange.End == null )
-                {
-                    dateRange.End = RockDateTime.Now;
-                }
-
-                if ( dateRange.Start.HasValue )
-                {
-                    interactionQuery = interactionQuery.Where( x => x.InteractionDateTime >= dateRange.Start.Value );
-                }
-
-                var interactionsList = interactionQuery.ToList();
-
-                var summary = interactionsList.Where( x => x.InteractionDateTime.Date < dateRange.End.Value.Date ).GroupBy( m => m.InteractionDateTime.Month )
-                    .Select( m => new SummaryInfo
-                    {
-                        Month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( m.Key ),
-                        ViewsCounts = m.Count( x => x.Operation == "Form Viewed" ),
-                        CompletionCounts = m.Count( x => x.Operation == "Form Completed" ),
-                        InterationDateTime = m.Min( x => x.InteractionDateTime )
-                    } ).ToList();
-
-                summaries.AddRange( summary );
+                startDate = startDate.Value.Date;
             }
 
-            return summaries;
+            // Determine the appropriate date grouping for the chart data points.
+            Func<int, int> groupKeySelector;
+            var groupByDay = timePeriod.TimeUnit != TimePeriodUnitSpecifier.Year;
+
+            if ( groupByDay )
+            {
+                // Group interactions by Start Date.
+                groupKeySelector = x => x;
+            }
+            else
+            {
+                // Group Steps by Start Date rounded to beginning of the month.
+                groupKeySelector = x => x / 100;
+            }
+
+            IEnumerable<SummaryInfo> summaries;
+            var interactionService = new InteractionService( context );
+            var interactionQuery = interactionService.Queryable()
+                                    .AsNoTracking()
+                                    .Where( x => x.InteractionComponent.EntityId == workflowTypeId );
+
+            if ( dateRange.Start.HasValue )
+            {
+                interactionQuery = interactionQuery.Where( x => x.InteractionDateTime >= startDate.Value && x.InteractionDateTime <= endDate.Value );
+            }
+
+            var viewedSummary = interactionQuery.Where( x => x.Operation == "Form Viewed" )
+                .Select( x => x.InteractionDateKey )
+                .AsEnumerable()
+                .GroupBy( groupKeySelector )
+                .Select( x => new SummaryInfo
+                {
+                    DatasetName = VIEWS_DATASET_NAME,
+                    InterationDateTime = groupByDay ? x.Key.GetDateKeyDate() : ( ( x.Key * 100 ) + 1 ).GetDateKeyDate(), // Adding +1 to get the first day of month.
+                    value = x.Count()
+                } );
+
+            var completedSummary = interactionQuery.Where( x => x.Operation == "Form Completed" )
+                .Select( x => x.InteractionDateKey )
+                .AsEnumerable()
+                .GroupBy( groupKeySelector )
+                .Select( x => new SummaryInfo
+                {
+                    DatasetName = COMPLETIONS_DATASET_NAME,
+                    InterationDateTime = groupByDay ? x.Key.GetDateKeyDate() : ( ( x.Key * 100 ) + 1 ).GetDateKeyDate(), // Adding +1 to get the first day of month.
+                    value = x.Count()
+                } );
+
+            summaries = viewedSummary.Union( completedSummary ).OrderBy( x => x.InterationDateTime );
+            return summaries.ToList();
         }
 
         /// <summary>
@@ -376,7 +449,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private void LoadSettings()
         {
-            string slidingDateRangeSettings = GetUserPreference( UserPreferenceKeys.SlidingDateRange );
+            string keyPrefix = string.Format( "form-analytics-{0}-", this.BlockId );
+            string slidingDateRangeSettings = GetUserPreference( keyPrefix + UserPreferenceKeys.SlidingDateRange );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
             {
                 // default to current year
@@ -394,7 +468,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         public void SaveSettings()
         {
-            SetUserPreference( UserPreferenceKeys.SlidingDateRange, drpSlidingDateRange.DelimitedValues, true );
+            string keyPrefix = string.Format( "form-analytics-{0}-", this.BlockId );
+            SetUserPreference( keyPrefix + UserPreferenceKeys.SlidingDateRange, drpSlidingDateRange.DelimitedValues, false );
         }
 
         #endregion Methods
@@ -404,20 +479,12 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         public class SummaryInfo
         {
             /// <summary>
-            /// Gets or sets the summary date time.
-            /// </summary>
-            /// <value>
-            /// The summary date time.
-            /// </value>
-            public string Month { get; set; }
-
-            /// <summary>
             /// Gets or sets the click counts.
             /// </summary>
             /// <value>
             /// The click counts.
             /// </value>
-            public int ViewsCounts { get; set; }
+            public string DatasetName { get; set; }
 
             /// <summary>
             /// Gets or sets the open counts.
@@ -425,7 +492,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             /// <value>
             /// The open counts.
             /// </value>
-            public int CompletionCounts { get; set; }
+            public int value { get; set; }
 
             /// <summary>
             /// Gets or sets the interation date time.

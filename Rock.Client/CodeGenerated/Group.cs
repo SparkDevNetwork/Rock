@@ -50,6 +50,9 @@ namespace Rock.Client
         public int? CampusId { get; set; }
 
         /// <summary />
+        public string ConfirmationAdditionalDetails { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -121,6 +124,9 @@ namespace Rock.Client
         public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary />
+        public string RSVPReminderAdditionalDetails { get; set; }
+
+        /// <summary />
         public int? RSVPReminderOffsetDays { get; set; }
 
         /// <summary />
@@ -176,6 +182,7 @@ namespace Rock.Client
             this.ArchivedDateTime = source.ArchivedDateTime;
             this.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             this.CampusId = source.CampusId;
+            this.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             this.Description = source.Description;
             this.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
             this.DisableScheduling = source.DisableScheduling;
@@ -199,6 +206,7 @@ namespace Rock.Client
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            this.RSVPReminderAdditionalDetails = source.RSVPReminderAdditionalDetails;
             this.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             this.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             this.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;

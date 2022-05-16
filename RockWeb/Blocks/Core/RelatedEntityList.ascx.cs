@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Core
         {
             get
             {
-                if ( _purposeKeys.IsNull() )
+                if ( _purposeKeys == null )
                 {
                     _purposeKeys = GetAttributeValue( AttributeKey.PurposeKey ).Split(',').Select( p => p.Trim() ).ToList();
                 }
@@ -395,7 +395,7 @@ namespace RockWeb.Blocks.Core
 
             if ( SourceIsCurrentPerson )
             {
-                if ( CurrentPerson.IsNull() )
+                if ( CurrentPerson == null )
                 {
                     return false;
                 }

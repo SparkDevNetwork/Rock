@@ -314,6 +314,7 @@
 
 @form-group-margin-bottom:       12px;
 @control-label-weight:           @font-weight-semibold;
+@control-label-offset:           @line-height-computed + 3px;
 
 @description-term-margin-top:             16px;
 @description-term-margin-bottom:          0;
@@ -340,8 +341,8 @@
 
 // Panel
 @panel-bg:                    @white;                         // The background color of the panel body.
-@panel-body-padding:          24px;
-@panel-heading-padding:       14px 24px;
+@panel-body-padding:          18px;
+@panel-heading-padding:       14px 18px;
 @panel-heading-bg:            @gray-100;                 // The background color of the panel's header.
 @panel-text:                  @text-color;                    // The text color of the panel.
 @panel-border:                @gray-300;                          // The panel's border color.
@@ -361,7 +362,7 @@
 @panel-following-active-color:#ffffff;
 @panel-following-active-bg:   @brand-color;                   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
 //--
-@panel-options-margin:        -14px -24px -14px 10px;   // Inverse of @panel-heading-padding with margin on the left.
+@panel-options-margin:        -14px -18px -14px 10px;   // Inverse of @panel-heading-padding with margin on the left.
 @panel-options-button-padding:      13px 12px 12px;
 
 @panel-footer-bg:             @panel-bg;                      // The background color of the panel's footer.
@@ -693,6 +694,9 @@
 @dropdown-header-color:          @gray-light;
 //--
 @dropdown-caret-color:           @link-color;
+
+
+@blockquote-font-size:           @font-size-sm;
 
 // Add Button focus shadow
 .btn-outline-mixin(true) {

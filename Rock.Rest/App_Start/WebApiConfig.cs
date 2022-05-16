@@ -334,7 +334,8 @@ namespace Rock.Rest
 
             config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel(), pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
 
-            new RegisterRestControllers.Message().Send();
+
+            new Rock.Transactions.RegisterControllersTransaction().Enqueue();
         }
     }
 }

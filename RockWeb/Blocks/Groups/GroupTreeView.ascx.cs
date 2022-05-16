@@ -50,6 +50,14 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page", order: 9 )]
     public partial class GroupTreeView : RockBlock
     {
+        #region Attribute Keys
+        public static class AttributeKey
+        {
+            public const string TreeviewTitle = "TreeviewTitle";
+        }
+
+        #endregion
+
         #region Fields
 
         private string _groupId = string.Empty;
@@ -166,6 +174,7 @@ namespace RockWeb.Blocks.Groups
                 tglIncludeNoCampus.Checked = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             }
 
+            lPanelTitle.Text = GetAttributeValue( AttributeKey.TreeviewTitle );
         }
 
         /// <summary>

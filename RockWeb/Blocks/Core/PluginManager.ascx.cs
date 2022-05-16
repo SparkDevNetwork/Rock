@@ -40,11 +40,13 @@ namespace RockWeb.Blocks.Core
         Search
     }
 
-    [DisplayName( "Plugin Manager" )]
+    [DisplayName( "Plugin Manager (Obsolete)" )]
     [Category( "Core" )]
     [Description( "Allows installed plugins to be viewed or removed and new ones to be added from the Rock Quarry server." )]
+    [RockObsolete( "1.13.3" )]
     public partial class PluginManager : Rock.Web.UI.RockBlock
     {
+#pragma warning disable CS0618
         #region Fields
         WebProjectManager nuGetService = null;
         private string rockPackageId = "Rock";
@@ -477,5 +479,7 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
+
+        #pragma warning restore CS0618
     }
 }

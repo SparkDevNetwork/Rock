@@ -554,7 +554,7 @@ namespace RockWeb.Blocks.Finance
 
             tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
-            tbLastName.Text = rFilter.GetUserPreference( "Government ID" );
+            tbGovernmentId.Text = rFilter.GetUserPreference( "Government ID" );
 
             Guid groupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuid();
             var listData = new GroupMemberService( new RockContext() ).Queryable( "Person, Group" )
@@ -796,20 +796,13 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            var personContext = this.ContextEntity<Person>();
-
-            if ( personContext != null )
-            {
-                benevolenceRequests = benevolenceRequests.Where( a => a.RequestedByPersonAlias.PersonId == personContext.Id );
-            }
-
             if ( sortProperty != null )
             {
                 gList.DataSource = benevolenceRequests.Sort( sortProperty ).ToList();
             }
             else
             {
-                gList.DataSource = benevolenceRequests.OrderByDescending( p => p.CreatedDateTime ).ThenByDescending( p => p.Id ).ToList();
+                gList.DataSource = benevolenceRequests.OrderByDescending( r => r.RequestDateTime ).ThenByDescending( r => r.Id ).ToList();
             }
 
             // Hide the campus column if the campus filter is not visible.

@@ -82,7 +82,9 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                ConfirmationSentDateTime = model.ConfirmationSentDateTime,
                 GroupMemberId = model.GroupMemberId,
+                LastRSVPReminderSentDateTime = model.LastRSVPReminderSentDateTime,
                 LocationId = model.LocationId,
                 ScheduleId = model.ScheduleId,
                 CreatedDateTime = model.CreatedDateTime,
@@ -154,9 +156,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupMemberAssignment target, GroupMemberAssignment source )
         {
             target.Id = source.Id;
+            target.ConfirmationSentDateTime = source.ConfirmationSentDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupMemberId = source.GroupMemberId;
+            target.LastRSVPReminderSentDateTime = source.LastRSVPReminderSentDateTime;
             target.LocationId = source.LocationId;
             target.ScheduleId = source.ScheduleId;
             target.CreatedDateTime = source.CreatedDateTime;

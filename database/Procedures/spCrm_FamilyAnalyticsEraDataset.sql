@@ -38,6 +38,7 @@ BEGIN
     DECLARE @cFAMILY_GROUPTYPE_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
     DECLARE @cADULT_ROLE_GUID UNIQUEIDENTIFIER = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
     DECLARE @cTRANSACTION_TYPE_CONTRIBUTION UNIQUEIDENTIFIER = '2D607262-52D6-4724-910D-5C6E8FB89ACC';
+	DECLARE @cATTRIBUTE_ERA_START_DATE_GUID UNIQUEIDENTIFIER = 'A106610C-A7A1-469E-4097-9DE6400FDFC2';
     -- --------- END CONFIGURATION --------------
     DECLARE @PersonRecordTypeValueId INT = (
             SELECT TOP 1 [Id]
@@ -48,6 +49,11 @@ BEGIN
             SELECT TOP 1 [Id]
             FROM [Attribute]
             WHERE [Guid] = @cATTRIBUTE_IS_ERA_GUID
+            )
+	DECLARE @EraStartDateAttributeId INT = (
+            SELECT TOP 1 [Id]
+            FROM [Attribute]
+            WHERE [Guid] = @cATTRIBUTE_ERA_START_DATE_GUID
             )
     DECLARE @FamilyGroupTypeId INT = (
             SELECT TOP 1 [Id]
@@ -73,10 +79,10 @@ BEGIN
     DECLARE @SundayExitAttendanceDurationShort DATETIME = DATEADD(DAY, (7 * @ExitAttendanceDurationShortWeeks * - 1), @SundayDateStart)
     DECLARE @SundayExitAttendanceDurationLong DATETIME = DATEADD(DAY, (7 * @ExitAttendanceDurationLongWeeks * - 1), @SundayDateStart)
     DECLARE @TempFinancialTransactionByDateAndGivingId TABLE (
-        DistinctCount INT
+ DistinctCount INT
         ,GivingId NVARCHAR(50)
         ,TransactionDateTime DATETIME
-       )
+        )
 
     INSERT INTO @TempFinancialTransactionByDateAndGivingId
     SELECT COUNT(DISTINCT (ft.[Id])) [DistinctCount]
@@ -121,7 +127,7 @@ BEGIN
 	DECLARE @TempEntryGiftCountDurationShort TABLE (
 			GivingId NVARCHAR(50) INDEX IX1 CLUSTERED
 			, DistinctCount INT
-		   )
+		    )
 
 	INSERT INTO @TempEntryGiftCountDurationShort
 	SELECT GivingId, SUM(ft.DistinctCount)
@@ -133,7 +139,7 @@ BEGIN
 	DECLARE @TempExitGiftCountDuration TABLE (
 			GivingId NVARCHAR(50) INDEX IX2 CLUSTERED
 			, DistinctCount INT
-		   )
+		    )
 
 	INSERT INTO @TempExitGiftCountDuration
 	SELECT GivingId, ISNULL(SUM(ft.DistinctCount), 0)
@@ -145,7 +151,7 @@ BEGIN
 	DECLARE @TempEntryGiftCountDurationLong TABLE (
 			GivingId NVARCHAR(50) INDEX IX3 CLUSTERED
 			, DistinctCount INT
-		   )
+		    )
 
 	INSERT INTO @TempEntryGiftCountDurationLong
 	SELECT GivingId, ISNULL(SUM(ft.DistinctCount), 0) AS [EntryGiftCountDurationLong]
@@ -157,7 +163,7 @@ BEGIN
 	DECLARE @TempExitAttendanceCountDurationShort TABLE (
 			FamilyId INT INDEX IX4 CLUSTERED
 			, DistinctCount INT
-		   )
+		    )
 
 	INSERT INTO @TempExitAttendanceCountDurationShort
 	SELECT FamilyId, COUNT(DISTINCT a.SundayDate) AS [ExitAttendanceCountDurationShort]
@@ -169,7 +175,7 @@ BEGIN
 	DECLARE @TempEntryAttendanceCountDuration TABLE (
 			FamilyId INT INDEX IX5 CLUSTERED
 			, DistinctCount INT
-		   )
+		    )
 
 	INSERT INTO @TempEntryAttendanceCountDuration
 	SELECT FamilyId, COUNT(DISTINCT a.SundayDate) AS [EntryAttendanceCountDuration]
@@ -181,7 +187,7 @@ BEGIN
 	DECLARE @TempExitAttendanceCountDurationLong TABLE (
 			FamilyId INT INDEX IX6 CLUSTERED
 			, DistinctCount INT
-		   )
+		    )
 
 	INSERT INTO @TempExitAttendanceCountDurationLong
 	SELECT FamilyId, COUNT(DISTINCT a.SundayDate) AS [ExitAttendanceCountDurationLong]
@@ -196,7 +202,7 @@ BEGIN
 			[IsEra] INT,
 			FamilyId INT,
 			INDEX IXR NONCLUSTERED(GivingId,[IsEra],FamilyId)
-		   )
+		    )
 
 	INSERT INTO @TempPersonFamilyGroupIds
 	SELECT p.[Id]
@@ -215,6 +221,40 @@ BEGIN
 	LEFT OUTER JOIN [AttributeValue] era ON era.[EntityId] = p.[Id]
 		AND era.[AttributeId] = @IsEraAttributeId
 	WHERE [RecordTypeValueId] = @PersonRecordTypeValueId -- person record type (not business)
+
+	DECLARE @TempIsEraFamilyMembers TABLE (
+		PersonId INT,
+		[IsEra] INT,
+		FamilyId INT,
+		INDEX IXR NONCLUSTERED([IsEra],FamilyId)
+	    )
+
+	DECLARE @StartDate DATETIME = GETDATE()
+
+	INSERT INTO @TempIsEraFamilyMembers
+	SELECT p.Id,
+		Min(tgpgids.IsEra),
+		Min(p.PrimaryFamilyId)
+		FROM [Person] p
+		LEFT JOIN @TempPersonFamilyGroupIds tgpgids ON p.PrimaryFamilyId = tgpgids.FamilyId
+		WHERE tgpgids.IsEra = 1
+		GROUP BY  p.Id
+    
+    -- Insert missing IsEra Attribute --
+	MERGE [AttributeValue] AS TARGET
+	USING @TempIsEraFamilyMembers AS SOURCE
+	ON (TARGET.EntityId = SOURCE.PersonId AND TARGET.AttributeId = @IsEraAttributeId)
+	WHEN NOT MATCHED BY TARGET
+	THEN INSERT (EntityId, AttributeId, Value, IsSystem, Guid, CreatedDateTime) VALUES (SOURCE.PersonId, @IsEraAttributeId, 'True', 0, NEWID(), @StartDate)
+	WHEN MATCHED THEN UPDATE SET Value = 'True';
+
+    -- Insert missing EraStartDate --
+	MERGE [AttributeValue] AS TARGET
+	USING @TempIsEraFamilyMembers AS SOURCE
+	ON (TARGET.EntityId = SOURCE.PersonId AND TARGET.AttributeId = @EraStartDateAttributeId)
+	WHEN NOT MATCHED BY TARGET
+	THEN INSERT (EntityId, AttributeId, Value, IsSystem, Guid, CreatedDateTime) VALUES (SOURCE.PersonId, @EraStartDateAttributeId, @StartDate, 0, NEWID(), @StartDate)
+    WHEN MATCHED THEN UPDATE SET Value = @StartDate;
 
 	SELECT [FamilyId]
         ,MAX([EntryGiftCountDurationShort]) AS [EntryGiftCountDurationShort]

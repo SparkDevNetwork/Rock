@@ -1334,7 +1334,7 @@ namespace Rock.Model
                         } )
                 } );
 
-                // if using thes filters, limit to people that have ScheduleTemplates that would include the scheduled date
+                // if using these filters, limit to people that have ScheduleTemplates that would include the scheduled date
                 if ( schedulerResourceParameters.GroupMemberFilterType == SchedulerResourceGroupMemberFilterType.ShowMatchingPreference
                     || schedulerResourceParameters.ResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingPreference
                     || schedulerResourceParameters.ResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingAssignment )
@@ -1348,13 +1348,13 @@ namespace Rock.Model
                     var locationParam = schedulerResourceParameters.AttendanceOccurrenceLocationIds?.ToList() ?? new List<int>();
                     if ( locationParam.Any() )
                     {
-                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.All( ma => locationParam.Contains( ma.LocationId.Value ) ) || a.MemberAssignments.All( ma => ma.LocationId == null ) );
+                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.Any( ma => locationParam.Contains( ma.LocationId.Value ) ) || a.MemberAssignments.Any( ma => ma.LocationId == null ) );
                     }
 
                     var scheduleParam = schedulerResourceParameters.AttendanceOccurrenceScheduleIds?.ToList() ?? new List<int>();
                     if ( scheduleParam.Any() )
                     {
-                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.All( ma => scheduleParam.Contains( ma.Schedule.Id ) ) || a.MemberAssignments.All( ma => ma.Schedule == null ) );
+                        resourceListQuery = resourceListQuery.Where( a => a.MemberAssignments.Any( ma => scheduleParam.Contains( ma.Schedule.Id ) ) || a.MemberAssignments.Any( ma => ma.Schedule == null ) );
                     }
                 }
 
@@ -1821,7 +1821,7 @@ namespace Rock.Model
 
             // create a lookup so we can find out which role the person has in the occurrence group (if they are a member)
             var attendanceOccurrenceGroupMemberLookupQuery = new GroupMemberService( rockContext )
-                .Queryable().Where( a => a.GroupId == attendanceOccurrenceGroupId );
+                .Queryable().Where( a => a.GroupId == attendanceOccurrenceGroupId && a.GroupMemberStatus == GroupMemberStatus.Active );
 
             Dictionary<int, IEnumerable<MemberLookupValue>> attendanceOccurrenceGroupMemberLookup;
 
@@ -1835,7 +1835,8 @@ namespace Rock.Model
                 else if ( personIds.Count < 1000 )
                 {
                     // if there are less than 1000, just get the member records for people that are scheduled, otherwise the SQL will get too complex
-                    attendanceOccurrenceGroupMemberLookupQuery = attendanceOccurrenceGroupMemberLookupQuery.Where( a => personIds.Contains( a.PersonId ) );
+                    attendanceOccurrenceGroupMemberLookupQuery = attendanceOccurrenceGroupMemberLookupQuery
+                        .Where( a => personIds.Contains( a.PersonId ) );
                 }
 
                 var attendanceOccurrenceGroupGroupTypeId = new GroupService( rockContext ).GetSelect( attendanceOccurrenceGroupId, s => s.GroupTypeId );
@@ -1881,11 +1882,14 @@ namespace Rock.Model
                     var personExclusionDateRange = new DateRange( a.BlackoutDateRanges.Min( d => d.StartDate ), a.BlackoutDateRanges.Max( d => d.EndDate ) );
                     personBlackoutDates = scheduleOccurrenceDateList.Where( d => personExclusionDateRange.Contains( d ) ).ToList();
                 }
-
-                var attendanceOccurrenceGroupMemberInfo = attendanceOccurrenceGroupMemberLookup
+                
+                var groupMemberLookupValues = attendanceOccurrenceGroupMemberLookup
                     ?.GetValueOrNull( a.PersonId )
-                    ?.OrderBy( x => x.GroupRole?.Order ?? int.MaxValue )
-                    ?.FirstOrDefault();
+                    ?.OrderBy( x => x.GroupRole?.Order ?? int.MaxValue );
+
+                var attendanceOccurrenceGroupMemberInfo = groupMemberLookupValues?.FirstOrDefault();
+
+                var attendanceOccurrenceGroupMemberRoles = groupMemberLookupValues?.Select( t => t.GroupRole?.Name ).ToList().AsDelimited( ", " );
 
                 var memberAssignments = attendanceOccurrenceGroupMemberInfo?.MemberAssignments;
                 ScheduledAttendanceItemMatchesPreference matchesPreference = ScheduledAttendanceItemMatchesPreference.NoPreference;
@@ -1934,7 +1938,7 @@ namespace Rock.Model
                     DeclinedReason = DefinedValueCache.GetValue( a.DeclineReasonValueId ).EncodeHtml(),
 
                     GroupMemberId = attendanceOccurrenceGroupMemberInfo?.MemberId,
-                    GroupRole = attendanceOccurrenceGroupMemberInfo?.GroupRole,
+                    GroupRoleName = attendanceOccurrenceGroupMemberRoles,
 
                     // not needed for resource that is getting listed in an occurrence
                     ResourcePreferenceList = null,
@@ -2257,7 +2261,23 @@ namespace Rock.Model
                 .FirstOrDefault( a => a.PersonAlias.PersonId == personId
                     && a.OccurrenceId == attendanceOccurrenceId );
 
-            if ( scheduledAttendance == null )
+            // If there already is a scheduled attendance
+            if ( scheduledAttendance != null )
+            {
+                if ( scheduledAttendance.RequestedToAttend != true )
+                {
+                    scheduledAttendance.RequestedToAttend = true;
+                }
+
+                // if they previously declined, set RSVP back to Unknown if they are added as pending again
+                if ( scheduledAttendance.RSVP == RSVP.No )
+                {
+                    scheduledAttendance.RSVP = RSVP.Unknown;
+                }
+            }
+
+            // There was not an already scheduled attendance, so let's add it
+            else 
             {
                 var personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId );
                 var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).Get( attendanceOccurrenceId );
@@ -2278,19 +2298,6 @@ namespace Rock.Model
 
                 this.Add( scheduledAttendance );
             }
-            else
-            {
-                if ( scheduledAttendance.RequestedToAttend != true )
-                {
-                    scheduledAttendance.RequestedToAttend = true;
-                }
-
-                // if they previously declined, set RSVP back to Unknown if they are added as pending again
-                if ( scheduledAttendance.RSVP == RSVP.No )
-                {
-                    scheduledAttendance.RSVP = RSVP.Unknown;
-                }
-            }
 
             return scheduledAttendance;
         }
@@ -2302,16 +2309,15 @@ namespace Rock.Model
         public void ScheduledPersonRemove( int attendanceId )
         {
             var scheduledAttendance = this.Get( attendanceId );
-            if ( scheduledAttendance != null )
+
+            if ( scheduledAttendance == null )
             {
-                scheduledAttendance.ScheduledToAttend = false;
-                scheduledAttendance.RequestedToAttend = false;
-                scheduledAttendance.RSVP = RSVP.Unknown;
+                return;
             }
-            else
-            {
-                // ignore if there is no attendance record
-            }
+
+            scheduledAttendance.ScheduledToAttend = false;
+            scheduledAttendance.RequestedToAttend = false;
+            scheduledAttendance.RSVP = RSVP.Unknown;
         }
 
         /// <summary>
@@ -2321,16 +2327,15 @@ namespace Rock.Model
         public void ScheduledPersonConfirm( int attendanceId )
         {
             var scheduledAttendance = this.Get( attendanceId );
-            if ( scheduledAttendance != null )
+
+            if ( scheduledAttendance == null )
             {
-                scheduledAttendance.ScheduledToAttend = true;
-                scheduledAttendance.RSVPDateTime = RockDateTime.Now;
-                scheduledAttendance.RSVP = RSVP.Yes;
+                return;
             }
-            else
-            {
-                // ignore if there is no attendance record
-            }
+
+            scheduledAttendance.ScheduledToAttend = true;
+            scheduledAttendance.RSVPDateTime = RockDateTime.Now;
+            scheduledAttendance.RSVP = RSVP.Yes;
         }
 
         /// <summary>
@@ -2340,15 +2345,15 @@ namespace Rock.Model
         public void ScheduledPersonConfirmCancel( int attendanceId )
         {
             var scheduledAttendance = this.Get( attendanceId );
-            if ( scheduledAttendance != null )
+
+            if ( scheduledAttendance == null )
             {
-                scheduledAttendance.ScheduledToAttend = null;
-                scheduledAttendance.RSVP = RSVP.Unknown;
+                return;
             }
-            else
-            {
-                // ignore if there is no attendance record
-            }
+
+            scheduledAttendance.ScheduledToAttend = null;
+            scheduledAttendance.RSVP = RSVP.Unknown;
+            scheduledAttendance.DeclineReasonValueId = null;
         }
 
         /// <summary>
@@ -2358,16 +2363,15 @@ namespace Rock.Model
         public void ScheduledPersonPending( int attendanceId )
         {
             var scheduledAttendance = this.Get( attendanceId );
-            if ( scheduledAttendance != null )
+
+            if ( scheduledAttendance == null )
             {
-                scheduledAttendance.RequestedToAttend = true;
-                scheduledAttendance.ScheduledToAttend = false;
-                scheduledAttendance.RSVP = RSVP.Unknown;
+                return;
             }
-            else
-            {
-                // ignore if there is no attendance record
-            }
+
+            scheduledAttendance.RequestedToAttend = true;
+            scheduledAttendance.ScheduledToAttend = false;
+            scheduledAttendance.RSVP = RSVP.Unknown;
         }
 
         /// <summary>
@@ -2378,16 +2382,15 @@ namespace Rock.Model
         public void ScheduledPersonDecline( int attendanceId, int? declineReasonValueId )
         {
             var scheduledAttendance = this.Get( attendanceId );
-            if ( scheduledAttendance != null )
+
+            if ( scheduledAttendance == null )
             {
-                scheduledAttendance.DeclineReasonValueId = declineReasonValueId;
-                scheduledAttendance.RSVPDateTime = RockDateTime.Now;
-                scheduledAttendance.RSVP = RSVP.No;
+                return;
             }
-            else
-            {
-                // ignore if there is no attendance record
-            }
+
+            scheduledAttendance.DeclineReasonValueId = declineReasonValueId;
+            scheduledAttendance.RSVPDateTime = RockDateTime.Now;
+            scheduledAttendance.RSVP = RSVP.No;
         }
 
         /// <summary>
@@ -2487,6 +2490,16 @@ namespace Rock.Model
         public IQueryable<Attendance> GetConfirmedScheduled()
         {
             return this.Queryable().Where( a => a.ScheduledToAttend == true && a.RSVP != RSVP.No && a.DidAttend != true );
+        }
+
+        /// <summary>
+        /// Gets a Queryable of Attendance Records that are scheduled and declined
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Attendance> GetDeclinedScheduleConfirmations()
+        {
+            return this.Queryable()
+                .Where( a => a.RSVP == RSVP.No && a.DidAttend != true );
         }
 
         /// <summary>
@@ -3141,7 +3154,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the group role.
         /// </value>
-        public string GroupRoleName => GroupRole?.Name;
+        public string GroupRoleName { get; set; }
 
         /// <summary>
         /// Gets the resource's Preferences (from <seealso cref="GroupMemberAssignment"/>) for t
@@ -3276,7 +3289,7 @@ namespace Rock.Model
         /// </summary>
         [Description( "Data View" )]
         DataView,
-    
+
         /// <summary>
         /// Group members whose week to work is the selected week AND whose assignment (location/schedule) matches the filters OR they have no assignment.
         /// </summary>

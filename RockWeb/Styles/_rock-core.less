@@ -181,7 +181,8 @@ a.warning {
 
   &.datepicker-dropdown {
     max-height: none;
-    overflow-y: hidden;
+    overflow-y: visible;
+    font-size: @font-size-base;
   }
 
   // Added to Support Right Aligned Dropdowns
@@ -288,10 +289,10 @@ th[align="right"] {
 }
 
 .control-label-offset {
-  margin-top: @line-height-computed + 5px;
+  margin-top: @control-label-offset;
 
   &.checkbox {
-    margin-top: @line-height-computed + 10px;
+    margin-top: @control-label-offset-checkbox;
   }
 }
 
@@ -512,6 +513,7 @@ th[align="right"] {
   border-bottom: 1px solid #dbdbdb;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
 
   @media (min-width: @screen-sm-min) {
@@ -536,6 +538,20 @@ th[align="right"] {
       background: #e9ecee;
     }
   }
+
+  .nav-pills {
+    margin: 6px 8px;
+
+    > li {
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+  }
+}
+
+.panel-toolbar-shadow {
+  box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
+  z-index: 10;
 }
 
 .no-border {

@@ -262,10 +262,11 @@ namespace RockWeb.Blocks.Communication
         protected void gEmailTemplates_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             var lSupports = e.Row.FindControl( "lSupports" ) as Literal;
+            var lEmailPreview = e.Row.FindControl( "lEmailPreview" ) as Literal;
 
             var systemCommunication = e.Row.DataItem as SystemCommunication;
 
-            if ( lSupports == null || systemCommunication == null )
+            if ( systemCommunication == null )
             {
                 return;
             }
@@ -282,7 +283,19 @@ namespace RockWeb.Blocks.Communication
             }
 
             lSupports.Text = html.ToString();
-        }
+     
+            var page = PageCache.Get( Rock.SystemGuid.Page.SYSTEM_COMMUNICATION_PREVIEW.AsGuid() );
+
+            if ( page != null )
+            {
+                var route = new PageRouteService( new RockContext() ).GetByPageId( page.Id ).First();
+                if ( route != null )
+                {
+                    var url = ResolveRockUrl( $"~/{route.Route}/?SystemCommunicationId={systemCommunication.Id}" );
+                    lEmailPreview.Text = $"<a href='{url}' title='Preview' class='text-black'><i class='fa fa-search'></i></a>";
+                }
+                }
+            }
 
         #endregion
 

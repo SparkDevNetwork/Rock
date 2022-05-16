@@ -34,7 +34,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Integer field.
  */
 export class IntegerFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         return toNumberOrNull(value)?.toString() ?? "";
     }
 

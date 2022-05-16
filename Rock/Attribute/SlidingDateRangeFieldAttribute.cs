@@ -73,7 +73,7 @@ namespace Rock.Attribute
             }
             if ( enabledSlidingDateRangeUnits != null )
             {
-                EnabledSlidingDateRangeUnits = EnabledSlidingDateRangeUnits;
+                EnabledSlidingDateRangeUnits = enabledSlidingDateRangeUnits;
             }
         }
 

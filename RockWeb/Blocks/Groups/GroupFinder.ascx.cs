@@ -643,8 +643,7 @@ namespace RockWeb.Blocks.Groups
         {
             acAddress.SetValues( null );
             BuildDynamicControls();
-
-            ShowResults();
+            ShowView();
         }
 
         /// <summary>
@@ -809,6 +808,7 @@ namespace RockWeb.Blocks.Groups
                     li.Selected = true;
                 }
             }
+
             cbIncludePending.Checked = GetAttributeValue( AttributeKey.IncludePending ).AsBoolean();
 
             var ppFieldType = new PageReferenceFieldType();
@@ -936,12 +936,19 @@ namespace RockWeb.Blocks.Groups
             {
                 acAddress.Visible = false;
 
-                // Check to see if there's any filters
+                // Check to see if there are any Schedule or attribute filters.
                 string scheduleFilters = GetAttributeValue( AttributeKey.ScheduleFilters );
+                bool displayCampusFilter = GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean();
+                bool loadInitialResults = GetAttributeValue( AttributeKey.LoadInitialResults ).AsBoolean();
+
                 if ( !string.IsNullOrWhiteSpace( scheduleFilters ) || AttributeFilters.Any() )
                 {
                     phFilterControls.Visible = true;
                     btnSearch.Visible = true;
+                }
+                else if ( displayCampusFilter && !loadInitialResults )
+                {
+                    pnlResults.Visible = loadInitialResults && displayCampusFilter;
                 }
                 else
                 {
@@ -1069,6 +1076,7 @@ namespace RockWeb.Blocks.Groups
                 cblCampus.Label = GetAttributeValue( AttributeKey.CampusLabel );
                 cblCampus.Visible = true;
                 cblCampus.DataSource = campuses.OrderBy( c => c.Order );
+
                 cblCampus.DataBind();
             }
             else
@@ -1086,6 +1094,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         continue;
                     }
+
                     existingFilters.Add( filterId );
                     var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, filterId, false, Rock.Reporting.FilterMode.SimpleFilter );
                     if ( control != null )
@@ -1269,6 +1278,14 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupQry = groupQry.Where( c => searchCampuses.Contains( c.CampusId ?? -1 ) );
                 }
+                else if ( searchCampuses.Count == 0 && !GetAttributeValue( AttributeKey.LoadInitialResults ).AsBoolean() )
+                {
+                    // If the campus filter is displayed, none are chosen, and results are not displayed on load,
+                    // then prompt the searcher to select a campus.
+                    ShowWarning( "Please select at least one campus." );
+                    pnlResults.Visible = false;
+                    return;
+                }
             }
             else if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
             {
@@ -1358,9 +1375,9 @@ namespace RockWeb.Blocks.Groups
                     {
                         expression = Expression.Or( expression, filters[keys[i]] );
                     }
+
                     groupQry = groupQry.Where( parameterExpression, expression );
                 }
-
             }
 
             List<GroupLocation> fences = null;
@@ -1465,9 +1482,7 @@ namespace RockWeb.Blocks.Groups
 
                     // Limit the group locations to only those locations inside one of the fences
                     groupLocations = groupLocations
-                        .Where( gl =>
-                            fences.Any( f => gl.Location.GeoPoint.Intersects( f.Location.GeoFence ) )
-                            )
+                        .Where( gl => fences.Any( f => gl.Location.GeoPoint.Intersects( f.Location.GeoFence ) ) )
                         .ToList();
 
                     // Limit the groups to the those that still contain a valid location
@@ -1707,7 +1722,7 @@ namespace RockWeb.Blocks.Groups
                         DateAdded = DateTime.MinValue,
                         Schedule = g.Schedule,
                         MemberCount = qryMembers.Count(),
-                        AverageAge = Math.Round( qryMembers.Select( m => m.Person.BirthDate ).ToList().Select( a => Person.GetAge( a ) ).Average() ?? 0.0D ),
+                        AverageAge = Math.Round( qryMembers.Select( m => new { m.Person.BirthDate, m.Person.DeceasedDate } ).ToList().Select( a => Person.GetAge( a.BirthDate, a.DeceasedDate ) ).Average() ?? 0.0D ),
                         Campus = g.Campus != null ? g.Campus.Name : string.Empty,
                         Distance = distances.Where( d => d.Key == g.Id )
                             .Select( d => d.Value ).FirstOrDefault()
@@ -1861,11 +1876,13 @@ namespace RockWeb.Blocks.Groups
             {
                 maxZoomLevel = "null";
             }
+
             var minZoomLevel = GetAttributeValue( AttributeKey.MinimumZoomLevel );
             if ( minZoomLevel.IsNullOrWhiteSpace() )
             {
                 minZoomLevel = "null";
             }
+
             var zoom = GetAttributeValue( AttributeKey.InitialZoomLevel );
             if ( zoom.IsNullOrWhiteSpace() )
             {
@@ -2252,6 +2269,13 @@ namespace RockWeb.Blocks.Groups
             ShowMessage( message );
         }
 
+        private void ShowWarning( string message )
+        {
+            nbNotice.Heading = "Warning";
+            nbNotice.NotificationBoxType = NotificationBoxType.Warning;
+            ShowMessage( message );
+        }
+
         private void ShowMessage( string message )
         {
             nbNotice.Text = string.Format( "<p>{0}</p>", message );
@@ -2343,6 +2367,7 @@ namespace RockWeb.Blocks.Groups
             {
                 groupTypeLocations = new Dictionary<int, int>();
             }
+
             var groupTypeLocationId = dropDownList.SelectedValue.AsIntegerOrNull();
             if ( groupTypeLocationId == null )
             {

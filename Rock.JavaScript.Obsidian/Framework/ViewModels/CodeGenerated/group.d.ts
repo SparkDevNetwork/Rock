@@ -29,6 +29,7 @@ export type Group = IEntity & {
     archivedDateTime?: string | null;
     attendanceRecordRequiredForCheckIn?: number;
     campusId?: number | null;
+    confirmationAdditionalDetails?: string | null;
     description?: string | null;
     disableScheduleToolboxAccess?: boolean;
     disableScheduling?: boolean;
@@ -49,6 +50,7 @@ export type Group = IEntity & {
     order?: number;
     parentGroupId?: number | null;
     requiredSignatureDocumentTemplateId?: number | null;
+    rSVPReminderAdditionalDetails?: string | null;
     rSVPReminderOffsetDays?: number | null;
     rSVPReminderSystemCommunicationId?: number | null;
     scheduleCancellationPersonAliasId?: number | null;

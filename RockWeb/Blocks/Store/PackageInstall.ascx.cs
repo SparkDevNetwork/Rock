@@ -50,10 +50,10 @@ namespace RockWeb.Blocks.Store
         #region Fields
 
         // used for private variables
-        private string _installPurchaseMessage = "Login below with your Rock Store account to install the <em>{0}</em> package. Your credit card on file will be charged ${1}.";
-        private string _installFreeMessage = "Login below with your Rock Store account to install free <em>{0}</em> package.";
-        private string _updateMessage = "Login below with your Rock Store account to upgrade this package.";
-        private string _installPreviousPurchase = "Login below with your Rock Store account to install this previously purchased package.";
+        private string _installPurchaseMessage = "<p>Log in below with your Rock Store account to install the <em>{0}</em> package. Your credit card on file will be charged ${1}.</p>";
+        private string _installFreeMessage = "<p>Log in below with your Rock Store account to install free <em>{0}</em> package.</p>";
+        private string _updateMessage = "<p>Log in below with your Rock Store account to upgrade this package.</p>";
+        private string _installPreviousPurchase = "<p>Log in below with your Rock Store account to install this previously purchased package.</p>";
 
         const string _xdtExtension = ".rock.xdt";
         #endregion

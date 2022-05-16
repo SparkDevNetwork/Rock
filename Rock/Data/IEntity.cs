@@ -23,6 +23,13 @@ namespace Rock.Data
     /// <summary>
     /// Interface for all code-first entities
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         This interface may be used by third party plugins but it should not
+    ///         be inherited from directly. The interface may change without warning
+    ///         which would break custom implementations.
+    ///     </para>
+    /// </remarks>
     public interface IEntity
     {
         /// <summary>
@@ -32,6 +39,15 @@ namespace Rock.Data
         /// The id.
         /// </value>
         int Id { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="Id"/> as a hashed identifier that can be used
+        /// to lookup the entity later. This hides the actual <see cref="Id"/>
+        /// number so that individuals cannot attempt to guess the next sequential
+        /// identifier numbers.
+        /// </summary>
+        /// <value>The hashed identifier key.</value>
+        string IdKey { get; }
 
         /// <summary>
         /// Gets or sets the GUID.

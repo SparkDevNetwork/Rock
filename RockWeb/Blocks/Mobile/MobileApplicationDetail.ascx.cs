@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Mobile
     [DisplayName( "Mobile Application Detail" )]
     [Category( "Mobile" )]
     [Description( "Edits and configures the settings of a mobile application." )]
-    [LinkedPage( "Layout Detail", "", true ) ]
+    [LinkedPage( "Layout Detail", "", true )]
     [LinkedPage( "Page Detail", "", true )]
     public partial class MobileApplicationDetail : RockBlock
     {
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Mobile
             pnlStyles.Visible = tabName == Tabs.Styles.ConvertToString();
             pnlLayouts.Visible = tabName == Tabs.Layouts.ConvertToString();
             pnlPages.Visible = tabName == Tabs.Pages.ConvertToString();
-            
+
             switch ( showTab )
             {
                 case Tabs.Application:
@@ -313,7 +313,7 @@ namespace RockWeb.Blocks.Mobile
             {
                 lLastDeployDate.Text = "<span class='label label-warning'>Not Deployed</span>";
             }
-            
+
 
             // Set the UI fields for the preview thumbnail.
             imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailBinaryFileId );
@@ -445,6 +445,7 @@ namespace RockWeb.Blocks.Mobile
 
             cbEnableNotificationsAutomatically.Checked = additionalSettings.EnableNotificationsAutomatically;
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
+            ceToastXaml.Text = additionalSettings.ToastXaml;
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
             ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
             tbEditPushTokenUpdateValue.Text = additionalSettings.PushTokenUpdateValue;
@@ -775,12 +776,13 @@ namespace RockWeb.Blocks.Mobile
             //
             additionalSettings.ShellType = rblEditApplicationType.SelectedValueAsEnum<ShellType>();
             additionalSettings.TabLocation = rblEditAndroidTabLocation.SelectedValueAsEnum<TabLocation>();
-            
+
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
             additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
+            additionalSettings.ToastXaml = ceToastXaml.Text;
             additionalSettings.PushTokenUpdateValue = tbEditPushTokenUpdateValue.Text;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
@@ -1276,7 +1278,7 @@ namespace RockWeb.Blocks.Mobile
             {
                 return;
             }
-            
+
             var deleteField = gPages.ColumnsOfType<DeleteField>().FirstOrDefault();
             if ( deleteField == null || !deleteField.Visible )
             {

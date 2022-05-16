@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="pnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-default">
+        <div class="panel panel-default text-black">
 
             <asp:Panel ID="pnlHeading" runat="server" CssClass="panel-heading">
                 <h1 class="panel-title">

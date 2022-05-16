@@ -19,11 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using Quartz;
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -56,6 +53,7 @@ namespace Rock.Jobs
         }
 
         #endregion Keys
+
         #region Constructor
 
         /// <summary> 
@@ -97,11 +95,11 @@ namespace Rock.Jobs
 
             var futureFollowupWorkflowResult = TriggerFutureFollowupWorkFlow( context, futureFollowupDateWorkflows );
 
-            context.UpdateLastStatusMessage( $@"Future follow-up Workflow Triggered: {futureFollowupWorkflowResult}" );
+            context.UpdateLastStatusMessage( $@"Future follow-up workflow triggered: {futureFollowupWorkflowResult}" );
         }
 
         /// <summary>
-        /// Trigger Future Followup Workflow
+        /// Trigger Future Follow-up Workflow
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="futureFollowupDateWorkflows">The future follow-up date workflows.</param>
@@ -112,7 +110,7 @@ namespace Rock.Jobs
             {
                 JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-                context.UpdateLastStatusMessage( $"Processing future follow-up workFlows." );
+                context.UpdateLastStatusMessage( $"Processing future follow-up workflows." );
 
                 int recordsUpdated = 0;
                 int triggerWorkflow = 0;
@@ -157,8 +155,8 @@ namespace Rock.Jobs
                                 updateRockContext.ConnectionRequests.Attach( connectionRequest );
                                 connectionRequest.ConnectionState = ConnectionState.Active;
 
-                                var guid = Rock.SystemGuid.ConnectionActivityType.FUTURE_FOLLOWUP_COMPLETE.AsGuid();
-                                var futureFollowupCompleteActivityId = new ConnectionActivityTypeService( rockContext )
+                                var guid = Rock.SystemGuid.ConnectionActivityType.FOLLOWUP_DATE_REACHED.AsGuid();
+                                var followupDateReachedActivityId = new ConnectionActivityTypeService( rockContext )
                                     .Queryable()
                                     .Where( t => t.Guid == guid )
                                     .Select( t => t.Id )
@@ -167,7 +165,8 @@ namespace Rock.Jobs
                                 ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
                                 connectionRequestActivity.ConnectionRequestId = connectionRequest.Id;
                                 connectionRequestActivity.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                                connectionRequestActivity.ConnectionActivityTypeId = futureFollowupCompleteActivityId;
+                                connectionRequestActivity.ConnectionActivityTypeId = followupDateReachedActivityId;
+                                connectionRequestActivity.Note = "Connection State changed to 'Active'.";
                                 new ConnectionRequestActivityService( updateRockContext ).Add( connectionRequestActivity );
                                 updateRockContext.SaveChanges();
                                 recordsUpdated += 1;
@@ -177,7 +176,7 @@ namespace Rock.Jobs
                     catch ( Exception ex )
                     {
                         // Log exception and keep on trucking.
-                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to trigger future followup workFlow:{connectionRequest.Id}.", ex ), _httpContext );
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to trigger future follow-up workflow: {connectionRequest.Id}.", ex ), _httpContext );
                         recordsWithError += 1;
                     }
                 }

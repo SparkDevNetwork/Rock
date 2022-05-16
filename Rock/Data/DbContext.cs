@@ -61,6 +61,7 @@ namespace Rock.Data
         /// Is there a transaction in progress?
         /// </summary>
         private bool _transactionInProgress = false;
+        private TaskCompletionSource<bool> _wrappedTransactionCompleted = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
@@ -96,6 +97,28 @@ namespace Rock.Data
         public string SourceOfChange { get; set; }
 
         /// <summary>
+        /// If <see cref="WrapTransaction(Action)"/> is in progress, this will return a task that will return completed
+        /// after the transaction is committed. Otherwise, it will return a completed task immediately.
+        /// </summary>
+        /// <value>
+        /// The wrapped transaction completed.
+        /// </value>
+        public Task<bool> WrappedTransactionCompletedTask
+        {
+            get
+            {
+                if ( _transactionInProgress )
+                {
+                    return _wrappedTransactionCompleted?.Task ?? Task.FromResult( true );
+                }
+                else
+                {
+                    return Task.FromResult( true );
+                }
+            }
+        }
+
+        /// <summary>
         /// Wraps the action in a BeginTransaction and CommitTransaction.
         /// Note that this will *always* commit the transaction (unless an exception occurs).
         /// If need to rollback the transaction within your action (for example, to show a validation warning),
@@ -121,6 +144,7 @@ namespace Rock.Data
             if ( !_transactionInProgress )
             {
                 _transactionInProgress = true;
+                _wrappedTransactionCompleted = new TaskCompletionSource<bool>();
                 using ( var dbContextTransaction = this.Database.BeginTransaction() )
                 {
                     try
@@ -128,20 +152,24 @@ namespace Rock.Data
                         if ( action.Invoke() )
                         {
                             dbContextTransaction.Commit();
+                            _wrappedTransactionCompleted.SetResult( true );
                         }
                         else
                         {
                             dbContextTransaction.Rollback();
+                            _wrappedTransactionCompleted.SetResult( false );
                             return false;
                         }
                     }
                     catch
                     {
                         dbContextTransaction.Rollback();
+                        _wrappedTransactionCompleted.SetResult( false );
                         throw;
                     }
                     finally
                     {
+                        _wrappedTransactionCompleted = null;
                         _transactionInProgress = false;
                     }
                 }
@@ -588,7 +616,30 @@ namespace Rock.Data
 
                 if ( item.Entity is ICacheable cacheable )
                 {
-                    cacheable.UpdateCache( item.PreSaveStateLegacy, this );
+                    /* 04/14/2022 MDP
+
+                     If we are in WrapTransaction, some other thread could update the cached item from the
+                     database before we have committed the transaction. That could cause the cache to have the
+                     previous value instead of the new value. To prevent that from happening,
+                     we'll use the ContinueWith on WrappedTransactionCompletedTask take care of flushing the
+                     cache after the data is committed to the database.
+
+                     Using the TaskContinuationOptions.ExecuteSynchronously option so that it runs in the same thread
+                     as WrapTransaction.
+
+                    */
+
+                    WrappedTransactionCompletedTask.ContinueWith( ( task ) =>
+                    {
+                        var commitedSuccessfully = task.Result;
+                        if ( commitedSuccessfully )
+                        {
+                            using ( var rockContextUpdateCache = new RockContext() )
+                            {
+                                cacheable.UpdateCache( item.PreSaveStateLegacy, rockContextUpdateCache );
+                            }
+                        };
+                    }, TaskContinuationOptions.ExecuteSynchronously );
                 }
             }
 
@@ -600,8 +651,8 @@ namespace Rock.Data
                     var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
                     if ( indexingEnabled )
                     {
-                        processEntityTypeIndexMsgs.ForEach( t => t.Send() );
-                        deleteEntityTypeIndexMsgs.ForEach( t => t.Send() );
+                        processEntityTypeIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
+                        deleteEntityTypeIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
                 } );
             }
@@ -891,7 +942,7 @@ namespace Rock.Data
                             EntityTypeId = entity.TypeId
                         };
 
-                        processWorkflowTriggerMsg.Send();
+                        processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompletedTask );
                     }
                 }
             }
