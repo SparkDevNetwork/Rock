@@ -143,6 +143,7 @@
     <Compile Include="Achievement\AchievementTests.cs" />
     <Compile Include="Attendances\AttendanceCodeTests.cs" />
     <Compile Include="Communications\EmailTransportComponentTests.cs" />
+    <Compile Include="Communications\SystemCommunicationTests.cs" />
     <Compile Include="Communications\Transport\MailgunTests.cs" />
     <Compile Include="Communications\Transport\SMTPTests.cs" />
     <Compile Include="Communications\Transport\TwilioTests.cs" />
