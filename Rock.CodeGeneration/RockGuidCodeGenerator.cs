@@ -433,9 +433,12 @@ JOIN EntityType et
                 Guid = a.Field<Guid>( "Guid" )
             } ).OrderBy( a => a.Path ).ToList();
 
-            var blockClassSearch = new Regex( @"\s*public partial class .* : .*Block.*" );
+            var blockClassSearch = new Regex( @"\s*public partial class .* : .*(Block|DashboardWidget).*" );
 
             var systemGuidLookup = GetSystemGuidLookup();
+
+            var regExHasBlockTypeGuidWithGuid = new Regex( @"(:?^|\s)\[.*BlockTypeGuid\s*\(.*(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}\s*""\s *\)" );
+            var regExHasBlockTypeGuidWithSystemGuidConst = new Regex( @"(:?^|\s)\[.*BlockTypeGuid\s*\(.*Rock.SystemGuid.*\s *\)" );
 
             foreach ( var blockTypeFromDatabase in blockTypesFromDatabase.Where( a => a.Path.IsNotNullOrWhiteSpace() ) )
             {
@@ -446,6 +449,16 @@ JOIN EntityType et
                 }
 
                 var blockTypeSourceLines = File.ReadAllLines( blockTypeFileName );
+
+                // Only do BlockTypes that don't have already have RockGuid attribute.
+                // Note that if block is in database with a different guid, it could be that the block hasn't been compiled/discovered yet.
+                // If so, we'll keep the guid the guid that is in the source code, and Rock will update the Guid in the Database when the block is compiled/discovered
+                // Reg finds pattern of a BlockType guid, but excludes from match if commented out (non whitespace before the [)
+                var alreadyHasBlockTypeGuidAttribute = blockTypeSourceLines.Any( ln => regExHasBlockTypeGuidWithGuid.IsMatch(ln) || regExHasBlockTypeGuidWithSystemGuidConst.IsMatch(ln) );
+                if ( alreadyHasBlockTypeGuidAttribute )
+                {
+                    continue;
+                }
 
                 var systemGuidConstName = systemGuidLookup.GetValueOrNull( blockTypeFromDatabase.Guid );
                 string rockGuidLine;
@@ -461,6 +474,7 @@ JOIN EntityType et
                 bool alreadyHasRockGuidAttribute = blockTypeSourceLines.Where( a => a.Contains( rockGuidLine ) ).Any();
                 if ( alreadyHasRockGuidAttribute )
                 {
+                    // shouldn't happen since we already existed if it has any BlockTypeGuid attribute in source, but just in case
                     continue;
                 }
 
@@ -477,6 +491,8 @@ JOIN EntityType et
 
                     lineNumber++;
                 }
+
+                Debug.WriteLine( $"Couldn't find blockClassSearch for {blockTypeFileName}" );
             }
         }
     }

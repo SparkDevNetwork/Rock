@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 {% endfor %}
 " )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "AC19A4F3-2E88-487E-8E88-377C1C20DBD5" )]
     public partial class LiquidDashboardWidget : DashboardWidget
     {
         /// <summary>
