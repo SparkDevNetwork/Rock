@@ -1604,7 +1604,7 @@ namespace Rock.ViewModels.Entities
             }
         }
 
-        private Dictionary<string, Guid> _restControllerGuidLookup = null;
+        private Dictionary<string, Guid> _restControllerGuidLookupFromDatabase = null;
 
         /// <summary>
         /// Writes the REST file for a given type
@@ -1613,9 +1613,9 @@ namespace Rock.ViewModels.Entities
         /// <param name="type"></param>
         private void WriteRESTFile( string rootFolder, Type type )
         {
-            if ( _restControllerGuidLookup == null )
+            if ( _restControllerGuidLookupFromDatabase == null )
             {
-                _restControllerGuidLookup = RockGuidCodeGenerator.GetDatabaseGuidLookup( RootFolder().FullName, $"SELECT [Guid], [ClassName] FROM [RestController]", "ClassName" ).Value;
+                _restControllerGuidLookupFromDatabase = RockGuidCodeGenerator.GetDatabaseGuidLookup( RootFolder().FullName, $"SELECT [Guid], [ClassName],[ModifiedDateTime] FROM [RestController]", "ClassName" ).Value;
             }
 
             string pluralizedName = PluralizeTypeName( type );
@@ -1625,7 +1625,13 @@ namespace Rock.ViewModels.Entities
             var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
             var rockObsolete = type.GetCustomAttribute<RockObsolete>();
             var fullClassName = $"{restNamespace}.{pluralizedName}Controller";
-            var restControllerGuid = _restControllerGuidLookup.GetValueOrNull( fullClassName );
+            var restControllerType = Type.GetType( $"{fullClassName}, {typeof(Rock.Rest.ApiControllerBase).Assembly.FullName}" );
+            var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
+
+            if ( restControllerGuid == null )
+            {
+                restControllerGuid = _restControllerGuidLookupFromDatabase.GetValueOrNull( fullClassName );
+            }
 
             var sb = new StringBuilder();
 
