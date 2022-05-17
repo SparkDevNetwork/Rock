@@ -475,8 +475,6 @@
     <Compile Include="Achievement\Component\StreakAchievement.cs" />
     <Compile Include="Achievement\StreakSourcedAchievementComponent.cs" />
     <Compile Include="Address\Bing.cs" />
-    <Compile Include="Address\MelissaData.cs" />
-    <Compile Include="Address\ServiceObjects.cs" />
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
@@ -3311,10 +3309,6 @@
     <Compile Include="Security\ISecured.cs" />
     <Compile Include="Security\LoginParameters.cs" />
     <Compile Include="Security\SecurityActionAttribute.cs" />
-    <Compile Include="Service References\MelissaData.AddressCheck\Reference.cs">
-      <SubType>code</SubType>
-    </Compile>
-    <Compile Include="Service References\ServiceObjects.GeoCoder\Reference.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Services\NuGet\PackageService.cs" />
     <Compile Include="Services\NuGet\RockPackagePathResolver.cs" />
@@ -3929,18 +3923,6 @@
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
-    <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
-    <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
-    <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </Content>
-    <Content Include="Service References\MelissaData.AddressCheck\Service.disco" />
-    <Content Include="Service References\ServiceObjects.GeoCoder\configuration.svcinfo" />
-    <Content Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />
-    <Content Include="Service References\ServiceObjects.GeoCoder\GeoCoder.disco" />
-    <Content Include="Service References\ServiceObjects.GeoCoder\Reference.svcmap">
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </Content>
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
   <ItemGroup>
@@ -3954,22 +3936,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource" />
-    <None Include="Service References\MelissaData.AddressCheck\Service.wsdl" />
-    <None Include="Service References\MelissaData.AddressCheck\Service.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\MelissaData.AddressCheck\Service1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\ServiceObjects.GeoCoder\GeoCoder.wsdl" />
-    <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.DistanceBetweenInfo.datasource" />
-    <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.DistanceToWaterInfo.datasource" />
-    <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.GeocodeCityWorldwideInfo.datasource" />
-    <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.Location.datasource" />
-    <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.Location_V3.datasource" />
-    <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ReverseAddress.datasource" />
-    <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Pbx\Provider\" />
