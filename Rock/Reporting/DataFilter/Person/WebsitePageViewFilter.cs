@@ -1,4 +1,4 @@
-﻿using Rock.Data;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -20,6 +20,7 @@ namespace Rock.Reporting.DataFilter.Interaction
     [Description( "Filter people based on their webpage view data" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Website Page View Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8E1E9C39-3A5C-49E5-8CB4-356A7EEF4206")]
     public class WebsitePageViewFilter : DataFilterComponent
     {
         #region Properties

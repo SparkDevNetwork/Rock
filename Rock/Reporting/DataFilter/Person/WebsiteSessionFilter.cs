@@ -1,4 +1,4 @@
-﻿using Rock.Data;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -20,6 +20,7 @@ namespace Rock.Reporting.DataFilter.Interaction
     [Description( "Filter people based on their website session interaction" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Website Session Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "50FDC068-D943-4673-B656-DFC2792BEEF7")]
     public class WebsiteSessionFilter : DataFilterComponent
     {
         #region Properties
