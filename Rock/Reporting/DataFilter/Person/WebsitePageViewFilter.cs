@@ -17,10 +17,10 @@ namespace Rock.Reporting.DataFilter.Interaction
     /// <summary>
     /// Operates against Interaction, InteractionComponent, InteractionChannel, InteractionSession.
     /// </summary>
-    [Description( "Filter people based on their webpage view interactions" )]
+    [Description( "Filter people based on their webpage view data" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Website Page View Filter" )]
-    public class WebsitePageViewDataViewFilter : DataFilterComponent
+    public class WebsitePageViewFilter : DataFilterComponent
     {
         #region Properties
 
