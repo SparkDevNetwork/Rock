@@ -1175,9 +1175,10 @@ namespace Rock.Lava
 
             var endDate = startDateTime.Value.AddYears( 1 );
 
-            var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
-            var calendarEvent = calendar.Events[0] as Event;
-
+            var calendar = CalendarCollection.Load( new StringReader( iCalString ) ).First();
+            var calendarEvent = calendar.Events[0];
+            
+            var tzName = RockDateTime.OrgTimeZoneInfo.Id;
             List<DateTimeOffset> dates;
 
             // Get the UTC offset of the start date, and apply that offset to all of the dates in the sequence.

@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using Rock.Model;
 
 using Ical.Net;
-using Ical.Net.Serialization.iCalendar.Serializers;
 using Ical.Net.DataTypes;
-using Ical.Net.Interfaces.DataTypes;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
 
 namespace Rock.Tests
 {
@@ -56,11 +56,11 @@ namespace Rock.Tests
             return schedule;
         }
 
-        public static Calendar GetCalendar( Event calendarEvent, RecurrencePattern recurrencePattern = null )
+        public static Calendar GetCalendar( CalendarEvent calendarEvent, RecurrencePattern recurrencePattern = null )
         {
             if ( recurrencePattern != null )
             {
-                calendarEvent.RecurrenceRules = new List<IRecurrencePattern> { recurrencePattern };
+                calendarEvent.RecurrenceRules = new List<RecurrencePattern> { recurrencePattern };
             }
 
             var calendar = new Calendar();
@@ -70,12 +70,12 @@ namespace Rock.Tests
             return calendar;
         }
 
-        public static Event GetCalendarEvent( DateTimeOffset eventStartDate, TimeSpan? eventDuration )
+        public static CalendarEvent GetCalendarEvent( DateTimeOffset eventStartDate, TimeSpan? eventDuration )
         {
             // Convert the start date to Rock time.
             var startDate = TimeZoneInfo.ConvertTime( eventStartDate, RockDateTime.OrgTimeZoneInfo );
 
-            var calendarEvent = new Event
+            var calendarEvent = new CalendarEvent
             {
                 DtStart = new CalDateTime( startDate.DateTime ),
                 Duration = eventDuration ?? new TimeSpan( 1, 0, 0 ),
