@@ -26,33 +26,33 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type CampusBag = {
-    name?: string | null;
+    campusSchedules?: CampusScheduleBag[] | null;
+
+    campusStatusValue?: ListItemBag | null;
+
+    campusTypeValue?: ListItemBag | null;
 
     description?: string | null;
 
-    isSystem: boolean;
-
     isActive?: boolean | null;
 
-    shortCode?: string | null;
+    isSystem: boolean;
 
-    url?: string | null;
+    leaderPersonAlias?: ListItemBag | null;
+
+    location?: ListItemBag | null;
+
+    name?: string | null;
 
     phoneNumber?: string | null;
 
     serviceTimes?: ListItemBag[] | null;
 
+    shortCode?: string | null;
+
     timeZoneId?: string | null;
 
-    campusSchedules?: CampusScheduleBag[] | null;
-
-    location?: ListItemBag | null;
-
-    leaderPersonAlias?: ListItemBag | null;
-
-    campusStatusValue?: ListItemBag | null;
-
-    campusTypeValue?: ListItemBag | null;
+    url?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

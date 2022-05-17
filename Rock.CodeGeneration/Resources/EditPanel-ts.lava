@@ -73,8 +73,8 @@ export default defineComponent({
 
         // Watch for parental changes in our model value and update all our values.
         watch(() => props.modelValue, () => {{ '{' }}{% if UseAttributeValues == true %}
-            updateRefValue(attributes, props.modelValue.attributes ?? []);
-            updateRefValue(attributeValues, props.modelValue.attributeValues ?? []);{% endif %}{% if UseDescription == true %}
+            updateRefValue(attributes, props.modelValue.attributes ?? {});
+            updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
             updateRefValue(description, props.modelValue.description ?? "");{% endif %}{% if UseIsActive == true %}
             updateRefValue(isActive, props.modelValue.isActive ?? false);{% endif %}{% if UseName == true %}
             updateRefValue(name, props.modelValue.name ?? "");{% endif %}

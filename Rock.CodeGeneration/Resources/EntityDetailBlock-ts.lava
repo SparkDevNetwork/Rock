@@ -20,11 +20,10 @@ import Alert from "@Obsidian/Controls/alert";
 import { EntityType } from "@Obsidian/SystemGuids";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import EditPanel from "./{{ EntityName }}Detail/editPanel";
 import ViewPanel from "./{{ EntityName }}Detail/viewPanel";
-import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { emptyGuid } from "@Obsidian/Utility/guid";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { NavigationUrlKey } from "./{{ EntityName }}Detail/types";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
@@ -43,6 +42,7 @@ export default defineComponent({
     setup() {
         const config = useConfigurationValues<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>();
         const invokeBlockAction = useInvokeBlockAction();
+        const securityGrant = getSecurityGrant(config.securityGrantToken);
 
         // #region Values
 
@@ -65,25 +65,36 @@ export default defineComponent({
             return {{ EntityName | CamelCase }}ViewBag.value?.name ?? "";
         });
 
-        const entityKey = computed((): string | null => {
-            return {{ EntityName | CamelCase }}ViewBag.value?.idKey ?? null;
+        /**
+         * The identifier key value for this entity.
+         */
+        const entityKey = computed((): string => {
+            return {{ EntityName | CamelCase }}ViewBag.value?.idKey ?? "";
         });
 
         /**
          * Additional labels to display in the block panel.
          */
-        const blockLabels = computed((): ListItemBag[] => {
-            const labels: ListItemBag[] = [];
+        const blockLabels = computed((): PanelAction[] | null => {
+            const labels: PanelAction[] = [];
 
             if (panelMode.value !== DetailPanelMode.View) {
-                return labels;
+                return null;
             }{% if UseIsActive %}
 
             if ({{ EntityName | CamelCase }}ViewBag.value?.isActive === true) {
-                labels.push({ value: "success", text: "Active" });
+                labels.push({
+                    iconCssClass: "fa fa-lightbulb",
+                    title: "Active",
+                    type: "success"
+                });
             }
             else {
-                labels.push({ value: "danger", text: "Inactive" });
+                labels.push({
+                    iconCssClass: "far fa-lightbulb",
+                    title: "Inactive",
+                    type: "danger"
+                });
             }{% endif %}
 
             return labels;
@@ -112,7 +123,7 @@ export default defineComponent({
          * @returns true if the panel should leave edit mode; otherwise false.
          */
         const onCancelEdit = async (): Promise<boolean> => {
-            if ({{ EntityName | CamelCase }}EditBag.value?.guid === emptyGuid) {
+            if (!{{ EntityName | CamelCase }}EditBag.value?.idKey) {
                 if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                     window.location.href = config.navigationUrls[NavigationUrlKey.ParentPage];
                 }
@@ -176,7 +187,7 @@ export default defineComponent({
                 entity: {{ EntityName | CamelCase }}EditBag.value,
                 isEditable: true,
                 validProperties: [{% if UseAttributeValues == true %}
-                    "attributeValues",{% endif %}{% for property in Properties %}
+                    "attributeValues",{% endif %}{% for property in Properties %}{% if property.Name == "IsSystem" %}{% continue %}{% endif %}
                     "{{ property.Name | CamelCase }}"{% unless forloop.last %},{% endunless %}{% endfor %}
                 ]
             };
@@ -204,6 +215,8 @@ export default defineComponent({
         };
 
         // #endregion
+
+        provideSecurityGrant(securityGrant);
 
         // Handle any initial error conditions or the need to go into edit mode.
         if (config.errorMessage) {
@@ -237,10 +250,6 @@ export default defineComponent({
     },
 
     template: `
-<Alert alertType="warning">
-    This is an experimental block and should not be used in production.
-</Alert>
-
 <Alert v-if="blockError" alertType="warning" v-text="blockError" />
 
 <Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />

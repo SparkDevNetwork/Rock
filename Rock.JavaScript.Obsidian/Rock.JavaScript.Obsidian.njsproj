@@ -71,6 +71,7 @@
     <Folder Include="Framework\FieldTypes\" />
     <Folder Include="Framework\PageState\" />
     <Folder Include="Framework\Types\Controls\" />
+    <Folder Include="Framework\Types\Utility\" />
     <Folder Include="Framework\Types\Reporting\" />
     <Folder Include="Framework\Utility\" />
     <Folder Include="Framework\ValidationRules\" />
@@ -282,6 +283,7 @@
     <TypeScriptCompile Include="Framework\Templates\rockPage.ts" />
     <TypeScriptCompile Include="Framework\Types\fieldType.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Reporting\comparisonType.d.ts" />
+    <TypeScriptCompile Include="Framework\Types\Utility\block.d.ts" />
     <TypeScriptCompile Include="Framework\Types\validationRules.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
     <TypeScriptCompile Include="Framework\Utility\promiseUtils.ts" />

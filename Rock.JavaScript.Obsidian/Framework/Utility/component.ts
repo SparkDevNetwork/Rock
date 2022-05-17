@@ -54,7 +54,7 @@ export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E ext
  *
  * @returns True if the target was updated, otherwise false.
  */
-export function updateRefValue<T>(target: Ref<T>, value: T): boolean {
+export function updateRefValue<T, TV extends T>(target: Ref<T>, value: TV): boolean {
     if (deepEqual(target.value, value, true)) {
         return false;
     }

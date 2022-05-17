@@ -314,7 +314,6 @@ export default defineComponent({
 
             editModeReadyCompletionSource = new PromiseCompletionSource();
             await editModeReadyCompletionSource.promise;
-            await new Promise(resolve => setTimeout(resolve, 1000));
 
             internalMode.value = props.entityKey ? DetailPanelMode.Edit : DetailPanelMode.Add;
             isEditModeLoading.value = false;

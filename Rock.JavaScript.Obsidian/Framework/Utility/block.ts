@@ -16,8 +16,9 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { SecurityGrant } from "@Obsidian/Types/Utility/block";
 import { HttpBodyData, HttpResult, HttpUrlParams } from "./http";
-import { inject, ref, Ref } from "vue";
+import { inject, provide, Ref, ref } from "vue";
 import { RockDateTime } from "./rockDateTime";
 
 export type ConfigurationValues = Record<string, unknown>;
@@ -74,16 +75,21 @@ export function useInvokeBlockAction(): InvokeBlockActionFunc {
     return result;
 }
 
+// #region Security Grants
+
+const securityGrantSymbol = Symbol();
+
 /**
  * Use a security grant token value provided by the server. This returns a reference
  * to the actual value and will automatically handle renewing the token and updating
- * the value.
+ * the value. This function is meant to be used by blocks. Controls should use the
+ * useSecurityGrant() function instead.
  * 
  * @param token The token provided by the server.
  *
- * @returns A reference to the token that will be updated automatically when it has been renewed.
+ * @returns A reference to the security grant that will be updated automatically when it has been renewed.
  */
-export function useSecurityGrantToken(token: string | null | undefined): { token: Ref<string | null> } {
+export function getSecurityGrant(token: string | null | undefined): SecurityGrant {
     // Use || so that an empty string gets converted to null.
     const tokenRef = ref(token || null);
     const invokeBlockAction = useInvokeBlockAction();
@@ -138,3 +144,27 @@ export function useSecurityGrantToken(token: string | null | undefined): { token
         token: tokenRef
     };
 }
+
+/**
+ * Provides the security grant to child components to use in their API calls.
+ * 
+ * @param grant The grant ot provide to child components.
+ */
+export function provideSecurityGrant(grant: SecurityGrant): void {
+    provide(securityGrantSymbol, grant);
+}
+
+/**
+ * Uses a previously provided security grant token by a parent component.
+ * This function is meant to be used by controls that need to obtain a security
+ * grant from a parent component.
+ *
+ * @returns A string reference that contains the security grant token.
+ */
+export function useSecurityGrantToken(): Ref<string | null> {
+    const grant = inject<SecurityGrant>(securityGrantSymbol);
+
+    return grant ? grant.token : ref(null);
+}
+
+// #endregion
