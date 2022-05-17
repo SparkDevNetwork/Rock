@@ -1319,6 +1319,8 @@
     <Compile Include="Reporting\DataFilter\ConnectionRequest\GroupMemberDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\PersonDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\PlacementGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\WebsitePageViewDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\WebsiteSessionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DocumentTypeFilter.cs" />
     <Compile Include="Reporting\DataTransform\Person\HeadOfHouseholdTransform.cs" />
     <Compile Include="Search\Finance\FinancialAccount.cs" />
