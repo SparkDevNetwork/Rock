@@ -64,6 +64,8 @@ import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
+import Block from "@Obsidian/Templates/block";
+import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -287,7 +289,18 @@ export const GalleryAndResult = defineComponent({
  * @returns A string of code that can be used to import the given control file
  */
 export function getControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}"`;
+    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}";`;
+}
+
+/**
+ * Generate a string of an import statement that imports the template will the given file name.
+ * The template's name will be based off the filename
+ *
+ * @param fileName Name of the control's file
+ * @returns A string of code that can be used to import the given control file
+ */
+export function getTemplateImportPath(fileName: string): string {
+    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Templates/${fileName}";`;
 }
 
 /** Demonstrates an attribute values container. */
@@ -2535,7 +2548,7 @@ const copyButtonGallery = defineComponent({
 });
 
 
-const galleryComponents: Record<string, Component> = [
+const controlGalleryComponents: Record<string, Component> = [
     attributeValuesContainerGallery,
     fieldFilterEditorGallery,
     textBoxGallery,
@@ -2592,19 +2605,251 @@ const galleryComponents: Record<string, Component> = [
         return newList;
     }, {});
 
+
+// #region Template Gallery
+
+/** Demonstrates the detailPanel component. */
+const detailBlockGallery = defineComponent({
+    name: "DetailBlockGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        CheckBoxList,
+        DetailBlock
+    },
+
+    setup() {
+        const simulateValues = ref<string[]>([]);
+
+        const headerActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("headerActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        const labels = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("labels")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "info",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        const headerSecondaryActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("headerSecondaryActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        const footerActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("footerActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        const footerSecondaryActions = computed((): PanelAction[] => {
+            if (!simulateValues.value.includes("footerSecondaryActions")) {
+                return [];
+            }
+
+            return [
+                {
+                    iconCssClass: "fa fa-user",
+                    title: "Action 1",
+                    type: "default",
+                    handler: () => alert("Action 1 selected.")
+                },
+                {
+                    iconCssClass: "fa fa-group",
+                    title: "Action 2",
+                    type: "success",
+                    handler: () => alert("Action 2 selected.")
+                }
+            ];
+        });
+
+        return {
+            colors: Array.apply(0, Array(256)).map((_: unknown, index: number) => `rgb(${index}, ${index}, ${index})`),
+            entityTypeGuid: EntityType.Group,
+            footerActions,
+            footerSecondaryActions,
+            headerActions,
+            headerSecondaryActions,
+            isAuditHidden: ref(false),
+            isBadgesVisible: ref(true),
+            isDeleteVisible: ref(true),
+            isEditVisible: ref(true),
+            isFollowVisible: ref(true),
+            isSecurityHidden: ref(false),
+            labels,
+            simulateValues,
+            simulateOptions: [
+                {
+                    value: "headerActions",
+                    text: "Header Actions"
+                },
+                {
+                    value: "headerSecondaryActions",
+                    text: "Header Secondary Actions"
+                },
+                {
+                    value: "labels",
+                    text: "Labels",
+                },
+                {
+                    value: "footerActions",
+                    text: "Footer Actions"
+                },
+                {
+                    value: "footerSecondaryActions",
+                    text: "Footer Secondary Actions"
+                },
+                {
+                    value: "helpContent",
+                    text: "Help Content"
+                }
+            ],
+            simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent")),
+            importCode: getTemplateImportPath("detailBlock"),
+            exampleCode: `<DetailBlock name="Sample Entity" :entityTypeGuid="entityTypeGuid" entityTypeName="Entity Type" entityKey="1" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+    <DetailBlock name="Sample Entity"
+        :entityTypeGuid="entityTypeGuid"
+        entityTypeName="Entity Type"
+        entityKey="1"
+        :headerActions="headerActions"
+        :headerSecondaryActions="headerSecondaryActions"
+        :labels="labels"
+        :footerActions="footerActions"
+        :footerSecondaryActions="footerSecondaryActions"
+        :isAuditHidden="isAuditHidden"
+        :isEditVisible="isEditVisible"
+        :isDeleteVisible="isDeleteVisible"
+        :isFollowVisible="isFollowVisible"
+        :isBadgesVisible="isBadgesVisible"
+        :isSecurityHidden="isSecurityHidden">
+        <template v-if="simulateHelp" #helpContent>
+            This is some help text.
+        </template>
+        <div v-for="c in colors" :style="{ background: c, height: '1px' }"></div>
+    </DetailBlock>
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox v-model="isAuditHidden" label="Is Audit Hidden" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="isBadgesVisible" label="Is Badges Visible" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="isDeleteVisible" label="Is Delete Visible" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="isEditVisible" label="Is Edit Visible" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="isFollowVisible" label="Is Follow Visible" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="isSecurityHidden" label="Is Security Hidden" />
+            </div>
+        </div>
+
+        <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal />
+    </template>
+</GalleryAndResult>`
+});
+
+const templateGalleryComponents = [
+    detailBlockGallery
+]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .reduce((newList, comp) => {
+        newList[comp.name] = comp;
+        return newList;
+    }, {});
+
+// #endregion
+
 export default defineComponent({
     name: "Example.ControlGallery",
     components: {
         Panel,
         SectionHeader,
-        ...galleryComponents
+        ...controlGalleryComponents,
+        ...templateGalleryComponents
     },
 
     setup() {
-        const currentComponent = ref<Component>(Object.values(galleryComponents)[0]);
+        const currentComponent = ref<Component>(Object.values(controlGalleryComponents)[0]);
 
         function getComponentFromHash(): void {
-            const component = galleryComponents[new URL(document.URL).hash.replace("#", "")];
+            const hashComponent = new URL(document.URL).hash.replace("#", "");
+            const component = controlGalleryComponents[hashComponent] ?? templateGalleryComponents[hashComponent];
 
             if (component) {
                 currentComponent.value = component;
@@ -2624,7 +2869,8 @@ export default defineComponent({
         return {
             currentComponent,
             convertComponentName,
-            galleryComponents
+            controlGalleryComponents,
+            templateGalleryComponents
         };
     },
 
@@ -2658,7 +2904,15 @@ export default defineComponent({
                 <h4>Components</h4>
 
                 <ul class="list-unstyled mb-0">
-                    <li v-for="(component, key) in galleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
+                    <li v-for="(component, key) in controlGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
+                        <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
+                    </li>
+                </ul>
+
+                <h4 class="mt-3">Templates</h4>
+
+                <ul class="list-unstyled mb-0">
+                    <li v-for="(component, key) in templateGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
                         <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
                     </li>
                 </ul>

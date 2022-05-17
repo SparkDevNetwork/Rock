@@ -396,7 +396,7 @@ export default defineComponent({
                 <template v-if="hasHeaderSecondaryActions">
                     <span class="action clickable" style="position: relative;">
                         <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-right">
                             <li v-for="action in headerSecondaryActions">
                                 <a href="#" @click.prevent.stop="onActionClick(action, $event)">
                                     <i :class="getHeaderSecondaryActionIconClass(action)"></i>
