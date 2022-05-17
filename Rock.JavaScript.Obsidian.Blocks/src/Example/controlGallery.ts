@@ -64,7 +64,6 @@ import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
-import Block from "@Obsidian/Templates/block";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -82,6 +81,8 @@ import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCol
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+
+// #region Gallery Support
 
 /**
  * Takes a gallery component's name and converts it to a name that is useful for the header and
@@ -302,6 +303,10 @@ export function getControlImportPath(fileName: string): string {
 export function getTemplateImportPath(fileName: string): string {
     return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Templates/${fileName}";`;
 }
+
+// #endregion
+
+// #region Control Gallery
 
 /** Demonstrates an attribute values container. */
 const attributeValuesContainerGallery = defineComponent({
@@ -2605,6 +2610,7 @@ const controlGalleryComponents: Record<string, Component> = [
         return newList;
     }, {});
 
+// #endregion
 
 // #region Template Gallery
 
