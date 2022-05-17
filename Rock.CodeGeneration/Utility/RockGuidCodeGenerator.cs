@@ -123,6 +123,9 @@ JOIN EntityType et
             var processedTypes = new HashSet<Type>();
             var nameSpaces = types.Select( a => a.Namespace ).Distinct().ToArray();
 
+            var regExHasEntityTypeGuidWithGuid = new Regex( @"(:?^|\s)\[.*EntityTypeGuid\s*\(.*(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}\s*""\s*\)" );
+            var regExHasEntityTypeGuidWithSystemGuidConst = new Regex( @"(:?^|\s)\[.*EntityTypeGuid\s*\(.*Rock.SystemGuid.*\s*\)" );
+
             Dictionary<Type, List<string>> possibleClassDeclarationsCache = new Dictionary<Type, List<string>>();
 
             foreach ( var fileName in GetRockGuidSearchFileNames( rootFolder ) )
@@ -207,8 +210,13 @@ JOIN EntityType et
                             guidLine = $"    [{rockGuidDeclaration}( \"{guidValue}\")]";
                         }
 
-                        var alreadyCodeGeneratedButNotCompiled = sourceFileText.Contains( guidLine );
-                        if ( !alreadyCodeGeneratedButNotCompiled )
+                        // If this type isn't in the EntityType table yet, and it doesn't have a EntityTypeGuid yet, see if we already code generated this with a new guid                     
+                        var alreadyCodeGeneratedWithSomeEntityTypeGuidButNotCompiled = sourceFileLines.Any( ln => regExHasEntityTypeGuidWithGuid.IsMatch( ln ) || regExHasEntityTypeGuidWithSystemGuidConst.IsMatch( ln ) );
+
+                        // Just in case, also look for exact guid 
+                        var alreadyCodeGeneratedWithSameGuidButNotCompiled = sourceFileText.Contains( guidLine );
+
+                        if ( !( alreadyCodeGeneratedWithSomeEntityTypeGuidButNotCompiled || alreadyCodeGeneratedWithSameGuidButNotCompiled ) )
                         {
                             sourceFileText = sourceFileText.Replace( sourceFileLine, $"{guidLine}{Environment.NewLine}{sourceFileLine}" );
                             File.WriteAllText( fileName, sourceFileText );
@@ -219,8 +227,8 @@ JOIN EntityType et
                         // Shouldn't happen since we are only processing Types that don't already have a RockGuid Attribute
                         if ( databaseRockGuidValue.IsNotNullOrWhiteSpace() && rockGuidAttributeValue != databaseRockGuidValue )
                         {
-                            sourceFileText = sourceFileText.Replace( $"[{attributeTypeFullName}(\"{rockGuidAttributeValue}\")]", $"{rockGuidDeclaration}(\"{databaseRockGuidSystemGuidName ?? databaseRockGuidValue}\")]" );
-                            sourceFileText = sourceFileText.Replace( $"[{attributeTypeName}(\"{rockGuidAttributeValue}\")]", $"[{rockGuidDeclaration}(\"{databaseRockGuidSystemGuidName ?? databaseRockGuidValue}\")]" );
+                            sourceFileText = sourceFileText.Replace( $"[{attributeTypeFullName}(\"{rockGuidAttributeValue}\")]", $"{rockGuidDeclaration}(\"{databaseRockGuidSystemGuidName ?? databaseRockGuidValue}\" )]" );
+                            sourceFileText = sourceFileText.Replace( $"[{attributeTypeName}(\"{rockGuidAttributeValue}\")]", $"[{rockGuidDeclaration}(\"{databaseRockGuidSystemGuidName ?? databaseRockGuidValue}\" )]" );
                         }
                     }
 
@@ -437,8 +445,8 @@ JOIN EntityType et
 
             var systemGuidLookup = GetSystemGuidLookup();
 
-            var regExHasBlockTypeGuidWithGuid = new Regex( @"(:?^|\s)\[.*BlockTypeGuid\s*\(.*(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}\s*""\s *\)" );
-            var regExHasBlockTypeGuidWithSystemGuidConst = new Regex( @"(:?^|\s)\[.*BlockTypeGuid\s*\(.*Rock.SystemGuid.*\s *\)" );
+            var regExHasBlockTypeGuidWithGuid = new Regex( @"(:?^|\s)\[.*BlockTypeGuid\s*\(.*(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}\s*""\s*\)" );
+            var regExHasBlockTypeGuidWithSystemGuidConst = new Regex( @"(:?^|\s)\[.*BlockTypeGuid\s*\(.*Rock.SystemGuid.*\s*\)" );
 
             foreach ( var blockTypeFromDatabase in blockTypesFromDatabase.Where( a => a.Path.IsNotNullOrWhiteSpace() ) )
             {
@@ -454,7 +462,7 @@ JOIN EntityType et
                 // Note that if block is in database with a different guid, it could be that the block hasn't been compiled/discovered yet.
                 // If so, we'll keep the guid the guid that is in the source code, and Rock will update the Guid in the Database when the block is compiled/discovered
                 // Reg finds pattern of a BlockType guid, but excludes from match if commented out (non whitespace before the [)
-                var alreadyHasBlockTypeGuidAttribute = blockTypeSourceLines.Any( ln => regExHasBlockTypeGuidWithGuid.IsMatch(ln) || regExHasBlockTypeGuidWithSystemGuidConst.IsMatch(ln) );
+                var alreadyHasBlockTypeGuidAttribute = blockTypeSourceLines.Any( ln => regExHasBlockTypeGuidWithGuid.IsMatch( ln ) || regExHasBlockTypeGuidWithSystemGuidConst.IsMatch( ln ) );
                 if ( alreadyHasBlockTypeGuidAttribute )
                 {
                     continue;

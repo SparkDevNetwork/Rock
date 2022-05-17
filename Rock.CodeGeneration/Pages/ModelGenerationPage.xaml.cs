@@ -21,6 +21,7 @@ using System.Windows.Input;
 using System.Xml;
 
 using Rock;
+using Rock.CodeGeneration.Utility;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
 
