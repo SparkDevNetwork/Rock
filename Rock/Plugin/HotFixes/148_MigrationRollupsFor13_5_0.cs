@@ -21,7 +21,7 @@ namespace Rock.Plugin.HotFixes
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 148, "1.13.4" )]
-    public class MigrationRolupsFor13_5_0 : Migration
+    public class MigrationRollupsFor13_5_0 : Migration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

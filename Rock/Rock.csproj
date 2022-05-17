@@ -1151,7 +1151,8 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.WebForms.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
-    <Compile Include="Plugin\HotFixes\148_MigrationRolupsFor13_5_0.cs" />
+    <Compile Include="Plugin\HotFixes\149_MigrationRollupsFor13_5_1.cs" />
+    <Compile Include="Plugin\HotFixes\148_MigrationRollupsFor13_5_0.cs" />
     <Compile Include="Plugin\HotFixes\147_MigrationRolupsFor13_1.cs" />
     <Compile Include="Plugin\HotFixes\146_UpdateStatementGeneratorDownloadLink.cs" />
     <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
