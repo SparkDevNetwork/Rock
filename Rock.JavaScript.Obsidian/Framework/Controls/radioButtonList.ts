@@ -16,9 +16,11 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
+import { updateRefValue } from "@Obsidian/Utility/component";
+import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
 
 export default defineComponent({
     name: "RadioButtonList",
@@ -30,36 +32,48 @@ export default defineComponent({
             type: Array as PropType<ListItemBag[]>,
             default: []
         },
+
         modelValue: {
             type: String as PropType<string>,
             default: ""
         },
+
         repeatColumns: {
             type: Number as PropType<number>,
             default: 0
         },
+
         horizontal: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        showBlankItem: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        compareValue: {
+            type: Function as PropType<((value: string, itemValue: string) => boolean)>,
+            default: defaultControlCompareValue
         }
     },
-    emits: [
-        "update:modelValue"
-    ],
-    data() {
-        return {
-            internalValue: ""
-        };
+
+    emits: {
+        "update:modelValue": (_value: string) => true
     },
-    computed: {
-        containerClasses (): string {
+
+    setup(props, { emit }) {
+        const internalValue = ref(props.modelValue);
+
+        const containerClasses = computed((): string => {
             const classes: string[] = [];
 
-            if (this.repeatColumns > 0) {
-                classes.push(`in-columns in-columns-${this.repeatColumns}`);
+            if (props.repeatColumns > 0) {
+                classes.push(`in-columns in-columns-${props.repeatColumns}`);
             }
 
-            if (this.horizontal) {
+            if (props.horizontal) {
                 classes.push("rockradiobuttonlist-horizontal");
             }
             else {
@@ -67,39 +81,76 @@ export default defineComponent({
             }
 
             return classes.join(" ");
-        }
-    },
-    methods: {
-        getItemUniqueId(uniqueId: Guid, item: ListItemBag): string {
+        });
+
+        const actualItems = computed((): ListItemBag[] => {
+            const items = [...props.items];
+
+            if (props.showBlankItem) {
+                items.splice(0, 0, {
+                    value: "",
+                    text: "None"
+                });
+            }
+
+            return items;
+        });
+
+        const getItemUniqueId = (uniqueId: Guid, item: ListItemBag): string => {
             const key = (item.value ?? "").replace(" ", "-");
 
             return `${uniqueId}-${key}`;
-        }
-    },
-    watch: {
-        internalValue() {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        modelValue: {
-            immediate: true,
-            handler() {
-                this.internalValue = this.modelValue;
+        };
+
+        const syncInternalValue = (): void => {
+            let value = props.modelValue;
+
+            if (value) {
+                // Ensure it is a valid value, if not then set it to blank.
+                const selectedOption = props.items.find(o => props.compareValue(value as string, o.value ?? "")) || null;
+
+                if (!selectedOption) {
+                    value = "";
+                }
+                else {
+                    value = selectedOption.value ?? "";
+                }
             }
-        }
+
+            updateRefValue(internalValue, value);
+        };
+
+        watch([() => props.modelValue, () => props.items], () => {
+            syncInternalValue();
+        });
+
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        });
+
+        syncInternalValue();
+
+        return {
+            actualItems,
+            containerClasses,
+            getItemUniqueId,
+            internalValue
+        };
     },
+
     template: `
 <RockFormField formGroupClasses="rock-radio-button-list" #default="{uniqueId}" name="radiobuttonlist" v-model="internalValue">
     <div class="control-wrapper">
         <div class="controls rockradiobuttonlist" :class="containerClasses">
             <span>
                 <template v-if="horizontal">
-                    <label v-for="item in items" class="radio-inline" :for="getItemUniqueId(uniqueId, item)">
+                    <label v-for="item in actualItems" class="radio-inline" :for="getItemUniqueId(uniqueId, item)">
                         <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
                         <span class="label-text">{{item.text}}</span>
                     </label>
                 </template>
                 <template v-else>
-                    <div v-for="item in items" class="radio">
+                    <div v-for="item in actualItems" class="radio">
                         <label :for="getItemUniqueId(uniqueId, item)">
                             <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
                             <span class="label-text">{{item.text}}</span>

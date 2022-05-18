@@ -81,8 +81,24 @@ import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCol
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
 
 // #region Gallery Support
+
+const displayStyleItems: ListItemBag[] = [
+    {
+        value: PickerDisplayStyle.Auto,
+        text: "Auto"
+    },
+    {
+        value: PickerDisplayStyle.List,
+        text: "List"
+    },
+    {
+        value: PickerDisplayStyle.Condensed,
+        text: "Condensed"
+    }
+];
 
 /**
  * Takes a gallery component's name and converts it to a name that is useful for the header and
@@ -2284,12 +2300,17 @@ const entityTypePickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
+        DropDownList,
         EntityTypePicker
     },
     setup() {
         return {
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
             includeGlobalOption: ref(false),
             multiple: ref(false),
+            showBlankItem: ref(false),
             value: ref({ value: EntityType.Person, text: "Default Person" }),
             importCode: getControlImportPath("entityTypePicker"),
             exampleCode: `<EntityTypePicker label="Entity Type" v-model="value" :multiple="false" :includeGlobalOption="false" />`
@@ -2302,11 +2323,38 @@ const entityTypePickerGallery = defineComponent({
     :exampleCode="exampleCode"
     enableReflection
 >
-    <EntityTypePicker label="Entity Type" v-model="value" :multiple="multiple" :includeGlobalOption="includeGlobalOption" />
+    <EntityTypePicker label="Entity Type"
+        v-model="value"
+        :multiple="multiple"
+        :includeGlobalOption="includeGlobalOption"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
 
     <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
-        <CheckBox label="Include Global Option" v-model="includeGlobalOption" />
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Include Global Option" v-model="includeGlobalOption" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+        </div>
     </template>
 </GalleryAndResult>`
 });

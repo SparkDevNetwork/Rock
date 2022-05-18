@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import { post } from "@Obsidian/Utility/http";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -34,15 +34,12 @@ export default defineComponent({
             required: false
         },
 
-        multiple: {
+        includeGlobalOption: {
             type: Boolean as PropType<boolean>,
             default: false
         },
 
-        includeGlobalOption: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        }
+        ...standardAsyncPickerProps
     },
 
     emits: {
@@ -53,6 +50,7 @@ export default defineComponent({
         // #region Values
 
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
+        const standardProps = useStandardAsyncPickerProps(props);
         const loadedItems = ref<ListItemBag[] | null>(null);
 
         // #endregion
@@ -114,15 +112,15 @@ export default defineComponent({
 
         return {
             actualItems,
-            internalValue
+            internalValue,
+            standardProps
         };
     },
 
     template: `
 <BaseAsyncPicker v-model="internalValue"
+    v-bind="standardProps"
     grouped
-    :items="actualItems"
-    :multiple="multiple"
-    showBlankItem />
+    :items="actualItems" />
 `
 });

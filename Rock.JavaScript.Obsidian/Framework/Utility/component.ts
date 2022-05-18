@@ -19,8 +19,8 @@ import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
 import { ControlLazyMode, ControlLazyModeType } from "@Obsidian/Types/Controls/controlLazyMode";
+import { PickerDisplayStyle, PickerDisplayStyleType } from "@Obsidian/Types/Controls/pickerDisplayStyle";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
-import { containsRequiredRule } from "./validationRules";
 
 type Prop = { [key: string]: unknown };
 type PropKey<T extends Prop> = Extract<keyof T, string>;
@@ -202,6 +202,11 @@ type StandardAsyncPickerProps = StandardRockFormFieldProps & {
     showBlankItem: {
         type: PropType<boolean>,
         default: false
+    },
+
+    displayStyle: {
+        type: PropType<PickerDisplayStyleType>,
+        default: PickerDisplayStyle.Auto
     }
 };
 
@@ -227,6 +232,11 @@ export const standardAsyncPickerProps: StandardAsyncPickerProps = {
     showBlankItem: {
         type: Boolean as PropType<boolean>,
         default: false
+    },
+
+    displayStyle: {
+        type: String as PropType<PickerDisplayStyleType>,
+        default: PickerDisplayStyle.Auto
     }
 };
 
@@ -243,7 +253,8 @@ function copyStandardAsyncPickerProps(source: ExtractPropTypes<StandardAsyncPick
     destination.enhanceForLongLists = source.enhanceForLongLists;
     destination.lazyMode = source.lazyMode;
     destination.multiple = source.multiple;
-    destination.showBlankItem = source.showBlankItem || !containsRequiredRule(source.rules);
+    destination.showBlankItem = source.showBlankItem;
+    destination.displayStyle = source.displayStyle;
 }
 
 /**
@@ -263,7 +274,8 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
         enhanceForLongLists: props.enhanceForLongLists,
         lazyMode: props.lazyMode,
         multiple: props.multiple,
-        showBlankItem: props.showBlankItem || !containsRequiredRule(props.rules)
+        showBlankItem: props.showBlankItem,
+        displayStyle: props.displayStyle
     });
 
     // Watch for changes in any of the standard props. Use deep for this so we
@@ -275,7 +287,7 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
     });
 
     // Watch for changes in our known list of props that might change.
-    watch([() => props.enhanceForLongLists, () => props.lazyMode, () => props.multiple, () => props.showBlankItem], () => {
+    watch([() => props.enhanceForLongLists, () => props.lazyMode, () => props.multiple, () => props.showBlankItem, () => props.displayStyle], () => {
         copyStandardAsyncPickerProps(props, propValues);
     });
 

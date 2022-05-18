@@ -98,6 +98,7 @@
     <Folder Include="System\" />
     <Folder Include="Tests\" />
     <Folder Include="Tests\Controls\" />
+    <Folder Include="Tests\Utility\" />
     <Folder Include="Tests\Rules\" />
     <Folder Include="Tests\Services\" />
   </ItemGroup>
@@ -175,6 +176,7 @@
     <TypeScriptCompile Include="Framework\Types\Controls\controlLazyMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\detailPanelMode.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\panelAction.d.ts" />
+    <TypeScriptCompile Include="Framework\Types\Controls\pickerDisplayStyle.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Controls\valueDetailListItem.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Reporting\comparisonValue.d.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\filterMode.d.ts" />
@@ -640,6 +642,7 @@
     <TypeScriptCompile Include="Framework\Utility\linq.ts" />
     <TypeScriptCompile Include="Framework\Utility\page.ts" />
     <TypeScriptCompile Include="Framework\Utility\rockDateTime.ts" />
+    <TypeScriptCompile Include="Tests\Utility\url.spec.ts" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">
