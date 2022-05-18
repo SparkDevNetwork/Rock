@@ -456,7 +456,7 @@
 
                     $li.addClass('rocktree-item')
                         .addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
-                        .addClass(isActive ? '' : 'is-inactive-not-allowed')
+                        .addClass(isActive ? '' : 'is-inactive')
                         .attr('data-id', node.id);
 
 
@@ -482,9 +482,7 @@
                         countInfoHtml = '<span class="label label-tree">' + node.countInfo + '</span>';
                     }
 
-                    var notAllowedClass = isActive ? '' : ' not-allowed';
-
-                    $li.append('<span class="rocktree-name' + notAllowedClass + '" title="' + nodeText.trim() + '"> <span class="rocktree-node-name-text">' + node.name + '</span>' + countInfoHtml + '</span>');
+                    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> <span class="rocktree-node-name-text">' + node.name + '</span>' + countInfoHtml + '</span>');
                     var $rockTreeNameNode = $li.find('.rocktree-name');
 
                     if (!self.options.categorySelection && node.isCategory) {
@@ -686,15 +684,11 @@
                 $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);
 
-                    var isInactive = $li.hasClass('is-inactive-not-allowed');
+                    var id = $li.attr('data-id');
 
-                    if (!isInactive) {
-                        var id = $li.attr('data-id');
-
-                        var nodeToAdd = _findNodeById(id, self.nodes);
-                        if (nodeToAdd) {
-                            selectedNodes.push(nodeToAdd);
-                        }
+                    var nodeToAdd = _findNodeById(id, self.nodes);
+                    if (nodeToAdd) {
+                       selectedNodes.push(nodeToAdd);
                     }
                 });
 
