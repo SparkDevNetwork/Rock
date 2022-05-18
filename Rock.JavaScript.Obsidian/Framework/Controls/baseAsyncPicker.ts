@@ -233,7 +233,13 @@ export default defineComponent({
             }
         });
 
-        if (props.lazyMode === ControlLazyMode.Eager || !isDropDownListStyle.value) {
+        if (Array.isArray(props.items)) {
+            // If we have an array of items, then just load it because there
+            // won't be any delay.
+            loadItems(true);
+        }
+        else if (props.lazyMode === ControlLazyMode.Eager || !isDropDownListStyle.value) {
+            // A radio list or checkbox list both require eager loading.
             const suspense = useSuspense();
 
             if (suspense) {
