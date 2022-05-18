@@ -1,4 +1,4 @@
-using Rock.Data;
+﻿using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -20,7 +20,7 @@ namespace Rock.Reporting.DataFilter.Interaction
     [Description( "Filter people based on their webpage view data" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Website Page View Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "8E1E9C39-3A5C-49E5-8CB4-356A7EEF4206")]
+    [Rock.SystemGuid.EntityTypeGuid( "8E1E9C39-3A5C-49E5-8CB4-356A7EEF4206" )]
     public class WebsitePageViewFilter : DataFilterComponent
     {
         #region Properties
@@ -181,7 +181,7 @@ console.log(websiteNames);
             rlbWebsites.ID = filterControl.GetChildControlInstanceName( "rlbWebsites" );
             rlbWebsites.CssClass = "js-websites";
             rlbWebsites.Items.Clear();
-            rlbWebsites.Items.AddRange( GetInteractionChannels().Select( x => new ListItem( x.Name, x.Id.ToString() ) ).ToArray() );
+            rlbWebsites.Items.AddRange( GetInteractionChannelListItems().ToArray() );
             filterControl.Controls.Add( rlbWebsites );
             controls.Add( rlbWebsites );
 
@@ -208,10 +208,13 @@ console.log(websiteNames);
             return controls.ToArray();
         }
 
-        private List<InteractionChannel> GetInteractionChannels()
+        private List<ListItem> GetInteractionChannelListItems()
         {
-            var interactionChannelService = new InteractionChannelService( new RockContext() );
-            var channels = interactionChannelService.Queryable().Where( x => x.ChannelTypeMediumValue.Value == "Website" ).ToList();
+            var channels = InteractionChannelCache.All()
+                .Where( x => x.ChannelTypeMediumValue.Value == "Website" )
+                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
+                .ToList();
+
             return channels;
         }
 
@@ -378,7 +381,7 @@ console.log(websiteNames);
                 }
             }
 
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>(personQry, parameterExpression, "p");
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personQry, parameterExpression, "p" );
         }
 
         #endregion
