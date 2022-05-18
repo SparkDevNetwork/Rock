@@ -246,7 +246,7 @@
                     <Rock:PanelWidget ID="wpScheduling" runat="server" Title="Scheduling">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbSchedulingEnabled" runat="server" Label="Scheduling Enabled" Help="Indicates whether scheduling is enabled for groups of this type."/>
+                                <Rock:RockCheckBox ID="cbSchedulingEnabled" runat="server" Label="Scheduling Enabled" AutoPostBack="true" OnCheckedChanged="cbSchedulingEnabled_CheckedChanged" Help="Indicates whether scheduling is enabled for groups of this type."/>
                             </div>
                             <div class="col-md-6">
                             </div>
