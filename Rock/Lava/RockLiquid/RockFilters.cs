@@ -51,6 +51,7 @@ using Rock.Web.UI;
 using UAParser;
 using Ical.Net;
 using Rock.Web.UI.Controls;
+using System.Web.UI;
 
 namespace Rock.Lava
 {
@@ -3831,6 +3832,34 @@ namespace Rock.Lava
             return stepsQuery.ToList();
         }
 
+        /// <summary>
+        /// Determines whether [is in security role] [the specified context].
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupId">The role Id.</param>
+        /// <returns>
+        ///   <c>true</c> if [is in security role] [the specified context]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsInSecurityRole( Context context, object input, int groupId )
+        {
+            var person = GetPerson( input );
+            var role = RoleCache.Get( groupId );
+
+            if ( person == null || role == null )
+            {
+                return false;
+            }
+
+            if ( !role.IsSecurityTypeGroup )
+            {
+                ExceptionLogService.LogException( $"RockFilter.IsInSecurityRole group with Id: {groupId} is not a SecurityRole" );
+                return false;
+            }
+
+            return role.IsPersonInRole( person.Guid );
+        }
+
         #endregion Person Filters
 
         #region Group Filters
@@ -5386,14 +5415,28 @@ namespace Rock.Lava
                  */
 
                 input = input.EscapeQuotes();
-                var quickReturnScript = "" +
+
+                if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
+                {
+                    var quickReturnScript = "" +
+                    $"function addQuickReturnAjax(typeName, typeOrder, input) {{" + Environment.NewLine +
+                    $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
+                    $"    Rock.personalLinks.addQuickReturn(typeName, typeOrder, input);" + Environment.NewLine +
+                    $"  }}" + Environment.NewLine +
+                    $"}};" + Environment.NewLine +
+                    $"addQuickReturnAjax('{typeName}', {typeOrder}, '{input}');";
+                    ScriptManager.RegisterStartupScript( rockPage, rockPage.GetType(), "AddQuickReturn", quickReturnScript, true );
+                }
+                else
+                {
+                    var quickReturnScript = "" +
                     $"$( document ).ready( function () {{" + Environment.NewLine +
                     $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
                     $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
                     $"  }}" + Environment.NewLine +
                     $"}});";
-
-                RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
+                    RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
+                }
             }
         }
 

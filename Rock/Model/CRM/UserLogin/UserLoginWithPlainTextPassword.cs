@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [DataContract]
     [NotMapped]
     [RockClientInclude("Use Rock.Client.UserLoginWithPlainTextPassword and set PlainTextPassword to set a new password as part of a api/UserLogins POST or PUT")]
+    [Rock.SystemGuid.EntityTypeGuid( "4DF3BA27-E6CD-4E6D-A5E4-E1617DD83185")]
     public class UserLoginWithPlainTextPassword : UserLogin
     {
         /// <summary>

@@ -21,7 +21,7 @@ import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import { defineComponent, inject } from "vue";
 import DatePicker from "@Obsidian/Controls/datePicker";
 import RockButton from "@Obsidian/Controls/rockButton";
-import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+import { newGuid } from "@Obsidian/Utility/guid";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import Alert from "@Obsidian/Controls/alert";
 import { asFormattedString } from "@Obsidian/Utility/numberUtils";
@@ -33,8 +33,8 @@ import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
 import GatewayControl, { GatewayControlModel, prepareSubmitPayment } from "@Obsidian/Controls/gatewayControl";
 import RockValidation from "@Obsidian/Controls/rockValidation";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
-import { FinancialAccount } from "@Obsidian/ViewModels/Entities/financialAccount";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { FinancialAccountBag } from "@Obsidian/ViewModels/Entities/financialAccountBag";
 
 const store = useStore();
 
@@ -43,7 +43,7 @@ export type ProcessTransactionArgs = {
     email: string;
     phoneNumber: string;
     phoneCountryCode: string;
-    accountAmounts: Record<Guid, number>;
+    accountAmounts: Record<string, number>;
     street1: string;
     street2: string;
     city: string;
@@ -134,8 +134,8 @@ export default defineComponent({
         totalAmount(): number {
             let total = 0;
 
-            for (const accountGuid in this.args.accountAmounts) {
-                total += this.args.accountAmounts[accountGuid];
+            for (const accountKey in this.args.accountAmounts) {
+                total += this.args.accountAmounts[accountKey];
             }
 
             return total;
@@ -149,7 +149,7 @@ export default defineComponent({
             return this.configurationValues["gatewayControl"] as GatewayControlModel;
         },
 
-        currentPerson(): Person | null {
+        currentPerson(): PersonBag | null {
             return store.state.currentPerson;
         },
 
@@ -163,8 +163,8 @@ export default defineComponent({
             return `${currentPerson.nickName ?? ""} ${currentPerson.lastName ?? ""}`;
         },
 
-        accounts(): FinancialAccount[] {
-            return this.configurationValues["financialAccounts"] as FinancialAccount[] || [];
+        accounts(): FinancialAccountBag[] {
+            return this.configurationValues["financialAccounts"] as FinancialAccountBag[] || [];
         },
 
         campuses(): ListItemBag[] {
@@ -188,8 +188,8 @@ export default defineComponent({
         accountAndCampusString(): string {
             const accountNames = [] as string[];
 
-            for (const accountGuid in this.args.accountAmounts) {
-                const account = this.accounts.find(a => areEqual(accountGuid, a.guid));
+            for (const accountKey in this.args.accountAmounts) {
+                const account = this.accounts.find(a => a.idKey === accountKey);
 
                 if (!account || !account.publicName) {
                     continue;
@@ -309,8 +309,8 @@ export default defineComponent({
         <template v-for="account in accounts">
             <CurrencyBox :label="account.publicName" v-model="args.accountAmounts[account.guid]" />
         </template>
-        <DropDownList label="Campus" v-model="args.campusGuid" :showBlankItem="false" :options="campuses" />
-        <DropDownList label="Frequency" v-model="args.frequencyValueGuid" :showBlankItem="false" :options="frequencies" />
+        <DropDownList label="Campus" v-model="args.campusGuid" :showBlankItem="false" :items="campuses" />
+        <DropDownList label="Frequency" v-model="args.frequencyValueGuid" :showBlankItem="false" :items="frequencies" />
         <DatePicker label="Process Gift On" v-model="args.giftDate" />
         <Alert alertType="validation" v-if="page1Error">{{page1Error}}</Alert>
         <RockButton btnType="primary" @click="onPageOneSubmit">Give Now</RockButton>

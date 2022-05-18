@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,6 +55,8 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "863E5638-B310-407E-A54E-2C069979881D")]
     public class CommunicationView : RockMobileBlockType
     {
         #region Block Attributes

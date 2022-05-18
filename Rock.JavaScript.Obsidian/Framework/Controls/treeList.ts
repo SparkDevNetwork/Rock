@@ -32,7 +32,7 @@ const treeItem = defineComponent({
             default: []
         },
 
-        allowMultiple: {
+        multiple: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -115,7 +115,7 @@ const treeItem = defineComponent({
          * Event handler for when this item is selected or deselected.
          */
         const onSelect = (): void => {
-            if (props.allowMultiple) {
+            if (props.multiple) {
                 if (props.item.value && !props.modelValue.includes(props.item.value)) {
                     emit("update:modelValue", [...props.modelValue, props.item.value]);
                 }
@@ -167,7 +167,7 @@ const treeItem = defineComponent({
         {{ itemName }}
     </span>
     <ul v-if="hasChildren" v-show="showChildren" class="rocktree-children" v-for="child in children">
-        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :allowMultiple="allowMultiple" />
+        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" />
     </ul>
 </li>
 `
@@ -186,7 +186,7 @@ export default defineComponent({
             default: []
         },
 
-        allowMultiple: {
+        multiple: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -232,7 +232,7 @@ export default defineComponent({
          */
         const onUpdateSelectedValues = (values: string[]): void => {
             // Pass the event up to the parent so it knows about the new selection.
-            if (props.allowMultiple) {
+            if (props.multiple) {
                 emit("update:modelValue", values);
             }
             else {
@@ -288,7 +288,7 @@ export default defineComponent({
     template: `
 <div>
     <ul class="rocktree">
-        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :allowMultiple="allowMultiple" />
+        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" />
     </ul>
 </div>
 `

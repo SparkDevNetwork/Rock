@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
     [BooleanField( "Continue On Error", "Should processing continue even if processing errors occur?", false, "", 2 )]
     [WorkflowAttribute( "Result Attribute", "An attribute to set to calculated saved account ID.", false, "", "", 3, null, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "EAE16533-A33B-40DF-BA7E-1CF5B07FBC5B")]
     public class GetDefaultSavedAccount : ActionComponent
     {
         /// <summary>

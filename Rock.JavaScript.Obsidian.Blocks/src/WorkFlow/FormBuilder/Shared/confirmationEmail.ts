@@ -101,7 +101,7 @@ export default defineComponent({
             <DropDownList v-model="recipientAttributeGuid"
                 label="Recipient"
                 rules="required"
-                :options="recipientOptions" />
+                :items="recipientOptions" />
         </div>
     </div>
 

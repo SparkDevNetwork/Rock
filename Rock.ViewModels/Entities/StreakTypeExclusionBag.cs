@@ -34,14 +34,6 @@ namespace Rock.ViewModels.Entities
     public partial class StreakTypeExclusionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ExclusionMap.
-        /// </summary>
-        /// <value>
-        /// The ExclusionMap.
-        /// </value>
-        public Byte[] ExclusionMap { get; set; }
-
-        /// <summary>
         /// Gets or sets the LocationId.
         /// </summary>
         /// <value>

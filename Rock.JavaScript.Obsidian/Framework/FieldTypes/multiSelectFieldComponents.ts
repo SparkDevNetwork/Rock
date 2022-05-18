@@ -120,8 +120,8 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<ListBox v-if="isListBox" v-model="internalValue" v-bind="listBoxConfigAttributes" :options="options" />
-<CheckBoxList v-else v-model="internalValue" v-bind="checkBoxListConfigAttributes" :options="options" />
+<ListBox v-if="isListBox" v-model="internalValue" v-bind="listBoxConfigAttributes" :items="options" />
+<CheckBoxList v-else v-model="internalValue" v-bind="checkBoxListConfigAttributes" :items="options" />
 `
 });
 
@@ -163,7 +163,7 @@ export const FilterComponent = defineComponent({
     },
 
     template: `
-<CheckBoxList v-model="internalValue" :options="options" horizontal />
+<CheckBoxList v-model="internalValue" :items="options" horizontal />
 `
 });
 
@@ -309,7 +309,7 @@ export const ConfigurationComponent = defineComponent({
     <DropDownList v-model="repeatDirection"
         label="Repeat Direction"
         help="The direction that the list options will be displayed."
-        :options="repeatDirectionOptions"
+        :items="repeatDirectionOptions"
         :showBlankItem="false" />
 </div>
 `

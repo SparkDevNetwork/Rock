@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AuthClient" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "CBD66C3A-959A-4A0B-926C-C3ADE43066B1")]
     public class AuthClient : Model<AuthClient>, IHasActiveFlag
     {
 

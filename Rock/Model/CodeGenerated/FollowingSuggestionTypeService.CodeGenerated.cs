@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new FollowingSuggestionTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Description = model.Description,
                 EntityNotificationFormatLava = model.EntityNotificationFormatLava,
                 EntityTypeId = model.EntityTypeId,

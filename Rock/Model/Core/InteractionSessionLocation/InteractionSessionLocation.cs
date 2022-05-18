@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionSessionLocation" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "790EC7AC-7443-466C-A07E-F702D86B9E1B")]
     public class InteractionSessionLocation : Model<InteractionSessionLocation>
     {
         #region Entity Properties

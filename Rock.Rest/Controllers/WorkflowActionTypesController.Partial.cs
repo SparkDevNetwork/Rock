@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,7 +27,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "e8c004e7-86f1-4ac0-9b43-c7f381ecd4ba" )]
     public partial class WorkflowActionTypesController
     {
         /// <summary>
@@ -37,7 +36,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/WorkflowActionTypes/GetChildren/{id}" )]
-        [RockGuid( "a1994526-1bc0-4cc6-a895-8c043d0fcd7c" )]
+        [Rock.SystemGuid.RestActionGuid( "A1994526-1BC0-4CC6-A895-8C043D0FCD7C" )]
         public IQueryable<TreeViewItem> GetChildren( string id )
         {
             var list = new List<TreeViewItem>();

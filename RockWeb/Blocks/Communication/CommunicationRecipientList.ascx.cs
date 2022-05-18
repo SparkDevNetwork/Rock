@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Communication
         Key = AttributeKey.DetailPage )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "EBEA5996-5695-4A42-A21C-29E11E711BE8" )]
     public partial class CommunicationRecipientList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

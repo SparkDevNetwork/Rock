@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// TaggedItems REST API
     /// </summary>
+    [RestControllerGuid( "6CDB23B0-F531-4969-937A-F5F9640D7921" )]
     public partial class TaggedItemsController : Rock.Rest.ApiController<Rock.Model.TaggedItem>
     {
         /// <summary>

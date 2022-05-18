@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Search.Person
     [Description( "Person Email Search" )]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Email")]
+    [Rock.SystemGuid.EntityTypeGuid( "00095C10-72C9-4C82-844E-AE8B146DE4F1")]
     public class Email : SearchComponent
     {
 

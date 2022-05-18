@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace Rock.Workflow.Action
     [IntegerField( "Unopened Timeout Length", "The amount of time in hours for the timeout.", false, order: 9 )]
     [WorkflowActivityType( "No Action Timeout Activity", "The activity to launch when no action is taken (e.g. no links are clicked)", false, "", "", 10 )]
     [IntegerField( "No Action Timeout Length", "The amount of time in hours for the timeout", false, order: 11 )]
+    [Rock.SystemGuid.EntityTypeGuid( "E5DDF7AA-CA76-4236-A8D5-88F66F864FE8")]
     public class SendEmailWithEvents : ActionComponent
     {
         /// <summary>

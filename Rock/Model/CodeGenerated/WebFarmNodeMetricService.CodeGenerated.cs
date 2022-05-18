@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new WebFarmNodeMetricBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 MetricType = ( int ) model.MetricType,
                 MetricValue = model.MetricValue,
                 MetricValueDateTime = model.MetricValueDateTime,

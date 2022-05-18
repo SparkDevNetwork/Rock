@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Communication.VideoEmbed
     [Export( typeof( VideoEmbedComponent ) )]
     [ExportMetadata( "ComponentName", "Vimeo" )]
     [Description( "Generates Vimeo video thumbnails for email." )]
+    [Rock.SystemGuid.EntityTypeGuid( "7CF5BEFE-B9EB-4D70-8FE9-76965D7F2333")]
     public class VimeoVideoEmbed : VideoEmbedComponent
     {
         /// <summary>

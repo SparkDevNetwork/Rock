@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new WorkflowActionFormSectionBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Description = model.Description,
                 Order = model.Order,
                 SectionTypeValueId = model.SectionTypeValueId,

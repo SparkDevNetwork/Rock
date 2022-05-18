@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// EventItemOccurrenceChannelItems REST API
     /// </summary>
+    [RestControllerGuid( "5A6678CE-4446-4384-9017-B70996882B8B" )]
     public partial class EventItemOccurrenceChannelItemsController : Rock.Rest.ApiController<Rock.Model.EventItemOccurrenceChannelItem>
     {
         /// <summary>

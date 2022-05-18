@@ -30,23 +30,39 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<ListItemBag | null>
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        securityGrantToken: {
+            type: String as PropType<string | null>,
+            required: false
         }
     },
 
+    emits: {
+        "update:modelValue": (_value: ListItemBag | ListItemBag[] | null) => true
+    },
+
     setup(props, { emit }) {
-        const internalValue = ref(props.modelValue ? [props.modelValue] : []);
+        const internalValue = ref(props.modelValue ?? null);
 
         // Configure the item provider with our settings. These are not reactive
         // since we don't do lazy loading so there is no point.
         const itemProvider = new LocationTreeItemProvider();
+        itemProvider.securityGrantToken = props.securityGrantToken;
 
         watch(internalValue, () => {
-            emit("update:modelValue", internalValue.value.length > 0 ? internalValue.value[0] : undefined);
+            emit("update:modelValue", internalValue.value);
         });
 
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue, props.modelValue ? [props.modelValue] : []);
+            updateRefValue(internalValue, props.modelValue ?? null);
         });
 
         return {
@@ -60,6 +76,7 @@ export default defineComponent({
     formGroupClasses="location-item-picker"
     iconCssClass="fa fa-home"
     :provider="itemProvider"
+    :multiple="multiple"
 />
 `
 });

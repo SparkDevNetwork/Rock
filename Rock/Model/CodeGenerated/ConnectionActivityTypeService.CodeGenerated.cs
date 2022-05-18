@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new ConnectionActivityTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ConnectionTypeId = model.ConnectionTypeId,
                 IsActive = model.IsActive,
                 Name = model.Name,

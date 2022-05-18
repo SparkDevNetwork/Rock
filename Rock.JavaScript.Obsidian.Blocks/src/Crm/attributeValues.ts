@@ -72,7 +72,7 @@ export default defineComponent({
         const invokeBlockAction = useInvokeBlockAction();
         const attributes = ref(configurationValues.attributes);
         const attributeValues = ref(configurationValues.values);
-        const personGuid = computed(() => store.personContext?.guid || null);
+        const personKey = computed(() => store.personContext?.idKey || null);
         const isLoading = ref(false);
         const isEditMode = ref(false);
         const errorMessage = ref("");
@@ -99,7 +99,7 @@ export default defineComponent({
             //}
 
             //const result = await invokeBlockAction<PublicAttributeValue[]>("SaveAttributeValues", {
-            //    personGuid: personGuid.value,
+            //    personKey: personKey.value,
             //    keyValueMap
             //});
 
@@ -142,9 +142,9 @@ export default defineComponent({
     <template #default>
         <Loading :isLoading="isLoading">
             <Alert v-if="errorMessage" alertType="warning">{{ errorMessage }}</Alert>
-            <AttributeValuesContainer v-if="!isEditMode" :attributeValues="attributeValues" :showEmptyValues="false" />
+            <AttributeValuesContainer v-if="!isEditMode" :attributeValues="attributeValues" :showEmptyValues="false" :showCategoryLabel="false" />
             <RockForm v-else @submit="doSave">
-                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :showAbbreviatedName="useAbbreviatedNames" :showCategoryLabel="false" />
                 <div class="actions">
                     <RockButton btnType="primary" btnSize="xs" type="submit">Save</RockButton>
                     <RockButton btnType="link" btnSize="xs" @click="goToViewMode">Cancel</RockButton>

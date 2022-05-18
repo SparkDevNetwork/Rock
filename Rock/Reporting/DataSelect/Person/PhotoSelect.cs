@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Photo of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Photo" )]
+    [Rock.SystemGuid.EntityTypeGuid( "C2EE52FA-044F-47DE-A398-18F8E3D9311D")]
     public class PhotoSelect : DataSelectComponent
     {
         #region Properties

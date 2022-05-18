@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionRequestWorkflow" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONNECTION_REQUEST_WORKFLOW )]
     public partial class ConnectionRequestWorkflow : Model<ConnectionRequestWorkflow>
     {
 

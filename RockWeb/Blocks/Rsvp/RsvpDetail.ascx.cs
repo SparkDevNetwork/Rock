@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.RSVP
         DefaultValue = Rock.SystemGuid.DefinedType.GROUP_RSVP_DECLINE_REASON,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.RSVP_DETAIL )]
     public partial class RSVPDetail : RockBlock
     {
         #region Keys

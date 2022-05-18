@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,7 @@ namespace Rock.Badge.Component
   <i class='badge-icon fa fa-heartbeat' style='color: {{ iconColor }}'></i>
 </div>
 " )]
+    [Rock.SystemGuid.EntityTypeGuid( "2F3E57EC-D126-4F0D-B1E5-C78E220C2060")]
     public class Giving : BadgeComponent
     {
         /// <summary>

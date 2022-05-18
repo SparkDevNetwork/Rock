@@ -25,11 +25,11 @@ import PersonPicker from "@Obsidian/Controls/personPicker";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
 import TextBox from "@Obsidian/Controls/textBox";
-import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
-import { DefinedType } from "@Obsidian/SystemGuids";
-import { updateRefValue } from "@Obsidian/Utility/component";
+import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";import { updateRefValue } from "@Obsidian/Utility/component";
+import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
+import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { CampusDetailOptionsBag, CampusBag } from "./types";
+import { DefinedType } from "@Obsidian/SystemGuids";
 
 export default defineComponent({
     name: "Core.CampusDetail.EditPanel",
@@ -66,7 +66,7 @@ export default defineComponent({
     setup(props, { emit }) {
         // #region Values
 
-        const attributes = ref(props.modelValue.attributes ?? []);
+        const attributes = ref(props.modelValue.attributes ?? {});
         const attributeValues = ref(props.modelValue.attributeValues ?? {});
         const campusStatusValue = ref(props.modelValue.campusStatusValue ?? null);
         const campusTypeValue = ref(props.modelValue.campusTypeValue ?? null);
@@ -76,7 +76,7 @@ export default defineComponent({
         const location = ref(props.modelValue.location ?? null);
         const name = ref(props.modelValue.name ?? "");
         const phoneNumber = ref(props.modelValue.phoneNumber ?? "");
-        const serviceTimes = ref((props.modelValue.serviceTimes ?? []).map((s): KeyValueItem => ({key: s.value, value: s.text})));
+        const serviceTimes = ref((props.modelValue.serviceTimes ?? []).map((s): KeyValueItem => ({ key: s.value, value: s.text })));
         const shortCode = ref(props.modelValue.shortCode ?? "");
         const timeZoneId = ref(props.modelValue.timeZoneId ?? "");
         const url = ref(props.modelValue.url ?? "");
@@ -93,6 +93,7 @@ export default defineComponent({
             return props.options.timeZoneOptions ?? [];
         });
 
+
         // #endregion
 
         // #region Functions
@@ -103,10 +104,10 @@ export default defineComponent({
 
         // #endregion
 
-        // Watch for changes in our model value and update all our values.
+        // Watch for parental changes in our model value and update all our values.
         watch(() => props.modelValue, () => {
-            updateRefValue(attributes, props.modelValue.attributes ?? []);
-            updateRefValue(attributeValues, props.modelValue.attributeValues ?? []);
+            updateRefValue(attributes, props.modelValue.attributes ?? {});
+            updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
             updateRefValue(campusStatusValue, props.modelValue.campusStatusValue ?? null);
             updateRefValue(campusTypeValue, props.modelValue.campusTypeValue ?? null);
             updateRefValue(description, props.modelValue.description ?? "");
@@ -121,6 +122,8 @@ export default defineComponent({
             updateRefValue(url, props.modelValue.url ?? "");
         });
 
+        // Determines which values we want to track changes on (defined in the
+        // array) and then emit a new object defined as newValue.
         watch([attributeValues, campusStatusValue, campusTypeValue, description, isActive, leaderPersonAlias, location, name, phoneNumber, serviceTimes, shortCode, timeZoneId, url], () => {
             const newValue: CampusBag = {
                 ...props.modelValue,
@@ -133,7 +136,7 @@ export default defineComponent({
                 location: location.value,
                 name: name.value,
                 phoneNumber: phoneNumber.value,
-                serviceTimes: serviceTimes.value.map((s): ListItemBag => ({value: s.key ?? "", text: s.value ?? ""})),
+                serviceTimes: serviceTimes.value.map((s): ListItemBag => ({ value: s.key ?? "", text: s.value ?? "" })),
                 shortCode: shortCode.value,
                 timeZoneId: timeZoneId.value,
                 url: url.value
@@ -196,7 +199,7 @@ export default defineComponent({
                 v-model="timeZoneId"
                 label="Time Zone"
                 help="The time zone you want certain time calculations of the Campus to operate in. Leave this blank to use the default Rock TimeZone."
-                :options="timeZoneOptions" />
+                :items="timeZoneOptions" />
 
             <PersonPicker v-model="leaderPersonAlias"
                 label="Campus Leader" />
@@ -225,7 +228,7 @@ export default defineComponent({
         </div>
     </div>
 
-    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode />
+    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 </fieldset>
 `
 });

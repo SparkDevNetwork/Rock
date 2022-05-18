@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Workflow Set Name" )]
 
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The value to use for the workflow's name. <span class='tip tip-lava'></span>", false, "", "", 1, "NameValue" )]
+    [Rock.SystemGuid.EntityTypeGuid( "36005473-BD5D-470B-B28D-98E6D7ED808D")]
     public class SetWorkflowName : ActionComponent
     {
         /// <summary>

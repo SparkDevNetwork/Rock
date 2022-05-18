@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -188,6 +188,7 @@ namespace RockWeb.Blocks.Security
 
     #endregion "Block Attributes"
 
+    [Rock.SystemGuid.BlockTypeGuid( "7B83D513-1178-429E-93FF-E76430E038E4" )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         private static class AttributeKey

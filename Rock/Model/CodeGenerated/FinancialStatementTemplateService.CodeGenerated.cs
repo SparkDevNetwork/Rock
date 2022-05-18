@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new FinancialStatementTemplateBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Description = model.Description,
                 FooterSettingsJson = model.FooterSettingsJson,
                 IsActive = model.IsActive,

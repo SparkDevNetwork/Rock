@@ -18,11 +18,11 @@
 import { Guid } from "@Obsidian/Types";
 import { IEntity } from "@Obsidian/ViewModels/entity";
 import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 
 export type State = {
     areSecondaryBlocksShown: boolean;
-    currentPerson: Person | null;
+    currentPerson: PersonBag | null;
     pageParameters: Record<string, unknown>;
     contextEntities: Record<string, IEntity>;
     pageId: number;

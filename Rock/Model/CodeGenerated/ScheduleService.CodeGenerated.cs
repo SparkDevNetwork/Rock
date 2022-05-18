@@ -125,9 +125,7 @@ namespace Rock.Model
 
             var viewModel = new ScheduleBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AutoInactivateWhenComplete = model.AutoInactivateWhenComplete,
                 CategoryId = model.CategoryId,
                 CheckInEndOffsetMinutes = model.CheckInEndOffsetMinutes,
@@ -140,7 +138,6 @@ namespace Rock.Model
                 Name = model.Name,
                 Order = model.Order,
                 WeeklyDayOfWeek = ( int? ) model.WeeklyDayOfWeek,
-                WeeklyTimeOfDay = model.WeeklyTimeOfDay,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// StepTypes REST API
     /// </summary>
+    [RestControllerGuid( "10BEAC38-2C3D-4E26-A44D-8093F30ED76E" )]
     public partial class StepTypesController : Rock.Rest.ApiController<Rock.Model.StepType>
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialBatch" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_BATCH )]
     public partial class FinancialBatch : Model<FinancialBatch>
     {
         #region Entity Properties

@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AuthScopeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 IsActive = model.IsActive,
                 IsSystem = model.IsSystem,
                 Name = model.Name,

@@ -15,29 +15,12 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Utility
 {
     public abstract class EntityBagBase : IViewModelWithAttributes
     {
-        /// <summary>
-        /// Gets or sets the Id.
-        /// </summary>
-        /// <value>
-        /// The Id.
-        /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Guid.
-        /// </summary>
-        /// <value>
-        /// The Guid.
-        /// </value>
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Gets or sets the identifier key of this entity.
         /// </summary>

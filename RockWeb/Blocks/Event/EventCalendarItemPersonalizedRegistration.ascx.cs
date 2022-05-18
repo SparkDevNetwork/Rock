@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -76,6 +76,7 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKeys.RegistrantListLavaTemplate,
         DefaultValue = defaultRegistrantListLavaTemplate,
         Order = 4 )]
+    [Rock.SystemGuid.BlockTypeGuid( "1A1FFACC-D74C-4061-B6A7-34150C462DB7" )]
     public partial class EventCalendarItemPersonalizedRegistration : Rock.Web.UI.RockBlock
     {
         /// <summary>

@@ -87,7 +87,7 @@ export const EditComponent = defineComponent({
         };
     },
     template: `
-<DropDownList v-if="isNamedPicker" v-model="internalValue" :options="dropDownListOptions" />
+<DropDownList v-if="isNamedPicker" v-model="internalValue" :items="dropDownListOptions" />
 <ColorPicker v-else v-model="internalValue" />
 `
 });
@@ -180,7 +180,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <DropDownList v-model="colorControlType" :options="typeList" :show-blank-item="false" label="Selection Type" help="The type of control to select color" />
+    <DropDownList v-model="colorControlType" :items="typeList" :show-blank-item="false" label="Selection Type" help="The type of control to select color" />
 </div>
 `
 });

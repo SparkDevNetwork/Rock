@@ -26,7 +26,7 @@ export default defineComponent({
         RockFormField
     },
     props: {
-        options: {
+        items: {
             type: Array as PropType<ListItemBag[]>,
             default: []
         },
@@ -70,8 +70,8 @@ export default defineComponent({
         }
     },
     methods: {
-        getOptionUniqueId(uniqueId: Guid, option: ListItemBag): string {
-            const key = (option.value ?? "").replace(" ", "-");
+        getItemUniqueId(uniqueId: Guid, item: ListItemBag): string {
+            const key = (item.value ?? "").replace(" ", "-");
 
             return `${uniqueId}-${key}`;
         }
@@ -93,16 +93,16 @@ export default defineComponent({
         <div class="controls rockradiobuttonlist" :class="containerClasses">
             <span>
                 <template v-if="horizontal">
-                    <label v-for="option in options" class="radio-inline" :for="getOptionUniqueId(uniqueId, option)">
-                        <input :id="getOptionUniqueId(uniqueId, option)" :name="uniqueId" type="radio" :value="option.value" v-model="internalValue" />
-                        <span class="label-text">{{option.text}}</span>
+                    <label v-for="item in items" class="radio-inline" :for="getItemUniqueId(uniqueId, item)">
+                        <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
+                        <span class="label-text">{{item.text}}</span>
                     </label>
                 </template>
                 <template v-else>
-                    <div v-for="option in options" class="radio">
-                        <label :for="getOptionUniqueId(uniqueId, option)">
-                            <input :id="getOptionUniqueId(uniqueId, option)" :name="uniqueId" type="radio" :value="option.value" v-model="internalValue" />
-                            <span class="label-text">{{option.text}}</span>
+                    <div v-for="item in items" class="radio">
+                        <label :for="getItemUniqueId(uniqueId, item)">
+                            <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" />
+                            <span class="label-text">{{item.text}}</span>
                         </label>
                     </div>
                 </template>

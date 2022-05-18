@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Prayer
     [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-html'>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 12 )]
 
     [LinkedPage( "Homepage", "Homepage of the kiosk.", true, "", "", 13 )]
+    [Rock.SystemGuid.BlockTypeGuid( "9D8ED334-F1F5-4377-9E27-B8C0852CF34D" )]
     public partial class PrayerRequestEntryKiosk : RockBlock
     {
         #region Properties

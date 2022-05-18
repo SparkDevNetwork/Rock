@@ -19,8 +19,8 @@ import { shallowReadonly, reactive } from "vue";
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { IEntity } from "@Obsidian/ViewModels/entity";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
-import { Group } from "@Obsidian/ViewModels/Entities/group";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { GroupBag } from "@Obsidian/ViewModels/Entities/groupBag";
 
 // This needs to move elsewhere probably.
 export type PageDebugTiming = {
@@ -94,12 +94,12 @@ class Store {
         return state.contextEntities[type] || null;
     }
 
-    get personContext(): Person | null {
-        return <Person | null>this.getContextEntity("person");
+    get personContext(): PersonBag | null {
+        return <PersonBag | null>this.getContextEntity("person");
     }
 
-    get groupContext(): Group | null {
-        return <Group | null>this.getContextEntity("group");
+    get groupContext(): GroupBag | null {
+        return <GroupBag | null>this.getContextEntity("group");
     }
 
     getPageParameter(key: string): unknown {

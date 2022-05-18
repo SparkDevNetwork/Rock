@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new DocumentTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 BinaryFileTypeId = model.BinaryFileTypeId,
                 DefaultDocumentNameTemplate = model.DefaultDocumentNameTemplate,
                 EntityTypeId = model.EntityTypeId,

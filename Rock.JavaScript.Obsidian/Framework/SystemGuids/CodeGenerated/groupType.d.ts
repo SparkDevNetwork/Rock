@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Group Types */
 export const enum GroupType {
     /** Security Role group type guid */
     GrouptypeSecurityRole = "AECE949F-704C-483E-A4FB-93D5E4720C4C",
@@ -57,4 +58,3 @@ export const enum GroupType {
     /** Campus Team group type guid */
     GrouptypeCampusTeam = "BADD7A6C-1FB3-4E11-A721-6D1377C6958C",
 }
-

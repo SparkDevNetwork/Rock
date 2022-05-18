@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Zone Blocks" )]
     [Category( "Administration" )]
     [Description( "Displays the blocks for a given zone." )]
+    [Rock.SystemGuid.BlockTypeGuid( "72CAAF77-A015-45F0-A549-F941B9AB4D75" )]
     public partial class ZoneBlocks : RockBlock
     {
         #region Fields

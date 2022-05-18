@@ -169,7 +169,7 @@ export const ConfigurationComponent = defineComponent({
     <DropDownList v-model="fileType"
         label="File Type"
         help="File type to use to store and retrieve the file. New file types can be configured under 'Admins Tools &gt; General Settings &gt; File Types'."
-        :options="fileTypeOptions" />
+        :items="fileTypeOptions" />
 </div>
 `
 });

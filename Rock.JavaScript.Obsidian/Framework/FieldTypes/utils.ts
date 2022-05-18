@@ -332,7 +332,7 @@ export function getStandardFilterComponent(comparisonLabelOrTypes: ComparisonTyp
         template: `
 <FieldFilterContainer :compareLabel="compareLabel">
     <template v-if="hasCompareComponent" #compare>
-        <DropDownList v-model="internalComparisonType" :options="comparisonTypeOptions" :showBlankItem="isTypeOptional" />
+        <DropDownList v-model="internalComparisonType" :items="comparisonTypeOptions" :showBlankItem="isTypeOptional" />
     </template>
 
     <ValueComponent v-if="hasValueComponent" v-model="internalComparisonValue" :configurationValues="configurationValues" :comparisonType="comparisonType" />

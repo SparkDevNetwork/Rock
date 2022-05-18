@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new IdentityVerificationCodeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Code = model.Code,
                 LastIssueDateTime = model.LastIssueDateTime,
                 CreatedDateTime = model.CreatedDateTime,

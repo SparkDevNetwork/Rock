@@ -19,7 +19,9 @@
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <Rock:RockBoundField DataField="PersistedScheduleIntervalMinutes" HeaderText="Persisted Interval" SortExpression="PersistedScheduleIntervalMinutes" />
+                            <Rock:RockLiteralField HeaderText="Persisted Interval" SortExpression="PersistedScheduleIntervalMinutes">
+                                <ItemTemplate><%# FormatFriendlyMinutesDuration( (int)Eval("PersistedScheduleIntervalMinutes") ) %></ItemTemplate>
+                            </Rock:RockLiteralField>
                             <Rock:RockBoundField DataField="PersistedLastRunDurationMilliseconds" HeaderText="Time to Build (ms)" NullDisplayText="-" DataFormatString="{0:F0}" SortExpression="PersistedLastRunDurationMilliseconds" />
                             <Rock:RockBoundField DataField="RunCount" HeaderText="Run Count" NullDisplayText="-" SortExpression="RunCount" />
                             <Rock:DateTimeField DataField="LastRunDateTime" HeaderText="Last Run Date Time" NullDisplayText="-" SortExpression="LastRunDateTime" />

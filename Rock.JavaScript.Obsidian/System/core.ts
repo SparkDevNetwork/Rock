@@ -23,11 +23,11 @@ declare type PackageMap = {
  * Describes the export names from the vendor bundle.
  */
 const vendorMaps: Record<string, string> = {
+    "ant-design-vue": "AntDesignVue",
     "axios": "Axios",
     "luxon": "Luxon",
     "mitt": "Mitt",
     "vue": "Vue",
-    "vue-select": "VueSelect",
     "tslib": "TSLib"
 };
 

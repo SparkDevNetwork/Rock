@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Finance
         AllowMultiple = true,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "C96479B6-E309-4B1A-B024-1F1276122A13" )]
     public partial class BenevolenceTypeDetail : Rock.Web.UI.RockBlock
     {
         #region Variables

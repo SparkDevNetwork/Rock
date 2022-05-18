@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Categories */
 export const enum Category {
     /** Communication Segments Dataview Category Guid */
     DataviewCommunicationSegments = "FF7081F8-7223-43D4-BE28-CB030DC4E13B",
@@ -103,4 +104,3 @@ export const enum Category {
     /** Hosting Metrics Metric Category Guid */
     MetricHostingMetrics = "370FBBD8-7766-4B3F-81A9-F13EE819A832",
 }
-

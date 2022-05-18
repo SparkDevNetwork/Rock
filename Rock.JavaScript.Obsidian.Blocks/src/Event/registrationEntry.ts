@@ -30,7 +30,7 @@ import { newGuid } from "@Obsidian/Utility/guid";
 import { List } from "@Obsidian/Utility/linq";
 import Page from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import RegistrationEntryIntro from "./RegistrationEntry/intro.partial";
 import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial";
 import RegistrationEntryRegistrationEnd from "./RegistrationEntry/registrationEnd.partial";
@@ -194,7 +194,7 @@ export default defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson(): Person | null {
+        currentPerson(): PersonBag | null {
             return store.state.currentPerson;
         },
 

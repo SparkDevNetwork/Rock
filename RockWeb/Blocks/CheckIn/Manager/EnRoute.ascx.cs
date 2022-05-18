@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         DefaultBooleanValue = false,
         Order = 3 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CHECK_IN_MANAGER_EN_ROUTE )]
     public partial class EnRoute : RockBlock
     {
         #region Keys

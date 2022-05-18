@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Finance
 
     #endregion  Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "0A813EC3-EC36-499B-9EBD-C3388DC7F49D" )]
     public partial class GivingAutomationAlerts : RockBlock
     {
         #region Attribute Keys

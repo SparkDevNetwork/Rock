@@ -28,7 +28,7 @@ export default defineComponent({
             default: ""
         },
 
-        options: {
+        items: {
             type: Array as PropType<ListItemBag[]>,
             default: []
         }
@@ -70,7 +70,7 @@ export default defineComponent({
 
     template: `
 <div class="btn-group btn-group-xs mb-2" role="group">
-    <button v-for="item in options" :class="getButtonClass(item)" :key="item.value" type="button" @click="onItemClick(item)">{{ item.text }}</button>
+    <button v-for="item in items" :class="getButtonClass(item)" :key="item.value" type="button" @click="onItemClick(item)">{{ item.text }}</button>
 </div>
 `
 });

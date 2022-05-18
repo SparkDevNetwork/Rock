@@ -1,0 +1,86 @@
+﻿<Page x:Class="Rock.CodeGeneration.Pages.MenuPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Rock.CodeGeneration.Pages"
+      xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Main Menu">
+
+    <StackPanel>
+        <Grid Margin="5">
+            <Grid.Resources>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Margin" Value="5" />
+                    <Setter Property="Padding" Value="10" />
+                </Style>
+                <Style TargetType="{x:Type fa:IconBlock}">
+                    <Setter Property="FontSize" Value="20" />
+                </Style>
+            </Grid.Resources>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Name="ModelGenerationButton"
+                Grid.Row="0"
+                Grid.Column="0"
+                Click="ModelGenerationButton_Click">
+                <StackPanel>
+                    <fa:IconBlock Icon="Magic" />
+                    <TextBlock Text="Model Generation" />
+                </StackPanel>
+            </Button>
+
+            <Button Name="ObsidianViewModelsButton"
+                Grid.Row="0"
+                Grid.Column="1"
+                Click="ObsidianViewModelsButton_Click">
+                <StackPanel>
+                    <fa:IconBlock Icon="Js" />
+                    <TextBlock Text="Obsidian View Models" />
+                </StackPanel>
+            </Button>
+
+            <Button Name="ObsidianEnumsButton"
+                Grid.Row="0"
+                Grid.Column="2"
+                Click="ObsidianEnumsButton_Click">
+                <StackPanel>
+                    <fa:IconBlock Icon="ListOl" />
+                    <TextBlock Text="Obsidian Enums" />
+                </StackPanel>
+            </Button>
+
+            <Button Name="ObsidianSystemGuidsButton"
+                Grid.Row="1"
+                Grid.Column="0"
+                Click="ObsidianSystemGuidsButton_Click">
+                <StackPanel>
+                    <fa:IconBlock Icon="Fingerprint" />
+                    <TextBlock Text="Obsidian System Guids" />
+                </StackPanel>
+            </Button>
+
+            <Button Name="ObsidianDetailBlock"
+                Grid.Row="1"
+                Grid.Column="1"
+                Click="ObsidianDetailBlock_Click">
+                <StackPanel>
+                    <fa:IconBlock Icon="Th" />
+                    <TextBlock Text="Obsidian Detail Block" />
+                </StackPanel>
+            </Button>
+        </Grid>
+    </StackPanel>
+</Page>

@@ -131,18 +131,16 @@ export const FieldFilterRuleRow = defineComponent({
     },
 
     template: `
-    <div class="d-flex form-group">
-        <div class="flex-fill">
-            <div class="row form-row">
-                <div class="filter-rule-comparefield col-md-4">
-                    <DropDownList :options="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
-                </div>
-                <div class="filter-rule-fieldfilter col-md-8">
-                    <RockAttributeFilter :attribute="currentAttribute" v-model="comparisonValue" :filter-mode="1" required />
-                </div>
+    <div class="filter-rule">
+        <div class="filter-rule-fields row form-row">
+            <div class="filter-rule-comparefield col-xs-12 col-md-4">
+                <DropDownList :items="attributeList" v-model="attributeGuid" :show-blank-item="false"  />
+            </div>
+            <div class="filter-rule-fieldfilter col-xs-12 col-md-8">
+                <RockAttributeFilter :attribute="currentAttribute" v-model="comparisonValue" :filter-mode="1" required />
             </div>
         </div>
-        <div class="flex-shrink-0 ml-2">
+        <div class="filter-rule-remove">
             <button class="btn btn-danger btn-square" @click.prevent="onRemoveRuleClick"><i class="fa fa-times"></i></button>
         </div>
     </div>

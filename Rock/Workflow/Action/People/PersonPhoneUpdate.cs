@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,7 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Unlisted", "Attribute Value", "The value or attribute value to indicate if number should be unlisted. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 4, "Unlisted" )]
     [WorkflowTextOrAttribute( "Messaging Enabled", "Attribute Value", "The value or attribute value to indicate if messaging (SMS) should be enabled for phone. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "MessagingEnabled" )]
     [BooleanField( "Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current phone number?", true, order: 6 )]
+    [Rock.SystemGuid.EntityTypeGuid( "65DFC198-B9F5-45CB-839D-AF30791C4FBF")]
     public class PersonPhoneUpdate : ActionComponent
     {
         /// <summary>

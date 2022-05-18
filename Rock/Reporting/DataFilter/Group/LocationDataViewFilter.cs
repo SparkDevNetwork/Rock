@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups by address using a set of locations identified by a Location Data View" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Location Data View Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "D8AD4131-249B-495D-8277-407607D5FDC5")]
     public class LocationDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Group, Rock.Model.Location>
     {
         #region Overrides

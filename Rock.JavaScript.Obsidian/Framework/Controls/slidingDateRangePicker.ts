@@ -185,12 +185,12 @@ export default defineComponent({
     name="slidingdaterange">
     <template #default="{uniqueId}">
         <div :id="uniqueId" class="form-control-group">
-            <DropDownList v-model="rangeType" :options="rangeTypeOptions" showBlankItem class="input-width-md slidingdaterange-select" />
+            <DropDownList v-model="rangeType" :items="rangeTypeOptions" showBlankItem class="input-width-md slidingdaterange-select" />
 
             <input v-if="isNumberVisible" v-model="timeValue" class="form-control input-width-sm slidingdaterange-number" type="number" pattern="[0-9]*]" />
 
             <template v-if="isTimeUnit">
-                <DropDownList v-model="timeUnit" :options="timeUnitOptions" class="form-control input-width-md slidingdaterange-timeunits-plural" :showBlankItem="false" />
+                <DropDownList v-model="timeUnit" :items="timeUnitOptions" class="form-control input-width-md slidingdaterange-timeunits-plural" :showBlankItem="false" />
 
                 <div class="label label-info slidingdaterange-info">{{ dateRangeText }}</div>
             </template>

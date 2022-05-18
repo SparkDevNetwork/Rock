@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "LavaShortcode" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "7574A473-3326-4973-8DF6-C7BF5F64EB36")]
     public partial class LavaShortcode : Model<LavaShortcode>, ICacheable
     {
         #region Entity Properties

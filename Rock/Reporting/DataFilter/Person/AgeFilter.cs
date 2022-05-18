@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on based on the current age in years" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Age" )]
+    [Rock.SystemGuid.EntityTypeGuid( "4911C63D-71BB-4686-AAA3-D66EA41DA465")]
     public class AgeFilter : DataFilterComponent
     {
         #region Properties

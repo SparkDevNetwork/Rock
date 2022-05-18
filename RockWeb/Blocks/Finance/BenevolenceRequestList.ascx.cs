@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.FilterBenevolenceTypesAttributeKey )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "3131C55A-8753-435F-85F3-DF777EFBD1C8" )]
     public partial class BenevolenceRequestList : RockBlock, ICustomGridColumns
     {
         #region SQL Constants
@@ -554,7 +555,7 @@ namespace RockWeb.Blocks.Finance
 
             tbFirstName.Text = rFilter.GetUserPreference( "First Name" );
             tbLastName.Text = rFilter.GetUserPreference( "Last Name" );
-            tbLastName.Text = rFilter.GetUserPreference( "Government ID" );
+            tbGovernmentId.Text = rFilter.GetUserPreference( "Government ID" );
 
             Guid groupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuid();
             var listData = new GroupMemberService( new RockContext() ).Queryable( "Person, Group" )

@@ -17,13 +17,16 @@
 
 import { computed, defineComponent, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert";
+import { EntityType } from "@Obsidian/SystemGuids";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
-import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-import { emptyGuid } from "@Obsidian/Utility/guid";
-import EditPanel from "./CampusDetail/editPanel";
-import { CampusDetailOptionsBag, CampusBag, DetailBlockBox, NavigationUrlKey } from "./CampusDetail/types";
-import ViewPanel from "./CampusDetail/viewPanel";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
+import EditPanel from "./CampusDetail/editPanel";
+import ViewPanel from "./CampusDetail/viewPanel";
+import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { NavigationUrlKey } from "./CampusDetail/types";
+import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
+import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
 export default defineComponent({
@@ -39,6 +42,7 @@ export default defineComponent({
     setup() {
         const config = useConfigurationValues<DetailBlockBox<CampusBag, CampusDetailOptionsBag>>();
         const invokeBlockAction = useInvokeBlockAction();
+        const securityGrant = getSecurityGrant(config.securityGrantToken);
 
         // #region Values
 
@@ -55,18 +59,27 @@ export default defineComponent({
         // #region Computed Values
 
         /**
-         * The name to display in the panel title.
+         * The entity name to display in the block panel.
          */
-        const panelName = computed((): string => campusViewBag.value?.name ?? "");
+        const panelName = computed((): string => {
+            return campusViewBag.value?.name ?? "";
+        });
+
+        /**
+         * The identifier key value for this entity.
+         */
+        const entityKey = computed((): string => {
+            return campusViewBag.value?.idKey ?? "";
+        });
 
         /**
          * Additional labels to display in the block panel.
          */
-        const panelLabels = computed((): PanelAction[] => {
+        const blockLabels = computed((): PanelAction[] | null => {
             const labels: PanelAction[] = [];
 
-            if (isEditMode.value) {
-                return labels;
+            if (panelMode.value !== DetailPanelMode.View) {
+                return null;
             }
 
             if (campusViewBag.value?.isActive === true) {
@@ -91,10 +104,10 @@ export default defineComponent({
             return config.isEditable === true && campusViewBag.value?.isSystem !== true;
         });
 
-        const isEditMode = computed((): boolean => panelMode.value === DetailPanelMode.Edit || panelMode.value === DetailPanelMode.Add);
-
         const options = computed((): CampusDetailOptionsBag => {
-            return config.options ?? {};
+            return config.options ?? {
+                isMultiTimeZoneSupported: false
+            };
         });
 
         // #endregion
@@ -112,7 +125,7 @@ export default defineComponent({
          * @returns true if the panel should leave edit mode; otherwise false.
          */
         const onCancelEdit = async (): Promise<boolean> => {
-            if (campusEditBag.value?.guid === emptyGuid) {
+            if (!campusEditBag.value?.idKey) {
                 if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                     window.location.href = config.navigationUrls[NavigationUrlKey.ParentPage];
                 }
@@ -131,7 +144,7 @@ export default defineComponent({
             errorMessage.value = "";
 
             const result = await invokeBlockAction<string>("Delete", {
-                guid: campusViewBag.value?.guid
+                key: campusViewBag.value?.idKey
             });
 
             if (result.isSuccess && result.data) {
@@ -150,7 +163,7 @@ export default defineComponent({
          */
         const onEdit = async (): Promise<boolean> => {
             const result = await invokeBlockAction<DetailBlockBox<CampusBag, CampusDetailOptionsBag>>("Edit", {
-                guid: campusViewBag.value?.guid
+                key: campusViewBag.value?.idKey
             });
 
             if (result.isSuccess && result.data && result.data.entity) {
@@ -174,10 +187,12 @@ export default defineComponent({
 
             const data: DetailBlockBox<CampusBag, CampusDetailOptionsBag> = {
                 entity: campusEditBag.value,
+                isEditable: true,
                 validProperties: [
                     "attributeValues",
                     "campusSchedules",
                     "campusStatusValue",
+                    //"campusTopics",
                     "campusTypeValue",
                     "description",
                     "isActive",
@@ -216,6 +231,8 @@ export default defineComponent({
 
         // #endregion
 
+        provideSecurityGrant(securityGrant);
+
         // Handle any initial error conditions or the need to go into edit mode.
         if (config.errorMessage) {
             blockError.value = config.errorMessage;
@@ -223,51 +240,59 @@ export default defineComponent({
         else if (!config.entity) {
             blockError.value = "The specified campus could not be viewed.";
         }
-        else if (config.entity.guid === emptyGuid) {
+        else if (!config.entity.idKey) {
             campusEditBag.value = config.entity;
             panelMode.value = DetailPanelMode.Add;
         }
 
         return {
-            blockError,
             campusViewBag,
             campusEditBag,
+            blockError,
+            blockLabels,
+            entityKey,
+            entityTypeGuid: EntityType.Campus,
             errorMessage,
             isEditable,
-            isEditMode,
             onCancelEdit,
             onDelete,
             onEdit,
             onSave,
             options,
-            panelLabels,
             panelMode,
             panelName
         };
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning">
-    {{ blockError }}
-</Alert>
+<Alert v-if="blockError" alertType="warning" v-text="blockError" />
 
-<Alert v-if="errorMessage" alertType="danger">
-    {{ errorMessage }}
-</Alert>
+<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
 <DetailBlock v-if="!blockError"
     v-model:mode="panelMode"
     :name="panelName"
-    :labels="panelLabels"
+    :labels="blockLabels"
+    :entityKey="entityKey"
+    :entityTypeGuid="entityTypeGuid"
     entityTypeName="Campus"
-    :isEditVisible="isEditable"
+    :isAuditHidden="false"
+    :isBadgesVisible="true"
     :isDeleteVisible="isEditable"
+    :isEditVisible="isEditable"
+    :isFollowVisible="true"
+    :isSecurityHidden="false"
     @cancelEdit="onCancelEdit"
     @delete="onDelete"
     @edit="onEdit"
     @save="onSave">
-    <EditPanel v-if="isEditMode" v-model="campusEditBag" :options="options" />
-    <ViewPanel v-else :modelValue="campusViewBag" :options="options" />
+    <template #view>
+        <ViewPanel :modelValue="campusViewBag" :options="options" />
+    </template>
+
+    <template #edit>
+        <EditPanel v-model="campusEditBag" :options="options" />
+    </template>
 </DetailBlock>
 `
 });

@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new BenevolenceResultBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Amount = model.Amount,
                 BenevolenceRequestId = model.BenevolenceRequestId,
                 ResultSummary = model.ResultSummary,

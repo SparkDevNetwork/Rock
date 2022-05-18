@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,6 @@ using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
-    [RockGuid( "3ff0343e-2eec-4ab7-871c-10f86c1ff7bf" )]
     public partial class GroupMembersController
     {
         /// <summary>
@@ -35,7 +34,6 @@ namespace Rock.Rest.Controllers
         /// <returns>A queryable collection of GroupMembers, including deceased, that match the provided query.</returns>
         [Authenticate, Secured]
         [EnableQuery]
-        [RockGuid( "eb77dda4-1dcb-45e6-ac58-888d9c9c04fa" )]
         public override IQueryable<GroupMember> Get()
         {
             var queryString = Request.RequestUri.Query;
@@ -62,7 +60,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
-        [RockGuid( "018496a4-f8c3-473e-bebb-2236497afb1c" )]
+        [Rock.SystemGuid.RestActionGuid( "018496A4-F8C3-473E-BEBB-2236497AFB1C" )]
         public System.Net.Http.HttpResponseMessage CreateKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
         {
             SetProxyCreation( true );
@@ -91,7 +89,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
-        [RockGuid( "51cb49b5-4338-4826-8dfc-2f902e30a01c" )]
+        [Rock.SystemGuid.RestActionGuid( "51CB49B5-4338-4826-8DFC-2F902E30A01C" )]
         public IQueryable<GroupMember> GetKnownRelationship( int personId, int relationshipRoleId )
         {
             SetProxyCreation( true );
@@ -112,7 +110,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpDelete]
         [System.Web.Http.Route( "api/GroupMembers/KnownRelationship" )]
-        [RockGuid( "f5fc602f-ae95-4853-9bca-16be0fbbcafc" )]
+        [Rock.SystemGuid.RestActionGuid( "F5FC602F-AE95-4853-9BCA-16BE0FBBCAFC" )]
         public void DeleteKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
         {
             SetProxyCreation( true );

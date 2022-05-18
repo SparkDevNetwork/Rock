@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -416,6 +416,8 @@ namespace Rock.Blocks.Types.Mobile.Security
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_SECURITY_ONBOARD_PERSON )]
+    [Rock.SystemGuid.BlockTypeGuid( "9544EE9E-07C2-4F14-9C93-3B16EBF0CC47")]
     public class OnboardPerson : RockMobileBlockType
     {
         #region Block Attributes
@@ -1895,8 +1897,11 @@ namespace Rock.Blocks.Types.Mobile.Security
                             if ( personalDevice != null )
                             {
                                 personalDevice.PersonAliasId = person.PrimaryAliasId;
-                                personalDevice.DeviceRegistrationId = request.Details.PushToken;
-                                personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                if ( ShowNotificationsRequest )
+                                {
+                                    personalDevice.DeviceRegistrationId = request.Details.PushToken;
+                                    personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                }
 
                                 rockContext.SaveChanges();
                             }
@@ -1979,8 +1984,11 @@ namespace Rock.Blocks.Types.Mobile.Security
                         if ( personalDevice != null )
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
-                            personalDevice.DeviceRegistrationId = details.PushToken;
-                            personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                            if ( ShowNotificationsRequest )
+                            {
+                                personalDevice.DeviceRegistrationId = details.PushToken;
+                                personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                            }
                         }
                     }
 

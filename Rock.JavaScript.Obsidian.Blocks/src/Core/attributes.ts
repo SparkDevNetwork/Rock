@@ -424,7 +424,7 @@ export default defineComponent({
                 label="Entity Type"
                 grouped
                 :enhanceForLongLists="false"
-                :options="entityTypeOptions" />
+                :items="entityTypeOptions" />
         </div>
     </template>
 

@@ -237,9 +237,7 @@ namespace Rock.Model
 
             var viewModel = new BinaryFileBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 BinaryFileTypeId = model.BinaryFileTypeId,
                 ContentLastModified = model.ContentLastModified,
                 Description = model.Description,

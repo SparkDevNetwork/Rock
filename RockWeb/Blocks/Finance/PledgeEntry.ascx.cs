@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Finance
 
     [SystemCommunicationField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, "", Order = 10 )]
     [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a selection of groups that current user belongs to that can then be associated with the pledge", false, "", "", 12 )]
+    [Rock.SystemGuid.BlockTypeGuid( "20B5568E-A010-4E15-9127-E63CF218D6E5" )]
     public partial class PledgeEntry : RockBlock
     {
         /// <summary>

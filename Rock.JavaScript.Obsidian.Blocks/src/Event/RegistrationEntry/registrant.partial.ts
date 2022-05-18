@@ -32,7 +32,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import FeeField from "./feeField.partial";
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Controls/itemsWithPreAndPostHtml";
 import { useStore } from "@Obsidian/PageState";
-import { Person } from "@Obsidian/ViewModels/Entities/person";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
@@ -148,7 +148,7 @@ export default defineComponent({
                     slotName: f.guid
                 }));
         },
-        currentPerson (): Person | null {
+        currentPerson (): PersonBag | null {
             return store.state.currentPerson;
         },
         pluralFeeTerm (): string {
@@ -237,13 +237,8 @@ export default defineComponent({
 
             return this.viewModel.familyMembers.find(fm => areEqual(fm.guid, personGuid)) || null;
         },
-
-        signatureDocumentName(): string {
-            return this.viewModel.signatureDocumentTemplateName ?? "";
-        },
-
         signatureDocumentTerm(): string {
-            return this.viewModel.signatureDocumentTerm ?? "";
+            return StringFilter.toTitleCase(this.viewModel.signatureDocumentTerm || "Release");
         }
     },
     methods: {
@@ -377,11 +372,11 @@ export default defineComponent({
         <template v-if="isDataForm">
             <template v-if="currentFormIndex === 0">
                 <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
-                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :options="familyOptions" validationTitle="Family" />
+                    <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules='required:{"allowEmptyString": true}' v-model="currentRegistrant.familyGuid" :items="familyOptions" validationTitle="Family" />
                 </div>
                 <div v-if="familyMemberOptions.length" class="row">
                     <div class="col-md-6">
-                        <DropDownList v-model="currentRegistrant.personGuid" :options="familyMemberOptions" label="Family Member to Register" />
+                        <DropDownList v-model="currentRegistrant.personGuid" :items="familyMemberOptions" label="Family Member to Register" />
                     </div>
                 </div>
             </template>
@@ -403,7 +398,7 @@ export default defineComponent({
         </template>
 
         <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
-            <h2 class="signature-header">Please sign the {{ signatureDocumentName }} {{ signatureDocumentTerm }} for {{ firstName }}</h2>
+            <h2 class="signature-header">Please Sign the {{ signatureDocumentTerm }} for {{ firstName }}</h2>
             <div class="signaturedocument-container">
                 <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
             </div>

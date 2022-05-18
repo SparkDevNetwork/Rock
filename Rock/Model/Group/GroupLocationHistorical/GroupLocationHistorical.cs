@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupLocationHistorical" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "03128778-5E7D-4FE4-9C7A-929936E06F90")]
     public partial class GroupLocationHistorical : Model<GroupLocationHistorical>, IHistoricalTracking
     {
         #region Entity Properties

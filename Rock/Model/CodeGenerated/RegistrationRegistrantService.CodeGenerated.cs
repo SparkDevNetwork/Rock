@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationRegistrantBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 Cost = model.Cost,
                 DiscountApplies = model.DiscountApplies,
                 GroupMemberId = model.GroupMemberId,

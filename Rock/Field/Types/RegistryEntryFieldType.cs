@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "D98E1D88-2240-4248-B93B-0512BD3BB61A")]
     public class RegistryEntryFieldType : FieldType
     {
         /// <summary>

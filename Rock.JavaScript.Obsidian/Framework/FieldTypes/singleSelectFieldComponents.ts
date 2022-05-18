@@ -113,8 +113,8 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<RadioButtonList v-if="isRadioButtons" v-model="internalValue" v-bind="rbConfigAttributes" :options="options" horizontal />
-<DropDownList v-else v-model="internalValue" v-bind="ddlConfigAttributes" :options="options" />
+<RadioButtonList v-if="isRadioButtons" v-model="internalValue" v-bind="rbConfigAttributes" :items="options" horizontal />
+<DropDownList v-else v-model="internalValue" v-bind="ddlConfigAttributes" :items="options" />
 `
 });
 
@@ -156,7 +156,7 @@ export const FilterComponent = defineComponent({
     },
 
     template: `
-<CheckBoxList v-model="internalValue" :options="options" horizontal />
+<CheckBoxList v-model="internalValue" :items="options" horizontal />
 `
 });
 
@@ -295,7 +295,7 @@ export const ConfigurationComponent = defineComponent({
     <DropDownList v-model="controlType"
         label="Control Type"
         help="The type of control to use for selecting a single value from the list."
-        :options="controlTypeOptions"
+        :items="controlTypeOptions"
         :showBlankItem="false" />
 
     <NumberBox v-if="isRadioList"

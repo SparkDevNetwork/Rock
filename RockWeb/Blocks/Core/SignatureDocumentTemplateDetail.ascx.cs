@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Core
         DefaultBooleanValue = false,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "9F26A1DA-74AE-4CB7-BABC-6AE81A581A06" )]
     public partial class SignatureDocumentTemplateDetail : RockBlock
     {
         public static class AttributeKey

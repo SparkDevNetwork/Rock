@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventCalendarItem" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "E37FB26F-03F6-48DA-8E96-F412616F5EE4")]
     public partial class EventCalendarItem : Model<EventCalendarItem>, ISecured
     {
         #region Entity Properties

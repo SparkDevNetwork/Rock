@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SmsPipeline" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "64DA3A06-FD39-4E5B-8126-38404FB0092A")]
     public class SmsPipeline : Model<SmsPipeline>
     {
         #region Entity Properties

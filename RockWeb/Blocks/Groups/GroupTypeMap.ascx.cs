@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Groups
 {% endif %}
 
 ", "", 9 )]
+    [Rock.SystemGuid.BlockTypeGuid( "2CCAFC0B-8B48-4B64-B210-0EDAF9FFC4EF" )]
     public partial class GroupTypeMap : Rock.Web.UI.RockBlock
     {
         #region Fields

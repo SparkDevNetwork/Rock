@@ -437,9 +437,9 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( this.ExpressionType == FilterExpressionType.Filter && this.EntityTypeId.HasValue )
+            if ( this.ExpressionType == FilterExpressionType.Filter && ( this.DataView?.EntityTypeId.HasValue == true ) )
             {
-                return this.ToString( EntityTypeCache.Get( this.EntityTypeId.Value ).GetEntityType() );
+                return this.ToString( EntityTypeCache.Get( this.DataView.EntityTypeId.Value ).GetEntityType() );
             }
             else
             {

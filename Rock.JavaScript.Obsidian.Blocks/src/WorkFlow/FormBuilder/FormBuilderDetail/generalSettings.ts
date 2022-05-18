@@ -135,8 +135,7 @@ export default defineComponent({
 
                 <DropDownList v-model="template"
                     label="Template"
-                    :options="templateOptions"
-                    />
+                    :items="templateOptions" />
 
                 <CategoryPicker v-model="category"
                     label="Category"

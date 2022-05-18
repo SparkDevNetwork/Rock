@@ -52,6 +52,14 @@
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResult.cs" />
+    <Compile Include="Blocks\Groups\GroupSchedulePreference\AssignmentScheduleAndLocationBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleSignup\PersonScheduleSignupDataBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleSignup\PersonScheduleSignupBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleToolbox\ConfirmDeclineBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleToolbox\ContentBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleUnavailability\ContentBag.cs" />
+    <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
+    <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
     <Compile Include="Blocks\IValidPropertiesBox.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailViewModel.cs" />
@@ -77,6 +85,7 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateListItemViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormValueSourcesViewModel.cs" />
     <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
+    <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
     <Compile Include="Entities\AchievementAttemptBag.cs" />
     <Compile Include="Entities\AchievementTypeBag.cs" />
     <Compile Include="Entities\AchievementTypePrerequisiteBag.cs" />
@@ -302,10 +311,11 @@
     <Compile Include="Reporting\FieldFilterGroupBag.cs" />
     <Compile Include="Reporting\FieldFilterRuleBag.cs" />
     <Compile Include="Connection\ConnectionRequestCountsBag.cs" />
-    <Compile Include="Controls\FieldTypeConfigurationBag.cs" />
-    <Compile Include="Controls\FieldTypeConfigurationPropertiesBag.cs" />
+    <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
+    <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Utility\AuditDetailBag.cs" />
+    <Compile Include="Utility\PublicAttributeCategoryBag.cs" />
     <Compile Include="Utility\PublicComparisonValueBag.cs" />
     <Compile Include="Utility\PublicAttributeBag.cs" />
     <Compile Include="Controls\BirthdayPickerBag.cs" />

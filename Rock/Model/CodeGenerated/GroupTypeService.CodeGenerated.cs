@@ -125,9 +125,7 @@ namespace Rock.Model
 
             var viewModel = new GroupTypeBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AdministratorTerm = model.AdministratorTerm,
                 AllowAnyChildGroupType = model.AllowAnyChildGroupType,
                 AllowedScheduleTypes = ( int ) model.AllowedScheduleTypes,

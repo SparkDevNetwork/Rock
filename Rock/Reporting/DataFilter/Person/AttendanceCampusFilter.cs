@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have attended the campus(es) a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Campus Attendance Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "B2335AA5-FA0E-4685-833B-7A77F1F55CFF")]
     public class AttendanceCampusFilter : DataFilterComponent
     {
         #region Properties

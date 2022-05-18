@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Form Builder" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "B2A91AD5-3B41-45A6-A670-EBBF3FF626F9")]
     public class FormBuilder : ActionComponent
     {
         /// <summary>

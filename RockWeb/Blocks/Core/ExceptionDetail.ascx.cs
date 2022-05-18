@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given exception." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "B9E704E8-2097-491D-A216-8011012AA84E" )]
     public partial class ExceptionDetail : RockBlock
     {
         #region Page Parameter Keys

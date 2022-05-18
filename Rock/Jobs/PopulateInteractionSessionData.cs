@@ -39,7 +39,7 @@ namespace Rock.Jobs
         "Rock.IpAddress.IpAddressLookupContainer, Rock",
         Name = "IP Address GeoCoding Component",
         Description = "The service that will perform the IP GeoCoding lookup for any new IPs that have not been GeoCoded.Not required to be set here because the job will use the first active component if one is not configured here.",
-        IsRequired = true,
+        IsRequired = false,
         Order = 0,
         Key = AttributeKey.IPAddressGeoCodingComponent )]
     [IntegerField(
@@ -311,14 +311,23 @@ namespace Rock.Jobs
                 }
             }
 
+            var warningMsg = string.Empty;
             if ( ipAddressSessionKeyValue.Count > 0 )
             {
-                jobContext.UpdateLastStatusMessage( $"Processing Interaction Session : Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. {ipAddressSessionKeyValue.Count} sent to LookupComponent to process." );
-                recordsUpdated = ProcessIPOnLookupComponent( ipAddressComponentGuid, ipAddressSessionKeyValue );
+                if ( ipAddressComponentGuid.AsGuidOrNull().HasValue )
+                {
+                    jobContext.UpdateLastStatusMessage( $"Processing Interaction Session : Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. {ipAddressSessionKeyValue.Count} sent to LookupComponent to process." );
+                    recordsUpdated = ProcessIPOnLookupComponent( ipAddressComponentGuid, ipAddressSessionKeyValue );
+                }
+                else
+                {
+                    jobContext.UpdateLastStatusMessage( $"Processing Interaction Session : Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now." );
+                    warningMsg = $"There is no LookupComponent configured to process {ipAddressSessionKeyValue.Count} records.";
+                }
             }
 
             // Format the result message
-            return $"<i class='fa fa-circle text-success'></i> Updated {recordsUpdated} out of {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )}";
+            return $"<i class='fa fa-circle text-success'></i> Updated {recordsUpdated} out of {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )}. {warningMsg}";
         }
 
         private int ProcessIPOnLookupComponent( string ipAddressComponentGuid, Dictionary<string, List<int>> ipAddressSessionKeyValue )

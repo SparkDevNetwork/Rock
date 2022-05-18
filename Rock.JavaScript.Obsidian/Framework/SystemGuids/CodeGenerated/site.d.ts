@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Site guids */
 export const enum Site {
     /** Gets the default Rock Site guid */
     SiteRockInternal = "C2D29296-6A87-47A9-A753-EE4E9159C4C4",
@@ -29,4 +30,3 @@ export const enum Site {
     /** The check in manager site guid */
     CheckInManager = "A5FA7C3C-A238-4E0B-95DE-B540144321EC",
 }
-

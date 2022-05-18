@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new GroupHistoricalBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ArchivedByPersonAliasId = model.ArchivedByPersonAliasId,
                 ArchivedDateTime = model.ArchivedDateTime,
                 CampusId = model.CampusId,

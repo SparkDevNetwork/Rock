@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,6 +66,7 @@ namespace Rock.Workflow.Action
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_GET_CAMPUS_TEAM_MEMBER )]
     public class PersonGetCampusTeamMember : ActionComponent
     {
         #region Workflow Attributes

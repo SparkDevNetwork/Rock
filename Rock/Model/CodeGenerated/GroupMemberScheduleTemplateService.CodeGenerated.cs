@@ -87,9 +87,7 @@ namespace Rock.Model
 
             var viewModel = new GroupMemberScheduleTemplateBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 GroupTypeId = model.GroupTypeId,
                 Name = model.Name,
                 ScheduleId = model.ScheduleId,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Tv
     #region Block Attributes
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "49F3D87E-BD8D-43D4-8217-340F3DFF4562" )]
     public partial class AppleTvAppDetail : Rock.Web.UI.RockBlock
     {
 

@@ -33,5 +33,7 @@ namespace Rock.ViewModels.Blocks
         public Dictionary<string, string> NavigationUrls { get; set; } = new Dictionary<string, string>();
 
         public List<string> ValidProperties { get; set; }
+
+        public string SecurityGrantToken { get; set; }
     }
 }

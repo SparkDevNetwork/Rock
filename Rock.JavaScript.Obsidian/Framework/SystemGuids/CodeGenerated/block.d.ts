@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Block Instances.  NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const enum Block {
     /** The Campus Detail page Campus Detail block guid */
     CampusDetailCampusDetail = "176FFC6F-6B55-4319-A781-A2F7F1F85F24",
@@ -71,4 +72,3 @@ export const enum Block {
     /** The financial account search block */
     FinancialAccountSearch = "21B7618B-47DD-4936-ABB5-81BDB4D56C6A",
 }
-

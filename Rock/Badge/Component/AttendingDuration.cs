@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Attending Duration" )]
     
+    [Rock.SystemGuid.EntityTypeGuid( "B50090B4-9424-4963-B34F-957394FFBB3E")]
     public class AttendingDuration : BadgeComponent
     {
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Administration
         Description = "The page to display group history.",
         Key = AttributeKey.HistoryPage )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "6D3F924E-BDD0-4C78-981E-B698351E75AD" )]
     public partial class ScheduledJobList : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

@@ -106,11 +106,11 @@ const galleryAndResult = defineComponent({
             <slot />
             <hr />
             <h4>Attribute Values Container (edit)</h4>
-            <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="true" />
+            <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="true" :showCategoryLabel="false" />
         </div>
         <div class="col-md-6">
             <h4>Attribute Values Container (view)</h4>
-            <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="false" />
+            <AttributeValuesContainer v-model="values" :attributes="attributes" :isEditMode="false" :showCategoryLabel="false" />
             <hr />
             <h4>Values</h4>
             <p>

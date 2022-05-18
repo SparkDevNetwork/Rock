@@ -25,4 +25,3 @@ export const enum Person {
     /** The Guid of the 'Giver Anonymous' person that ships with core */
     GiverAnonymous = "802235DC-3CA5-94B0-4326-AACE71180F48",
 }
-

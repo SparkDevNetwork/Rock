@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -138,6 +138,7 @@ namespace RockWeb.Blocks.Security
         DefaultIntegerValue = IdentityVerification.DefaultMaxFailedMatchAttemptCount,
         Order = 11,
         Key = AttributeKey.ValidationCodeAttempts )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.PHONE_NUMBER_LOOKUP )]
     public partial class PhoneNumberIdentification : Rock.Web.UI.RockBlock
     {
         private int IdentityVerificationId

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Badge.Component
         Order = 0,
         Key = AttributeKey.AchievementType )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "FB04FBDF-A934-4576-92EA-B7E085E76824")]
     public class Achievement : BadgeComponent
     {
         #region Keys

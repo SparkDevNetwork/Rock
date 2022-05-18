@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,6 +63,7 @@ namespace Rock.Badge.Component
   <i class='badge-icon {{ groupIcon }}' style='color: {{ iconColor }}'></i>
 </div>
 " )]
+    [Rock.SystemGuid.EntityTypeGuid( "2A6DB456-8D8F-4D82-BFE2-F4545204BD90")]
     public class GroupTypeAttendance : BadgeComponent
     {
         /// <summary>

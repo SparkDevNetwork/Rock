@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Preselects options if using Family check-in type based on the 'days back' value." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Preselect Recent Attendance" )]
+    [Rock.SystemGuid.EntityTypeGuid( "23C1D3FA-4F16-4AF6-9528-04C7C52F5C2A")]
     public class PreSelectRecentAttendance : CheckInActionComponent
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -87,6 +87,7 @@ namespace RockWeb.Blocks.Cms
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_NAVIGATION )]
     public partial class ContentChannelNavigation : Rock.Web.UI.RockBlock
     {
 
@@ -192,7 +193,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( selectedChannelGuid.HasValue )
                     {
-                        SelectedChannelId = ContentChannelCache.Get( selectedChannelGuid.Value ).Id;
+                        SelectedChannelId = ContentChannelCache.Get( selectedChannelGuid.Value )?.Id;
                     }
                 }
 
@@ -206,7 +207,7 @@ namespace RockWeb.Blocks.Cms
                     var categoryGuid = PageParameter( "CategoryGuid" ).AsGuidOrNull();
                     if ( categoryGuid.HasValue )
                     {
-                        var categoryId = CategoryCache.Get( categoryGuid.Value ).Id;
+                        var categoryId = CategoryCache.Get( categoryGuid.Value )?.Id;
 
                         SetUserPreference( CATEGORY_FILTER_SETTING, categoryId.ToString() );
                         ddlCategory.SetValue( categoryId );
@@ -307,6 +308,13 @@ namespace RockWeb.Blocks.Cms
 
             // Get CategoryGuid from Route
             var categoryGuid = PageParameter( "CategoryGuid" ).AsGuidOrNull();
+            if ( !categoryGuid.HasValue )
+            {
+                var categoryId = ddlCategory.SelectedValueAsId();
+                categoryGuid = CategoryCache.Get( categoryId.GetValueOrDefault() )?.Guid;
+            }
+
+            // if user has selected a category or one was provided as a query param add it to the new route params
             if ( categoryGuid.HasValue )
             {
                 queryString.Add( "CategoryGuid", categoryGuid.ToString() );
@@ -586,7 +594,22 @@ namespace RockWeb.Blocks.Cms
 
             if ( GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean() )
             {
-                var categoryId = ddlCategory.SelectedValueAsId();
+                int? categoryId = null;
+                var categoryGuid = PageParameter( "CategoryGuid" ).AsGuidOrNull();
+                var selectedChannelGuid = PageParameter( "ContentChannelGuid" ).AsGuidOrNull();
+
+                if ( selectedChannelGuid.HasValue )
+                {
+                    categoryId = CategoryCache.Get( categoryGuid.GetValueOrDefault() )?.Id;
+                }
+                else
+                {
+                    categoryId = ddlCategory.SelectedValueAsId();
+                }
+
+                SetUserPreference( CATEGORY_FILTER_SETTING, categoryId.ToString() );
+                ddlCategory.SetValue( categoryId );
+
                 var parentCategoryGuid = GetAttributeValue( AttributeKey.ParentCategory ).AsGuidOrNull();
                 if ( ddlCategory.Visible && categoryId.HasValue )
                 {

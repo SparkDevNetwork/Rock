@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Metric Value Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular metric value." )]
+    [Rock.SystemGuid.BlockTypeGuid( "508DA252-F94C-4641-8579-458D8FCE14B2" )]
     public partial class MetricValueDetail : RockBlock
     {
         #region Control Methods

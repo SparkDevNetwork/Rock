@@ -34,7 +34,7 @@ export default defineComponent({
             default: []
         },
 
-        options: {
+        items: {
             type: Array as PropType<Array<ListItemBag>>,
             required: true
         },
@@ -56,10 +56,10 @@ export default defineComponent({
         watch(() => props.modelValue, () => updateRefValue(internalValue, props.modelValue));
         watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
-        const valueForOption = (option: ListItemBag): string => option.value ?? "";
-        const textForOption = (option: ListItemBag): string => option.text ?? "";
+        const valueForItem = (item: ListItemBag): string => item.value ?? "";
+        const textForItem = (item: ListItemBag): string => item.text ?? "";
 
-        const uniqueIdForOption = (uniqueId: Guid, option: ListItemBag): string => `${uniqueId}-${(option.value ?? "").replace(" ", "-")}`;
+        const uniqueIdForItem = (uniqueId: Guid, item: ListItemBag): string => `${uniqueId}-${(item.value ?? "").replace(" ", "-")}`;
 
         const containerClasses = computed(() => {
             const classes: string[] = [];
@@ -81,9 +81,9 @@ export default defineComponent({
         return {
             containerClasses,
             internalValue,
-            textForOption,
-            uniqueIdForOption,
-            valueForOption
+            textForItem,
+            uniqueIdForItem,
+            valueForItem
         };
     },
 
@@ -96,16 +96,16 @@ export default defineComponent({
         <div class="control-wrapper">
             <div class="controls rockcheckboxlist" :class="containerClasses">
                 <template v-if="horizontal">
-                    <label v-for="option in options" class="checkbox-inline" :for="uniqueIdForOption(uniqueId, option)">
-                        <input :id="uniqueIdForOption(uniqueId, option)" :name="uniqueId" type="checkbox" :value="valueForOption(option)" v-model="internalValue" />
-                        <span class="label-text">{{textForOption(option)}}</span>
+                    <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
+                        <input :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                        <span class="label-text">{{textForItem(item)}}</span>
                     </label>
                 </template>
                 <template v-else>
-                    <div v-for="option in options" class="checkbox">
-                        <label :for="uniqueIdForOption(uniqueId, option)">
-                            <input :id="uniqueIdForOption(uniqueId, option)" :name="uniqueId" type="checkbox" :value="valueForOption(option)" v-model="internalValue" />
-                            <span class="label-text">{{textForOption(option)}}</span>
+                    <div v-for="item in items" class="checkbox">
+                        <label :for="uniqueIdForItem(uniqueId, item)">
+                            <input :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                            <span class="label-text">{{textForItem(item)}}</span>
                         </label>
                     </div>
                 </template>

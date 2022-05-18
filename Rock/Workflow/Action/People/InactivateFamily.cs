@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -75,6 +75,7 @@ namespace Rock.Workflow.Action
 
     #endregion Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( "5A4E3084-B7BD-4F5C-B071-DA9F30781ACB")]
     public class InactivateFamily : ActionComponent
     {
         #region Workflow Attributes

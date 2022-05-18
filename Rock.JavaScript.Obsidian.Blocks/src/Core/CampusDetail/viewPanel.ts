@@ -16,15 +16,15 @@
 //
 
 import { computed, defineComponent, PropType, ref } from "vue";
-import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import Alert from "@Obsidian/Controls/alert";
-import StaticFormControl from "@Obsidian/Controls/staticFormControl";
-import { escapeHtml } from "@Obsidian/Utility/stringUtils";
-import { List } from "@Obsidian/Utility/linq";
-import { CampusDetailOptionsBag, CampusBag } from "./types";
+import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
 import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
+import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
+import { List } from "@Obsidian/Utility/linq";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export default defineComponent({
     name: "Core.CampusDetail.ViewPanel",
@@ -44,16 +44,14 @@ export default defineComponent({
     components: {
         Alert,
         AttributeValuesContainer,
-        StaticFormControl,
         ValueDetailList
     },
 
     setup(props) {
         // #region Values
 
-        const attributes = ref(props.modelValue?.attributes ?? []);
+        const attributes = ref(props.modelValue?.attributes ?? {});
         const attributeValues = ref(props.modelValue?.attributeValues ?? {});
-        const description = ref(props.modelValue?.description ?? "");
 
         // #endregion
 
@@ -61,25 +59,27 @@ export default defineComponent({
 
         const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
 
+        /** The values to display full-width at the top of the block. */
         const topValues = computed((): ValueDetailListItem[] => {
             const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return valueBuilder.getValues();
+                return valueBuilder.build();
             }
 
             if (props.modelValue.description) {
                 valueBuilder.addTextValue("Description", props.modelValue.description);
             }
 
-            return valueBuilder.getValues();
+            return valueBuilder.build();
         });
 
+        /** The values to display at half-width on the left side of the block. */
         const leftSideValues = computed((): ValueDetailListItem[] => {
             const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return valueBuilder.getValues();
+                return valueBuilder.build();
             }
 
             if (props.modelValue.campusStatusValue?.text) {
@@ -114,14 +114,15 @@ export default defineComponent({
                 valueBuilder.addTextValue("Campus Schedules", props.modelValue.campusSchedules.map(s => s.schedule?.text ?? "").join(", "));
             }
 
-            return valueBuilder.getValues();
+            return valueBuilder.build();
         });
 
+        /** The values to display at half-width on the left side of the block. */
         const rightSideValues = computed((): ValueDetailListItem[] => {
             const valueBuilder = new ValueDetailListItemBuilder();
 
             if (!props.modelValue) {
-                return valueBuilder.getValues();
+                return valueBuilder.build();
             }
 
             if (props.modelValue.campusTypeValue?.text) {
@@ -140,7 +141,7 @@ export default defineComponent({
                 valueBuilder.addTextValue("Location", props.modelValue.location.text);
             }
 
-            return valueBuilder.getValues();
+            return valueBuilder.build();
         });
 
         // #endregion
@@ -156,7 +157,6 @@ export default defineComponent({
         return {
             attributes,
             attributeValues,
-            description,
             isSystem,
             leftSideValues,
             rightSideValues,
@@ -182,7 +182,7 @@ export default defineComponent({
         </div>
     </div>
 
-    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" />
+    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 </fieldset>
 `
 });

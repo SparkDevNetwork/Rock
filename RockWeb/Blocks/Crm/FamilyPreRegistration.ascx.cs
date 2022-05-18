@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -401,6 +401,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "463A454A-6370-4B4A-BCA1-415F2D9B0CB7" )]
     public partial class FamilyPreRegistration : RockBlock
     {
         #region Attribute Keys, Categories and Values
@@ -2612,5 +2613,3 @@ namespace RockWeb.Blocks.Crm
         }
     }
 }
-
-

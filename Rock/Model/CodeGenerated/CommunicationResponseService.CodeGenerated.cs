@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new CommunicationResponseBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 FromPersonAliasId = model.FromPersonAliasId,
                 IsRead = model.IsRead,
                 MessageKey = model.MessageKey,

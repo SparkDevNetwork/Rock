@@ -87,8 +87,19 @@ export function toTitleCase(str: string | null): string {
     }
 
     return str.replace(/\w\S*/g, (word) => {
-        return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+        return word.charAt(0).toUpperCase() + word.substring(1).toLowerCase();
     });
+}
+
+/**
+ * Capitalize the first character
+ */
+export function upperCaseFirstCharacter(str: string | null): string {
+    if (!str) {
+        return "";
+    }
+
+    return str.charAt(0).toUpperCase() + str.substring(1);
 }
 
 /**
@@ -139,7 +150,7 @@ export function stripPhoneNumber(str: string): string {
 
 /**
  * Pad the left side of a string so it is at least length characters long.
- * 
+ *
  * @param str The string to be padded.
  * @param length The minimum length to make the string.
  * @param padCharacter The character to use to pad the string.
@@ -149,7 +160,7 @@ export function padLeft(str: string | undefined | null, length: number, padChara
         padCharacter = " ";
     }
     else if (padCharacter.length > 1) {
-        padCharacter = padCharacter.substr(0, 1);
+        padCharacter = padCharacter.substring(0, 1);
     }
 
     if (!str) {
@@ -175,7 +186,7 @@ export function padRight(str: string | undefined | null, length: number, padChar
         padCharacter = " ";
     }
     else if (padCharacter.length > 1) {
-        padCharacter = padCharacter.substr(0, 1);
+        padCharacter = padCharacter.substring(0, 1);
     }
 
     if (!str) {
@@ -196,7 +207,7 @@ export type TruncateOptions = {
 /**
  * Ensure a string does not go over the character limit. Truncation happens
  * on word boundaries.
- * 
+ *
  * @param str The string to be truncated.
  * @param limit The maximum length of the resulting string.
  * @param options Additional options that control how truncation will happen.
@@ -244,7 +255,7 @@ const escapeHtmlMap: Record<string, string> = {
 /**
  * Escapes a string so it can be used in HTML. This turns things like the <
  * character into the &lt; sequence so it will still render as "<".
- * 
+ *
  * @param str The string to be escaped.
  * @returns A string that has all HTML entities escaped.
  */

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Communication.Medium
     [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "SMS" )]
     [IntegerField( "Character Limit", "Set this to show a character limit countdown for SMS communications. Set to 0 to disable", false, 160 )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS )]
     public class Sms : MediumComponent
     {
         const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse

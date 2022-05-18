@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action
     [CodeEditorField( "Lava", "The <span class='tip tip-lava'></span> to run.", Web.UI.Controls.CodeEditorMode.Lava, Web.UI.Controls.CodeEditorTheme.Rock, 300, true, "", "", 0, "Value" )]
     [WorkflowAttribute( "Attribute", "The attribute to store the result in.", false, "", "", 1 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this action.", false, order: 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "BC21E57A-1477-44B3-A7C2-61A806118945")]
     public class RunLava : ActionComponent
     {
         /// <summary>

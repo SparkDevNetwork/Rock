@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -93,6 +93,7 @@ namespace RockWeb.Blocks.CheckIn
 
     #endregion Attribute Keys
 
+    [Rock.SystemGuid.BlockTypeGuid( "92DCF018-F551-4890-8BA1-511D97BF6B8A" )]
     public partial class MultiPersonSelect : CheckInBlock
     {
         /* 2021-05/07 ETD

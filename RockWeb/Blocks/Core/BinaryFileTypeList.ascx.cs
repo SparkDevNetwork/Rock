@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Administration
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "0926B82C-CBA2-4943-962E-F788C8A80037" )]
     public partial class BinaryFileTypeList : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

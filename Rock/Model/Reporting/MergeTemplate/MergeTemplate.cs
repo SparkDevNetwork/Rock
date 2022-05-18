@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "MergeTemplate" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MERGE_TEMPLATE )]
     public partial class MergeTemplate : Model<MergeTemplate>, ICategorized
     {
         #region Entity Properties

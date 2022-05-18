@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -265,6 +265,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 1 )]
     #endregion Notes Block Attribute Settings
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "6C2ED1FA-218B-4ACC-B661-A2618F310CD4" )]
     public partial class RapidAttendanceEntry : RockBlock
     {
         #region Fields

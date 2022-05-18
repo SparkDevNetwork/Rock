@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// SignatureDocuments REST API
     /// </summary>
+    [RestControllerGuid( "DE7062C1-64E5-48E5-936F-53A062CF24F4" )]
     public partial class SignatureDocumentsController : Rock.Rest.ApiController<Rock.Model.SignatureDocument>
     {
         /// <summary>

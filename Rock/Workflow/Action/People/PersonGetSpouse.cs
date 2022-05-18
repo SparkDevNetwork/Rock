@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to add the note to.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Spouse Attribute", "The workflow attribute to assign the spouse to. Spouse is deemed to be the other adult on the family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "45D48A23-981A-435E-8294-CE212F66BFD1")]
     public class PersonGetSpouse : ActionComponent
     {
         /// <summary>

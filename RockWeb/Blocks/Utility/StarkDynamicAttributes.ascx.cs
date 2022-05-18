@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Utility
         Order = 0 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "7C34A0FA-ED0D-4B8B-B458-6EC970711726" )]
     public partial class StarkDynamicAttributes : Rock.Web.UI.RockBlock, Rock.Web.UI.IDynamicAttributesBlock
     {
         #region Constants

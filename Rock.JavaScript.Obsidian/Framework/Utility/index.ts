@@ -22,3 +22,4 @@ export * as Suspense from "./suspense";
 export * as TreeItemProviders from "./treeItemProviders";
 export * as Url from "./url";
 export * as Util from "./util";
+export * as ValidationRules from "./validationRules";

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Theme Styler" )]
     [Category( "CMS" )]
     [Description( "Allows you to change the LESS variables of a theme." )]
+    [Rock.SystemGuid.BlockTypeGuid( "92B100A0-43D7-4D73-B410-17DA8697606A" )]
     public partial class ThemeStyler : Rock.Web.UI.RockBlock
     {
         #region Fields

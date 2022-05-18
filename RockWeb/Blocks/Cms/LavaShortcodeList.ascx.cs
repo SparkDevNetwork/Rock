@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.DetailPage )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "C26C7979-81C1-4A20-A167-35415CD7FED3" )]
     public partial class LavaShortcodeList : RockBlock
     {
 

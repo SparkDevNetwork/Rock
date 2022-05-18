@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter Person records on the attribute values of a Step they have participated in" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Step Participants By Attribute Value Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "A8A108B7-6713-444F-AA02-A65C1D354B96")]
     public class StepParticipantsByAttributeValueFilter : EntityFieldFilter
     {
         #region Properties

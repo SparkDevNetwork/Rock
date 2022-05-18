@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// StepWorkflows REST API
     /// </summary>
+    [RestControllerGuid( "3C97709A-5F0D-4C6C-9FEC-FAE0E794F366" )]
     public partial class StepWorkflowsController : Rock.Rest.ApiController<Rock.Model.StepWorkflow>
     {
         /// <summary>

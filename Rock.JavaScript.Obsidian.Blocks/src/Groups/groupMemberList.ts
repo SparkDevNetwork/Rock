@@ -68,8 +68,8 @@ export default defineComponent({
         };
     },
     computed: {
-        groupId(): number {
-            return store.groupContext?.id || 0;
+        groupKey(): string | null {
+            return store.groupContext?.idKey || null;
         },
     },
     methods: {
@@ -83,7 +83,7 @@ export default defineComponent({
 
             try {
                 const result = await this.invokeBlockAction<GetGroupMemberListResponse>("GetGroupMemberList", {
-                    groupId: this.groupId,
+                    groupKey: this.groupKey,
                     filterOptions: {
                         take: 50,
                         skip: 0
@@ -112,7 +112,7 @@ export default defineComponent({
     },
     watch: {
         async groupId(): Promise<void> {
-            if (this.groupId) {
+            if (this.groupKey) {
                 await this.fetchGroupMembers();
             }
         },
@@ -124,7 +124,7 @@ export default defineComponent({
         }
     },
     async mounted(): Promise<void> {
-        if (this.groupId) {
+        if (this.groupKey) {
             await this.fetchGroupMembers();
         }
     },

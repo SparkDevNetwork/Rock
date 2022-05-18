@@ -90,7 +90,7 @@ export const AddressControlBase = defineComponent({
             <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" validationTitle="City" />
         </div>
         <div class="form-group col-sm-3">
-            <DropDownList :showBlankItem="false" v-model="modelValue.state" :options="stateOptions" />
+            <DropDownList :showBlankItem="false" v-model="modelValue.state" :items="stateOptions" />
         </div>
         <div class="form-group col-sm-3">
             <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" validationTitle="Zip" />

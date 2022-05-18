@@ -203,14 +203,14 @@ export default defineComponent({
         <div :class="columnClass">
             <DropDownList v-model="recordStatus"
                 label="Record Status"
-                :options="recordStatusOptions"
+                :items="recordStatusOptions"
                 rules="required" />
         </div>
 
         <div :class="columnClass">
             <DropDownList v-model="connectionStatus"
                 label="Connection Status"
-                :options="connectionStatusOptions"
+                :items="connectionStatusOptions"
                 rules="required" />
         </div>
     </div>
@@ -224,13 +224,13 @@ export default defineComponent({
         <div :class="columnClass">
             <DropDownList v-model="campusType"
                 label="Campus Type"
-                :options="campusTypeOptions" />
+                :items="campusTypeOptions" />
         </div>
 
         <div :class="columnClass">
             <DropDownList v-model="campusStatus"
                 label="Campus Status"
-                :options="campusStatusOptions" />
+                :items="campusStatusOptions" />
         </div>
     </div>
 
@@ -239,28 +239,28 @@ export default defineComponent({
             <DropDownList v-model="gender"
                 label="Gender"
                 :showBlankItem="false"
-                :options="formFieldVisibilityOptions" />
+                :items="formFieldVisibilityOptions" />
         </div>
 
         <div :class="columnClass">
             <DropDownList v-model="email"
                 label="Email"
                 :showBlankItem="false"
-                :options="formFieldVisibilityOptions" />
+                :items="formFieldVisibilityOptions" />
         </div>
 
         <div :class="columnClass">
             <DropDownList v-model="mobilePhone"
                 label="Mobile Phone"
                 :showBlankItem="false"
-                :options="formFieldVisibilityOptions" />
+                :items="formFieldVisibilityOptions" />
         </div>
 
         <div :class="columnClass">
             <DropDownList v-model="birthdate"
                 label="Birthdate"
                 :showBlankItem="false"
-                :options="formFieldVisibilityOptions" />
+                :items="formFieldVisibilityOptions" />
         </div>
     </div>
 
@@ -269,13 +269,13 @@ export default defineComponent({
             <DropDownList v-model="address"
                 label="Address"
                 :showBlankItem="false"
-                :options="formFieldVisibilityOptions" />
+                :items="formFieldVisibilityOptions" />
         </div>
 
         <div :class="columnClass">
             <DropDownList v-model="addressType"
                 label="Address Type"
-                :options="addressTypeOptions"
+                :items="addressTypeOptions"
                 rules="required" />
         </div>
 
@@ -283,7 +283,7 @@ export default defineComponent({
             <DropDownList v-model="maritalStatus"
                 label="Marital Status"
                 :showBlankItem="false"
-                :options="formFieldVisibilityOptions" />
+                :items="formFieldVisibilityOptions" />
         </div>
     </div>
 
@@ -292,7 +292,7 @@ export default defineComponent({
             <DropDownList v-model="spouseEntry"
                 label="Spouse Entry"
                 :showBlankItem="false"
-                :options="formFieldVisibilityOptions" />
+                :items="formFieldVisibilityOptions" />
         </div>
 
         <div :class="columnClass">

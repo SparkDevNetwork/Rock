@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new MetricBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AdminPersonAliasId = model.AdminPersonAliasId,
                 AutoPartitionOnPrimaryCampus = model.AutoPartitionOnPrimaryCampus,
                 DataViewId = model.DataViewId,

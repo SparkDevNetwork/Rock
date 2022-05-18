@@ -108,6 +108,12 @@ type ChildTreeItemOptions = {
      * on demand.
      */
     lazyLoad?: boolean;
+
+    /**
+     * A token provided by the server that will give us additional security
+     * authorization to specific categories.
+     */
+    securityGrantToken?: string | null;
 };
 
 /**
@@ -140,6 +146,12 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
     public entityTypeQualifierValue?: string;
 
     /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
      * Gets the child items from the server.
      * 
      * @param parentGuid The parent item whose children are retrieved.
@@ -152,10 +164,11 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
             entityTypeGuid: this.entityTypeGuid,
             entityTypeQualifierColumn: this.entityTypeQualifierColumn,
             entityTypeQualifierValue: this.entityTypeQualifierValue,
-            lazyLoad: false
+            lazyLoad: false,
+            securityGrantToken: this.securityGrantToken
         };
 
-        const response = await post<TreeItemBag[]>("/api/v2/Controls/CategoryPicker/childTreeItems", {}, options);
+        const response = await post<TreeItemBag[]>("/api/v2/Controls/CategoryPickerChildTreeItems", {}, options);
 
         if (response.isSuccess && response.data) {
             return response.data;
@@ -187,6 +200,12 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
  */
 export class LocationTreeItemProvider implements ITreeItemProvider {
     /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
      * Gets the child items from the server.
      * 
      * @param parentGuid The parent item whose children are retrieved.
@@ -194,8 +213,13 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
     private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
-        const url = `/api/v2/Controls/LocationPicker/GetActiveChildren/${parentGuid ?? emptyGuid}/${emptyGuid}`;
-        const response = await get<TreeItemBag[]>(url);
+        const options = {
+            guid: parentGuid ?? emptyGuid,
+            rootLocationGuid: emptyGuid,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/LocationPickerGetActiveChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
 
         if (response.isSuccess && response.data) {
             return response.data;

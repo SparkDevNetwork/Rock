@@ -211,7 +211,7 @@ export default defineComponent({
                     Person entry is enabled on the template and cannot be changed.
                 </Alert>
 
-                <DropDownList v-model="campusSetFrom" label="Campus Set From" :options="campusSetFromOptions" />
+                <DropDownList v-model="campusSetFrom" label="Campus Set From" :items="campusSetFromOptions" />
             </div>
         </div>
     </div>

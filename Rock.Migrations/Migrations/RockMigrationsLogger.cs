@@ -83,6 +83,8 @@ namespace Rock.Migrations
             }
         }
 
+        private string lastLoggedCompletedMigration;
+
         /// <summary>
         /// Logs the completed migration.
         /// </summary>
@@ -91,7 +93,11 @@ namespace Rock.Migrations
             if ( lastMigrationName != null && stopwatch != null )
             {
                 stopwatch.Stop();
-                WriteToLog( $"[{stopwatch.Elapsed.TotalMilliseconds,5:#} ms] {lastMigrationName}" );
+                if ( lastLoggedCompletedMigration != lastMigrationName )
+                {
+                    WriteToLog( $"[{stopwatch.Elapsed.TotalMilliseconds,5:#} ms] {lastMigrationName}" );
+                    lastLoggedCompletedMigration = lastMigrationName;
+                }
             }
         }
 

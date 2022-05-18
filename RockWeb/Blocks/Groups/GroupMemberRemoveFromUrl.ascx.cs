@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Groups
 </div>", order: 2 )]
     [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message' should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
     [BooleanField("Inactivate Instead of Remove", "Inactivates the person in the group instead of removing them.", false, key:"Inactivate", order: 4)]
+    [Rock.SystemGuid.BlockTypeGuid( "0159CE20-7B41-4D53-985C-81877ED75767" )]
     public partial class GroupMemberRemoveFromUrl : Rock.Web.UI.RockBlock
     {
         #region Fields

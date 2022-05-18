@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataFilter.Workflow
     [Description( "Filter workflows by workflow type" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Type Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "48975139-45A8-4CCC-BC03-FDB32B9BB7C6")]
     public class WorkflowTypeFilter : DataFilterComponent
     {
         #region Properties

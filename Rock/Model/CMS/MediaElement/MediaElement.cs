@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "MediaElement" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "F4506B5D-F22C-4D3F-8205-FE48A9B7584B")]
     public partial class MediaElement : Model<MediaElement>
     {
         #region Entity Properties

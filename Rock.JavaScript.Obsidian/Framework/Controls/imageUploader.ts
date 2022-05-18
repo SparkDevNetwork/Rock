@@ -126,7 +126,7 @@ export default defineComponent({
             }
             catch (e) {
                 // Show any error message we got.
-                uploadErrorMessage.value = e.toString();
+                uploadErrorMessage.value = String(e);
             }
             finally {
                 // Clear the uploading progress whether success or failure.

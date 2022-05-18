@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new EntitySetItemBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 AdditionalMergeValuesJson = model.AdditionalMergeValuesJson,
                 EntityId = model.EntityId,
                 EntitySetId = model.EntitySetId,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -129,6 +129,7 @@ namespace RockWeb.Blocks.Event
         DefaultBooleanValue = true,
         Order = 11 )]
     #endregion BlockAttributes
+    [Rock.SystemGuid.BlockTypeGuid( "CABD2BFB-DFFF-42CD-BF1A-14F3BEE583DD" )]
     public partial class RegistrationEntry : RockBlock
     {
         private static class AttributeKey
@@ -743,7 +744,6 @@ namespace RockWeb.Blocks.Event
             // Change the display when family members are allowed
             rblFamilyOptions.Label = RegistrantTerm + " is in the same " + GetAttributeValue( AttributeKey.FamilyTerm ) + " as";
             rblRegistrarFamilyOptions.Label = "You are in the same " + GetAttributeValue( AttributeKey.FamilyTerm ) + " as";
-            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = RegistrationTemplate != null && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes ? "block" : "none";
 
             if ( !Page.IsPostBack )
             {
@@ -1312,21 +1312,56 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRegistrantNext_Click( object sender, EventArgs e )
         {
-            if ( Page.IsValid )
+            if ( !ValidateControls( phRegistrantControls.Controls) )
             {
-                if ( CurrentPanel == PanelIndex.PanelRegistrant )
-                {
-                    _saveNavigationHistory = true;
-
-                    ShowRegistrant( true, true );
-                }
-                else
-                {
-                    ShowStart();
-                }
-
-                hfTriggerScroll.Value = "true";
+                return;
             }
+
+            if ( CurrentPanel == PanelIndex.PanelRegistrant )
+            {
+                _saveNavigationHistory = true;
+
+                ShowRegistrant( true, true );
+            }
+            else
+            {
+                ShowStart();
+            }
+
+            hfTriggerScroll.Value = "true";
+        }
+
+        protected bool ValidateControls( ControlCollection controls )
+        {
+            var isValid = true;
+
+            foreach( Control control in controls )
+            {
+                if ( control is FieldVisibilityWrapper )
+                {
+                    isValid = ValidateControls( control.Controls );
+                }
+
+                if ( isValid == false )
+                {
+                    break;
+                }
+
+                var irockControl = control as IRockControl;
+                if ( irockControl == null || irockControl.ValidationGroup.IsNullOrWhiteSpace() || !control.Visible )
+                {
+                    continue;
+                }
+
+                if ( !irockControl.IsValid )
+                {
+                    isValid = false;
+                    break;
+                }
+            }
+
+            // If no invalid controls encountered then return true;
+            return isValid;
         }
 
         /// <summary>
@@ -3618,12 +3653,13 @@ namespace RockWeb.Blocks.Event
             }
 
             PaymentInfo paymentInfo = null;
-            if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
+
+            var savedCCId = rblSavedCC.SelectedValueAsId() ?? 0;
+            if ( rblSavedCC.Items.Count > 0 && savedCCId > 0 )
             {
                 var savedAccount = new FinancialPersonSavedAccountService( rockContext )
                     .Queryable()
-                    .Where( a => a.Id == rblSavedCC.SelectedValueAsId().Value
-                        && a.PersonAlias.PersonId == CurrentPersonId )
+                    .Where( a => a.Id == savedCCId && a.PersonAlias.PersonId == CurrentPersonId )
                     .AsNoTracking()
                     .FirstOrDefault();
 
@@ -4327,9 +4363,7 @@ namespace RockWeb.Blocks.Event
                         pnlRegistrantFields.Visible = true;
                         pnlDigitalSignature.Visible = false;
                         lbRegistrantNext.Visible = true;
-
                         ddlFamilyMembers.Items.Clear();
-                        var preselectFamilyMember = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes;
 
                         if ( CurrentFormIndex == 0 && RegistrationState != null && RegistrationTemplate.ShowCurrentFamilyMembers )
                         {
@@ -4362,7 +4396,7 @@ namespace RockWeb.Blocks.Event
                                     foreach ( var familyMember in familyMembers )
                                     {
                                         ListItem listItem = new ListItem( familyMember.FullName, familyMember.Id.ToString() );
-                                        listItem.Selected = familyMember.Id == registrant.PersonId && preselectFamilyMember;
+                                        listItem.Selected = familyMember.Id == registrant.PersonId;
                                         ddlFamilyMembers.Items.Add( listItem );
                                     }
                                 }
@@ -4865,6 +4899,10 @@ namespace RockWeb.Blocks.Event
                                 "None of the above" );
                             rblFamilyOptions.DataSource = familyOptions;
                             rblFamilyOptions.DataBind();
+
+                            // If this is the first registrant and there is a logged in person then select that as the default.
+                            rblFamilyOptions.SelectedIndex = CurrentRegistrantIndex == 0 && CurrentPerson != null ? 0 : -1;
+
                             pnlFamilyOptions.Visible = true;
                         }
                         else

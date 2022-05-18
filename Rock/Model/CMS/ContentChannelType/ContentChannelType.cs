@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "D5992F79-7FB8-49FF-82AB-E8CB2CEC1E74")]
     public partial class ContentChannelType : Model<ContentChannelType>, ICacheable
     {
         #region Entity Properties

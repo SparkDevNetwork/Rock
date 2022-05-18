@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,9 +58,10 @@ namespace Rock.Workflow.Action
         false, "", "", 7, AttributeKey.InteractionEntityId, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
     [WorkflowTextOrAttribute( "Interaction DateTime", "Interaction DateTime",
         "An optional date time to use when adding the interaction. <span class='tip tip-lava'></span>",
-        false, "", "", 8, AttributeKey.InteractionDateTime, new string[] { "Rock.Field.Types.DateTimeFieldType" } )]
-    [WorkflowAttribute( "ResultInteractionId", "When set, the created Interaction record's Id will be put into this optional text field attribute.",
-        false, "", "", 9, AttributeKey.ResultInteractionId, new string[] { "Rock.Field.Types.TextFieldType" } )]
+        false, "", "", 8, AttributeKey.InteractionDateTime, new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.DateFieldType" } )]
+    [WorkflowAttribute( "Result Interaction Id", "When set, the created Interaction record's Id will be put into this optional text field attribute.",
+        false, "", "", 9, AttributeKey.ResultInteractionId, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.IntegerFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "12587805-D8F0-4423-9C4C-3F87D2D4D423")]
     public class InteractionAdd : ActionComponent
     {
         #region Attribute Keys

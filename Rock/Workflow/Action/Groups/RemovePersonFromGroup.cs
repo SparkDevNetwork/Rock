@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.PersonFieldType" })]
 
     [Rock.Attribute.GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to use for the removal. Leave role blank to remove them no matter what their role is.", "Group", true, key: "GroupAndRole" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E0305041-5F3B-42FD-8E1D-D2BC3224D50E")]
     public class RemovePersonFromGroup : ActionComponent
     {
         /// <summary>

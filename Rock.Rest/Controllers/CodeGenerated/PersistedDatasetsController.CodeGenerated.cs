@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PersistedDatasets REST API
     /// </summary>
+    [RestControllerGuid( "55373AF6-2281-4D62-8065-F217133011D1" )]
     public partial class PersistedDatasetsController : Rock.Rest.ApiController<Rock.Model.PersistedDataset>
     {
         /// <summary>

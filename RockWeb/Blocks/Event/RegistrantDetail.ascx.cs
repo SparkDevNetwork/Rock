@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays interface for editing the registrant attribute values and fees for a given registrant." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D72A1A61-43D1-4D5D-92EC-BAECA02EAC43" )]
     public partial class RegistrantDetail : RockBlock
     {
         #region Properties

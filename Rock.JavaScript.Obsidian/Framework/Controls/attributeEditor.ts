@@ -19,9 +19,9 @@ import { Guid } from "@Obsidian/Types";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import CheckBox from "./checkBox";
 import TextBox from "./textBox";
-import { FieldTypeConfigurationBag } from "@Obsidian/ViewModels/Controls/fieldTypeConfigurationBag";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
-import CategoriesPicker from "./categoriesPicker";
+import CategoryPicker from "./categoryPicker";
 import FieldTypeEditor from "./fieldTypeEditor";
 import StaticFormControl from "./staticFormControl";
 import PanelWidget from "./panelWidget";
@@ -31,7 +31,7 @@ export default defineComponent({
     name: "AttributeEditor",
 
     components: {
-        CategoriesPicker,
+        CategoryPicker,
         CheckBox,
         FieldTypeEditor,
         PanelWidget,
@@ -101,7 +101,7 @@ export default defineComponent({
         const preHtml = ref(props.modelValue?.preHtml ?? "");
         const postHtml = ref(props.modelValue?.postHtml ?? "");
         const categories = ref([...(props.modelValue?.categories ?? [])]);
-        const fieldTypeValue = ref<FieldTypeConfigurationBag>({
+        const fieldTypeValue = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
             fieldTypeGuid: props.modelValue?.fieldTypeGuid ?? "",
             configurationValues: { ...(props.modelValue?.configurationValues ?? {}) },
             defaultValue: props.modelValue?.defaultValue ?? ""
@@ -228,11 +228,12 @@ export default defineComponent({
 
     <div class="row">
         <div class="col-md-6">
-            <CategoriesPicker v-model="categories"
+            <CategoryPicker v-model="categories"
                 label="Categories"
                 :entityTypeGuid="attributeEntityTypeGuid"
                 entityTypeQualifierColumn="EntityTypeId"
-                :entityTypeQualifierValue="categoryQualifierValue" />
+                :entityTypeQualifierValue="categoryQualifierValue"
+                multiple />
 
             <StaticFormControl v-if="isSystem" v-model="attributeKey" label="Key" />
             <TextBox v-else v-model="attributeKey" label="Key" rules="required" :disabled="keyDisabledAttr" />

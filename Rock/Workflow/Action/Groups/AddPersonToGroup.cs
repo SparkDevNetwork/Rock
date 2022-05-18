@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace Rock.Workflow.Action
     [GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, "", "", 1, "GroupAndRole" )]
     [EnumField( "Group Member Status", "The  status to set the user to in the group.", typeof( GroupMemberStatus ), true, "1", "", 2 )]
     [BooleanField("Update Existing", "If the selected person already belongs to the selected group, should their current role and status be updated to reflect the configured values above.", true, "", 3)]
+    [Rock.SystemGuid.EntityTypeGuid( "DF0167A1-6928-4FBC-893B-5826A28AAC83")]
     public class AddPersonToGroup : ActionComponent
     {
         /// <summary>

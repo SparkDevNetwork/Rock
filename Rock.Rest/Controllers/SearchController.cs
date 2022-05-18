@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,8 +26,8 @@ namespace Rock.Controllers
     /// <summary>
     /// Search REST API
     /// </summary>
-    [RockGuid( "1d08e8b4-61af-4ed7-9201-b64fcc3c22ad" )]
-    public partial class SearchController : ApiController
+    [Rock.SystemGuid.RestControllerGuid( "1D08E8B4-61AF-4ED7-9201-B64FCC3C22AD")]
+    public partial class SearchController : ApiController 
     {
         /// <summary>
         /// GET that returns a list of results based on the Search Type and Term
@@ -37,7 +37,7 @@ namespace Rock.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/search" )]
         [EnableQuery]
-        [RockGuid( "ebaec60a-9c0a-45cd-954d-51e56b3bd162" )]
+        [Rock.SystemGuid.RestActionGuid( "EBAEC60A-9C0A-45CD-954D-51E56B3BD162" )]
         public IQueryable<string> Get()
         {
             string queryString = Request.RequestUri.Query;

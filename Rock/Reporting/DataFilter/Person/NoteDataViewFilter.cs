@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select people that have notes returned by a specified Data View" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person with Note" )]
+    [Rock.SystemGuid.EntityTypeGuid( "DFC209A0-7309-433E-B8D4-E7B6BC8AE7EC")]
     public class NoteDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.Note>
     {
         #region Overrides

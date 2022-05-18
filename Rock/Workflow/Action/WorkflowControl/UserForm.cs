@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Form" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "486DC4FA-FCBC-425F-90B0-E606DA8A9F68")]
     public class UserEntryForm : ActionComponent
     {
         /// <summary>

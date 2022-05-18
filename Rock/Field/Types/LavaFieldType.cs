@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ namespace Rock.Field.Types
     /// Lava Field Type.  Stored as text
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LAVA )]
     public class LavaFieldType : CodeEditorFieldType
     {
         #region Formatting

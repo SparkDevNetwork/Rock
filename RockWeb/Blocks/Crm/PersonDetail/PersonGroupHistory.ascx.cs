@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = false,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "F8E351BC-607E-4897-B732-F590B5155451" )]
     public partial class PersonGroupHistory : PersonBlock
     {
         #region Attribute Keys

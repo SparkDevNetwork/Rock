@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Select all the requests where the requester is the same person as the people returned from this other data view." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Data View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8C05C3F9-4AB4-41D1-9311-214A9AD6BCE0")]
     public class PersonDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Properties

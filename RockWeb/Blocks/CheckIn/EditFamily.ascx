@@ -150,14 +150,14 @@
                             <asp:HiddenField ID="hfGroupMemberGuid" runat="server" />
                             <asp:ValidationSummary ID="vsEditPerson" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgEditPerson" />
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:Toggle ID="tglAdultChild" runat="server" OnText="Adult" OffText="Child" ActiveButtonCssClass="btn-primary" OnCheckedChanged="tglAdultChild_CheckedChanged" />
                                     <Rock:DefinedValuePicker ID="dvpRecordStatus" runat="server" Label="Record Status" ValidationGroup="vgEditPerson" />
 
                                     <%-- keep a hidden field for connectionstatus since we need to keep the state, but don't want it to be editable or viewable --%>
                                     <asp:HiddenField ID="hfConnectionStatus" runat="server" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <%-- Fields to be shown when editing a Child --%>
                                     <asp:Panel ID="pnlChildRelationshipToAdult" runat="server">
                                         <Rock:RockDropDownList ID="ddlChildRelationShipToAdult" runat="server" Label="Relationship to Adult" />
@@ -170,43 +170,43 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" Required="true" ValidationGroup="vgEditPerson" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" Label="Last Name" Required="true" ValidationGroup="vgEditPerson" />
                                 </div>
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:DefinedValuePicker ID="dvpSuffix" runat="server" Label="Suffix" ValidationGroup="vgEditPerson" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:ButtonGroup ID="bgGender" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-primary active" UnselectedItemClass="btn btn-default" Label="&nbsp;" Required="true" ValidationGroup="vgEditPerson" RequiredErrorMessage="Gender is required.">
                                         <asp:ListItem Text="Male" Value="1" />
                                         <asp:ListItem Text="Female" Value="2" />
                                     </Rock:ButtonGroup>
                                 </div>
-                                <div class="col-md-6">
-                                    <Rock:DatePicker ID="dpBirthDate" runat="server" Label="Birthdate" AllowFutureDateSelection="False" RequireYear="True" ShowOnFocus="false" StartView="decade" />
+                                <div class="col-md-6" style="min-height:auto;">
+                                    <Rock:DatePicker ID="dpBirthDate" runat="server" Label="Birthdate" AllowFutureDateSelection="False" RequireYear="True" ShowOnFocus="false" StartView="decade" ValidationGroup="vgEditPerson" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:GradePicker ID="gpGradePicker" runat="server" Label="Grade" UseGradeOffsetAsValue="true" UseAbbreviation="true" ValidationGroup="vgEditPerson" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:PhoneNumberBox ID="pnMobilePhone" runat="server" Label="Mobile Phone" ValidationGroup="vgEditPerson" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:ButtonGroup ID="bgSMS" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-primary active" UnselectedItemClass="btn btn-default" Label="&nbsp;" ValidationGroup="vgEditPerson" RequiredErrorMessage="SMS Enabled is required.">
                                         <asp:ListItem Text="SMS Enabled" Value="True" />
                                         <asp:ListItem Text="No SMS" Value="False" />
                                     </Rock:ButtonGroup>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="vgEditPerson" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="min-height:auto;">
                                     <Rock:RockTextBox ID="tbAlternateID" runat="server" Label="Alternate ID" CssClass="js-alternate-id" ValidationGroup="vgEditPerson" />
                                 </div>
 

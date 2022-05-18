@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Utility
     [Description( "View and edit attribute values for an entity." )]
 
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "4A89FF55-A6A3-4A9B-8D1D-2ADE092565F5" )]
     public partial class EntityAttributeValues : RockBlock, ISecondaryBlock
     {
         #region Base Method Overrides

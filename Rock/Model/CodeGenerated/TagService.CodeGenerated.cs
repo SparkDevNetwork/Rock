@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new TagBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 BackgroundColor = model.BackgroundColor,
                 CategoryId = model.CategoryId,
                 Description = model.Description,

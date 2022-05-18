@@ -154,8 +154,8 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<DropDownList v-if="!isMultiple" v-model="internalValue" v-bind="configAttributes" :options="options" :showBlankItem="!isRequired" />
-<CheckBoxList v-else v-model="internalValues" :options="optionsMultiple" horizontal :repeatColumns="repeatColumns" />
+<DropDownList v-if="!isMultiple" v-model="internalValue" v-bind="configAttributes" :items="options" :showBlankItem="!isRequired" />
+<CheckBoxList v-else v-model="internalValues" :items="optionsMultiple" horizontal :repeatColumns="repeatColumns" />
 `
 });
 
@@ -249,12 +249,14 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {};
+            const newValue: Record<string, string> = {
+                ...props.modelValue
+            };
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
             newValue[ConfigurationValueKey.DefinedType] = definedTypeValue.value;
-            newValue[ConfigurationValueKey.Values] = selectableValues.value.join(",");
+            newValue[ConfigurationValueKey.SelectableValues] = selectableValues.value.join(",");
             newValue[ConfigurationValueKey.AllowMultiple] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
             newValue[ConfigurationValueKey.DisplayDescription] = asTrueFalseOrNull(displayDescriptions.value) ?? "False";
             newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
@@ -263,7 +265,7 @@ export const ConfigurationComponent = defineComponent({
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== props.modelValue[ConfigurationValueKey.DefinedType]
-                || newValue[ConfigurationValueKey.Values] !== (props.modelValue[ConfigurationValueKey.Values] ?? "")
+                || newValue[ConfigurationValueKey.SelectableValues] !== (props.modelValue[ConfigurationValueKey.SelectableValues] ?? "")
                 || newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple] ?? "False")
                 || newValue[ConfigurationValueKey.DisplayDescription] !== (props.modelValue[ConfigurationValueKey.DisplayDescription] ?? "False")
                 || newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
@@ -307,7 +309,7 @@ export const ConfigurationComponent = defineComponent({
             enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationValueKey.EnhancedSelection]);
             includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
             repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
-            selectableValues.value = (props.modelValue.selectableValues?.split(",") ?? []).filter(s => s !== "");
+            selectableValues.value = (props.modelValue[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
         }, {
             immediate: true
         });
@@ -341,13 +343,13 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <DropDownList v-model="definedTypeValue" label="Defined Type" :options="definedTypeOptions" :showBlankItem="false" />
+    <DropDownList v-model="definedTypeValue" label="Defined Type" :items="definedTypeOptions" :showBlankItem="false" />
     <CheckBox v-model="allowMultipleValues" label="Allow Multiple Values" text="Yes" help="When set, allows multiple defined type values to be selected." />
     <CheckBox v-model="displayDescriptions" label="Display Descriptions" text="Yes" help="When set, the defined value descriptions will be displayed instead of the values." />
     <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" text="Yes" />
     <CheckBox v-model="includeInactive" label="Include Inactive" text="Yes" />
     <NumberBox v-model="repeatColumns" label="Repeat Columns" />
-    <CheckBoxList v-if="hasValues" v-model="selectableValues" label="Selectable Values" :options="definedValueOptions" :horizontal="true" />
+    <CheckBoxList v-if="hasValues" v-model="selectableValues" label="Selectable Values" :items="definedValueOptions" :horizontal="true" />
 </div>
 `
 });

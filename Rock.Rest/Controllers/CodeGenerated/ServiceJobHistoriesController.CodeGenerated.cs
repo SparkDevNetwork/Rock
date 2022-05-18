@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ServiceJobHistories REST API
     /// </summary>
+    [RestControllerGuid( "6A97CDED-12D0-426A-B3A6-7130589CDA5F" )]
     public partial class ServiceJobHistoriesController : Rock.Rest.ApiController<Rock.Model.ServiceJobHistory>
     {
         /// <summary>

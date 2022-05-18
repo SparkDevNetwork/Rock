@@ -31,9 +31,22 @@
 
                 <Rock:PanelWidget ID="pwExperimentalSettings" runat="server" Title="Experimental Settings" TitleIconCssClass="fa fa-flask" Expanded="false">
                     <Rock:DayOfWeekPicker ID="dowpStartingDayOfWeek" runat="server" Label="Starting Day of Week" DefaultDayOfWeek="Monday" Help="Set this to change how Rock calculates 'Sunday Date'. This setting is retro-active to any data that is stored with SundayDate." />
-                    <Rock:NotificationBox ID="nbStartDayOfWeekSaveMessage" runat="server" NotificationBoxType="Warning" Text="This is an experimental setting. Saving this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'." />
+                    <Rock:NotificationBox ID="nbStartDayOfWeekSaveMessage" runat="server" NotificationBoxType="Warning" Text="This is an experimental setting. Changing this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'." />
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <Rock:NumberBox ID="nbSecurityGrantTokenDuration" runat="server" CssClass="input-width-md" Label="Security Grant Token Duration" Help="This specifies the default duration in minutes that a security grant token will be valid for. These are used to provide additional security context to UI controls." AppendText="minutes" NumberType="Integer" MinimumValue="60" />
+                        </div>
+                    </div>
+
+                    <Rock:NotificationBox ID="nbSecurityGrantTokenDurationSaveMessage" runat="server" Visible="false" NotificationBoxType="Success" Text="Security grant token duration has been successfully updated." />
+
                     <div class="actions">
-                        <Rock:BootstrapButton ID="btnSaveStartDayOfWeek" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveStartDayOfWeek_Click" Text="Save" DataLoadingText="Updating..." ValidationGroup="Experimental" />
+                        <Rock:BootstrapButton ID="btnSaveExperimental" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveExperimental_Click" Text="Save" DataLoadingText="Updating..." ValidationGroup="Experimental" />
+
+                        <span class="pull-right">
+                            <asp:LinkButton ID="btnRevokeSecurityGrants" runat="server" CssClass="btn btn-default" OnClick="btnRevokeSecurityGrants_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to revoke all security grant tokens?');" Text="Revoke Grants" ValidationGroup="Experimental" ToolTip="Revokes all existing security grant tokens that have been issued." />
+                        </span>
                     </div>
                 </Rock:PanelWidget>
 

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// DocumentTypes REST API
     /// </summary>
+    [RestControllerGuid( "D4F0015E-EAE9-4CE6-96BA-7C30E7DF8058" )]
     public partial class DocumentTypesController : Rock.Rest.ApiController<Rock.Model.DocumentType>
     {
         /// <summary>

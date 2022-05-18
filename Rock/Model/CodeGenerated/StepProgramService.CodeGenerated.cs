@@ -93,9 +93,7 @@ namespace Rock.Model
 
             var viewModel = new StepProgramBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 CategoryId = model.CategoryId,
                 DefaultListView = ( int ) model.DefaultListView,
                 Description = model.Description,

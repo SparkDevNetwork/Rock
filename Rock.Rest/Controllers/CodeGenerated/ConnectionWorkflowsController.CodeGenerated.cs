@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ConnectionWorkflows REST API
     /// </summary>
+    [RestControllerGuid( "1572D65A-3847-4E28-B504-03B4865BAD47" )]
     public partial class ConnectionWorkflowsController : Rock.Rest.ApiController<Rock.Model.ConnectionWorkflow>
     {
         /// <summary>

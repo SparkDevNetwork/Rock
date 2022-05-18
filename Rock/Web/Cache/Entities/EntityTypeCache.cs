@@ -330,7 +330,7 @@ namespace Rock.Web.Cache
 
         #region Cache Related Methods
 
-        private static Dictionary<int, Type> _cacheableEntityTypeIds = null;
+        private static Dictionary<string, Type> _cachedEntityTypeByEntityType = null;
         private System.Reflection.MethodInfo _cachedItemGetMethod = null;
         private System.Reflection.MethodInfo _cachedItemFlushItemMethod = null;
         private System.Reflection.MethodInfo _cachedItemClearMethod = null;
@@ -389,18 +389,18 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Type GetEntityCacheType()
         {
-            if ( _cacheableEntityTypeIds == null )
+            if ( _cachedEntityTypeByEntityType == null )
             {
-                _cacheableEntityTypeIds = Reflection.FindTypes( typeof( IEntityCache ) ).Values
+                _cachedEntityTypeByEntityType = Reflection.FindTypes( typeof( IEntityCache ) ).Values
                     .Select( a => new
                     {
                         CacheTypeType = a.BaseType.GenericTypeArguments[0],
                         EntityTypeType = a.BaseType.GenericTypeArguments[1]
                     } )
-                    .ToDictionary( k => EntityTypeCache.Get( k.EntityTypeType ).Id, v => v.CacheTypeType );
+                    .ToDictionary( k => k.EntityTypeType.FullName, v => v.CacheTypeType );
             }
 
-            var entityCacheType = _cacheableEntityTypeIds?.GetValueOrNull( this.Id );
+            var entityCacheType = _cachedEntityTypeByEntityType?.GetValueOrNull( this.Name );
 
             return entityCacheType;
         }

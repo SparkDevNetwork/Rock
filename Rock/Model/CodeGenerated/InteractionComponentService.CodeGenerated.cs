@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new InteractionComponentBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ChannelCustom1 = model.ChannelCustom1,
                 ChannelCustom2 = model.ChannelCustom2,
                 ChannelCustomIndexed1 = model.ChannelCustomIndexed1,

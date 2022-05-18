@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// IdentityVerifications REST API
     /// </summary>
+    [RestControllerGuid( "F673335D-80E5-4412-A485-3C5C661F0018" )]
     public partial class IdentityVerificationsController : Rock.Rest.ApiController<Rock.Model.IdentityVerification>
     {
         /// <summary>

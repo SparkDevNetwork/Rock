@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Prayer
 
     [LinkedPage( "Detail Page", Order = 0 ),]
     [CategoryField( "Category Selection", "A top level category. Only prayer requests comments under this category will be shown.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, "PrayerRequestCategory" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DF0F5743-2BFF-40C0-8BEE-39F1DE7B4C22" )]
     public partial class PrayerCommentsList : RockBlock, ICustomGridColumns
     {
         #region Fields

@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new EventItemOccurrenceChannelItemBag
             {
-                Id = model.Id,
                 IdKey = model.IdKey,
-                Guid = model.Guid,
                 ContentChannelItemId = model.ContentChannelItemId,
                 EventItemOccurrenceId = model.EventItemOccurrenceId,
                 CreatedDateTime = model.CreatedDateTime,

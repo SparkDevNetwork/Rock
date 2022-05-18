@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Reporting
     [Description( "Lists all reports under a specified report category." )]
     [CategoryField( "Report Category", "Category to use to list reports for.", false, "Rock.Model.Report", "", "", true, "89e54497-5e98-4f1b-b83a-95bfb685da91", "" )]
     [LinkedPage("Detail Page", "Detail page to show report.", true, "", "", 1)]
+    [Rock.SystemGuid.BlockTypeGuid( "37D29989-F7CA-4D51-925A-378DB73ED53D" )]
     public partial class ReportList : RockBlock, ICustomGridColumns
     {
         #region Fields

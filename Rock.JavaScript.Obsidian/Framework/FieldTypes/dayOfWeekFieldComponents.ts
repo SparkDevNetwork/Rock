@@ -47,7 +47,7 @@ export const EditComponent = defineComponent({
         };
     },
     template: `
-<DropDownList v-model="internalValue" :options="options" />
+<DropDownList v-model="internalValue" :items="options" />
 `
 });
 
@@ -77,7 +77,7 @@ export const FilterComponent = defineComponent({
         };
     },
     template: `
-<DropDownList v-model="internalValue" :options="options" />
+<DropDownList v-model="internalValue" :items="options" />
 `
 });
 
