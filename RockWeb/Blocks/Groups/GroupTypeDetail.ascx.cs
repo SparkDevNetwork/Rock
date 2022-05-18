@@ -703,6 +703,24 @@ namespace RockWeb.Blocks.Groups
             BindInheritedAttributes( gtpInheritedGroupType.SelectedValueAsInt(), groupTypeService, attributeService );
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbSchedulingEnabled control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void cbSchedulingEnabled_CheckedChanged( object sender, EventArgs e )
+        {
+            ScheduleTypesRequired();
+        }
+
+        /// <summary>
+        /// Sets the requirement of the "Schedule Types" control based on the checked state of the "Scheduling Enabled" control.
+        /// </summary>
+        private void ScheduleTypesRequired()
+        {
+            cblScheduleTypes.Required = cbSchedulingEnabled.Checked;
+        }
+
         #endregion
 
         #endregion
@@ -914,6 +932,8 @@ namespace RockWeb.Blocks.Groups
 
             // Scheduling
             cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
+            ScheduleTypesRequired();
+            cblScheduleTypes.RequiredErrorMessage = "A 'Group Schedule Option' must be selected under 'Attendance / Check-In' when Scheduling is enabled.";
 
             ddlScheduleConfirmationSystemCommunication.SetValue( groupType.ScheduleConfirmationSystemCommunicationId );
             cbRequiresReasonIfDeclineSchedule.Checked = groupType.RequiresReasonIfDeclineSchedule;
@@ -3025,5 +3045,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
     }
 }
