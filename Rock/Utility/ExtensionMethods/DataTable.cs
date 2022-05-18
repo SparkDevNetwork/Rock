@@ -64,7 +64,19 @@ namespace Rock
             foreach ( DataColumn col in dt.Columns )
             {
                 columnNames.Add( col.ColumnName );
-                properties.Add( new DynamicProperty( col.ColumnName, col.DataType ) );
+
+                // Determine the property data type, and create a nullable type if the table column allows null values.
+                var dataType = col.DataType;
+                if ( col.AllowDBNull )
+                {
+                    if ( dataType.IsValueType
+                         && !( dataType.IsGenericType && dataType.GetGenericTypeDefinition() == typeof( Nullable<> ) ) )
+                    {
+                        dataType = typeof( Nullable<> ).MakeGenericType( dataType );
+                    }
+                }
+
+                properties.Add( new DynamicProperty( col.ColumnName, dataType ) );
             }
 
             var rowType = DynamicClassFactory.CreateType( properties );
