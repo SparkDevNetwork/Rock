@@ -44,6 +44,17 @@ namespace Rock.CodeGeneration.Pages
 
         #region Properties
 
+        public string DisplayedAssemblyPath
+        {
+            get => _displayedAssemblyPath;
+            set
+            {
+                _displayedAssemblyPath = value;
+                OnPropertyChanged();
+            }
+        }
+        private string _displayedAssemblyPath;
+
         public string AssemblyPath
         {
             get => _assemblyPath;
@@ -274,10 +285,23 @@ namespace Rock.CodeGeneration.Pages
             string assemblyFileName = fi.FullName;
 
             AssemblyPath = assemblyFileName;
+            DisplayedAssemblyPath = assemblyFileName;
             AssemblyDateTimeElapsed = fi.LastWriteTime.ToElapsedString();
             AssemblyDateTime = fi.LastWriteTime.ToString();
 
             var assembly = Assembly.LoadFrom( assemblyFileName );
+
+            var rockWebBinRockDllFileName = Path.Combine( RootFolder().FullName, "RockWeb\\Bin\\Rock.dll" );
+            if ( File.Exists( rockWebBinRockDllFileName ) )
+            {
+                var rockWebBinRockDll = Assembly.ReflectionOnlyLoadFrom( rockWebBinRockDllFileName );
+
+                // if the files are identical (they should be), display the path of the RockWeb\Bin Rock.dll
+                if ( rockWebBinRockDll.ManifestModule.ModuleVersionId == rockAssembly.ManifestModule.ModuleVersionId )
+                {
+                    DisplayedAssemblyPath = rockWebBinRockDllFileName;
+                }
+            }
 
             foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
             {
@@ -1626,7 +1650,7 @@ namespace Rock.ViewModels.Entities
             var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
             var rockObsolete = type.GetCustomAttribute<RockObsolete>();
             var fullClassName = $"{restNamespace}.{pluralizedName}Controller";
-            var restControllerType = Type.GetType( $"{fullClassName}, {typeof(Rock.Rest.ApiControllerBase).Assembly.FullName}" );
+            var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiControllerBase ).Assembly.FullName}" );
             var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
 
             if ( restControllerGuid == null )
