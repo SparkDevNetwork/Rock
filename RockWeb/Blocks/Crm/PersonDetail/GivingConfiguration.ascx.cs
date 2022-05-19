@@ -742,8 +742,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var rockContext = new RockContext();
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
             var savedAccountList = financialPersonSavedAccountService
-                .Queryable()
-                .Where( a => a.PersonAliasId == this.Person.PrimaryAliasId.Value && a.FinancialPaymentDetail != null )
+                .GetByPersonId( this.Person.Id )
+                .Where( a => a.FinancialPaymentDetail != null )
                 .ToList();
 
             rptSavedAccounts.DataSource = savedAccountList;
