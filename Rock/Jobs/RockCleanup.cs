@@ -948,7 +948,7 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
-                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.Status.Equals( "Completed" )
+                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.CompletedDateTime.HasValue
                 && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.CompletedWorkflowRetentionPeriod ) )
                 .ToList();
 
