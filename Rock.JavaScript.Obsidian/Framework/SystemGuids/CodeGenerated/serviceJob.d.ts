@@ -49,7 +49,7 @@ export const enum ServiceJob {
     DataMigrations103SpiritualGifts = "B16F889F-3349-4CA9-976D-7EF098DD8BC6",
     /** The Job to run Post v11 Data Migrations to update Date Keys on several tables */
     DataMigrations110PopulateDateKeys = "E56FD4FC-02F8-4A46-A91D-E86C2B635870",
-    /** The job to run Post V11 to create an index on  */
+    /** The job to run Post V11 to create an index on Rock.Model.CommunicationRecipient.ResponseCode */
     DataMigrations110CommunicationrecipientResponsecodeIndex = "131F9418-777B-4A34-A19B-EB9A65893602",
     /** The Job to run Post v11 Data Migrations to update Related DataView Id in DataView Filter table. */
     DataMigrations110PopulateRelatedDataviewId = "C3882742-714B-4E82-8894-4B944142CDC7",
@@ -83,10 +83,10 @@ export const enum ServiceJob {
     GetNcoa = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
     /**
      * The Job to Rebuild a Sequence. This job has been deleted and replaced with
-     * 
+     * Rock.Transactions.StreakTypeRebuildTransaction
      */
     RebuildStreak = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A",
-    /** The rock cleanup Job.  */
+    /** The rock cleanup Job. Rock.Jobs.RockCleanup */
     RockCleanup = "1A8238B1-038A-4295-9FDE-C6D93002A5D7",
     /** The steps automation job - add steps based on people in a dataview */
     StepsAutomation = "97858941-0447-49D6-9E35-B03665FEE965",
@@ -96,12 +96,12 @@ export const enum ServiceJob {
     SendGroupAttendanceDigest = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B",
     /** A run once job after a new installation. The purpose of this job is to populate generated datasets after an initial installation using RockInstaller that are too large to include in the installer. */
     PostInstallDataMigrations = "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3",
-    /** The  job. */
+    /** The Rock.Jobs.GivingAutomation job. */
     GivingAutomation = "B6DE0544-8C91-444E-B911-453D4CE71515",
-    /** Use  instead */
+    /** Use Rock.SystemGuid.ServiceJob.GIVING_AUTOMATION instead */
     GivingAnalytics = "B6DE0544-8C91-444E-B911-453D4CE71515",
     /** The media synchronize job. */
     SyncMedia = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
-    /** The Process Elevated Security Job.  */
+    /** The Process Elevated Security Job. Rock.Jobs.ProcessElevatedSecurity */
     ProcessElevatedSecurity = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
 }

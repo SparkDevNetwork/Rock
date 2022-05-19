@@ -145,12 +145,15 @@
     <Compile Include="Utility\GeneratedFile.cs" />
     <Compile Include="Utility\INavigation.cs" />
     <Compile Include="Utility\InverseBooleanConverter.cs" />
-    <Compile Include="Utility\MultiDocReader.cs" />
     <Compile Include="Utility\PropertyDeclaration.cs" />
     <Compile Include="Utility\SolutionHelper.cs" />
     <Compile Include="Utility\SupportTools.cs" />
     <Compile Include="Utility\TypeScriptImport.cs" />
     <Compile Include="ViewModels\AlertViewModel.cs" />
+    <Compile Include="XmlDoc\Comment.cs" />
+    <Compile Include="XmlDoc\Comments.cs" />
+    <Compile Include="XmlDoc\XmlDocId.cs" />
+    <Compile Include="XmlDoc\XmlDocReader.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

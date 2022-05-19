@@ -40,7 +40,7 @@ export type FieldTypeEditorUpdateAttributeConfigurationResultBag = {
 
     /**
      * Gets or sets the default attribute value view model that corresponds
-     * to the current .
+     * to the current Rock.ViewModels.Controls.FieldTypeEditorUpdateAttributeConfigurationResultBag.ConfigurationValues.
      */
     defaultValue?: string | null;
 };
