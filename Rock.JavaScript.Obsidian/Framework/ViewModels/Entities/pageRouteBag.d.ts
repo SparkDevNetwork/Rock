@@ -25,28 +25,32 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PageRoute View Model */
 export type PageRouteBag = {
-    /** Gets or sets the IsGlobal. */
+    /** If true then the route will be accessible from all sites regardless if EnableExclusiveRoutes is set on the site */
     isGlobal: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if the PageRoute is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the PageId. */
+    /** Gets or sets the Id of the Rock.Model.Page that the PageRoute is linked to. This property is required. */
     pageId: number;
 
-    /** Gets or sets the Route. */
+    /**
+     * Gets or sets the format of the route path. Route examples include: Page NewAccount or Checkin/Welcome. 
+     * A specific group Group/{GroupId} (i.e. Group/16). A person's history Person/{PersonId}/History (i.e. Person/12/History).
+     * This property is required.
+     */
     route?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

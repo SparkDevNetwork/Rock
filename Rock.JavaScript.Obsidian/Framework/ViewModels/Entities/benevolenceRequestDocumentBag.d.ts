@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BenevolenceRequestDocument View Model */
 export type BenevolenceRequestDocumentBag = {
-    /** Gets or sets the BenevolenceRequestId. */
+    /** Gets or sets the benevolence request identifier. */
     benevolenceRequestId: number;
 
-    /** Gets or sets the BinaryFileId. */
+    /** Gets or sets the binary file id. */
     binaryFileId: number;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -34,178 +34,178 @@ namespace Rock.ViewModels.Entities
     public partial class BenevolenceRequestBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BenevolenceTypeId.
+        /// Gets or sets the benevolence type identifier.
         /// </summary>
         /// <value>
-        /// The BenevolenceTypeId.
+        /// The benevolence type identifier.
         /// </value>
         public int BenevolenceTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the campus identifier.
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// The campus identifier.
         /// </value>
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CaseWorkerPersonAliasId.
+        /// Gets or sets the PersonAliasId of the Rock.Model.PersonAlias who is the case worker for this request.
         /// </summary>
         /// <value>
-        /// The CaseWorkerPersonAliasId.
+        /// A System.Int32 representing the PersonAliasId of the Rock.Model.PersonAlias who is the case worker for this benevolence request.
         /// </value>
         public int? CaseWorkerPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CellPhoneNumber.
+        /// Gets or sets the Cell Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// The CellPhoneNumber.
+        /// A System.Int32 representing the Cell Phone Number of the person who requested benevolence.
         /// </value>
         public string CellPhoneNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConnectionStatusValueId.
+        /// Gets or sets the Id of the Defined Value Rock.Model.DefinedValue representing the connection status of the Requester.
         /// </summary>
         /// <value>
-        /// The ConnectionStatusValueId.
+        /// A System.Int32 representing the connection status of the Requester.
         /// </value>
         public int? ConnectionStatusValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Email.
+        /// Gets or sets the email address of the person requesting benevolence.
         /// </summary>
         /// <value>
-        /// The Email.
+        /// A System.String containing the email address of the person requesting benevolence.
         /// </value>
         public string Email { get; set; }
 
         /// <summary>
-        /// Gets or sets the FirstName.
+        /// Gets or sets the First Name of the person that this benevolence request is about. This property is required.
         /// </summary>
         /// <value>
-        /// The FirstName.
+        /// A System.String containing the first name of the person that this benevolence request is about.
         /// </value>
         public string FirstName { get; set; }
 
         /// <summary>
-        /// Gets or sets the GovernmentId.
+        /// Gets or sets the GovernmentId of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// The GovernmentId.
+        /// A System.Int32 representing the GovernmentId of the person who requested benevolence.
         /// </value>
         public string GovernmentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the HomePhoneNumber.
+        /// Gets or sets the Home Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// The HomePhoneNumber.
+        /// A System.Int32 representing the Home Phone Number of the person who requested benevolence.
         /// </value>
         public string HomePhoneNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastName.
+        /// Gets or sets the Last Name of the person that this benevolence request is about. This property is required.
         /// </summary>
         /// <value>
-        /// The LastName.
+        /// A System.String containing the last name of the person that this benevolence request is about.  
         /// </value>
         public string LastName { get; set; }
 
         /// <summary>
-        /// Gets or sets the LocationId.
+        /// Gets or sets the Id of the Rock.Model.Location that is associated with this BenevolenceRequest.
         /// </summary>
         /// <value>
-        /// The LocationId.
+        /// An System.Int32 referencing the Id of the Rock.Model.Location that is associated with this BenevolenceRequest. 
         /// </value>
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProvidedNextSteps.
+        /// Gets or sets the provided next steps.
         /// </summary>
         /// <value>
-        /// The ProvidedNextSteps.
+        /// The provided next steps.
         /// </value>
         public string ProvidedNextSteps { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestDateTime.
+        /// Gets or sets the date that this benevolence request was entered.
         /// </summary>
         /// <value>
-        /// The RequestDateTime.
+        /// A System.DateTime representing the date that this benevolence request was entered.
         /// </value>
         public DateTime RequestDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestedByPersonAliasId.
+        /// Gets or sets the PersonAliasId of the Rock.Model.PersonAlias who is submitting the BenevolenceRequest
         /// </summary>
         /// <value>
-        /// The RequestedByPersonAliasId.
+        /// A System.Int32 representing the PersonAliasId of Rock.Model.PersonAlias submitting the BenevolenceRequest.
         /// </value>
         public int? RequestedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestStatusValueId.
+        /// Gets or sets the Id of the Defined Value Rock.Model.DefinedValue representing the status of the Benevolence Request.
         /// </summary>
         /// <value>
-        /// The RequestStatusValueId.
+        /// A System.Int32 representing the status of the Benevolence Request.
         /// </value>
         public int? RequestStatusValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestText.
+        /// Gets or sets the text/content of the request.
         /// </summary>
         /// <value>
-        /// The RequestText.
+        /// A System.String representing the text/content of the request.
         /// </value>
         public string RequestText { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResultSummary.
+        /// Gets or sets the summary of the request result.
         /// </summary>
         /// <value>
-        /// The ResultSummary.
+        /// A System.String representing the summary of the request result.
         /// </value>
         public string ResultSummary { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkPhoneNumber.
+        /// Gets or sets the Work Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// The WorkPhoneNumber.
+        /// A System.Int32 representing the Work Phone Number of the person who requested benevolence.
         /// </value>
         public string WorkPhoneNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

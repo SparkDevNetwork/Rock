@@ -34,122 +34,100 @@ namespace Rock.ViewModels.Entities
     public partial class StreakTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the Streak Type.
         /// </summary>
-        /// <value>
-        /// The Description.
-        /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableAttendance.
+        /// This determines whether the streak type will write attendance records when marking someone as present or
+        /// if it will just update the enrolled individual’s map.
         /// </summary>
-        /// <value>
-        /// The EnableAttendance.
-        /// </value>
         public bool EnableAttendance { get; set; }
 
         /// <summary>
-        /// Gets or sets the FirstDayOfWeek.
+        /// Gets or sets the first day of the week for Rock.Model.StreakOccurrenceFrequency.Weekly streak type calculations.
+        /// Leave this null to assume the system setting, which is accessed via Rock.RockDateTime.FirstDayOfWeek.
         /// </summary>
         /// <value>
-        /// The FirstDayOfWeek.
+        /// The first day of week.
         /// </value>
         public int? FirstDayOfWeek { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
-        /// <value>
-        /// The IsActive.
-        /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the Streak Type. This property is required.
         /// </summary>
-        /// <value>
-        /// The Name.
-        /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the OccurrenceFrequency.
+        /// Gets or sets the timespan that each map bit represents (Rock.Model.StreakOccurrenceFrequency).
         /// </summary>
-        /// <value>
-        /// The OccurrenceFrequency.
-        /// </value>
         public int OccurrenceFrequency { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequiresEnrollment.
+        /// Gets or sets a flag indicating if this streak type requires explicit enrollment. If not set, a person can be
+        /// implicitly enrolled through attendance.
         /// </summary>
-        /// <value>
-        /// The RequiresEnrollment.
-        /// </value>
         public bool RequiresEnrollment { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDate.
+        /// Gets or sets the System.DateTime associated with the least significant bit of all maps in this streak type.
         /// </summary>
-        /// <value>
-        /// The StartDate.
-        /// </value>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the StructureEntityId.
+        /// Gets or sets the Id of the Entity associated with attendance for this streak type. If not set, this streak type
+        /// will account for any attendance record.
         /// </summary>
-        /// <value>
-        /// The StructureEntityId.
-        /// </value>
         public int? StructureEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StructureSettingsJSON.
+        /// Gets or sets the structure settings JSON.
         /// </summary>
         /// <value>
-        /// The StructureSettingsJSON.
+        /// The structure settings JSON.
         /// </value>
         public string StructureSettingsJSON { get; set; }
 
         /// <summary>
-        /// Gets or sets the StructureType.
+        /// Gets or sets the attendance association (Rock.Model.StreakStructureType). If not set, this streak type
+        /// will not be associated with attendance.
         /// </summary>
-        /// <value>
-        /// The StructureType.
-        /// </value>
         public int? StructureType { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

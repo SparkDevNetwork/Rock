@@ -25,28 +25,28 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** NotificationRecipient View Model */
 export type NotificationRecipientBag = {
-    /** Gets or sets the NotificationId. */
+    /** Gets or sets the notification identifier. */
     notificationId: number;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId: number;
 
-    /** Gets or sets the Read. */
+    /** Gets or sets a value indicating whether this Rock.Model.NotificationRecipient is read. */
     read: boolean;
 
-    /** Gets or sets the ReadDateTime. */
+    /** Gets or sets the read date time. */
     readDateTime?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

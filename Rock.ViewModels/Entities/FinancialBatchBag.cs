@@ -34,114 +34,124 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialBatchBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AccountingSystemCode.
+        /// Gets or sets an optional transaction code from an accounting system that batch is associated with
         /// </summary>
         /// <value>
-        /// The AccountingSystemCode.
+        /// A System.String representing the Accounting System transaction code for the batch.
         /// </value>
         public string AccountingSystemCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the BatchEndDateTime.
+        /// Gets or sets end of the posting date and time range for FinancialTransactions that are included in this batch.
+        /// Transactions that post before or on this date and time and after the Rock.Model.FinancialBatch.BatchStartDateTime can be included in this batch.
         /// </summary>
         /// <value>
-        /// The BatchEndDateTime.
+        /// A System.DateTime representing the posting end date for the batch.
         /// </value>
         public DateTime? BatchEndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the BatchStartDateTime.
+        /// Gets or sets the start posting date and time range of FinancialTransactions that are included in this batch.  
+        /// Transactions that post on or after this date and time and before the Rock.Model.FinancialBatch.BatchEndDateTime can be included in this batch.
         /// </summary>
         /// <value>
-        /// The BatchStartDateTime.
+        /// A System.DateTime representing the posting start date for the batch.
         /// </value>
         public DateTime? BatchStartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the CampusId of the Rock.Model.Campus that this batch is associated with. If the batch is not linked
+        /// to a campus, this value will be null.
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// A System.Int32 representing the CampusId of the Rock.Model.Campus that this batch is associated with.
         /// </value>
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ControlAmount.
+        /// Gets or sets the control amount. This should match the total value of all
+        /// FinancialTransactions that are included in the batch.
+        /// Use Rock.Model.FinancialBatchService.IncrementControlAmount(System.Int32,System.Decimal,Rock.Model.History.HistoryChangeList) if you are incrementing the control amount
+        /// based on a transaction amount.
         /// </summary>
         /// <value>
-        /// The ControlAmount.
+        /// A System.Decimal representing the control amount of the batch.
         /// </value>
         public decimal ControlAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the ControlItemCount.
+        /// Gets or sets the control item count.
         /// </summary>
         /// <value>
-        /// The ControlItemCount.
+        /// The control item count.
         /// </value>
         public int? ControlItemCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsAutomated.
+        /// Gets or sets a value indicating whether this instance is automated.
+        /// If IsAutomated is True, the UI should not allow the status of Pending to be changed to Open or Closed ( an external process will be in change of changing the status )
         /// </summary>
         /// <value>
-        /// The IsAutomated.
+        ///   true if this instance is automated; otherwise, false.
         /// </value>
         public bool IsAutomated { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the batch.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the name of the batch.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note.
+        /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// The Note.
+        /// The note.
         /// </value>
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the status of the batch.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// A Rock.Model.BatchStatus representing the status of the batch.
+        /// When this value is BatchStatus.Pending  it means that transactions are still being added to the batch.
+        /// When this value is BatchStatus.Open it means that all transactions have been added and are ready to be matched up.
+        /// When this value is BatchStatus.Closed it means that the batch has balanced and has been closed.
         /// </value>
         public int Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

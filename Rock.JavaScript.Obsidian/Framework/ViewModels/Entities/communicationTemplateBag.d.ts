@@ -25,97 +25,97 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CommunicationTemplate View Model */
 export type CommunicationTemplateBag = {
-    /** Gets or sets the BCCEmails. */
+    /** Gets or sets the BCC emails. */
     bCCEmails?: string | null;
 
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the category identifier. */
     categoryId?: number | null;
 
-    /** Gets or sets the CCEmails. */
+    /** Gets or sets the cc emails. */
     cCEmails?: string | null;
 
-    /** Gets or sets the CssInliningEnabled. */
+    /** Gets or sets a value indicating whether [CSS inlining enabled]. */
     cssInliningEnabled: boolean;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets the FromEmail. */
+    /** Gets or sets from email. */
     fromEmail?: string | null;
 
-    /** Gets or sets the FromName. */
+    /** Gets or sets from name. */
     fromName?: string | null;
 
-    /** Gets or sets the ImageFileId. */
+    /** Gets or sets the image file identifier for the Template Preview Image */
     imageFileId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this is an active communication template. This value is required. */
     isActive: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this PageContext is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the LavaFieldsJson. */
+    /** The internal storage for Rock.Model.CommunicationTemplate.LavaFields */
     lavaFieldsJson?: string | null;
 
-    /** Gets or sets the LogoBinaryFileId. */
+    /** Gets or sets the logo binary file identifier that email messages using this template can use for the logo in the message content */
     logoBinaryFileId?: number | null;
 
-    /** Gets or sets the Message. */
+    /** Gets or sets the message. */
     message?: string | null;
 
-    /** Gets or sets the MessageMetaData. */
+    /** Gets or sets the message meta data. */
     messageMetaData?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the Communication Template */
     name?: string | null;
 
-    /** Gets or sets the PushData. */
+    /** Gets or sets the push data. */
     pushData?: string | null;
 
-    /** Gets or sets the PushImageBinaryFileId. */
+    /** Gets or sets the push image file identifier. */
     pushImageBinaryFileId?: number | null;
 
-    /** Gets or sets the PushMessage. */
+    /** Gets or sets the message. */
     pushMessage?: string | null;
 
-    /** Gets or sets the PushOpenAction. */
+    /** Gets or sets the push open action. */
     pushOpenAction?: number | null;
 
-    /** Gets or sets the PushOpenMessage. */
+    /** Gets or sets the push open message. */
     pushOpenMessage?: string | null;
 
-    /** Gets or sets the PushSound. */
+    /** Gets or sets from number. */
     pushSound?: string | null;
 
-    /** Gets or sets the PushTitle. */
+    /** Gets or sets from number. */
     pushTitle?: string | null;
 
-    /** Gets or sets the ReplyToEmail. */
+    /** Gets or sets the reply to email. */
     replyToEmail?: string | null;
 
-    /** Gets or sets the SenderPersonAliasId. */
+    /** Gets or sets the PersonId of the Rock.Model.Person who is the sender of the Communication */
     senderPersonAliasId?: number | null;
 
-    /** Gets or sets the SMSFromDefinedValueId. */
+    /** Gets or sets from number. */
     sMSFromDefinedValueId?: number | null;
 
-    /** Gets or sets the SMSMessage. */
+    /** Gets or sets the message. */
     sMSMessage?: string | null;
 
-    /** Gets or sets the Subject. */
+    /** Gets or sets the name of the Communication */
     subject?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

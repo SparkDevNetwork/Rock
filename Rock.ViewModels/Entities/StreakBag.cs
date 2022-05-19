@@ -34,122 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class StreakBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CurrentStreakCount.
+        /// The current number of non excluded occurrences attended in a row
         /// </summary>
-        /// <value>
-        /// The CurrentStreakCount.
-        /// </value>
         public int CurrentStreakCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the CurrentStreakStartDate.
+        /// The date that the current streak began
         /// </summary>
-        /// <value>
-        /// The CurrentStreakStartDate.
-        /// </value>
         public DateTime? CurrentStreakStartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the EngagementCount.
+        /// The number of engagements on occurrences
         /// </summary>
-        /// <value>
-        /// The EngagementCount.
-        /// </value>
         public int EngagementCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnrollmentDate.
+        /// Gets or sets the System.DateTime when the person was enrolled in the streak type.
+        /// This is not the Streak Type start date.
         /// </summary>
-        /// <value>
-        /// The EnrollmentDate.
-        /// </value>
         public DateTime EnrollmentDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the InactiveDateTime.
+        /// Gets or sets the System.DateTime when the person deactivated their Streak. If null, the Streak is active.
         /// </summary>
-        /// <value>
-        /// The InactiveDateTime.
-        /// </value>
         public DateTime? InactiveDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LocationId.
+        /// Gets or sets the Rock.Model.Location identifier by which the person's exclusions will be sourced.
         /// </summary>
-        /// <value>
-        /// The LocationId.
-        /// </value>
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LongestStreakCount.
+        /// The longest number of non excluded occurrences attended in a row
         /// </summary>
-        /// <value>
-        /// The LongestStreakCount.
-        /// </value>
         public int LongestStreakCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the LongestStreakEndDate.
+        /// The date the longest streak ended
         /// </summary>
-        /// <value>
-        /// The LongestStreakEndDate.
-        /// </value>
         public DateTime? LongestStreakEndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the LongestStreakStartDate.
+        /// The date the longest streak began
         /// </summary>
-        /// <value>
-        /// The LongestStreakStartDate.
-        /// </value>
         public DateTime? LongestStreakStartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the Rock.Model.PersonAlias identifier.
         /// </summary>
-        /// <value>
-        /// The PersonAliasId.
-        /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StreakTypeId.
+        /// Gets or sets the Id of the Rock.Model.StreakType to which this Streak belongs. This property is required.
         /// </summary>
-        /// <value>
-        /// The StreakTypeId.
-        /// </value>
         public int StreakTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

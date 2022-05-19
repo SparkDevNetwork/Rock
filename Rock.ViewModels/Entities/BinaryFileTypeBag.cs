@@ -34,146 +34,146 @@ namespace Rock.ViewModels.Entities
     public partial class BinaryFileTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CacheControlHeaderSettings.
+        /// Gets or sets the cache control header settings.
         /// </summary>
         /// <value>
-        /// The CacheControlHeaderSettings.
+        /// The cache control header settings.
         /// </value>
         public string CacheControlHeaderSettings { get; set; }
 
         /// <summary>
-        /// Gets or sets the CacheToServerFileSystem.
+        /// Gets or sets a flag indicating whether the file on any Rock.Model.BinaryFile child entities should be cached to the server.
         /// </summary>
         /// <value>
-        /// The CacheToServerFileSystem.
+        ///  A System.Boolean value that is true if caching to the server is allowed; otherwise, false.
         /// </value>
         public bool CacheToServerFileSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the BinaryFileType.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the BinaryFileType.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the CSS class that is used for a vector/CSS icon.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// A System.String representing the CSS class that is used for a vector/CSS based icon.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this BinaryFileType is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this is part of the core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxHeight.
+        /// Gets or sets a value indicating the maximum height of a file type.
         /// </summary>
         /// <value>
-        /// The MaxHeight.
+        /// A System.Int32 representing the maximum height in pixels of a file type.
         /// </value>
         public int? MaxHeight { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxWidth.
+        /// Gets or sets a value indicating the maximum width of a file type.
         /// </summary>
         /// <value>
-        /// The MaxWidth.
+        /// A System.Int32 representing the maximum width in pixels of a file type.
         /// </value>
         public int? MaxWidth { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the given Name of the BinaryFileType. This value is an alternate key and is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the given Name of the BinaryFileType. 
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreferredColorDepth.
+        /// Gets or sets the preferred color depth of the file type.
         /// </summary>
         /// <value>
-        /// The PreferredColorDepth.
+        /// A Rock.Model.ColorDepth enum value that represents the preferred color depth of the file type.
         /// </value>
         public int PreferredColorDepth { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreferredFormat.
+        /// Gets or sets the preferred format of the file type.
         /// </summary>
         /// <value>
-        /// The PreferredFormat.
+        /// A Rock.Model.Format enum value that represents the preferred format of the file type.
         /// </value>
         public int PreferredFormat { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreferredRequired.
+        /// Gets or sets a value indicating whether the preferred attributes of the file type are required
         /// </summary>
         /// <value>
-        /// The PreferredRequired.
+        /// A System.Boolean value that is true if the "preferred" attributes are required; otherwise, false.
         /// </value>
         public bool PreferredRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreferredResolution.
+        /// Gets or sets the preferred resolution of the file type.
         /// </summary>
         /// <value>
-        /// The PreferredResolution.
+        /// A Rock.Model.Resolution enum value that represents the preferred resolution of the file type.
         /// </value>
         public int PreferredResolution { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequiresViewSecurity.
+        /// Gets or sets a value indicating whether security should be checked when displaying files of this type
         /// </summary>
         /// <value>
-        /// The RequiresViewSecurity.
+        /// true if [requires view security]; otherwise, false.
         /// </value>
         public bool RequiresViewSecurity { get; set; }
 
         /// <summary>
-        /// Gets or sets the StorageEntityTypeId.
+        /// Gets or sets the Id of the storage service Rock.Model.EntityType that is used to store files of this type.
         /// </summary>
         /// <value>
-        /// The StorageEntityTypeId.
+        /// An System.Int32 representing the Id of the storage service Rock.Model.EntityType.
         /// </value>
         public int? StorageEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -34,90 +34,96 @@ namespace Rock.ViewModels.Entities
     public partial class GroupLocationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// Gets or sets the Id of the Rock.Model.Group that is associated with this GroupLocation. This property is required.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// An System.Int32 representing the Id of the Rock.Model.Group that this GroupLocation is associated with.
         /// </value>
         public int GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupLocationTypeValueId.
+        /// The Id of the GroupLocationType Rock.Model.DefinedValue that is used to identify the type of Rock.Model.GroupLocation
+        /// that this is. Examples: Home Address, Work Address, Primary Address.
         /// </summary>
         /// <value>
-        /// The GroupLocationTypeValueId.
+        /// An System.Int32 referencing the Id of the GroupLocationType Rock.Model.DefinedValue that identifies the type of group location that this is.
+        /// If a GroupLocationType Rock.Model.DefinedValue is not associated with this GroupLocation this value will be null.
         /// </value>
         public int? GroupLocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupMemberPersonAliasId.
+        /// Gets or sets the group member Rock.Model.PersonAlias identifier.  A GroupLocation can optionally be created by selecting one of the group 
+        /// member's locations.  If the GroupLocation is created this way, the member's person alias id is saved with the group location
         /// </summary>
         /// <value>
-        /// The GroupMemberPersonAliasId.
+        /// The group member person alias identifier.
         /// </value>
         public int? GroupMemberPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsMailingLocation.
+        /// Gets or sets a flag indicating if the Rock.Model.Location referenced by this GroupLocation is the mailing address/location for the Rock.Model.Group.  
+        /// This field is only supported in the UI for family groups
         /// </summary>
         /// <value>
-        /// The IsMailingLocation.
+        /// A System.Boolean value that is true if this is the mailing address/location for this Rock.Model.Group.
         /// </value>
         public bool IsMailingLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsMappedLocation.
+        /// Gets or sets a flag indicating if this is the mappable location for this 
+        /// This field is only supported in the UI for family groups
         /// </summary>
         /// <value>
-        /// The IsMappedLocation.
+        /// true if this instance is location; otherwise, false.
         /// </value>
         public bool IsMappedLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the LocationId.
+        /// Gets or sets the Id of the Rock.Model.Location that is associated with this GroupLocation. This property is required.
         /// </summary>
         /// <value>
-        /// The LocationId.
+        /// An System.Int32 referencing the Id of the Rock.Model.Location that is associated with this GroupLocation. 
         /// </value>
         public int LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order of the GroupLocation in the group location list. The lower the number the higher the 
+        /// display priority this GroupLocation has. This property is required.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 representing the display order of the GroupLocation.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

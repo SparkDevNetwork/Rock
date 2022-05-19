@@ -25,6 +25,12 @@
         /// <value>The content of the file.</value>
         public string Content { get; }
 
+        /// <summary>
+        /// Indicates the state of this file in regards to being saved or not.
+        /// </summary>
+        /// <value>The save state of the generated file.</value>
+        public GeneratedFileSaveState SaveState { get; set; } = GeneratedFileSaveState.NotProcessed;
+
         #endregion
 
         #region Constructors

@@ -25,46 +25,46 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Category View Model */
 export type CategoryBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType that this Category belongs to. */
     entityTypeId: number;
 
-    /** Gets or sets the EntityTypeQualifierColumn. */
+    /** Gets or sets the entity type qualifier column that contains the value (see Rock.Model.Category.EntityTypeQualifierValue) that is used to narrow the scope of the Category. */
     entityTypeQualifierColumn?: string | null;
 
-    /** Gets or sets the EntityTypeQualifierValue. */
+    /** Gets or sets the entity type qualifier value that is used to narrow the scope of the Category to a subset or specific instance of an EntityType. */
     entityTypeQualifierValue?: string | null;
 
-    /** Gets or sets the HighlightColor. */
+    /** Gets or sets the color of the highlight. */
     highlightColor?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the name of the icon CSS class. This property is only used for CSS based icons. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Category is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the Category */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the ParentCategoryId. */
+    /** Gets or sets the CategoryId of the parent Category.  */
     parentCategoryId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

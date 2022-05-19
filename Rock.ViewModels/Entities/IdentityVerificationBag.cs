@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class IdentityVerificationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the FailedMatchAttemptCount.
+        /// Gets or sets the failed match attempt count.
         /// </summary>
         /// <value>
-        /// The FailedMatchAttemptCount.
+        /// The failed match attempt count.
         /// </value>
         public int? FailedMatchAttemptCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the IdentityVerificationCodeId.
+        /// Gets or sets the identity verification code identifier.
         /// </summary>
         /// <value>
-        /// The IdentityVerificationCodeId.
+        /// The identity verification code identifier.
         /// </value>
         public int IdentityVerificationCodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IssueDateTime.
+        /// Gets or sets the issue date time.
         /// </summary>
         /// <value>
-        /// The IssueDateTime.
+        /// The issue date time.
         /// </value>
         public DateTime IssueDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReferenceNumber.
+        /// Gets or sets the reference number.
         /// </summary>
         /// <value>
-        /// The ReferenceNumber.
+        /// The reference number.
         /// </value>
         public string ReferenceNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestIpAddress.
+        /// Gets or sets the request ip address.
         /// </summary>
         /// <value>
-        /// The RequestIpAddress.
+        /// The request ip address.
         /// </value>
         public string RequestIpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

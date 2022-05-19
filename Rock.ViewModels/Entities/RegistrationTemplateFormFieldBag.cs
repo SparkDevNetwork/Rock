@@ -34,146 +34,146 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationTemplateFormFieldBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AttributeId.
+        /// Gets or sets the Rock.Model.Attribute identifier.
         /// </summary>
         /// <value>
-        /// The AttributeId.
+        /// The attribute identifier.
         /// </value>
         public int? AttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FieldSource.
+        /// Gets or sets the source of the field value.
         /// </summary>
         /// <value>
-        /// The FieldSource.
+        /// The applies to.
         /// </value>
         public int FieldSource { get; set; }
 
         /// <summary>
-        /// Gets or sets the FieldVisibilityRulesJSON.
+        /// JSON Serialized Rock.Model.RegistrationTemplateFormField.FieldVisibilityRules
         /// </summary>
         /// <value>
-        /// The FieldVisibilityRulesJSON.
+        /// The field visibility rules json.
         /// </value>
         public string FieldVisibilityRulesJSON { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsGridField.
+        /// Gets or sets a value indicating whether this instance is grid field.
         /// </summary>
         /// <value>
-        /// The IsGridField.
+        /// true if this instance is grid field; otherwise, false.
         /// </value>
         public bool IsGridField { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsInternal.
+        /// Gets or sets a value indicating whether this field is only for administrative, and not shown in the public form
         /// </summary>
         /// <value>
-        /// The IsInternal.
+        /// true if this instance is internal; otherwise, false.
         /// </value>
         public bool IsInternal { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsRequired.
+        /// Gets or sets a value indicating whether this instance is required.
         /// </summary>
         /// <value>
-        /// The IsRequired.
+        /// true if this instance is required; otherwise, false.
         /// </value>
         public bool IsRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSharedValue.
+        /// Gets or sets a value indicating whether this is a 'shared value'. If so, the value entered will default to the value entered for first person registered.
         /// </summary>
         /// <value>
-        /// The IsSharedValue.
+        ///   true if [common value]; otherwise, false.
         /// </value>
         public bool IsSharedValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonFieldType.
+        /// Gets or sets the type of the person field.
         /// </summary>
         /// <value>
-        /// The PersonFieldType.
+        /// The type of the person field.
         /// </value>
         public int PersonFieldType { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostText.
+        /// Gets or sets the Post-HTML.
         /// </summary>
         /// <value>
-        /// The PostText.
+        /// The post text.
         /// </value>
         public string PostText { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreText.
+        /// Gets or sets the Pre-HTML.
         /// </summary>
         /// <value>
-        /// The PreText.
+        /// The pre text.
         /// </value>
         public string PreText { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationTemplateFormId.
+        /// Gets or sets the Rock.Model.RegistrationTemplateForm identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationTemplateFormId.
+        /// The registration template form identifier.
         /// </value>
         public int RegistrationTemplateFormId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowCurrentValue.
+        /// Gets or sets a value indicating whether [show current value].
         /// </summary>
         /// <value>
-        /// The ShowCurrentValue.
+        ///   true if [show current value]; otherwise, false.
         /// </value>
         public bool ShowCurrentValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowOnWaitlist.
+        /// Gets or sets a value indicating whether the field should be shown on a waitlist.
         /// </summary>
         /// <value>
-        /// The ShowOnWaitlist.
+        ///   true if the field should be shown on a waitlist; otherwise, false.
         /// </value>
         public bool ShowOnWaitlist { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -34,82 +34,83 @@ namespace Rock.ViewModels.Entities
     public partial class DataViewFilterBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the DataViewId.
+        /// Gets or sets the id of the Data View that owns this record.
         /// </summary>
         /// <value>
-        /// The DataViewId.
+        /// The data view identifier.
         /// </value>
         public int? DataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Reporting.DataFilterComponent that this filter is using.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that is being used in the filter.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpressionType.
+        /// Gets or sets the expression type of this DataViewFilter.
         /// </summary>
         /// <value>
-        /// The ExpressionType.
+        /// A Rock.Model.FilterExpressionType that represents the expression type for the filter.  When FilterExpressionType.Filter it represents a filter expression, when FilterExpressionType.GroupAll it means that 
+        /// all conditions found in child expressions must be met, when FilterExpressionType.GroupOr it means that at least one condition found in the child filter expressions must be met.
         /// </value>
         public int ExpressionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the ParentId.
+        /// Gets or sets the DataViewFilterId of the parent DataViewFilter.
         /// </summary>
         /// <value>
-        /// The ParentId.
+        /// A System.Int32 representing the DataViewFilterId of the parent DataViewFilter. If this DataViewFilter does not have a parent, this value will be null.
         /// </value>
         public int? ParentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedDataViewId.
+        /// Gets or sets the id of the data view that this record uses for filtering.
         /// </summary>
         /// <value>
-        /// The RelatedDataViewId.
+        /// The related data view identifier.
         /// </value>
         public int? RelatedDataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Selection.
+        /// Gets or sets the value that the DataViewFilter is filtering by.
         /// </summary>
         /// <value>
-        /// The Selection.
+        /// A System.String containing the value to be used as a filter.
         /// </value>
         public string Selection { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

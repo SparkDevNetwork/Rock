@@ -34,90 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialStatementTemplateBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the FooterSettingsJson.
+        /// Gets or sets the JSON for Rock.Model.FinancialStatementTemplate.FooterSettings
         /// </summary>
         /// <value>
-        /// The FooterSettingsJson.
+        /// The footer template.
         /// </value>
         public string FooterSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this is an active financial statement template. This value is required.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean value that is true if this financial statement template is active, otherwise false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the LogoBinaryFileId.
+        /// Gets or sets the image file identifier for the Logo Image
         /// </summary>
         /// <value>
-        /// The LogoBinaryFileId.
+        /// The Logo file identifier.
         /// </value>
         public int? LogoBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the Financial Statement Template
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the name of the Financial Statement Template
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReportSettingsJson.
+        /// Gets or sets the JSON for Rock.Model.FinancialStatementTemplate.ReportSettings
         /// </summary>
         /// <value>
-        /// The ReportSettingsJson.
+        /// The report settings.
         /// </value>
         public string ReportSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReportTemplate.
+        /// Gets or sets the report template.
         /// </summary>
         /// <value>
-        /// The ReportTemplate.
+        /// The report template.
         /// </value>
         public string ReportTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

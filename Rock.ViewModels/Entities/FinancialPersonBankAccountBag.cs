@@ -34,58 +34,59 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialPersonBankAccountBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AccountNumberMasked.
+        /// Gets or sets the Masked Account Number (Last 4 of Account Number prefixed with 12 *'s)
         /// </summary>
         /// <value>
-        /// The AccountNumberMasked.
+        /// The account number masked.
         /// </value>
         public string AccountNumberMasked { get; set; }
 
         /// <summary>
-        /// Gets or sets the AccountNumberSecured.
+        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash so that it can be matched without being known
+        /// Enables a match of a Check Account to Person ( or Persons if multiple persons share a checking account) can be made
         /// </summary>
         /// <value>
-        /// The AccountNumberSecured.
+        /// AccountNumberSecured.
         /// </value>
         public string AccountNumberSecured { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

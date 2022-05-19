@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionOpportunityGroupConfig View Model */
 export type ConnectionOpportunityGroupConfigBag = {
-    /** Gets or sets the ConnectionOpportunityId. */
+    /** Gets or sets the Rock.Model.ConnectionOpportunity identifier. */
     connectionOpportunityId: number;
 
-    /** Gets or sets the GroupMemberRoleId. */
+    /** Gets or sets the group member role identifier. */
     groupMemberRoleId?: number | null;
 
-    /** Gets or sets the GroupMemberStatus. */
+    /** Gets or sets the Rock.Model.GroupMemberStatus. */
     groupMemberStatus: number;
 
-    /** Gets or sets the GroupTypeId. */
+    /** Gets or sets the Rock.Model.GroupType identifier. */
     groupTypeId: number;
 
-    /** Gets or sets the UseAllGroupsOfType. */
+    /** Gets or sets a value indicating whether [use all groups of type]. */
     useAllGroupsOfType: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -34,138 +34,149 @@ namespace Rock.ViewModels.Entities
     public partial class BlockBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AdditionalSettings.
+        /// Gets or sets the additional settings.
         /// </summary>
         /// <value>
-        /// The AdditionalSettings.
+        /// The additional settings.
         /// </value>
         public string AdditionalSettings { get; set; }
 
         /// <summary>
-        /// Gets or sets the BlockTypeId.
+        /// Gets or sets the Id of the Rock.Model.BlockType that this Block is implementing. This property is required.
         /// </summary>
         /// <value>
-        /// The BlockTypeId.
+        /// An System.Int32 that represents the Rock.Model.BlockType that this Block is implementing.
         /// </value>
         public int BlockTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CssClass.
+        /// Gets or sets an optional CSS class to include when the block's parent container is rendered
         /// </summary>
         /// <value>
-        /// The CssClass.
+        /// The CSS class.
         /// </value>
         public string CssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Block was created by and is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if this Block is part of the Rock core system/framework, otherwise is false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LayoutId.
+        /// Gets or sets the Id of the Rock.Model.Layout that this Block is implemented on. This property will only be populated
+        /// if the Block is implemented on a Rock.Model.Layout.
+        /// Blocks that have a specific LayoutId will be shown on all pages on a site that have the specified LayoutId
         /// </summary>
         /// <value>
-        /// The LayoutId.
+        /// An System.Int32 that represents the Id of the Rock.Model.Layout that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// as part of a Rock.Model.Page or Rock.Model.Site.
         /// </value>
         public int? LayoutId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets a user defined name of the block implementation. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents a user defined name for the Block.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order that this Block appears in the Rock.Model.Block.Page/Layout zone that the Block is implemented in.  Blocks are 
+        /// displayed/rendered in Ascending (1,2,3,...) order. The lower the number the higher in the Zone the Block will appear.  Rock.Model.Page Blocks have
+        /// priority over layout Blocks, so they will appear higher in the Zone than Rock.Model.Site/Layout Blocks. This property is required
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 that represents the display order of the Block in a Rock.Model.Page/Layout Zone.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the OutputCacheDuration.
+        /// Gets or sets the length of time (in minutes) that the Block's data is cached. This property is required.
         /// </summary>
         /// <value>
-        /// The OutputCacheDuration.
+        /// An System.Int32 that represents the length of time that the Block's data is cached.
         /// </value>
         public int OutputCacheDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the PageId.
+        /// Gets or sets the Id of the Rock.Model.Page that this Block is implemented on. This property will only be populated
+        /// if the Block is implemented on a Rock.Model.Page.
+        /// Blocks that have a specific PageId will only be shown in the specified Page
         /// </summary>
         /// <value>
-        /// The PageId.
+        /// An System.Int32 that represents the Id of the Rock.Model.Page that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// as part of a Rock.Model.Layout or Rock.Model.Site.
         /// </value>
         public int? PageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostHtml.
+        /// Gets or sets any HTML to be rendered after the block
         /// </summary>
         /// <value>
-        /// The PostHtml.
+        /// The post HTML.
         /// </value>
         public string PostHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreHtml.
+        /// Gets or sets any HTML to be rendered before the block
         /// </summary>
         /// <value>
-        /// The PreHtml.
+        /// The pre HTML.
         /// </value>
         public string PreHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the SiteId.
+        /// Gets or sets the Id of the Rock.Model.Site that this Block is implemented on. This property will only be populated
+        /// if the Block is implemented on a Rock.Model.Site.
+        /// Blocks that have a specific SiteId will be shown on all pages on a site
         /// </summary>
         /// <value>
-        /// The SiteId.
+        /// An System.Int32 that represents the Id of the Rock.Model.Site that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// as part of a Rock.Model.Page or Rock.Model.Layout .
         /// </value>
         public int? SiteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Zone.
+        /// Gets or sets the name of the layout zone/section that this Block is being implemented on. This property is required.
         /// </summary>
         /// <value>
-        /// The Zone.
+        /// A System.String that represents the name of the Zone that this Block is implemented on.
         /// </value>
         public string Zone { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

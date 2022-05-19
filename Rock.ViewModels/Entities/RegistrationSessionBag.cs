@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationSessionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ClientIpAddress.
+        /// Gets or sets the client ip address.
         /// </summary>
         /// <value>
-        /// The ClientIpAddress.
+        /// The client ip address.
         /// </value>
         public string ClientIpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpirationDateTime.
+        /// Gets or sets the expiration date time.
         /// </summary>
         /// <value>
-        /// The ExpirationDateTime.
+        /// The expiration date time.
         /// </value>
         public DateTime ExpirationDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentGatewayReference.
+        /// Gets or sets the payment gateway reference.
         /// </summary>
         /// <value>
-        /// The PaymentGatewayReference.
+        /// The payment gateway reference.
         /// </value>
         public string PaymentGatewayReference { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationCount.
+        /// Gets or sets the registration count. These are registrants that are not slated to be on the waitlist.
         /// </summary>
         /// <value>
-        /// The RegistrationCount.
+        /// The registration count.
         /// </value>
         public int RegistrationCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationData.
+        /// Gets or sets the registration data.
         /// </summary>
         /// <value>
-        /// The RegistrationData.
+        /// The registration data.
         /// </value>
         public string RegistrationData { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationId.
+        /// Gets or sets the registration identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationId.
+        /// The registration identifier.
         /// </value>
         public int? RegistrationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationInstanceId.
+        /// Gets or sets the registration instance identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationInstanceId.
+        /// The registration instance identifier.
         /// </value>
         public int RegistrationInstanceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionStartDateTime.
+        /// Gets or sets the session start date time.
         /// </summary>
         /// <value>
-        /// The SessionStartDateTime.
+        /// The session start date time.
         /// </value>
         public DateTime SessionStartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionStatus.
+        /// Gets or sets the session status.
         /// </summary>
         /// <value>
-        /// The SessionStatus.
+        /// The session status.
         /// </value>
         public int SessionStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowActivityType View Model */
 export type WorkflowActivityTypeBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the description or summary about this WorkflowActivityType. */
     description?: string | null;
 
-    /** Gets or sets the IsActivatedWithWorkflow. */
+    /** Gets or sets a value indicating if this WorkflowActivityType is activated with the workflow. */
     isActivatedWithWorkflow: boolean;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this WorkflowActivityType is active. */
     isActive?: boolean | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the friendly Name of this WorkflowActivityType. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order that this WorkflowActivityType will be executed in the WorkflowType's process.  */
     order: number;
 
-    /** Gets or sets the WorkflowTypeId. */
+    /** Gets or sets the WorkflowTypeId of the Rock.Model.WorkflowType that this WorkflowActivityType belongs to. */
     workflowTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

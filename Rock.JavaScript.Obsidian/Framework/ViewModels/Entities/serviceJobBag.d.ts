@@ -25,67 +25,83 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ServiceJob View Model */
 export type ServiceJobBag = {
-    /** Gets or sets the Assembly. */
+    /**
+     * Gets or sets the Assembly name of the .dll file that contains the job class.
+     * Set this to null to have Rock figure out the Assembly automatically.
+     */
     assembly?: string | null;
 
-    /** Gets or sets the Class. */
+    /** Gets or sets the fully qualified class name with Namespace of the Job class. This property is required. */
     class?: string | null;
 
-    /** Gets or sets the CronExpression. */
+    /** Gets or sets the Cron Expression that is used to schedule the Job. This property is required. */
     cronExpression?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a user defined description of the Job. */
     description?: string | null;
 
-    /** Gets or sets the EnableHistory. */
+    /** Gets or sets a value indicating whether jobs should be logged in ServiceJobHistory */
     enableHistory: boolean;
 
-    /** Gets or sets the HistoryCount. */
+    /** Gets or sets the history count per job. */
     historyCount: number;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if the Job is active. */
     isActive?: boolean | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Job is part of the Rock core system/framework */
     isSystem: boolean;
 
-    /** Gets or sets the LastRunDateTime. */
+    /** Gets or sets the date and time that the job last ran. */
     lastRunDateTime?: string | null;
 
-    /** Gets or sets the LastRunDurationSeconds. */
+    /** Gets or set the amount of time, in seconds, that it took the job to run the last time that it ran. */
     lastRunDurationSeconds?: number | null;
 
-    /** Gets or sets the LastRunSchedulerName. */
+    /**
+     * Gets or sets the name of the scheduler that the job ran under the last time that it ran. In most cases this 
+     * is used to determine if the was run by the IIS or Windows service.
+     */
     lastRunSchedulerName?: string | null;
 
-    /** Gets or sets the LastStatus. */
+    /** Gets or sets the completion status that was returned by the Job the last time that it ran. */
     lastStatus?: string | null;
 
-    /** Gets or sets the LastStatusMessage. */
+    /**
+     * Gets or sets the status message that was returned the last time that the job was run. In most cases this will be used
+     * in the event of an exception to return the exception message.
+     */
     lastStatusMessage?: string | null;
 
-    /** Gets or sets the LastSuccessfulRunDateTime. */
+    /** Gets or sets the date and time that the Job last completed successfully. */
     lastSuccessfulRunDateTime?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the friendly Name of the Job. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the NotificationEmails. */
+    /**
+     * Gets or sets a comma delimited list of email address that should receive notification emails for this job. Notification
+     * emails are sent to these email addresses based on the completion status of the Job and the Rock.Model.ServiceJob.NotificationStatus
+     * property of this job.
+     */
     notificationEmails?: string | null;
 
-    /** Gets or sets the NotificationStatus. */
+    /**
+     * Gets or sets the NotificationStatus for this job, this property determines when notification emails should be sent to the Rock.Model.ServiceJob.NotificationEmails
+     * that are associated with this Job
+     */
     notificationStatus: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

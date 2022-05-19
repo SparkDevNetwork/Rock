@@ -26,115 +26,121 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowActionForm View Model */
 export type WorkflowActionFormBag = {
-    /** Gets or sets the ActionAttributeGuid. */
+    /** An optional text attribute that will be updated with the action that was selected */
     actionAttributeGuid?: Guid | null;
 
-    /** Gets or sets the Actions. */
+    /** Gets or sets the delimited list of action buttons and actions. */
     actions?: string | null;
 
-    /** Gets or sets the AllowNotes. */
+    /** Gets or sets whether Notes can be entered */
     allowNotes?: boolean | null;
 
-    /** Gets or sets the AllowPersonEntry. */
+    /** Gets or sets a value indicating whether a new person (and spouse) can be added */
     allowPersonEntry: boolean;
 
-    /** Gets or sets the Footer. */
+    /** Gets or sets the footer. */
     footer?: string | null;
 
-    /** Gets or sets the Header. */
+    /** Gets or sets the header. */
     header?: string | null;
 
-    /** Gets or sets the IncludeActionsInNotification. */
+    /** Gets or sets a value indicating whether [include actions in notification]. */
     includeActionsInNotification: boolean;
 
-    /** Gets or sets the NotificationSystemCommunicationId. */
+    /** Gets or sets the notification system communication identifier. */
     notificationSystemCommunicationId?: number | null;
 
-    /** Gets or sets the PersonEntryAddressEntryOption. */
+    /** Gets or sets the person entry address entry option. */
     personEntryAddressEntryOption: number;
 
-    /** Gets or sets the PersonEntryAutofillCurrentPerson. */
+    /** Gets or sets a value indicating whether Person Entry should auto-fill with the CurrentPerson */
     personEntryAutofillCurrentPerson: boolean;
 
-    /** Gets or sets the PersonEntryBirthdateEntryOption. */
+    /** Gets or sets the person entry birthdate entry option. */
     personEntryBirthdateEntryOption: number;
 
-    /** Gets or sets the PersonEntryCampusIsVisible. */
+    /** Gets or sets a value indicating whether [person entry show campus]. */
     personEntryCampusIsVisible: boolean;
 
-    /** Gets or sets the PersonEntryCampusStatusValueId. */
+    /**
+     * Gets or sets the person entry campus status value identifier.
+     * This and Rock.Model.WorkflowActionForm.PersonEntryCampusTypeValueId will determine which campuses will selectable
+     */
     personEntryCampusStatusValueId?: number | null;
 
-    /** Gets or sets the PersonEntryCampusTypeValueId. */
+    /**
+     * Gets or sets the person entry campus type value identifier.
+     * This and Rock.Model.WorkflowActionForm.PersonEntryCampusStatusValueId will determine which campuses will selectable
+     */
     personEntryCampusTypeValueId?: number | null;
 
-    /** Gets or sets the PersonEntryConnectionStatusValueId. */
+    /** Gets or sets the person entry connection status value identifier. */
     personEntryConnectionStatusValueId?: number | null;
 
-    /** Gets or sets the PersonEntryDescription. */
+    /** Gets or sets the Description to display under the Rock.Model.WorkflowActionForm.PersonEntryTitle */
     personEntryDescription?: string | null;
 
-    /** Gets or sets the PersonEntryEmailEntryOption. */
+    /** Gets or sets the person entry email entry option. */
     personEntryEmailEntryOption: number;
 
-    /** Gets or sets the PersonEntryFamilyAttributeGuid. */
+    /** Gets or sets the person entry family attribute unique identifier. (The one used to set the Added/Edited Person's Family to) */
     personEntryFamilyAttributeGuid?: Guid | null;
 
-    /** Gets or sets the PersonEntryGenderEntryOption. */
+    /** Gets or sets the person entry gender entry option. */
     personEntryGenderEntryOption: number;
 
-    /** Gets or sets the PersonEntryGroupLocationTypeValueId. */
+    /** Gets or sets the person entry address type value identifier. */
     personEntryGroupLocationTypeValueId?: number | null;
 
-    /** Gets or sets the PersonEntryHideIfCurrentPersonKnown. */
+    /** Gets or sets a value indicating whether Person Entry should be hidden if the CurrentPerson is known */
     personEntryHideIfCurrentPersonKnown: boolean;
 
-    /** Gets or sets the PersonEntryMaritalStatusEntryOption. */
+    /** Gets or sets the person entry marital status entry option. */
     personEntryMaritalStatusEntryOption: number;
 
-    /** Gets or sets the PersonEntryMobilePhoneEntryOption. */
+    /** Gets or sets the person entry mobile phone entry option. */
     personEntryMobilePhoneEntryOption: number;
 
-    /** Gets or sets the PersonEntryPersonAttributeGuid. */
+    /** Gets or sets the person entry person workflow attribute unique identifier. (The one used to set the Added/Edited Person to) */
     personEntryPersonAttributeGuid?: Guid | null;
 
-    /** Gets or sets the PersonEntryPostHtml. */
+    /** Gets or sets the person entry post HTML. */
     personEntryPostHtml?: string | null;
 
-    /** Gets or sets the PersonEntryPreHtml. */
+    /** Gets or sets the person entry preHTML. */
     personEntryPreHtml?: string | null;
 
-    /** Gets or sets the PersonEntryRecordStatusValueId. */
+    /** Gets or sets the person entry record status value identifier. */
     personEntryRecordStatusValueId?: number | null;
 
-    /** Gets or sets the PersonEntrySectionTypeValueId. */
+    /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the SectionType for the Person Entry Section. */
     personEntrySectionTypeValueId?: number | null;
 
-    /** Gets or sets the PersonEntryShowHeadingSeparator. */
+    /** Gets or sets whether a heading separator should be display under the Rock.Model.WorkflowActionForm.PersonEntryTitle and Rock.Model.WorkflowActionForm.PersonEntryDescription */
     personEntryShowHeadingSeparator: boolean;
 
-    /** Gets or sets the PersonEntrySpouseAttributeGuid. */
+    /** Gets or sets the person entry spouse workflow attribute unique identifier.  (The one used to set the Added/Edited Person's Spouse to) */
     personEntrySpouseAttributeGuid?: Guid | null;
 
-    /** Gets or sets the PersonEntrySpouseEntryOption. */
+    /** Gets or sets the person entry spouse entry option. */
     personEntrySpouseEntryOption: number;
 
-    /** Gets or sets the PersonEntrySpouseLabel. */
+    /** Gets or sets the person entry spouse label. */
     personEntrySpouseLabel?: string | null;
 
-    /** Gets or sets the PersonEntryTitle. */
+    /** Gets or sets the Title to display at the top the Person Entry Section */
     personEntryTitle?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

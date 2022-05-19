@@ -26,43 +26,43 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupDemographicValue View Model */
 export type GroupDemographicValueBag = {
-    /** Gets or sets the GroupDemographicTypeId. */
+    /** Gets or sets the GroupDemographicType ID that this GroupDemographicValue is for. */
     groupDemographicTypeId: number;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the Group ID that this GroupDemographicValue is for. */
     groupId: number;
 
-    /** Gets or sets the LastCalculatedDateTime. */
+    /** Gets or sets the last date and time when this GroupDemographicValue was calculated. */
     lastCalculatedDateTime?: string | null;
 
-    /** Gets or sets the RelatedEntityId. */
+    /** Gets or sets the related entity identifier. e.g. the ID of the DefinedValue */
     relatedEntityId?: number | null;
 
-    /** Gets or sets the RelatedEntityTypeId. */
+    /** Gets or sets the related EntityTypeID this value if for. e.g. DefinedValue. */
     relatedEntityTypeId?: number | null;
 
-    /** Gets or sets the Value. */
+    /** Gets or sets the value. */
     value?: string | null;
 
-    /** Gets or sets the ValueAsBoolean. */
+    /** Gets or sets the value as boolean. */
     valueAsBoolean?: boolean | null;
 
-    /** Gets or sets the ValueAsGuid. */
+    /** Gets or sets the value as GUID. */
     valueAsGuid?: Guid | null;
 
-    /** Gets or sets the ValueAsNumeric. */
+    /** Gets or sets the value as numeric. */
     valueAsNumeric?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -34,250 +34,250 @@ namespace Rock.ViewModels.Entities
     public partial class CommunicationTemplateBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BCCEmails.
+        /// Gets or sets the BCC emails.
         /// </summary>
         /// <value>
-        /// The BCCEmails.
+        /// The BCC emails.
         /// </value>
         public string BCCEmails { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// The category identifier.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CCEmails.
+        /// Gets or sets the cc emails.
         /// </summary>
         /// <value>
-        /// The CCEmails.
+        /// The cc emails.
         /// </value>
         public string CCEmails { get; set; }
 
         /// <summary>
-        /// Gets or sets the CssInliningEnabled.
+        /// Gets or sets a value indicating whether [CSS inlining enabled].
         /// </summary>
         /// <value>
-        /// The CssInliningEnabled.
+        ///   true if [CSS inlining enabled]; otherwise, false.
         /// </value>
         public bool CssInliningEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the FromEmail.
+        /// Gets or sets from email.
         /// </summary>
         /// <value>
-        /// The FromEmail.
+        /// From email.
         /// </value>
         public string FromEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the FromName.
+        /// Gets or sets from name.
         /// </summary>
         /// <value>
-        /// The FromName.
+        /// From name.
         /// </value>
         public string FromName { get; set; }
 
         /// <summary>
-        /// Gets or sets the ImageFileId.
+        /// Gets or sets the image file identifier for the Template Preview Image
         /// </summary>
         /// <value>
-        /// The ImageFileId.
+        /// The image file identifier.
         /// </value>
         public int? ImageFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this is an active communication template. This value is required.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean value that is true if this schedule is active, otherwise false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this PageContext is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if the PageContext is part of the core system/framework, otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LavaFieldsJson.
+        /// The internal storage for Rock.Model.CommunicationTemplate.LavaFields
         /// </summary>
         /// <value>
-        /// The LavaFieldsJson.
+        /// The lava fields json
         /// </value>
         public string LavaFieldsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the LogoBinaryFileId.
+        /// Gets or sets the logo binary file identifier that email messages using this template can use for the logo in the message content
         /// </summary>
         /// <value>
-        /// The LogoBinaryFileId.
+        /// The logo binary file identifier.
         /// </value>
         public int? LogoBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Message.
+        /// Gets or sets the message.
         /// </summary>
         /// <value>
-        /// The Message.
+        /// The message.
         /// </value>
         public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the MessageMetaData.
+        /// Gets or sets the message meta data.
         /// </summary>
         /// <value>
-        /// The MessageMetaData.
+        /// The message meta data.
         /// </value>
         public string MessageMetaData { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the Communication Template
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the name of the communication template
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushData.
+        /// Gets or sets the push data.
         /// </summary>
         /// <value>
-        /// The PushData.
+        /// The push data.
         /// </value>
         public string PushData { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushImageBinaryFileId.
+        /// Gets or sets the push image file identifier.
         /// </summary>
         /// <value>
-        /// The PushImageBinaryFileId.
+        /// The push image file identifier.
         /// </value>
         public int? PushImageBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushMessage.
+        /// Gets or sets the message.
         /// </summary>
         /// <value>
-        /// The PushMessage.
+        /// The message.
         /// </value>
         public string PushMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushOpenAction.
+        /// Gets or sets the push open action.
         /// </summary>
         /// <value>
-        /// The PushOpenAction.
+        /// The push open action.
         /// </value>
         public int? PushOpenAction { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushOpenMessage.
+        /// Gets or sets the push open message.
         /// </summary>
         /// <value>
-        /// The PushOpenMessage.
+        /// The push open message.
         /// </value>
         public string PushOpenMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushSound.
+        /// Gets or sets from number.
         /// </summary>
         /// <value>
-        /// The PushSound.
+        /// From number.
         /// </value>
         public string PushSound { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushTitle.
+        /// Gets or sets from number.
         /// </summary>
         /// <value>
-        /// The PushTitle.
+        /// From number.
         /// </value>
         public string PushTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReplyToEmail.
+        /// Gets or sets the reply to email.
         /// </summary>
         /// <value>
-        /// The ReplyToEmail.
+        /// The reply to email.
         /// </value>
         public string ReplyToEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the SenderPersonAliasId.
+        /// Gets or sets the PersonId of the Rock.Model.Person who is the sender of the Communication
         /// </summary>
         /// <value>
-        /// The SenderPersonAliasId.
+        /// A System.Int32 representing the PersonId of the Rock.Model.Person who is the sender of the Communication.
         /// </value>
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMSFromDefinedValueId.
+        /// Gets or sets from number.
         /// </summary>
         /// <value>
-        /// The SMSFromDefinedValueId.
+        /// From number.
         /// </value>
         public int? SMSFromDefinedValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMSMessage.
+        /// Gets or sets the message.
         /// </summary>
         /// <value>
-        /// The SMSMessage.
+        /// The message.
         /// </value>
         public string SMSMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the Subject.
+        /// Gets or sets the name of the Communication
         /// </summary>
         /// <value>
-        /// The Subject.
+        /// A System.String that represents the name of the communication.
         /// </value>
         public string Subject { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

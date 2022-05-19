@@ -34,194 +34,198 @@ namespace Rock.ViewModels.Entities
     public partial class NoteTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AllowsAttachments.
+        /// Gets or sets a value indicating whether attachments are allowed for this note type.
         /// </summary>
         /// <value>
-        /// The AllowsAttachments.
+        ///   true if attachments are allowed; otherwise, false.
         /// </value>
         public bool AllowsAttachments { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowsReplies.
+        /// Gets or sets a value indicating whether [allows replies].
         /// </summary>
         /// <value>
-        /// The AllowsReplies.
+        ///   true if [allows replies]; otherwise, false.
         /// </value>
         public bool AllowsReplies { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowsWatching.
+        /// Gets or sets a value indicating whether [allows watching].
         /// </summary>
         /// <value>
-        /// The AllowsWatching.
+        ///   true if [allows watching]; otherwise, false.
         /// </value>
         public bool AllowsWatching { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovalUrlTemplate.
+        /// A optional Lava Template that can be used to general a URL where Notes of this type can be approved
+        /// If this is left blank, the Approval URL will be a URL to the page (including a hash anchor to the note) where the note was originally created
         /// </summary>
         /// <value>
-        /// The ApprovalUrlTemplate.
+        /// The approval URL template.
         /// </value>
         public string ApprovalUrlTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the AutoWatchAuthors.
+        /// Gets or sets a value indicating whether [automatic watch authors].
         /// </summary>
         /// <value>
-        /// The AutoWatchAuthors.
+        ///   true if [automatic watch authors]; otherwise, false.
         /// </value>
         public bool AutoWatchAuthors { get; set; }
 
         /// <summary>
-        /// Gets or sets the BackgroundColor.
+        /// Gets or sets the background color of each note
         /// </summary>
         /// <value>
-        /// The BackgroundColor.
+        /// The color of the background.
         /// </value>
         public string BackgroundColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the BinaryFileTypeId.
+        /// Gets or sets the binary file type identifier used when saving attachments.
         /// </summary>
         /// <value>
-        /// The BinaryFileTypeId.
+        /// The binary file type identifier used when saving attachments.
         /// </value>
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the BorderColor.
+        /// Gets or sets the border color of each note
         /// </summary>
         /// <value>
-        /// The BorderColor.
+        /// The color of the border.
         /// </value>
         public string BorderColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the Id of the Rock.Model.EntityType that this NoteType is used for.  A NoteType can only be associated with a single Rock.Model.EntityType and will 
+        /// only contain notes for entities of this type. This property is required.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the Id of the Rock.Model.EntityType
         /// </value>
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierColumn.
+        /// Gets or sets the name of the qualifier column/property on the Rock.Model.EntityType that this NoteType applies to. If this is not 
+        /// provided, the note type can be used on all entities of the provided Rock.Model.EntityType.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierColumn.
+        /// A System.String representing the name of the qualifier column that this NoteType applies to.
         /// </value>
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierValue.
+        /// Gets or sets the qualifier value in the qualifier column that this note type applies to.  For instance this note type and related notes will only be applicable to entity 
+        /// if the value in the EntityTypeQualiferColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierValue.
+        /// Entity Type Qualifier Value.
         /// </value>
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the FontColor.
+        /// Gets or sets the font color of the note text
         /// </summary>
         /// <value>
-        /// The FontColor.
+        /// The color of the font.
         /// </value>
         public string FontColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the name of an icon CSS class. 
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// A System.String representing the name of an icon CSS class
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating that this NoteType is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this NoteType is part of the core system/framework, otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxReplyDepth.
+        /// Gets or sets the maximum reply depth.
         /// </summary>
         /// <value>
-        /// The MaxReplyDepth.
+        /// The maximum reply depth.
         /// </value>
         public int? MaxReplyDepth { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the NoteType. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the Name of the NoteType.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequiresApprovals.
+        /// Gets or sets a value indicating whether [requires approvals].
         /// </summary>
         /// <value>
-        /// The RequiresApprovals.
+        ///   true if [requires approvals]; otherwise, false.
         /// </value>
         public bool RequiresApprovals { get; set; }
 
         /// <summary>
-        /// Gets or sets the SendApprovalNotifications.
+        /// Gets or sets a value indicating whether [send approval notifications].
         /// </summary>
         /// <value>
-        /// The SendApprovalNotifications.
+        ///   true if [send approval notifications]; otherwise, false.
         /// </value>
         public bool SendApprovalNotifications { get; set; }
 
         /// <summary>
-        /// Gets or sets the UserSelectable.
+        /// Gets or sets a value indicating whether the type is user selectable.
         /// </summary>
         /// <value>
-        /// The UserSelectable.
+        ///   true if [user selectable]; otherwise, false.
         /// </value>
         public bool UserSelectable { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

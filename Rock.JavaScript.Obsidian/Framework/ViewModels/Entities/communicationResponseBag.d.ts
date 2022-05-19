@@ -25,43 +25,47 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CommunicationResponse View Model */
 export type CommunicationResponseBag = {
-    /** Gets or sets the FromPersonAliasId. */
+    /** Gets or sets from person alias identifier. */
     fromPersonAliasId?: number | null;
 
-    /** Gets or sets the IsRead. */
+    /** Gets or sets a value indicating whether this instance is read. */
     isRead: boolean;
 
-    /** Gets or sets the MessageKey. */
+    /**
+     * This is the address of the sender communication medium. e.g. A phone number or email address.
+     * It is used when an incoming message cannot be identified with a person, this can be used to
+     * link it up later.
+     */
     messageKey?: string | null;
 
-    /** Gets or sets the RelatedCommunicationId. */
+    /** Gets or sets the related communication identifier. */
     relatedCommunicationId?: number | null;
 
-    /** Gets or sets the RelatedMediumEntityTypeId. */
+    /** Gets or sets the related medium entity type identifier. */
     relatedMediumEntityTypeId: number;
 
-    /** Gets or sets the RelatedSmsFromDefinedValueId. */
+    /** Gets or sets the related SMS from defined value identifier. */
     relatedSmsFromDefinedValueId?: number | null;
 
-    /** Gets or sets the RelatedTransportEntityTypeId. */
+    /** Gets or sets the related transport entity type identifier. */
     relatedTransportEntityTypeId: number;
 
-    /** Gets or sets the Response. */
+    /** Gets or sets the response. */
     response?: string | null;
 
-    /** Gets or sets the ToPersonAliasId. */
+    /** Gets or sets to person alias identifier. */
     toPersonAliasId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

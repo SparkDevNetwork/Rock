@@ -25,49 +25,53 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ReportField View Model */
 export type ReportFieldBag = {
-    /** Gets or sets the ColumnHeaderText. */
+    /** Gets or sets the column header text. */
     columnHeaderText?: string | null;
 
-    /** Gets or sets the ColumnOrder. */
+    /** Gets or sets the column order of this field */
     columnOrder: number;
 
-    /** Gets or sets the DataSelectComponentEntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Reporting.DataSelectComponent that this report field is using. */
     dataSelectComponentEntityTypeId?: number | null;
 
-    /** Gets or sets the IsCommunicationMergeField. */
+    /** Gets or sets the is communication merge field. */
     isCommunicationMergeField?: boolean | null;
 
-    /** Gets or sets the IsCommunicationRecipientField. */
+    /** Gets or sets the is recipient field. */
     isCommunicationRecipientField?: boolean | null;
 
-    /** Gets or sets the ReportFieldType. */
+    /** Gets or sets the type of the report field. */
     reportFieldType: number;
 
-    /** Gets or sets the ReportId. */
+    /** Gets or sets the report identifier. */
     reportId: number;
 
-    /** Gets or sets the Selection. */
+    /**
+     * Selection is where the FieldType stores specific parameter values 
+     * If ReportFieldType is Column or Attribute, it is the Column or Attribute name
+     * If ReportFieldType is DataSelectComponent, it will be some values of whatever the DataSelectComponent implements for specific parameters
+     */
     selection?: string | null;
 
-    /** Gets or sets the ShowInGrid. */
+    /** Gets or sets a value indicating whether [show in grid]. */
     showInGrid: boolean;
 
-    /** Gets or sets the SortDirection. */
+    /** Gets or sets the sort direction. */
     sortDirection: number;
 
-    /** Gets or sets the SortOrder. */
+    /** Gets or sets the sort order (ORDER BY). NULL means don't sort by this field */
     sortOrder?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

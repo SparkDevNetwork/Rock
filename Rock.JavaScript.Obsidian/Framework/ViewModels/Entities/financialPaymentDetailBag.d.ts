@@ -25,43 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialPaymentDetail View Model */
 export type FinancialPaymentDetailBag = {
-    /** Gets or sets the AccountNumberMasked. */
+    /** Gets or sets the Masked Account Number (Last 4 of Account Number prefixed with 12 *'s) */
     accountNumberMasked?: string | null;
 
-    /** Gets or sets the BillingLocationId. */
+    /** Gets or sets the billing location identifier. */
     billingLocationId?: number | null;
 
-    /** Gets or sets the CreditCardTypeValueId. */
+    /**
+     * Gets or sets the DefinedValueId of the credit card type Rock.Model.DefinedValue indicating the credit card brand/type that was used
+     * to make this transaction. This value will be null for transactions that were not made by credit card.
+     */
     creditCardTypeValueId?: number | null;
 
-    /** Gets or sets the CurrencyTypeValueId. */
+    /**
+     * Gets or sets the DefinedValueId of the currency type Rock.Model.DefinedValue indicating the currency that the
+     * transaction was made in.
+     */
     currencyTypeValueId?: number | null;
 
-    /** Gets or sets the ExpirationMonth. */
+    /** Gets the expiration month */
     expirationMonth?: number | null;
 
-    /** Gets or sets the ExpirationYear. */
+    /** Gets the 4 digit year */
     expirationYear?: number | null;
 
-    /** Gets or sets the FinancialPersonSavedAccountId. */
+    /** Gets or sets the Rock.Model.FinancialPersonSavedAccount id that was used for this transaction (if there was one) */
     financialPersonSavedAccountId?: number | null;
 
-    /** Gets or sets the GatewayPersonIdentifier. */
+    /**
+     * Gets or sets the Gateway Person Identifier.
+     * This would indicate id the customer vault information on the gateway.
+     */
     gatewayPersonIdentifier?: string | null;
 
-    /** Gets or sets the NameOnCard. */
+    /** Gets the name on card. */
     nameOnCard?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

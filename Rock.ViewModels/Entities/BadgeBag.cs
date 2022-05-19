@@ -34,98 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class BadgeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BadgeComponentEntityTypeId.
+        /// Gets or sets the Id of the badge component entity type
         /// </summary>
-        /// <value>
-        /// The BadgeComponentEntityTypeId.
-        /// </value>
         public int BadgeComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the badge.
         /// </summary>
-        /// <value>
-        /// The Description.
-        /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType that this Badge describes.
         /// </summary>
-        /// <value>
-        /// The EntityTypeId.
-        /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierColumn.
+        /// Gets or sets the entity type qualifier column that contains the value (see Rock.Model.Badge.EntityTypeQualifierValue) that is used narrow the scope of the Badge to a subset or specific instance of an EntityType.
         /// </summary>
-        /// <value>
-        /// The EntityTypeQualifierColumn.
-        /// </value>
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierValue.
+        /// Gets or sets the entity type qualifier value that is used to narrow the scope of the Badge to a subset or specific instance of an EntityType.
         /// </summary>
-        /// <value>
-        /// The EntityTypeQualifierValue.
-        /// </value>
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
-        /// <value>
-        /// The IsActive.
-        /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the given Name of the badge. This value is an alternate key and is required.
         /// </summary>
-        /// <value>
-        /// The Name.
-        /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
-        /// <value>
-        /// The Order.
-        /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

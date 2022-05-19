@@ -34,474 +34,475 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationTemplateBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AddPersonNote.
+        /// Gets or sets a value indicating whether a person note should be added when a person registers for this type of registration.
         /// </summary>
         /// <value>
-        /// The AddPersonNote.
+        ///   true if [add person note]; otherwise, false.
         /// </value>
         public bool AddPersonNote { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowExternalRegistrationUpdates.
+        /// Gets or sets a value indicating whether to allow external registration updates (should a person be able to update their registration on-line after submitting it).
         /// </summary>
         /// <value>
-        /// The AllowExternalRegistrationUpdates.
+        /// true if [allow external registration updates]; otherwise, false.
         /// </value>
         public bool AllowExternalRegistrationUpdates { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowMultipleRegistrants.
+        /// Gets or sets a value indicating whether [allow multiple registrants].
         /// </summary>
         /// <value>
-        /// The AllowMultipleRegistrants.
+        /// true if [allow multiple registrants]; otherwise, false.
         /// </value>
         public bool AllowMultipleRegistrants { get; set; }
 
         /// <summary>
-        /// Gets or sets the BatchNamePrefix.
+        /// Gets or sets the batch name prefix.
         /// </summary>
         /// <value>
-        /// The BatchNamePrefix.
+        /// The batch name prefix.
         /// </value>
         public string BatchNamePrefix { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// The category identifier.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConfirmationEmailTemplate.
+        /// Gets or sets the confirmation email text to send.
         /// </summary>
         /// <value>
-        /// The ConfirmationEmailTemplate.
+        /// The confirmation email template.
         /// </value>
         public string ConfirmationEmailTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConfirmationFromEmail.
+        /// Gets or sets the confirmation from email.
         /// </summary>
         /// <value>
-        /// The ConfirmationFromEmail.
+        /// The confirmation from email.
         /// </value>
         public string ConfirmationFromEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConfirmationFromName.
+        /// Gets or sets the name of the confirmation from.
         /// </summary>
         /// <value>
-        /// The ConfirmationFromName.
+        /// The name of the confirmation from.
         /// </value>
         public string ConfirmationFromName { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConfirmationSubject.
+        /// Gets or sets the confirmation subject.
         /// </summary>
         /// <value>
-        /// The ConfirmationSubject.
+        /// The confirmation subject.
         /// </value>
         public string ConfirmationSubject { get; set; }
 
         /// <summary>
-        /// Gets or sets the Cost.
+        /// Gets or sets the cost (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false).
         /// </summary>
         /// <value>
-        /// The Cost.
+        /// The cost.
         /// </value>
         public decimal Cost { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefaultPayment.
+        /// Gets or sets the default amount to pay per registrant (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false).
+        /// If this is null, the default payment will be the Rock.Model.RegistrationTemplate.Cost
         /// </summary>
         /// <value>
-        /// The DefaultPayment.
+        /// The default payment.
         /// </value>
         public decimal? DefaultPayment { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description of the Attribute.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String that represents the description of the registration template.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DiscountCodeTerm.
+        /// Gets or sets the term to use for discount code
         /// </summary>
         /// <value>
-        /// The DiscountCodeTerm.
+        /// The discount code term.
         /// </value>
         public string DiscountCodeTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the FeeTerm.
+        /// Gets or sets the term to use for fee
         /// </summary>
         /// <value>
-        /// The FeeTerm.
+        /// The fee term.
         /// </value>
         public string FeeTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the FinancialGatewayId.
+        /// Gets or sets the financial gateway identifier.
         /// </summary>
         /// <value>
-        /// The FinancialGatewayId.
+        /// The financial gateway identifier.
         /// </value>
         public int? FinancialGatewayId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupMemberRoleId.
+        /// Gets or sets the group member role that registrants will be added to group as
         /// </summary>
         /// <value>
-        /// The GroupMemberRoleId.
+        /// The group member role identifier.
         /// </value>
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupMemberStatus.
+        /// Gets or sets the group member status that registrants will be added to group with.
         /// </summary>
         /// <value>
-        /// The GroupMemberStatus.
+        /// The group member status.
         /// </value>
         public int GroupMemberStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupTypeId.
+        /// Gets or sets the group type that this registration template applies to
         /// </summary>
         /// <value>
-        /// The GroupTypeId.
+        /// The group type identifier.
         /// </value>
         public int? GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsRegistrationMeteringEnabled.
+        /// Gets or sets a value indicating whether this instance is registration metering enabled.
         /// </summary>
         /// <value>
-        /// The IsRegistrationMeteringEnabled.
+        ///   true if this instance is registration metering enabled; otherwise, false.
         /// </value>
         public bool IsRegistrationMeteringEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the LoginRequired.
+        /// Gets or sets a value indicating whether [log in required].
         /// </summary>
         /// <value>
-        /// The LoginRequired.
+        ///   true if [log in required]; otherwise, false.
         /// </value>
         public bool LoginRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxRegistrants.
+        /// Gets or sets the maximum registrants.
         /// </summary>
         /// <value>
-        /// The MaxRegistrants.
+        /// The maximum registrants.
         /// </value>
         public int? MaxRegistrants { get; set; }
 
         /// <summary>
-        /// Gets or sets the MinimumInitialPayment.
+        /// Gets or sets the minimum initial payment (if Rock.Model.RegistrationTemplate.SetCostOnInstance == false).
         /// </summary>
         /// <value>
-        /// The MinimumInitialPayment.
+        /// The minimum initial payment.
         /// </value>
         public decimal? MinimumInitialPayment { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the registration template
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Notify.
+        /// Gets or sets the notify.
         /// </summary>
         /// <value>
-        /// The Notify.
+        /// The notify.
         /// </value>
         public int Notify { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentReminderEmailTemplate.
+        /// Gets or sets the payment reminder email template.
         /// </summary>
         /// <value>
-        /// The PaymentReminderEmailTemplate.
+        /// The payment reminder email template.
         /// </value>
         public string PaymentReminderEmailTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentReminderFromEmail.
+        /// Gets or sets the payment reminder from email.
         /// </summary>
         /// <value>
-        /// The PaymentReminderFromEmail.
+        /// The payment reminder from email.
         /// </value>
         public string PaymentReminderFromEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentReminderFromName.
+        /// Gets or sets the name of the payment reminder from.
         /// </summary>
         /// <value>
-        /// The PaymentReminderFromName.
+        /// The name of the payment reminder from.
         /// </value>
         public string PaymentReminderFromName { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentReminderSubject.
+        /// Gets or sets the payment reminder subject.
         /// </summary>
         /// <value>
-        /// The PaymentReminderSubject.
+        /// The payment reminder subject.
         /// </value>
         public string PaymentReminderSubject { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentReminderTimeSpan.
+        /// Gets or sets the payment reminder time span in days.
         /// </summary>
         /// <value>
-        /// The PaymentReminderTimeSpan.
+        /// The payment reminder time span in days.
         /// </value>
         public int? PaymentReminderTimeSpan { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrantsSameFamily.
+        /// Gets or sets flag indicating if registrants registered for this template are typically in same family. values are ( yes, no, ask ).
         /// </summary>
         /// <value>
-        /// The RegistrantsSameFamily.
+        /// The registrants same family.
         /// </value>
         public int RegistrantsSameFamily { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrantTerm.
+        /// Gets or sets the term to use for registrant
         /// </summary>
         /// <value>
-        /// The RegistrantTerm.
+        /// The registrant term.
         /// </value>
         public string RegistrantTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrantWorkflowTypeId.
+        /// Optional workflow type to launch for registrant
         /// </summary>
         /// <value>
-        /// The RegistrantWorkflowTypeId.
+        /// The workflow type id.
         /// </value>
         public int? RegistrantWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrarOption.
+        /// Gets or sets the registrar option.
         /// </summary>
         /// <value>
-        /// The RegistrarOption.
+        /// The registrar option.
         /// </value>
         public int RegistrarOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationAttributeTitleEnd.
+        /// Gets or sets the section title for attributes that are collected at the end of the registration entry process.
         /// </summary>
         /// <value>
-        /// The RegistrationAttributeTitleEnd.
+        /// The registration attribute title end.
         /// </value>
         public string RegistrationAttributeTitleEnd { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationAttributeTitleStart.
+        /// Gets or sets the section title for attributes that are collected at the start of the registration entry process.
         /// </summary>
         /// <value>
-        /// The RegistrationAttributeTitleStart.
+        /// The registration attribute title start.
         /// </value>
         public string RegistrationAttributeTitleStart { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationInstructions.
+        /// Gets or sets the registration instructions.
         /// </summary>
         /// <value>
-        /// The RegistrationInstructions.
+        /// The registration instructions.
         /// </value>
         public string RegistrationInstructions { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationTerm.
+        /// Gets or sets the term to use for registration
         /// </summary>
         /// <value>
-        /// The RegistrationTerm.
+        /// The registration term.
         /// </value>
         public string RegistrationTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationWorkflowTypeId.
+        /// Optional workflow type to launch at end of registration
         /// </summary>
         /// <value>
-        /// The RegistrationWorkflowTypeId.
+        /// The workflow type id.
         /// </value>
         public int? RegistrationWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReminderEmailTemplate.
+        /// Gets or sets the reminder email template.
         /// </summary>
         /// <value>
-        /// The ReminderEmailTemplate.
+        /// The reminder email template.
         /// </value>
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReminderFromEmail.
+        /// Gets or sets the reminder from email.
         /// </summary>
         /// <value>
-        /// The ReminderFromEmail.
+        /// The reminder from email.
         /// </value>
         public string ReminderFromEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReminderFromName.
+        /// Gets or sets the name of the reminder from.
         /// </summary>
         /// <value>
-        /// The ReminderFromName.
+        /// The name of the reminder from.
         /// </value>
         public string ReminderFromName { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReminderSubject.
+        /// Gets or sets the reminder subject.
         /// </summary>
         /// <value>
-        /// The ReminderSubject.
+        /// The reminder subject.
         /// </value>
         public string ReminderSubject { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestEntryName.
+        /// Gets or sets the name of the request entry.
         /// </summary>
         /// <value>
-        /// The RequestEntryName.
+        /// The name of the request entry.
         /// </value>
         public string RequestEntryName { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequiredSignatureDocumentTemplateId.
+        /// Gets or sets the required signature document type identifier.
         /// </summary>
         /// <value>
-        /// The RequiredSignatureDocumentTemplateId.
+        /// The required signature document type identifier.
         /// </value>
         public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SetCostOnInstance.
+        /// Gets or sets the set cost on instance.
         /// </summary>
         /// <value>
-        /// The SetCostOnInstance.
+        /// The set cost on instance.
         /// </value>
         public bool? SetCostOnInstance { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowCurrentFamilyMembers.
+        /// Gets or sets a value indicating whether [show current family members].
         /// </summary>
         /// <value>
-        /// The ShowCurrentFamilyMembers.
+        /// true if [show current family members]; otherwise, false.
         /// </value>
         public bool ShowCurrentFamilyMembers { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignatureDocumentAction.
+        /// Gets or sets the signature documentation.
         /// </summary>
         /// <value>
-        /// The SignatureDocumentAction.
+        /// The signature documentation.
         /// </value>
         public int SignatureDocumentAction { get; set; }
 
         /// <summary>
-        /// Gets or sets the SuccessText.
+        /// Gets or sets the success text.
         /// </summary>
         /// <value>
-        /// The SuccessText.
+        /// The success text.
         /// </value>
         public string SuccessText { get; set; }
 
         /// <summary>
-        /// Gets or sets the SuccessTitle.
+        /// Gets or sets the success title.
         /// </summary>
         /// <value>
-        /// The SuccessTitle.
+        /// The success title.
         /// </value>
         public string SuccessTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the WaitListEnabled.
+        /// Gets or sets a value indicating whether a wait list is enabled for this event template
         /// </summary>
         /// <value>
-        /// The WaitListEnabled.
+        ///   true if [wait list enabled]; otherwise, false.
         /// </value>
         public bool WaitListEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the WaitListTransitionEmailTemplate.
+        /// Gets or sets the wait list transition email template.
         /// </summary>
         /// <value>
-        /// The WaitListTransitionEmailTemplate.
+        /// The wait list transition email template.
         /// </value>
         public string WaitListTransitionEmailTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the WaitListTransitionFromEmail.
+        /// Gets or sets the wait list transition from email.
         /// </summary>
         /// <value>
-        /// The WaitListTransitionFromEmail.
+        /// The wait list transition from email.
         /// </value>
         public string WaitListTransitionFromEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the WaitListTransitionFromName.
+        /// Gets or sets the name of the wait list transition from.
         /// </summary>
         /// <value>
-        /// The WaitListTransitionFromName.
+        /// The name of the wait list transition from.
         /// </value>
         public string WaitListTransitionFromName { get; set; }
 
         /// <summary>
-        /// Gets or sets the WaitListTransitionSubject.
+        /// Gets or sets the wait list transition subject.
         /// </summary>
         /// <value>
-        /// The WaitListTransitionSubject.
+        /// The wait list transition subject.
         /// </value>
         public string WaitListTransitionSubject { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

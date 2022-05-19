@@ -25,28 +25,28 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BenevolenceWorkflow View Model */
 export type BenevolenceWorkflowBag = {
-    /** Gets or sets the BenevolenceTypeId. */
+    /** Gets or sets the benevolence type identifier. */
     benevolenceTypeId?: number | null;
 
-    /** Gets or sets the QualifierValue. */
+    /** Gets or sets the workflow qualifier. */
     qualifierValue?: string | null;
 
-    /** Gets or sets the TriggerType. */
+    /** Gets or sets the type of the trigger. */
     triggerType: number;
 
-    /** Gets or sets the WorkflowTypeId. */
+    /** Gets or sets the workflow type identifier. */
     workflowTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

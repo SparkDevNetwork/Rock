@@ -34,130 +34,131 @@ namespace Rock.ViewModels.Entities
     public partial class AssessmentTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AssessmentPath.
+        /// Gets or sets the AssessmentPath of the Rock.Model.AssessmentType  
         /// </summary>
         /// <value>
-        /// The AssessmentPath.
+        /// A System.String for the AssessmentPath.
         /// </value>
         public string AssessmentPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the AssessmentResultsPath.
+        /// Gets or sets the AssessmentResultsPath of the Rock.Model.Assessment or the Rock.Model.AssessmentType if no requestor required.
         /// </summary>
         /// <value>
-        /// The AssessmentResultsPath.
+        /// A System.String for the AssessmentResultsPath.
         /// </value>
         public string AssessmentResultsPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the BadgeColor.
+        /// Gets or sets the color of the badge.
         /// </summary>
         /// <value>
-        /// The BadgeColor.
+        /// The color of the badge.
         /// </value>
         public string BadgeColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the BadgeSummaryLava.
+        /// Gets or sets the badge summary lava.
         /// </summary>
         /// <value>
-        /// The BadgeSummaryLava.
+        /// The badge summary lava.
         /// </value>
         public string BadgeSummaryLava { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the Description of the Rock.Model.AssessmentType
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String for the Description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// The icon CSS class.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets the IsActive flag for the Rock.Model.AssessmentType.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean for the IsActive flag.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Rock.Model.AssessmentType is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this Rock.Model.AssessmentType. is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the MinimumDaysToRetake.
+        /// Gets or sets the number of days given for the Rock.Model.AssessmentType. to be retaken.
         /// </summary>
         /// <value>
-        /// The MinimumDaysToRetake.
+        /// The minimum days allowed to retake the Rock.Model.AssessmentType.
         /// </value>
         public int MinimumDaysToRetake { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequiresRequest.
+        /// Gets or sets the RequiresRequest flag for the Rock.Model.AssessmentType.
         /// </summary>
         /// <value>
-        /// The RequiresRequest.
+        /// A System.Boolean for the RequiresRequest.
         /// </value>
         public bool RequiresRequest { get; set; }
 
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the Title of the Rock.Model.AssessmentType  
         /// </summary>
         /// <value>
-        /// The Title.
+        /// A System.String for the Title.
         /// </value>
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValidDuration.
+        /// Gets or sets the number of days the assessment is valid for Rock.Model.AssessmentType.
+        /// How long (in days) is this assessment valid before it must be taken again.
         /// </summary>
         /// <value>
-        /// The ValidDuration.
+        /// The duration (in days) the Rock.Model.AssessmentType is considered valid.
         /// </value>
         public int ValidDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

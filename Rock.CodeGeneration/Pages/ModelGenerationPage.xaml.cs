@@ -22,6 +22,7 @@ using System.Xml;
 
 using Rock;
 using Rock.CodeGeneration.Utility;
+using Rock.CodeGeneration.XmlDoc;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
 
@@ -39,6 +40,8 @@ namespace Rock.CodeGeneration.Pages
         private readonly List<CheckedItem<Type>> _modelItems = new List<CheckedItem<Type>>();
 
         private readonly System.Windows.Forms.FolderBrowserDialog _fbdOutput = new System.Windows.Forms.FolderBrowserDialog();
+
+        private readonly XmlDocReader _xmlDoc = SupportTools.GetXmlDocReader();
 
         #endregion
 
@@ -1206,13 +1209,36 @@ namespace Rock.ViewModels.Entities
 
             foreach ( var property in properties )
             {
-                sb.AppendLine( $@"        /// <summary>
+                if ( property.SummaryComment.IsNotNullOrWhiteSpace() )
+                {
+                    sb.AppendLine( "        /// <summary>" );
+                    foreach ( var line in property.SummaryComment.Split( new string[] { "\r\n" }, StringSplitOptions.None ) )
+                    {
+                        sb.AppendLine( $"        /// {line}" );
+                    }
+                    sb.AppendLine( "        /// </summary>" );
+
+                    if ( property.ValueComment.IsNotNullOrWhiteSpace() )
+                    {
+                        sb.AppendLine( "        /// <value>" );
+                        foreach ( var line in property.ValueComment.Split( new string[] { "\r\n" }, StringSplitOptions.None ) )
+                        {
+                            sb.AppendLine( $"        /// {line}" );
+                        }
+                        sb.AppendLine( "        /// </value>" );
+                    }
+                }
+                else
+                {
+                    sb.AppendLine( $@"        /// <summary>
         /// Gets or sets the {property.Name}.
         /// </summary>
         /// <value>
         /// The {property.Name}.
-        /// </value>
-        public {property.TypeName} {property.Name} {{ get; set; }}
+        /// </value>" );
+                }
+
+                sb.AppendLine( $@"        public {property.TypeName} {property.Name} {{ get; set; }}
 " );
             }
 
@@ -1297,18 +1323,22 @@ namespace Rock.ViewModels.Entities
                         imports = new HashSet<string> { typeAttribute.ImportStatement };
                     }
 
+                    var comments = _xmlDoc.GetMemberComments( p.Value );
+
                     return new ViewModelProperty
                     {
                         Name = p.Key,
                         IsObsolete = obsolete != null,
                         IsEnum = isEnum,
                         IsNullable = isNullable,
+                        SummaryComment = comments.Summary?.PlainText,
                         TypeName =
                             ( isNullable && isEnum ) ? "int?" :
                             isEnum ? "int" :
                             PropertyTypeName( p.Value.PropertyType ),
                         TypeScriptImports = imports,
-                        TypeScriptType = tsType
+                        TypeScriptType = tsType,
+                        ValueComment = comments.Value?.PlainText
                     };
                 } )
                 .Where( p => !p.IsObsolete )
@@ -2809,6 +2839,18 @@ namespace Rock.ViewModels.Entities
         /// The name of the type.
         /// </value>
         public string TypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the summary comment.
+        /// </summary>
+        /// <value>The summary comment.</value>
+        public string SummaryComment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value comment.
+        /// </summary>
+        /// <value>The value comment.</value>
+        public string ValueComment { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the type script.

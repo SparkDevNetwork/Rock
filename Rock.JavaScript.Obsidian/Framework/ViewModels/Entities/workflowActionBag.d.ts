@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowAction View Model */
 export type WorkflowActionBag = {
-    /** Gets or sets the ActionTypeId. */
+    /** Gets or sets the ActionTypeId of the Rock.Model.WorkflowAction that is being executed by this instance. */
     actionTypeId: number;
 
-    /** Gets or sets the ActivityId. */
+    /** Gets or sets the WorkflowActivityId of the Rock.Model.WorkflowActivity that this WorkflowAction is a part of. */
     activityId: number;
 
-    /** Gets or sets the CompletedDateTime. */
+    /** Gets or sets the date and time that the WorkflowAction completed. */
     completedDateTime?: string | null;
 
-    /** Gets or sets the FormAction. */
+    /** If ActionType is a UserEntryForm Gets or sets the form action. */
     formAction?: string | null;
 
-    /** Gets or sets the LastProcessedDateTime. */
+    /** Gets or sets the date and time that this WorkflowAction was last processed. */
     lastProcessedDateTime?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

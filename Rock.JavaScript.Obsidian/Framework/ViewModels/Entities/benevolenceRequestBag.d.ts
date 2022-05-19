@@ -25,70 +25,70 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BenevolenceRequest View Model */
 export type BenevolenceRequestBag = {
-    /** Gets or sets the BenevolenceTypeId. */
+    /** Gets or sets the benevolence type identifier. */
     benevolenceTypeId: number;
 
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the campus identifier. */
     campusId?: number | null;
 
-    /** Gets or sets the CaseWorkerPersonAliasId. */
+    /** Gets or sets the PersonAliasId of the Rock.Model.PersonAlias who is the case worker for this request. */
     caseWorkerPersonAliasId?: number | null;
 
-    /** Gets or sets the CellPhoneNumber. */
+    /** Gets or sets the Cell Phone Number of the person who requested benevolence. */
     cellPhoneNumber?: string | null;
 
-    /** Gets or sets the ConnectionStatusValueId. */
+    /** Gets or sets the Id of the Defined Value Rock.Model.DefinedValue representing the connection status of the Requester. */
     connectionStatusValueId?: number | null;
 
-    /** Gets or sets the Email. */
+    /** Gets or sets the email address of the person requesting benevolence. */
     email?: string | null;
 
-    /** Gets or sets the FirstName. */
+    /** Gets or sets the First Name of the person that this benevolence request is about. This property is required. */
     firstName?: string | null;
 
-    /** Gets or sets the GovernmentId. */
+    /** Gets or sets the GovernmentId of the person who requested benevolence. */
     governmentId?: string | null;
 
-    /** Gets or sets the HomePhoneNumber. */
+    /** Gets or sets the Home Phone Number of the person who requested benevolence. */
     homePhoneNumber?: string | null;
 
-    /** Gets or sets the LastName. */
+    /** Gets or sets the Last Name of the person that this benevolence request is about. This property is required. */
     lastName?: string | null;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the Id of the Rock.Model.Location that is associated with this BenevolenceRequest. */
     locationId?: number | null;
 
-    /** Gets or sets the ProvidedNextSteps. */
+    /** Gets or sets the provided next steps. */
     providedNextSteps?: string | null;
 
-    /** Gets or sets the RequestDateTime. */
+    /** Gets or sets the date that this benevolence request was entered. */
     requestDateTime?: string | null;
 
-    /** Gets or sets the RequestedByPersonAliasId. */
+    /** Gets or sets the PersonAliasId of the Rock.Model.PersonAlias who is submitting the BenevolenceRequest */
     requestedByPersonAliasId?: number | null;
 
-    /** Gets or sets the RequestStatusValueId. */
+    /** Gets or sets the Id of the Defined Value Rock.Model.DefinedValue representing the status of the Benevolence Request. */
     requestStatusValueId?: number | null;
 
-    /** Gets or sets the RequestText. */
+    /** Gets or sets the text/content of the request. */
     requestText?: string | null;
 
-    /** Gets or sets the ResultSummary. */
+    /** Gets or sets the summary of the request result. */
     resultSummary?: string | null;
 
-    /** Gets or sets the WorkPhoneNumber. */
+    /** Gets or sets the Work Phone Number of the person who requested benevolence. */
     workPhoneNumber?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

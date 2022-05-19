@@ -25,34 +25,38 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PersonScheduleExclusion View Model */
 export type PersonScheduleExclusionBag = {
-    /** Gets or sets the EndDate. */
+    /** Gets or sets the end date. */
     endDate?: string | null;
 
-    /** Gets or sets the GroupId. */
+    /** The GroupId if there is a specific group for this exclusion. */
     groupId?: number | null;
 
-    /** Gets or sets the ParentPersonScheduleExclusionId. */
+    /**
+     * Gets or sets the parent person schedule exclusion identifier.
+     * Use this to associate this exclusion with another PersonScheduleExclusion.
+     * This can be used support family based blackout dates (A person can indicate a blackout date and also include other members of their family).
+     */
     parentPersonScheduleExclusionId?: number | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier of the Person that this exclusion is for */
     personAliasId?: number | null;
 
-    /** Gets or sets the StartDate. */
+    /** Gets or sets the start date. */
     startDate?: string | null;
 
-    /** Gets or sets the Title. */
+    /** Gets or sets the title (optional) */
     title?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

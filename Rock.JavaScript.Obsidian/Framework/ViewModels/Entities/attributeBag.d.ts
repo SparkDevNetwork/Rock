@@ -26,94 +26,112 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Attribute View Model */
 export type AttributeBag = {
-    /** Gets or sets the AbbreviatedName. */
+    /**
+     * Gets or sets the shortened name of the attribute.
+     * If null or whitespace then the full name is returned.
+     */
     abbreviatedName?: string | null;
 
-    /** Gets or sets the AllowSearch. */
+    /**
+     * Gets or sets whether this Attribute should be used in 'search by attribute value' UIs. 
+     * For example, if you had a UI where you would allow the user to find people based on a list of attributes
+     */
     allowSearch: boolean;
 
-    /** Gets or sets the AttributeColor. */
+    /** The color to visually distinguish the attribute. For example, Rock.Model.Attribute.AttributeColor might be used to set the color for the Rock.Model.Attribute.IconCssClass of the icon. */
     attributeColor?: string | null;
 
-    /** Gets or sets the DefaultValue. */
+    /** Gets or sets the Attribute's default value. */
     defaultValue?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the description of the Attribute. */
     description?: string | null;
 
-    /** Gets or sets the EnableHistory. */
+    /** Gets or sets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical */
     enableHistory: boolean;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType that this Attribute is used to configure. This property will not be populated if the Attribute is a Global (system) Attribute. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the EntityTypeQualifierColumn. */
+    /** Gets or sets the entity type qualifier column that contains the value (see Rock.Model.Attribute.EntityTypeQualifierValue) that is used narrow the scope of the Attribute to a subset or specific instance of an EntityType. */
     entityTypeQualifierColumn?: string | null;
 
-    /** Gets or sets the EntityTypeQualifierValue. */
+    /** Gets or sets the entity type qualifier value that is used to narrow the scope of the Attribute to a subset or specific instance of an EntityType. */
     entityTypeQualifierValue?: string | null;
 
-    /** Gets or sets the FieldTypeId. */
+    /**
+     * Gets or sets the FieldTypeId of the Rock.Model.FieldType that is used to select/set the Rock.Model.AttributeValue for this Attribute setting.
+     * The FieldType can also be used to enforce formatting of the attribute setting. This property is required.
+     */
     fieldTypeId: number;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the name of the icon CSS class. This property is only used for CSS based icons. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this attribute is active. */
     isActive: boolean;
 
-    /** Gets or sets the IsAnalytic. */
+    /**
+     * Gets or sets a value indicating whether this instance is analytic.
+     * NOTE: Only applies if this is an Attribute on an Entity that implements IAnalytic and has an [AnalyticAttributes] Attribute
+     * If this is true, the Analytic table for this entity should include a field for this attribute
+     */
     isAnalytic: boolean;
 
-    /** Gets or sets the IsAnalyticHistory. */
+    /**
+     * Gets or sets a value indicating whether this instance is analytic history.
+     * Only applies if this is an Attribute on an Entity that implements IAnalyticHistorical and IsAnalytic is True
+     * If this is true and IsAnalytic is also true, a change in value of this Attribute on the Entity makes the CurrentRowIndicator=1 record
+     * to become CurrentRowIndicator=0, sets the ExpireDate, then a new row with CurrentRowIndicator=1 to be created
+     */
     isAnalyticHistory: boolean;
 
-    /** Gets or sets the IsGridColumn. */
+    /** Gets or sets a flag indicating if this Attribute is a Grid Column? */
     isGridColumn: boolean;
 
-    /** Gets or sets the IsIndexEnabled. */
+    /** Gets or sets a value indicating whether this instance is index enabled. */
     isIndexEnabled: boolean;
 
-    /** Gets or sets the IsMultiValue. */
+    /** Gets or sets a flag indicating if the Attribute supports multiple values. */
     isMultiValue: boolean;
 
-    /** Gets or sets the IsPublic. */
+    /** Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in). */
     isPublic: boolean;
 
-    /** Gets or sets the IsRequired. */
+    /** Gets or sets a flag indicating if a value is required. */
     isRequired: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Attribute is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the Key. */
+    /** Gets sets the Key value  that is used to reference and call the Attribute. This property is required. */
     key?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the Attribute. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the display order of the attribute. */
     order: number;
 
-    /** Gets or sets the PostHtml. */
+    /** Gets or sets any HTML to be rendered after the attribute's edit control  */
     postHtml?: string | null;
 
-    /** Gets or sets the PreHtml. */
+    /** Gets or sets any HTML to be rendered before the attribute's edit control  */
     preHtml?: string | null;
 
-    /** Gets or sets the ShowOnBulk. */
+    /** Gets or sets a flag indicating if this attribute shows when doing a bulk entry form. */
     showOnBulk: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the category Guids. */

@@ -34,130 +34,133 @@ namespace Rock.ViewModels.Entities
     public partial class DocumentTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BinaryFileTypeId.
+        /// Gets or sets the id of the Rock.Model.BinaryFileType that this document type belongs to.
         /// </summary>
         /// <value>
-        /// The BinaryFileTypeId.
+        /// A System.Int32 representing the Rock.Model.BinaryFileType.
         /// </value>
         public int BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefaultDocumentNameTemplate.
+        /// Gets or sets the default document name template.
         /// </summary>
         /// <value>
-        /// The DefaultDocumentNameTemplate.
+        /// The default document name template.
         /// </value>
         public string DefaultDocumentNameTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the Id of the Rock.Model.EntityType that this DocumentType is used for.  A DocumentType can only be associated with a single Rock.Model.EntityType and will 
+        /// only contain notes for entities of this type. This property is required.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the Id of the Rock.Model.EntityType
         /// </value>
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierColumn.
+        /// Gets or sets the name of the qualifier column/property on the Rock.Model.EntityType that this Docuement Type applies to. If this is not 
+        /// provided, the document type can be used on all entities of the provided Rock.Model.EntityType.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierColumn.
+        /// A System.String representing the name of the qualifier column that this DocumentType applies to.
         /// </value>
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierValue.
+        /// Gets or sets the qualifier value in the qualifier column that this document type applies to.  For instance this note type and related notes will only be applicable to entity 
+        /// if the value in the EntityTypeQualiferColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierValue.
+        /// Entity Type Qualifier Value.
         /// </value>
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the CSS class that is used for a vector/CSS icon.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// A System.String representing the CSS class that is used for a vector/CSS based icon.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsImage.
+        /// Gets or sets the IsImage flag for the Rock.Model.DocumentType.
         /// </summary>
         /// <value>
-        /// The IsImage.
+        /// A System.Boolean for the IsImage flag.
         /// </value>
         public bool IsImage { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this DocumentType is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this is part of the core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxDocumentsPerEntity.
+        /// Gets or sets the maximum documents per entity.  This would limit the documents of that type per entity. A blank value means no limit.
         /// </summary>
         /// <value>
-        /// The MaxDocumentsPerEntity.
+        /// A System.Int32 that represents the maximum documents per entity.
         /// </value>
         public int? MaxDocumentsPerEntity { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the given Name of the DocumentType.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the given Name of the BinaryFileType. 
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order of this DocumentType.  The lower the number the higher the display priority.  This property is required.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 that represents the display order of this DocumentType.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the UserSelectable.
+        /// Gets or sets a value indicating whether the type is user selectable.
         /// </summary>
         /// <value>
-        /// The UserSelectable.
+        ///   true if [user selectable]; otherwise, false.
         /// </value>
         public bool UserSelectable { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

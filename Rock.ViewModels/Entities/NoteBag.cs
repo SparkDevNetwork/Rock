@@ -34,162 +34,163 @@ namespace Rock.ViewModels.Entities
     public partial class NoteBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ApprovalsSent.
+        /// Gets or sets a value indicating whether [approvals sent].
         /// </summary>
         /// <value>
-        /// The ApprovalsSent.
+        ///   true if [approvals sent]; otherwise, false.
         /// </value>
         public bool ApprovalsSent { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovalStatus.
+        /// Gets or sets the approval status.
         /// </summary>
         /// <value>
-        /// The ApprovalStatus.
+        /// The approval status.
         /// </value>
         public int ApprovalStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovedByPersonAliasId.
+        /// Gets or sets the PersonAliasId of the Rock.Model.Person who either approved or declined the Note. If no approval action has been performed on this Note, this value will be null.
         /// </summary>
         /// <value>
-        /// The ApprovedByPersonAliasId.
+        /// A System.Int32 representing the PersonAliasId of hte Rock.Model.Person who either approved or declined the ContentItem. This value will be null if no approval action has been
+        /// performed on this add.
         /// </value>
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovedDateTime.
+        /// Gets or sets the approved date.
         /// </summary>
         /// <value>
-        /// The ApprovedDateTime.
+        /// The approved date.
         /// </value>
         public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Caption.
+        /// Gets or sets the caption
         /// </summary>
         /// <value>
-        /// The Caption.
+        /// A System.String representing the caption of the Note.
         /// </value>
         public string Caption { get; set; }
 
         /// <summary>
-        /// Gets or sets the EditedByPersonAliasId.
+        /// Gets or sets the person alias that last edited the note text. Use this instead of ModifiedByPersonAliasId to determine the last person to edit the note text
         /// </summary>
         /// <value>
-        /// The EditedByPersonAliasId.
+        /// The edited by person alias identifier.
         /// </value>
         public int? EditedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EditedDateTime.
+        /// Gets or sets the last time the note text was edited. Use this instead of ModifiedDateTime to determine the last time a person edited a note 
         /// </summary>
         /// <value>
-        /// The EditedDateTime.
+        /// The edited date time.
         /// </value>
         public DateTime? EditedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the Id of the entity that this note is related to.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// A System.Int32 representing the Id of the entity (object) that this note is related to.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsAlert.
+        /// Gets or sets a flag indicating if this note is an alert.
         /// </summary>
         /// <value>
-        /// The IsAlert.
+        /// A System.Boolean value that is true if this note is an alert; otherwise false.
         /// </value>
         public bool? IsAlert { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPrivateNote.
+        /// Gets or sets a value indicating whether this note is viewable to only the person that created the note
         /// </summary>
         /// <value>
-        /// The IsPrivateNote.
+        /// true if this instance is private note; otherwise, false.
         /// </value>
         public bool IsPrivateNote { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this note is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this note is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the NoteTypeId.
+        /// Gets or sets the Id of the Rock.Model.NoteType. This property is required.
         /// </summary>
         /// <value>
-        /// The NoteTypeId.
+        /// A System.Int32 representing the Id of the Rock.Model.NoteType
         /// </value>
         public int NoteTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the NoteUrl.
+        /// Gets or sets the URL where the Note was created. Use NoteUrl with a hash anchor of the Note.NoteAnchorId so that Notifications and Approvals can know where to view the note
         /// </summary>
         /// <value>
-        /// The NoteUrl.
+        /// The note URL.
         /// </value>
         public string NoteUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the NotificationsSent.
+        /// Gets or sets a value indicating whether [notifications sent].
         /// </summary>
         /// <value>
-        /// The NotificationsSent.
+        ///   true if [notifications sent]; otherwise, false.
         /// </value>
         public bool NotificationsSent { get; set; }
 
         /// <summary>
-        /// Gets or sets the ParentNoteId.
+        /// Gets or sets the parent note identifier.
         /// </summary>
         /// <value>
-        /// The ParentNoteId.
+        /// The parent note identifier.
         /// </value>
         public int? ParentNoteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Text.
+        /// Gets or sets the text/body of the note.
         /// </summary>
         /// <value>
-        /// The Text.
+        /// A System.String representing the text/body of the note.
         /// </value>
         public string Text { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

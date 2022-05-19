@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class AttributeValueBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AttributeId.
+        /// Gets or sets the AttributeId of the Rock.Model.Attribute that this AttributeValue provides a value for.
         /// </summary>
         /// <value>
-        /// The AttributeId.
+        /// A System.Int32 representing the AttributeId of the Rock.Model.Attribute that this AttributeValue provides a value for.
         /// </value>
         public int AttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the Id of the entity instance that uses this AttributeValue. An Rock.Model.Attribute is a configuration setting, so each 
+        /// instance of the Entity that uses the same Attribute can have a different value.  For instance a Rock.Model.BlockType has a declared attribute, and that attribute can be configured 
+        /// with a different value on each Rock.Model.Block that implements the Rock.Model.BlockType. This value will either be 0 or null for global attributes or attributes that have a 
+        /// constant across all instances of an EntityType.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// A System.Int32 that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if is part of the Rock core system/framework.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Value.
+        /// Gets or sets the value
         /// </summary>
         /// <value>
-        /// The Value.
+        /// A System.String representing the value.
         /// </value>
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsNumeric.
+        /// Gets the Value as a decimal (Computed on Save).
         /// </summary>
-        /// <value>
-        /// The ValueAsNumeric.
-        /// </value>
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

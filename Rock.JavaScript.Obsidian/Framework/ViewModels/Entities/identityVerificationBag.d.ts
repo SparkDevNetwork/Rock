@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** IdentityVerification View Model */
 export type IdentityVerificationBag = {
-    /** Gets or sets the FailedMatchAttemptCount. */
+    /** Gets or sets the failed match attempt count. */
     failedMatchAttemptCount?: number | null;
 
-    /** Gets or sets the IdentityVerificationCodeId. */
+    /** Gets or sets the identity verification code identifier. */
     identityVerificationCodeId: number;
 
-    /** Gets or sets the IssueDateTime. */
+    /** Gets or sets the issue date time. */
     issueDateTime?: string | null;
 
-    /** Gets or sets the ReferenceNumber. */
+    /** Gets or sets the reference number. */
     referenceNumber?: string | null;
 
-    /** Gets or sets the RequestIpAddress. */
+    /** Gets or sets the request ip address. */
     requestIpAddress?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

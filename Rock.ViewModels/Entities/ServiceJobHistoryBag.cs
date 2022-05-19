@@ -34,82 +34,83 @@ namespace Rock.ViewModels.Entities
     public partial class ServiceJobHistoryBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ServiceJobId.
+        /// The Id of the ServiceJob
         /// </summary>
         /// <value>
-        /// The ServiceJobId.
+        /// The ServiceJob identifier.
         /// </value>
         public int ServiceJobId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ServiceWorker.
+        /// Gets or sets the name of the service worker.
         /// </summary>
         /// <value>
-        /// The ServiceWorker.
+        /// A System.String representing the name of the service worker.
         /// </value>
         public string ServiceWorker { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDateTime.
+        /// Gets or sets the date and time that the Job started.
         /// </summary>
         /// <value>
-        /// The StartDateTime.
+        /// A System.DateTime representing the date and time that the Job started
         /// </value>
         public DateTime? StartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the completion status that was returned by the Job.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// A System.String containing the status that was returned by the Job.
         /// </value>
         public string Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the StatusMessage.
+        /// Gets or sets the status message that was returned by the job. In most cases this will be used
+        /// in the event of an exception to return the exception message.
         /// </summary>
         /// <value>
-        /// The StatusMessage.
+        /// A System.String representing the Status Message that returned by the job.
         /// </value>
         public string StatusMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the StopDateTime.
+        /// Gets or sets the date and time that the job finished.
         /// </summary>
         /// <value>
-        /// The StopDateTime.
+        /// A System.DateTime that the job finished.
         /// </value>
         public DateTime? StopDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -34,154 +34,154 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialTransactionAlertBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AlertDateKey.
+        /// Gets or sets the alert date key.
         /// </summary>
         /// <value>
-        /// The AlertDateKey.
+        /// The alert date key.
         /// </value>
         public int AlertDateKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the AlertDateTime.
+        /// Gets or sets the alert date time.
         /// </summary>
         /// <value>
-        /// The AlertDateTime.
+        /// The alert date time.
         /// </value>
         public DateTime AlertDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the AlertTypeId.
+        /// Gets or sets the financial transaction alert type identifier.
         /// </summary>
         /// <value>
-        /// The AlertTypeId.
+        /// The financial transaction alert type identifier.
         /// </value>
         public int AlertTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Amount.
+        /// Gets or sets the amount of financial transaction
         /// </summary>
         /// <value>
-        /// The Amount.
+        /// The amount of financial transaction.
         /// </value>
         public decimal? Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the AmountCurrentIqr.
+        /// Gets or sets the amount current interquartile range.
         /// </summary>
         /// <value>
-        /// The AmountCurrentIqr.
+        /// The amount current interquartile range.
         /// </value>
         public decimal? AmountCurrentIqr { get; set; }
 
         /// <summary>
-        /// Gets or sets the AmountCurrentMedian.
+        /// Gets or sets the amount current median
         /// </summary>
         /// <value>
-        /// The AmountCurrentMedian.
+        /// The amount current median
         /// </value>
         public decimal? AmountCurrentMedian { get; set; }
 
         /// <summary>
-        /// Gets or sets the AmountIqrMultiplier.
+        /// Gets or sets the amount interquartile range multiplier.
         /// </summary>
         /// <value>
-        /// The AmountIqrMultiplier.
+        /// The amount interquartile range multiplier.
         /// </value>
         public decimal? AmountIqrMultiplier { get; set; }
 
         /// <summary>
-        /// Gets or sets the FrequencyCurrentMean.
+        /// Gets or sets the frequency current mean.
         /// </summary>
         /// <value>
-        /// The FrequencyCurrentMean.
+        /// The frequency current mean.
         /// </value>
         public decimal? FrequencyCurrentMean { get; set; }
 
         /// <summary>
-        /// Gets or sets the FrequencyCurrentStandardDeviation.
+        /// Gets or sets the frequency current standard deviation.
         /// </summary>
         /// <value>
-        /// The FrequencyCurrentStandardDeviation.
+        /// The frequency current standard deviation.
         /// </value>
         public decimal? FrequencyCurrentStandardDeviation { get; set; }
 
         /// <summary>
-        /// Gets or sets the FrequencyDifferenceFromMean.
+        /// Gets or sets the frequency difference from mean.
         /// </summary>
         /// <value>
-        /// The FrequencyDifferenceFromMean.
+        /// The frequency difference from mean.
         /// </value>
         public decimal? FrequencyDifferenceFromMean { get; set; }
 
         /// <summary>
-        /// Gets or sets the FrequencyZScore.
+        /// Gets or sets the frequency Z score.
         /// </summary>
         /// <value>
-        /// The FrequencyZScore.
+        /// The frequency Z score.
         /// </value>
         public decimal? FrequencyZScore { get; set; }
 
         /// <summary>
-        /// Gets or sets the GivingId.
+        /// Gets or sets the giving identifier.
         /// </summary>
         /// <value>
-        /// The GivingId.
+        /// The giving identifier.
         /// </value>
         public string GivingId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the Id of the person Rock.Model.Person who is associated with the transaction.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// A System.Int32 representing the PersonAliasId of Rock.Model.PersonAlias associated with the transaction.
         /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReasonsKey.
+        /// Gets or sets the reason key.
         /// </summary>
         /// <value>
-        /// The ReasonsKey.
+        /// The reason key.
         /// </value>
         public string ReasonsKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionId.
+        /// Gets or sets the transaction identifier.
         /// </summary>
         /// <value>
-        /// The TransactionId.
+        /// The transaction identifier.
         /// </value>
         public int? TransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

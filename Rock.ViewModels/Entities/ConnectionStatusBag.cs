@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class ConnectionStatusBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AutoInactivateState.
+        /// Gets or sets a value indicating whether choosing this Status will set the Request's State to Inactive.
         /// </summary>
         /// <value>
-        /// The AutoInactivateState.
+        /// true if this will set the State to Inactive; otherwise, false.
         /// </value>
         public bool AutoInactivateState { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConnectionTypeId.
+        /// Gets or sets the Rock.Model.ConnectionType identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionTypeId.
+        /// The connection type identifier.
         /// </value>
         public int? ConnectionTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the HighlightColor.
+        /// Gets or sets the color of the highlight.
         /// </summary>
         /// <value>
-        /// The HighlightColor.
+        /// The color of the highlight.
         /// </value>
         public string HighlightColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsCritical.
+        /// Gets or sets a value indicating whether this instance is critical.
         /// </summary>
         /// <value>
-        /// The IsCritical.
+        /// true if this instance is critical; otherwise, false.
         /// </value>
         public bool IsCritical { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsDefault.
+        /// Gets or sets a value indicating whether this instance is default.
         /// </summary>
         /// <value>
-        /// The IsDefault.
+        /// true if this instance is default; otherwise, false.
         /// </value>
         public bool IsDefault { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

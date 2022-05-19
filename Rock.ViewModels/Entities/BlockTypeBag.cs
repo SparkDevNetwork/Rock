@@ -34,90 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class BlockTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Category.
+        /// Gets or sets the category of the BlockType.  Blocks will be grouped by category when displayed to user
         /// </summary>
         /// <value>
-        /// The Category.
+        /// A System.String that represents the category of the BlockType.
         /// </value>
         public string Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the BlockType.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String that represents the Description of the BlockType
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the entity type identifier for the pre-compiled class that provides the logic for this block type.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The entity type identifier for the pre-compiled class that provides the logic for this block type.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsCommon.
+        /// Gets or sets a value indicating whether this blocktype is commonly used
         /// </summary>
         /// <value>
-        /// The IsCommon.
+        ///   true if this instance is common; otherwise, false.
         /// </value>
         public bool IsCommon { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this BlockType was created by and is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if this Block is part of the Rock core system/framework, otherwise is false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the BlockType.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the Name of the BlockType. This property is required.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Path.
+        /// Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType.
         /// </summary>
         /// <value>
-        /// The Path.
+        /// A System.String that represents the relative path to the supporting UserControl for the BlockType.
         /// </value>
         public string Path { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

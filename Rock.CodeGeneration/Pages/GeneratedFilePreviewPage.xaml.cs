@@ -57,7 +57,7 @@ namespace Rock.CodeGeneration.Pages
         /// Gets or sets the post save action handler.
         /// </summary>
         /// <value>The post save action handler.</value>
-        public Action<IReadOnlyList<GeneratedFile>, IReadOnlyList<GeneratedFile>, IReadOnlyList<GeneratedFile>> PostSaveAction { get; set; }
+        public Action<IReadOnlyList<GeneratedFile>> PostSaveAction { get; set; }
 
         #endregion
 
@@ -192,48 +192,43 @@ namespace Rock.CodeGeneration.Pages
                 return;
             }
 
-            // Find all the files that should be exported.
-            var files = _exportFiles
-                .Where( f => f.IsExporting )
-                .Select( f => f.File )
-                .ToList();
-
-            // Find all the files that will be skipped.
-            var skippedFiles = _exportFiles.Where( f => !f.IsExporting )
-                .Select( f => f.File )
-                .ToList();
-
-            var failedFiles = new List<GeneratedFile>();
-            var exportedFiles = new List<GeneratedFile>();
-
             // Attempt to write each file to disk. If something goes wrong
             // then add it to the list of failed files.
-            foreach ( var file in files )
+            foreach ( var file in _exportFiles )
             {
+                if ( !file.IsExporting )
+                {
+                    file.File.SaveState = GeneratedFileSaveState.NoChange;
+                    continue;
+                }
+
                 try
                 {
-                    var filePath = Path.Combine( solutionPath, file.SolutionRelativePath );
+                    var filePath = Path.Combine( solutionPath, file.File.SolutionRelativePath );
 
                     EnsureDirectoryExists( Path.GetDirectoryName( filePath ) );
+                    var exists = File.Exists( filePath );
 
-                    File.WriteAllText( filePath, file.Content );
+                    File.WriteAllText( filePath, file.File.Content );
 
-                    exportedFiles.Add( file );
+                    file.File.SaveState = exists ? GeneratedFileSaveState.Updated : GeneratedFileSaveState.Created;
                 }
                 catch ( Exception ex )
                 {
-                    System.Diagnostics.Debug.WriteLine( $"Error processing file '{file.SolutionRelativePath}': {ex.Message}" );
-                    failedFiles.Add( file );
+                    System.Diagnostics.Debug.WriteLine( $"Error processing file '{file.File.SolutionRelativePath}': {ex.Message}" );
+                    file.File.SaveState = GeneratedFileSaveState.Failed;
                 }
             }
 
             // Process any post-save action requested by the owner.
-            PostSaveAction?.Invoke( exportedFiles, skippedFiles, failedFiles );
+            PostSaveAction?.Invoke( _exportFiles.Select( f => f.File ).ToList() );
+
+            var failedFiles = _exportFiles.Where( f => f.File.SaveState == GeneratedFileSaveState.Failed );
 
             // If any files had errors, display which ones.
             if ( failedFiles.Any() )
             {
-                var errorMessage = $"The following files had errors:\n{string.Join( "\n", failedFiles.Select( f => f.SolutionRelativePath ) )}";
+                var errorMessage = $"The following files had errors:\n{string.Join( "\n", failedFiles.Select( f => f.File.SolutionRelativePath ) )}";
                 MessageBox.Show( Window.GetWindow( this ), errorMessage, "Some files failed to process." );
             }
             else

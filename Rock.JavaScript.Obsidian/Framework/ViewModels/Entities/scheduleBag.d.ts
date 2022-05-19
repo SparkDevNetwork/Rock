@@ -25,52 +25,62 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Schedule View Model */
 export type ScheduleBag = {
-    /** Gets or sets the AutoInactivateWhenComplete. */
+    /** Gets or sets a value indicating whether [auto inactivate when complete]. */
     autoInactivateWhenComplete: boolean;
 
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the CategoryId of the Rock.Model.Category that this Schedule belongs to. */
     categoryId?: number | null;
 
-    /** Gets or sets the CheckInEndOffsetMinutes. */
+    /**
+     * Gets or sets the number of minutes following schedule start that Check-in should be active. 0 represents that Check-in will only be available
+     * until the Schedule's start time.
+     */
     checkInEndOffsetMinutes?: number | null;
 
-    /** Gets or sets the CheckInStartOffsetMinutes. */
+    /**
+     * Gets or sets the number of minutes prior to the Schedule's start time  that Check-in should be active. 0 represents that Check-in 
+     * will not be available to the beginning of the event.
+     */
     checkInStartOffsetMinutes?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a user defined Description of the Schedule. */
     description?: string | null;
 
-    /** Gets or sets the EffectiveEndDate. */
+    /** Gets or sets that date that this Schedule expires and becomes inactive. This value is inclusive and the schedule will be inactive after this date. */
     effectiveEndDate?: string | null;
 
-    /** Gets or sets the EffectiveStartDate. */
+    /** Gets or sets the Date that the Schedule becomes effective/active. This property is inclusive, and the schedule will be inactive before this date.  */
     effectiveStartDate?: string | null;
 
-    /** Gets or sets the iCalendarContent. */
+    /** Gets or sets the content lines of the iCalendar */
     iCalendarContent?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this is an active schedule. This value is required. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the Schedule. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /**
+     * Gets or sets the order.
+     * Use List&lt;Schedule&gt;().OrderByOrderAndNextScheduledDateTime
+     * to get the schedules in the desired order.
+     */
     order: number;
 
-    /** Gets or sets the WeeklyDayOfWeek. */
+    /** Gets or sets the weekly day of week. */
     weeklyDayOfWeek?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

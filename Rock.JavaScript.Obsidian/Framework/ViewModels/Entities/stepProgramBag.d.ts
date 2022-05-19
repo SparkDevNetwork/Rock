@@ -25,40 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** StepProgram View Model */
 export type StepProgramBag = {
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the Id of the Rock.Model.Category. */
     categoryId?: number | null;
 
-    /** Gets or sets the DefaultListView. */
+    /** Gets or sets the default view mode for the program. This value is required. */
     defaultListView: number;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a description of the program. */
     description?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the program. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the StepTerm. */
+    /** Gets or sets the term used for steps within this program. This property is required. */
     stepTerm?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */
