@@ -36,6 +36,7 @@
     <Content Include="Framework\Core\tsconfig.json" />
     <Content Include="Framework\Directives\tsconfig.json" />
     <Content Include="Framework\FieldTypes\tsconfig.json" />
+    <Content Include="Framework\Libs\tsconfig.json" />
     <Content Include="Framework\PageState\tsconfig.json" />
     <Content Include="Framework\rollup.config.js" />
     <Content Include="Framework\.eslintrc.js" />
@@ -69,6 +70,7 @@
     <Folder Include="Framework\Directives\" />
     <Folder Include="Framework\Core\" />
     <Folder Include="Framework\FieldTypes\" />
+    <Folder Include="Framework\Libs\" />
     <Folder Include="Framework\PageState\" />
     <Folder Include="Framework\Types\Controls\" />
     <Folder Include="Framework\Types\Utility\" />
@@ -170,6 +172,7 @@
     <TypeScriptCompile Include="Framework\FieldTypes\urlLinkFieldComponents.ts" />
     <TypeScriptCompile Include="Framework\FieldTypes\utils.ts" />
     <TypeScriptCompile Include="Framework\Core\Reporting\comparisonTypeOptions.ts" />
+    <TypeScriptCompile Include="Framework\Libs\highlightJs.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\followingEventType.d.ts" />
     <TypeScriptCompile Include="Framework\SystemGuids\CodeGenerated\signatureDocumentTemplate.d.ts" />
     <TypeScriptCompile Include="Framework\Templates\detailBlock.ts" />

@@ -16,6 +16,7 @@
 //
 
 import { Component, computed, defineComponent, getCurrentInstance, onMounted, onUnmounted, PropType, ref, useAttrs, watch } from "vue";
+import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
@@ -178,12 +179,31 @@ export const GalleryAndResult = defineComponent({
                 );
             }
         });
+
+        const styledImportCode = computed((): string | undefined => {
+            if (!props.importCode) {
+                return undefined;
+            }
+
+            return HighlightJs.highlight("typescript", props.importCode)?.value;
+        });
+
+        const styledExampleCode = computed((): string | undefined => {
+            if (!props.exampleCode) {
+                return undefined;
+            }
+
+            return HighlightJs.highlight("html", props.exampleCode)?.value;
+        });
+
         const showReflection = ref(false);
 
         return {
             componentName,
             formattedValue,
             showReflection,
+            styledExampleCode,
+            styledImportCode,
         };
     },
 
@@ -268,12 +288,12 @@ export const GalleryAndResult = defineComponent({
     <slot name="usage">
         <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
         <div v-if="importCode" class="galleryContent-codeSampleWrapper">
-            <pre class="galleryContent-codeSample">{{ importCode }}</pre>
+            <pre class="galleryContent-codeSample"><code v-html="styledImportCode"></code></pre>
             <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
         </div>
         <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
         <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
-            <pre class="galleryContent-codeSample">{{ exampleCode }}</pre>
+            <pre class="galleryContent-codeSample"><code v-html="styledExampleCode"></code></pre>
             <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
         </div>
     </slot>
