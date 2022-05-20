@@ -875,6 +875,19 @@ namespace RockWeb.Blocks.Finance
             if ( groupMember.Id == 0)
             {
                 groupMemberService.Add( groupMember );
+
+                /*
+                     6/20/2022 - SMC
+
+                     We need to save the new Group to the database so that an Id is assigned.  This
+                     Id is necessary to calculate the correct GivingId for the business, otherwise
+                     all new businesses are given a GivingId of "G0" until the Rock Cleanup Job runs,
+                     which causes the transactions to appear on any new records (because they all
+                     have the same GivingId).
+
+                     Reason: Transactions showing up on records they don't belong to.
+                */
+                rockContext.SaveChanges();
             }
 
             return groupMember;
