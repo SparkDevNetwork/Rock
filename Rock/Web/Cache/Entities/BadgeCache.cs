@@ -191,18 +191,31 @@ namespace Rock.Web.Cache
             {
                 var component = BadgeComponent;
                 var textWriter = new StringWriter();
-                var htmlTextWriter = new System.Web.UI.HtmlTextWriter( textWriter );
 
-                component.ParentContextEntityBlock = null;
-                component.Entity = entity;
-                component.Render( this, htmlTextWriter );
+                component.Render( this, entity, textWriter );
 
-                htmlTextWriter.Flush();
+                using ( var htmlTextWriter = new System.Web.UI.HtmlTextWriter( textWriter ) )
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    component.ParentContextEntityBlock = null;
+                    component.Entity = entity;
+                    component.Render( this, htmlTextWriter );
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
+
+                var script = component.GetWrappedJavaScript( this, entity );
+
+                if ( script.IsNullOrWhiteSpace() )
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    script = component.GetWrappedJavaScript( this );
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
 
                 return new RenderedBadgeBag
                 {
                     Html = textWriter.ToString(),
-                    JavaScript = component.GetWrappedJavaScript( this )
+                    JavaScript = script
                 };
             }
             catch ( Exception ex )

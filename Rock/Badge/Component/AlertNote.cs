@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -43,13 +44,8 @@ namespace Rock.Badge.Component
     [Rock.SystemGuid.EntityTypeGuid( "139E9BD6-2159-49F0-B8C8-29C7E251BE50")]
     public class AlertNote : BadgeComponent
     {
-
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
             List<Guid> noteTypes = new List<Guid>();
 
@@ -64,7 +60,7 @@ namespace Rock.Badge.Component
             // check for alert note
             var alertNotesExist = new NoteService( new RockContext() ).Queryable().AsNoTracking()
                                 .Where( n => noteTypes.Contains( n.NoteType.Guid )
-                                        && n.EntityId.Value == Entity.Id
+                                        && n.EntityId.Value == entity.Id
                                         && n.IsAlert == true
                                         && ( !n.IsPrivateNote || n.CreatedByPersonAlias.PersonId == currentPersonId )
                                         )

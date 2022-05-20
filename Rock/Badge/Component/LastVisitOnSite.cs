@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Text.Encodings.Web;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -46,14 +48,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person ) )
             {
                 return;
             }
@@ -62,14 +60,10 @@ namespace Rock.Badge.Component
             writer.Write( "</div>" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return null;
             }
@@ -98,12 +92,12 @@ namespace Rock.Badge.Component
             var pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
 
             // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
-            var detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={Person.Guid}&SiteId={siteId}" );
+            var detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={person.Guid}&SiteId={siteId}" );
 
             return $@"
                 $.ajax({{
                     type: 'GET',
-                    url: Rock.settings.get('baseUrl') + 'api/Badges/LastVisitOnSite/{Person.Id}/{siteId}' ,
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/LastVisitOnSite/{person.Id}/{siteId}' ,
                     statusCode: {{
                         200: function (data, status, xhr) {{
                             var badgeHtml = '';
