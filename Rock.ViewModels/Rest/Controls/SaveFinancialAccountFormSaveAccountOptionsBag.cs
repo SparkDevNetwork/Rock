@@ -17,12 +17,13 @@
 
 using System;
 
-namespace Rock.Rest.v2.Options
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be provided to <see cref="ControlsController.SaveFinancialAccountFormSaveAccount(SaveFinancialAccountFormSaveAccountOptions)"/>.
+    /// The options that can be passed to the FormSaveAccount API action of
+    /// the SaveFinancialAccount control.
     /// </summary>
-    public sealed class SaveFinancialAccountFormSaveAccountOptions
+    public sealed class SaveFinancialAccountFormSaveAccountOptionsBag
     {
         /// <summary>
         /// Gets or sets the gateway unique identifier.

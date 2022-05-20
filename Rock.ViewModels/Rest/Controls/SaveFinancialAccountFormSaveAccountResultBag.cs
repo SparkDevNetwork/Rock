@@ -15,12 +15,13 @@
 // </copyright>
 //
 
-namespace Rock.Rest.v2.Options
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// Save Financial Account Form Result
+    /// The result that will be returned from the FormSaveAccount API action of
+    /// the SaveFinancialAccount control.
     /// </summary>
-    public sealed class SaveFinancialAccountFormSaveAccountResult
+    public sealed class SaveFinancialAccountFormSaveAccountResultBag
     {
         /// <summary>
         /// Gets or sets the title.

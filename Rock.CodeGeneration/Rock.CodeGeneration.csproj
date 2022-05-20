@@ -186,9 +186,6 @@
     <PackageReference Include="EntityFramework">
       <Version>6.4.4</Version>
     </PackageReference>
-    <PackageReference Include="LoxSmoke.DocXml">
-      <Version>3.4.5</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Core">
       <Version>5.2.3</Version>
     </PackageReference>

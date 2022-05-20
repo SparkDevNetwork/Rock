@@ -15,12 +15,13 @@
 // </copyright>
 //
 
-namespace Rock.Rest.v2.Options
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be provided to <see cref="ControlsController.PersonPickerSearch(PersonPickerSearchOptions)"/>
+    /// The options that can be passed to the Search API action of
+    /// the PersonPicker control.
     /// </summary>
-    public class PersonPickerSearchOptions
+    public class PersonPickerSearchOptionsBag
     {
         /// <summary>
         /// Gets or sets the name.
@@ -53,15 +54,15 @@ namespace Rock.Rest.v2.Options
         public bool IncludeDetails { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [include businesses].
+        /// Gets or sets a value indicating whether to include businesses in the results.
         /// </summary>
-        /// <value><c>true</c> if [include businesses]; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if businesses should be included in the results; otherwise, <c>false</c>.</value>
         public bool IncludeBusinesses { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [include deceased].
+        /// Gets or sets a value indicating whether to include deceased people in the results.
         /// </summary>
-        /// <value><c>true</c> if [include deceased]; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if deceased people should be included in the results; otherwise, <c>false</c>.</value>
         public bool IncludeDeceased { get; set; }
     }
 

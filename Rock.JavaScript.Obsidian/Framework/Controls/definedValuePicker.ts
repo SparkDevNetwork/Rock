@@ -18,6 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { post } from "@Obsidian/Utility/http";
+import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
@@ -60,7 +61,7 @@ export default defineComponent({
         const standardProps = useStandardAsyncPickerProps(props);
 
         const loadItems = async (): Promise<ListItemBag[]> => {
-            const options = {
+            const options: Partial<DefinedValuePickerGetDefinedValuesOptionsBag> = {
                 definedTypeGuid: props.definedTypeGuid,
                 securityGrantToken: props.securityGrantToken
             };

@@ -138,13 +138,6 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
     <Compile Include="v2\ControlsController.cs" />
-    <Compile Include="v2\Options\CategoryPickerChildTreeItemsOptions.cs" />
-    <Compile Include="v2\Options\DefinedValuePickerGetDefinedValuesOptions.cs" />
-    <Compile Include="v2\Options\EntityTypePickerGetEntityTypesOptions.cs" />
-    <Compile Include="v2\Options\LocationPickerGetActiveChildrenOptions.cs" />
-    <Compile Include="v2\Options\PersonPickerSearchOptions.cs" />
-    <Compile Include="v2\Options\SaveFinancialAccountFormSaveAccountOptions.cs" />
-    <Compile Include="v2\Options\SaveFinancialAccountFormSaveAccountResult.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
     <Compile Include="v2\BlockActionsController.cs" />
@@ -525,7 +518,9 @@
     <EmbeddedResource Include="Swagger\CustomAssets\screen.css" />
     <EmbeddedResource Include="Swagger\CustomAssets\typography.css" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="v2\Options\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,9 +21,9 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Rest.v2.Options;
 using Rock.Security;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -57,7 +57,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "CategoryPickerChildTreeItems" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "A1D07211-6C50-463B-98ED-1622DC4D73DD" )]
-        public IHttpActionResult CategoryPickerChildTreeItems( [FromBody] CategoryPickerChildTreeItemsOptions options )
+        public IHttpActionResult CategoryPickerChildTreeItems( [FromBody] CategoryPickerChildTreeItemsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -135,7 +135,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
-        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptions options )
+        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -176,7 +176,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "EntityTypePickerGetEntityTypes" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "AFDD3D40-5856-478B-A41A-0539127F0631" )]
-        public IHttpActionResult EntityTypePickerGetEntityTypes( [FromBody] EntityTypePickerGetEntityTypesOptions options )
+        public IHttpActionResult EntityTypePickerGetEntityTypes( [FromBody] EntityTypePickerGetEntityTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -283,7 +283,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "LocationPickerGetActiveChildren" )]
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
-        public IHttpActionResult LocationPickerGetActiveChildren( [FromBody] LocationPickerGetActiveChildrenOptions options )
+        public IHttpActionResult LocationPickerGetActiveChildren( [FromBody] LocationPickerGetActiveChildrenOptionsBag options )
         {
             IQueryable<Location> qry;
 
@@ -369,7 +369,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "PersonPickerSearch" )]
         [Rock.SystemGuid.RestActionGuid( "1947578D-B28F-4956-8666-DCC8C0F2B945" )]
-        public IQueryable<Rock.Rest.Controllers.PersonSearchResult> PersonPickerSearch( [FromBody] PersonPickerSearchOptions options )
+        public IQueryable<Rock.Rest.Controllers.PersonSearchResult> PersonPickerSearch( [FromBody] PersonPickerSearchOptionsBag options )
         {
             var rockContext = new RockContext();
 
@@ -390,12 +390,12 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "SaveFinancialAccountFormSaveAccount" )]
         [Rock.SystemGuid.RestActionGuid( "544B6302-A9E0-430E-A1C1-7BCBC4A6230C" )]
-        public SaveFinancialAccountFormSaveAccountResult SaveFinancialAccountFormSaveAccount( [FromBody] SaveFinancialAccountFormSaveAccountOptions options )
+        public SaveFinancialAccountFormSaveAccountResultBag SaveFinancialAccountFormSaveAccount( [FromBody] SaveFinancialAccountFormSaveAccountOptionsBag options )
         {
             // Validate the arguments
             if ( options?.TransactionCode.IsNullOrWhiteSpace() != false )
             {
-                return new SaveFinancialAccountFormSaveAccountResult
+                return new SaveFinancialAccountFormSaveAccountResultBag
                 {
                     Title = "Sorry",
                     Detail = "The account information cannot be saved as there's not a valid transaction code to reference",
@@ -405,7 +405,7 @@ namespace Rock.Rest.v2
 
             if ( options.SavedAccountName.IsNullOrWhiteSpace() )
             {
-                return new SaveFinancialAccountFormSaveAccountResult
+                return new SaveFinancialAccountFormSaveAccountResultBag
                 {
                     Title = "Missing Account Name",
                     Detail = "Please enter a name to use for this account",
@@ -422,7 +422,7 @@ namespace Rock.Rest.v2
                 {
                     if ( options.Username.IsNullOrWhiteSpace() || options.Password.IsNullOrWhiteSpace() )
                     {
-                        return new SaveFinancialAccountFormSaveAccountResult
+                        return new SaveFinancialAccountFormSaveAccountResultBag
                         {
                             Title = "Missing Information",
                             Detail = "A username and password are required when saving an account",
@@ -434,7 +434,7 @@ namespace Rock.Rest.v2
 
                     if ( userLoginService.GetByUserName( options.Username ) != null )
                     {
-                        return new SaveFinancialAccountFormSaveAccountResult
+                        return new SaveFinancialAccountFormSaveAccountResultBag
                         {
                             Title = "Invalid Username",
                             Detail = "The selected Username is already being used. Please select a different Username",
@@ -444,7 +444,7 @@ namespace Rock.Rest.v2
 
                     if ( !UserLoginService.IsPasswordValid( options.Password ) )
                     {
-                        return new SaveFinancialAccountFormSaveAccountResult
+                        return new SaveFinancialAccountFormSaveAccountResultBag
                         {
                             Title = "Invalid Password",
                             Detail = UserLoginService.FriendlyPasswordRules(),
@@ -460,7 +460,7 @@ namespace Rock.Rest.v2
 
                 if ( gateway is null )
                 {
-                    return new SaveFinancialAccountFormSaveAccountResult
+                    return new SaveFinancialAccountFormSaveAccountResultBag
                     {
                         Title = "Invalid Gateway",
                         Detail = "Sorry, the financial gateway information is not valid.",
@@ -477,7 +477,7 @@ namespace Rock.Rest.v2
 
                 if ( transactionPerson is null || paymentDetail is null )
                 {
-                    return new SaveFinancialAccountFormSaveAccountResult
+                    return new SaveFinancialAccountFormSaveAccountResultBag
                     {
                         Title = "Invalid Transaction",
                         Detail = "Sorry, the account information cannot be saved as there's not a valid transaction to reference",
@@ -534,7 +534,7 @@ namespace Rock.Rest.v2
                 financialPersonSavedAccountService.Add( savedAccount );
                 rockContext.SaveChanges();
 
-                return new SaveFinancialAccountFormSaveAccountResult
+                return new SaveFinancialAccountFormSaveAccountResultBag
                 {
                     Title = "Success",
                     Detail = "The account has been saved for future use",

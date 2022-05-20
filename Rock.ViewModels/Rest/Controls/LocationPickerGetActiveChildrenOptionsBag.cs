@@ -17,24 +17,27 @@
 
 using System;
 
-namespace Rock.Rest.v2.Options
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to <see cref="ControlsController.DefinedValuePickerGetDefinedValues(DefinedValuePickerGetDefinedValuesOptions)"/>.
+    /// The options that can be passed to the GetActiveChildren API action of
+    /// the LocationPicker control.
     /// </summary>
-    public class DefinedValuePickerGetDefinedValuesOptions
+    public class LocationPickerGetActiveChildrenOptionsBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the defined type to load values from.
+        /// Gets or sets the unique identifier of the parent location whose
+        /// children are to be enumerated.
         /// </summary>
-        /// <value>The unique identifier of the defined type to load values from.</value>
-        public Guid DefinedTypeGuid { get; set; }
+        /// <value>The unique identifier of the parent location.</value>
+        public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether inactive values should be included.
+        /// Gets or sets the root location unique identifier. This is used if <see cref="Guid"/>
+        /// is empty to specify the root location to limit the tree to.
         /// </summary>
-        /// <value><c>true</c> if inactive values should be included; otherwise, <c>false</c>.</value>
-        public bool IncludeInactive { get; set; }
+        /// <value>The root location unique identifier.</value>
+        public Guid RootLocationGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the security grant token to use when performing

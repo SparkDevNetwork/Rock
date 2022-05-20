@@ -17,6 +17,7 @@
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import { post } from "@Obsidian/Utility/http";
+import { EntityTypePickerGetEntityTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTypePickerGetEntityTypesOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
@@ -95,7 +96,9 @@ export default defineComponent({
          * Loads the items from the server.
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
-            const result = await post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, {});
+            const options: Partial<EntityTypePickerGetEntityTypesOptionsBag> = {
+            };
+            const result = await post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, options);
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;

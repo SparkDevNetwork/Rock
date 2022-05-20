@@ -15,12 +15,13 @@
 // </copyright>
 //
 
-namespace Rock.Rest.v2.Options
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be provided to <see cref="ControlsController.EntityTypePickerGetEntityTypes(EntityTypePickerGetEntityTypesOptions)"/>.
+    /// The options that can be passed to the GetEntityTypes API action of
+    /// the EntityTypePicker control.
     /// </summary>
-    public class EntityTypePickerGetEntityTypesOptions
+    public class EntityTypePickerGetEntityTypesOptionsBag
     {
         /* Intentionally left blank for compatibility with future options. */
     }
