@@ -146,6 +146,10 @@ export default defineComponent({
             return props.displayStyle === PickerDisplayStyle.List && !props.multiple;
         });
 
+        const isHorizontal = computed((): boolean => {
+            return props.columnCount != 1;
+        });
+
         // #endregion
 
         // #region Functions
@@ -260,6 +264,7 @@ export default defineComponent({
             internalValue,
             isCheckBoxListStyle,
             isDropDownListStyle,
+            isHorizontal,
             isLoading,
             isRadioButtonListStyle,
             onOpen,
@@ -284,13 +289,16 @@ export default defineComponent({
 <CheckBoxList v-if="isCheckBoxListStyle"
     v-model="internalValue"
     v-bind="standardProps"
-    :items="actualItems" />
+    :horizontal="isHorizontal"
+    :items="actualItems"
+    :repeatColumns="columnCount" />
 
 <RadioButtonList v-if="isRadioButtonListStyle"
     v-model="internalValue"
     v-bind="standardProps"
+    :horizontal="isHorizontal"
     :items="actualItems"
+    :repeatColumns="columnCount"
     :showBlankItem="showBlankItem" />
 `
 });
-

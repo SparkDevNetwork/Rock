@@ -185,7 +185,9 @@ export const GalleryAndResult = defineComponent({
                 return undefined;
             }
 
-            return HighlightJs.highlight("typescript", props.importCode)?.value;
+            return HighlightJs.highlight(props.importCode, {
+                language: "typescript"
+            })?.value;
         });
 
         const styledExampleCode = computed((): string | undefined => {
@@ -193,7 +195,9 @@ export const GalleryAndResult = defineComponent({
                 return undefined;
             }
 
-            return HighlightJs.highlight("html", props.exampleCode)?.value;
+            return HighlightJs.highlight(props.exampleCode, {
+                language: "html"
+            })?.value;
         });
 
         const showReflection = ref(false);
@@ -2321,10 +2325,12 @@ const entityTypePickerGallery = defineComponent({
         GalleryAndResult,
         CheckBox,
         DropDownList,
-        EntityTypePicker
+        EntityTypePicker,
+        NumberUpDown
     },
     setup() {
         return {
+            columnCount: ref(0),
             displayStyle: ref(PickerDisplayStyle.Auto),
             displayStyleItems,
             enhanceForLongLists: ref(false),
@@ -2346,6 +2352,7 @@ const entityTypePickerGallery = defineComponent({
     <EntityTypePicker label="Entity Type"
         v-model="value"
         :multiple="multiple"
+        :columnCount="columnCount"
         :includeGlobalOption="includeGlobalOption"
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
@@ -2373,6 +2380,10 @@ const entityTypePickerGallery = defineComponent({
         <div class="row">
             <div class="col-md-3">
                 <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
         </div>
     </template>
