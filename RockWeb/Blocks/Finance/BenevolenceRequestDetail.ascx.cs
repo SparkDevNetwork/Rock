@@ -1427,20 +1427,35 @@ namespace RockWeb.Blocks.Finance
             _requester = benevolenceRequest?.RequestedByPersonAlias?.Person;
             _assignedTo = benevolenceRequest?.CaseWorkerPersonAlias?.Person;
 
-            lViewBenevolenceType.Text = $"<span class='label label-info'>{benevolenceRequest?.BenevolenceType?.Name}</span>";
+            hlViewBenevolenceType.Text = $"{benevolenceRequest?.BenevolenceType?.Name}";
+            hlViewBenevolenceType.LabelType = LabelType.Type;
 
             var campus = _requester?.GetCampus();
 
+            hlViewCampus.LabelType = LabelType.Campus;
             if ( campus != null )
             {
-                lViewCampus.Text = $"<span class='label label-campus'>{campus?.Name}</span>";
+                hlViewCampus.Text = $"{campus?.Name}";
             }
             else
             {
-                lViewCampus.Text = $"<span class='label label-campus'>{CampusCache.All()?.FirstOrDefault()?.Name}</span>";
+                hlViewCampus.Text = $"{CampusCache.All()?.FirstOrDefault()?.Name}";
             }
 
-            lViewStatus.Text = $"<span class='label label-default'>{benevolenceRequest?.RequestStatusValue?.Value}</span>";
+            switch ( benevolenceRequest?.RequestStatusValue?.Value.ToUpper() )
+            {
+                case "APPROVED":
+                    hlViewStatus.LabelType = LabelType.Success;
+                    break;
+                case "PENDING":
+                    hlViewStatus.LabelType = LabelType.Default;
+                    break;
+                case "DENIED":
+                    hlViewStatus.LabelType = LabelType.Danger;
+                    break;
+            }
+            
+            hlViewStatus.Text = $"{benevolenceRequest?.RequestStatusValue?.Value}";
 
             DisplayPersonName();
 
