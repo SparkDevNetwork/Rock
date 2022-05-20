@@ -518,9 +518,7 @@
     <EmbeddedResource Include="Swagger\CustomAssets\screen.css" />
     <EmbeddedResource Include="Swagger\CustomAssets\typography.css" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="v2\Options\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

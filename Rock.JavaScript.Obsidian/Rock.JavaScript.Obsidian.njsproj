@@ -97,6 +97,7 @@
     <Folder Include="Framework\ViewModels\Finance\" />
     <Folder Include="Framework\ViewModels\Reporting\" />
     <Folder Include="Framework\ViewModels\Rest\" />
+    <Folder Include="Framework\ViewModels\Rest\Controls\" />
     <Folder Include="Framework\ViewModels\Utility\" />
     <Folder Include="System\" />
     <Folder Include="Tests\" />
