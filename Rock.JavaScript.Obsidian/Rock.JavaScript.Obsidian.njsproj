@@ -93,6 +93,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleUnavailability\" />
     <Folder Include="Framework\ViewModels\Connection\" />
     <Folder Include="Framework\ViewModels\Controls\" />
+    <Folder Include="Framework\ViewModels\CRM\" />
     <Folder Include="Framework\ViewModels\Entities\" />
     <Folder Include="Framework\ViewModels\Finance\" />
     <Folder Include="Framework\ViewModels\Reporting\" />
@@ -108,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Build\build.ts" />
+    <TypeScriptCompile Include="Framework\Controls\badgeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\baseAsyncPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\copyButton.ts" />
     <TypeScriptCompile Include="Framework\Controls\definedValuePicker.ts" />
@@ -375,6 +377,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\fieldTypeEditorUpdateAttributeConfigurationResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\gatewayControlBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CRM\renderedBadgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementTypePrerequisiteBag.d.ts" />
@@ -603,6 +606,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgeListGetBadgesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetDefinedValuesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTypePickerGetEntityTypesOptionsBag.d.ts" />

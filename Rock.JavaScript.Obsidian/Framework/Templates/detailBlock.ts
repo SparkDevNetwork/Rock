@@ -20,6 +20,7 @@ import { Guid } from "@Obsidian/Types";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
 import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+import BadgeList from "@Obsidian/Controls/badgeList";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockSuspense from "@Obsidian/Controls/rockSuspense";
@@ -39,7 +40,8 @@ export default defineComponent({
         Panel,
         RockButton,
         RockForm,
-        RockSuspense
+        RockSuspense,
+        BadgeList
     },
 
     props: {
@@ -427,7 +429,7 @@ export default defineComponent({
     </template>
 
     <template v-if="!isEditMode && isBadgesVisible" #subheaderRight>
-        Badges.
+        <BadgeList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
     </template>
 
     <template v-if="$slots.helpContent" #helpContent>

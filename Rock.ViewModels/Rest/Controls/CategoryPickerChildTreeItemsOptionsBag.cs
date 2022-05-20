@@ -20,7 +20,8 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options for retrieving child tree items for the category picker.
+    /// The options that can be passed to the ChildTreeItems API action of
+    /// the CategoryPicker control.
     /// </summary>
     public class CategoryPickerChildTreeItemsOptionsBag
     {

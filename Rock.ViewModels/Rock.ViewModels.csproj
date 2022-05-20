@@ -87,6 +87,7 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormValueSourcesViewModel.cs" />
     <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
     <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
+    <Compile Include="CRM\RenderedBadgeBag.cs" />
     <Compile Include="Entities\AchievementAttemptBag.cs" />
     <Compile Include="Entities\AchievementTypeBag.cs" />
     <Compile Include="Entities\AchievementTypePrerequisiteBag.cs" />
@@ -315,6 +316,7 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
+    <Compile Include="Rest\Controls\BadgeListGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategoryPickerChildTreeItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerGetDefinedValuesOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTypePickerGetEntityTypesOptionsBag.cs" />

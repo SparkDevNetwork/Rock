@@ -23,7 +23,10 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** The options for retrieving child tree items for the category picker. */
+/**
+ * The options that can be passed to the ChildTreeItems API action of
+ * the CategoryPicker control.
+ */
 export type CategoryPickerChildTreeItemsOptionsBag = {
     /**
      * Gets or sets the parent unique identifier whose children are to

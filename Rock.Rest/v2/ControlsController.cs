@@ -23,6 +23,7 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.CRM;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -30,6 +31,7 @@ using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Http;
@@ -43,6 +45,85 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67")]
     public class ControlsController : ApiControllerBase 
     {
+        #region Badge List
+
+        /// <summary>
+        /// Get the rendered badge information for a specific entity.
+        /// </summary>
+        /// <param name="options">The options that describe which badges to render.</param>
+        /// <returns>A collection of <see cref="RenderedBadgeBag"/> objects.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BadgeListGetBadges" )]
+        [Rock.SystemGuid.RestActionGuid( "34387b98-bf7e-4000-a28a-24ea08605285" )]
+        public IHttpActionResult BadgeListGetBadges( [FromBody] BadgeListGetBadgesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
+                var entityType = entityTypeCache?.GetEntityType();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Verify that we found the entity type.
+                if ( entityType == null )
+                {
+                    return BadRequest( "Unknown entity type." );
+                }
+
+                // Load the entity and verify we got one.
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+
+                if ( entity == null )
+                {
+                    return NotFound();
+                }
+
+                // If the entity can be secured, ensure the person has access to it.
+                if ( entity is ISecured securedEntity )
+                {
+                    var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( entity, Authorization.VIEW ) == true;
+
+                    if ( !isAuthorized )
+                    {
+                        return Unauthorized();
+                    }
+                }
+
+                List<BadgeCache> badges;
+
+                // Load the list of badges that were requested or all badges
+                // if no specific badges were requested.
+                if ( options.BadgeTypeGuids != null && options.BadgeTypeGuids.Any() )
+                {
+                    badges = options.BadgeTypeGuids
+                        .Select( g => BadgeCache.Get( g ) )
+                        .Where( b => b != null )
+                        .ToList();
+                }
+                else
+                {
+                    badges = BadgeCache.All()
+                        .Where( b => !b.EntityTypeId.HasValue || b.EntityTypeId.Value == entityTypeCache.Id )
+                        .ToList();
+                }
+
+                // Filter out any badges that don't apply to the entity or are not
+                // authorized by the person to be viewed.
+                badges = badges.Where( b => b.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( b, Authorization.VIEW ) == true )
+                    .ToList();
+
+                // Render all the badges and then filter out any that are empty.
+                var badgeResults = badges.Select( b => b.RenderBadge( entity ) )
+                    .Where( b => b.Html.IsNotNullOrWhiteSpace() || b.JavaScript.IsNotNullOrWhiteSpace() )
+                    .ToList();
+
+                return Ok( badgeResults );
+            }
+        }
+
+        #endregion
+
         #region Category Picker
 
         private static readonly Regex QualifierValueLookupRegex = new Regex( "^{EL:((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12})):((?:[a-f\\d]{8})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{4})-(?:[a-f\\d]{12}))}$", RegexOptions.IgnoreCase );
