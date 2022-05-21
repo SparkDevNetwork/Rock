@@ -43,8 +43,8 @@ namespace Rock.Jobs
         Order = 0,
         Key = AttributeKey.IPAddressGeoCodingComponent )]
     [IntegerField(
-        "Lookback Maximum( Days )",
-        Description = "The number of days into the past the job should look for unmatched addresses in the InteractionSession table. ( default 30 days ).",
+        "Lookback Maximum (days)",
+        Description = "The number of days into the past the job should look for unmatched addresses in the InteractionSession table. (default 30 days)",
         IsRequired = false,
         Order = 1,
         DefaultIntegerValue = 30,

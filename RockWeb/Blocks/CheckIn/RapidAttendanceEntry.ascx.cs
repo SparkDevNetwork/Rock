@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.CheckIn
         DefaultBooleanValue = true,
         Order = 3 )]
     [IntegerField(
-        "Expires After (Days)",
+        "Expires After (days)",
         Key = AttributeKey.ExpiresAfter,
         DefaultIntegerValue = 14,
         Description = "Number of days until the request will expire.",
