@@ -235,7 +235,16 @@ namespace Rock.Utility
             int autoFitRows = Math.Min( rows, 10000 );
             var autoFitRange = worksheet.Cells[headerRows, 1, autoFitRows, columns];
 
-            autoFitRange.AutoFitColumns();
+            // AutoFitColumns might throw an exception if the wrong format was used for a column, however if we've reached this stage
+            // the excel can be generated if the exception is handled.
+            try
+            {
+                autoFitRange.AutoFitColumns();
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+            }
 
             // TODO: add alternating highlights
 
@@ -282,6 +291,16 @@ namespace Rock.Utility
             if ( field is CurrencyField )
             {
                 return DecimalFormat;
+            }
+
+            if (field is DateField)
+            {
+                return DateFormat;
+            }
+
+            if (field is DateTimeField)
+            {
+                return DateTimeFormat;
             }
 
             return DefaultColumnFormat( exportValue?.GetType() );
