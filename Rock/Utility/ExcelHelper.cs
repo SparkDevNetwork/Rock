@@ -293,12 +293,12 @@ namespace Rock.Utility
                 return DecimalFormat;
             }
 
-            if (field is DateField)
+            if ( field is DateField )
             {
                 return DateFormat;
             }
 
-            if (field is DateTimeField)
+            if ( field is DateTimeField )
             {
                 return DateTimeFormat;
             }
