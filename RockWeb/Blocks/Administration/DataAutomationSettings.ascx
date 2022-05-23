@@ -318,7 +318,9 @@
                                     <Rock:SchedulePicker ID="spExcludeSchedules" runat="server" AllowMultiSelect="true" Label="Exclude Schedules" />
                                 </div>
                             </div>
-
+                            <div class="clearfix margin-b-lg">
+                                <Rock:NumberBox ID="nbTimesToTriggerCampusChange" runat="server" Label="The number of time to attending a campus to trigger a campus change." MinimumValue="1" AppendText="times" CssClass="input-width-md" Text="3" />
+                            </div>
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
                                     <Rock:RockCheckBox ID="cbMostFamilyGiving" runat="server" />
@@ -328,7 +330,6 @@
                                     <Rock:RockDropDownList ID="ddlAttendanceOrGiving" CssClass="input-width-lg" runat="server" Label="If the calculated campus for most attendance and most giving are different" />
                                 </div>
                             </div>
-
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
                                     <Rock:RockCheckBox ID="cbIgnoreIfManualUpdate" runat="server" />

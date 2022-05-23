@@ -647,11 +647,11 @@ Update Family Status: {updateFamilyStatus}
                                 a.CampusId.HasValue &&
                                 a.PersonAlias != null )
                             .Select( a => new PersonCampus
-                               {
-                                   PersonId = a.PersonAlias.PersonId,
-                                   CampusId = a.CampusId.Value,
-                                   ScheduleId = a.Occurrence.ScheduleId
-                               } )
+                            {
+                                PersonId = a.PersonAlias.PersonId,
+                                CampusId = a.CampusId.Value,
+                                ScheduleId = a.Occurrence.ScheduleId
+                            } )
                             .ToList();
 
                         // Exclude attendances which coincide with the occurence of any schedule from the list of excluded schedules
@@ -725,10 +725,10 @@ Update Family Status: {updateFamilyStatus}
                             int attendanceCampusCount = 0;
                             if ( personCampusAttendance.Any() )
                             {
-                                var startPeriod = RockDateTime.Now.AddDays( -settings.MostFamilyAttendancePeriod );
                                 var attendanceCampus = personCampusAttendance
                                     .Where( a => personIds.Contains( a.PersonId ) )
                                     .GroupBy( a => a.CampusId )
+                                    .Where( a => a.Count() >= settings.TimesToTriggerCampusChange )
                                     .OrderByDescending( a => a.Count() )
                                     .Select( a => new
                                     {
@@ -748,7 +748,6 @@ Update Family Status: {updateFamilyStatus}
                             int givingCampusCount = 0;
                             if ( settings.IsMostFamilyGivingEnabled )
                             {
-                                var startPeriod = RockDateTime.Now.AddDays( -settings.MostFamilyAttendancePeriod );
                                 var givingCampus = personCampusGiving
                                     .Where( a => personIds.Contains( a.PersonId ) )
                                     .GroupBy( a => a.CampusId )
