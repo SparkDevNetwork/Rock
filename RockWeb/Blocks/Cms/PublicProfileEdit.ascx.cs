@@ -89,14 +89,7 @@ namespace RockWeb.Blocks.Cms
         Description = "Whether family members are shown or not.",
         DefaultBooleanValue = true,
         Order = 6 )]
-
-    [BooleanField(
-        "Show Gender",
-        Key = AttributeKey.ShowGender,
-        Description = "Whether gender is shown or not.",
-        DefaultBooleanValue = true,
-        Order = 7 )]
-
+     
     [BooleanField(
         "Show Addresses",
         Key = AttributeKey.ShowAddresses,
@@ -250,6 +243,13 @@ namespace RockWeb.Blocks.Cms
         DefaultBooleanValue = true,
         Order = 26 )]
 
+    [BooleanField(
+        "Show Gender",
+        Key = AttributeKey.ShowGender,
+        Description = "Whether gender is shown or not.",
+        DefaultBooleanValue = true,
+        Order = 27 )]
+
     [CodeEditorField( "View Template",
         Key = AttributeKey.ViewTemplate,
         Description = "The lava template to use to format the view details.",
@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Cms
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = "{% include '~/Assets/Lava/PublicProfile.lava' %}",
-        Order = 27 )]
+        Order = 28 )]
 
     #endregion
 
