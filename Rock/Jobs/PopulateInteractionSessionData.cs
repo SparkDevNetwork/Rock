@@ -18,12 +18,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Quartz;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.IpAddress;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -151,7 +153,6 @@ namespace Rock.Jobs
             {
                 results.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
             }
-
             context.Result = results.ToString();
 
             if ( _exceptions.Any() )
@@ -168,6 +169,7 @@ namespace Rock.Jobs
             var howManyRecords = dataMap.GetString( AttributeKey.HowManyRecords ).AsIntegerOrNull() ?? 50000;
             var maxSessionRecords = 2000;
             var totalRecordsProcessed = 0;
+            Stopwatch stopwatch = Stopwatch.StartNew();
             while ( howManyRecords > 0 )
             {
                 var recordsTobeUpdated = 0;
@@ -200,6 +202,8 @@ namespace Rock.Jobs
                 howManyRecords = anyRemaining ? howManyRecords - take : 0;
             }
 
+            stopwatch.Stop();
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "{0} ({1}): Completed in {2} seconds.", nameof( PopulateInteractionSessionData ), "Process Interaction Count And Duration", stopwatch.Elapsed.TotalSeconds );
             return $"<i class='fa fa-circle text-success'></i> Updated Interaction Count And Session Duration for {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )}";
         }
 
@@ -210,6 +214,8 @@ namespace Rock.Jobs
             var lookbackMaximumInDays = dataMap.GetString( AttributeKey.LookbackMaximumInDays ).AsInteger();
             var startDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );
             var anyRemaining = true;
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
             var howManyRecords = dataMap.GetString( AttributeKey.HowManyRecords ).AsIntegerOrNull() ?? 50000;
             var ipAddressComponentGuid = dataMap.GetString( AttributeKey.IPAddressGeoCodingComponent );
             var ipAddressSessionKeyValue = new Dictionary<string, List<int>>();
@@ -314,10 +320,21 @@ namespace Rock.Jobs
             var warningMsg = string.Empty;
             if ( ipAddressSessionKeyValue.Count > 0 )
             {
+                IpAddressLookupComponent provider = null;
                 if ( ipAddressComponentGuid.AsGuidOrNull().HasValue )
                 {
+                    provider = IpAddressLookupContainer.GetComponent( ipAddressComponentGuid );
+                }
+
+                if ( provider == null )
+                {
+                    provider = IpAddressLookupContainer.Instance.Components.Select( a => a.Value.Value ).Where( x => x.IsActive ).FirstOrDefault();
+                }
+
+                if ( provider != null )
+                {
                     jobContext.UpdateLastStatusMessage( $"Processing Interaction Session : Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. {ipAddressSessionKeyValue.Count} sent to LookupComponent to process." );
-                    recordsUpdated = ProcessIPOnLookupComponent( ipAddressComponentGuid, ipAddressSessionKeyValue );
+                    recordsUpdated = ProcessIPOnLookupComponent( provider, ipAddressSessionKeyValue );
                 }
                 else
                 {
@@ -325,12 +342,13 @@ namespace Rock.Jobs
                     warningMsg = $"There is no LookupComponent configured to process {ipAddressSessionKeyValue.Count} records.";
                 }
             }
-
+            stopwatch.Stop();
+            RockLogger.Log.Debug( RockLogDomains.Jobs, "{0} ({1}): Completed in {2} seconds.", nameof( PopulateInteractionSessionData ), "Process Interaction Session", stopwatch.Elapsed.TotalSeconds );
             // Format the result message
             return $"<i class='fa fa-circle text-success'></i> Updated {recordsUpdated} out of {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )}. {warningMsg}";
         }
 
-        private int ProcessIPOnLookupComponent( string ipAddressComponentGuid, Dictionary<string, List<int>> ipAddressSessionKeyValue )
+        private int ProcessIPOnLookupComponent( IpAddressLookupComponent provider, Dictionary<string, List<int>> ipAddressSessionKeyValue )
         {
             var recordsProcessed = 0;
             if ( ipAddressSessionKeyValue.Count > 0 )
@@ -345,17 +363,13 @@ namespace Rock.Jobs
                     var errorMessage = string.Empty;
                     try
                     {
-                        var provider = IpAddressLookupContainer.GetComponent( ipAddressComponentGuid );
-                        if ( provider != null )
+                        var lookupResult = provider.Lookup( ipAddresses, out errorMessage );
+                        if ( errorMessage.IsNotNullOrWhiteSpace() )
                         {
-                            var lookupResult = provider.Lookup( ipAddresses, out errorMessage );
-                            if ( errorMessage.IsNotNullOrWhiteSpace() )
-                            {
-                                _errors.Add( string.Format( @"Ip Lookup Component failed with batch of {0} IP with error message {1}.", ipAddresses.Count, errorMessage ) );
-                            }
-
-                            recordsProcessed += lookupResult.SuccessCount;
+                            _errors.Add( string.Format( @"Ip Lookup Component failed with batch of {0} IP with error message {1}.", ipAddresses.Count, errorMessage ) );
                         }
+
+                        recordsProcessed += lookupResult.SuccessCount;
                     }
                     catch ( Exception ex )
                     {
