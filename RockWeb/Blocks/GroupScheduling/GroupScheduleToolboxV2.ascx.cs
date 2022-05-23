@@ -142,6 +142,41 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultValue = "Schedule Unavailability",
         Order = 11,
         Key = AttributeKey.ScheduleUnavailabilityButtonText )]
+    [BooleanField( "Override Hide from Toolbox",
+        Description = " When enabled this setting will show all schedule enabled groups no matter what their 'Disable Schedule Toolbox Access' setting is set to.",
+        DefaultBooleanValue = false,
+        Order = 12,
+        Key = AttributeKey.OverrideHideFromToolbox )]
+    [CodeEditorField(
+        "Schedule Unavailability Header",
+        Key = AttributeKey.ScheduleUnavailabilityHeader,
+        Description = "Header content to put on the Schedule Unavailability panel. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = HeaderLavaTemplateDefaultValue,
+        Order = 13 )]
+    [CodeEditorField(
+        "Update Schedule Preferences Header",
+        Key = AttributeKey.UpdateSchedulePreferencesHeader,
+        Description = "Header content to put on the Update Schedule Preferences panel. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = HeaderLavaTemplateDefaultValue,
+        Order = 14 )]
+    [CodeEditorField(
+        "Sign-up for Additional Times Header",
+        Key = AttributeKey.SignupforAdditionalTimesHeader,
+        Description = "Header content to put on the Sign-up for Additional Times panel. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = HeaderLavaTemplateDefaultValue,
+        Order = 15 )]
 
     #endregion
     public partial class GroupScheduleToolboxV2 : RockBlock
@@ -162,6 +197,10 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string UpdateSchedulePreferencesButtonText = "UpdateSchedulePreferencesButtonText";
             public const string EnableScheduleUnavailability = "EnableScheduleUnavailability";
             public const string ScheduleUnavailabilityButtonText = "ScheduleUnavailabilityButtonText";
+            public const string OverrideHideFromToolbox = "OverrideHideFromToolbox";
+            public const string ScheduleUnavailabilityHeader = "ScheduleUnavailabilityHeader";
+            public const string UpdateSchedulePreferencesHeader = "UpdateSchedulePreferencesHeader";
+            public const string SignupforAdditionalTimesHeader = "SignupforAdditionalTimesHeader";
         }
 
         /// <summary>
@@ -178,6 +217,10 @@ namespace RockWeb.Blocks.GroupScheduling
 
         protected const string ALL_GROUPS_STRING = "All Groups";
         protected const string NO_LOCATION_PREFERENCE = "No Location Preference";
+        protected const string HeaderLavaTemplateDefaultValue = @"
+<p>
+    <a class=""btn btn-sm btn-default"" href=""javascript:history.back()""><i class=""fa fa-chevron-left""></i> Back</a>
+</p>";
 
         #endregion
 
@@ -512,6 +555,8 @@ $('#{0}').tooltip();
             pnlUnavailabilitySchedule.Visible = true;
             drpUnavailabilityDateRange.DelimitedValues = string.Empty;
             tbUnavailabilityDateDescription.Text = string.Empty;
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+            lUnavailabilityScheduleHeader.Text = GetAttributeValue( AttributeKey.ScheduleUnavailabilityHeader ).ResolveMergeFields( mergeFields );
             BindUnavailabilityGroups();
             BindPersonsForUnavailabilitySchedule();
         }
@@ -561,6 +606,8 @@ $('#{0}').tooltip();
             pnlSignup.Visible = false;
             pnlPreferences.Visible = true;
             pnlUnavailabilitySchedule.Visible = false;
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+            lPreferencesHeader.Text = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesHeader ).ResolveMergeFields( mergeFields );
             BindGroupPreferencesRepeater();
         }
 
@@ -581,7 +628,8 @@ $('#{0}').tooltip();
             pnlSignup.Visible = true;
             pnlPreferences.Visible = false;
             pnlUnavailabilitySchedule.Visible = false;
-
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+            lSignupHeader.Text = GetAttributeValue( AttributeKey.SignupforAdditionalTimesHeader ).ResolveMergeFields( mergeFields );
             LoadSignupFamilyMembersDropDown();
 
             var selectedSignupPersonId = ddlSignUpSchedulesFamilyMembers.SelectedValueAsId() ?? this.SelectedPersonId;
@@ -1229,7 +1277,7 @@ $('#{0}').tooltip();
             using ( var rockContext = new RockContext() )
             {
                 var groupService = new GroupService( rockContext );
-
+                var overrideHideFromToolbox = GetAttributeValue( AttributeKey.OverrideHideFromToolbox ).AsBoolean();
                 // get groups that the selected person is an active member of and have SchedulingEnabled and have at least one location with a schedule
                 var groups = groupService
                     .Queryable()
@@ -1238,7 +1286,7 @@ $('#{0}').tooltip();
                     .Where( x => x.IsActive == true && x.IsArchived == false
                         && x.GroupType.IsSchedulingEnabled == true
                         && x.DisableScheduling == false
-                        && x.DisableScheduleToolboxAccess == false )
+                        && ( overrideHideFromToolbox || x.DisableScheduleToolboxAccess == false ) )
                     .Where( x => x.GroupLocations.Any( gl => gl.Schedules.Any() ) )
                     .OrderBy( x => new { x.Order, x.Name } )
                     .AsNoTracking()
@@ -1386,11 +1434,12 @@ $('#{0}').tooltip();
 
             var personService = new PersonService( rockContext );
 
+            var overrideHideFromToolbox = GetAttributeValue( AttributeKey.OverrideHideFromToolbox ).AsBoolean();
             var familyMembersQuery = personService.GetFamilyMembers( this.SelectedPersonId, false );
 
             var groupMemberQuery = new GroupMemberService( rockContext ).Queryable()
                 .Where( a => a.Group.GroupType.IsSchedulingEnabled
-                    && a.Group.DisableScheduleToolboxAccess == false
+                    && ( overrideHideFromToolbox || a.Group.DisableScheduleToolboxAccess == false )
                     && a.Group.DisableScheduling == false
                     && a.Group.IsActive
                     && a.Group.IsArchived == false
@@ -1682,7 +1731,7 @@ $('#{0}').tooltip();
         /// </summary>
         /// <param name="includeScheduledItems">if set to <c>true</c> [include scheduled items].</param>
         /// <returns></returns>
-        private static List<PersonScheduleSignup> GetScheduleSignupData( int selectedSignupPersonId, int? futureWeeksToShow )
+        private List<PersonScheduleSignup> GetScheduleSignupData( int selectedSignupPersonId, int? futureWeeksToShow )
         {
             List<PersonScheduleSignup> personScheduleSignups = new List<PersonScheduleSignup>();
             int numOfWeeks = futureWeeksToShow ?? 6;
@@ -1698,12 +1747,12 @@ $('#{0}').tooltip();
 
                 var groupLocationService = new GroupLocationService( rockContext );
                 var personGroupLocationQry = groupLocationService.Queryable().AsNoTracking();
-
+                var overrideHideFromToolbox = GetAttributeValue( AttributeKey.OverrideHideFromToolbox ).AsBoolean();
                 // get GroupLocations that are for Groups that the person is an active member of
                 personGroupLocationQry = personGroupLocationQry.Where( a => a.Group.IsArchived == false
                     && a.Group.GroupType.IsSchedulingEnabled == true
                     && a.Group.DisableScheduling == false
-                    && a.Group.DisableScheduleToolboxAccess == false
+                    && ( overrideHideFromToolbox || a.Group.DisableScheduleToolboxAccess == false )
                     && a.Group.Members.Any( m => m.PersonId == selectedSignupPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                 var personGroupLocationList = personGroupLocationQry.ToList();
@@ -1819,6 +1868,7 @@ $('#{0}').tooltip();
         {
             using ( var rockContext = new RockContext() )
             {
+                var overrideHideFromToolbox = GetAttributeValue( AttributeKey.OverrideHideFromToolbox ).AsBoolean();
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groups = groupMemberService
                     .Queryable()
@@ -1827,7 +1877,7 @@ $('#{0}').tooltip();
                         && g.PersonId == this.SelectedPersonId
                         && g.Group.GroupType.IsSchedulingEnabled == true
                         && g.Group.DisableScheduling == false
-                        && g.Group.DisableScheduleToolboxAccess == false )
+                        && ( overrideHideFromToolbox || g.Group.DisableScheduleToolboxAccess == false ) )
                     .Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } )
                     .ToList();
 
