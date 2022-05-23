@@ -655,7 +655,7 @@ Update Family Status: {updateFamilyStatus}
                             .ToList();
 
                         // Exclude attendances which coincide with the occurence of any schedule from the list of excluded schedules
-                        if ( settings.ExcludeSchedules.Count > 0 )
+                        if ( settings.ExcludeSchedules != null && settings.ExcludeSchedules.Count > 0 )
                         {
                             var excludeSchedules = new ScheduleService( rockContext )
                                 .Queryable().AsNoTracking()
