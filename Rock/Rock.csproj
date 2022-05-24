@@ -777,6 +777,7 @@
     <Compile Include="Jobs\GivingAutomation.cs" />
     <Compile Include="Field\Types\MobileNavigationActionFieldType.cs" />
     <Compile Include="Jobs\PostV127DataMigrationsRebuildGroupSalutations.cs" />
+    <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV13DataMigrationsAddInteractionComponentIndexToInteraction.cs" />
     <Compile Include="Jobs\ProcessElevatedSecurity.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
