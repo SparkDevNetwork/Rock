@@ -14,7 +14,7 @@
 
 {% capture id %}{% endcapture %}
 {% capture title %}{{ campus.Name }}, SC{% endcapture %}
-{% capture titlesize %}display-1{% endcapture %}
+{% capture titlesize %}display-1 uppercase{% endcapture %}
 {% capture content %}{% endcapture %}
 {% capture textalignment %}left{% endcapture %}
 {% capture label %}{% endcapture %}

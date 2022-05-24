@@ -17,7 +17,7 @@
 
         <Rock:Zone Name="Feature" runat="server" />
 
-        <div id="content" class="clearfix">
+        <div id="content" class="container-fluid">
 
             <div class="row">
                 <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">

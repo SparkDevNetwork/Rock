@@ -1,7 +1,8 @@
 {% assign servicetype = 'NewSpring' %}
 
-{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
-{% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' %}
+{% assign campusName = campusSlug | Replace:'-',' ' | Capitalize %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusName | First %}
 
 {% if servicetype == 'Fuse' %}
     {% assign leader = campus.FusePastorPersonId | PersonById %}
@@ -9,7 +10,7 @@
     {% assign leader = campus.CampusPastorPersonId | PersonById %}
 {% endif %}
 
-{% if campus.campusStaff != empty %}
+{% comment %} {% if campus.campusStaff != empty %}
 
 
     {% if leader != null %}
@@ -28,4 +29,23 @@
     {% endif %}
 
 
+{% endif %} {% endcomment %}
+
+{% if leader != null %}
+<div data-column="none">
+    <div class="panel">
+        <div class="panel-body soft-double-ends soft-sides xs-text-center clearfix">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-3 xs-push-bottom">
+                    <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ leader | Attribute:'StaffImage','Url' }}'); border: 5px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.4);"></div>
+                </div><div class="col-xs-12 col-sm-12 col-md-9">
+                    <h4 class="h5 text-gray-light push-half-bottom">{{ leader | Attribute:'StaffTitle' }}</h4>
+                    <h2 class="h2 push-half-bottom">{{ leader.FullName }}</h2>
+                    <p>{{ leader | Attribute:'StaffBio' }}</p>
+                    <p class="flush"><a href="/staff/campus/{{ campusSlug }}">Meet the {{ campus.Name }} Team</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}

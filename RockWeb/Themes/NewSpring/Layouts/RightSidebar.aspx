@@ -20,8 +20,8 @@
 
         <Rock:Zone Name="Feature" runat="server" />
 
-        <div id="content" class="clearfix">
-            <div class="row">
+        <div id="content" class="container-fluid">
+            <div class="row page-constrained mx-auto">
                 <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">
                     <Rock:Zone Name="Main" runat="server" />
                 </div><div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
