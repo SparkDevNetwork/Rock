@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Connection
         "Bulk Update Requests",
         Description = "Page used to update selected connection requests",
         IsRequired = true,
-        DefaultValue = "",
+        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUESTS_BULK_UPDATE,
         Order = 16,
         Key = AttributeKey.BulkUpdateRequestsPage )]
 
