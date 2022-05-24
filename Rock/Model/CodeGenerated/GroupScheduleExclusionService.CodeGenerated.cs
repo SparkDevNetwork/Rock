@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new GroupScheduleExclusionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 EndDate = model.EndDate,
                 GroupTypeId = model.GroupTypeId,
                 StartDate = model.StartDate,

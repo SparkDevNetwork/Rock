@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on their document types within a specific date range" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Document Type Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E9FE74C5-2AA1-49B1-9982-6DE75D230E29")]
     public class DocumentTypeFilter : DataFilterComponent
     {
         #region Properties

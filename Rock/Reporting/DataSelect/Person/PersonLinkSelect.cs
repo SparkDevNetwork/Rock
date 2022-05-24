@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataSelect.Person
 
     [BooleanField( "Show As Link", "", true )]
     [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
+    [Rock.SystemGuid.EntityTypeGuid( "6301F6B4-B2EF-469A-8EC2-7D5F06B55C60")]
     public class PersonLinkSelect : DataSelectComponent
     {
         /// <summary>

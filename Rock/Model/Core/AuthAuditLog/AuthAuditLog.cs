@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AuthAuditLog" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "6AC9997F-B238-4A67-933E-D80E1551704D")]
     public class AuthAuditLog : Entity<AuthAuditLog>
     {
         #region Entity Properties

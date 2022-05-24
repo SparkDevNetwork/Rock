@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NoteType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "337EED57-D4AB-4EED-BBDB-0CB3A467DBCC")]
     public partial class NoteType : Model<NoteType>, IOrdered, ICacheable
     {
         #region Entity Properties

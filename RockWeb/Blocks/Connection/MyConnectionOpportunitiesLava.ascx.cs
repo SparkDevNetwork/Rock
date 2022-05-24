@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -70,6 +70,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.Contents,
         Order = 4 )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "1B8E50A0-7AC4-475F-857C-50D0809A3F04" )]
     public partial class MyConnectionOpportunitiesLava : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

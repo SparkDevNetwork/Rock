@@ -13,6 +13,7 @@
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlblWorkflowId" runat="server" LabelType="Info" />
                     <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Visible="false" />
                     <Rock:HighlightLabel ID="hlState" runat="server" />
                 </div>
             </div>

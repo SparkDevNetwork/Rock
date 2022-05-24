@@ -16,16 +16,17 @@
 //
 
 import { computed, defineComponent, ref } from "vue";
-import Alert from "../../Elements/alert";
-import PaneledDetailBlockTemplate from "../../Templates/paneledDetailBlockTemplate";
+import Alert from "@Obsidian/Controls/alert";
+import PaneledDetailBlockTemplate from "@Obsidian/Templates/paneledDetailBlockTemplate";
 import EditPanel from "./{{ EntityName }}Detail/editPanel";
 import ViewPanel from "./{{ EntityName }}Detail/viewPanel";
-import { useConfigurationValues, useInvokeBlockAction } from "../../Util/block";
-import { emptyGuid } from "../../Util/guid";
+import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { emptyGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { NavigationUrlKey } from "./{{ EntityName }}Detail/types";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-import { {{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail";
+import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
+import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
 export default defineComponent({
     name: "Core.{{ EntityName }}Detail",
@@ -76,8 +77,8 @@ export default defineComponent({
         /**
          * Additional labels to display in the block panel.
          */
-        const blockLabels = computed((): ListItem[] => {
-            const labels: ListItem[] = [];
+        const blockLabels = computed((): ListItemBag[] => {
+            const labels: ListItemBag[] = [];
 
             if (isEditMode.value) {
                 return labels;
@@ -135,7 +136,7 @@ export default defineComponent({
             errorMessage.value = "";
 
             const result = await invokeBlockAction<string>("Delete", {
-                guid: {{ EntityName | CamelCase }}ViewBag.value?.guid
+                key: {{ EntityName | CamelCase }}ViewBag.value?.idKey
             });
 
             if (result.isSuccess && result.data) {
@@ -154,7 +155,7 @@ export default defineComponent({
          */
         const onEdit = async (): Promise<boolean> => {
             const result = await invokeBlockAction<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>("Edit", {
-                guid: {{ EntityName | CamelCase }}ViewBag.value?.guid
+                key: {{ EntityName | CamelCase }}ViewBag.value?.idKey
             });
 
             if (result.isSuccess && result.data && result.data.entity) {
@@ -178,6 +179,7 @@ export default defineComponent({
 
             const data: DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> = {
                 entity: {{ EntityName | CamelCase }}EditBag.value,
+                isEditable: true,
                 validProperties: [{% if UseAttributeValues == true %}
                     "attributeValues",{% endif %}{% for property in Properties %}
                     "{{ property.Name | CamelCase }}"{% unless forloop.last %},{% endunless %}{% endfor %}
@@ -185,7 +187,7 @@ export default defineComponent({
             };
 
             const result = await invokeBlockAction<{{ EntityName }}Bag | string>("Save", {
-                saveCrate: data
+                box: data
             });
 
             if (result.isSuccess && result.data) {

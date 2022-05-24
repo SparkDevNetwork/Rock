@@ -25,4 +25,3 @@ export const enum BenevolenceType {
     /** Benevolence - BenevolenceType Guid */
     Benevolence = "B4A7C50B-E399-452E-BA37-1ABD6B15482C",
 }
-

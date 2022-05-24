@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// NoteTypes REST API
     /// </summary>
+    [RestControllerGuid( "6361EA34-D19D-44F8-94D9-583B333F5429" )]
     public partial class NoteTypesController : Rock.Rest.ApiController<Rock.Model.NoteType>
     {
         /// <summary>

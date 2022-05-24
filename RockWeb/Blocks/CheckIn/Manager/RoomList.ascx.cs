@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -75,6 +75,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Order = 5 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "2DEA7808-9AC1-4913-BF58-1CDC7922C901" )]
     public partial class RoomList : RockBlock
     {
         #region Attribute Keys

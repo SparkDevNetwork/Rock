@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,7 +37,8 @@ namespace Rock.Workflow.Action
     [IntegerField( "Minutes To Delay", "The number of minutes to delay successful execution of action", false, order: 0 )]
     [WorkflowAttribute( "Date In Attribute", "The date or date/time attribute value to use for the delay.", false, "", "", 1, null, new string[] { "Rock.Field.Types.DateFieldType", "Rock.Field.Types.DateTimeFieldType" } )]
     [CustomDropdownListField("Next Weekday", "The next day of the week to wait till.", "0^Sunday,1^Monday,2^Tuesday,3^Wednesday,4^Thursday,5^Friday,6^Saturday,7^Sunday", false, order: 2)]
-    class Delay : Rock.Workflow.ActionComponent
+    [Rock.SystemGuid.EntityTypeGuid( "D22E73F7-86E2-46CA-AD5B-7770A866726B")]
+    public class Delay : Rock.Workflow.ActionComponent
     {
         /// <summary>
         /// Executes the action.

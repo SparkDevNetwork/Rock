@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Reporting
         DefaultBooleanValue = true,
         Order = 1
         )]
+    [Rock.SystemGuid.BlockTypeGuid( "61CDA12E-A19F-4299-AF3E-4F7E2B8F5866" )]
     public partial class DataViewResults : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Attribute Keys

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new CampusScheduleBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CampusId = model.CampusId,
                 Order = model.Order,
                 ScheduleId = model.ScheduleId,

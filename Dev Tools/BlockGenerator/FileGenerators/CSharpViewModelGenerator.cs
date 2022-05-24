@@ -23,11 +23,11 @@ namespace BlockGenerator.FileGenerators
         {
             var usings = new List<string>
             {
-                "Rock.ViewModels.NonEntities"
+                "Rock.ViewModels.Utility"
             };
 
             var sb = new StringBuilder();
-            sb.AppendLine( $"    public class {entityName}Bag : ViewModelBase" );
+            sb.AppendLine( $"    public class {entityName}Bag : EntityBagBase" );
             sb.AppendLine( "    {" );
 
             var sortedProperties = properties.OrderBy( p => p.Name ).ToList();

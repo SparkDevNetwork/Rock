@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PersonDuplicates REST API
     /// </summary>
+    [RestControllerGuid( "7E83743E-2BEB-4282-92F4-9CB14435BB03" )]
     public partial class PersonDuplicatesController : Rock.Rest.ApiController<Rock.Model.PersonDuplicate>
     {
         /// <summary>

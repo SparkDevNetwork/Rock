@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -77,6 +77,7 @@ namespace RockWeb.Blocks.Reporting
 	</div>" )]
     [IntegerField( "Page Size", "The number of components to show per page.", true, 20, "", 3 )]
     [ContextAware( typeof( Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "00FF58B1-A433-43AA-82C9-45F8F58FBE9F" )]
     public partial class InteractionComponentList : Rock.Web.UI.RockBlock
     {
         #region Fields

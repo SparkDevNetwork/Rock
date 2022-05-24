@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -111,6 +111,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.CampusLabel )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "C0D58DEE-D266-4AA8-8750-414A3CC26C07" )]
     public partial class OpportunitySearch : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -384,21 +385,24 @@ namespace RockWeb.Blocks.Connection
                         tbSearchName.Text = searchSelections["tbSearchName"];
                     }
 
-                    if ( searchSelections.ContainsKey( "cblCampus" ) )
+                    var selectedCampusIds = new List<int>();
+                    if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
                     {
-                        var selectedItems = searchSelections["cblCampus"].SplitDelimitedValues().AsIntegerList();
-                        cblCampus.SetValues( selectedItems );
-                    }
-                }
-                else if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
-                {
-                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
-                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+                        var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
+                        var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-                    if ( contextCampus != null )
-                    {
-                        cblCampus.SetValue( contextCampus.Id.ToString() );
+                        if ( contextCampus != null )
+                        {
+                            selectedCampusIds.Add( contextCampus.Id );
+                        }
                     }
+
+                    if ( !selectedCampusIds.Any() && searchSelections.ContainsKey( "cblCampus" ) )
+                    {
+                        selectedCampusIds.AddRange( searchSelections["cblCampus"].SplitDelimitedValues().AsIntegerList() );
+                    }
+
+                    cblCampus.SetValues( selectedCampusIds );
                 }
 
                 if ( GetAttributeValue( AttributeKey.DisplayAttributeFilters ).AsBoolean() )

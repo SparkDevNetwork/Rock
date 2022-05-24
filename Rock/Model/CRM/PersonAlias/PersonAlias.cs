@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Model
     [Table( "PersonAlias" )]
     [NotAudited]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_ALIAS )]
     public partial class PersonAlias : Entity<PersonAlias>
     {
         #region Entity Properties

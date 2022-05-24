@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AnalyticsSourceCampus REST API
     /// </summary>
+    [RestControllerGuid( "DBF2A1AD-9E75-4D0D-A480-10423242AF75" )]
     public partial class AnalyticsSourceCampusController : Rock.Rest.ApiController<Rock.Model.AnalyticsSourceCampus>
     {
         /// <summary>

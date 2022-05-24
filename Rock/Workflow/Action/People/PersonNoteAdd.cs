@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -82,6 +82,7 @@ namespace Rock.Workflow.Action
 
     #endregion Workflow Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( "B2C8B951-C41E-4DFB-9F92-F183223448AA")]
     public class PersonNoteAdd : ActionComponent
     {
         private static class AttributeKey

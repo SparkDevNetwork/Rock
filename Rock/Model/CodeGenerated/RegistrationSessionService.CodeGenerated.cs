@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationSessionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ClientIpAddress = model.ClientIpAddress,
                 ExpirationDateTime = model.ExpirationDateTime,
                 PaymentGatewayReference = model.PaymentGatewayReference,

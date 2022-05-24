@@ -26,6 +26,31 @@ namespace Rock.SystemGuid
         #region Block Template
 
         /// <summary>
+        /// The block template for the mobile group schedule preference landing page.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_SIGNUP_LANDING_PAGE = "7F89AE4D-BD8B-49ED-B8EC-F883D43505F2";
+
+        /// <summary>
+        /// The block template for the mobile group schedule preference landing page.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_PREFERENCE_LANDING_PAGE = "D39CCB65-2444-48E4-9DE1-7A01AB20CB61";
+
+        /// <summary>
+        /// The block template for mobile group schedule unavailability block. 
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_UNAVAILABILITY = "48EE4803-66BE-43A0-A7CF-E2D669DB2D21";
+
+        /// <summary>
+        /// The block template for mobile group schedule toolbox block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_TOOLBOX = "7E11BEF1-F6F7-49E3-8804-90AC1CB9AD25";
+
+        /// <summary>
+        /// The block template for mobile group schedule toolbox decline modal.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_TOOLBOX_DECLINE_MODAL = "68ACFE34-C1D9-40C6-9AB1-9E6F4DA846EE";
+
+        /// <summary>
         /// The block template for mobile answer to prayer block.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_ANSWER_TO_PRAYER = "D13256E3-D9ED-45C2-8EF7-C4AABCF4B2B7";

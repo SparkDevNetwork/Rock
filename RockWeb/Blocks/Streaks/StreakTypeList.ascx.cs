@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Streaks
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "DDE31844-B024-472E-9B21-E094DFC40CAB" )]
     public partial class StreakTypeList : RockBlock
     {
         #region Keys

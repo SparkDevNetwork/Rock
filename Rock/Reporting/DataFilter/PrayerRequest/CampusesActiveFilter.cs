@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
     [Description("Filter prayer requests that are associated with any of the selected active campuses.")]
     [Export(typeof(DataFilterComponent))]
     [ExportMetadata("ComponentName", "Prayer Request Active Campuses Filter")]
+    [Rock.SystemGuid.EntityTypeGuid( "FD7758C0-95EC-4EDD-BE1A-5DC25197AD30")]
     public class CampusesActiveFilter : CampusesFilter
     {
         #region Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Connection
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "175158F8-F10E-476F-809E-A76825E0AC5D" )]
     public partial class BulkUpdateRequests : RockBlock
     {
         #region AttributeKeys
@@ -509,9 +510,17 @@ namespace RockWeb.Blocks.Connection
                     .Include( ct => ct.ConnectionOpportunities )
                     .FirstOrDefault( ct => ct.Id == connectionTypeId );
 
-            BindDropdownLists( connectionType );
-
-            BindCampusSelector( entitySetId, rockContext );
+            if (connectionType is null)
+            {
+                pnlEntry.Visible = false;
+                ShowNotification( NotificationBoxType.Warning,  "There is no reference to a valid Connection.  Please set this page up under the 'Bulk Update Requests' block settings of the Connection Request Board block, and select the connection requests you would like to edit." );
+            }
+            else
+            {
+                pnlEntry.Visible = true;
+                BindDropdownLists( connectionType );
+                BindCampusSelector( entitySetId, rockContext );
+            }
         }
 
         /// <summary>

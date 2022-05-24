@@ -111,8 +111,7 @@ namespace Rock.Model
 
             var viewModel = new GroupTypeRoleBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CanEdit = model.CanEdit,
                 CanManageMembers = model.CanManageMembers,
                 CanView = model.CanView,

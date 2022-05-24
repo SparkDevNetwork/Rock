@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Asset Manager" )]
     [Category( "CMS" )]
     [Description( "Manage files stored on a remote server or 3rd party cloud storage" )]
+    [Rock.SystemGuid.BlockTypeGuid( "13165D92-9CCD-4071-8484-3956169CB640" )]
     public partial class AssetManager : RockBlock, IPickerBlock
     {
         private const string NullSelectedId = "-1";

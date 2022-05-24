@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Last Public Note of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Last Public Note for a Person" )]
+    [Rock.SystemGuid.EntityTypeGuid( "230E6B5E-8472-47E3-91DC-30D5D044665C")]
     public class LastNoteSelect : DataSelectComponent
     {
         #region Properties

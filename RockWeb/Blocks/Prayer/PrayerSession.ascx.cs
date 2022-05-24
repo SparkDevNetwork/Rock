@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -107,6 +107,7 @@ namespace RockWeb.Blocks.Prayer
         DefaultBooleanValue = true,
         IsRequired = true,
         Order = 8 )]
+    [Rock.SystemGuid.BlockTypeGuid( "FD294789-3B72-4D83-8006-FA50B5087D06" )]
     public partial class PrayerSession : RockBlock
     {
         #region Keys

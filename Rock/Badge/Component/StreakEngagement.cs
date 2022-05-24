@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,6 +63,7 @@ namespace Rock.Badge.Component
         required: false,
         key: AttributeKey.StreakDetailPage )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "095EDDED-D648-456B-9673-D8CB41FC9558")]
     public class StreakEngagement : BadgeComponent
     {
         #region Keys

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new BenevolenceRequestDocumentBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 BenevolenceRequestId = model.BenevolenceRequestId,
                 BinaryFileId = model.BinaryFileId,
                 Order = model.Order,

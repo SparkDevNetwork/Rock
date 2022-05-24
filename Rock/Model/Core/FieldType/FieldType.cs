@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "FieldType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "54018EB6-868C-477D-8B6A-455A6115B30B")]
     public partial class FieldType : Model<FieldType>, ICacheable
     {
         #region Entity Properties

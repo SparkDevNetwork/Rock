@@ -137,8 +137,7 @@ namespace Rock.Model
 
             var viewModel = new SystemCommunicationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Bcc = model.Bcc,
                 Body = model.Body,
                 CategoryId = model.CategoryId,

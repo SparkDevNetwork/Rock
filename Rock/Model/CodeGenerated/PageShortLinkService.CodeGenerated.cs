@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PageShortLinkBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 SiteId = model.SiteId,
                 Token = model.Token,
                 Url = model.Url,

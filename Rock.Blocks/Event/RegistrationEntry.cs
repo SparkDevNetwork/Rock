@@ -2026,7 +2026,7 @@ namespace Rock.Blocks.Event
                 var signedData = Security.Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
                 var signedBy = RequestContext.CurrentPerson ?? registrar;
 
-                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person );
+                var document = CreateSignatureDocument( documentTemplate, signedData, registrant, signedBy, registrar, person, registrant.Person.FullName, context.RegistrationSettings.Name);
 
                 new SignatureDocumentService( rockContext ).Add( document );
                 rockContext.SaveChanges();
@@ -3623,14 +3623,14 @@ namespace Rock.Blocks.Event
         /// <param name="assignedTo">The <see cref="Person"/> that is the responsible party for signing the document.</param>
         /// <param name="appliesTo">The <see cref="Person"/> that this document will apply to.</param>
         /// <returns>A <see cref="SignatureDocument"/> object that can be saved to the database.</returns>
-        private static SignatureDocument CreateSignatureDocument( SignatureDocumentTemplate signatureDocumentTemplate, SignedDocumentData documentData, IEntity entity, Person signedBy, Person assignedTo, Person appliesTo )
+        private static SignatureDocument CreateSignatureDocument( SignatureDocumentTemplate signatureDocumentTemplate, SignedDocumentData documentData, IEntity entity, Person signedBy, Person assignedTo, Person appliesTo, String registrantName, String registrationInstanceName )
         {
             // Glue stuff into the signature document
             var signatureDocument = new SignatureDocument
             {
                 SignatureDocumentTemplateId = signatureDocumentTemplate.Id,
                 Status = SignatureDocumentStatus.Signed,
-                Name = "Signed Document",
+                Name = $"{registrantName} ({registrationInstanceName})",
                 EntityTypeId = entity != null ? EntityTypeCache.GetId( entity.GetType() ) : null,
                 EntityId = entity?.Id,
                 SignedByPersonAliasId = signedBy.PrimaryAliasId,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "1d7dbbb1-7192-4cfa-8164-a836dde1e54d" )]
     public partial class NotesController
     {
         /// <summary>
@@ -35,7 +34,7 @@ namespace Rock.Rest.Controllers
         // NOTE: Intentionally don't use the [Secured] attribute on this Controller method since security depends on which Note they are attempting to Edit
         [HttpGet]
         [System.Web.Http.Route( "api/Notes/GetNoteEditData" )]
-        [RockGuid( "d7da6ab3-cccd-4abb-ad25-83ee092a5dd5" )]
+        [Rock.SystemGuid.RestActionGuid( "D7DA6AB3-CCCD-4ABB-AD25-83EE092A5DD5" )]
         public Rock.Model.Note GetNoteEditData( int noteId )
         {
             // Enable proxy creation since Note security may need to lazy load some child properties (for example, note.CreatedByPersonAlias)

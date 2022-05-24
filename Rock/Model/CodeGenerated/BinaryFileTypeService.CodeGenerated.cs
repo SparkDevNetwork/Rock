@@ -105,8 +105,7 @@ namespace Rock.Model
 
             var viewModel = new BinaryFileTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CacheControlHeaderSettings = model.CacheControlHeaderSettings,
                 CacheToServerFileSystem = model.CacheToServerFileSystem,
                 Description = model.Description,

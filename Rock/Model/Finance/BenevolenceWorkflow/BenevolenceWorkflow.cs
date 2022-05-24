@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "BenevolenceWorkflow" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "1F27A8E2-C40A-4C8D-9F22-55BC24B98D80")]
     public partial class BenevolenceWorkflow : Model<BenevolenceWorkflow>
     {
         #region Entity Properties

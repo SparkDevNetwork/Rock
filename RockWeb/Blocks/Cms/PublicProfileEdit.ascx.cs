@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -241,6 +241,7 @@ namespace RockWeb.Blocks.Cms
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "841D1670-8BFD-4913-8409-FB47EB7A2AB9" )]
     public partial class PublicProfileEdit : RockBlock
     {
         private static class AttributeKey

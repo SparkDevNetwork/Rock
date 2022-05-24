@@ -127,8 +127,8 @@ namespace Rock.Blocks
 $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializeBlock({{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializeBlock({{
             blockFileUrl: '{BlockFileUrl}',
             rootElement: document.getElementById('{rootElementId}'),
             blockGuid: '{BlockCache.Guid}',

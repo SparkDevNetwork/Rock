@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AssessmentTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AssessmentPath = model.AssessmentPath,
                 AssessmentResultsPath = model.AssessmentResultsPath,
                 BadgeColor = model.BadgeColor,

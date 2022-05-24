@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they are in a group of a specific group type" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Group of Group Type Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "0E239967-6D33-4205-B19F-08AD8FF6ED0B")]
     public class InGroupGroupTypeFilter : DataFilterComponent
     {
         #region Properties

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new HtmlContentBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
                 ApprovedDateTime = model.ApprovedDateTime,
                 BlockId = model.BlockId,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description("Select Person by their Prayer Requests from a Prayer Request View.")]
     [Export(typeof(DataFilterComponent))]
     [ExportMetadata("ComponentName", "Prayer Request View")]
+    [Rock.SystemGuid.EntityTypeGuid( "C1DE9FCD-55DE-4908-B223-B07F1FFDBAEF")]
     public class PrayerRequestDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.PrayerRequest>
     {
         #region Overrides

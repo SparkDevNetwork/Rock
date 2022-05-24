@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -137,6 +137,7 @@ namespace Rock.Workflow.Action
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEND_EMAIL )]
     public class SendEmail : ActionComponent
     {
         #region Attribute Keys

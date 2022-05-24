@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Core
         Order = 1,
         Key = AttributeKey.DatabaseTimeout )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "8C6280DA-9BB4-47C8-96BA-3878B8B85466" )]
     public partial class MergeTemplateEntry : RockBlock
     {
         public static class AttributeKey

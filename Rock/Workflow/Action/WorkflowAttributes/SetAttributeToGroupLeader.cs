@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Leader", "The attribute to set to the group loader.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "179BE15E-DA54-4517-BDA9-E3ED339FFC7D")]
     public class SetAttributeToGroupLeader : ActionComponent
     {
         /// <summary>

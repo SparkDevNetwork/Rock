@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Achievements" )]
     [Description( "Displays the details of the given Achievement Type for editing." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "4C4A46CD-1622-4642-A655-11585C5D3D31" )]
     public partial class AchievementTypeDetail : RockBlock
     {
         #region Keys
@@ -564,29 +565,19 @@ namespace RockWeb.Blocks.Streaks
             achievementType.AchievementFailureWorkflowTypeId = wtpFailureWorkflowType.SelectedValueAsInt();
             achievementType.BadgeLavaTemplate = ceBadgeLava.Text;
             achievementType.ResultsLavaTemplate = ceResultsLava.Text;
+            achievementType.HighlightColor = cpHighlightColor.Text;
 
             var binaryFileService = new BinaryFileService( rockContext );
-            if ( achievementType.ImageBinaryFileId != imgupImageBinaryFile.BinaryFileId )
-            {
-                var oldImageTemplatePreview = binaryFileService.Get( achievementType.ImageBinaryFileId ?? 0 );
-                if ( oldImageTemplatePreview != null )
-                {
-                    // the old image won't be needed anymore, so make it IsTemporary and have it get cleaned up later
-                    oldImageTemplatePreview.IsTemporary = true;
-                }
-            }
 
+            MarkOldImageAsTemporary( achievementType.ImageBinaryFileId, binaryFileService );
             achievementType.ImageBinaryFileId = imgupImageBinaryFile.BinaryFileId;
-
             // Ensure that the Image is not set as IsTemporary=True
-            if ( achievementType.ImageBinaryFileId.HasValue )
-            {
-                var imageTemplatePreview = binaryFileService.Get( achievementType.ImageBinaryFileId.Value );
-                if ( imageTemplatePreview != null && imageTemplatePreview.IsTemporary )
-                {
-                    imageTemplatePreview.IsTemporary = false;
-                }
-            }
+            EnsureCurrentImageIsNotMarkedAsTemporary( achievementType.ImageBinaryFileId, binaryFileService );
+
+            MarkOldImageAsTemporary( achievementType.AlternateImageBinaryFileId, binaryFileService );
+            achievementType.AlternateImageBinaryFileId = imgupAlternateImageBinaryFile.BinaryFileId;
+            // Ensure that the Image is not set as IsTemporary=True
+            EnsureCurrentImageIsNotMarkedAsTemporary( achievementType.AlternateImageBinaryFileId, binaryFileService );
 
             achievementType.CustomSummaryLavaTemplate = ceCustomSummaryLavaTemplate.Text;
 
@@ -703,6 +694,31 @@ namespace RockWeb.Blocks.Streaks
             } );
         }
 
+        private static void EnsureCurrentImageIsNotMarkedAsTemporary( int? binaryFileId, BinaryFileService binaryFileService )
+        {
+            if ( binaryFileId.HasValue )
+            {
+                var imageTemplatePreview = binaryFileService.Get( binaryFileId.Value );
+                if ( imageTemplatePreview != null && imageTemplatePreview.IsTemporary )
+                {
+                    imageTemplatePreview.IsTemporary = false;
+                }
+            }
+        }
+
+        private void MarkOldImageAsTemporary( int? binaryFileId, BinaryFileService binaryFileService )
+        {
+            if ( binaryFileId != imgupImageBinaryFile.BinaryFileId )
+            {
+                var oldImageTemplatePreview = binaryFileService.Get( binaryFileId ?? 0 );
+                if ( oldImageTemplatePreview != null )
+                {
+                    // the old image won't be needed anymore, so make it IsTemporary and have it get cleaned up later
+                    oldImageTemplatePreview.IsTemporary = true;
+                }
+            }
+        }
+
         /// <summary>
         /// Called by a related block to show the detail for a specific entity.
         /// </summary>
@@ -774,6 +790,8 @@ namespace RockWeb.Blocks.Streaks
             ceCustomSummaryLavaTemplate.Text = achievementType.CustomSummaryLavaTemplate;
             imgupImageBinaryFile.BinaryFileId = achievementType.ImageBinaryFileId;
             cpCategory.SetValue( achievementType.CategoryId );
+            cpHighlightColor.Text = achievementType.HighlightColor;
+            imgupAlternateImageBinaryFile.BinaryFileId = achievementType.AlternateImageBinaryFileId;
 
             // Workflows
             wtpStartWorkflowType.SetValue( achievementType.AchievementStartWorkflowTypeId );

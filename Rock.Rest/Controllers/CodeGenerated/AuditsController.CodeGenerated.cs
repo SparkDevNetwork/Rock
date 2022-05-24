@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Audits REST API
     /// </summary>
+    [RestControllerGuid( "37794843-A954-4767-8B9E-A815D912183B" )]
     public partial class AuditsController : Rock.Rest.ApiController<Rock.Model.Audit>
     {
         /// <summary>

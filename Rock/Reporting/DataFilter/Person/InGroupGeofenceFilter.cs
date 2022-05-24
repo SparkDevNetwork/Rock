@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether any of their family's map locations are within the geofenced boundary of the specified group" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Group Geofence Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "32ADC9E4-29CB-4D19-9073-CD9D3A8D2A6C")]
     public class InGroupGeofenceFilter : DataFilterComponent
     {
         #region Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "Note", "Attribute Value", "Text or workflow attribute that contains the text to set the group member note to. <span class='tip tip-lava'></span>", true, "", "", 2, "Note",
         new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "D54F30CD-8759-45BA-AF05-ABCFB0F21005")]
     public class SetGroupMemberNote : ActionComponent
     {
         /// <summary>

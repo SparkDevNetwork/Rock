@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "MetricPartition" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "82ED733F-BAD8-4D8D-BCB7-10A6433F452A")]
     public partial class MetricPartition : Model<MetricPartition>, IOrdered
     {
         #region Entity Properties

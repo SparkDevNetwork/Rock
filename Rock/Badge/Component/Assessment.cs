@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Badge.Component
         IncludeInactive = false,
         IsRequired = false,
         Order = 0 )]
+    [Rock.SystemGuid.EntityTypeGuid( "C10B68B3-A13C-4B1A-9C56-91F0630AED90")]
     public class Assessment : BadgeComponent
     {
         private class AttributeKeys

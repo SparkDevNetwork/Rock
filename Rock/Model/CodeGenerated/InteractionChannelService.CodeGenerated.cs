@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new InteractionChannelBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ChannelData = model.ChannelData,
                 ChannelDetailTemplate = model.ChannelDetailTemplate,
                 ChannelEntityId = model.ChannelEntityId,

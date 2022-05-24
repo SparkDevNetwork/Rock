@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Crm
         DefaultValue = CodeEditorValue.LavaTemplate,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "2D90562E-7332-46DB-9100-0C4106151CA1" )]
     public partial class PersonalDevices : RockBlock
     {
         #region Attribute Keys and Values

@@ -177,6 +177,15 @@ namespace RockWeb
 
                         ievent.ExceptionDates = newExceptionDatesList;
 
+                        // If one-time recurrence dates exist, create a placeholder recurrence rule to ensure that the iCalendar file
+                        // can be correctly imported by Outlook.
+                        // Fixes Issue #4112. Refer https://github.com/SparkDevNetwork/Rock/issues/4112
+                        if ( ievent.RecurrenceRules.Count == 0
+                             && ievent.RecurrenceDates.Count > 0 )
+                        {
+                            ievent.RecurrenceRules.Add( new RecurrencePattern( "FREQ=DAILY;COUNT=1" ) );
+                        }
+
                         // Rock has more descriptions than iCal so lets concatenate them
                         string description = CreateEventDescription( eventItem, occurrence );
 

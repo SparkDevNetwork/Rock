@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new SignalTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 Name = model.Name,
                 Order = model.Order,

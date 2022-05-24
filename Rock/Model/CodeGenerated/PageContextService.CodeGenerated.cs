@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PageContextBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Entity = model.Entity,
                 IdParameter = model.IdParameter,
                 IsSystem = model.IsSystem,

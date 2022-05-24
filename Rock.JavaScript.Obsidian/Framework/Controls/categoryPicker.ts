@@ -17,8 +17,8 @@
 
 import { Guid } from "@Obsidian/Types";
 import { defineComponent, PropType, ref, watch } from "vue";
-import { CategoryTreeItemProvider } from "../Util/treeItemProviders";
-import { updateRefValue } from "../Util/util";
+import { CategoryTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import TreeItemPicker from "./treeItemPicker";
 
@@ -31,7 +31,8 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<ListItemBag | null>
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
         },
 
         rootCategoryGuid: {
@@ -48,11 +49,25 @@ export default defineComponent({
 
         entityTypeQualifierValue: {
             type: String as PropType<string>
+        },
+
+        securityGrantToken: {
+            type: String as PropType<string | null>,
+            required: false
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
+    emits: {
+        "update:modelValue": (_value: ListItemBag | ListItemBag[] | null) => true
+    },
+
     setup(props, { emit }) {
-        const internalValue = ref(props.modelValue ? [props.modelValue] : []);
+        const internalValue = ref(props.modelValue ?? null);
 
         // Configure the item provider with our settings. These are not reactive
         // since we don't do lazy loading so there is no point.
@@ -61,13 +76,18 @@ export default defineComponent({
         itemProvider.entityTypeGuid = props.entityTypeGuid;
         itemProvider.entityTypeQualifierColumn = props.entityTypeQualifierColumn;
         itemProvider.entityTypeQualifierValue = props.entityTypeQualifierValue;
+        itemProvider.securityGrantToken = props.securityGrantToken;
+
+        watch(() => props.securityGrantToken, () => {
+            itemProvider.securityGrantToken = props.securityGrantToken;
+        });
 
         watch(internalValue, () => {
-            emit("update:modelValue", internalValue.value.length > 0 ? internalValue.value[0] : undefined);
+            emit("update:modelValue", internalValue.value);
         });
 
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue, props.modelValue ? [props.modelValue] : []);
+            updateRefValue(internalValue, props.modelValue ?? null);
         });
 
         return {
@@ -81,6 +101,7 @@ export default defineComponent({
     formGroupClasses="category-picker"
     iconCssClass="fa fa-folder-open"
     :provider="itemProvider"
+    :multiple="multiple"
 />
 `
 });

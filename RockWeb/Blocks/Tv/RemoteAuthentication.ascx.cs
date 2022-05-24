@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Tv
         AttributeKey.CodeExpirationDuration)]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "3080C707-4594-4DDD-95B5-DEF82141DE6A" )]
     public partial class RemoteAuthentication : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -132,7 +133,7 @@ namespace RockWeb.Blocks.Tv
             if ( !Page.IsPostBack )
             {
                 // Check to ensure that the person is logged in.
-                if ( CurrentPerson.IsNull() )
+                if ( CurrentPerson == null )
                 {
                     nbWarningMessages.Text = "This page requires that a person be authenticated to use.";
                     nbWarningMessages.Visible = true;
@@ -240,7 +241,7 @@ namespace RockWeb.Blocks.Tv
                                 .FirstOrDefault();
 
             // Check for code that does not exist
-            if ( authSession.IsNull() )
+            if ( authSession == null )
             {
                 nbAuthenticationMessages.Text = "The code provided is not valid. Please confirm that you have correctly entered the code.";
                 nbAuthenticationMessages.NotificationBoxType = NotificationBoxType.Warning;

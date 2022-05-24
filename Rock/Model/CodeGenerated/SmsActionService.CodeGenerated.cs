@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new SmsActionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ContinueAfterProcessing = model.ContinueAfterProcessing,
                 ExpireDate = model.ExpireDate,
                 IsActive = model.IsActive,

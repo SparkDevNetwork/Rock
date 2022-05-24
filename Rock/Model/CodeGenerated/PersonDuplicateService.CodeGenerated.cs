@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PersonDuplicateBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Capacity = model.Capacity,
                 DuplicatePersonAliasId = model.DuplicatePersonAliasId,
                 IgnoreUntilScoreChanges = model.IgnoreUntilScoreChanges,

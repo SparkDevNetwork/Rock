@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AttributeValueBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AttributeId = model.AttributeId,
                 EntityId = model.EntityId,
                 IsSystem = model.IsSystem,

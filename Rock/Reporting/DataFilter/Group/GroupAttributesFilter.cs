@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter group on its attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Attributes Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "0F4D0B55-EC26-43D5-91CE-D7162ABCDCE6")]
     public class GroupAttributesFilter : EntityFieldFilter
     {
         #region Properties

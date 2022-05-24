@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Workflow.Action
     [AttributeField( SystemGuid.EntityType.BENEVOLENCE_REQUEST, "Benevolence Request Attribute", "The benevolence request attribute that should be updated with the provided value.", true, false, "", "", 1 )]
     [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the benevolence request attribute to. <span class='tip tip-lava'></span>", true, "", "", 2, "Value" )]
     [BooleanField("Use Blank Value", "If the provided value is an empty string should it be used to blank out the attribute value or should it be ignored? If true the empty value will be used to blank out the attribute.", true, order: 3)]
+    [Rock.SystemGuid.EntityTypeGuid( "478FEDC6-2AD7-467C-9C02-A41E2EFC4271")]
     public class BenevolenceRequestSetAttribute : ActionComponent
     {
         /// <summary>
@@ -82,6 +83,7 @@ namespace Rock.Workflow.Action
             {
                 benevolenceRequest.LoadAttributes();
 
+                SetWorkflowAttributeValue( action, attribute.Guid, attributeValue );
                 Rock.Attribute.Helper.SaveAttributeValue( benevolenceRequest, attribute, attributeValue, rockContext );
                 action.AddLogEntry( $"Updated benevolence attribute '{attribute.Name}' to '{attributeValue}'." );
             }

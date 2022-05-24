@@ -21,45 +21,41 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { CampusScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusScheduleBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type CampusBag = {
-    name?: string | null;
-
-    description?: string | null;
-
-    isSystem: boolean;
-
-    isActive?: boolean | null;
-
-    shortCode?: string | null;
-
-    url?: string | null;
-
-    phoneNumber?: string | null;
-
-    serviceTimes?: ListItemBag[] | null;
-
-    timeZoneId?: string | null;
-
     campusSchedules?: CampusScheduleBag[] | null;
-
-    location?: ListItemBag | null;
-
-    leaderPersonAlias?: ListItemBag | null;
 
     campusStatusValue?: ListItemBag | null;
 
     campusTypeValue?: ListItemBag | null;
 
-    /** Gets or sets the Id. */
-    id: number;
+    description?: string | null;
 
-    /** Gets or sets the Guid. */
-    guid?: Guid | null;
+    isActive?: boolean | null;
+
+    isSystem: boolean;
+
+    leaderPersonAlias?: ListItemBag | null;
+
+    location?: ListItemBag | null;
+
+    name?: string | null;
+
+    phoneNumber?: string | null;
+
+    serviceTimes?: ListItemBag[] | null;
+
+    shortCode?: string | null;
+
+    timeZoneId?: string | null;
+
+    url?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;

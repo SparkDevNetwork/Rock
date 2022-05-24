@@ -187,7 +187,7 @@ namespace Rock.Communication
                 if ( _allowLava )
                 {
                     // Zero or more repeating groups of Lava tags, or email addresses separated by whitespace or commas.
-                    return $@"(({_lavaBlockRegex}|{_lavaTagRegex}|{_lavaShortcodeRegex}|{_lavaVariableRegex})(({_emailAddressRegex})([\s,])*)*)";
+                    return $@"(({_lavaBlockRegex}|{_lavaTagRegex}|{_lavaShortcodeRegex}|{_lavaVariableRegex}|{_emailAddressRegex}|[\s,]*)*)";
                 }
 
                 // One or more email addresses, separated by whitespace or commas.

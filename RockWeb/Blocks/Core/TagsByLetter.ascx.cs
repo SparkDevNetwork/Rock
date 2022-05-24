@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Core
         Order = 1,
         Key = AttributeKey.EntityType )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "784C84CF-28B0-45B5-A3ED-D7D9B2A26A5B" )]
     public partial class TagsByLetter : Rock.Web.UI.RockBlock
     {
         public static class AttributeKey

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeMatrixItem" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "3C9D5021-0484-4846-AEF6-B6216D26C3C8")]
     public partial class AttributeMatrixItem : Model<AttributeMatrixItem>, IOrdered
     {
         #region Entity Properties

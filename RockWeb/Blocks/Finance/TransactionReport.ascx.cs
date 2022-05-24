@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5 )]
 
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "1FAEE5A2-5005-4BD8-A2BD-B7D9030A894D" )]
     public partial class TransactionReport : Rock.Web.UI.RockBlock
     {
         #region Properties

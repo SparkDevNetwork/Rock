@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Show Public Only", "If enabled, it will limit the list only to the prayer requests that are public.", false, order: 5 )]
 
     [ContextAware( typeof( Rock.Model.Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "4D6B686A-79DF-4EFC-A8BA-9841C248BF74" )]
     public partial class PrayerRequestList : RockBlock, ICustomGridColumns
     {
         #region Fields

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RelatedEntityBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AdditionalSettingsJson = model.AdditionalSettingsJson,
                 IsSystem = model.IsSystem,
                 Note = model.Note,

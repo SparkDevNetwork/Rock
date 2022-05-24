@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Assessment types.   */
 export const enum AssessmentType {
     /** The DISC assessment types guid */
     Disc = "A5CB2E3D-118A-41F2-972B-325A328B0B54",
@@ -33,4 +34,3 @@ export const enum AssessmentType {
     /** The Motivators assessment types guid */
     Motivators = "EABE1ABA-4A23-44FF-8C7F-6B71383BED09",
 }
-

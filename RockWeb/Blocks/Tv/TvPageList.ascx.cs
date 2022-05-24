@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Tv
     [LinkedPage( "Page Detail", "", true, "", "", 0, AttributeKey.PageDetail )]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "7BD1B79C-BF27-42C6-8359-F80EC7FEE397" )]
     public partial class TvPageList : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
         #region Attribute Keys

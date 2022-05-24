@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Description = "The badges to display.",
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.BADGES )]
     public partial class Badges : ContextEntityBlock
     {
         #region Attribute Keys

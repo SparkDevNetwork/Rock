@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -140,6 +140,7 @@ namespace RockWeb.Blocks.Communication
         Order = 13 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD )]
     public partial class CommunicationEntryWizard : RockBlock
     {
         #region Attribute Keys
@@ -3176,7 +3177,7 @@ function onTaskCompleted( resultData )
 
             if ( pushData.Url.IsNotNullOrWhiteSpace() )
             {
-                openActionDetails.Append( string.Format( "<b>Url:</b> {0}<br />", pushData.Url ) );
+                openActionDetails.Append( string.Format( "<b>URL:</b> {0}<br />", pushData.Url ) );
             }
 
             if ( communication.PushOpenMessage.IsNotNullOrWhiteSpace() )

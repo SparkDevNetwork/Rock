@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Block for editing a linkage associated to an event registration instance." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D341EF12-406B-477D-8A85-16EBDDF2B04B" )]
     public partial class RegistrationInstanceLinkageDetail : Rock.Web.UI.RockBlock
     {
         #region Keys

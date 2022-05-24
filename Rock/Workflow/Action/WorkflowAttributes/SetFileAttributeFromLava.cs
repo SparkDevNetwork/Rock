@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Workflow.Action.WorkflowAttributes
     [TextField( "File Name", "The file name to use for the file.", true, "file.txt" )]
     [TextField( "Mimetype", "The mimetype of the file", true, "text/plain" )]
     [CodeEditorField( "Lava Template", "The Lava template to use to create the text file. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 500, true, order: 2, defaultValue: @"" )]
+    [Rock.SystemGuid.EntityTypeGuid( "DA89B9B9-E950-4A69-8C74-ABFC80DD7CF7")]
     public class SetFileAttributeFromLava : ActionComponent
     {
         /// <summary>

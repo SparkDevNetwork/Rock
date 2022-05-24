@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -180,6 +180,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C" )]
     public partial class Bio : PersonBlock
     {
         #region Attribute Keys

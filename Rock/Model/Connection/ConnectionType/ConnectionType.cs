@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONNECTION_TYPE )]
     public partial class ConnectionType : Model<ConnectionType>, IOrdered, ICacheable
     {
         #region Entity Properties

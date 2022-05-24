@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -106,6 +106,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CMS_HERO_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "A8597994-BD47-4A15-8BB1-4B508977665F")]
     public class Hero : RockMobileBlockType
     {
         /// <summary>

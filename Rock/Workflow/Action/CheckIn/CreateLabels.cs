@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Create Labels" )]
     [BooleanField( "Enable Saving Label Data", "Select 'Yes' if the label data should be temporarily saved on the attendance record. Select 'No' to disable saving label data.", true )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "8F348E7B-F9FD-4600-852D-477B13B0B4EE")]
     public class CreateLabels : CheckInActionComponent
     {
         private static class MergeFieldKey

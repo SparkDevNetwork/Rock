@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people by address using a set of locations identified by a Location Data View" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Location Data View Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "CC24FC79-5A5F-48F2-A6A3-9DD49A90A42B")]
     public class LocationDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Settings

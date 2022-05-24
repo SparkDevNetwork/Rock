@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select Person by their Connection Requests from a Connection Request View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Request View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "C5B7783F-F897-4031-B19E-685057CD08F3")]
     public class ConnectionRequestDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.ConnectionRequest>
     {
         #region Overrides

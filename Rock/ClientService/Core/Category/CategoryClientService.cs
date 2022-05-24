@@ -118,7 +118,7 @@ namespace Rock.ClientService.Core.Category
 
             // Get all the categories from the query and then filter on security.
             var categoryItemList = categoryList
-                .Where( c => c.IsAuthorized( Authorization.VIEW, Person ) )
+                .Where( c => c.IsAuthorized( Authorization.VIEW, Person ) || options.SecurityGrant?.IsAccessGranted( c, Authorization.VIEW ) == true )
                 .Select( c => new TreeItemBag
                 {
                     Value = c.Guid.ToString(),
@@ -204,7 +204,7 @@ namespace Rock.ClientService.Core.Category
             // of the two operations.
             foreach ( var childCategory in categoryService.Queryable().Where( c => c.ParentCategory.Guid == parentGuid ) )
             {
-                if ( childCategory.IsAuthorized( Authorization.VIEW, Person ) )
+                if ( childCategory.IsAuthorized( Authorization.VIEW, Person ) || options.SecurityGrant?.IsAccessGranted( childCategory, Authorization.VIEW ) == true )
                 {
                     return true;
                 }
@@ -317,7 +317,7 @@ namespace Rock.ClientService.Core.Category
 
                 foreach ( var childCategory in childCategories )
                 {
-                    if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) || options.SecurityGrant?.IsAccessGranted( childCategory, Authorization.VIEW ) == true )
                     {
                         // This category has child categories that the person can view so add them to categoryItemList
                         categoryItem.HasChildren = true;

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group type for editing." )]
+    [Rock.SystemGuid.BlockTypeGuid( "78B8EE69-71A7-43C1-B00B-ED13828FE104" )]
     public partial class GroupTypeDetail : RockBlock
     {
         #region Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Finance
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "85753750-7465-4241-97A6-E5F27EA38C8B" )]
     public partial class ScheduledTransactionView : RockBlock
     {
         #region Attribute Keys
@@ -78,6 +79,10 @@ namespace RockWeb.Blocks.Finance
 
         private static class PageParameterKey
         {
+            [RockObsolete( "1.13.1" )]
+            [Obsolete( "Pass the GUID instead using the key ScheduledTransactionGuid." )]
+            public const string ScheduledTransactionId = "ScheduledTransactionId";
+
             public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
             public const string PersonId = "PersonId";
         }
@@ -266,13 +271,39 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Gets the scheduled transaction Guid based on what is specified in the URL
+        /// </summary>
+        /// <param name="refresh">if set to <c>true</c> [refresh].</param>
+        /// <returns></returns>
+        private Guid? GetScheduledTransactionGuidFromUrl()
+        {
+            var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+
+#pragma warning disable CS0618
+            var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
+#pragma warning restore CS0618
+
+            if ( financialScheduledTransactionGuid.HasValue  )
+            {
+                return financialScheduledTransactionGuid.Value;
+            }
+
+            if ( financialScheduledTransactionId.HasValue )
+            {
+                return new FinancialScheduledTransactionService( new RockContext() ).GetGuid( financialScheduledTransactionId.Value );
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnRefresh control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRefresh_Click( object sender, EventArgs e )
         {
-            var financialScheduledTranactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+            var financialScheduledTranactionGuid = GetScheduledTransactionGuidFromUrl();
             if ( !financialScheduledTranactionGuid.HasValue )
             {
                 return;
@@ -321,7 +352,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancelSchedule_Click( object sender, EventArgs e )
         {
-            var financialScheduledTranactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+            var financialScheduledTranactionGuid = GetScheduledTransactionGuidFromUrl();
             if ( !financialScheduledTranactionGuid.HasValue )
             {
                 return;
@@ -367,7 +398,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnReactivateSchedule_Click( object sender, EventArgs e )
         {
-            var financialScheduledTranactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+            var financialScheduledTranactionGuid = GetScheduledTransactionGuidFromUrl();
             if ( !financialScheduledTranactionGuid.HasValue )
             {
                 return;
@@ -727,7 +758,7 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private FinancialScheduledTransaction GetTransaction( RockContext rockContext )
         {
-            var scheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+            var scheduledTransactionGuid = GetScheduledTransactionGuidFromUrl();
             if ( scheduledTransactionGuid.HasValue )
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
@@ -766,7 +797,7 @@ namespace RockWeb.Blocks.Finance
                 hlStatus.Text = financialScheduledTransaction.Status.ConvertToString();
                 hlStatus.LabelType = LabelType.Warning;
             }
-            else 
+            else
             {
 
                 hlStatus.Text = financialScheduledTransaction.IsActive ? "Active" : "Inactive";
@@ -975,7 +1006,7 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private FinancialScheduledTransaction GetScheduledTransaction()
         {
-            var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+            var financialScheduledTransactionGuid = GetScheduledTransactionGuidFromUrl();
             if ( financialScheduledTransactionGuid.HasValue )
             {
                 var rockContext = new RockContext();

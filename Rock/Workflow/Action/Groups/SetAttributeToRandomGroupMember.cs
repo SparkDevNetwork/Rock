@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Selected Person", "The attribute to set with the random person.", true, "", "", 3, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     
+    [Rock.SystemGuid.EntityTypeGuid( "96B57C0E-F84D-4B45-A11F-35F8A7A63689")]
     public class SetAttributeToRandomGroupMember : ActionComponent
     {
         /// <summary>

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ReportBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CategoryId = model.CategoryId,
                 DataViewId = model.DataViewId,
                 Description = model.Description,

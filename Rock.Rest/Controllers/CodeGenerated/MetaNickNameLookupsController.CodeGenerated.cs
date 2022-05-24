@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// MetaNickNameLookups REST API
     /// </summary>
+    [RestControllerGuid( "88D256D2-AF8C-4C91-8B20-1B1FA632FA7B" )]
     public partial class MetaNickNameLookupsController : Rock.Rest.ApiController<Rock.Model.MetaNickNameLookup>
     {
         /// <summary>

@@ -202,9 +202,9 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns a formatted string of the duration.
+        /// Returns a formatted string of the duration (given in seconds).
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="value">The value (in seconds).</param>
         /// <returns>A friendly time duration such as '1h 44m' or '5m 22s'</returns>
         public static string ToFriendlyDuration( this int? value )
         {

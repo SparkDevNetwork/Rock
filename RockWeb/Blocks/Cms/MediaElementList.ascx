@@ -23,7 +23,8 @@
                                  <ItemTemplate>
                                      <%# ((int?)Eval("DurationSeconds")).ToFriendlyDuration() %>
                                  </ItemTemplate>
-                             </Rock:RockTemplateField>
+                            </Rock:RockTemplateField>
+                            <Rock:RockBoundField DataField="WatchCount" HeaderText="Watch Count" SortExpression="WatchCount" />
                             <Rock:DeleteField OnClick="gElementList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>

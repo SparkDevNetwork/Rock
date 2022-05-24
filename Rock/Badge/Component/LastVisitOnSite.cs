@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Badge.Component
 
     [SiteField( "Site", "Site to filter for.", true, "3", "", 1 )]
     [LinkedPage( "Page View Details", "Page to show the details of the page views. If blank no link is created.", false, "", "", 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "A8619A37-5DB6-4CD1-AC5A-B2FD9AC80F67")]
     public class LastVisitOnSite : BadgeComponent
     {
         /// <summary>

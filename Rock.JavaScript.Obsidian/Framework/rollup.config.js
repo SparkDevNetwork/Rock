@@ -10,13 +10,6 @@ import * as process from "process";
 import * as path from "path";
 import * as glob from "glob";
 
-const cwd = process.cwd();
-const frameworkPath = path.join(cwd, "Framework");
-let files = glob.sync(frameworkPath + "/**/*.@(ts|vue)")
-    .filter(f => !f.endsWith(".d.ts"))
-    .filter(f => f.indexOf(".partial.ts") === -1 && f.indexOf(".partial.vue") === -1)
-    .map(f => path.normalize(f).substring(cwd.length + 1));
-
 function fixStyleInjectPlugin() {
     return {
         name: "fix-style-external",
@@ -30,91 +23,223 @@ function fixStyleInjectPlugin() {
     };
 }
 
-export default {
-    input: files,
+function generateConfig(files, srcPath, outPath, tsConfig) {
+    return {
+        input: files,
 
-    output: {
-        format: "system",
-        dir: "dist/Framework",
-        entryFileNames: (chunk) => {
-            if (chunk.facadeModuleId.indexOf(frameworkPath) === 0) {
-                return path.join(path.dirname(chunk.facadeModuleId.replace(frameworkPath, "").substring(1)), "[name].js");
+        output: {
+            format: "system",
+            dir: outPath,
+            entryFileNames: (chunk) => {
+                if (chunk.facadeModuleId.indexOf(srcPath) === 0) {
+                    return path.join(path.dirname(chunk.facadeModuleId.replace(srcPath, "").substring(1)), "[name].js");
+                }
+
+                return "[name].js";
+            }
+        },
+
+        external: (target, source, c) => {
+            if (["vue", "luxon", "axios", "mitt", "tslib"].includes(target)) {
+                return true;
             }
 
-            return "[name].js";
-        }
-    },
+            if (target.startsWith("@")) {
+                return true;
+            }
 
-    external: (target) => {
-        if (["vue", "luxon", "axios", "mitt", "tslib"].includes(target)) {
+            // Check if this is a primary bundle.
+            if (source === undefined) {
+                return false;
+            }
+
+            // Check if it is a .vue file reference to itself.
+            if (target.indexOf(".vue?vue&") !== -1) {
+                return false;
+            }
+
+            // Check if it is a reference to a partial file.
+            if (target.endsWith(".partial.ts") || target.endsWith(".partial.vue")) {
+                return false;
+            }
+
+            if (target.startsWith(".")) {
+                const targetPath = path.normalize(path.join(path.dirname(source), target));
+
+                if (!targetPath.startsWith(srcPath)) {
+                    return true;
+                }
+
+                return false;
+            }
+            else {
+                if (!target.startsWith(srcPath)) {
+                    return true;
+                }
+
+                console.log(target, source, c, srcPath);
+            }
+
+            throw `Unexpected target '${target}'`;
+        },
+
+        plugins: [
+            vue(),
+
+            fixStyleInjectPlugin(),
+
+            resolve({
+                extensions: [".js", ".ts", ".vue"],
+                resolveOnly: ["style-inject"]
+            }),
+
+            // Process only `<style module>` blocks.
+            PostCSS({
+                modules: {
+                    generateScopedName: "[local]___[hash:base64:5]",
+                },
+                include: /&module=.*\.css$/,
+            }),
+
+            // Process all `<style>` blocks except `<style module>`.
+            PostCSS({ include: /(?<!&module=.*)\.css$/ }),
+
+            commonjs(),
+
+            typescript({
+                typescript: ttypescript,
+                tsconfig: tsConfig,
+                tsconfigOverride: {
+                    compilerOptions: {
+                        module: "ESNext"
+                    }
+                },
+                useTsconfigDeclarationDir: true
+            }),
+
+            copy({
+                targets: [
+                    {
+                        src: "dist/Framework/*",
+                        dest: "../RockWeb/Obsidian/"
+                    }
+                ],
+                hook: "closeBundle"
+            }),
+        ]
+    };
+
+}
+
+function generateBundle(srcPath, outPath) {
+    return {
+        input: [path.join(srcPath, "index.js")],
+
+        output: {
+            format: "system",
+            file: outPath
+        },
+
+        external: (target, source) => {
+            // Check if this is a primary bundle.
+            if (source === undefined) {
+                return false;
+            }
+
+            // Check if it is a reference to a partial file.
+            if (target.endsWith(".partial.ts")) {
+                return false;
+            }
+
+            // If the file is a same directory relative or within the same path
+            // then inline it so it's included in the bundle.
+            if (target.startsWith("./")) {
+                return false;
+            }
+            else {
+                if (target.startsWith(srcPath)) {
+                    return false;
+                }
+            }
+
             return true;
-        }
+        },
 
-        if (target[0] === ".") {
-            return false;
-        }
+        plugins: [
+            resolve({
+                extensions: [".js", ".ts"]
+            }),
 
-        return false;
-    },
+            commonjs()
+        ]
+    };
+}
 
-    plugins: [
-        vue(),
+function generateAutoBundles(srcPath, outPath) {
+    const files = glob.sync(srcPath + "/**/*.@(js)")
+        .map(f => path.normalize(f).substring(cwd.length + 1))
+        .filter(f => !f.endsWith(".d.ts") && !f.endsWith(".partial.js"));
 
-        fixStyleInjectPlugin(),
+    return {
+        input: files,
 
-        resolve({
-            extensions: [".js", ".ts", ".vue"],
-            resolveOnly: ["style-inject"]
-        }),
-
-        // Process only `<style module>` blocks.
-        PostCSS({
-            modules: {
-                generateScopedName: "[local]___[hash:base64:5]",
-            },
-            include: /&module=.*\.css$/,
-        }),
-
-        // Process all `<style>` blocks except `<style module>`.
-        PostCSS({ include: /(?<!&module=.*)\.css$/ }),
-
-        commonjs(),
-
-        typescript({
-            typescript: ttypescript,
-            tsconfig: "./Framework/tsconfig.json",
-            tsconfigOverride: {
-                compilerOptions: {
-                    module: "ESNext"
+        output: {
+            format: "system",
+            dir: outPath,
+            entryFileNames: (chunk) => {
+                if (chunk.facadeModuleId.indexOf(srcPath) === 0) {
+                    return path.join(path.dirname(chunk.facadeModuleId.replace(srcPath, "").substring(1)), "[name].js");
                 }
-            },
-            useTsconfigDeclarationDir: true,
-            emitDeclarationOnly: true
-        }),
 
-    //    babel({
-    //        extensions: [".js", ".ts"],
-    //        exclude: "node_modules/**",
-    //        babelHelpers: "runtime",
-    //        presets: [
-    //            ["@babel/preset-env", {
-    //                targets: "edge >= 13 or chrome >= 50 or and_chr >= 50 or safari >= 10 or ios_saf >= 10 or firefox >= 43 or and_ff >= 43"
-    //            }],
-    //            "@babel/preset-typescript"
-    //        ],
-    //        "plugins": [
-    //            ["@babel/plugin-transform-runtime"]
-    //        ]
-    //    }),
+                return "[name].js";
+            }
+        },
 
-        copy({
-            targets: [
-                {
-                    src: "dist/Framework/*",
-                    dest: "../RockWeb/Obsidian/"
+        external: (target, source) => {
+            // Check if this is a primary bundle.
+            if (source === undefined) {
+                return false;
+            }
+
+            // Check if it is a reference to a partial file.
+            if (target.endsWith(".partial.ts")) {
+                return false;
+            }
+
+            // If the file is a same directory relative or within the same path
+            // then inline it so it's included in the bundle.
+            if (target.startsWith("./")) {
+                return false;
+            }
+            else {
+                if (target.startsWith(srcPath)) {
+                    return false;
                 }
-            ],
-            hook: "closeBundle"
-        }),
-    ]
-};
+            }
+
+            return true;
+        },
+
+        plugins: [
+            resolve({
+                extensions: [".js", ".ts"]
+            }),
+
+            commonjs()
+        ]
+    };
+}
+
+
+const cwd = process.cwd();
+
+const utilityConfig = generateBundle(path.join(cwd, "dist", "Framework", "Utility"), path.join(cwd, "dist", "FrameworkBundled", "Utility.js"));
+const validationRulesConfig = generateBundle(path.join(cwd, "dist", "Framework", "ValidationRules"), path.join(cwd, "dist", "FrameworkBundled", "ValidationRules.js"));
+const pageStateConfig = generateBundle(path.join(cwd, "dist", "Framework", "PageState"), path.join(cwd, "dist", "FrameworkBundled", "PageState.js"));
+const coreConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Core"), path.join(cwd, "dist", "FrameworkBundled", "Core"));
+const directivesConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Directives"), path.join(cwd, "dist", "FrameworkBundled", "Directives"));
+const controlsConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Controls"), path.join(cwd, "dist", "FrameworkBundled", "Controls"));
+const fieldTypesConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "FieldTypes"), path.join(cwd, "dist", "FrameworkBundled", "FieldTypes"));
+const templatesConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Templates"), path.join(cwd, "dist", "FrameworkBundled", "Templates"));
+
+export default [utilityConfig, validationRulesConfig, pageStateConfig, coreConfig, directivesConfig, controlsConfig, fieldTypesConfig, templatesConfig];

@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationTemplateFeeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AllowMultiple = model.AllowMultiple,
                 DiscountApplies = model.DiscountApplies,
                 FeeType = ( int ) model.FeeType,

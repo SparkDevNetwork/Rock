@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "08C35F15-9AF7-468F-9D50-CDFD3D21220C" )]
     public partial class DefinedTypeDetail : RockBlock
     {
         public static class AttributeKey

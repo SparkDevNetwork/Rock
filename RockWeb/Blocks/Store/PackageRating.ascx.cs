@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Store
     [Category( "Store" )]
     [Description( "Enters ratings for a given package." )]
     [LinkedPage( "Package Detail Page", "Page reference to use for the package detail page.", false, "", "", 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "5A7C11C2-4E9F-4AF6-8149-CB2093CE9727" )]
     public partial class PackageRating : Rock.Web.UI.RockBlock
     {
         #region Fields

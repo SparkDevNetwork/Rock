@@ -216,6 +216,16 @@ namespace Rock.Bus.Message
     /// </summary>
     public class GiftWasGivenMessageData
     {
+        /*
+             5/16/2022 - SMC
+
+             Do not refactor this without approval from the DSD.
+
+             These events are used by some existing plugins and modifying the data contract will break those.
+
+             Reason:  Existing implementations expect this data contract.
+        */
+
         /// <summary>
         /// Gets or sets the financial transaction.
         /// </summary>

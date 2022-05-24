@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Kiosk", "", 12 )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "D10900A8-C2C1-4414-A443-3781A5CF371C" )]
     public partial class TransactionEntryKiosk : Rock.Web.UI.RockBlock
     {
         #region Fields

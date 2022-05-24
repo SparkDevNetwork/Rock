@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "DocumentType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "18CF366F-46B6-49CA-B557-BCABD6BBD175")]
     public partial class DocumentType : Model<DocumentType>, IOrdered, ICacheable
     {
         #region Properties

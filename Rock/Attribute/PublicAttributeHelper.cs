@@ -120,10 +120,11 @@ namespace Rock.Attribute
                 FieldTypeGuid = attribute.FieldType.Guid,
                 AttributeGuid = attribute.Guid,
                 Name = attribute.Name,
-                Categories = attribute.Categories.OrderBy( c => c.Order ).Select( c => new ListItemBag
+                Categories = attribute.Categories.OrderBy( c => c.Order ).Select( c => new PublicAttributeCategoryBag
                 {
-                    Value = c.Guid.ToString(),
-                    Text = c.Name
+                    Guid = c.Guid,
+                    Name = c.Name,
+                    Order = c.Order
                 } ).ToList(),
                 Key = attribute.Key,
                 IsRequired = attribute.IsRequired,
@@ -161,10 +162,11 @@ namespace Rock.Attribute
                 FieldTypeGuid = attribute.FieldType.Guid,
                 AttributeGuid = attribute.Guid,
                 Name = attribute.Name,
-                Categories = attribute.Categories.OrderBy( c => c.Order ).Select( c => new ListItemBag
+                Categories = attribute.Categories.OrderBy( c => c.Order ).Select( c => new PublicAttributeCategoryBag
                 {
-                    Value = c.Guid.ToString(),
-                    Text = c.Name
+                    Guid = c.Guid,
+                    Name = c.Name,
+                    Order = c.Order
                 } ).ToList(),
                 Order = attribute.Order,
                 Key = attribute.Key,

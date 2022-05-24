@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new StepTypePrerequisiteBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Order = model.Order,
                 PrerequisiteStepTypeId = model.PrerequisiteStepTypeId,
                 StepTypeId = model.StepTypeId,

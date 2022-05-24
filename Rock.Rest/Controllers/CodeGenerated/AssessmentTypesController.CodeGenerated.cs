@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AssessmentTypes REST API
     /// </summary>
+    [RestControllerGuid( "6715DD35-B99D-4DD7-A284-E7A1F060BE29" )]
     public partial class AssessmentTypesController : Rock.Rest.ApiController<Rock.Model.AssessmentType>
     {
         /// <summary>

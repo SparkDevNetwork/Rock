@@ -82,14 +82,6 @@ namespace Rock.ViewModels.Entities
         public int OccurrenceFrequency { get; set; }
 
         /// <summary>
-        /// Gets or sets the OccurrenceMap.
-        /// </summary>
-        /// <value>
-        /// The OccurrenceMap.
-        /// </value>
-        public Byte[] OccurrenceMap { get; set; }
-
-        /// <summary>
         /// Gets or sets the RequiresEnrollment.
         /// </summary>
         /// <value>

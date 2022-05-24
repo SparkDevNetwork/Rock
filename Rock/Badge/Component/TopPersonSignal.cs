@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Top Person Signal" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "1BC1335A-A37E-4C02-83C1-AD2883FD954E")]
     public class TopPersonSignal : BadgeComponent
     {
         /// <summary>

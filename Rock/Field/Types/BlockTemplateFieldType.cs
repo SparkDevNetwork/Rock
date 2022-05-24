@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// Field Type to select a template to use in a block
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "CCD73456-C83B-4D6E-BD69-8133D2EB996D")]
     public class BlockTemplateFieldType : FieldType
     {
 

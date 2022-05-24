@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Examples
     [DisplayName( "Developer Environment Info" )]
     [Category( "Examples" )]
     [Description( "Shows Information about the Development environment" )]
+    [Rock.SystemGuid.BlockTypeGuid( "03BFBFCA-36C4-480D-A10B-3CF349F4A6EA" )]
     public partial class DevelopEnvironmentInfo : RockBlock
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,7 +27,6 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
-    [RockGuid( "485fa8f3-5804-47b8-a84c-9813f2e16b2e" )]
     public partial class AssetStorageProvidersController
     {
         /// <summary>
@@ -37,7 +36,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetChildren" )]
-        [RockGuid( "4d7b4ae1-82f3-46b9-99e3-bae03b2edfaa" )]
+        [Rock.SystemGuid.RestActionGuid( "4D7B4AE1-82F3-46B9-99E3-BAE03B2EDFAA" )]
         public IQueryable<TreeViewItem> GetChildren( string assetFolderId )
         {
             var assetStorageService = new AssetStorageProviderService( new RockContext() );
@@ -103,7 +102,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetFolders" )]
-        [RockGuid( "8a2e7ec6-2a38-41ac-9a83-b74ff4b7fd45" )]
+        [Rock.SystemGuid.RestActionGuid( "8A2E7EC6-2A38-41AC-9A83-B74FF4B7FD45" )]
         public List<Asset> GetFolders( int assetStorageProviderId, string path )
         {
             var assetStorageProviderService = ( AssetStorageProviderService ) Service;
@@ -126,7 +125,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/AssetStorageProviders/GetFiles" )]
-        [RockGuid( "40defe35-2196-4a11-bd08-bcffce1c4240" )]
+        [Rock.SystemGuid.RestActionGuid( "40DEFE35-2196-4A11-BD08-BCFFCE1C4240" )]
         public List<Asset> GetFiles( int assetStorageProviderId, string path )
         {
 

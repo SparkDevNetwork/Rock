@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new FinancialScheduledTransactionDetailBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AccountId = model.AccountId,
                 Amount = model.Amount,
                 EntityId = model.EntityId,

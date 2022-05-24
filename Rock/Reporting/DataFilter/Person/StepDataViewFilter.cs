@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select people that are represented in the Step entries returned by a specified Data View" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Step Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "93CBA12B-A143-464A-8F37-16F0CE9F316C")]
     public class StepDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.Step>
     {
         #region Overrides

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationTemplatePlacementBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AllowMultiplePlacements = model.AllowMultiplePlacements,
                 Cost = model.Cost,
                 GroupTypeId = model.GroupTypeId,

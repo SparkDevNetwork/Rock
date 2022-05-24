@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -138,6 +138,7 @@ namespace RockWeb.Blocks.Core
         Order = 15,
         Key = AttributeKey.NoteViewLavaTemplate )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.NOTES )]
     public partial class Notes : RockBlock, ISecondaryBlock
     {
         public static class AttributeKey

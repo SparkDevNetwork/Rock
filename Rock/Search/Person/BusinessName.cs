@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Search.Person
     [Description("Business Name Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Business Name")]
+    [Rock.SystemGuid.EntityTypeGuid( "944ACDD0-A4AC-4E5A-8689-E2D8EF773BC2")]
     public class BusinessName : SearchComponent
     {
         /// <summary>

@@ -248,9 +248,9 @@
                             <Rock:Grid ID="gStatusAutomations" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Status Automation">
                                 <Columns>
                                     <Rock:RockBoundField DataField="AutomationName" HeaderText="Automation Name" />
-                                    <Rock:RockBoundField DataField="DataView.Name" HeaderText="Data View" />
-                                    <Rock:EnumField DataField="GroupRequirementsFilter" HeaderText="GroupRequirementsFilter" />
-                                    <Rock:RockBoundField DataField="DestinationStatus.Name" HeaderText="Move To" />
+                                    <Rock:RockBoundField DataField="DataViewName" HeaderText="Data View" />
+                                    <Rock:EnumField DataField="GroupRequirementsFilter" HeaderText="Group Requirements Filter" />
+                                    <Rock:RockBoundField DataField="DestinationStatusName" HeaderText="Move To" />
                                     <Rock:EditField OnClick="gStatusAutomations_Edit" />
                                     <Rock:DeleteField OnClick="gStatusAutomations_Delete" />
                                 </Columns>

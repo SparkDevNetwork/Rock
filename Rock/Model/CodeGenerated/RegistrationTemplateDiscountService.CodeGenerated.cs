@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationTemplateDiscountBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AutoApplyDiscount = model.AutoApplyDiscount,
                 Code = model.Code,
                 DiscountAmount = model.DiscountAmount,

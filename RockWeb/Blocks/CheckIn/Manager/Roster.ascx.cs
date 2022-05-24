@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -119,6 +119,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "EA5C2CF9-8602-445F-B2B7-48D0A5CFEA8C" )]
     public partial class Roster : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -88,6 +88,7 @@ Example:
     [CustomDropdownListField( "Chart Type", "", "Line,Bar,Pie", false, "Line", order: 9 )]
     [DecimalField( "Pie Inner Radius", "If this is a pie chart, specific the inner radius to have a donut hole. For example, specify: 0.75 to have the inner radius as 75% of the outer radius.", false, 0, order: 10 )]
     [BooleanField( "Pie Show Labels", "If this is a pie chart, specify if labels show be shown", true, "", order: 11 )]
+    [Rock.SystemGuid.BlockTypeGuid( "7BCCBFB0-26A5-4376-B1F3-DC6ADD7C3723" )]
     public partial class DynamicChart : Rock.Reporting.Dashboard.DashboardWidget
     {
         /// <summary>
@@ -104,7 +105,8 @@ Example:
 
             var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
-            pageReference.QueryString.Add( this.Request.QueryString );
+            pageReference.QueryString.Add( this.CurrentPageReference.QueryString ); // Add paramters from the url querystring parameters
+            pageReference.QueryString.Add( this.CurrentPageReference.Parameters.ToNameValueCollection() ); // Add paramters from the routes parameters
             pageReference.QueryString.Add( "GetChartData", "true" );
             pageReference.QueryString.Add( "GetChartDataBlockId", this.BlockId.ToString() );
             pageReference.QueryString.Add( "TimeStamp", RockDateTime.Now.ToJavascriptMilliseconds().ToString() );

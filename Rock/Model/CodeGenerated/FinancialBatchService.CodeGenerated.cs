@@ -83,8 +83,7 @@ namespace Rock.Model
 
             var viewModel = new FinancialBatchBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AccountingSystemCode = model.AccountingSystemCode,
                 BatchEndDateTime = model.BatchEndDateTime,
                 BatchStartDateTime = model.BatchStartDateTime,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Set Status" )]
     [TextField( "Status", "The status to set workflow to. <span class='tip tip-lava'></span>" )]
+    [Rock.SystemGuid.EntityTypeGuid( "96D371A7-A291-4F8F-8B38-B8F72CE5407E")]
     public class SetStatus : ActionComponent
     {
         /// <summary>

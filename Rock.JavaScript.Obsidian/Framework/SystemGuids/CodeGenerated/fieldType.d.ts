@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Guids for Field Types. NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const enum FieldType {
     /** Address field type */
     Address = "0A495222-23B7-41D3-82C8-D484CDB75D17",
@@ -289,4 +290,3 @@ export const enum FieldType {
     /** Workflow Types field type */
     WorkflowTypes = "1D50399B-0D6E-480B-A71A-E7BD37DD83F0",
 }
-

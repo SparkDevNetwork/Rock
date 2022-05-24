@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the phone numbers of the parents of a person." )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Parents' Phone Numbers" )]
+    [Rock.SystemGuid.EntityTypeGuid( "CDE54D9E-CA91-4E13-920A-24EC01F75C1E")]
     public class ParentsPhoneNumberSelect : DataSelectComponent
     {
         #region Properties

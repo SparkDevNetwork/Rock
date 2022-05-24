@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Available Schedules" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "0F16E0C5-825A-4058-8285-6370DAAC2C19")]
     public class SetAvailableSchedules : CheckInActionComponent
     {
         /// <summary>

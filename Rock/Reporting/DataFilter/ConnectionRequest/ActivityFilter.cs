@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Would allow filtering by activity types." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Activity Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1511AFEF-1E60-4056-B861-5EBED0362BE4")]
     public class ActivityFilter : DataFilterComponent
     {
         #region Properties

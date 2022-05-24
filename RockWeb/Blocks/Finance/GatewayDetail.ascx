@@ -51,8 +51,6 @@
                                 runat="server"
                                 NotificationBoxType="Warning"
                                 Heading="Important!"
-                                Text="An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected.
-                                An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned."
                                 Visible="false"></Rock:NotificationBox>
                         </div>
                     </div>

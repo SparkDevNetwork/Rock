@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "WebFarm" )]
     [Table( "WebFarmNodeLog" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "E00B4559-8E53-4B21-8B29-DB2E6DD74C50")]
     public partial class WebFarmNodeLog : Model<WebFarmNodeLog>
     {
         #region Entity Properties
