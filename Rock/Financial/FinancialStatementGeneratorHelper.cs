@@ -1142,7 +1142,12 @@ namespace Rock.Financial
             foreach ( var documentPersonId in documentPersonIds )
             {
                 // Create the document, linking the entity and binary file.
-                if ( saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate == true && doNotSave == false )
+#pragma warning disable CS0618
+                // This is obsolete, but we'll still need to use it until it this option is completely remove
+                var overwriteDocumentsOfThisTypeCreatedOnSameDate = saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate;
+#pragma warning restore CS0618
+
+                if ( overwriteDocumentsOfThisTypeCreatedOnSameDate == true && doNotSave == false )
                 {
                     using ( var deleteDocContext = new RockContext() )
                     {

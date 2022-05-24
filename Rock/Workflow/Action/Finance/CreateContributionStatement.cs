@@ -179,14 +179,28 @@ namespace Rock.Workflow.Action
 
             if ( targetPerson == null )
             {
-                throw new FinancialGivingStatementArgumentException( "Giver must be specified" );
+                var errorMessage = "Giver must be specified.";
+                errorMessages.Add( errorMessage );
+                action.AddLogEntry( errorMessage, true );
+                return false;
             }
 
             // Get the statement template.
             FinancialStatementTemplate financialStatementTemplate = new FinancialStatementTemplateService( rockContext ).Get( statementTemplateGuid.Value );
             if ( financialStatementTemplate == null )
             {
-                throw new FinancialGivingStatementArgumentException( "StatementTemplate must be specified." );
+                var errorMessage = "StatementTemplate must be specified.";
+                errorMessages.Add( errorMessage );
+                action.AddLogEntry( errorMessage, true );
+                return false;
+            }
+
+            if ( startDateTime == null )
+            {
+                var errorMessage = "Start Date must be specified.";
+                errorMessages.Add( errorMessage );
+                action.AddLogEntry( errorMessage, true );
+                return false;
             }
 
             // Get the document type.
@@ -236,7 +250,9 @@ namespace Rock.Workflow.Action
                     {
                         // Don't generate a statement if no statement HTML.
                         action.AddLogEntry( "The contribution statement could not be generated.", true );
-                        return true; // Return true here to allow the action to run 'successfully' without a document. This allows the action to be easily used when the document is optional without a bunch of action filter tests.
+
+                        // Return true here to allow the action to run 'successfully' without a document. This allows the action to be easily used when the document is optional without a bunch of action filter tests.
+                        return true;
                     }
 
                     // Render the PDF from the HTML result.
