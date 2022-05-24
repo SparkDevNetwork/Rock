@@ -672,7 +672,7 @@ Update Family Status: {updateFamilyStatus}
                     {
                         int transactionTypeContributionId = DefinedValueCache.GetOrThrow( "Transaction Type/Contribution", Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
-                        var startPeriod = RockDateTime.Now.AddDays( -settings.MostFamilyAttendancePeriod );
+                        var startPeriod = RockDateTime.Now.AddDays( -settings.MostFamilyGivingPeriod );
                         personCampusGiving = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( a =>
