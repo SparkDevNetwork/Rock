@@ -1,0 +1,97 @@
+{% assign eventItemId = 'Global' | PageParameter:'EventItemId' %}
+{% assign fallbackImage = 'Global' | Attribute:'ImageLandscape' %}
+
+{% eventitem id:'{{ eventItemId }}' iterator:'events' %}
+  {% assign event = events | First %}
+{% endeventitem %}
+
+{% capture id %}{% endcapture %}
+{% capture title %}{{ event.Name | Replace:"'","’" }}{% endcapture %}
+{% capture content %}<p class="push-half-bottom">{{ event.Summary | Replace:"'","’" }}</p>{% endcapture %}
+{% capture textalignment %}{% endcapture %}
+{% capture label %}{% endcapture %}
+{% capture subtitle %}{% endcapture %}
+{% capture imageurl %}{{ event | Attribute:'ImageLandscape' | WithFallback:'',fallbackImage }}{% endcapture %}
+{% capture imageoverlayurl %}{% endcapture %}
+{% capture imagealignment %}{% endcapture %}
+{% capture imageopacity %}{% endcapture %}
+{% capture imageflip %}{% endcapture %}
+{% capture imageblur %}{% endcapture %}
+{% capture grayscale %}{% endcapture %}
+{% capture backgroundvideourl %}{% endcapture %}
+{% capture lava %}{% endcapture %}
+{% capture video %}{% endcapture %}
+{% capture ratio %}{% endcapture %}
+{% capture trimcopy %}{% endcapture %}
+{% capture linkcolor %}{% endcapture %}
+{% capture linkurl %}{% endcapture %}
+{% capture linktext %}{% endcapture %}
+{% capture backgroundcolor %}{% endcapture %}
+{% capture hideforegroundelements %}{% endcapture %}
+
+{% assign eventPageGuids = event | Attribute:'EventPage','RawValue' | Split:',' %}
+{% assign eventPageGuidsCount = eventPageGuids | Size %}
+{% if eventPageGuidsCount == 2 %}
+  {% capture eventPageRoute %}/{[ pageRouteFromRouteGuid guid:'{{ eventPageGuids | Last }}' ]}{% endcapture %}
+{% endif %}
+
+{% capture lava %}
+  {% if eventPageRoute and eventPageRoute != empty %}
+    <a href="{{ eventPageRoute }}" class="btn btn-primary">Learn More</a>
+  {% endif %}
+  <a href="#occurrences" class="btn {% if eventPageRoute and eventPageRoute != empty %}btn-default{% else %}btn-primary{% endif %}" data-scroll>Times & Locations</a>
+{% endcapture %}
+
+{[ sideBySide id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+
+{% assign occurrencesWithNextStartDateTime = 0 %}
+{% for occurrence in event.EventItemOccurrences %}
+  {% assign nextStartDateTime = occurrence | Property:'NextStartDateTime' %}
+  {% if nextStartDateTime %}
+    {% assign occurrencesWithNextStartDateTime = occurrencesWithNextStartDateTime | Plus:1 %}
+  {% endif %}
+{% endfor %}
+
+{% assign occurrences = event.EventItemOccurrences | OrderBy:'NextStartDateTime,Campus.Name desc' %}
+
+<div id="occurrences" class="row">
+  {% for occurrence in occurrences %}{% assign nextStartDateTime = occurrence | Property:'NextStartDateTime' %}{% if nextStartDateTime %}<div class="col-md-4 col-sm-6 col-xs-12">
+    {% assign occurrenceCampus = occurrence.Campus | WithFallback:'',null %}
+    {% assign occurrenceUpcomingDates = occurrence | Property:'Schedule' | Property:'iCalendarContent' | DatesFromICal:11 %}
+    {% assign upcomingDatesSize = occurrenceUpcomingDates | Size %}
+    {% assign scheduleFriendlyText = occurrence.Schedule.FriendlyScheduleText | StripHtml | Replace:':00','' | Replace:' AM','am<br>' | Replace:' PM','pm<br>' %}
+    {% assign registrationUrlSlug = occurrence.Linkages | First | Property:'UrlSlug' %}
+    {% capture title %}{% if occurrenceCampus and occurrenceCampus != empty %}{{ occurrence.Campus.Name }}{% else %}All Campuses{% endif %}{% endcapture %}
+
+    {% capture content %}
+      {% assign note = occurrence.Note | StripHtml %}
+      {% if note and note != empty %}
+        <p class="push-quarter-bottom"><i class="fal fa-info-circle push-quarter-right"></i> {{ note }}</p>
+      {% endif %}
+
+      <p class="{% if occurrence.Location and occurrence.Location != empty %}push-quarter-bottom{% endif %}"><i class="fal fa-calendar-alt push-quarter-right"></i> {[ formatDate date:'{{ nextStartDateTime }}' ]} @ {{ nextStartDateTime | Date:'h:mmtt' | Downcase | Replace:':00','' }}{% if upcomingDatesSize > 1 %}<br><a role="button" data-toggle="collapse" href="#collapse-{{ occurrence.Id }}" aria-expanded="false" aria-controls="collapse-{{ occurrence.Id }}"><small>See More Dates</small></a>{% endif %}</p>
+
+      {% if upcomingDatesSize > 1 %}
+        <div class="collapse" id="collapse-{{ occurrence.Id }}">
+          <ul class="list-unstyled well push-half-bottom">
+            {% for date in occurrenceUpcomingDates offset:1 %}
+            <li>{[ formatDate date:'{{ date }}' ]} @ {{ date | Date:'h:mmtt' | Downcase | Replace:':00','' }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if occurrence.Location and occurrence.Location != empty %}
+        <p class="{% if registrationUrlSlug and registrationUrlSlug != empty %}push-half-bottom{% endif %}"><i class="fal fa-map-marker-alt push-quarter-right"></i> {{ occurrence.Location }}</p>
+      {% endif %}
+    {% endcapture %}
+
+    {% if registrationUrlSlug and registrationUrlSlug != empty %}
+      {% assign linktext = 'Register Now' %}
+      {% assign linkurl = registrationUrlSlug | Prepend:'/registration/' %}
+    {% endif %}
+
+    {[ card title:'{{ title }}' titlesize:'h4' content:'{{ content }}' imageurl:'' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' ]}
+  </div>{% endif %}{% endfor %}
+</div>

@@ -1,0 +1,60 @@
+{% capture staffGroupsString %}
+    [{% group where:'ParentGroupId == 1528254' iterator:'groups' %}
+        {% for group in groups %}{
+            "Id":{{ group.Id }},
+            "Name":{{ group.Name | ToJSON }},
+            "Staff":{{ group.Members | Select:'Person' | Sort:'LastName' | Select:'Id' | ToJSON }}
+        }{% unless forloop.last %},{% endunless %}{% endfor %}
+    {% endgroup %}]
+{% endcapture %}
+{% assign staffGroups = staffGroupsString | FromJSON %}
+[
+    {% campus where:'IsActive == "True" && Public == "Yes"' sort:'Name' iterator:'campuses' %}
+    {%- for campus in campuses -%}
+        {% assign campusType = campus | Attribute:'CampusType','RawValue' %}
+        {% if campusType == 'permanent' or campusType == 'portable' or campusType == 'community' %}
+            {% assign staffMembers = staffGroups | | Where:'Name', campus.Name | First | Property:'Staff' %}
+            {
+                "Id": {{ campus.Id | ToJSON }},
+                "Guid": {{ campus.Guid | ToJSON }},
+                "Shortcode": {{ campus.ShortCode | ToJSON }},
+                "CampusType": {{ campusType | ToJSON }},
+                "Name": {{ campus.Name | ToJSON }},
+                "LocationStreet1": {{ campus.Location.Street1 | ToJSON }},
+                "LocationStreet2": {{ campus.Location.Street2 | ToJSON }},
+                "LocationCity": {{ campus.Location.City | ToJSON }},
+                "LocationState": {{ campus.Location.State | ToJSON }},
+                "LocationPostalCode": {{ campus.Location.PostalCode | ToJSON }},
+                "LocationLatitude": {{ campus.Location.Latitude | ToJSON }},
+                "LocationLongitude": {{ campus.Location.Longitude | ToJSON }},
+                "PhoneNumber": {{ campus.PhoneNumber | ToJSON }},
+                "Email": {{ campus.Name | Replace:' ','' | Downcase | Append:'@newspring.cc' | ToJSON }},
+                "Url": {{ campus.Name | Replace:' ','' | Downcase | Prepend:'https://newspring.cc/locations/' | ToJSON }},
+                "CampusPastorPersonId": {{ campus.LeaderPersonAliasId | PersonByAliasId | Property:'Id' | ToJSON }},
+                "FusePastorPersonId": {{ campus | Attribute:'FusePastor','Id' | ToJSON }},
+                "GooglePlacesId": {{ campus | Attribute:'GooglePlacesId' | ToJSON }},
+                "GetDirectionsURL": {{ campus | Attribute:'GetDirectionsURL','RawValue' | ToJSON }},
+                "FuseGetDirectionsURL": {{ campus | Attribute:'FuseGetDirectionsURL','RawValue' | ToJSON }},
+                "LandscapeImage": {{ campus | Attribute:'ImageLandscape' | ToJSON }},
+                "FuseLandscapeImage": {{ campus | Attribute:'FuseImageLandscape' | ToJSON }},
+                "ServiceTimes": {{ campus | Attribute:'ServiceTimes1' | FromJSON | ToJSON }},
+                "MailingAddress": {{ campus | Attribute:'MailingAddress' | ToJSON }},
+                "OfficeAddress": {{ campus | Attribute:'OfficeAddress' | ToJSON }},
+                "CampusStaff": [
+                    {% for staff in staffMembers %}
+                        {% assign staffMember = staff | PersonById %}
+                        {
+                            "PersonId": {{ staffMember.Id }},
+                            "FullName": {{ staffMember.FullName | ToJSON }},
+                            "StaffImage": {{ staffMember | Attribute:'StaffImage','Url' | ToJSON }},
+                            "StaffTitle": {{ staffMember | Attribute:'StaffTitle' | ToJSON }},
+                            "StaffEmail": {{ staffMember | Attribute:'StaffEmail' | ToJSON }},
+                            "NickName": {{ staffMember.NickName | ToJSON }}
+                        }{%- unless forloop.last -%},{%- endunless -%}
+                    {% endfor %}
+                ]
+            }{%- unless forloop.last -%},{%- endunless -%}
+        {% endif %}
+    {%- endfor -%}
+    {% endcampus %}
+]

@@ -1,0 +1,11 @@
+{% if id and id != empty and parentccid and parentccid != empty %}
+{% sql %}
+SELECT TOP 1 ccis.Slug
+FROM ContentChannelItemAssociation ccia
+JOIN ContentChannelItem pcci
+ON ccia.ContentChannelItemId = pcci.Id
+JOIN ContentChannelItemSlug ccis
+ON pcci.Id = ccis.ContentChannelItemId
+WHERE ccia.ChildContentChannelItemId = {{ id }}
+AND pcci.ContentChannelId = {{ parentccid }}
+{% endsql %}{% for result in results %}{{ result.Slug }}{% endfor %}{% endif %}

@@ -24,7 +24,7 @@
             <td>
               {% if Role == '0' %}
                 {% comment %}Role is 'Assigned To', go to WorkflowEntry page {% endcomment %}
-                <a href='/MyDashboardWorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}?WorkflowGuid={{ action.Activity.Workflow.Guid }}'>{{ action.Activity.Workflow.Name }} ({{ action.Activity.ActivityType.Name }})</a>
+                <a href='/MyDashboardWorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}?WorkflowGuid={{ action.Activity.Workflow.Guid }}'>{{ action.Activity.Workflow.Name }}</a>
               {% else %}
                 {% comment %}Role is 'Initiated', go to Workflow Detail page {% endcomment %}
                 <a href='/MyDashboardWorkflow/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.Name }}</a>
