@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Shows the number of Members in the Group with a specified Status or Role type" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Member Count" )]
+    [Rock.SystemGuid.EntityTypeGuid( "45786F38-F50B-4FB2-8CEB-AFDCF42C5EB5")]
     public class MemberCountSelect : DataSelectComponent
     {
         #region Properties

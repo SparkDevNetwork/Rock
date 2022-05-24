@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Store
     [DisplayName( "Link Organization" )]
     [Category( "Store" )]
     [Description( "Links a Rock organization to the store." )]
+    [Rock.SystemGuid.BlockTypeGuid( "41DFED6E-2ECD-4198-80C3-816B27241EB4" )]
     public partial class LinkOrganization : Rock.Web.UI.RockBlock
     {
         #region Fields

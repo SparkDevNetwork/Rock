@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Last Login Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Login" )]
+    [Rock.SystemGuid.EntityTypeGuid( "F4A1FC8D-D27C-40C9-86CA-3DE87046E79E")]
     public class LastLoginSelect : DataSelectComponent
     {
         #region Properties

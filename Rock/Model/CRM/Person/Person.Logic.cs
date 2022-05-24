@@ -481,7 +481,7 @@ namespace Rock.Model
         {
             get
             {
-                return Person.GetAge( this.BirthDate );
+                return Person.GetAge( this.BirthDate, this.DeceasedDate );
             }
 
             private set
@@ -494,7 +494,33 @@ namespace Rock.Model
         /// Gets the age.
         /// </summary>
         /// <param name="birthDate">The birth date.</param>
+        /// <param name="deceasedDate">The deceased date.</param>
         /// <returns></returns>
+        public static int? GetAge( DateTime? birthDate, DateTime? deceasedDate )
+        {
+            if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
+            {
+                DateTime asOfDate = deceasedDate.HasValue ? deceasedDate.Value : RockDateTime.Today;
+                int age = asOfDate.Year - birthDate.Value.Year;
+                if ( birthDate.Value > asOfDate.AddYears( -age ) )
+                {
+                    // their birthdate is after today's date, so they aren't a year older yet
+                    age--;
+                }
+
+                return age;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the age.
+        /// </summary>
+        /// <param name="birthDate">The birth date.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use GetAge( birthDate, deceasedDate ) instead." )]
         public static int? GetAge( DateTime? birthDate )
         {
             if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
@@ -1271,7 +1297,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public sealed class CalculateFamilySalutationArgs
         {

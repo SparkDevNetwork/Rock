@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AssetStorageProvider" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "E0B4BE77-B29F-4BD4-AE45-CF833AC3A482")]
     public partial class AssetStorageProvider : Model<AssetStorageProvider>, IHasActiveFlag
     {
         #region Entity Properties

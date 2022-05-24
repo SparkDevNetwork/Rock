@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -110,6 +110,7 @@ namespace RockWeb.Blocks.Cms
         EditorMode = CodeEditorMode.Lava,
         Category = "CustomSetting",
         Key = AttributeKey.PostHtml )]
+    [Rock.SystemGuid.BlockTypeGuid( "FDF1BBFF-7A7B-4F4E-BF34-831203B0FEAC" )]
     public partial class UniversalSearch : RockBlockCustomSettings
     {
         #region AttributeKeys

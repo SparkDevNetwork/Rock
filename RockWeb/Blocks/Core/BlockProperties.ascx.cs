@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Block Properties" )]
     [Category( "Core" )]
     [Description( "Allows you to administrate a block's properties." )]
+    [Rock.SystemGuid.BlockTypeGuid( "5EC45388-83D4-4E99-BF25-3FA00327F08B" )]
     public partial class BlockProperties : RockBlock
     {
         #region Fields
@@ -260,11 +261,11 @@ namespace RockWeb.Blocks.Core
             SiteCache _site = null;
 
             // Get site info from Page -> Layout -> Site
-            if ( _block.Page.IsNotNull() )
+            if ( _block.Page != null )
             {
                 _site = SiteCache.Get( _block.Page.SiteId );
             }
-            else if ( _block.Layout.IsNotNull() )
+            else if ( _block.Layout != null )
             {
                 _site = SiteCache.Get( _block.Layout.SiteId );
             }
@@ -274,7 +275,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // Change Pre/Post text labels if this is a mobile block
-            if ( _site.IsNotNull() &&  _site.SiteType == SiteType.Mobile )
+            if ( _site != null &&  _site.SiteType == SiteType.Mobile )
             {
                 cePostHtml.Label = "Post-XAML";
                 cePreHtml.Label = "Pre-XAML";

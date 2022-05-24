@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select the Location of the Group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group's Location" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8533C1A1-01E6-4791-B653-C3D0774818BA")]
     public class LocationSelect : DataSelectComponent
     {
         #region Properties
@@ -139,6 +140,14 @@ namespace Rock.Reporting.DataSelect.Group
             var selectExpression = SelectExpressionExtractor.Extract( groupLocationQuery, entityIdProperty, "p" );
 
             return selectExpression;
+        }
+
+        /// <inheritdoc />
+        public override string SortProperties( string selection )
+        {
+            // Sorting is disabled for this field because the return value is not a scalar.
+            // This field returns a Location object because the output requires client-side rendering logic.
+            return string.Empty;
         }
 
         /// <summary>

@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new GroupLocationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 GroupId = model.GroupId,
                 GroupLocationTypeValueId = model.GroupLocationTypeValueId,
                 GroupMemberPersonAliasId = model.GroupMemberPersonAliasId,

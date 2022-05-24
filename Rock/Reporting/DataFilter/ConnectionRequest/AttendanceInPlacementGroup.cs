@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Filter connnection request on whether they have attended the selected placement group(s) a specified number of times." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Attendance In Placement Group Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "97438F23-A178-4FEE-9545-D1DE96107D16")]
     public class AttendanceInPlacementGroup : DataFilterComponent
     {
         private class GroupAttendanceFilterSelection

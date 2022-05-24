@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -65,6 +65,7 @@ namespace RockWeb.Blocks.Prayer
     [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 17 )]
 
     [ContextAware(typeof(Rock.Model.Person))]
+    [Rock.SystemGuid.BlockTypeGuid( "4C32F2CD-5A88-4C3A-ADEA-CF94E85D20A6" )]
     public partial class PrayerRequestEntry : RockBlock
     {
         #region Properties

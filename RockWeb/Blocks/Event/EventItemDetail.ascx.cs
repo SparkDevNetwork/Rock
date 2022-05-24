@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given calendar event item." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "39E3476D-1BA1-438D-887F-03DD23639221" )]
     public partial class EventItemDetail : RockBlock
     {
         #region Properties

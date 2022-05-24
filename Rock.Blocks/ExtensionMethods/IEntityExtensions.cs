@@ -26,7 +26,7 @@ namespace Rock.Blocks
 {
     internal static class IEntityExtensions
     {
-        public static ListItemBag ToListItemPack( this IEntity entity )
+        public static ListItemBag ToListItemBag( this IEntity entity )
         {
             if ( entity == null )
             {
@@ -42,14 +42,14 @@ namespace Rock.Blocks
             return viewModel;
         }
 
-        public static List<ListItemBag> ToListItemPackList( this IEnumerable<IEntity> entities )
+        public static List<ListItemBag> ToListItemBagList( this IEnumerable<IEntity> entities )
         {
             if ( entities == null )
             {
                 return new List<ListItemBag>();
             }
 
-            return entities.Select( e => e.ToListItemPack() ).ToList();
+            return entities.Select( e => e.ToListItemBag() ).ToList();
         }
 
         public static int? GetEntityId<TEntity>( this ListItemBag viewModel, RockContext rockContext )

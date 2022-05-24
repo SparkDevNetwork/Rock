@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "ViewState Viewer" )]
     [Category( "Utility" )]
     [Description( "Block allows you to see what's in the View State of a page." )]
+    [Rock.SystemGuid.BlockTypeGuid( "268F9F11-BC74-4E86-A72D-6AA668BF470D" )]
     public partial class ViewStateViewer : Rock.Web.UI.RockBlock
     {
         #region Fields

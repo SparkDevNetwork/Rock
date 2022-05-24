@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Would allow filtering requests to a specific Connection Type." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Type Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "6FADE7F1-DF86-47F9-BBD9-31C7188C1714")]
     public class ConnectionTypeFilter : DataFilterComponent
     {
         #region Properties

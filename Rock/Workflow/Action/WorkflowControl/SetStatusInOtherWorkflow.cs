@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Workflow", "The workflow to set the status of.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowFieldType" } )]
     [BooleanField("Process Target Workflow", "Should this action process the target workflow after setting the status (if not, workflow may not be processed until next time workflow job runs).", false, "", 2, "ProcessNow" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8C66083E-1A6E-40F7-B3ED-3077FA82E65E")]
     public class SetStatusInOtherWorkflow : ActionComponent
     {
         /// <summary>

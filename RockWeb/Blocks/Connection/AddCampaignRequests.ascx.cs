@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Connection
     #region Block Attributes
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "11630BB9-E685-4582-91F8-620448AA34B0" )]
     public partial class AddCampaignRequests : RockBlock
     {
         #region Attribute Keys

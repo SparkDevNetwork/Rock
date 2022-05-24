@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Badge.Component
     [ExportMetadata( "ComponentName", "DISC" )]
 
     [LinkedPage( "DISC Result Detail", "Page to show the details of the DISC assessment results. If blank no link is created.", false )]
+    [Rock.SystemGuid.EntityTypeGuid( "6D29DB44-EDC5-42AA-B42C-482BC0920AD0")]
     public class DISC : BadgeComponent
     {
         /// <summary>

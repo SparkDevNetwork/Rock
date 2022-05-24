@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Follow
     [DisplayName( "Event Subscription" )]
     [Category( "Follow" )]
     [Description( "Block for users to select which following events they would like to subscribe to." )]
+    [Rock.SystemGuid.BlockTypeGuid( "F72A4100-001E-47F9-9406-5529F2A45131" )]
     public partial class EventSubscription : RockBlock
     {
         #region Fields

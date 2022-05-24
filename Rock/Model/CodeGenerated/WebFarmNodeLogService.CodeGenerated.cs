@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new WebFarmNodeLogBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 EventDateTime = model.EventDateTime,
                 EventType = model.EventType,
                 Message = model.Message,

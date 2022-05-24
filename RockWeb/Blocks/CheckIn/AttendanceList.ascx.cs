@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Checkin
     [DisplayName( "Attendance List" )]
     [Category( "Checkin" )]
     [Description( "Block for displaying the attendance history of a person or a group." )]
+    [Rock.SystemGuid.BlockTypeGuid( "678ED4B6-D76F-4D43-B069-659E352C9BD8" )]
     public partial class AttendanceList : RockBlock, ICustomGridColumns
     {
 

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new EventItemBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
                 ApprovedOnDateTime = model.ApprovedOnDateTime,
                 Description = model.Description,

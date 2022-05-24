@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new StepWorkflowBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 StepId = model.StepId,
                 StepWorkflowTriggerId = model.StepWorkflowTriggerId,
                 WorkflowId = model.WorkflowId,

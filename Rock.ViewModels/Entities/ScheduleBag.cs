@@ -130,14 +130,6 @@ namespace Rock.ViewModels.Entities
         public int? WeeklyDayOfWeek { get; set; }
 
         /// <summary>
-        /// Gets or sets the WeeklyTimeOfDay.
-        /// </summary>
-        /// <value>
-        /// The WeeklyTimeOfDay.
-        /// </value>
-        public TimeSpan? WeeklyTimeOfDay { get; set; }
-
-        /// <summary>
         /// Gets or sets the CreatedDateTime.
         /// </summary>
         /// <value>

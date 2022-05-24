@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new NoteTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AllowsAttachments = model.AllowsAttachments,
                 AllowsReplies = model.AllowsReplies,
                 AllowsWatching = model.AllowsWatching,

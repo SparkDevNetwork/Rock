@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [Description( "Show Group Status" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Status" )]
+    [Rock.SystemGuid.EntityTypeGuid( "F6107037-DA13-49D0-B2EB-A5989D221318")]
     public class GroupStatusSelect : DataSelectComponent
     {
         /// <summary>

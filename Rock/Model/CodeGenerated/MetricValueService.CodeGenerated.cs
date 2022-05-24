@@ -83,8 +83,7 @@ namespace Rock.Model
 
             var viewModel = new MetricValueBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 MetricId = model.MetricId,
                 MetricValueDateTime = model.MetricValueDateTime,
                 MetricValueType = ( int ) model.MetricValueType,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Badge.Component
 
     [CodeEditorField( "Display Text", "The text (or HTML) to display as a badge", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your Lava syntax.", false )]
+    [Rock.SystemGuid.EntityTypeGuid( "95912004-62B5-4460-951F-D752427D44FE")]
     public class Liquid : BadgeComponent
     {
         /// <summary>

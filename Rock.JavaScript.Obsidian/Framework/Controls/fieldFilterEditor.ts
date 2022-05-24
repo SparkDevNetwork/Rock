@@ -16,10 +16,10 @@
 //
 
 import { defineComponent, PropType, ref, TransitionGroup, watch } from "vue";
-import DropDownList from "../Elements/dropDownList";
-import { FilterExpressionType } from "../Reporting/filterExpressionType";
-import { areEqual, newGuid } from "../Util/guid";
-import { updateRefValue } from "../Util/util";
+import DropDownList from "./dropDownList";
+import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
@@ -116,7 +116,7 @@ export default defineComponent({
         /**
          * Event handler for when a single rule has been updated. Replace the
          * rule in our array with the new rule.
-         * 
+         *
          * @param rule The new rule information.
          */
         const onUpdateRule = (rule: FieldFilterRuleBag): void => {
@@ -133,7 +133,7 @@ export default defineComponent({
         /**
          * Event handler for when a rule has requested that it be removed from
          * the list of rules.
-         * 
+         *
          * @param rule The rule to be removed.
          */
         function onRemoveRule(rule: FieldFilterRuleBag): void {
@@ -168,17 +168,17 @@ export default defineComponent({
             showHide,
             showHideOptions
         };
-    }, 
+    },
 
     template: `
 <div class="filtervisibilityrules-container">
     <div class="filtervisibilityrules-rulesheader">
         <div class="filtervisibilityrules-type form-inline form-inline-all">
-            <DropDownList v-model="showHide" :options="showHideOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
+            <DropDownList v-model="showHide" :items="showHideOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
             <div class="form-control-static margin-r-sm">
                 <span class="filtervisibilityrules-fieldname">{{ title }}</span><span class="filtervisibilityrules-if"> if</span>
             </div>
-            <DropDownList v-model="allAny" :options="allAnyOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
+            <DropDownList v-model="allAny" :items="allAnyOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
             <span class="form-control-static">of the following match:</span>
         </div>
     </div>

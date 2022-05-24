@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new InteractionSessionLocationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CountryCode = model.CountryCode,
                 CountryValueId = model.CountryValueId,
                 GeoPoint = model.GeoPoint,

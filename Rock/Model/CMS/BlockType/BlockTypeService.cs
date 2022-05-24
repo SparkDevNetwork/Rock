@@ -20,7 +20,9 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
+
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -102,7 +104,7 @@ namespace Rock.Model
                      * Notice that we call BlockTypeCache.Get every time we need data from it.
                      * We do this because the BlockTypeCache get easily get stale due to other threads.
                      */
-                    
+
                     if ( BlockTypeCache.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
                     {
                         // make sure that only one thread is trying to compile block types and attributes so that we don't get collisions and unneeded compiler overhead
@@ -178,6 +180,13 @@ namespace Rock.Model
 
                             // Update Name, Category, and Description based on block's attribute definitions
                             blockType.Name = Reflection.GetDisplayName( type ) ?? string.Empty;
+
+                            var blockTypeGuidFromAttribute = type.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>()?.Guid;
+                            if ( blockTypeGuidFromAttribute != null && blockType.Guid != blockTypeGuidFromAttribute.Value )
+                            {
+                                blockType.Guid = blockTypeGuidFromAttribute.Value;
+                            }
+
                             if ( string.IsNullOrWhiteSpace( blockType.Name ) )
                             {
                                 blockType.Name = type.FullName;
@@ -197,10 +206,20 @@ namespace Rock.Model
                             Rock.Attribute.Helper.UpdateAttributes( type, blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
                         }
                     }
-                    catch ( Exception ex )
+                    catch ( Exception thrownException )
                     {
-                        Debug.WriteLine( $"RegisterEntityBlockTypes failed for {type.FullName} with exception: {ex.Message}" );
-                        ExceptionLogService.LogException( new Exception( string.Format( "Problem processing block with path '{0}'.", type.FullName ), ex ), null );
+                        // if the exception was due to a duplicate Guid, throw a duplicateGuidException. That'll make it easier to troubleshoot.
+                        var duplicateGuidException = Rock.SystemGuid.DuplicateSystemGuidException.CatchDuplicateSystemGuidException( thrownException, $"RegisterEntityBlockTypes failed for {type.FullName}" );
+                        if ( duplicateGuidException != null )
+                        {
+                            Debug.WriteLine( duplicateGuidException.Message );
+                            ExceptionLogService.LogException( duplicateGuidException );
+                        }
+                        else
+                        {
+                            Debug.WriteLine( $"RegisterEntityBlockTypes failed for {type.FullName} with exception: {thrownException.Message}" );
+                            ExceptionLogService.LogException( new Exception( string.Format( "Problem processing block with path '{0}'.", type.FullName ), thrownException ), null );
+                        }
                     }
                 }
             }
@@ -233,7 +252,7 @@ namespace Rock.Model
                 registeredPaths = new List<string>();
             }
             else
-            { 
+            {
                 using ( var rockContext = new RockContext() )
                 {
                     registeredPaths = new BlockTypeService( rockContext )
@@ -311,6 +330,12 @@ namespace Rock.Model
                             blockType.Category = Rock.Reflection.GetCategory( controlType ) ?? string.Empty;
                             blockType.Description = Rock.Reflection.GetDescription( controlType ) ?? string.Empty;
 
+                            var blockTypeGuidFromAttribute = blockCompiledType.GetCustomAttribute<Rock.SystemGuid.BlockTypeGuidAttribute>()?.Guid;
+                            if ( blockTypeGuidFromAttribute != null && blockType.Guid != blockTypeGuidFromAttribute.Value )
+                            {
+                                blockType.Guid = blockTypeGuidFromAttribute.Value;
+                            }
+
                             rockContext.SaveChanges();
 
                             // Update the attributes used by the block
@@ -318,10 +343,20 @@ namespace Rock.Model
                         }
                     }
                 }
-                catch ( Exception ex )
+                catch ( Exception thrownException )
                 {
-                    System.Diagnostics.Debug.WriteLine( $"RegisterBlockTypes failed for {path} with exception: {ex.Message}" );
-                    ExceptionLogService.LogException( new Exception( string.Format( "Problem processing block with path '{0}'.", path ), ex ), null );
+                    // if the exception was due to a duplicate Guid, log a duplicateGuidException. That'll make it easier to troubleshoot.
+                    var duplicateGuidException = Rock.SystemGuid.DuplicateSystemGuidException.CatchDuplicateSystemGuidException( thrownException, $"RegisterBlockTypes failed for {path}" );
+                    if ( duplicateGuidException != null )
+                    {
+                        System.Diagnostics.Debug.WriteLine( duplicateGuidException.Message );
+                        ExceptionLogService.LogException( duplicateGuidException );
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine( $"RegisterBlockTypes failed for {path} with exception: {thrownException.Message}" );
+                        ExceptionLogService.LogException( new Exception( string.Format( "Problem processing block with path '{0}'.", path ), thrownException ), null );
+                    }
                 }
             }
         }

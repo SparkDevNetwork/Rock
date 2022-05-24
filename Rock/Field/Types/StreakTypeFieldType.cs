@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of streak types and allow a single selection.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "F1411F4A-BD4B-4F80-9A83-94026C009F4D")]
     public class StreakTypeFieldType : EntitySingleSelectionListFieldTypeBase<StreakType>
     {
         /// <summary>

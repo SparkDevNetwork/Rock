@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Security.Oidc
     [Category( "Security > OIDC" )]
     [Description( "Choose to authorize the auth client to access the user's data." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OIDC_AUTHORIZE )]
     public partial class Authorize : RockBlock
     {
         #region Keys

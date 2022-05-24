@@ -22,7 +22,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeCategoryBag } from "@Obsidian/ViewModels/Utility/publicAttributeCategoryBag";
 
 /**
  * A slimmed down version of an attribute that includes enough detail to
@@ -51,7 +51,7 @@ export type PublicAttributeBag = {
     order: number;
 
     /** Gets or sets the categories. */
-    categories?: ListItemBag[] | null;
+    categories?: PublicAttributeCategoryBag[] | null;
 
     /** Gets or sets the configuration values. */
     configurationValues?: Record<string, string> | null;

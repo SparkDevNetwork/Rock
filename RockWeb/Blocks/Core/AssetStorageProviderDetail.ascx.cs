@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Asset Storage Provider Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given asset storage provider." )]
+    [Rock.SystemGuid.BlockTypeGuid( "C4CD9A9D-424A-4F4F-A470-C1B4AFD123BC" )]
     public partial class AssetStorageProviderDetail : RockBlock
     {
         /// <summary>

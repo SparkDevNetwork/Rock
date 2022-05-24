@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AuthBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Action = model.Action,
                 AllowOrDeny = model.AllowOrDeny,
                 EntityId = model.EntityId,

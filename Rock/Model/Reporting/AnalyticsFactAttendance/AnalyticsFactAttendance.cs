@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [Table( "AnalyticsFactAttendance" )]
     [DataContract]
     [CodeGenExclude( CodeGenFeature.ViewModelFile )]
+    [Rock.SystemGuid.EntityTypeGuid( "3FCC0DF5-4299-4971-860C-8CB591DA75D8")]
     public class AnalyticsFactAttendance : AnalyticsBaseAttendance<AnalyticsFactAttendance>
     {
         #region Entity Properties Specific to Analytics

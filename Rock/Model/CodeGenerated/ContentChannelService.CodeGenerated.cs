@@ -93,8 +93,7 @@ namespace Rock.Model
 
             var viewModel = new ContentChannelBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ChannelUrl = model.ChannelUrl,
                 ChildItemsManuallyOrdered = model.ChildItemsManuallyOrdered,
                 ContentChannelTypeId = model.ContentChannelTypeId,

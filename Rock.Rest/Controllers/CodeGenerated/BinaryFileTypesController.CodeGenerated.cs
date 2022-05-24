@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// BinaryFileTypes REST API
     /// </summary>
+    [RestControllerGuid( "AEAB9C6F-96AA-43FF-BC91-5555303EC629" )]
     public partial class BinaryFileTypesController : Rock.Rest.ApiController<Rock.Model.BinaryFileType>
     {
         /// <summary>

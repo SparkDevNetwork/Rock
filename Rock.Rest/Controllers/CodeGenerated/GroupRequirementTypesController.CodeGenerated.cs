@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// GroupRequirementTypes REST API
     /// </summary>
+    [RestControllerGuid( "891F67E1-F18A-47D2-A2B1-27E96BE4D87C" )]
     public partial class GroupRequirementTypesController : Rock.Rest.ApiController<Rock.Model.GroupRequirementType>
     {
         /// <summary>

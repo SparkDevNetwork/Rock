@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -80,6 +80,7 @@ namespace RockWeb.Blocks.Examples
         IsRequired = false,
         DefaultIntegerValue = 1,
         Order = 4 )]
+    [Rock.SystemGuid.BlockTypeGuid( "A42E0031-B2B9-403A-845B-9C968D7716A6" )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -1689,7 +1690,7 @@ namespace RockWeb.Blocks.Examples
                                    Type = n.Attribute( "type" ).Value,
                                    Name = n.Attribute( "name" ).Value,
                                    Guid = n.Attribute( "guid" ).Value.AsGuid(),
-                                   IsActive = n.Attribute( "isActive" ).Value.AsBoolean( true ),
+                                   IsActive = n.Attribute( "isActive" ) == null || n.Attribute( "isActive" ).Value.AsBoolean( true ),
                                    ParentLocationGuid = n.Attribute( "parentLocationGuid" ) != null ? n.Attribute( "parentLocationGuid" ).Value : null,
                                };
 

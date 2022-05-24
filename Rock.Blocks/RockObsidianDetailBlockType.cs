@@ -34,18 +34,13 @@ namespace Rock.Blocks
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The <see cref="Campus"/> to be viewed or edited on the page.</returns>
-        protected TEntity GetInitialEntity<TEntity, TService>( RockContext rockContext, string entityIdKey, string entityGuidKey )
+        protected TEntity GetInitialEntity<TEntity, TService>( RockContext rockContext, string entityIdKey )
             where TService : Service<TEntity>
             where TEntity : Rock.Data.Entity<TEntity>, new()
         {
-            // TODO: Add Site option for "Allow Integer Identifiers"
-            int? id = null;
-            var guid = RequestContext.GetPageParameter( entityGuidKey ).AsGuidOrNull();
-
-            if ( true /* TODO: PageCache.SiteCache.IsIntegerIdentifierAllowed */ )
-            {
-                id = RequestContext.GetPageParameter( entityIdKey ).AsIntegerOrNull();
-            }
+            var entityId = RequestContext.GetPageParameter( entityIdKey );
+            var id = !PageCache.Layout.Site.DisablePredictableIds ? entityId.AsIntegerOrNull() : null;
+            var guid = entityId.AsGuidOrNull();
 
             var entityService = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
 
@@ -59,20 +54,7 @@ namespace Rock.Blocks
                 };
             }
 
-            // Otherwise look for an existing one in the database.
-            if ( guid.HasValue )
-            {
-                return entityService.GetNoTracking( guid.Value );
-            }
-            else if ( id.HasValue )
-            {
-                return entityService.GetNoTracking( id.Value );
-            }
-            else
-            {
-                return null;
-            }
+            return entityService.GetNoTracking( entityId, !PageCache.Layout.Site.DisablePredictableIds );
         }
-
     }
 }

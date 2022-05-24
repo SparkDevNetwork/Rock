@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AttributeMatrixItemBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AttributeMatrixId = model.AttributeMatrixId,
                 Order = model.Order,
                 CreatedDateTime = model.CreatedDateTime,

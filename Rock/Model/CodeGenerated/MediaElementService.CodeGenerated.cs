@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new MediaElementBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 DurationSeconds = model.DurationSeconds,
                 FileDataJson = model.FileDataJson,

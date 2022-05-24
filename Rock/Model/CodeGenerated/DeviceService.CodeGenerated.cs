@@ -105,8 +105,7 @@ namespace Rock.Model
 
             var viewModel = new DeviceBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CameraBarcodeConfigurationType = ( int? ) model.CameraBarcodeConfigurationType,
                 Description = model.Description,
                 DeviceTypeValueId = model.DeviceTypeValueId,

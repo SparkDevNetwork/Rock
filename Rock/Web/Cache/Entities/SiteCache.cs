@@ -551,6 +551,24 @@ namespace Rock.Web.Cache
         public bool EnableExclusiveRoutes { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether geo-location lookups should be performed on interactions.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable page view geo tracking]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnablePageViewGeoTracking { get; private set; }
+
+        /// <summary>
+        /// Gets or sets whether predictable Ids are disabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if predictable Ids are disabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool DisablePredictableIds { get; private set; }
+
+        /// <summary>
         /// Gets or sets the configuration mobile file path.
         /// </summary>
         /// <value>
@@ -632,6 +650,8 @@ namespace Rock.Web.Cache
             ThumbnailFileUrl = site.ThumbnailFileUrl;
             LatestVersionDateTime = site.LatestVersionDateTime;
             EnableExclusiveRoutes = site.EnableExclusiveRoutes;
+            EnablePageViewGeoTracking = site.EnablePageViewGeoTracking;
+            DisablePredictableIds = site.DisablePredictableIds;
 
             foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
             {

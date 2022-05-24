@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new CommunicationRecipientBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AdditionalMergeValuesJson = model.AdditionalMergeValuesJson,
                 CommunicationId = model.CommunicationId,
                 MediumEntityTypeId = model.MediumEntityTypeId,

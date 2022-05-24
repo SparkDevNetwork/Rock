@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// UserLogins REST API
     /// </summary>
+    [RestControllerGuid( "003879B7-B613-4295-982B-9F3427A25081" )]
     public partial class UserLoginsController : Rock.Rest.ApiController<Rock.Model.UserLogin>
     {
         /// <summary>

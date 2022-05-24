@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Assessments
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "00A86827-1E0C-4F47-8A6F-82581FA75CED" )]
     public partial class AssessmentTypeList : RockBlock, ISecondaryBlock
     {
         #region Attribute Keys

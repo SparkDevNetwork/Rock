@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ConnectionRequestActivityBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ConnectionActivityTypeId = model.ConnectionActivityTypeId,
                 ConnectionOpportunityId = model.ConnectionOpportunityId,
                 ConnectionRequestId = model.ConnectionRequestId,

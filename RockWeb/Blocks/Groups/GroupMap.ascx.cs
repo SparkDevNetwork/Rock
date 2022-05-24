@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField("Show Child Groups as Default", "Defaults to showing all child groups if no user preference is set", false, order: 7, key: SHOW_CHILD_GROUPS_AS_DEFAULT_KEY )]
     [CodeEditorField( "Info Window Contents", "Lava template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, DEFAULT_LAVA_TEMPLATE, "", 8 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "967F0D2B-DB76-486A-B034-D22B9D9240D3" )]
     public partial class GroupMap : Rock.Web.UI.RockBlock
     {
 

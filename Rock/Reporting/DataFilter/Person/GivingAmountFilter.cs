@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on their total contribution amount" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Giving Amount Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1087DEE3-9932-4647-88A3-7CD87AB16B7D")]
     public class GivingAmountFilter : DataFilterComponent
     {
         #region Properties

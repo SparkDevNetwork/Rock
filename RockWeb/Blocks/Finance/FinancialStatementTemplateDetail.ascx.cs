@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the statement template." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "78DB9184-97CF-4FC4-BD71-8F3ABE4100BA" )]
     public partial class FinancialStatementTemplateDetail : RockBlock
     {
         #region Page Parameter Keys
@@ -392,10 +393,10 @@ namespace RockWeb.Blocks.Finance
             rbUseCustomAccountIds.Checked = transactionSetting.AccountSelectionOption != FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
             if ( transactionSetting.SelectedAccountIds.Any() )
             {
-                var accountList = FinancialAccountCache.GetByIds( transactionSetting.SelectedAccountIds )
+                var accountList = new FinancialAccountService( new RockContext() ).GetByIds( transactionSetting.SelectedAccountIds )
                     .Where( a => a.IsActive )
                     .ToList();
-                apTransactionAccountsCustom.SetValuesFromCache( accountList );
+                apTransactionAccountsCustom.SetValues( accountList );
             }
 
             cbIncludeChildAccountsCustom.Checked = transactionSetting.AccountSelectionOption == FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccountsIncludeChildren;
@@ -408,11 +409,11 @@ namespace RockWeb.Blocks.Finance
             cbIncludeNonCashGifts.Checked = pledgeSetting.IncludeNonCashGifts;
             if ( pledgeSetting.AccountIds.Any() )
             {
-                var accountList = FinancialAccountCache.GetByIds( pledgeSetting.AccountIds )
+                var accountList = new FinancialAccountService( new RockContext() ).GetByIds( pledgeSetting.AccountIds )
                     .Where( a => a.IsActive )
                     .ToList();
 
-                apPledgeAccounts.SetValuesFromCache( accountList );
+                apPledgeAccounts.SetValues( accountList );
             }
         }
 

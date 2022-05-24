@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AssetStorageProviderBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 EntityTypeId = model.EntityTypeId,
                 IsActive = model.IsActive,

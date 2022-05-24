@@ -71,6 +71,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool DisablePredictableIds { get; set; }
+
+        /// <summary />
         public bool EnabledForShortening { get; set; } = true;
 
         /// <summary />
@@ -213,6 +216,7 @@ namespace Rock.Client
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
+            this.DisablePredictableIds = source.DisablePredictableIds;
             this.EnabledForShortening = source.EnabledForShortening;
             this.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             this.EnableMobileRedirect = source.EnableMobileRedirect;

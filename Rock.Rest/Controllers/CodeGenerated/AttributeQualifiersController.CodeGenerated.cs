@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AttributeQualifiers REST API
     /// </summary>
+    [RestControllerGuid( "3DDDA47F-44BD-4934-91E5-DE309D133426" )]
     public partial class AttributeQualifiersController : Rock.Rest.ApiController<Rock.Model.AttributeQualifier>
     {
         /// <summary>

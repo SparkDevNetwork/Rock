@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -256,6 +256,7 @@ namespace RockWeb.Blocks.Groups
         Category = AttributeCategory.CustomSetting )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "9F8F2D68-DEEA-4686-810F-AB32923F855E" )]
     public partial class GroupFinder : RockBlockCustomSettings
     {
         private static class AttributeKey
@@ -1722,7 +1723,7 @@ namespace RockWeb.Blocks.Groups
                         DateAdded = DateTime.MinValue,
                         Schedule = g.Schedule,
                         MemberCount = qryMembers.Count(),
-                        AverageAge = Math.Round( qryMembers.Select( m => m.Person.BirthDate ).ToList().Select( a => Person.GetAge( a ) ).Average() ?? 0.0D ),
+                        AverageAge = Math.Round( qryMembers.Select( m => new { m.Person.BirthDate, m.Person.DeceasedDate } ).ToList().Select( a => Person.GetAge( a.BirthDate, a.DeceasedDate ) ).Average() ?? 0.0D ),
                         Campus = g.Campus != null ? g.Campus.Name : string.Empty,
                         Distance = distances.Where( d => d.Key == g.Id )
                             .Select( d => d.Value ).FirstOrDefault()

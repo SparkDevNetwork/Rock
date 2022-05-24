@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace Rock.Bus.Transport
         Order = 0,
         Key = AttributeKey.Password )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "64437280-5BB3-4274-B39F-EE31782438DE")]
     public class RabbitMq : TransportComponent
     {
         #region Attribute Keys

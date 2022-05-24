@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-import Alert from "../Elements/alert.vue";
+import Alert from "./alert";
 import { defineComponent, PropType, ref, watch } from "vue";
-import { RockDateTime } from "../Util/rockDateTime";
-import { FormError } from "../Util/form";
+import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+import { FormError } from "@Obsidian/Utility/form";
 import { computed } from "vue";
 
 export default defineComponent({

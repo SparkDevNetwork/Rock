@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Badge.Component
 
     [GroupTypeField( "Group Type", "The type of group to use.", true )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd" )]
+    [Rock.SystemGuid.EntityTypeGuid( "CD6477C8-F567-4313-980E-CC63D46EAE84")]
     public class GeofencedByGroup : BadgeComponent
     {
         /// <summary>

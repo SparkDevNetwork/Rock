@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -57,6 +57,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Description = "If enabled, the Connection Request Detail page defined by the Connection Type will be used to view the request(if it's not empty/unset). Otherwise the Connection Request Detail page configured on this block will be used.",
         DefaultBooleanValue = true,
         Order = 2 )]
+    [Rock.SystemGuid.BlockTypeGuid( "39C53B93-C75A-45DE-B9E7-DFA4EE6B7027" )]
     public partial class ConnectionRequests : Rock.Web.UI.PersonBlock
     {
         #region Attribute Keys

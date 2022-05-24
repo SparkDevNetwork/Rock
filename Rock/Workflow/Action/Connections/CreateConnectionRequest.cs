@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", false, "", "", 6, null,
         new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "F95C376A-714E-41FE-B27A-683F9E9078ED")]
     public class CreateConnectionRequest : ActionComponent
     {
         /// <summary>

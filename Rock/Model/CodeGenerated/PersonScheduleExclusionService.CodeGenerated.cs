@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new PersonScheduleExclusionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 EndDate = model.EndDate,
                 GroupId = model.GroupId,
                 ParentPersonScheduleExclusionId = model.ParentPersonScheduleExclusionId,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Activate Activity" )]
 
     [WorkflowActivityType( "Activity", "The activity type to activate", true, "", "", 0 )]
+    [Rock.SystemGuid.EntityTypeGuid( "38907A90-1634-4A93-8017-619326A4A582")]
     public class ActivateActivity : ActionComponent
     {
         /// <summary>

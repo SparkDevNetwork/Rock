@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -131,6 +131,7 @@ namespace RockWeb.Blocks.Finance
     #endregion Advanced options
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "F1ADF375-7442-4B30-BAC3-C387EA9B6C18" )]
     public partial class ScheduledTransactionEditV2 : RockBlock
     {
         #region constants
@@ -310,6 +311,10 @@ mission. We are so grateful for your commitment.</p>
 
         public static class PageParameterKey
         {
+            [RockObsolete( "1.13.1" )]
+            [Obsolete( "Pass the GUID instead using the key ScheduledTransactionGuid." )]
+            public const string ScheduledTransactionId = "ScheduledTransactionId";
+
             public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
         }
 
@@ -328,7 +333,7 @@ mission. We are so grateful for your commitment.</p>
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            hfScheduledTransactionGuid.Value = this.PageParameter( PageParameterKey.ScheduledTransactionGuid );
+            hfScheduledTransactionGuid.Value = GetScheduledTransactionGuidFromUrl()?.ToString();
 
             var scheduledTransaction = this.GetFinancialScheduledTransaction( new RockContext() );
 
@@ -413,6 +418,32 @@ mission. We are so grateful for your commitment.</p>
         }
 
         #region methods
+
+        /// <summary>
+        /// Gets the scheduled transaction Guid based on what is specified in the URL
+        /// </summary>
+        /// <param name="refresh">if set to <c>true</c> [refresh].</param>
+        /// <returns></returns>
+        private Guid? GetScheduledTransactionGuidFromUrl()
+        {
+            var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+
+#pragma warning disable CS0618
+            var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
+#pragma warning restore CS0618
+
+            if ( financialScheduledTransactionGuid.HasValue )
+            {
+                return financialScheduledTransactionGuid.Value;
+            }
+
+            if ( financialScheduledTransactionId.HasValue )
+            {
+                return new FinancialScheduledTransactionService( new RockContext() ).GetGuid( financialScheduledTransactionId.Value );
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Gets the financial scheduled transaction.

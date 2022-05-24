@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new BenevolenceWorkflowBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 BenevolenceTypeId = model.BenevolenceTypeId,
                 QualifierValue = model.QualifierValue,
                 TriggerType = ( int ) model.TriggerType,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -145,6 +145,7 @@ namespace RockWeb.Blocks.Cms
 
     [ContextAware]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.HTML_CONTENT )]
     public partial class HtmlContentDetail : RockBlockCustomSettings, ISecondaryBlock
     {
 

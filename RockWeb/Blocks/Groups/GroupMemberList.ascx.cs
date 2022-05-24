@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -32,7 +31,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -53,6 +51,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 7, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
     [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 8, SHOW_DATE_ADDED_KEY )]
     [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 9 )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_LIST )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         private const string SHOW_FIRST_LAST_ATTENDANCE_KEY = "ShowAttendance";
@@ -310,8 +309,10 @@ namespace RockWeb.Blocks.Groups
         private bool _isExporting = false;
         private bool _showAttendance = false;
         private bool _hasGroupRequirements = false;
+        private bool _allowGroupScheduling = false;
         private HashSet<int> _groupMemberIdsThatLackGroupRequirements = new HashSet<int>();
         private List<int> _groupMemberIdsWithWarnings = new List<int>();
+        private List<int> _groupMemberIdsPersonInMultipleRoles = new List<int>();
         private bool _showDateAdded = false;
         private bool _showNoteColumn = false;
 
@@ -460,6 +461,17 @@ namespace RockWeb.Blocks.Groups
                     else if ( _groupMemberIdsWithWarnings.Contains( groupMember.Id ) )
                     {
                         sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-warning'></i>" );
+                    }
+                }
+
+                if ( _allowGroupScheduling )
+                {
+                    if ( _groupMemberIdsPersonInMultipleRoles.Contains( groupMember.Id ) )
+                    {
+                        sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title=" +
+                            "'This person has multiple roles in this group. This is an unsupported configuration for groups with Group Scheduling enabled. The system does not support scheduling the same person with different roles.'>" +
+                            "<i class='fa fa-exclamation-circle text-warning'></i>" +
+                            "</span>" );
                     }
                 }
 
@@ -1439,11 +1451,20 @@ namespace RockWeb.Blocks.Groups
             _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
             _hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
+            _allowGroupScheduling = _group.GroupType.IsSchedulingEnabled;
 
-            // If there are group requirements that that member doesn't meet, show an icon in the grid
+            // If there are group requirements that a member doesn't meet, show an icon in the grid
             var groupService = new GroupService( rockContext );
             _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( groupService.GroupMembersNotMeetingRequirements( _group, false, true ).Select( a => a.Key.Id ).ToList().Distinct() );
             _groupMemberIdsWithWarnings = groupService.GroupMemberIdsWithRequirementWarnings( _group );
+
+            // Get a collection of group member Ids that are in the group more than once (because they have multiple roles in the group) if this group allows scheduling.
+            if ( _allowGroupScheduling )
+            {
+                _groupMemberIdsPersonInMultipleRoles = _group.Members
+                    .Where( gm => _group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).GroupBy( m => m.PersonId ).Where( g => g.Count() > 1 ).Select( g => g.Key ).Contains( gm.PersonId ) )
+                    .Select( m => m.Id ).ToList();
+            }
 
             gGroupMembers.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 

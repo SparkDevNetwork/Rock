@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes locations (from groups) if the location has no schedule.  If location contains schedules, but they are all excluded by filter, will also mark the location as excluded by filter." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Locations" )]
+    [Rock.SystemGuid.EntityTypeGuid( "51AE2690-ED00-423D-86AD-6E97054F04A9")]
     public class RemoveEmptyLocations : CheckInActionComponent
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "1FD31CDC-E5E2-431B-8D53-72FC0430044D")]
     public class DocumentTypeFieldType : FieldType
     {
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new CampusTopicBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CampusId = model.CampusId,
                 Email = model.Email,
                 IsPublic = model.IsPublic,

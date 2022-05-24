@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Show the group(s) of a specific group type where one or more of the person's family's map locations are withing the group's geofence." )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Geofencing group of specific group type" )]
+    [Rock.SystemGuid.EntityTypeGuid( "26571938-D421-4BAA-8150-84A31FE5D2FF")]
     public class InGroupGeofenceGroupTypeSelect : DataSelectComponent
     {
         #region Properties

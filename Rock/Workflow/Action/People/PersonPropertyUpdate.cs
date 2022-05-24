@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
     [CustomDropdownListField("Property", "The property to update.", "Title^Title (Defined Value),FirstName^First Name (Text),NickName^Nick Name (Text),MiddleName^Middle Name (Text),LastName^Last Name (Text),Suffix^Suffix (Defined Value),Birthdate^Birthdate (Date/Text),Photo^Photo (Binary File/Integer of Binary File),Gender^Gender (Text or Integer [1=Male 2=Female 0=Unknown]),MaritalStatus^Marital Status (Defined Value),AnniversaryDate^Anniversary Date (Date),CommunicationPreference^Communication Preference (Text or Integer [1=Email 2=SMS 3=PushNotification]),Email^Email (Text),EmailPreference^Email Preference (Text or Integer [0=EmailAllowed 1=NoMassEmails 2=DoNotEmail]),IsEmailActive^Is Email Active (Boolean),EmailNote^Email Note (Text),GraduationYear^Graduation Year (Integer),RecordStatus^Record Status (Defined Value),RecordStatusReason^Inactive Record Status Reason (Defined Value),InactiveReasonNote^Inactive Reason Note (Text),ConnectionStatus^Connection Status (Defined Value),IsDeceased^IsDeceased (Boolean),SystemNote^System Note (Text),", true, order: 1 )]
     [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the person property to. <span class='tip tip-lava'></span>", false, "", "", 2, "Value" )]
     [BooleanField("Ignore Blank Values", "If a value is blank should it be ignored, or should it be used to wipe out the current value. This is helpful with working with defined values that can not be found.", true, order: 3)]
+    [Rock.SystemGuid.EntityTypeGuid( "65FF3BCF-0F78-46FF-A291-180D0236DD8E")]
     public class PersonPropertyUpdate : ActionComponent
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Crm
         DefaultIntegerValue = 5,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D6224911-2590-427F-9DCE-6D14E79806BA" )]
     public partial class PersonalDeviceInteractions : RockBlock
     {
         #region Attribute Keys

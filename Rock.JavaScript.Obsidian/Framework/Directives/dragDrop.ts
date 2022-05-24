@@ -16,7 +16,7 @@
 //
 
 import { Directive } from "vue";
-import { loadJavaScriptAsync } from "../Util/page";
+import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
 
 const dragulaScriptPromise = loadJavaScriptAsync("/Scripts/dragula.min.js", () => window.dragula !== undefined);
 
@@ -366,8 +366,11 @@ class DragDropService {
 
         // No canStartDrag defined. Use default behavior. Check if they defined
         // a handleSelector value and use that to see if the handle is valid.
+        // If the handle selector matches the handle exactly or the handle
+        // is a descendant of any element matching handle selector, then drag.
         if (elementOptions.options.handleSelector) {
-            return Array.from(container.querySelectorAll(elementOptions.options.handleSelector)).includes(handle);
+            return Array.from(container.querySelectorAll(elementOptions.options.handleSelector))
+                .some(n => n.contains(handle));
         }
 
         // Default is to always allow drag.

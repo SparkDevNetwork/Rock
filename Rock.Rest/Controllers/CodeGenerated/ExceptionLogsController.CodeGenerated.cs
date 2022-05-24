@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ExceptionLogs REST API
     /// </summary>
+    [RestControllerGuid( "224D50D0-BB26-4512-BCF4-04407A9D84ED" )]
     public partial class ExceptionLogsController : Rock.Rest.ApiController<Rock.Model.ExceptionLog>
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// The selected value is stored as a Guid.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_ACTIVITY_TYPE )]
     public class ConnectionActivityTypeFieldType : FieldType, IEntityFieldType
     {
         #region Configuration

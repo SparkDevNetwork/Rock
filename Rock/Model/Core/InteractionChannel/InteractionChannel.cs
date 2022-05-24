@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionChannel" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "08606092-5FF5-4A34-A7A6-3DEE43F2843A")]
     public partial class InteractionChannel : Model<InteractionChannel>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties

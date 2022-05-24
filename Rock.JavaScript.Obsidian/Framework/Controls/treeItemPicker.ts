@@ -16,12 +16,13 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import RockButton from "../Elements/rockButton";
-import RockFormField from "../Elements/rockFormField";
+import RockButton from "./rockButton";
+import RockFormField from "./rockFormField";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ITreeItemProvider } from "../Util/treeItemProviders";
+import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
-import TreeList from "../Elements/treeList";
+import TreeList from "./treeList";
+import { updateRefValue } from "@Obsidian/Utility/component";
 
 /**
  * Helper function to flatten an array of items that contains child items
@@ -47,6 +48,31 @@ function flatten<T>(source: T[], childrenSource: (value: T) => T[]): T[] {
     return flatArray;
 }
 
+/**
+ * Convert a single item to an array of one item. If the value is already an
+ * array then it is just returned as is.
+ * 
+ * @param value The value from the parent component.
+ *
+ * @returns The value trimmed down to just the actual selection value.
+ */
+function forceToArray(value: ListItemBag | ListItemBag[] | undefined | null, multiple: boolean): ListItemBag[] {
+    if (value === undefined || value === null) {
+        return [];
+    }
+    else if (Array.isArray(value)) {
+        if (!multiple && value.length > 1) {
+            return [value[0]];
+        }
+        else {
+            return value;
+        }
+    }
+    else {
+        return [value];
+    }
+}
+
 export default defineComponent({
     name: "TreeItemPicker",
 
@@ -58,11 +84,11 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Array as PropType<ListItemBag[]>,
-            default: []
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            required: false
         },
 
-        allowMultiple: {
+        multiple: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -81,13 +107,17 @@ export default defineComponent({
         }
     },
 
+    emits: {
+        "update:modelValue": (_value: ListItemBag | ListItemBag[] | null) => true
+    },
+
     setup(props, { emit }) {
         /**
          * Our internal list of selected values. This must be kept seperate
          * because we don't actually emit the new values until the user clicks
          * the select button.
          */
-        const internalValues = ref<string[]>(props.modelValue.map(v => v.value ?? ""));
+        const internalValues = ref(forceToArray(props.modelValue, props.multiple).map(v => v.value ?? ""));
 
         /**
          * A flat array of items from the tree. This is used to quickly filter
@@ -99,7 +129,11 @@ export default defineComponent({
         const showPopup = ref(false);
 
         /** Determines if the clear button should be shown. */
-        const showClear = computed(() => props.modelValue.length > 0);
+        const showClear = computed((): boolean => {
+            // Use modelValue since internalValues is used for the in-process
+            // popup, not the actual stored value.
+            return forceToArray(props.modelValue, props.multiple).length > 0;
+        });
 
         /**
          * Determines the names of the currently selected items. This shows the
@@ -108,53 +142,16 @@ export default defineComponent({
          * selecting items.
          */
         const selectedNames = computed((): string => {
-            return props.modelValue.map(v => v.text).join(", ");
+            return forceToArray(props.modelValue, true).map(v => v.text).join(", ");
         });
 
         /** The CSS class to use for the picker icon. */
         const pickerIconClass = computed((): string => `${props.iconCssClass} fa-fw`);
 
-        /**
-         * Event handler for when the list of items in the tree list has been
-         * updated.
-         * 
-         * @param newItems The new root items being used by the tree list.
-         */
-        const onUpdateItems = (newItems: TreeItemBag[]): void => {
-            // Update our flatItems array with the list of new items.
-            flatItems.value = flatten(newItems ?? [], i => i.children ?? []);
-        };
-
-        /**
-         * Event handler for when the clear button is clicked by the user.
-         */
-        const onClear = (): void => {
-            emit("update:modelValue", []);
-        };
-
-        /**
-         * Event handler for when the user clicks on the picker. Show/hide the
-         * popup.
-         */
-        const onPickerClick = (): void => {
-            showPopup.value = !showPopup.value;
-        };
-
-        /**
-         * Event handler for when the user clicks the cancel button. Hide the
-         * popup.
-         */
-        const onCancel = (): void => {
-            showPopup.value = false;
-        };
-
-        /**
-         * Event handler for when the user clicks the select button. Save the
-         * current selection and close the popup.
-         */
-        const onSelect = (): void => {
+        /** Updates the model value from our internal value. */
+        const updateModelValue = (): void => {
             // Create a new set of selected items to emit.
-            const newModelValue = props.modelValue
+            const newModelValue = forceToArray(props.modelValue, true)
                 .filter(v => internalValues.value.includes(v.value ?? ""));
 
             // Helpful list of the values already in the new model value.
@@ -178,13 +175,67 @@ export default defineComponent({
             }
 
             // Emit the new value and close the popup.
-            emit("update:modelValue", newModelValue);
+            if (props.multiple) {
+                emit("update:modelValue", newModelValue);
+            }
+            else {
+                emit("update:modelValue", newModelValue.length > 0 ? newModelValue[0] : null);
+            }
+        };
+
+        /**
+         * Event handler for when the list of items in the tree list has been
+         * updated.
+         * 
+         * @param newItems The new root items being used by the tree list.
+         */
+        const onUpdateItems = (newItems: TreeItemBag[]): void => {
+            // Update our flatItems array with the list of new items.
+            flatItems.value = flatten(newItems ?? [], i => i.children ?? []);
+        };
+
+        /**
+         * Event handler for when the clear button is clicked by the user.
+         */
+        const onClear = (): void => {
+            emit("update:modelValue", props.multiple ? [] : null);
+        };
+
+        /**
+         * Event handler for when the user clicks on the picker. Show/hide the
+         * popup.
+         */
+        const onPickerClick = (): void => {
+            showPopup.value = !showPopup.value;
+        };
+
+        /**
+         * Event handler for when the user clicks the cancel button. Hide the
+         * popup.
+         */
+        const onCancel = (): void => {
+            showPopup.value = false;
+        };
+
+        /**
+         * Event handler for when the user clicks the select button. Save the
+         * current selection and close the popup.
+         */
+        const onSelect = (): void => {
+            updateModelValue();
             showPopup.value = false;
         };
 
         // Watch for changes to the selected values from the parent control and
         // update our internal values to match.
-        watch(() => props.modelValue, () => internalValues.value = props.modelValue.map(v => v.value ?? ""));
+        watch([() => props.modelValue, () => props.multiple], (oldValues, newValues) => {
+            updateRefValue(internalValues, forceToArray(props.modelValue, props.multiple).map(v => v.value ?? ""));
+
+            // If the "multiple" property changed, force update the model value.
+            if (newValues[1] !== oldValues[1]) {
+                updateModelValue();
+            }
+        });
 
         return {
             internalValues,
@@ -221,7 +272,7 @@ export default defineComponent({
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i :class="pickerIconClass"></i>
                     <span class="selected-names" v-text="selectedNames"></span>
-                    <i class="fa fa-caret-down pull-right"></i>
+                    <b class="fa fa-caret-down pull-right"></b>
                 </a>
     
                 <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
@@ -230,7 +281,7 @@ export default defineComponent({
     
                 <div v-show="showPopup" class="picker-menu dropdown-menu" style="display: block;">
                     <div class="scrollbar-thin" style="height: 200px; overflow-y: scroll; overflow-x: hidden;">
-                        <TreeList v-model="internalValues" :allowMultiple="allowMultiple" :items="items" :provider="provider" @update:items="onUpdateItems" />
+                        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" />
                     </div>
     
                     <div class="picker-actions">

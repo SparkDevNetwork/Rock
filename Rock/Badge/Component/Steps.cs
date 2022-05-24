@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace Rock.Badge.Component
         order: 2,
         key: AttributeKey.IsCondensed )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "3246EFE4-76E4-44C9-9DF0-1A7C3EAD4597")]
     public class Steps : BadgeComponent
     {
         #region Keys

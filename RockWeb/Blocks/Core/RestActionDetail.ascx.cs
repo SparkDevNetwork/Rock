@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "REST Action Detail" )]
     [Category( "Core" )]
     [Description( "Detail block for a REST Action that can be used to test the REST action." )]
+    [Rock.SystemGuid.BlockTypeGuid( "5BB83A28-CED2-4B40-9FDA-9C3D21FD6A83" )]
     public partial class RestActionDetail : RockBlock
     {
         #region Base Control Methods

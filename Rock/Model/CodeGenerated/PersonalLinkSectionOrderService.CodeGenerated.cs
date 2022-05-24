@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PersonalLinkSectionOrderBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Order = model.Order,
                 PersonAliasId = model.PersonAliasId,
                 SectionId = model.SectionId,

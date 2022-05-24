@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Finance
         DefaultBooleanValue = false,
         Order = 6,
         Key = AttributeKey.EnableForeignCurrency )]
+    [Rock.SystemGuid.BlockTypeGuid( "1DE16F87-4A49-4A3C-A03E-B8488ECBEEBE" )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock
     {
         #region Keys

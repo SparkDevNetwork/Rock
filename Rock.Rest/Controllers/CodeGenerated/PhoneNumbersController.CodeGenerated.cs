@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PhoneNumbers REST API
     /// </summary>
+    [RestControllerGuid( "F1F39D29-4905-44BB-9FB8-552FD122F560" )]
     public partial class PhoneNumbersController : Rock.Rest.ApiController<Rock.Model.PhoneNumber>
     {
         /// <summary>

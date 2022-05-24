@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Storage.Provider
     [Description( "File System-driven file storage" )]
     [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "FileSystem" )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_FILESYSTEM )]
     public class FileSystem : ProviderComponent
     {
         /// <summary>

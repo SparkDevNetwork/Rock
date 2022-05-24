@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new GroupMemberAssignmentBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ConfirmationSentDateTime = model.ConfirmationSentDateTime,
                 GroupMemberId = model.GroupMemberId,
                 LastRSVPReminderSentDateTime = model.LastRSVPReminderSentDateTime,

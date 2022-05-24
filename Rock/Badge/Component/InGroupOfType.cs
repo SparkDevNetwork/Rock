@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Badge.Component
 
     [GroupTypeField( "Group Type", "The type of group to use.", true )]
     [ColorField( "Badge Color", "The color of the badge (#ffffff).", true, defaultValue: "#0ab4dd" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E7CE9210-FE85-4772-9225-E6C721B816BD")]
     public class InGroupOfType : BadgeComponent
     {
         /// <summary>

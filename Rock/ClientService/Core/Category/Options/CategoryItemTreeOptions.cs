@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Security;
+
 namespace Rock.ClientService.Core.Category.Options
 {
     /// <summary>
@@ -141,5 +143,12 @@ namespace Rock.ClientService.Core.Category.Options
         /// </summary>
         /// <value><c>true</c> if child items should not be loaded eagerly; otherwise, <c>false</c>.</value>
         public bool LazyLoad { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant which provides additional authorization
+        /// checks when not null.
+        /// </summary>
+        /// <value>The security grant to use for additional authorization.</value>
+        internal SecurityGrant SecurityGrant { get; set; }
     }
 }

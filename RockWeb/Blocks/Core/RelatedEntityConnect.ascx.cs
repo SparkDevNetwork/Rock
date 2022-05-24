@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -117,6 +117,7 @@ namespace RockWeb.Blocks.Core
         Order = 11,
         Key = AttributeKey.AttributeColumns )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "5F40F4FD-338A-4711-87F7-980ED1FAE615" )]
     public partial class RelatedEntityConnect : RockBlock
     {
         public static class AttributeKey
@@ -354,7 +355,7 @@ namespace RockWeb.Blocks.Core
                 relatedEntity = GetExistingRelationship( rockContext, relatedEntityService );
             }
 
-            if ( relatedEntity.IsNull() )
+            if ( relatedEntity == null )
             {
                 relatedEntity = new RelatedEntity();
                 relatedEntity.SourceEntityTypeId = sourceEntityTypeId;
@@ -490,7 +491,7 @@ namespace RockWeb.Blocks.Core
                 // Check for existing values, if there are multiple we'll assume the first item
                 relatedEntity = GetExistingRelationship();
 
-                if ( relatedEntity.IsNotNull() )
+                if ( relatedEntity != null )
                 {
                     if ( relatedEntity.Quantity.HasValue )
                     {
@@ -505,7 +506,7 @@ namespace RockWeb.Blocks.Core
             // We need to configure the attribute value container
             if ( EnableAttributeEditing )
             {
-                if ( relatedEntity.IsNull() )
+                if ( relatedEntity == null )
                 {
                     // Create a stub of a relationship object so that the attribute editor knows what attributes to show
                     relatedEntity = new RelatedEntity();
@@ -529,12 +530,12 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private RelatedEntity GetExistingRelationship( RockContext rockContext = null, RelatedEntityService relatedEntityService = null )
         {
-            if ( rockContext.IsNull() )
+            if ( rockContext == null )
             {
                 rockContext = new RockContext();
             }
 
-            if ( relatedEntityService.IsNull() )
+            if ( relatedEntityService == null )
             {
                 relatedEntityService = new RelatedEntityService( rockContext );
             }

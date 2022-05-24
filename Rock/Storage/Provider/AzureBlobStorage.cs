@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,6 +59,7 @@ namespace Rock.Storage.Provider
 
     #endregion Storage Provider Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( "9925A20A-7262-4FC7-B86E-856F6D98BE17")]
     public class AzureBlobStorage : ProviderComponent
     {
         #region Attribute Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,7 @@ namespace Rock.Workflow.Action
         IsRequired = false,
         Order = 3,
         Key = AttributeKeys.AttributeValue )]
+    [Rock.SystemGuid.EntityTypeGuid( "961B28A7-EAFE-4019-A305-37C62414AC05")]
     public class SetEntityAttribute : ActionComponent
     {
         #region Attribute Keys

@@ -955,12 +955,69 @@ namespace Rock.Migrations.Migrations {
         ///	&lt;/summary&gt;
         ///	
         ///	&lt;remarks&gt;	
-        ///		For eRA we only consider adults for the criteria.
-        ///	&lt;/r [rest of string was truncated]&quot;;.
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset {
             get {
                 return ResourceManager.GetString("_202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the people that attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* Id 
+        ///		* NickName
+        ///		* LastName
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this are will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos;datetime&apos;&gt;Ending date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;GroupIds&apos; datatype=&apos;varc [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_Attendees {
+            get {
+                return ResourceManager.GetString("_202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQu" +
+                        "ery_Attendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///         This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * PersonId 
+        ///        * SundayDate - Last time attended
+        ///    &lt;/returns&gt;
+        ///    &lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///    &lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///    &lt;p [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQu" +
+                        "ery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @LaunchWorkflowConditionId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = &apos;E5EFC23D-E030-496C-A9A4-D2BF4181CB49&apos; )
+        ///DECLARE @LaunchWorkflowOnlyIfIndividualLoggedInId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = &apos;EB298724-07D5-42AF-B4BF-82420AF6A657&apos; )
+        ///DECLARE @WriteInteractionOnlyIfIndividualLoggedInId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = &apos;63B254F7-E19C-48FD-A93F-AFEE19C1ED21&apos; )
+        ///DECLARE @LogInteractionsId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [G [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202205091654423_RemoveContentChannelViewDetail_Script {
+            get {
+                return ResourceManager.GetString("_202205091654423_RemoveContentChannelViewDetail_Script", resourceCulture);
             }
         }
     }

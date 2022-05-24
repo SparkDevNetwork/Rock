@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new FollowingBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 EntityId = model.EntityId,
                 EntityTypeId = model.EntityTypeId,
                 PersonAliasId = model.PersonAliasId,

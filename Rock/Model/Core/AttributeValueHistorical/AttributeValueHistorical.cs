@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeValueHistorical" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "D940AA57-D977-4B75-B4BE-7C2EB40B26A4")]
     public partial class AttributeValueHistorical : Model<AttributeValueHistorical>, IHistoricalTracking
     {
         #region Entity Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,7 @@ namespace Rock.Financial
         Key = AttributeKey.GenerateFakeGetPayments,
         DefaultBooleanValue = false,
         Order = 3 )]
+    [Rock.SystemGuid.EntityTypeGuid( "AB3C5BF6-4D99-4289-84AF-3EF798849705")]
     public class TestRedirectionGateway : GatewayComponent, IAutomatedGatewayComponent, IRedirectionGatewayComponent
     {
         #region Attribute Keys

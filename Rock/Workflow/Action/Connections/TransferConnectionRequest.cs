@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Connection Opportunity Attribute", "The attribute that contains the type of the new connection opportunity.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.ConnectionOpportunityFieldType" } )]
     [WorkflowTextOrAttribute("Transfer Note", "Transfer Note Attribute", "The note to include with the transfer activity.", false, "", "", 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "308B46FD-6D87-471B-AA98-AAE1894B0D49")]
     public class TransferConnectionRequest : ActionComponent
     {
         /// <summary>

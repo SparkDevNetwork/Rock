@@ -22,7 +22,7 @@ namespace BlockGenerator.Pages
         {
             InitializeComponent();
 
-            RockEnumsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( Path.Combine( "Rock.Enums", "bin", "Debug", "Rock.Enums.dll" ), "Rock.Enums" )
+            RockEnumsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Rock.Model.Gender ).Assembly.Location, "Rock.Enums" )
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 

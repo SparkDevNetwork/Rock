@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new DataViewFilterBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 DataViewId = model.DataViewId,
                 EntityTypeId = model.EntityTypeId,
                 ExpressionType = ( int ) model.ExpressionType,

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new BlockTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Category = model.Category,
                 Description = model.Description,
                 EntityTypeId = model.EntityTypeId,

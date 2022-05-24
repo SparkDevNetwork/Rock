@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.GroupMembers
     [Description( "Retrieve the group memberships involving a set of people in a Data View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Contains People" )]
+    [Rock.SystemGuid.EntityTypeGuid( "7C59C380-A99B-4D6F-9BBE-5C2A6CC37593")]
     public class ContainsPeopleFilter : RelatedDataViewFilterBase<Rock.Model.GroupMember, Rock.Model.Person>
     {
         #region Overrides

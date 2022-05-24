@@ -106,7 +106,7 @@
                     <StackPanel>
                         <controls:Alert x:Name="RockViewModelsOutOfDateAlert"
                                         Margin="0, 8, 0, 0"
-                                        Text="The Rock.ViewModels.dll is older than the source code files, you might need to recompile." />
+                                        Text="The Rock.ViewModels.dll is older than the source code files, you might need to recompile it and the code generation tool." />
                     </StackPanel>
                 </Border>
             </Grid>

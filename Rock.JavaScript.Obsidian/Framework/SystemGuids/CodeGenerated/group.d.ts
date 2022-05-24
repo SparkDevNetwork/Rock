@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Groups */
 export const enum Group {
     /** RSR - Rock Administration */
     GroupAdministrators = "628C51A8-4613-43ED-A18D-4A6FB999273E",
@@ -57,4 +58,3 @@ export const enum Group {
     /** RSR - Prayer Access */
     GroupRsrPrayerAccess = "9E17621E-F559-44E9-8C40-E8CF44CF8FCF",
 }
-

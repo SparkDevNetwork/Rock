@@ -41,7 +41,7 @@ namespace Rock
         public static bool IsNotNull<T>( T value )
             where T : class
         {
-            return !value.IsNull();
+            return value != null;
         }
 
         /// <summary>

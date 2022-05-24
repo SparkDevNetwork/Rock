@@ -23,32 +23,32 @@ namespace Rock.ViewModels.Blocks.Core.CampusDetail
 {
     public class CampusBag : EntityBagBase
     {
-        public string Name { get; set; }
+        public List<CampusScheduleBag> CampusSchedules { get; set; }
+
+        public ListItemBag CampusStatusValue { get; set; }
+
+        public ListItemBag CampusTypeValue { get; set; }
 
         public string Description { get; set; }
 
-        public bool IsSystem { get; set; }
-
         public bool? IsActive { get; set; }
 
-        public string ShortCode { get; set; }
+        public bool IsSystem { get; set; }
 
-        public string Url { get; set; }
+        public ListItemBag LeaderPersonAlias { get; set; }
+
+        public ListItemBag Location { get; set; }
+
+        public string Name { get; set; }
 
         public string PhoneNumber { get; set; }
 
         public List<ListItemBag> ServiceTimes { get; set; }
 
+        public string ShortCode { get; set; }
+
         public string TimeZoneId { get; set; }
 
-        public List<CampusScheduleBag> CampusSchedules { get; set; }
-
-        public ListItemBag Location { get; set; }
-
-        public ListItemBag LeaderPersonAlias { get; set; }
-
-        public ListItemBag CampusStatusValue { get; set; }
-
-        public ListItemBag CampusTypeValue { get; set; }
+        public string Url { get; set; }
     }
 }

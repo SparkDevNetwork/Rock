@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,6 +64,7 @@ namespace Rock.Communication.Transport
         DefaultIntegerValue = 10,
         Order = 4,
         Key = TwilioAttributeKey.MaxParallelization )]
+    [Rock.SystemGuid.EntityTypeGuid( "CF9FD146-8623-4D9A-98E6-4BD710F071A4")]
     public class Twilio : TransportComponent, IAsyncTransport, ISmsPipelineWebhook
     {
         /// <summary>

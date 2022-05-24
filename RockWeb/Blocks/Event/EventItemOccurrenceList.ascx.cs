@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Registration Instance Page", "The page to view registration details", true, "", "", 1 )]
     [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
     [LinkedPage( "Content Item Detail Page", "The page for viewing details about a content item", true, "", "", 3 )]
+    [Rock.SystemGuid.BlockTypeGuid( "94230E7A-8EB7-4407-9B8E-888B54C71E39" )]
     public partial class EventItemOccurrenceList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Properties

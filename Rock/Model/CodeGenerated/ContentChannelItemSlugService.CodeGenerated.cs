@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ContentChannelItemSlugBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ContentChannelItemId = model.ContentChannelItemId,
                 IsPrimary = model.IsPrimary,
                 Slug = model.Slug,

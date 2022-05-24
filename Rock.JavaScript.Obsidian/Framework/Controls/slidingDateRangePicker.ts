@@ -15,13 +15,13 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import RockFormField from "../Elements/rockFormField";
-import DropDownList from "../Elements/dropDownList";
-import DatePickerBase from "../Elements/datePicker";
+import RockFormField from "./rockFormField";
+import DropDownList from "./dropDownList";
+import DatePickerBase from "./datePicker";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { toNumber, toNumberOrNull } from "../Services/number";
-import { get } from "../Util/http";
-import { SlidingDateRange, rangeTypeOptions, timeUnitOptions } from "../Services/slidingDateRange";
+import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { get } from "@Obsidian/Utility/http";
+import { SlidingDateRange, rangeTypeOptions, timeUnitOptions } from "@Obsidian/Utility/slidingDateRange";
 
 export default defineComponent({
     name: "SlidingDateRangePicker",
@@ -185,12 +185,12 @@ export default defineComponent({
     name="slidingdaterange">
     <template #default="{uniqueId}">
         <div :id="uniqueId" class="form-control-group">
-            <DropDownList v-model="rangeType" :options="rangeTypeOptions" showBlankItem class="input-width-md slidingdaterange-select" />
+            <DropDownList v-model="rangeType" :items="rangeTypeOptions" showBlankItem class="input-width-md slidingdaterange-select" />
 
             <input v-if="isNumberVisible" v-model="timeValue" class="form-control input-width-sm slidingdaterange-number" type="number" pattern="[0-9]*]" />
 
             <template v-if="isTimeUnit">
-                <DropDownList v-model="timeUnit" :options="timeUnitOptions" class="form-control input-width-md slidingdaterange-timeunits-plural" :showBlankItem="false" />
+                <DropDownList v-model="timeUnit" :items="timeUnitOptions" class="form-control input-width-md slidingdaterange-timeunits-plural" :showBlankItem="false" />
 
                 <div class="label label-info slidingdaterange-info">{{ dateRangeText }}</div>
             </template>

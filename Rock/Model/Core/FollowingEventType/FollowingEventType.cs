@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "FollowingEventType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "8A0D208B-762D-403A-A972-3A0F079866D4")]
     public partial class FollowingEventType : Model<FollowingEventType>, IOrdered, IHasActiveFlag
     {
         #region Entity Properties

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// StreakTypeExclusions REST API
     /// </summary>
+    [RestControllerGuid( "7C3F1399-0659-40D0-9727-04DD59011580" )]
     public partial class StreakTypeExclusionsController : Rock.Rest.ApiController<Rock.Model.StreakTypeExclusion>
     {
         /// <summary>

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PageContexts REST API
     /// </summary>
+    [RestControllerGuid( "D85C1FEE-8B3E-43C5-9CA0-386BDADF7B18" )]
     public partial class PageContextsController : Rock.Rest.ApiController<Rock.Model.PageContext>
     {
         /// <summary>

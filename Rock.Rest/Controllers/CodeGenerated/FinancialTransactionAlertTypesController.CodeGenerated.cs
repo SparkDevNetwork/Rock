@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// FinancialTransactionAlertTypes REST API
     /// </summary>
+    [RestControllerGuid( "4B89FC23-2379-4416-8435-E95F13F8DDA5" )]
     public partial class FinancialTransactionAlertTypesController : Rock.Rest.ApiController<Rock.Model.FinancialTransactionAlertType>
     {
         /// <summary>

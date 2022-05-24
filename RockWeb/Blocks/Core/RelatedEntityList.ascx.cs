@@ -125,6 +125,7 @@ namespace RockWeb.Blocks.Core
         Order = 8,
         Key = AttributeKey.HeaderIconCssClass )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "28516B18-7423-4A97-9223-B97537BD0F79" )]
     public partial class RelatedEntityList : RockBlock
     {
         public static class AttributeKey
@@ -181,7 +182,7 @@ namespace RockWeb.Blocks.Core
         {
             get
             {
-                if ( _purposeKeys.IsNull() )
+                if ( _purposeKeys == null )
                 {
                     _purposeKeys = GetAttributeValue( AttributeKey.PurposeKey ).Split(',').Select( p => p.Trim() ).ToList();
                 }
@@ -395,7 +396,7 @@ namespace RockWeb.Blocks.Core
 
             if ( SourceIsCurrentPerson )
             {
-                if ( CurrentPerson.IsNull() )
+                if ( CurrentPerson == null )
                 {
                     return false;
                 }

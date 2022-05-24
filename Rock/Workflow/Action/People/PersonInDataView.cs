@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Workflow.Action
     [IntegerField( "Timeout", "Number of seconds to wait before timing out.", false, 30, order: 2 )]
     [WorkflowAttribute( "Boolean", "Workflow attribute to set True or False.", true, "", "", 3, null, new string[] { "Rock.Field.Types.BooleanFieldType" } )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "B6E3DA81-FDA9-4579-9438-93D6DCB86DAB")]
     public class PersonInDataView : ActionComponent
     {
         /// <summary>

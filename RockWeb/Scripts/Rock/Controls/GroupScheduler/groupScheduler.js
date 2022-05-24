@@ -73,11 +73,28 @@
                             var $resourceDiv = $(el);
 
                             // the occurrence of this target occurrence column
-                            // If multi-group mode this occurrence column will be a group, and resources can only be dragged into it is the the currently selected (active) group
+                            // If multi-group mode this occurrence column will be a group, and resources can only be dragged into it is the currently selected (active) group
                             // In single-group mode, this occurrence column will be a schedule/day, and any target column can be dragged into
                             var $occurrenceColumn = $(target).closest('.js-occurrence-column');
                             var isSchedulerTargetColumn = $occurrenceColumn.data("is-scheduler-target-column")
                             if (!isSchedulerTargetColumn) {
+                                return false;
+                            }
+
+                            var personId = $resourceDiv.attr('data-person-id');
+                            var $nearPeople = $(target).closest('.js-scheduler-target-container').find('.js-resource');
+                            var allowPerson = true;
+                            $.each($nearPeople, function (i)
+                            {
+                                var $nearPerson = $($nearPeople[i]);
+                                var nearPersonId = $nearPerson.attr('data-person-id');
+                                if (personId == nearPersonId)
+                                {
+                                    allowPerson = false;
+                                }
+                            });
+                            if (!allowPerson)
+                            {
                                 return false;
                             }
 
@@ -621,11 +638,15 @@
 
                 $resourceDiv.attr('data-has-requirements-conflict', schedulerResource.HasGroupRequirementsConflict);
                 var $resourceMeta = $resourceDiv.find('.js-resource-meta');
-
                 // if the person is a member of the occurrence group, we can show their role and set the groupmember-id
                 if (schedulerResource.GroupRole) {
                     var $resourceMemberRole = $resourceDiv.find('.js-resource-member-role');
                     $resourceMemberRole.append(schedulerResource.GroupRole.Name);
+                }
+
+                if (schedulerResource.GroupRoleName) {
+                    var $resourceMemberRole = $resourceDiv.find('.js-resource-member-role');
+                    $resourceMemberRole.append(schedulerResource.GroupRoleName);
                 }
 
                 if (schedulerResource.GroupMemberId) {
@@ -739,6 +760,7 @@
 
                 var resourceName = $resourceDiv.find('.js-resource-name');
                 resourceName.text(schedulerResource.PersonName);
+                resourceName.attr('data-person-id', schedulerResource.PersonId);
 
                 if (schedulerResource.ConfirmationStatus === 'declined') {
                     var resourceNameToolTipHtml = schedulerResource.DeclinedReason || 'No reason given.';

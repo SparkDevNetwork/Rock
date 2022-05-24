@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have participated in one or more Steps" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Taken Step" )]
+    [Rock.SystemGuid.EntityTypeGuid( "7B984B07-F67C-4B78-BB81-9AFDDF750382")]
     public class StepsTakenFilter : DataFilterComponent
     {
         #region Settings

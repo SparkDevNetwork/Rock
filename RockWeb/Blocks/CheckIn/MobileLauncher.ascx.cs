@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -211,6 +211,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 9 )]
 
     #endregion Block Attributes for Text options
+    [Rock.SystemGuid.BlockTypeGuid( "FA4D15E6-4C85-4247-A374-5E592E711CFD" )]
     public partial class MobileLauncher : CheckInBlock
     {
         #region Attribute Keys

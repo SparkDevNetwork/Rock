@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// DataViewFilters REST API
     /// </summary>
+    [RestControllerGuid( "D4CDCACD-B13D-47A8-9A18-85171B8BFCB3" )]
     public partial class DataViewFiltersController : Rock.Rest.ApiController<Rock.Model.DataViewFilter>
     {
         /// <summary>

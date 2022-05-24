@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups based on the number of members with status or leader criteria" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Member Count (Advanced)" )]
+    [Rock.SystemGuid.EntityTypeGuid( "9972788B-5947-4EE1-AEBD-C9D861D94F02")]
     public class MemberCountFilter : DataFilterComponent
     {
         #region Properties

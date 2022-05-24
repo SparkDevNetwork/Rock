@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
     [IntegerField( "Shard Count", "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).", true, 1 )]
+    [Rock.SystemGuid.EntityTypeGuid( "97DACCE9-F397-4E7B-9596-783A233FCFCF")]
     public class Elasticsearch : IndexComponent
     {
         /// <summary>

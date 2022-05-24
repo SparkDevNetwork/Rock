@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Workflow.Action.CheckIn
         Rock.SystemGuid.Attribute.GROUP_AGE_RANGE, order: 2 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Birthdate Range Attribute", "Select the attribute used to define the birthdate range of the group", true, false,
         Rock.SystemGuid.Attribute.GROUP_BIRTHDATE_RANGE, order: 3 )]
+    [Rock.SystemGuid.EntityTypeGuid( "23F1E3FD-48AE-451F-9911-A5C7523A74B6")]
     public class FilterGroupsByAge : CheckInActionComponent
     {
         /// <summary>

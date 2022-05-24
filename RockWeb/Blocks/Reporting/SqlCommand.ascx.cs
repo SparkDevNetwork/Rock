@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Block to execute a SQL command and display the result (if any)." )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "89EAFE90-7082-4FF2-BC87-F50BFDB53298" )]
     public partial class SqlCommand : RockBlock
     {
         #region Control Methods

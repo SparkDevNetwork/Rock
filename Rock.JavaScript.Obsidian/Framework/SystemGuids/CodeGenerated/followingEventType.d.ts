@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Following Event Type GUIDS. */
 export const enum FollowingEventType {
     /** Gets the Upcoming Birthdays GUID. */
     UpcomingBirthdays = "E1C2F8BD-E875-4C7B-91A1-EDB98AB01BDC",
@@ -39,4 +40,3 @@ export const enum FollowingEventType {
     /** Gets the Pastoral Note Added GUID. */
     PastoralNoteAdded = "E9CAED55-BFCE-4484-B5CC-23F563B84D68",
 }
-

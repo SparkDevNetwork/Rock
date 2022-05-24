@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// MediaFolders REST API
     /// </summary>
+    [RestControllerGuid( "BDD5928C-7210-4AE0-AE21-3ECCD4CBB098" )]
     public partial class MediaFoldersController : Rock.Rest.ApiController<Rock.Model.MediaFolder>
     {
         /// <summary>

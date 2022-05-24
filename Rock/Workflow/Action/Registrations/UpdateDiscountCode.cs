@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace Rock.Workflow.Action
 
     [BooleanField( "Update Past Registrations", "Should registrations that have used this discount code be retroactively updated?", order: 4 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "0BA8600C-7FB2-4E6E-B47C-37B1CE27A13E")]
     public class UpdateDiscountCode : ActionComponent
     {
         /// <summary>

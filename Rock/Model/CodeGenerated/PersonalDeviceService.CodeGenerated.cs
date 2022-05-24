@@ -93,8 +93,7 @@ namespace Rock.Model
 
             var viewModel = new PersonalDeviceBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 DeviceRegistrationId = model.DeviceRegistrationId,
                 DeviceUniqueIdentifier = model.DeviceUniqueIdentifier,
                 DeviceVersion = model.DeviceVersion,

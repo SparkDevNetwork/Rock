@@ -429,8 +429,7 @@ namespace Rock.Model
 
             var viewModel = new DefinedValueBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CategoryId = model.CategoryId,
                 DefinedTypeId = model.DefinedTypeId,
                 Description = model.Description,

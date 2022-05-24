@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationRegistrantFeeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Cost = model.Cost,
                 Option = model.Option,
                 Quantity = model.Quantity,

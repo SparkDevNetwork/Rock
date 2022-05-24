@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Communication Settings" )]
     [Category( "Communication" )]
     [Description( "Block used to set values specific to communication." )]
+    [Rock.SystemGuid.BlockTypeGuid( "ED6447A6-F7E0-4680-BFD1-B45527C17156" )]
     public partial class CommunicationSettings : RockBlock
     {
         #region Base Control Methods

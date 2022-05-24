@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select a comma-delimited list of members of the group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Member List" )]
+    [Rock.SystemGuid.EntityTypeGuid( "42D54FD1-74AA-4D47-BE84-BF92334ECD33")]
     public class MemberListSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties

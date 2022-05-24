@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMember" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.GROUP_MEMBER )]
     public partial class GroupMember : Model<GroupMember>, ICacheable
     {
         #region Entity Properties

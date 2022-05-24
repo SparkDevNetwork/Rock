@@ -247,7 +247,14 @@ namespace RockWeb
                 {
                     if ( messages.IsNullOrWhiteSpace() )
                     {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} seconds] Less files compiled successfully. ", +stopwatchCompileLess.Elapsed.TotalSeconds ) );
+                        if ( stopwatchCompileLess.Elapsed.TotalSeconds < 1 )
+                        {
+                            System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Less Files Compiled", stopwatchCompileLess.Elapsed.TotalMilliseconds ) );
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} seconds] Less Files Compiled", +stopwatchCompileLess.Elapsed.TotalSeconds ) );
+                        }
                     }
                     else
                     {
@@ -310,7 +317,7 @@ namespace RockWeb
                 // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
                 BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
 
-                Debug.WriteLine( string.Format( "[{0,5:#} seconds] All block types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
+                Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
             } );
 
             BlockTypeCompilationThread.Start();
@@ -453,6 +460,17 @@ namespace RockWeb
                                 context.Response.StatusCode = 404;
                                 return;
                             }
+
+                            // Check for client\remote host disconnection error specifically SignalR or web-socket connections
+                            // Ignore this error as it indicates the server it trying to write a response to a disconnected client.
+                            if( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
+                                httpEx.Message.Contains( "The remote host closed the connection." ) &&
+                                httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                            {
+                                context.ClearError();
+                                context.Response.StatusCode = 200;
+                                return;
+                            }
                         }
                     }
                     catch
@@ -477,7 +495,7 @@ namespace RockWeb
                             ex = newEx;
                         }
                     }
-
+                                      
                     if ( !( ex is HttpRequestValidationException ) )
                     {
                         SendNotification( ex );

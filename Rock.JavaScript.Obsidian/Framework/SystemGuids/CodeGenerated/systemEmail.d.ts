@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Email Templates */
 export const enum SystemEmail {
     /** Gets the template guid for the Attendance email */
     AttendanceNotification = "CA794BD8-25C5-46D9-B7C2-AD8190AC27E6",
@@ -63,4 +64,3 @@ export const enum SystemEmail {
     /** Gets the template guid for a Assessment Request system email */
     AssessmentRequest = "41FF4269-7B48-40CD-81D4-C11370A13DED",
 }
-

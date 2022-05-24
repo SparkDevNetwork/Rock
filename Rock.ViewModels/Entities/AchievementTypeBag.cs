@@ -98,6 +98,14 @@ namespace Rock.ViewModels.Entities
         public bool AllowOverAchievement { get; set; }
 
         /// <summary>
+        /// Gets or sets the AlternateImageBinaryFileId.
+        /// </summary>
+        /// <value>
+        /// The AlternateImageBinaryFileId.
+        /// </value>
+        public int? AlternateImageBinaryFileId { get; set; }
+
+        /// <summary>
         /// Gets or sets the BadgeLavaTemplate.
         /// </summary>
         /// <value>
@@ -144,6 +152,14 @@ namespace Rock.ViewModels.Entities
         /// The Description.
         /// </value>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HighlightColor.
+        /// </summary>
+        /// <value>
+        /// The HighlightColor.
+        /// </value>
+        public string HighlightColor { get; set; }
 
         /// <summary>
         /// Gets or sets the ImageBinaryFileId.

@@ -54,6 +54,31 @@ namespace Rock.Data
         public int Id { get; set; }
 
         /// <summary>
+        /// Gets the <see cref="Id"/> as a hashed identifier that can be used
+        /// to lookup the entity later. This hides the actual <see cref="Id"/>
+        /// number so that individuals cannot attempt to guess the next sequential
+        /// identifier numbers.
+        /// </summary>
+        /// <value>The hashed identifier key or an empty string if it could not be determined.</value>
+        [DataMember]
+        [NotMapped]
+        public string IdKey
+        {
+            get
+            {
+                try
+                {
+                    return Id != 0 ? IdHasher.Instance.GetHash( Id ) : string.Empty;
+                }
+                catch
+                {
+                    return string.Empty;
+                }
+            }
+            private set { /* Make DataContract happy. */ }
+        }
+
+        /// <summary>
         /// Gets or sets a <see cref="System.Guid"/> value that is a guaranteed unique identifier for the entity object.  This value
         /// is an alternate key for the object, and should be used when interacting with external systems and when comparing and synchronizing
         /// objects across across data stores or external /implementations of Rock
@@ -77,8 +102,6 @@ namespace Rock.Data
             set
             {
                 _guid = value;
-                // Manually setting the Guid resets this value. See also SetGuidFromAttribute.
-                GuidSetFromRockGuidAttribute = false;
             }
         }
         private Guid _guid = Guid.NewGuid();
@@ -262,18 +285,6 @@ namespace Rock.Data
                 return this.ToStringSafe();
             }
         }
-
-        /// <summary>
-        /// Gets a value indicating whether the unique identifier was set from a <seealso cref="Rock.Data.RockGuidAttribute" />.
-        /// Used with <seealso cref="SetGuidFromRockGuidAttribute(Rock.Data.RockGuidAttribute)"/>.
-        /// This value is automatically reset to false if the <seealso cref="Guid" /> is set directly.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [unique identifier set from attribute]; otherwise, <c>false</c>.</value>
-        [NotMapped]
-        [LavaHidden]
-        [HideFromReporting]
-        internal bool GuidSetFromRockGuidAttribute{ get; private set; }
 
         #endregion
 
@@ -584,21 +595,6 @@ namespace Rock.Data
 
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
-        }
-
-        /// <summary>
-        /// Sets the unique identifier from a <seealso cref="Rock.Data.RockGuidAttribute"/> value.
-        /// </summary>
-        /// <param name="rockGuid">The unique identifier.</param>
-        internal void SetGuidFromRockGuidAttribute( Rock.Data.RockGuidAttribute rockGuid )
-        {
-            if (null == rockGuid || rockGuid.Guid.IsEmpty())
-            {
-                return;
-            }
-
-            this.Guid = rockGuid.Guid;
-            this.GuidSetFromRockGuidAttribute = true;
         }
 
         #endregion

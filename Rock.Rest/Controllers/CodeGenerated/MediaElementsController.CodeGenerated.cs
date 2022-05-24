@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// MediaElements REST API
     /// </summary>
+    [RestControllerGuid( "E47F69BD-0174-43E3-A062-59F5BE1504F8" )]
     public partial class MediaElementsController : Rock.Rest.ApiController<Rock.Model.MediaElement>
     {
         /// <summary>

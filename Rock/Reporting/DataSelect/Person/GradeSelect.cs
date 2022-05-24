@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Grade of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Grade" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1BF02438-BF23-4BC3-A98A-B5D7523297B2")]
     public class GradeSelect : DataSelectComponent
     {
         #region Properties

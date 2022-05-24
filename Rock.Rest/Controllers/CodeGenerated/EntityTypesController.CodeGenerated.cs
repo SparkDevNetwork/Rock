@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// EntityTypes REST API
     /// </summary>
+    [RestControllerGuid( "E234EA27-5FBA-4B2A-A977-AFA3F335A1C1" )]
     public partial class EntityTypesController : Rock.Rest.ApiController<Rock.Model.EntityType>
     {
         /// <summary>

@@ -21,8 +21,8 @@
 // </copyright>
 //
 
+/** Static Guids used by the Rock application */
 export const enum ContentChannelType {
     /** A Content Component Content Channel Type */
     ContentComponent = "BCFE276D-96A3-46E5-BF9F-7B68CC44DA33",
 }
-

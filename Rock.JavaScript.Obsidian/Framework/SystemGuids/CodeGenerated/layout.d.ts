@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Layouts */
 export const enum Layout {
     /** Gets the Left Sidebar layout (Internal Site) */
     LeftSidebar = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D",
@@ -33,4 +34,3 @@ export const enum Layout {
     /** Gets the Left Sidebar layout (Checkin Manager Site) */
     CheckinManagerLeftSidebar = "2669A579-48A5-4160-88EA-C3A10024E1E1",
 }
-

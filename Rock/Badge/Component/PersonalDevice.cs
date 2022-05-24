@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Badge.Component
 
     [LinkedPage( "Personal Devices Detail", "Page to show the details of the personal devices added.", false, order: 1 )]
     [BooleanField( "Hide If None", "Should the badge be hidden if there are no devices registered to this person?", true, order: 2 )]
+    [Rock.SystemGuid.EntityTypeGuid( "C92E1D6C-EE4B-4BD6-B5C6-9E6071243341")]
     public class PersonalDevice : BadgeComponent
     {
         /// <summary>
