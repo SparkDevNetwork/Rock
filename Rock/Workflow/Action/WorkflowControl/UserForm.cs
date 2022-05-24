@@ -27,7 +27,6 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Prompts user for attribute values
     /// </summary>
     [ActionCategory( "Workflow Control" )]
     [Description( "Prompts user for attribute values" )]
@@ -153,6 +152,7 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            // Always return false. Special logic for User Form will be handled in the WorkflowEntry block.
             return false;
         }
 
