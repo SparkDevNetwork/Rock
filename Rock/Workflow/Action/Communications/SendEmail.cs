@@ -113,21 +113,21 @@ namespace Rock.Workflow.Action
         Description = "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.",
         IsRequired = false,
         Order = 8,
-        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType", "Rock.Field.Types.BinaryFileFieldType" } )]
 
     [WorkflowAttribute( "Attachment Two",
         Key = AttributeKey.AttachmentTwo,
         Description = "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.",
         IsRequired = false,
         Order = 9,
-        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType", "Rock.Field.Types.BinaryFileFieldType" } )]
 
     [WorkflowAttribute( "Attachment Three",
         Key = AttributeKey.AttachmentThree,
         Description = "Workflow attribute that contains the email attachment. Note file size that can be sent is limited by both the sending and receiving email services typically 10 - 25 MB.",
         IsRequired = false,
         Order = 10,
-        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType", "Rock.Field.Types.BinaryFileFieldType" } )]
 
     [BooleanField( "Save Communication History",
         Key = AttributeKey.SaveCommunicationHistory,

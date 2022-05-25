@@ -22,7 +22,7 @@ using Rock.Data;
 namespace Rock.Financial
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockClientInclude( "The FinancialStatementGeneratorOptions that are configured on the Statement Generator WPF application" )]
     public class FinancialStatementGeneratorOptions
@@ -121,7 +121,7 @@ namespace Rock.Financial
         public List<FinancialStatementReportConfiguration> ReportConfigurationList { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [RockClientInclude( "Individual Save Options for the FinancialStatementGeneratorOptions" )]
         public class FinancialStatementIndividualSaveOptions
@@ -172,7 +172,17 @@ namespace Rock.Financial
             /// <value>
             ///   <c>true</c> if [overwrite documents of this type created on same date]; otherwise, <c>false</c>.
             /// </value>
-            public bool OverwriteDocumentsOfThisTypeCreatedOnSameDate { get; set; } = true;
+            [RockObsolete("1.13")]
+            [Obsolete("Use OverwriteDocumentsOfThisTypeWithSamePurposeKey instead.")]
+            public bool OverwriteDocumentsOfThisTypeCreatedOnSameDate { get; set; } = false; // Defaulted to false when deprecated.
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [overwrite documents of this type with the same purpose key].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [overwrite documents of this type with the same purpose key]; otherwise, <c>false</c>.
+            /// </value>
+            public bool OverwriteDocumentsOfThisTypeWithSamePurposeKey { get; set; } = true;
 
             /// <summary>
             /// Gets or sets the document save for.
@@ -183,7 +193,7 @@ namespace Rock.Financial
             public FinancialStatementIndividualSaveOptionsSaveFor DocumentSaveFor { get; set; }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             [RockClientInclude( "Individual SaveFor Options for the FinancialStatementGeneratorOptions" )]
             public enum FinancialStatementIndividualSaveOptionsSaveFor
@@ -206,12 +216,18 @@ namespace Rock.Financial
                 /// Note that want to limit to Giving Group because some members
                 /// of the Family may giving individually and have a different statement
                 /// </summary>
-                AllActiveFamilyMembersInGivingGroup
+                AllActiveFamilyMembersInGivingGroup,
+
+                /// <summary>
+                /// Used when you only want the document created but do not
+                /// want to save it to the person's record.
+                /// </summary>
+                DoNotSave
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [RockClientInclude( "Report configuration for the StatementGeneratorOptions ReportConfigurationList." )]
         public class FinancialStatementReportConfiguration
@@ -241,7 +257,7 @@ namespace Rock.Financial
             public string DestinationFolder { get; set; }
 
             /// <summary>
-            /// This is the pattern that will be used to create the individual bulk reports. The value 
+            /// This is the pattern that will be used to create the individual bulk reports. The value
             /// here is the value that the files will all start with.
             /// </summary>
             /// <value>
@@ -256,16 +272,16 @@ namespace Rock.Financial
             ///   <c>true</c> if [split files on primary sort value]; otherwise, <c>false</c>.
             /// </value>
             /// <remarks>
-            /// Much of the logic for filenames will depend on the "Split files on the primary sort value" setting. When 
+            /// Much of the logic for filenames will depend on the "Split files on the primary sort value" setting. When
             /// enabled the file name will contain the primary sort value.When not enabled, and chaptering enabled, the
             /// filename will contain the starting primary sort value and ending primary sort value.
-            /// 
+            ///
             /// Example with "Split files on the primary sort value" enabled (zip code sort ):
             /// statements-85024-1.pdf(-1 at the end is the chapter )
-            /// 
+            ///
             /// Example with "Split files on the primary sort value" disabled( last name sort) :
             /// statements-abbot-benes.pdf
-            /// 
+            ///
             /// If "Prevent Primary Sort Values Orphans" is not enabled, you could have overlap on a single value:
             /// statements-abbot-benes.pdf
             /// statements-benes-carrol.pdf
@@ -281,7 +297,7 @@ namespace Rock.Financial
             public int? MaxStatementsPerChapter { get; set; }
 
             /// <summary>
-            ///  When chaptering, this setting will keep the primary sort values 
+            ///  When chaptering, this setting will keep the primary sort values
             ///  from being split across a chapter. When this is enabled, it could mean that more statements are in a
             ///  chapter that the max statements per chapter setting allows.
             /// </summary>
@@ -291,7 +307,7 @@ namespace Rock.Financial
             public bool PreventSplittingPrimarySortValuesAcrossChapters { get; set; }
 
             /// <summary>
-            /// The minimum number of total contributions a statement must have 
+            /// The minimum number of total contributions a statement must have
             /// before it's added to the bulk report.
             /// </summary>
             /// <value>
@@ -300,7 +316,7 @@ namespace Rock.Financial
             public decimal? MinimumContributionAmount { get; set; }
 
             /// <summary>
-            /// Determines if individuals with addresses should be added to the 
+            /// Determines if individuals with addresses should be added to the
             /// report.Addresses with countries the same as the Organization's address( Global Attribute ) or
             /// addresses with blank countries will be considered local.
             /// </summary>
@@ -320,7 +336,7 @@ namespace Rock.Financial
 
             /// <summary>
             /// Gets or sets a value indicating whether [exclude recipients that have an incomplete address].
-            /// Either the recipient has no mailing address, or the address is missing <seealso cref="Rock.Model.Location.PostalCode"/> or <seealso cref="Rock.Model.Location.Street1"/> 
+            /// Either the recipient has no mailing address, or the address is missing <seealso cref="Rock.Model.Location.PostalCode"/> or <seealso cref="Rock.Model.Location.Street1"/>
             /// </summary>
             /// <value>
             ///   <c>true</c> if [exclude recipients that have an incomplete address]; otherwise, <c>false</c>.
@@ -347,7 +363,7 @@ namespace Rock.Financial
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockClientInclude( "FinancialStatement OrderBy options" )]
     public enum FinancialStatementOrderBy

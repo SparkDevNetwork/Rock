@@ -26,7 +26,7 @@ using Rock.Client;
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="System.Windows.Controls.Page" />
     /// <seealso cref="System.Windows.Markup.IComponentConnector" />
@@ -62,7 +62,7 @@ namespace Rock.Apps.StatementGenerator
             txtDocumentDescription.Text = saveOptions.DocumentDescription;
             txtDocumentName.Text = saveOptions.DocumentName;
             txtDocumentPurposeKey.Text = saveOptions.DocumentPurposeKey;
-            cbOverwriteDocumentsOfThisTypeCreatedOnSameDate.IsChecked = saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate;
+            cbOverwriteDocumentsOfThisTypeWithSamePurposeKey.IsChecked = saveOptions.OverwriteDocumentsOfThisTypeWithSamePurposeKey;
             rbSaveForAllAdults.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup;
             rbSaveForPrimaryGiver.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.PrimaryGiver;
             rbSaveForAllActiveFamilyMembers.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup;
@@ -94,7 +94,9 @@ namespace Rock.Apps.StatementGenerator
             foreach ( var documentType in documentTypeList.OrderBy( d => d.Name ) )
             {
                 var item = new ComboBoxItem { Content = documentType.Name, Tag = documentType.Id };
-                item.IsSelected = documentType.Id == selectedDocumentTypeId;
+                item.IsSelected = (documentType.Id == selectedDocumentTypeId) ||
+                    // Default to the new giving statement type if possible.
+                    (selectedDocumentTypeId == null && string.Equals(documentType.Guid.ToString(), "E8513F11-165D-4EDB-AC27-9204B84FB016", System.StringComparison.OrdinalIgnoreCase));
                 cboDocumentType.Items.Add( item );
             }
         }
@@ -112,7 +114,7 @@ namespace Rock.Apps.StatementGenerator
             saveOptions.DocumentDescription = txtDocumentDescription.Text;
             saveOptions.DocumentName = txtDocumentName.Text;
             saveOptions.DocumentPurposeKey = txtDocumentPurposeKey.Text;
-            saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate = cbOverwriteDocumentsOfThisTypeCreatedOnSameDate.IsChecked ?? false;
+            saveOptions.OverwriteDocumentsOfThisTypeWithSamePurposeKey = cbOverwriteDocumentsOfThisTypeWithSamePurposeKey.IsChecked ?? false;
 
             if ( rbSaveForAllAdults.IsChecked == true )
             {
