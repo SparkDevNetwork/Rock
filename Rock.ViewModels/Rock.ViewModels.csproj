@@ -319,6 +319,12 @@
     <Compile Include="Rest\Controls\BadgeListGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategoryPickerChildTreeItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerGetDefinedValuesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListAddEntityTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListCreatePersonalTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListGetAvailableTagsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListGetEntityTagsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListRemoveEntityTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListTagBag.cs" />
     <Compile Include="Rest\Controls\EntityTypePickerGetEntityTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationPickerGetActiveChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonPickerSearchOptionsBag.cs" />

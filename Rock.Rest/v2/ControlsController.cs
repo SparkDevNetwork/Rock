@@ -15,6 +15,13 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Web.Http;
+
 using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
@@ -27,14 +34,6 @@ using Rock.ViewModels.CRM;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Web.Http;
 
 namespace Rock.Rest.v2
 {
@@ -242,6 +241,275 @@ namespace Rock.Rest.v2
 
                 return Ok( definedValues );
             }
+        }
+
+        #endregion
+
+        #region Entity Tag List
+
+        /// <summary>
+        /// Gets the tags that are currently specified for the given entity.
+        /// </summary>
+        /// <param name="options">The options that describe which tags to load.</param>
+        /// <returns>A collection of <see cref="EntityTagListTagBag"/> that represent the tags.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityTagListGetEntityTags" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "7542d4b3-17dc-4640-acbd-f02784130401" )]
+        public IHttpActionResult EntityTagListGetEntityTags( [FromBody] EntityTagListGetEntityTagsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( !entityTypeId.HasValue || !entityGuid.HasValue )
+                {
+                    return NotFound();
+                }
+
+                var taggedItemService = new TaggedItemService( rockContext );
+                var items = taggedItemService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, entityGuid.Value, options.CategoryGuid, false )
+                    .Include( ti => ti.Tag.Category )
+                    .Select( ti => ti.Tag )
+                    .ToList()
+                    .Where( t => t.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( t, Authorization.VIEW ) == true )
+                    .Select( t => GetTagBagFromTag( t ) )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        /// <summary>
+        /// Gets the tags that are available for the given entity.
+        /// </summary>
+        /// <param name="options">The options that describe which tags to load.</param>
+        /// <returns>A collection of list item bags that represent the tags.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityTagListGetAvailableTags" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "91890d39-6e3e-4623-aad7-f32e686c784e" )]
+        public IHttpActionResult EntityTagListGetAvailableTags( [FromBody] EntityTagListGetAvailableTagsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( !entityTypeId.HasValue || !entityGuid.HasValue )
+                {
+                    return NotFound();
+                }
+
+                var tagService = new TagService( rockContext );
+                var items = tagService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, options.CategoryGuid, false )
+                    .Where( t => t.Name.StartsWith( options.Name )
+                        && !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) )
+                    .ToList()
+                    .Where( t => t.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( t, Authorization.VIEW ) == true )
+                    .Select( t => GetTagBagFromTag( t ) )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        /// <summary>
+        /// Create a new personal tag for the EntityTagList control.
+        /// </summary>
+        /// <param name="options">The options that describe the tag to be created.</param>
+        /// <returns>An instance of <see cref="EntityTagListTagBag"/> that represents the tag.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityTagListCreatePersonalTag" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8ccb7b8d-5d5c-4aa6-a12c-ed062c7afa05" )]
+        public IHttpActionResult EntityTagListCreatePersonalTag( [FromBody] EntityTagListCreatePersonalTagOptionsBag options )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+
+                if ( !entityTypeId.HasValue )
+                {
+                    return NotFound();
+                }
+
+                var tagService = new TagService( rockContext );
+                var tag = tagService.Get( entityTypeId.Value, string.Empty, string.Empty, RockRequestContext.CurrentPerson?.Id, options.Name, options.CategoryGuid, true );
+
+                // If the personal tag already exists, use a 409 to indicate
+                // it already exists and return the existing tag.
+                if ( tag != null && tag.OwnerPersonAliasId.HasValue )
+                {
+                    // If the personal tag isn't active, make it active.
+                    if ( !tag.IsActive )
+                    {
+                        tag.IsActive = true;
+                        System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+                        rockContext.SaveChanges();
+                    }
+
+                    return Content( System.Net.HttpStatusCode.Conflict, GetTagBagFromTag( tag ) );
+                }
+
+                // At this point tag either doesn't exist or was an organization
+                // tag so we need to create a new personal tag.
+                tag = new Tag
+                {
+                    EntityTypeId = entityTypeId,
+                    OwnerPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( RockRequestContext.CurrentPerson.Id ),
+                    Name = options.Name
+                };
+
+                if ( options.CategoryGuid.HasValue )
+                {
+                    var category = new CategoryService( rockContext ).Get( options.CategoryGuid.Value );
+
+                    if ( category == null || ( !category.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) && !grant?.IsAccessGranted( category, Authorization.VIEW ) != true ) )
+                    {
+                        return NotFound();
+                    }
+
+                    // Set the category as well so we can properly convert to a bag.
+                    tag.Category = category;
+                    tag.CategoryId = category.Id;
+                }
+
+                tagService.Add( tag );
+
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+                rockContext.SaveChanges();
+
+                return Content( System.Net.HttpStatusCode.Created, GetTagBagFromTag( tag ) );
+            }
+        }
+
+        /// <summary>
+        /// Adds a tag on the given entity.
+        /// </summary>
+        /// <param name="options">The options that describe the tag and the entity to be tagged.</param>
+        /// <returns>An instance of <see cref="EntityTagListTagBag"/> that represents the tag applied to the entity.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityTagListAddEntityTag" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c9cacc7f-68de-4765-8967-b50ee2949062" )]
+        public IHttpActionResult EntityTagListAddEntityTag( [FromBody] EntityTagListAddEntityTagOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( !entityTypeId.HasValue || !entityGuid.HasValue )
+                {
+                    return NotFound();
+                }
+
+                var tagService = new TagService( rockContext );
+                var tag = tagService.Get( options.TagKey );
+
+                if ( tag == null || ( !tag.IsAuthorized( Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Authorization.VIEW ) != true ) )
+                {
+                    return NotFound();
+                }
+
+                // If the entity is not already tagged, then tag it.
+                var taggedItem = tag.TaggedItems.FirstOrDefault( i => i.EntityGuid.Equals( entityGuid ) );
+
+                if ( taggedItem == null )
+                {
+                    taggedItem = new TaggedItem
+                    {
+                        Tag = tag,
+                        EntityTypeId = entityTypeId.Value,
+                        EntityGuid = entityGuid.Value
+                    };
+
+                    tag.TaggedItems.Add( taggedItem );
+
+                    System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+                    rockContext.SaveChanges();
+                }
+
+                return Ok( GetTagBagFromTag( tag ) );
+            }
+        }
+
+        /// <summary>
+        /// Removes a tag from the given entity.
+        /// </summary>
+        /// <param name="options">The options that describe the tag and the entity to be untagged.</param>
+        /// <returns>A response code that indicates success or failure.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EntityTagListRemoveEntityTag" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6a78d538-87db-43fe-9150-4e9a3f276afe" )]
+        public IHttpActionResult EntityTagListRemoveEntityTag( [FromBody] EntityTagListRemoveEntityTagOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var tagService = new TagService( rockContext );
+                var taggedItemService = new TaggedItemService( rockContext );
+
+                if ( !entityTypeId.HasValue || !entityGuid.HasValue )
+                {
+                    return NotFound();
+                }
+
+                var tag = tagService.Get( options.TagKey );
+
+                if ( tag == null || ( !tag.IsAuthorized( Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Authorization.VIEW ) != true ) )
+                {
+                    return NotFound();
+                }
+
+                // If the entity is tagged, then untag it.
+                var taggedItem = taggedItemService.Queryable()
+                    .FirstOrDefault( ti => ti.TagId == tag.Id && ti.EntityGuid == entityGuid.Value );
+
+                if ( taggedItem != null )
+                {
+                    taggedItemService.Delete( taggedItem );
+
+                    System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+                    rockContext.SaveChanges();
+                }
+
+                return Ok();
+            }
+        }
+
+        private static EntityTagListTagBag GetTagBagFromTag( Tag tag )
+        {
+            return new EntityTagListTagBag
+            {
+                IdKey = tag.IdKey,
+                BackgroundColor = tag.BackgroundColor,
+                Category = tag.Category != null
+                    ? new ListItemBag
+                    {
+                        Value = tag.Category.Guid.ToString(),
+                        Text = tag.Category.ToString()
+                    }
+                    : null,
+                EntityTypeGuid = tag.EntityTypeId.HasValue ? EntityTypeCache.Get( tag.EntityTypeId.Value ).Guid : Guid.Empty,
+                IconCssClass = tag.IconCssClass,
+                IsPersonal = tag.OwnerPersonAliasId.HasValue,
+                Name = tag.Name
+            };
         }
 
         #endregion
@@ -613,6 +881,8 @@ namespace Rock.Rest.v2
 
                 var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
                 financialPersonSavedAccountService.Add( savedAccount );
+
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
                 rockContext.SaveChanges();
 
                 return new SaveFinancialAccountFormSaveAccountResultBag

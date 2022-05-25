@@ -65,6 +65,7 @@ import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
+import EntityTagList from "@Obsidian/Controls/entityTagList";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -83,6 +84,7 @@ import SectionContainer from "@Obsidian/Controls/sectionContainer";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+import { useStore } from "@Obsidian/PageState";
 
 // #region Gallery Support
 
@@ -2631,6 +2633,39 @@ const copyButtonGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates entity tag list */
+const entityTagListGallery = defineComponent({
+    name: "EntityTagListGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        EntityTagList
+    },
+    setup() {
+        const store = useStore();
+
+        return {
+            disabled: ref(false),
+            entityTypeGuid: EntityType.Person,
+            entityKey: store.state.currentPerson?.idKey ?? "",
+            importCode: getControlImportPath("entityTagList"),
+            exampleCode: `<EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+    <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
+
+    <template #settings>
+        <CheckBox label="Disabled" v-model="disabled" />
+    </template>
+</GalleryAndResult>`
+});
+
+
 
 const controlGalleryComponents: Record<string, Component> = [
     attributeValuesContainerGallery,
@@ -2679,7 +2714,8 @@ const controlGalleryComponents: Record<string, Component> = [
     sectionContainerGallery,
     categoryPickerGallery,
     locationPickerGallery,
-    copyButtonGallery
+    copyButtonGallery,
+    entityTagListGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -2824,6 +2860,7 @@ const detailBlockGallery = defineComponent({
             isEditVisible: ref(true),
             isFollowVisible: ref(true),
             isSecurityHidden: ref(false),
+            isTagsVisible: ref(false),
             labels,
             simulateValues,
             simulateOptions: [
@@ -2875,7 +2912,8 @@ const detailBlockGallery = defineComponent({
         :isDeleteVisible="isDeleteVisible"
         :isFollowVisible="isFollowVisible"
         :isBadgesVisible="isBadgesVisible"
-        :isSecurityHidden="isSecurityHidden">
+        :isSecurityHidden="isSecurityHidden"
+        :isTagsVisible="isTagsVisible">
         <template v-if="simulateHelp" #helpContent>
             This is some help text.
         </template>
@@ -2901,6 +2939,9 @@ const detailBlockGallery = defineComponent({
             </div>
             <div class="col-md-3">
                 <CheckBox v-model="isSecurityHidden" label="Is Security Hidden" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox v-model="isTagsVisible" label="Is Tags Visible" />
             </div>
         </div>
 

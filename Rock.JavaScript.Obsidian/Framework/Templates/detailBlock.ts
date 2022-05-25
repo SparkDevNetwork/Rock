@@ -21,6 +21,7 @@ import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
 import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
 import BadgeList from "@Obsidian/Controls/badgeList";
+import EntityTagList from "@Obsidian/Controls/entityTagList";
 import RockButton from "@Obsidian/Controls/rockButton";
 import RockForm from "@Obsidian/Controls/rockForm";
 import RockSuspense from "@Obsidian/Controls/rockSuspense";
@@ -37,6 +38,7 @@ export default defineComponent({
     name: "DetailBlock",
 
     components: {
+        EntityTagList,
         Panel,
         RockButton,
         RockForm,
@@ -68,6 +70,11 @@ export default defineComponent({
         entityKey: {
             type: String as PropType<string | null>,
             required: false
+        },
+
+        isTagsVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         isFollowVisible: {
@@ -419,12 +426,20 @@ export default defineComponent({
         </span>
     </template>
 
-    <template v-if="!isEditMode && hasLabels" #subheaderLeft>
-        <div class="label-group">
-            <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
-                <template v-if="action.title">{{ action.title }}</template>
-                <i v-else :class="action.iconCssClass"></i>
-            </span>
+    <template v-if="!isEditMode && (hasLabels || isTagsVisible)" #subheaderLeft>
+        <div class="d-flex">
+            <div v-if="hasLabels" class="label-group">
+                <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
+                    <template v-if="action.title">{{ action.title }}</template>
+                    <i v-else :class="action.iconCssClass"></i>
+                </span>
+            </div>
+
+            <div v-if="isTagsVisible && hasLabels" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
+
+            <div v-if="isTagsVisible" class="flex-grow-1">
+                <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+            </div>
         </div>
     </template>
 
