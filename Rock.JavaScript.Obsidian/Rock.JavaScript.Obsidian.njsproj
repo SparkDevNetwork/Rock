@@ -86,6 +86,8 @@
     <Folder Include="Framework\ViewModels\Blocks\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\CRM\" />
+    <Folder Include="Framework\ViewModels\Blocks\CRM\PersonDetail\Badges\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupScheduleSignup\" />
@@ -361,6 +363,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CRM\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\assignmentScheduleAndLocationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupSchedulePreference\preferencePageContentBag.d.ts" />

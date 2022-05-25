@@ -142,13 +142,13 @@ export default defineComponent({
         /** The unique identifier of the entity type described by entityKey. */
         entityTypeGuid: {
             type: String as PropType<Guid>,
-            required: true
+            required: false
         },
 
         /** The identifier key for the entity whose tags should be displayed. */
         entityKey: {
             type: String as PropType<string>,
-            required: true
+            required: false
         },
 
         /** The optional category unique identifier to limit tags to. */
@@ -337,15 +337,17 @@ export default defineComponent({
                 loadCancelledToken.value = true;
             }
 
-            // Start a new cancellation request.
-            const cancelled = ref(false);
-            loadCancelledToken = cancelled;
+            if (props.entityTypeGuid && props.entityKey) {
+                // Start a new cancellation request.
+                const cancelled = ref(false);
+                loadCancelledToken = cancelled;
 
-            const tags = await getEntityTags(props.entityTypeGuid, props.entityKey, securityToken.value);
+                const tags = await getEntityTags(props.entityTypeGuid, props.entityKey, securityToken.value);
 
-            // If we haven't been cancelled, then set the value.
-            if (!cancelled.value) {
-                currentTags.value = tags;
+                // If we haven't been cancelled, then set the value.
+                if (!cancelled.value) {
+                    currentTags.value = tags;
+                }
             }
         };
 

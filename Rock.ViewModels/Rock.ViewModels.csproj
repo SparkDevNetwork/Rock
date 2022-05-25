@@ -47,6 +47,7 @@
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
+    <Compile Include="Blocks\CRM\PersonDetail\Badges\BadgesConfigurationBox.cs" />
     <Compile Include="Blocks\DetailBlockBox.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />

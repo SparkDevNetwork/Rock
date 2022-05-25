@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
+    <Compile Include="CRM\PersonDetail\Badges.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
@@ -106,7 +107,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="CRM\" />
     <Folder Include="Finance\" />
     <Folder Include="Groups\" />
     <Folder Include="Security\" />
