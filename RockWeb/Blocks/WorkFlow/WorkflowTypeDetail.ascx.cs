@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -329,6 +329,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 var newWorkflowType = workflowType.CloneWithoutIdentity();
                 newWorkflowType.IsSystem = false;
                 newWorkflowType.Name = workflowType.Name + " - Copy";
+                newWorkflowType.WorkflowIdPrefix = workflowType.WorkflowIdPrefix + " - Copy";
 
                 // Create temporary state objects for the new workflow type
                 var newAttributesState = new List<Attribute>();
