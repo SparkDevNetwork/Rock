@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, nextTick } from "vue";
 import Alert from "@Obsidian/Controls/alert";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import { EntityType } from "@Obsidian/SystemGuids";
@@ -69,6 +69,23 @@ export default defineComponent({
         // #region Event Handlers
 
         // #endregion
+
+        const script = [...config.topLeftBadges ?? [],
+            ...config.topMiddleBadges ?? [],
+            ...config.topRightBadges ?? [],
+            ...config.bottomLeftBadges ?? [],
+            ...config.bottomRightBadges ?? []]
+            .map(b => b.javaScript ?? "").join("");
+
+        if (script !== "") {
+            // Add the script on the next tick to ensure the HTML has been rendered.
+            nextTick(() => {
+                const scriptNode = document.createElement("script");
+                scriptNode.type = "text/javascript";
+                scriptNode.innerText = script;
+                document.body.appendChild(scriptNode);
+            });
+        }
 
         return {
             bottomLeftBadges,
