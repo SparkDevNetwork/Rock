@@ -1298,6 +1298,12 @@ namespace Rock.Financial
                 documentName = documentNameTemplate.ResolveMergeFields( mergeFields );
             }
 
+            if ( documentName.IsNullOrWhiteSpace() )
+            {
+                // If there isn't a DocumentName and the documentNameTemplate didn't result in a name, use Document Type name, or fail over to just "Document"
+                documentName = documentType?.Name ?? "Document";
+            }
+
             return documentName;
         }
 
