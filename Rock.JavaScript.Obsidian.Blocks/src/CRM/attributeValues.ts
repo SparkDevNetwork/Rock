@@ -56,7 +56,7 @@ function sortedAttributeValues(attributeValues: PublicAttributeBag[]): PublicAtt
 }
 
 export default defineComponent({
-    name: "Crm.AttributeValues",
+    name: "CRM.AttributeValues",
     components: {
         Alert,
         Block,

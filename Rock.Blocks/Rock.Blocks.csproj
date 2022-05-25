@@ -106,7 +106,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Crm\" />
+    <Folder Include="CRM\" />
     <Folder Include="Finance\" />
     <Folder Include="Groups\" />
     <Folder Include="Security\" />

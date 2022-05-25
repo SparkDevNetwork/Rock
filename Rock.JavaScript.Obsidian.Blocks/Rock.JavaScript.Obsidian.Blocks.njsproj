@@ -38,7 +38,7 @@
     <Folder Include="src\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\CampusDetail\" />
-    <Folder Include="src\Crm\" />
+    <Folder Include="src\CRM\" />
     <Folder Include="src\Event\" />
     <Folder Include="src\Event\RegistrationEntry\" />
     <Folder Include="src\Example\" />
@@ -58,7 +58,7 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.ts" />
-    <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
+    <TypeScriptCompile Include="src\CRM\attributeValues.ts" />
     <TypeScriptCompile Include="src\Event\registrationEntry.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationEntry\costSummary.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationEntry\discountCodeForm.partial.ts" />
