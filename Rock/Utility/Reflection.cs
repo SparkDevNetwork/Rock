@@ -378,7 +378,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the type of the entity identifier for entity.
+        /// Gets the specified entity identifier given the entity type unique
+        /// identifier and the entity unique identifier.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityKey">The entity identifier key.</param>
@@ -490,6 +491,117 @@ namespace Rock
         // Cache the ServiceType that we found when doing reflection. Doing reflection each time could take a few milliseconds,
         // but once we cache it, it'll only a few microseconds to get the type
         private static ConcurrentDictionary<Type, Type> serviceTypesByEntityTypeLookup = new ConcurrentDictionary<Type, Type>();
+
+        /// <summary>
+        /// Gets the specified entity identifier given the entity type unique
+        /// identifier and the entity key.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityKey">The entity identifier key.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns>The identifier of the entity.</returns>
+        internal static int? GetEntityIdForEntityType( int entityTypeId, string entityKey, bool allowIntegerIdentifier = true, Data.DbContext dbContext = null )
+        {
+            var entityTypeGuid = EntityTypeCache.Get( entityTypeId ).Guid;
+
+            return GetEntityIdForEntityType( entityTypeGuid, entityKey, allowIntegerIdentifier, dbContext );
+        }
+
+        /// <summary>
+        /// Gets the specified entity identifier given the entity type unique
+        /// identifier and the entity unique identifier.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type unique identifier, this represents the model to use when mapping the <paramref name="entityKey"/> to an unique identifier.</param>
+        /// <param name="entityKey">The entity identifier key.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns>The unique identifier of the entity.</returns>
+        internal static int? GetEntityIdForEntityType( Guid entityTypeGuid, string entityKey, bool allowIntegerIdentifier = true, Data.DbContext dbContext = null )
+        {
+            var type = EntityTypeCache.Get( entityTypeGuid )?.GetEntityType();
+
+            if ( type == null )
+            {
+                return null;
+            }
+
+            // Get the integer identifier from the key or the hasher.
+            var entityId = allowIntegerIdentifier ? entityKey.AsIntegerOrNull() : null;
+
+            if ( !entityId.HasValue )
+            {
+                entityId = Rock.Utility.IdHasher.Instance.GetId( entityKey );
+            }
+
+            if ( entityId.HasValue )
+            {
+                return entityId.Value;
+            }
+
+            // Check if the key is already in the Guid format.
+            Guid? entityGuid = entityKey.AsGuidOrNull();
+
+            // If no unique identifier found, we can't proceed.
+            if ( !entityGuid.HasValue )
+            {
+                return null;
+            }
+
+            /*
+             * 1/11/2022 - DSH
+             * 
+             * This should be reworked at some point to provide mapping support
+             * on models or ICachable so they can either specify the class that
+             * handles the cache for it or a GetIdFromCache method.
+             */
+
+            /*
+             * 1/14/2022 -DSH
+             * 
+             * This should also be updated to build a new Guid<=>Id cache map that
+             * is fairly short lived (5-15 minutes). This cache would be used
+             * to improve performance further for items that would not normally
+             * be cached. It should then be tested if the ICachable logic is
+             * noticably slower than this new method and whichever is faster should
+             * be used as the primary source of truth.
+             */
+
+            // Check to see if we might have this item in cache. This is unholy
+            // but it will catch probably 95% of the cases where we have a cache
+            // available for a model.
+            // Performance is good, 0.07ms for positive cache hit.
+            if ( typeof( ICacheable ).IsAssignableFrom( type ) && type.Namespace == "Rock.Model" )
+            {
+                var cacheType = Type.GetType( $"Rock.Web.Cache.{type.Name}Cache" );
+
+                // Make sure the base type inherits from ModelCache<,>
+                if ( cacheType != null && cacheType.BaseType.IsGenericType && cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) )
+                {
+                    // Make sure the base type is the expected type, e.g. ModelCache<CampusCache, Campus>
+                    if ( cacheType.BaseType.GenericTypeArguments[1] == type )
+                    {
+                        var cacheGetIdMethod = cacheType.GetMethod( "GetId", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, null, new Type[] { typeof( Guid ) }, null );
+
+                        if ( cacheGetIdMethod != null )
+                        {
+                            entityId = ( int? ) cacheGetIdMethod.Invoke( null, new object[] { entityGuid.Value } );
+                        }
+                    }
+                }
+            }
+
+            // If we didn't find the entity id in cache, look it up in the database.
+            if ( !entityId.HasValue )
+            {
+                var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+                var getIdMethod = serviceInstance?.GetType().GetMethod( "GetId", new Type[] { typeof( Guid ) } );
+
+                entityId = getIdMethod?.Invoke( serviceInstance, new object[] { entityGuid.Value } ) as int?;
+            }
+
+            return entityId;
+        }
 
         /// <summary>
         /// Gets the appropriate Rock.Data.IService based on the entity type

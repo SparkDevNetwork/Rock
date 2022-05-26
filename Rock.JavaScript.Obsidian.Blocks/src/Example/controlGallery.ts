@@ -2891,7 +2891,7 @@ const detailBlockGallery = defineComponent({
             ],
             simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent")),
             importCode: getTemplateImportPath("detailBlock"),
-            exampleCode: `<DetailBlock name="Sample Entity" :entityTypeGuid="entityTypeGuid" entityTypeName="Entity Type" entityKey="1" />`
+            exampleCode: `<DetailBlock name="Sample Entity" :entityTypeGuid="entityTypeGuid" entityTypeName="Entity Type" entityKey="57dc00a3-ff88-4d4c-9878-30ae309117e2" />`
         };
     },
     template: `
@@ -2901,7 +2901,7 @@ const detailBlockGallery = defineComponent({
     <DetailBlock name="Sample Entity"
         :entityTypeGuid="entityTypeGuid"
         entityTypeName="Entity Type"
-        entityKey="1"
+        entityKey="57dc00a3-ff88-4d4c-9878-30ae309117e2"
         :headerActions="headerActions"
         :headerSecondaryActions="headerSecondaryActions"
         :labels="labels"

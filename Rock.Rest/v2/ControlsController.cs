@@ -621,6 +621,148 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Following
+
+        /// <summary>
+        /// Determines if the entity is currently being followed by the logged in person.
+        /// </summary>
+        /// <param name="options">The options that describe which entity to be checked.</param>
+        /// <returns>A <see cref="FollowingGetFollowingResponseBag"/> that contains the followed state of the entity.</returns>
+        [HttpPost]
+        [Authenticate]
+        [System.Web.Http.Route( "FollowingGetFollowing" )]
+        [Rock.SystemGuid.RestActionGuid( "fa1cc136-a994-4870-9507-818ea7a70f01" )]
+        public IHttpActionResult FollowingGetFollowing( [FromBody] FollowingGetFollowingOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( RockRequestContext.CurrentPerson == null )
+                {
+                    return Unauthorized();
+                }
+
+                // Get the entity type identifier to use to lookup the entity.
+                int? entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+
+                if ( !entityTypeId.HasValue )
+                {
+                    return NotFound();
+                }
+
+                // Get the entity identifier to use for the following query.
+                var entityId = Reflection.GetEntityIdForEntityType( entityTypeId.Value, options.EntityKey, true, rockContext );
+
+                if ( !entityId.HasValue )
+                {
+                    return NotFound();
+                }
+
+                var purposeKey = options.PurposeKey ?? string.Empty;
+
+                // Look for any following objects that match the criteria.
+                var followings = new FollowingService( rockContext ).Queryable()
+                    .Where( f =>
+                        f.EntityTypeId == entityTypeId.Value &&
+                        f.EntityId == entityId.Value &&
+                        f.PersonAlias.PersonId == RockRequestContext.CurrentPerson.Id &&
+                        ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) );
+
+                return Ok( new FollowingGetFollowingResponseBag
+                {
+                    IsFollowing = followings.Any()
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Sets the following state of the entity for the logged in person.
+        /// </summary>
+        /// <param name="options">The options that describe which entity to be followed or unfollowed.</param>
+        /// <returns>An HTTP status code that indicates if the request was successful.</returns>
+        [HttpPost]
+        [Authenticate]
+        [System.Web.Http.Route( "FollowingSetFollowing" )]
+        [Rock.SystemGuid.RestActionGuid( "8ca2eafb-e577-4f65-8d96-f42d8d5aae7a" )]
+        public IHttpActionResult FollowingSetFollowing( [FromBody] FollowingSetFollowingOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var followingService = new FollowingService( rockContext );
+
+                if ( RockRequestContext.CurrentPerson == null )
+                {
+                    return Unauthorized();
+                }
+
+                // Get the entity type identifier to use to lookup the entity.
+                int? entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
+
+                if ( !entityTypeId.HasValue )
+                {
+                    return NotFound();
+                }
+
+                // Get the entity identifier to use for the following query.
+                var entityId = Reflection.GetEntityIdForEntityType( entityTypeId.Value, options.EntityKey, true, rockContext );
+
+                if ( !entityId.HasValue )
+                {
+                    return NotFound();
+                }
+
+                var purposeKey = options.PurposeKey ?? string.Empty;
+
+                // Look for any following objects that match the criteria.
+                var followings = followingService.Queryable()
+                    .Where( f =>
+                        f.EntityTypeId == entityTypeId.Value &&
+                        f.EntityId == entityId.Value &&
+                        f.PersonAlias.PersonId == RockRequestContext.CurrentPerson.Id &&
+                        ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) );
+
+                if ( options.IsFollowing )
+                {
+                    // Already following, don't need to add a new record.
+                    if ( followings.Any() )
+                    {
+                        return Ok();
+                    }
+
+                    var following = new Following
+                    {
+                        EntityTypeId = entityTypeId.Value,
+                        EntityId = entityId.Value,
+                        PersonAliasId = RockRequestContext.CurrentPerson.PrimaryAliasId.Value,
+                        PurposeKey = purposeKey
+                    };
+
+                    followingService.Add( following );
+
+                    if ( !following.IsValid )
+                    {
+                        return BadRequest( string.Join( ", ", following.ValidationResults.Select( r => r.ErrorMessage ) ) );
+                    }
+                }
+                else
+                {
+                    foreach ( var following in followings )
+                    {
+                        // Don't check security here because a person is allowed
+                        // to un-follow/delete something they previously followed.
+                        followingService.Delete( following );
+                    }
+                }
+
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
+        }
+
+        #endregion
+
         #region Location Picker
 
         /// <summary>

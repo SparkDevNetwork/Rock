@@ -327,6 +327,9 @@
     <Compile Include="Rest\Controls\EntityTagListRemoveEntityTagOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListTagBag.cs" />
     <Compile Include="Rest\Controls\EntityTypePickerGetEntityTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\FollowingGetFollowingOptionsBag.cs" />
+    <Compile Include="Rest\Controls\FollowingGetFollowingResponseBag.cs" />
+    <Compile Include="Rest\Controls\FollowingSetFollowingOptionsBag.cs" />
     <Compile Include="Rest\Controls\LocationPickerGetActiveChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\PersonPickerSearchOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountOptionsBag.cs" />
