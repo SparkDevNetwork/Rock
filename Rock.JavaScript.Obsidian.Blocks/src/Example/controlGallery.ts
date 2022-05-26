@@ -66,6 +66,7 @@ import CategoryPicker from "@Obsidian/Controls/categoryPicker";
 import LocationPicker from "@Obsidian/Controls/locationPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
+import Following from "@Obsidian/Controls/following";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -2590,7 +2591,7 @@ const locationPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-/** Demonstrates location picker */
+/** Demonstrates copy button */
 const copyButtonGallery = defineComponent({
     name: "CopyButtonGallery",
     components: {
@@ -2665,6 +2666,51 @@ const entityTagListGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates following control. */
+const followingGallery = defineComponent({
+    name: "FollowingGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        Following,
+        TextBox
+    },
+    setup() {
+        const store = useStore();
+
+        return {
+            disabled: ref(false),
+            entityTypeGuid: ref(EntityType.Person),
+            entityKey: ref(store.state.currentPerson?.idKey ?? ""),
+            importCode: getControlImportPath("following"),
+            exampleCode: `<Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+    <Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Disabled" v-model="disabled" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox label="Entity Key" v-model="entityKey" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 
 
 const controlGalleryComponents: Record<string, Component> = [
@@ -2715,7 +2761,8 @@ const controlGalleryComponents: Record<string, Component> = [
     categoryPickerGallery,
     locationPickerGallery,
     copyButtonGallery,
-    entityTagListGallery
+    entityTagListGallery,
+    followingGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

@@ -119,6 +119,7 @@
     <TypeScriptCompile Include="Framework\Controls\electronicSignature.ts" />
     <TypeScriptCompile Include="Framework\Controls\entityTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\flowNodeDiagram.ts" />
+    <TypeScriptCompile Include="Framework\Controls\following.ts" />
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />

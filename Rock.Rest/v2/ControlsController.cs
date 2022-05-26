@@ -649,8 +649,20 @@ namespace Rock.Rest.v2
                     return NotFound();
                 }
 
-                // Get the entity identifier to use for the following query.
-                var entityId = Reflection.GetEntityIdForEntityType( entityTypeId.Value, options.EntityKey, true, rockContext );
+                int? entityId = null;
+
+                // Special handling for a person record, need to translate it to
+                // a person alias record.
+                if ( entityTypeId.Value == EntityTypeCache.GetId<Person>() )
+                {
+                    entityTypeId = EntityTypeCache.GetId<PersonAlias>();
+                    entityId = new PersonService( rockContext ).Get( options.EntityKey, true )?.PrimaryAliasId;
+                }
+                else
+                {
+                    // Get the entity identifier to use for the following query.
+                    entityId = Reflection.GetEntityIdForEntityType( entityTypeId.Value, options.EntityKey, true, rockContext );
+                }
 
                 if ( !entityId.HasValue )
                 {
@@ -702,8 +714,20 @@ namespace Rock.Rest.v2
                     return NotFound();
                 }
 
-                // Get the entity identifier to use for the following query.
-                var entityId = Reflection.GetEntityIdForEntityType( entityTypeId.Value, options.EntityKey, true, rockContext );
+                int? entityId = null;
+
+                // Special handling for a person record, need to translate it to
+                // a person alias record.
+                if ( entityTypeId.Value == EntityTypeCache.GetId<Person>() )
+                {
+                    entityTypeId = EntityTypeCache.GetId<PersonAlias>();
+                    entityId = new PersonService( rockContext ).Get( options.EntityKey, true )?.PrimaryAliasId;
+                }
+                else
+                {
+                    // Get the entity identifier to use for the following query.
+                    entityId = Reflection.GetEntityIdForEntityType( entityTypeId.Value, options.EntityKey, true, rockContext );
+                }
 
                 if ( !entityId.HasValue )
                 {
