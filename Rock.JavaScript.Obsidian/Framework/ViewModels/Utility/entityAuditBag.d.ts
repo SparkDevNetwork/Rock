@@ -24,9 +24,12 @@
 import { Guid } from "@Obsidian/Types";
 
 /** Contains the information required to show the audit panel details for a model. */
-export type AuditDetailBag = {
+export type EntityAuditBag = {
     /** Gets or sets the identifier of the model. */
     id?: number | null;
+
+    /** Gets or sets the identifier key of the model. */
+    idKey?: string | null;
 
     /** Gets or sets the unique identifier of the model. */
     guid?: Guid | null;

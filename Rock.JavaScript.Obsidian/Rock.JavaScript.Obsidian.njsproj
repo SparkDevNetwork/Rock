@@ -612,6 +612,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\auditDetailGetAuditDetailsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgeListGetBadgesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetDefinedValuesOptionsBag.d.ts" />
@@ -629,8 +630,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\saveFinancialAccountFormSaveAccountOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\saveFinancialAccountFormSaveAccountResultBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Utility\auditDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\debugTiming.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Utility\entityAuditBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\listItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicAttributeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Utility\publicAttributeCategoryBag.d.ts" />

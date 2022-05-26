@@ -211,7 +211,8 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the type of the i entity for entity.
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// identifier key specified.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="key">The key that identifies the entity.</param>
@@ -220,6 +221,27 @@ namespace Rock
         {
             var dbContext = Reflection.GetDbContextForEntityType( entityType );
             Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+            if ( serviceInstance != null )
+            {
+                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( string ), typeof( bool ) } );
+                return getMethod.Invoke( serviceInstance, new object[] { key, true } ) as Rock.Data.IEntity;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IEntity"/> that corresponds to the entity type and
+        /// identifier key specified.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="key">The key that identifies the entity.</param>
+        /// <param name="dbContext">The database context to use when accessing the database.</param>
+        /// <returns>An instance of the entity or null if not found.</returns>
+        public static Rock.Data.IEntity GetIEntityForEntityType( Type entityType, string key, Data.DbContext dbContext = null )
+        {
+            Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+
             if ( serviceInstance != null )
             {
                 System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( string ), typeof( bool ) } );

@@ -317,6 +317,7 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
+    <Compile Include="Rest\Controls\AuditDetailGetAuditDetailsOptionsBag.cs" />
     <Compile Include="Rest\Controls\BadgeListGetBadgesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategoryPickerChildTreeItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\DefinedValuePickerGetDefinedValuesOptionsBag.cs" />
@@ -334,7 +335,7 @@
     <Compile Include="Rest\Controls\PersonPickerSearchOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountOptionsBag.cs" />
     <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountResultBag.cs" />
-    <Compile Include="Utility\AuditDetailBag.cs" />
+    <Compile Include="Utility\EntityAuditBag.cs" />
     <Compile Include="Utility\PublicAttributeCategoryBag.cs" />
     <Compile Include="Utility\PublicComparisonValueBag.cs" />
     <Compile Include="Utility\PublicAttributeBag.cs" />

@@ -44,6 +44,56 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67")]
     public class ControlsController : ApiControllerBase 
     {
+        #region Audit Detail
+
+        /// <summary>
+        /// Gets the audit details about the entity.
+        /// </summary>
+        /// <param name="options">The options that describe which entity to be audited.</param>
+        /// <returns>A <see cref="EntityAuditBag"/> that contains the requested information.</returns>
+        [HttpPost]
+        [Authenticate]
+        [System.Web.Http.Route( "AuditDetailGetAuditDetails" )]
+        [Rock.SystemGuid.RestActionGuid( "714d83c9-96e4-49d7-81af-2eed7d5ccd56" )]
+        public IHttpActionResult AuditDetailGetAuditDetails( [FromBody] AuditDetailGetAuditDetailsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // Get the entity type identifier to use to lookup the entity.
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid )?.GetEntityType();
+
+                if ( entityType == null )
+                {
+                    return NotFound();
+                }
+
+                var entity = Reflection.GetIEntityForEntityType( entityType, options.EntityKey, rockContext ) as IModel;
+
+                if ( entity == null )
+                {
+                    return NotFound();
+                }
+
+                // If the entity can be secured, ensure the person has access to it.
+                if ( entity is ISecured securedEntity )
+                {
+                    var isAuthorized = securedEntity.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( entity, Authorization.VIEW ) == true;
+
+                    if ( !isAuthorized )
+                    {
+                        return Unauthorized();
+                    }
+                }
+
+                return Ok( entity.GetEntityAuditBag() );
+            }
+        }
+
+        #endregion
+
         #region Badge List
 
         /// <summary>

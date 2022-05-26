@@ -1678,4 +1678,6 @@ export const enum Page {
     ContributionStatementPage = "98EBADAF-CCA9-4893-9DD3-D8201D8BD7FA",
     /** The system communication preview internal page. */
     SystemCommunicationPreview = "FD8E0C71-9543-4CAB-9918-76A67EFE5093",
+    /** The connection requests bulk update page */
+    ConnectionRequestsBulkUpdate = "1F5D34CF-89C1-426C-A139-83D87905D669",
 }

@@ -269,6 +269,8 @@ export const enum EntityType {
     WorkflowType = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE",
     /** The EntityType Guid for Rock.Model.WorkflowActionType */
     WorkflowActionType = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6",
+    /** The EntityType Guid for Rock.Model.WorkflowFormBuilderTemplate. */
+    WorkflowFormBuilderTemplate = "65fa3078-9d42-4857-b78a-f32a05f7a4c1",
     /** The guid for the Test Financial Gateway entity type */
     FinancialGatewayTestGateway = "C22B0247-7C9F-411B-A1F5-0051FCBAC199",
     /** The guid for the Step entity type */

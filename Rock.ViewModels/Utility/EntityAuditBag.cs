@@ -21,13 +21,19 @@ namespace Rock.ViewModels.Utility
     /// <summary>
     /// Contains the information required to show the audit panel details for a model.
     /// </summary>
-    public class AuditDetailBag
+    public class EntityAuditBag
     {
         /// <summary>
         /// Gets or sets the identifier of the model.
         /// </summary>
         /// <value>The identifier of the model.</value>
         public int? Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier key of the model.
+        /// </summary>
+        /// <value>The identifier key of the model.</value>
+        public string IdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier of the model.
