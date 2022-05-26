@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -3388,6 +3388,15 @@ function onTaskCompleted( resultData )
         /// </summary>
         private CommunicationRecipient GetSampleCommunicationRecipient( Rock.Model.Communication communication, RockContext rockContext )
         {
+            // Update the recipients in the communication
+            UpdateCommunicationRecipients( communication, rockContext );
+
+            // If we have recipients in the communication then just return the first one.
+            if ( communication.Recipients.Any() )
+            {
+                return communication.Recipients.First();
+            }
+
             var recipientPersonId = 0;
 
             if ( IndividualRecipientPersonIds.Count == 0 )
@@ -3414,8 +3423,11 @@ function onTaskCompleted( resultData )
             // If there are additional merge fields, get the merge values connected to the sample recipient.
             if ( communication.AdditionalMergeFields.Any() )
             {
-                recipient.AdditionalMergeValues = new CommunicationRecipientService( rockContext ).GetByCommunicationId( communication.Id )
-                    .Where( cr => cr.PersonAlias.Id == recipient.PersonAlias.Id ).First().AdditionalMergeValues;
+                recipient.AdditionalMergeValues = new CommunicationRecipientService( rockContext )
+                    .GetByCommunicationId( communication.Id )
+                    .Where( cr => cr.PersonAlias.Id == recipient.PersonAlias.Id )
+                    .FirstOrDefault()?
+                    .AdditionalMergeValues;
             }
 
             return recipient;
