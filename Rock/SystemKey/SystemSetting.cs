@@ -250,5 +250,10 @@ namespace Rock.SystemKey
         /// The statement generator configuration
         /// </summary>
         public const string STATEMENT_GENERATOR_CONFIG = "core_StatementGeneratorConfig";
+
+        /// <summary>
+        /// Security Settings (Account Protection profiles)
+        /// </summary>
+        public const string ROCK_SECURITY_SETTINGS = "core_RockSecuritySettings";
     }
 }

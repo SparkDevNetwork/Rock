@@ -30,7 +30,6 @@ namespace Rock.Security
     /// </summary>
     public class SecuritySettingsService
     {
-        private const string SYSTEM_SETTING_KEY = "core_RockSecuritySettings";
         private List<ValidationResult> _validationResults;
 
         /// <summary>
@@ -58,10 +57,12 @@ namespace Rock.Security
         public SecuritySettingsService()
         {
             _validationResults = new List<ValidationResult>();
-            var securitySettings = SystemSettings.GetValue( SYSTEM_SETTING_KEY ).FromJsonOrNull<SecuritySettings>();
+            var securitySettings = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS ).FromJsonOrNull<SecuritySettings>();
             if ( securitySettings == null )
             {
                 securitySettings = GetDefaultSecuritySettings();
+                SecuritySettings = securitySettings;
+                Save();
             }
             else
             {
@@ -82,24 +83,6 @@ namespace Rock.Security
         /// <returns></returns>
         private SecuritySettings GetDefaultSecuritySettings()
         {
-            Group adminGroup = null;
-            Group dataIntegrityGroup = null;
-
-            using ( var rockContext = new RockContext() )
-            {
-                var groupService = new GroupService( rockContext );
-                adminGroup = groupService.GetByGuid( SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );
-                dataIntegrityGroup = groupService.GetByGuid( SystemGuid.Group.GROUP_DATA_INTEGRITY_WORKER.AsGuid() );
-            }
-
-            var allRoles = RoleCache.AllRoles();
-            var adminRole = allRoles
-                .Where( r => r.Guid == SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() )
-                .FirstOrDefault();
-            var dataIntegrityRole = allRoles
-                .Where( r => r.Guid == SystemGuid.Group.GROUP_DATA_INTEGRITY_WORKER.AsGuid() )
-                .FirstOrDefault();
-
             return new SecuritySettings
             {
                 AccountProtectionProfilesForDuplicateDetectionToIgnore = new List<AccountProtectionProfile> {
@@ -109,8 +92,8 @@ namespace Rock.Security
                 },
                 AccountProtectionProfileSecurityGroup = new Dictionary<AccountProtectionProfile, RoleCache>
                 {
-                    { AccountProtectionProfile.Extreme, adminRole },
-                    { AccountProtectionProfile.High, dataIntegrityRole }
+                    { AccountProtectionProfile.Extreme, RoleCache.Get( SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ) },
+                    { AccountProtectionProfile.High, RoleCache.Get( SystemGuid.Group.GROUP_DATA_INTEGRITY_WORKER.AsGuid() ) }
                 },
                 DisableTokensForAccountProtectionProfiles = new List<AccountProtectionProfile> {
                     AccountProtectionProfile.Extreme
@@ -126,7 +109,7 @@ namespace Rock.Security
         {
             if ( Validate() )
             {
-                SystemSettings.SetValue( SYSTEM_SETTING_KEY, this.SecuritySettings.ToJson() );
+                SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS, this.SecuritySettings.ToJson() );
                 return true;
             }
 
