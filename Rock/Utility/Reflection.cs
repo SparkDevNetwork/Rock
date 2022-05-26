@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -486,6 +487,10 @@ namespace Rock
             return entityGuid;
         }
 
+        // Cache the ServiceType that we found when doing reflection. Doing reflection each time could take a few milliseconds,
+        // but once we cache it, it'll only a few microseconds to get the type
+        private static ConcurrentDictionary<Type, Type> serviceTypesByEntityTypeLookup = new ConcurrentDictionary<Type, Type>();
+
         /// <summary>
         /// Gets the appropriate Rock.Data.IService based on the entity type
         /// </summary>
@@ -494,18 +499,40 @@ namespace Rock
         /// <returns></returns>
         public static Rock.Data.IService GetServiceForEntityType( Type entityType, System.Data.Entity.DbContext dbContext )
         {
-            Type serviceType = typeof( Rock.Data.Service<> );
-            if ( entityType.Assembly != serviceType.Assembly )
+            Type serviceTypeForEntityType;
+
+            serviceTypesByEntityTypeLookup.TryGetValue( entityType, out serviceTypeForEntityType );
+            if ( serviceTypeForEntityType == null )
             {
-                var serviceTypeLookup = Reflection.SearchAssembly( entityType.Assembly, serviceType );
-                if ( serviceTypeLookup.Any() )
+                /* 05/25/2022 MDP
+
+                  To find the appropriate Service class for the entity type, we'll
+                  use reflection to find the class that was code-generated (or manually created) for the EntityType.
+                  For example, PersonService is the derived class for Service<Person> and GroupService is the derived class for Group
+
+                  Just in case we can't find it a derived class, we'll just do the Service<T>.
+                  For example, if the entityType is plugin.Model.PotLuck, there might not be a derived service for that.
+                  So, we'll use Service<plugin.Model.PotLuck> in that case
+
+                */
+
+                // Find service that has this entity type's base class of Service<T>
+                serviceTypeForEntityType = Reflection.FindTypes( typeof( IService ) ).Values.Where( a => a.GetGenericArgumentsOfBaseType( typeof( Service<> ) ).Any( g => g == entityType ) ).FirstOrDefault();
+                if ( serviceTypeForEntityType == null)
                 {
-                    serviceType = serviceTypeLookup.First().Value;
+                    // No derived class, so use Service<T>
+                    // This could happen if this is a plugin IEntity, for example: plugin.Model.PotLuck
+                    Type serviceType = typeof( Rock.Data.Service<> );
+                    serviceTypeForEntityType = serviceType.MakeGenericType( new Type[] { entityType } );
+                }
+
+                if ( serviceTypeForEntityType != null )
+                {
+                    serviceTypesByEntityTypeLookup.TryAdd( entityType, serviceTypeForEntityType );
                 }
             }
 
-            Type service = serviceType.MakeGenericType( new Type[] { entityType } );
-            Rock.Data.IService serviceInstance = Activator.CreateInstance( service, dbContext ) as Rock.Data.IService;
+            Rock.Data.IService serviceInstance = Activator.CreateInstance( serviceTypeForEntityType, dbContext ) as Rock.Data.IService;
             return serviceInstance;
         }
 
