@@ -61,6 +61,7 @@ import FileUploader from "@Obsidian/Controls/fileUploader";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
 import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker";
+import AssessmentTypePicker from "@Obsidian/Controls/assessmentTypePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
@@ -74,7 +75,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-import { BinaryFiletype, DefinedType, EntityType, FieldType } from "@Obsidian/SystemGuids";
+import { BinaryFiletype, DefinedType, EntityType, FieldType, AssessmentType } from "@Obsidian/SystemGuids";
 import { SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
@@ -2389,6 +2390,9 @@ const entityTypePickerGallery = defineComponent({
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
         </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
     </template>
 </GalleryAndResult>`
 });
@@ -2844,6 +2848,81 @@ const followingGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates assessment type picker */
+const assessmentTypePickerGallery = defineComponent({
+    name: "AssessmentTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        AssessmentTypePicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            isInactiveIncluded: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({ value: AssessmentType.Disc, text: "DISC" }),
+            importCode: getControlImportPath("assessmentTypePicker"),
+            exampleCode: `<AssessmentTypePicker label="Assessment Type" v-model="value" :isInactiveIncluded="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <AssessmentTypePicker label="Assessment Type"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :isInactiveIncluded="isInactiveIncluded"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Include Inactive" v-model="isInactiveIncluded" help="When set, inactive assessments will be included in the list." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Button</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 
 const controlGalleryComponents: Record<string, Component> = [
@@ -2897,7 +2976,8 @@ const controlGalleryComponents: Record<string, Component> = [
     entityTagListGallery,
     followingGallery,
     achievementTypePickerGallery,
-    badgeComponentPickerGallery
+    badgeComponentPickerGallery,
+    assessmentTypePickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

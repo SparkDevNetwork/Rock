@@ -1143,6 +1143,46 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Assessment Type Picker
+
+        /// <summary>
+        /// Gets the achievement types that can be displayed in the achievement type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssessmentTypePickerGetAssessmentTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "B47DCE1B-89D7-4DD5-88A7-B3C393D49A7C  " )]
+        public IHttpActionResult AssessmentTypePickerGetEntityTypes( [FromBody] AssessmentTypePickerGetAssessmentTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = AssessmentTypeCache.All( rockContext )
+                    .Where( at =>
+                    {
+                        if (options.isInactiveIncluded == true)
+                        {
+                            return true;
+                        }
+
+                        return at.IsActive;
+                    } )
+                    .OrderBy( at => at.Title )
+                    .ThenBy( at => at.Id )
+                    .Select( at => new ListItemBag
+                    {
+                        Value = at.Guid.ToString(),
+                        Text = at.Title
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Badge Component Picker
 
         /// <summary>
