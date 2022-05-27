@@ -1111,5 +1111,35 @@ namespace Rock.Rest.v2
         }
 
         #endregion
+
+        #region Achievement Type Picker
+
+        /// <summary>
+        /// Gets the achievement types that can be displayed in the achievement type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AchievementTypePickerGetAchievementTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "F98E3033-C652-4031-94B3-E7C44ECA51AA" )]
+        public IHttpActionResult AchievementTypePickerGetEntityTypes( [FromBody] AchievementTypePickerGetAchievementTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = AchievementTypeCache.All( rockContext )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.Name,
+                        Category = t.Category?.Name
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
     }
 }

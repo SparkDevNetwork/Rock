@@ -15,15 +15,14 @@
 // </copyright>
 //
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
-import { emptyGuid } from "@Obsidian/Utility/guid";
 import { post } from "@Obsidian/Utility/http";
-import { EntityTypePickerGetEntityTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTypePickerGetEntityTypesOptionsBag";
+import { AchievementTypePickerGetAchievementTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/achievementTypePickerGetAchievementTypesOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
 
 export default defineComponent({
-    name: "EntityTypePicker",
+    name: "AchievementTypePicker",
 
     components: {
         BaseAsyncPicker
@@ -33,11 +32,6 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
-        },
-
-        includeGlobalOption: {
-            type: Boolean as PropType<boolean>,
-            default: false
         },
 
         ...standardAsyncPickerProps
@@ -63,7 +57,7 @@ export default defineComponent({
          * post-processing, such as adding additional items, and still be lazy loaded as well.
          */
         const actualItems = computed((): ListItemBag[] | (() => Promise<ListItemBag[]>) => {
-            return loadedItems.value ? postProcessItems(loadedItems.value) : loadOptions;
+            return loadedItems.value || loadOptions;
         });
 
         // #endregion
@@ -71,37 +65,16 @@ export default defineComponent({
         // #region Functions
 
         /**
-         * Perform additional processing on the items based on our property
-         * settings.
-         *
-         * @param items The items to be processed.
-         *
-         * @returns A new array of items that have been processed.
-         */
-        const postProcessItems = (items: ListItemBag[]): ListItemBag[] => {
-            const processedItems = [...items];
-
-            if (props.includeGlobalOption) {
-                processedItems.splice(0, 0, {
-                    value: emptyGuid,
-                    text: "None (Global Attributes)"
-                });
-            }
-
-            return processedItems;
-        };
-
-        /**
          * Loads the items from the server.
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
-            const options: Partial<EntityTypePickerGetEntityTypesOptionsBag> = {
+            const options: Partial<AchievementTypePickerGetAchievementTypesOptionsBag> = {
             };
-            const result = await post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, options);
+            const result = await post<ListItemBag[]>("/api/v2/Controls/AchievementTypePickerGetAchievementTypes", undefined, options);
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;
-                return postProcessItems(result.data);
+                return result.data;
             }
             else {
                 console.error(result.errorMessage ?? "Unknown error while loading data.");
