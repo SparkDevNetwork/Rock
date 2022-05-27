@@ -21,11 +21,12 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Http;
-
+using Rock.Badge;
 using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Extension;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -42,7 +43,7 @@ namespace Rock.Rest.v2
     /// </summary>
     [RoutePrefix( "api/v2/Controls" )]
     [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67")]
-    public class ControlsController : ApiControllerBase 
+    public class ControlsController : ApiControllerBase
     {
         #region Audit Detail
 
@@ -1138,6 +1139,109 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        #endregion
+
+        #region Badge Component Picker
+
+        /// <summary>
+        /// Gets the badge components that can be displayed in the badge component picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of list items that represent the badge components.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BadgeComponentPickerGetBadgeComponents" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ABDFC10F-BCCC-4AF1-8DB3-88A26862485D" )]
+        public IHttpActionResult BadgeComponentPickerGetEntityTypes( [FromBody] BadgeComponentPickerGetBadgeComponentsOptionsBag options )
+        {
+            var componentsList = GetComponentListItems( "Rock.Badge.BadgeContainer, Rock", ( Component component ) =>
+            {
+                var badgeComponent = component as BadgeComponent;
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid.GetValueOrDefault() )?.Name;
+
+                return badgeComponent != null && badgeComponent.DoesApplyToEntityType(entityType);
+            } );
+
+            return Ok( componentsList );
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Retrieve a list of ListItems representing components for the given container type
+        /// </summary>
+        /// <param name="containerType"></param>
+        /// <returns>A list of ListItems representing components</returns>
+        protected List<ListItemBag> GetComponentListItems( string containerType )
+        {
+            return GetComponentListItems( containerType, (x) => true );
+        }
+
+        /// <summary>
+        /// Retrieve a list of ListItems representing components for the given container type. Filters any components
+        /// out that don't pass the given validator
+        /// </summary>
+        /// <param name="containerType"></param>
+        /// <param name="isValidComponentChecker"></param>
+        /// <returns>A list of ListItems representing components</returns>
+        protected List<ListItemBag> GetComponentListItems( string containerType, Func<Component, bool> isValidComponentChecker )
+        {
+            if ( containerType.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var resolvedContainerType = Type.GetType( containerType );
+
+            if ( resolvedContainerType == null )
+            {
+                return null;
+            }
+
+            var instanceProperty = resolvedContainerType.GetProperty( "Instance" );
+
+            if ( instanceProperty == null )
+            {
+                return null;
+            }
+
+            var container = instanceProperty.GetValue( null, null ) as IContainer;
+            var componentDictionary = container?.Dictionary;
+
+            var items = new List<ListItemBag>();
+
+            foreach ( var component in componentDictionary )
+            {
+                var componentValue = component.Value.Value;
+                var entityType = EntityTypeCache.Get( componentValue.GetType() );
+
+                if ( !componentValue.IsActive || entityType == null || !isValidComponentChecker(componentValue) )
+                {
+                    continue;
+                }
+
+                var componentName = component.Value.Key;
+
+                // If the component name already has a space then trust
+                // that they are using the exact name formatting they want.
+                if ( !componentName.Contains( ' ' ) )
+                {
+                    componentName = componentName.SplitCase();
+                }
+
+                items.Add( new ListItemBag
+                {
+                    Text = componentName,
+                    Value = entityType.Guid.ToString().ToUpper()
+                } );
+            }
+
+
+            return items;
         }
 
         #endregion
