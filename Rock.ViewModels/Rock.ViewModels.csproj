@@ -327,6 +327,7 @@
     <Compile Include="Rest\Controls\EntityTagListGetEntityTagsOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListRemoveEntityTagOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTagListTagBag.cs" />
+    <Compile Include="Rest\Controls\AssessmentTypePickerGetAssessmentTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\EntityTypePickerGetEntityTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\FollowingGetFollowingOptionsBag.cs" />
     <Compile Include="Rest\Controls\FollowingGetFollowingResponseBag.cs" />
