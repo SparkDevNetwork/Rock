@@ -61,6 +61,7 @@ import FileUploader from "@Obsidian/Controls/fileUploader";
 import ImageUploader from "@Obsidian/Controls/imageUploader";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
 import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker";
+import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderPicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
@@ -2778,6 +2779,74 @@ const followingGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Asset Storage Provider picker */
+const assetStorageProviderPickerGallery = defineComponent({
+    name: "AssetStorageProviderPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        AssetStorageProviderPicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("assetStorageProviderPicker"),
+            exampleCode: `<AssetStorageProviderPicker label="Asset Storage Provider" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <AssetStorageProviderPicker label="Asset Storage Provider"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
 
 
 const controlGalleryComponents: Record<string, Component> = [
@@ -2830,7 +2899,8 @@ const controlGalleryComponents: Record<string, Component> = [
     copyButtonGallery,
     entityTagListGallery,
     followingGallery,
-    achievementTypePickerGallery
+    achievementTypePickerGallery,
+    assetStorageProviderPickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

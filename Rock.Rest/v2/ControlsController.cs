@@ -1141,5 +1141,37 @@ namespace Rock.Rest.v2
         }
 
         #endregion
+
+        #region Asset Storage Provider Picker
+
+        /// <summary>
+        /// Gets the asset storage providers that can be displayed in the asset storage provider picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetStorageProviderPickerGetAssetStorageProviders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "665EDE0C-1FEA-4421-B355-4D4F72B7E26E" )]
+        public IHttpActionResult AssetStorageProviderPickerGetAssetStorageProviders( [FromBody] AssetStorageProviderPickerGetAssetStorageProvidersOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = new AssetStorageProviderService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( g => g.EntityTypeId.HasValue && g.IsActive )
+                    .OrderBy( g => g.Name )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.Name
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
     }
 }
