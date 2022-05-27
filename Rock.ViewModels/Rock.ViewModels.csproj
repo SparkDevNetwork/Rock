@@ -49,6 +49,7 @@
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
     <Compile Include="Blocks\CRM\PersonDetail\Badges\BadgesConfigurationBox.cs" />
     <Compile Include="Blocks\DetailBlockBox.cs" />
+    <Compile Include="Blocks\Engagement\StepFlowBox.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateDetail\ValueSourcesViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateListItemViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormValueSourcesViewModel.cs" />
+    <Compile Include="Blocks\Engagement\FlowNodeDiagramBag.cs" />
     <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
     <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
     <Compile Include="CRM\RenderedBadgeBag.cs" />
@@ -362,5 +364,6 @@
       <Name>Rock.Enums</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

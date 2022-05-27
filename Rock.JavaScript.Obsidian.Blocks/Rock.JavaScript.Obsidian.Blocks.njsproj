@@ -40,6 +40,9 @@
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\CRM\" />
     <Folder Include="src\CRM\PersonDetail\" />
+    <Folder Include="src\Engagement\" />
+    <Folder Include="src\Engagement\Steps\" />
+    <Folder Include="src\Engagement\Steps\StepFlow\" />
     <Folder Include="src\Event\" />
     <Folder Include="src\Event\RegistrationEntry\" />
     <Folder Include="src\Example\" />
@@ -61,6 +64,8 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.ts" />
     <TypeScriptCompile Include="src\CRM\attributeValues.ts" />
     <TypeScriptCompile Include="src\CRM\PersonDetail\badges.ts" />
+    <TypeScriptCompile Include="src\Engagement\Steps\stepFlow.ts" />
+    <TypeScriptCompile Include="src\Engagement\Steps\StepFlow\flowNodeDiagram.ts" />
     <TypeScriptCompile Include="src\Event\registrationEntry.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationEntry\costSummary.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationEntry\discountCodeForm.partial.ts" />
