@@ -139,7 +139,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if [allow checkout default]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowCheckoutDefault => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( false );
+        public bool AllowCheckoutDefault => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK ).AsBoolean( false );
 
         /// <summary>
         /// Gets a value indicating whether [enable presence].

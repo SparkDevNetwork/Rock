@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemKey
 {
     /// <summary>
@@ -130,7 +132,19 @@ namespace Rock.SystemKey
         /// <summary>
         /// Attribute key for GroupTypes that allow checkout
         /// </summary>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "This value is no longer used. We'll leave this in in case a plugin is still using it but won't allow the old attribute to be edited." )]
         public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT = "core_checkin_AllowCheckout";
+
+        /// <summary>
+        /// Attribute key for GroupTypes that allow checkout using the kiosks
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK = "core_checkin_AllowCheckout_Kiosk";
+
+        /// <summary>
+        /// Attribute key for GroupTypes that allows checkout to be enabled in the check-in Manager 
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER = "core_checkin_AllowCheckout_Manager";
 
         /// <summary>
         /// Attribute key for GroupTypes that have presence enabled

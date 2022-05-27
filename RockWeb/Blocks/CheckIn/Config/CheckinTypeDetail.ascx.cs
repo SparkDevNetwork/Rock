@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -264,7 +264,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeAlphaLength", nbCodeAlphaLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericLength", nbCodeNumericLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", cbCodeRandom.Checked.ToString() );
-                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT, cbAllowCheckout.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK, cbAllowCheckoutAtKiosk.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER, cbAllowCheckoutInManager.Checked.ToString() );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE, cbEnablePresence.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectDaysBack", nbAutoSelectDaysBack.Text );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectOptions", ddlAutoSelectOptions.SelectedValueAsInt() );
@@ -538,7 +539,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 nbCodeAlphaLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" );
                 nbCodeNumericLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" );
                 cbCodeRandom.Checked = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericRandom" ).AsBoolean( true );
-                cbAllowCheckout.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( true );
+                cbAllowCheckoutAtKiosk.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK ).AsBoolean( true );
+                cbAllowCheckoutInManager.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean( true );
                 cbEnablePresence.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
                 nbAutoSelectDaysBack.Text = groupType.GetAttributeValue( "core_checkin_AutoSelectDaysBack" );
                 ddlAutoSelectOptions.SetValue( groupType.GetAttributeValue( "core_checkin_AutoSelectOptions" ) );
