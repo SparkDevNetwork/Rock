@@ -70,6 +70,7 @@ import LocationPicker from "@Obsidian/Controls/locationPicker";
 import CopyButton from "@Obsidian/Controls/copyButton";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import Following from "@Obsidian/Controls/following";
+import AuditDetail from "@Obsidian/Controls/auditDetail";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -2826,7 +2827,6 @@ const followingGallery = defineComponent({
     },
     template: `
 <GalleryAndResult
-    :value="value"
     :importCode="importCode"
     :exampleCode="exampleCode">
     <Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" :disabled="disabled" />
@@ -2994,6 +2994,45 @@ const assetStorageProviderPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates audit detail. */
+const auditDetailGallery = defineComponent({
+    name: "AuditDetailGallery",
+    components: {
+        GalleryAndResult,
+        AuditDetail,
+        TextBox
+    },
+    setup() {
+        const store = useStore();
+
+        return {
+            entityTypeGuid: ref(EntityType.Person),
+            entityKey: ref(store.state.currentPerson?.idKey ?? ""),
+            importCode: getControlImportPath("auditDetail"),
+            exampleCode: `<AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+    <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox label="Entity Key" v-model="entityKey" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
 
 const controlGalleryComponents: Record<string, Component> = [
     attributeValuesContainerGallery,
@@ -3048,7 +3087,8 @@ const controlGalleryComponents: Record<string, Component> = [
     achievementTypePickerGallery,
     badgeComponentPickerGallery,
     assessmentTypePickerGallery,
-    assetStorageProviderPickerGallery
+    assetStorageProviderPickerGallery,
+    auditDetailGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
