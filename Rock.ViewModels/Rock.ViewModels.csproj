@@ -319,6 +319,8 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
+    <Compile Include="Rest\Controls\BinaryFilePickerGetBinaryFileOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BinaryFileTypePickerGetBinaryFileTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetStorageProviderPickerGetAssetStorageProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AuditDetailGetAuditDetailsOptionsBag.cs" />
     <Compile Include="Rest\Controls\AchievementTypePickerGetAchievementTypesOptionsBag.cs" />

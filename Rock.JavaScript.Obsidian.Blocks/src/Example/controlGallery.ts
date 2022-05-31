@@ -63,6 +63,8 @@ import EntityTypePicker from "@Obsidian/Controls/entityTypePicker";
 import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker";
 import AssessmentTypePicker from "@Obsidian/Controls/assessmentTypePicker";
 import AssetStorageProviderPicker from "@Obsidian/Controls/assetStorageProviderPicker";
+import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker";
+import BinaryFilePicker from "@Obsidian/Controls/binaryFilePicker";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker";
@@ -2994,6 +2996,149 @@ const assetStorageProviderPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+
+/** Demonstrates Binary File type picker */
+const binaryFileTypePickerGallery = defineComponent({
+    name: "BinaryFileTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        BinaryFileTypePicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("binaryFileTypePicker"),
+            exampleCode: `<BinaryFileTypePicker label="Binary File Type" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <BinaryFileTypePicker label="Binary File Type"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates BinaryFile  picker */
+const binaryFilePickerGallery = defineComponent({
+    name: "BinaryFilePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        BinaryFilePicker,
+        BinaryFileTypePicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            binaryFileType: ref({
+                "value": BinaryFiletype.Default
+            }),
+            value: ref({}),
+            importCode: getControlImportPath("binaryFilePicker"),
+            exampleCode: `<BinaryFilePicker label="Binary File" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <BinaryFilePicker label="Binary File"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :binaryFileTypeGuid="binaryFileType.value" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+
+            <div class="col-md-4">
+                <BinaryFileTypePicker label="Binary File Type" v-model="binaryFileType" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates audit detail. */
 const auditDetailGallery = defineComponent({
     name: "AuditDetailGallery",
@@ -3088,7 +3233,9 @@ const controlGalleryComponents: Record<string, Component> = [
     badgeComponentPickerGallery,
     assessmentTypePickerGallery,
     assetStorageProviderPickerGallery,
-    auditDetailGallery
+    auditDetailGallery,
+    binaryFileTypePickerGallery,
+    binaryFilePickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

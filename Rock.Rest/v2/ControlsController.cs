@@ -1159,15 +1159,7 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var items = AssessmentTypeCache.All( rockContext )
-                    .Where( at =>
-                    {
-                        if (options.isInactiveIncluded == true)
-                        {
-                            return true;
-                        }
-
-                        return at.IsActive;
-                    } )
+                    .Where( at => options.isInactiveIncluded == true || at.IsActive )
                     .OrderBy( at => at.Title )
                     .ThenBy( at => at.Id )
                     .Select( at => new ListItemBag
@@ -1202,6 +1194,69 @@ namespace Rock.Rest.v2
                     .Queryable().AsNoTracking()
                     .Where( g => g.EntityTypeId.HasValue && g.IsActive )
                     .OrderBy( g => g.Name )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.Name
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Binary File Picker
+
+        /// <summary>
+        /// Gets the asset storage providers that can be displayed in the asset storage provider picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BinaryFilePickerGetBinaryFiles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9E5F190E-91FD-4E50-9F00-8B4F9DBD874C" )]
+        public IHttpActionResult BinaryFilePickerGetBinaryFiles( [FromBody] BinaryFilePickerGetBinaryFilesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = new BinaryFileService( new RockContext() )
+                    .Queryable()
+                    .Where( f => f.BinaryFileType.Guid == options.BinaryFileTypeGuid && !f.IsTemporary )
+                    .OrderBy( f => f.FileName )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.FileName
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Binary File Type Picker
+
+        /// <summary>
+        /// Gets the binary file types that can be displayed in the binary file type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BinaryFileTypePickerGetBinaryFileTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "C93E5A06-82DE-4475-88B8-B173C03BFB50" )]
+        public IHttpActionResult BinaryFileTypePickerGetBinaryFileTypes( [FromBody] BinaryFileTypePickerGetBinaryFileTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = new BinaryFileTypeService( rockContext )
+                    .Queryable()
+                    .OrderBy( f => f.Name )
                     .Select( t => new ListItemBag
                     {
                         Value = t.Guid.ToString(),
