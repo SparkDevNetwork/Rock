@@ -113,6 +113,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a queryable of Interaction Components that are tied to Rock Sites with Geo Tracking enabled.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<InteractionComponent> QueryByPagesOnSitesWithGeoTracking()
+        {
+            var rockContext = this.Context as Rock.Data.RockContext;
+            var interactionChannelService = new InteractionChannelService( rockContext );
+
+            // Get a queryable of interaction channels of sites with geo tracking enabled
+            var interactionChannelQry = interactionChannelService.QueryBySitesWithGeoTracking().Select( a => a.Id );
+            
+            return this.Queryable().Where( a => interactionChannelQry.Contains( a.InteractionChannelId ) );
+        }
+
+        /// <summary>
         /// Deletes the specified GroupLocation and sets GroupLocationHistorical.GroupLocationId to NULL.
         /// Will not delete the GroupLocation and return false if the GroupLocationHistorical.GroupLocationId fails to update.
         /// Will try to determine current person alias from HttpContext.
