@@ -196,6 +196,7 @@
                                     <Rock:RockListBox ID="lbRegistrationOptionalAttributesForChildren" runat="server" Label="Optional Attributes for Children" />
                                     <Rock:RockListBox ID="lbRegistrationRequiredAttributesForFamilies" runat="server" Label="Required Attributes for Families" />
                                     <Rock:RockListBox ID="lbRegistrationOptionalAttributesForFamilies" runat="server" Label="Optional Attributes for Families" />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayBirthdateOnAdults" runat="server" Label="Display Birthdate on Adults" Help="How should Birthdate be displayed for adults?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayBirthdateOnChildren" runat="server" Label="Display Birthdate on Children" Help="How should Birthdate be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayGradeOnChildren" runat="server" Label="Display Grade on Children" Help="How should Grade be displayed for children?" />
                                 </div>

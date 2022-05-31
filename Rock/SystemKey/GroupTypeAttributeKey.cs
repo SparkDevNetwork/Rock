@@ -116,6 +116,11 @@ namespace Rock.SystemKey
         public const string CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN = "core_checkin_registration_DisplayBirthdateOnChildren";
 
         /// <summary>
+        /// Show or hide the control to set the Birthdate on Adults
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS = "core_checkin_registration_DisplayBirthdateOnAdults";
+
+        /// <summary>
         /// Show or hide the control to set the Grade on Children
         /// </summary>
         public const string CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN = "core_checkin_registration_DisplayGradeOnChildren";

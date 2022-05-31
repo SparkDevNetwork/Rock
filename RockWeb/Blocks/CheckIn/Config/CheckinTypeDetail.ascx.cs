@@ -306,6 +306,10 @@ namespace RockWeb.Blocks.CheckIn.Config
                     ddlRegistrationDisplayBirthdateOnChildren.SelectedValue );
 
                 groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS,
+                    ddlRegistrationDisplayBirthdateOnAdults.SelectedValue );
+
+                groupType.SetAttributeValue(
                     Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN,
                     ddlRegistrationDisplayGradeOnChildren.SelectedValue );
 
@@ -562,6 +566,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 lbRegistrationOptionalAttributesForFamilies.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES ).SplitDelimitedValues() );
 
                 ddlRegistrationDisplayBirthdateOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN ) );
+                ddlRegistrationDisplayBirthdateOnAdults.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS ) );
                 ddlRegistrationDisplayGradeOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN ) );
 
                 int? defaultPersonConnectionStatusValueId = null;
@@ -664,6 +669,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN );
 
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE );
@@ -882,6 +888,11 @@ namespace RockWeb.Blocks.CheckIn.Config
             ddlRegistrationDisplayBirthdateOnChildren.Items.Add( ControlOptions.HIDE );
             ddlRegistrationDisplayBirthdateOnChildren.Items.Add( ControlOptions.OPTIONAL );
             ddlRegistrationDisplayBirthdateOnChildren.Items.Add( ControlOptions.REQUIRED );
+
+            ddlRegistrationDisplayBirthdateOnAdults.Items.Clear();
+            ddlRegistrationDisplayBirthdateOnAdults.Items.Add( ControlOptions.HIDE );
+            ddlRegistrationDisplayBirthdateOnAdults.Items.Add( ControlOptions.OPTIONAL );
+            ddlRegistrationDisplayBirthdateOnAdults.Items.Add( ControlOptions.REQUIRED );
 
             ddlRegistrationDisplayGradeOnChildren.Items.Clear();
             ddlRegistrationDisplayGradeOnChildren.Items.Add( ControlOptions.HIDE );
