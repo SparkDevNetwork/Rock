@@ -15,8 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Tasks;
 
@@ -24,6 +26,27 @@ namespace Rock.Model
 {
     public partial class ConnectionRequest
     {
+        private HashSet<int> _processedConnectionStatusAutomations = null;
+        private bool _runAutomationsInPostSaveChanges = true;
+
+        /// <summary>
+        /// To help protect again an infinite loop, keep track of the automations
+        /// that have already run.
+        /// </summary>
+        /// <value>The processed connection status automations.</value>
+        private HashSet<int> processedConnectionStatusAutomations
+        {
+            get
+            {
+                if ( _processedConnectionStatusAutomations == null )
+                {
+                    _processedConnectionStatusAutomations = new HashSet<int>();
+                }
+
+                return _processedConnectionStatusAutomations;
+            }
+        }
+
         /// <summary>
         /// Save hook implementation for <see cref="ConnectionRequest"/>.
         /// </summary>
@@ -33,8 +56,6 @@ namespace Rock.Model
             private History.HistoryChangeList HistoryChangeList { get; set; }
 
             private History.HistoryChangeList PersonHistoryChangeList { get; set; }
-
-            private ProcessConnectionRequestChange.Message _processConnectionRequestChangeMessage = null;
 
             /// <summary>
             /// Called before the save operation is executed.
@@ -47,9 +68,6 @@ namespace Rock.Model
                 HistoryChangeList = new History.HistoryChangeList();
                 PersonHistoryChangeList = new History.HistoryChangeList();
                 var connectionRequest = this.Entity as ConnectionRequest;
-
-                // Create a change notification message to be sent after the connection request has been saved.
-                _processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( Entry, connectionRequest, currentPersonAliasId );
 
                 var rockContext = ( RockContext ) this.RockContext;
                 var connectionOpportunity = connectionRequest.ConnectionOpportunity;
@@ -130,8 +148,13 @@ namespace Rock.Model
             /// </remarks>
             protected override void PostSave()
             {
-                // Send the change notification message now that the connection request has been saved.
-                _processConnectionRequestChangeMessage.Send();
+                // Get the current person's alias ID from the current context.
+                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+                var connectionRequest = this.Entity as ConnectionRequest;
+
+                // Create and send the change notification message now that the connection request has been saved.
+                var processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( Entry, connectionRequest, currentPersonAliasId );
+                processConnectionRequestChangeMessage.SendWhen( this.DbContext.WrappedTransactionCompletedTask );
 
                 var rockContext = ( RockContext ) this.RockContext;
                 if ( Entity.ConnectionStatus == null )
@@ -145,20 +168,40 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
 
-                if ( Entity.ConnectionStatus.ConnectionStatusAutomations.Any() )
+                var connectionStatusAutomationsQuery = new ConnectionStatusAutomationService( rockContext ).Queryable().Where( a => a.SourceStatusId == Entity.ConnectionStatusId );
+
+                if ( this.Entity._runAutomationsInPostSaveChanges && connectionStatusAutomationsQuery.Any() )
                 {
-                    foreach ( var connectionStatusAutomation in Entity.ConnectionStatus.ConnectionStatusAutomations )
+                    var connectionStatusAutomationsList = connectionStatusAutomationsQuery.AsNoTracking().OrderBy( a => a.AutomationName ).ToList();
+                    var connectionStatusAutomations = connectionStatusAutomationsList;
+                    int changedStatusCount = 0;
+                    foreach ( var connectionStatusAutomation in connectionStatusAutomations )
                     {
+                        if ( this.Entity.processedConnectionStatusAutomations.Contains( connectionStatusAutomation.Id ) )
+                        {
+                            // to avoid recursion, skip over automations that have already been processed in this thread.
+                            continue;
+                        }
+
+                        if ( Entity.ConnectionStatusId == connectionStatusAutomation.DestinationStatusId )
+                        {
+                            // If already have this status, no need to figure out if it needs to be set to this status,
+                            // or to set the status.
+                            this.Entity.processedConnectionStatusAutomations.Add( connectionStatusAutomation.Id );
+                            continue;
+                        }
+
                         bool isAutomationValid = true;
                         if ( connectionStatusAutomation.DataViewId.HasValue )
                         {
                             // Get the dataview configured for the connection request
                             var dataViewService = new DataViewService( rockContext );
                             var dataview = dataViewService.Get( connectionStatusAutomation.DataViewId.Value );
+
                             if ( dataview != null )
                             {
-                                var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
-                                isAutomationValid = dataview.GetQuery( dataViewGetQueryArgs ).Any( a => a.Id == Entity.Id );
+                                var dataViewQuery = new ConnectionRequestService( rockContext ).GetQueryUsingDataView( dataview );
+                                isAutomationValid = dataViewQuery.Any( a => a.Id == Entity.Id );
                             }
                         }
 
@@ -199,34 +242,48 @@ namespace Rock.Model
 
                         if ( isAutomationValid )
                         {
-                            Entity.ConnectionStatusId = connectionStatusAutomation.DestinationStatusId;
-
-                            // disabled pre post processing in order to prevent circular loop that may arise due to status change.
-                            rockContext.SaveChanges( true );
+                            if ( Entity.SetConnectionStatusFromAutomationLoop( connectionStatusAutomation ) )
+                            {
+                                changedStatusCount++;
+                                rockContext.SaveChanges();
+                            }
                         }
                     }
                 }
 
-                if ( HistoryChangeList?.Any() == true )
+                var hasHistoryChanges = HistoryChangeList?.Any() == true;
+                var hasPersonHistoryChanges = PersonHistoryChangeList?.Any() == true;
+                if ( hasHistoryChanges || hasPersonHistoryChanges )
                 {
-                    HistoryService.SaveChanges( rockContext, typeof( ConnectionRequest ), Rock.SystemGuid.Category.HISTORY_CONNECTION_REQUEST.AsGuid(), Entity.Id, HistoryChangeList, true, Entity.ModifiedByPersonAliasId );
-                }
+                    using ( var historyRockContext = new RockContext() )
+                    {
+                        if ( hasHistoryChanges )
+                        {
+                            HistoryService.SaveChanges( historyRockContext, typeof( ConnectionRequest ), Rock.SystemGuid.Category.HISTORY_CONNECTION_REQUEST.AsGuid(), Entity.Id, HistoryChangeList, false, Entity.ModifiedByPersonAliasId );
+                        }
 
-                if ( PersonHistoryChangeList?.Any() == true )
-                {
-                    var personAlias = Entity.PersonAlias ?? new PersonAliasService( rockContext ).Get( Entity.PersonAliasId );
-                    HistoryService.SaveChanges(
-                                rockContext,
-                                typeof( Person ),
-                                Rock.SystemGuid.Category.HISTORY_PERSON_CONNECTION_REQUEST.AsGuid(),
-                                personAlias.PersonId,
-                                PersonHistoryChangeList,
-                                "Request",
-                                typeof( ConnectionRequest ),
-                                Entity.Id,
-                                true,
-                                Entity.ModifiedByPersonAliasId,
-                                rockContext.SourceOfChange );
+                        if ( hasPersonHistoryChanges )
+                        {
+                            var personId = Entity.PersonAlias?.PersonId ?? new PersonAliasService( rockContext ).GetPersonId( Entity.PersonAliasId );
+                            if ( personId.HasValue )
+                            {
+                                HistoryService.SaveChanges(
+                                            historyRockContext,
+                                            typeof( Person ),
+                                            Rock.SystemGuid.Category.HISTORY_PERSON_CONNECTION_REQUEST.AsGuid(),
+                                            personId.Value,
+                                            PersonHistoryChangeList,
+                                            "Request",
+                                            typeof( ConnectionRequest ),
+                                            Entity.Id,
+                                            false,
+                                            Entity.ModifiedByPersonAliasId,
+                                            rockContext.SourceOfChange );
+                            }
+                        }
+
+                        historyRockContext.SaveChanges( false );
+                    }
                 }
 
                 base.PostSave();
@@ -240,7 +297,7 @@ namespace Rock.Model
                     message.State = entry.State;
 
                     // If the current person alias has a value, set that value for the message.
-                    if (currentPersonAliasId.HasValue)
+                    if ( currentPersonAliasId.HasValue )
                     {
                         message.InitiatorPersonAliasId = currentPersonAliasId;
                     }

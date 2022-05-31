@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter by Previous Checkin" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "5151FB64-35C6-48B3-ACCF-959BAD3A31CA")]
     public class FilterByPreviousCheckin : CheckInActionComponent
     {
         /// <summary>

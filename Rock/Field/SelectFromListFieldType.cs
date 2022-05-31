@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -51,9 +51,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var clientValues = base.GetPublicConfigurationValues( privateConfigurationValues );
+            var clientValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
             var repeatColumns = privateConfigurationValues.GetValueOrNull( REPEAT_COLUMNS )?.AsIntegerOrNull() ?? 0;
 
@@ -63,7 +63,7 @@ namespace Rock.Field.Types
             }
 
             var values = GetListSource( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) )
-                    .Select( kvp => new ListItemViewModel
+                    .Select( kvp => new ListItemBag
                     {
                         Value = kvp.Key,
                         Text = kvp.Value

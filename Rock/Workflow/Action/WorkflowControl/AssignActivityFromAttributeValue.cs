@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Attribute", "The person or group attribute value to assign this activity to.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "F100A31F-E93A-4C7A-9E55-0FAF41A101C4")]
     public class AssignActivityFromAttributeValue : ActionComponent
     {
         /// <summary>

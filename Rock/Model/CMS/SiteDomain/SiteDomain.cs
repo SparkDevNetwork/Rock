@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "SiteDomain" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "4C4CD7DD-427C-45EC-9651-F8250D3CAB5F")]
     public partial class SiteDomain : Model<SiteDomain>, IOrdered, ICacheable
     {
         #region Entity Properties

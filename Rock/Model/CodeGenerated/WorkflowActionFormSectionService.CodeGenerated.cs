@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// WorkflowActionFormSection View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( WorkflowActionFormSection ) )]
-    public partial class WorkflowActionFormSectionViewModelHelper : ViewModelHelper<WorkflowActionFormSection, Rock.ViewModel.WorkflowActionFormSectionViewModel>
+    public partial class WorkflowActionFormSectionViewModelHelper : ViewModelHelper<WorkflowActionFormSection, WorkflowActionFormSectionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.WorkflowActionFormSectionViewModel CreateViewModel( WorkflowActionFormSection model, Person currentPerson = null, bool loadAttributes = true )
+        public override WorkflowActionFormSectionBag CreateViewModel( WorkflowActionFormSection model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.WorkflowActionFormSectionViewModel
+            var viewModel = new WorkflowActionFormSectionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 Order = model.Order,
                 SectionTypeValueId = model.SectionTypeValueId,
@@ -188,7 +188,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.WorkflowActionFormSectionViewModel ToViewModel( this WorkflowActionFormSection model, Person currentPerson = null, bool loadAttributes = false )
+        public static WorkflowActionFormSectionBag ToViewModel( this WorkflowActionFormSection model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new WorkflowActionFormSectionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

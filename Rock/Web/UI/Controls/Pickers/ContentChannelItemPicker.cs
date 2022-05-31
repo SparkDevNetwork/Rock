@@ -142,6 +142,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _ddlContentChannelItem.Required;
             }
+
             set
             {
                 EnsureChildControls();
@@ -275,16 +276,11 @@ namespace Rock.Web.UI.Controls
                 int contentChannelItemId = value ?? 0;
                 if ( _ddlContentChannelItem.SelectedValue != contentChannelItemId.ToString() )
                 {
-                    if ( !ContentChannelId.HasValue )
+                    var contentChannelItem = new Rock.Model.ContentChannelItemService( new RockContext() ).Get( contentChannelItemId );
+                    if ( contentChannelItem != null && _ddlContentChannel.SelectedValue != contentChannelItem.ContentChannelId.ToString() )
                     {
-                        var contentChannelItem = new Rock.Model.ContentChannelItemService( new RockContext() ).Get( contentChannelItemId );
-                        if ( contentChannelItem != null &&
-                            _ddlContentChannel.SelectedValue != contentChannelItem.ContentChannelId.ToString() )
-                        {
-                            _ddlContentChannel.SelectedValue = contentChannelItem.ContentChannelId.ToString();
-
-                            LoadContentChannelItems( contentChannelItem.ContentChannelId );
-                        }
+                        _ddlContentChannel.SelectedValue = contentChannelItem.ContentChannelId.ToString();
+                        LoadContentChannelItems( contentChannelItem.ContentChannelId );
                     }
 
                     _ddlContentChannelItem.SelectedValue = contentChannelItemId.ToString();
@@ -323,7 +319,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlContentChannelItem = new RockDropDownList();
             _ddlContentChannelItem.EnhanceForLongLists = true;
-            
+
             _ddlContentChannelItem.ID = this.ID + "_ddlContentChannelItem";
             Controls.Add( _ddlContentChannelItem );
 

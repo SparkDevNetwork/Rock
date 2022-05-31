@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -106,7 +107,7 @@ namespace Rock.Model
     /// Schedule View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Schedule ) )]
-    public partial class ScheduleViewModelHelper : ViewModelHelper<Schedule, Rock.ViewModel.ScheduleViewModel>
+    public partial class ScheduleViewModelHelper : ViewModelHelper<Schedule, ScheduleBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -115,17 +116,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ScheduleViewModel CreateViewModel( Schedule model, Person currentPerson = null, bool loadAttributes = true )
+        public override ScheduleBag CreateViewModel( Schedule model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ScheduleViewModel
+            var viewModel = new ScheduleBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AutoInactivateWhenComplete = model.AutoInactivateWhenComplete,
                 CategoryId = model.CategoryId,
                 CheckInEndOffsetMinutes = model.CheckInEndOffsetMinutes,
@@ -138,7 +138,6 @@ namespace Rock.Model
                 Name = model.Name,
                 Order = model.Order,
                 WeeklyDayOfWeek = ( int? ) model.WeeklyDayOfWeek,
-                WeeklyTimeOfDay = model.WeeklyTimeOfDay,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -238,7 +237,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ScheduleViewModel ToViewModel( this Schedule model, Person currentPerson = null, bool loadAttributes = false )
+        public static ScheduleBag ToViewModel( this Schedule model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ScheduleViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

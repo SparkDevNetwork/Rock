@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -82,6 +82,7 @@ namespace Rock.Workflow.Action
         DefaultBooleanValue = false,
         Order = 5,
         Key = AttributeKey.SaveCommunicationHistory )]
+    [Rock.SystemGuid.EntityTypeGuid( "F22FA171-B5E7-497F-9AE6-F7B98A377D0E")]
     public class SendSms : ActionComponent
     {
         #region Workflow Attributes

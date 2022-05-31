@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionAlert" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "0E60F95E-70B5-4A06-9BEE-80ED9F12F25A")]
     public class FinancialTransactionAlert : Model<FinancialTransactionAlert>
     {
         #region Entity Properties

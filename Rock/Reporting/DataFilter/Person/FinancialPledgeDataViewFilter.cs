@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select Person by their Pledges from a Financial Pledge View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Financial Pledge View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "2353A81B-C1B1-4DAE-8B02-7E4DA37EE383")]
     public class FinancialPledgeDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.FinancialPledge>
     {
         #region Overrides

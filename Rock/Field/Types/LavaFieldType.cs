@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ namespace Rock.Field.Types
     /// Lava Field Type.  Stored as text
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LAVA )]
     public class LavaFieldType : CodeEditorFieldType
     {
         #region Formatting
@@ -45,7 +46,7 @@ namespace Rock.Field.Types
         {
             string newValue = value;
 
-            if ( value.HasMergeFields() )
+            if ( value.IsLavaTemplate() )
             {
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                 if ( entityTypeId.HasValue && entityId.HasValue )

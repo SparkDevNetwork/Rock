@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Follow
     [Category( "Follow" )]
     [Description( "Block for displaying people that current person follows." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "BD548744-DC6D-4870-9FED-BB9EA24E709B" )]
     public partial class PersonFollowingList : RockBlock, ICustomGridColumns
     {
 

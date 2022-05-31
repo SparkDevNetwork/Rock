@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,6 +66,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONTENT_CHANNEL_ITEM_VIEW_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "B76B5F10-D2D6-4C60-B6FB-F913A62442E0")]
     public class ContentChannelItemView : RockMobileBlockType
     {
         /// <summary>

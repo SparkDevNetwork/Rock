@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Badge.Component
     [LinkedPage( "Detail Page", "Select the page to navigate when the badge is clicked.", false, order: 2 )]
     [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa-random", key: "BadgeIconCss", order:3 )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd", order: 4 )]
+    [Rock.SystemGuid.EntityTypeGuid( "DE2F669D-4321-466F-BFC2-AE4F9952C2ED")]
     public class InteractionsInRange : BadgeComponent
     {
         /// <summary>

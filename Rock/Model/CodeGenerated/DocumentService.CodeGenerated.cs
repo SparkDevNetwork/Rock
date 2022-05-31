@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// Document View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Document ) )]
-    public partial class DocumentViewModelHelper : ViewModelHelper<Document, Rock.ViewModel.DocumentViewModel>
+    public partial class DocumentViewModelHelper : ViewModelHelper<Document, DocumentBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.DocumentViewModel CreateViewModel( Document model, Person currentPerson = null, bool loadAttributes = true )
+        public override DocumentBag CreateViewModel( Document model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.DocumentViewModel
+            var viewModel = new DocumentBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 DocumentTypeId = model.DocumentTypeId,
                 EntityId = model.EntityId,
@@ -180,7 +180,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.DocumentViewModel ToViewModel( this Document model, Person currentPerson = null, bool loadAttributes = false )
+        public static DocumentBag ToViewModel( this Document model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new DocumentViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

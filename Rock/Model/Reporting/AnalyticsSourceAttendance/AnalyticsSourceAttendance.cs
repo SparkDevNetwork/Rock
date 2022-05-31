@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [DataContract]
     [HideFromReporting]
     [CodeGenExclude( CodeGenFeature.ViewModelFile )]
+    [Rock.SystemGuid.EntityTypeGuid( "BCE52831-6FEF-4521-9E4A-AE5C29F20E2F")]
     public class AnalyticsSourceAttendance : AnalyticsBaseAttendance<AnalyticsSourceAttendance>
     {
         // intentionally blank.  See AnalyticsBaseAttendance.

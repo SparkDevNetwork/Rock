@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Order = 2 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "730F5D9E-A411-48F2-BBDF-51146C510817" )]
     public partial class GroupScheduleRoster : RockBlock
     {
         private static class AttributeDefault

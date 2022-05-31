@@ -16,15 +16,19 @@
 //
 
 import { Component, computed, defineComponent, PropType, ref, watch } from "vue";
-import RockField from "../Controls/rockField";
-import Alert from "../Elements/alert";
-import DropDownList from "../Elements/dropDownList";
-import StaticFormControl from "../Elements/staticFormControl";
-import { getFieldType } from "../Fields/index";
-import { get, post } from "../Util/http";
-import { areEqual } from "../Util/guid";
-import { PublicEditableAttributeValue, ListItem } from "../ViewModels";
-import { FieldTypeConfigurationPropertiesViewModel, FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
+import RockField from "./rockField";
+import Alert from "./alert";
+import DropDownList from "./dropDownList";
+import StaticFormControl from "./staticFormControl";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { get, post } from "@Obsidian/Utility/http";
+import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
+import { FieldTypeEditorUpdateAttributeConfigurationResultBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationResultBag";
+import { updateRefValue } from "@Obsidian/Utility/component";
+import { deepEqual } from "@Obsidian/Utility/util";
 
 export default defineComponent({
     name: "FieldTypeEditor",
@@ -38,7 +42,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Object as PropType<FieldTypeConfigurationViewModel | null>,
+            type: Object as PropType<FieldTypeEditorUpdateAttributeConfigurationOptionsBag | null>,
             default: null
         },
 
@@ -53,6 +57,8 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
+        const internalValue = ref(props.modelValue);
+
         /** The selected field type in the drop down list. */
         const fieldTypeValue = ref(props.modelValue?.fieldTypeGuid ?? "");
 
@@ -60,13 +66,13 @@ export default defineComponent({
         let resetToDefaultsTimer: number | null = null;
 
         /** The details about the default value used for the field. */
-        const defaultValue = ref<PublicEditableAttributeValue | null>(null);
+        const defaultValue = ref("");
 
         /** The current configuration properties that describe the field type options. */
         const configurationProperties = ref<Record<string, string>>({});
 
-        /** The current options selected in the configuration properties. */
-        const configurationOptions = ref<Record<string, string>>(props.modelValue?.configurationOptions ?? {});
+        /** The current values selected in the configuration properties. */
+        const configurationValues = ref<Record<string, string>>(props.modelValue?.configurationValues ?? {});
 
         /** True if the default value component should be shown. */
         const hasDefaultValue = computed((): boolean => {
@@ -95,7 +101,7 @@ export default defineComponent({
         const fieldErrorMessage = ref("");
 
         /** The options to be shown in the field type drop down control. */
-        const fieldTypeOptions = ref<ListItem[]>([]);
+        const fieldTypeOptions = ref<ListItemBag[]>([]);
 
         /** The UI component that will handle the configuration of the field type. */
         const configurationComponent = computed((): Component | null => {
@@ -115,7 +121,21 @@ export default defineComponent({
         const fieldTypeName = computed((): string => {
             const matches = fieldTypeOptions.value.filter(v => areEqual(v.value, fieldTypeValue.value));
 
-            return matches.length >= 1 ? matches[0].text : "";
+            return matches.length >= 1 ? matches[0].text ?? "" : "";
+        });
+
+        const defaultValueAttribute = computed((): PublicAttributeBag => {
+            return {
+                fieldTypeGuid: fieldTypeValue.value,
+                attributeGuid: newGuid(),
+                configurationValues: configurationValues.value,
+                name: "Default Value",
+                key: "DefaultValue",
+                description: "",
+                isRequired: false,
+                order: 0,
+                categories: []
+            };
         });
 
         /**
@@ -133,13 +153,15 @@ export default defineComponent({
                 return;
             }
 
-            const newValue: FieldTypeConfigurationViewModel = {
+            const newValue: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
                 fieldTypeGuid: fieldTypeValue.value,
-                configurationOptions: configurationOptions.value,
-                defaultValue: defaultValue.value?.value ?? ""
+                configurationValues: configurationValues.value,
+                defaultValue: defaultValue.value ?? ""
             };
 
-            emit("update:modelValue", newValue);
+            // This only updates if the value has actually changed, which removes
+            // some false dirty state.
+            updateRefValue(internalValue, newValue);
         };
 
         /**
@@ -155,8 +177,8 @@ export default defineComponent({
             isConfigurationReady.value = false;
             isInternalUpdate = true;
             configurationProperties.value = {};
-            configurationOptions.value = {};
-            defaultValue.value = null;
+            configurationValues.value = {};
+            defaultValue.value = "";
             isInternalUpdate = false;
 
             updateModelValue();
@@ -170,25 +192,25 @@ export default defineComponent({
                 return;
             }
 
-            const update: FieldTypeConfigurationViewModel = {
+            const update: FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
                 fieldTypeGuid: fieldTypeValue.value,
-                configurationOptions: configurationOptions.value,
+                configurationValues: configurationValues.value,
                 defaultValue: currentDefaultValue
             };
 
-            post<FieldTypeConfigurationPropertiesViewModel>("/api/v2/Controls/FieldTypeEditor/fieldTypeConfiguration", null, update)
+            post<FieldTypeEditorUpdateAttributeConfigurationResultBag>("/api/v2/Controls/FieldTypeEditorUpdateAttributeConfiguration", null, update)
                 .then(result => {
                     resetToDefaults();
                     console.debug("got configuration", result.data);
 
-                    if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationOptions && result.data.defaultValue) {
+                    if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationValues) {
                         fieldErrorMessage.value = "";
                         isConfigurationReady.value = true;
 
                         isInternalUpdate = true;
                         configurationProperties.value = result.data.configurationProperties;
-                        configurationOptions.value = result.data.configurationOptions;
-                        defaultValue.value = result.data.defaultValue;
+                        configurationValues.value = result.data.configurationValues;
+                        defaultValue.value = result.data.defaultValue ?? "";
                         isInternalUpdate = false;
 
                         updateModelValue();
@@ -197,6 +219,33 @@ export default defineComponent({
                         fieldErrorMessage.value = result.errorMessage ?? "Encountered unknown error communicating with server.";
                     }
                 });
+        };
+
+        /** Called when the default value has been changed by the screen control. */
+        const onDefaultValueUpdate = (value: string): void => {
+            console.debug("default value updated");
+            defaultValue.value = value;
+            updateModelValue();
+        };
+
+        /**
+         * Called when the field type configuration control requests that the
+         * configuration properties be updated from the server.
+         */
+        const onUpdateConfiguration = (): void => {
+            console.debug("onUpdateConfiguration");
+            updateFieldConfiguration(defaultValue.value ?? "");
+        };
+
+        /**
+         * Called when the field type configuration control has updated one of
+         * the configuration values that does not require a full reload.
+         * 
+         * @param key The key of the configuration value that was changed.
+         * @param value The new value of the configuration value.
+         */
+        const onUpdateConfigurationValue = (_key: string, _value: string): void => {
+            updateModelValue();
         };
 
         // Called when the field type drop down value is changed.
@@ -208,38 +257,21 @@ export default defineComponent({
             updateFieldConfiguration("");
         });
 
-        /** Called when the default value has been changed by the screen control. */
-        const onDefaultValueUpdate = (): void => {
-            console.debug("default value updated");
-            updateModelValue();
-        };
-
-        /**
-         * Called when the field type configuration control requests that the
-         * configuration properties be updated from the server.
-         */
-        const onUpdateConfiguration = (): void => {
-            console.debug("onUpdateConfiguration");
-            updateFieldConfiguration(defaultValue.value?.value ?? "");
-        };
-
-        /**
-         * Called when the field type configuration control has updated one of
-         * the configuration values that does not require a full reload.
-         * 
-         * @param key The key of the configuration value that was changed.
-         * @param value The new value of the configuration value.
-         */
-        const onUpdateConfigurationValue = (key: string, value: string): void => {
-            if (defaultValue.value?.configurationValues) {
-                console.debug("update configuration value", key, value);
-                defaultValue.value.configurationValues[key] = value;
-                updateModelValue();
+        // Watch for changes to our internal value and update the model value.
+        watch(internalValue, () => {
+            // Normally, this deepEqual wouldn't be needed. But there are times
+            // where the internalValue is changed twice. For example, we will
+            // reset the value to blank and then set the proper value. In that
+            // case this watch will be triggered because it detects the value
+            // did indeed change, but we need to check if it was just a toggle
+            // to a blank value and then back to the model value.
+            if (!deepEqual(internalValue.value, props.modelValue, true)) {
+                emit("update:modelValue", internalValue.value);
             }
-        };
+        });
 
         // Get all the available field types that the user is allowed to edit.
-        get<ListItem[]>("/api/v2/Controls/FieldTypeEditor/availableFieldTypes")
+        post<ListItemBag[]>("/api/v2/Controls/FieldTypeEditorGetAvailableFieldTypes", undefined, {})
             .then(result => {
                 if (result.isSuccess && result.data) {
                     fieldTypeOptions.value = result.data;
@@ -255,9 +287,10 @@ export default defineComponent({
 
         return {
             configurationComponent,
-            configurationOptions,
+            configurationValues,
             configurationProperties,
             defaultValue,
+            defaultValueAttribute,
             hasDefaultValue,
             fieldErrorMessage,
             fieldTypeName,
@@ -275,13 +308,13 @@ export default defineComponent({
 <div>
     <template v-if="isFieldTypesReady">
         <StaticFormControl v-if="isFieldTypeReadOnly" label="Field Type" v-model="fieldTypeName" />
-        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :options="fieldTypeOptions" rules="required" />
+        <DropDownList v-else label="Field Type" v-model="fieldTypeValue" :items="fieldTypeOptions" rules="required" />
     </template>
     <Alert v-if="fieldErrorMessage" alertType="warning">
         {{ fieldErrorMessage }}
     </Alert>
-    <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationOptions" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
-    <RockField v-if="hasDefaultValue" :attributeValue="defaultValue" @update:attributeValue="onDefaultValueUpdate" isEditMode />
+    <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
+    <RockField v-if="hasDefaultValue" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
 </div>
 `
 });

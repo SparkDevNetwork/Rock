@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -71,6 +71,7 @@ namespace RockWeb.Blocks.Event
 
     [CustomRadioListField( "Approval Status Filter", "Allows filtering events by their approval status.", "1^Approved, 2^Unapproved, 3^All", true, "1", key: "ApprovalStatusFilter", order: 22 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "8760D668-8ADF-48C8-9D90-09461FB75B88" )]
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
         #region Fields

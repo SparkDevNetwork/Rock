@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Storage.AssetStorage
     [ExportMetadata( "ComponentName", "ServerFileSystem" )]
 
     [TextField( name: "Root Folder", description: "", required: true, defaultValue: "~/", category: "", order: 0, key: "RootFolder" )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_FILESYSTEM )]
     public class FileSystemComponent : AssetStorageComponent
     {
         #region Properties

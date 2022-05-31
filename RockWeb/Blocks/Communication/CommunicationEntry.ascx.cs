@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.Communication
         Order = 2 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY )]
     public partial class CommunicationEntry : RockBlock
     {
         #region Attribute Keys
@@ -908,7 +909,7 @@ namespace RockWeb.Blocks.Communication
         private void ShowDetail( Rock.Model.Communication communication )
         {
             Recipients.Clear();
-
+            int? mediumEntityTypeId = null;
             if ( communication != null && communication.Id > 0 )
             {
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
@@ -930,9 +931,11 @@ namespace RockWeb.Blocks.Communication
                         a.Status,
                         a.StatusNote,
                         a.OpenedClient,
-                        a.OpenedDateTime
+                        a.OpenedDateTime,
+                        a.MediumEntityTypeId
                     } ).ToList();
 
+                mediumEntityTypeId = recipientList.Where( a => a.MediumEntityTypeId.HasValue ).Select( a => a.MediumEntityTypeId ).FirstOrDefault();
                 Recipients = recipientList.Select( recipient => new Recipient( recipient.Person, recipient.PersonHasSMS, recipient.HasPersonalDevice, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) ).ToList();
             }
             else
@@ -967,6 +970,10 @@ namespace RockWeb.Blocks.Communication
             CommunicationId = communication.Id;
 
             BindMediums();
+            if ( mediumEntityTypeId.HasValue && !ViewedEntityTypes.Contains( mediumEntityTypeId.Value ) )
+            {
+                ViewedEntityTypes.Add( mediumEntityTypeId.Value );
+            }
 
             CommunicationData = new CommunicationDetails();
             CommunicationDetails.Copy( communication, CommunicationData );

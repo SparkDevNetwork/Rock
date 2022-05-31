@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -92,6 +92,7 @@ namespace RockWeb.Blocks.Finance
         DefaultIntegerValue = 180,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "48E4225F-8948-4FB0-8F00-1B43D3D9B3C3" )]
     public partial class GivingAnalytics : RockBlock
     {
         private static class AttributeKeys
@@ -1812,12 +1813,12 @@ function(item) {
                 }
                 else
                 {
-                    gGiversGifts.DataSource = qry.Sort( gGiversGifts.SortProperty ).ToList();
+                    gGiversGifts.SetLinqDataSource( qry.Sort( gGiversGifts.SortProperty ) );
                 }
             }
             else
             {
-                gGiversGifts.DataSource = qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName ).ToList();
+                gGiversGifts.SetLinqDataSource( qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName ) );
             }
 
             gGiversGifts.DataBind();

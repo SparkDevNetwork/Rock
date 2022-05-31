@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupDemographicValue" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "C9CED7B0-88BF-40D1-83D1-A58B3C57A2E1")]
     public partial class GroupDemographicValue : Model<GroupDemographicValue>
     {
         #region Entity Properties
@@ -138,7 +139,7 @@ namespace Rock.Model
                 // since this will get called on every save, don't spend time attempting to convert a large string to a decimal.
                 // SQL Server type is decimal(18,2) so 18 digits max with 2 being the fractional. Including the possibility of 4 commas
                 // and a decimal point to get a max string length of 24 that can be turned into the SQL number type.
-                if ( this.Value.IsNull() || this.Value.Length > 24 )
+                if ( this.Value == null || this.Value.Length > 24 )
                 {
                     _valueAsNumeric = null;
                     return _valueAsNumeric;

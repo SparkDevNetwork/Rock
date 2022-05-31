@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultIntegerValue = 6,
         Order = 0,
         Key = AttributeKey.FutureWeeksToShow )]
+    [Rock.SystemGuid.BlockTypeGuid( "37D43C21-1A4D-4B13-9555-EF0B7304EB8A" )]
     public partial class GroupScheduler : RockBlock
     {
         /// <summary>
@@ -230,7 +231,6 @@ btnCopyToClipboard.ClientID );
             {
                 _listedEndOfWeekDates.Add( endOfWeekDate );
                 endOfWeekDate = endOfWeekDate.AddDays( 7 );
-                i++;
             }
 
             rptWeekSelector.DataSource = _listedEndOfWeekDates;
@@ -547,8 +547,8 @@ btnCopyToClipboard.ClientID );
             }
 
             // NOTE: if PageParameters or UserPreferences specify an invalid combination of ResourceSourceType and GroupId,
-            // For example, an AlternateGroupId but when a Group has GroupRequirements, 
-            // ApplyFilter() will correct for it 
+            // For example, an AlternateGroupId but when a Group has GroupRequirements,
+            // ApplyFilter() will correct for it
             SetResourceListSourceType( resourceListSourceType, groupMemberFilterType );
 
             gpResourceListAlternateGroup.SetValue( this.GetUrlSettingOrBlockUserPreference( PageParameterKey.AlternateGroupId, UserPreferenceKey.AlternateGroupId ).AsIntegerOrNull() );
@@ -696,7 +696,7 @@ btnCopyToClipboard.ClientID );
             var resourceListSourceType = ( GroupSchedulerResourceListSourceType ) hfSchedulerResourceListSourceType.Value.AsInteger();
             var groupMemberFilterType = ( SchedulerResourceGroupMemberFilterType ) hfResourceGroupMemberFilterType.Value.AsInteger();
 
-            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = Enum.GetValues( typeof( GroupSchedulerResourceListSourceType ) ).OfType<GroupSchedulerResourceListSourceType>().ToList();
+            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = typeof( GroupSchedulerResourceListSourceType ).GetOrderedValues<GroupSchedulerResourceListSourceType>().ToList();
 
             if ( selectedGroup != null && selectedGroup.SchedulingMustMeetRequirements )
             {
@@ -2253,9 +2253,9 @@ btnCopyToClipboard.ClientID );
             var group = groupMemberPerson.Group;
 
             /* 2020-07-23 MDP
-             *  Note that an Attendance record is for a Person, not a GroupMemberId, so GroupMemberId would be whatever GroupMember record was found for this 
+             *  Note that an Attendance record is for a Person, not a GroupMemberId, so GroupMemberId would be whatever GroupMember record was found for this
              *  Person in the Occurrence group.
-             *  So, if the person is in the group multiple times, the groupMember record would be first group member record for that person, sorted by GroupTypeRole.Order. 
+             *  So, if the person is in the group multiple times, the groupMember record would be first group member record for that person, sorted by GroupTypeRole.Order.
              *  But, they could have preferences for multiple group members records, so lookup by personId instead of GroupMemberId
              */
             var preferencesForGroup = groupMemberAssignmentQuery
@@ -2429,9 +2429,9 @@ btnCopyToClipboard.ClientID );
             var groupMemberAssignmentQuery = groupMemberAssignmentService.Queryable();
 
             /* 2020-07-23 MDP
-             *  Note that an Attendance record is for a Person, not a GroupMemberId, so GroupMemberId would be whatever GroupMember record was found for this 
+             *  Note that an Attendance record is for a Person, not a GroupMemberId, so GroupMemberId would be whatever GroupMember record was found for this
              *  Person in the Occurrence group.
-             *  So, f the person is in the group multiple times, the groupMember record would be first group member record for that person, sorted by GroupTypeRole.Order. 
+             *  So, f the person is in the group multiple times, the groupMember record would be first group member record for that person, sorted by GroupTypeRole.Order.
              *  But, they could have preferences for multiple group members records, so lookup by personId instead of GroupMemberId
              */
             int groupMemberPersonId = groupMember.PersonId;
@@ -2455,7 +2455,7 @@ btnCopyToClipboard.ClientID );
             groupMember.ScheduleTemplateId = ddlGroupMemberScheduleTemplate.SelectedValueAsId();
 
             /* 2020-07-23 MDP
-                 - 'Update Preference' means that the selected Schedule/Location is now their *only* preference for this Group. 
+                 - 'Update Preference' means that the selected Schedule/Location is now their *only* preference for this Group.
                     So, if they have preferences for other schedules for this group, delete them
                     see https://app.asana.com/0/0/1185765604320009/f
 

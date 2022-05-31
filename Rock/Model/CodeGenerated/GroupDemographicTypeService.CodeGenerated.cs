@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// GroupDemographicType View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( GroupDemographicType ) )]
-    public partial class GroupDemographicTypeViewModelHelper : ViewModelHelper<GroupDemographicType, Rock.ViewModel.GroupDemographicTypeViewModel>
+    public partial class GroupDemographicTypeViewModelHelper : ViewModelHelper<GroupDemographicType, GroupDemographicTypeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupDemographicTypeViewModel CreateViewModel( GroupDemographicType model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupDemographicTypeBag CreateViewModel( GroupDemographicType model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupDemographicTypeViewModel
+            var viewModel = new GroupDemographicTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ComponentEntityTypeId = model.ComponentEntityTypeId,
                 Description = model.Description,
                 GroupTypeId = model.GroupTypeId,
@@ -184,7 +184,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupDemographicTypeViewModel ToViewModel( this GroupDemographicType model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupDemographicTypeBag ToViewModel( this GroupDemographicType model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupDemographicTypeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

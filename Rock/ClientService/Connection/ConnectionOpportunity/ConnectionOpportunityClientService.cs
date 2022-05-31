@@ -19,9 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.Connection.ConnectionRequest;
+using Rock.ViewModels.Connection;
 
 namespace Rock.ClientService.Connection.ConnectionOpportunity
 {
@@ -49,47 +50,55 @@ namespace Rock.ClientService.Connection.ConnectionOpportunity
         #region Methods
 
         /// <summary>
-        /// Gets the opportunity request counts for the given opportunities. The
-        /// Person the service was initialized with is used to calculate
-        /// <see cref="ConnectionRequestCountsViewModel.AssignedToYouCount"/>.
+        /// Gets both the opportunity request counts (TotalCount and AssignedToYouCount) for the
+        /// given opportunities. The Person the service was initialized with is used to calculate
+        /// <see cref="ConnectionRequestCountsBag.AssignedToYouCount"/>.
         /// </summary>
         /// <remarks>This method does not check security, it is assumed you have already done so.</remarks>
         /// <param name="connectionOpportunityIds">The connection opportunity identifiers.</param>
         /// <returns>A dictionary of connection request count objects.</returns>
-        public Dictionary<int, ConnectionRequestCountsViewModel> GetOpportunityRequestCounts( IEnumerable<int> connectionOpportunityIds )
+        public Dictionary<int, ConnectionRequestCountsBag> GetOpportunityRequestCounts( IEnumerable<int> connectionOpportunityIds )
         {
             var connectionRequestService = new ConnectionRequestService( RockContext );
 
             // Create all counts as initially empty, this method must always return
             // a value for each opportunity id.
-            var requestCounts = connectionOpportunityIds.ToDictionary( id => id, _ => new ConnectionRequestCountsViewModel() );
-
-            // Fast out, if there is no logged in person then just return a
-            // bunch of zeros for now. Later if we add other counts we might
-            // need more complex logic.
-            if ( Person == null )
-            {
-                return requestCounts;
-            }
+            var requestCounts = connectionOpportunityIds.ToDictionary( id => id, _ => new ConnectionRequestCountsBag() );
 
             // Find all the connection requests assigned to the person.
-            var assignedToYouRequestQry = connectionRequestService.Queryable()
+            var activeConnectionRequestQry = connectionRequestService.Queryable()
                 .Where( r => connectionOpportunityIds.Contains( r.ConnectionOpportunityId )
-                    && r.ConnectionState == ConnectionState.Active
-                    && r.ConnectorPersonAliasId.HasValue
-                    && r.ConnectorPersonAlias.PersonId == Person.Id );
+                    && r.ConnectionState == ConnectionState.Active );
 
             // Group them by the connection opportunity and get the counts for
             // each opportunity.
-            assignedToYouRequestQry
-                .GroupBy( r => r.ConnectionOpportunityId )
-                .Select( g => new
-                {
-                    Id = g.Key,
-                    Count = g.Count()
-                } )
-                .ToList()
-                .ForEach( o => requestCounts[o.Id].AssignedToYouCount = o.Count );
+            if ( Person != null )
+            {
+                // If we have a Person (Person.Id) count their requests into the AssignedToYouCount along with the TotalCount.
+                activeConnectionRequestQry
+                    .GroupBy( r => r.ConnectionOpportunityId )
+                    .Select( g => new
+                    {
+                        Id = g.Key,
+                        Count = g.Count( r => r.ConnectorPersonAliasId.HasValue && r.ConnectorPersonAlias.PersonId == Person.Id ),
+                        TotalCount = g.Count()
+                    } )
+                    .ToList()
+                    .ForEach( o => { requestCounts[o.Id].AssignedToYouCount = o.Count; requestCounts[o.Id].TotalCount = o.TotalCount; } );
+            }
+            else
+            {
+                // Otherwise, we can only count the total into the TotalCount.
+                activeConnectionRequestQry
+                    .GroupBy( r => r.ConnectionOpportunityId )
+                    .Select( g => new
+                    {
+                        Id = g.Key,
+                        TotalCount = g.Count()
+                    } )
+                    .ToList()
+                    .ForEach( o =>  requestCounts[o.Id].TotalCount = o.TotalCount );
+            }
 
             return requestCounts;
         }

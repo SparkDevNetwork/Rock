@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Search.Other
     [Description("Universal Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Universal Search")]
+    [Rock.SystemGuid.EntityTypeGuid( "BD0FAAC1-2313-4D36-8B78-268715320F02")]
     public class Universal : SearchComponent
     {
 

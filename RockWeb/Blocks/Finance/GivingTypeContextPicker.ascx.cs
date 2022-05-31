@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Giving Type Context Setter" )]
     [Category( "Finance" )]
     [Description( "Block that can be used to set the Person context to either the current person or one of the current person's businesses." )]
+    [Rock.SystemGuid.BlockTypeGuid( "57B00D03-1CDC-4492-95CF-7BD127CE61F0" )]
     public partial class GivingTypeContextPicker : RockBlock
     {
         #region Base Control Methods

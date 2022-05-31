@@ -30,9 +30,8 @@ namespace Rock.Tests.Integration
         [AssemblyInitialize]
         public static void AssemblyInitialize( TestContext context )
         {
+            Rock.AssemblyInitializer.Initialize();
             LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true );
-            Bus.RockMessageBus.StartAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            Bus.RockMessageBus.IsRockStarted = true;
 
             new SampleData().Load( "http://storage.rockrms.com/sampledata/sampledata_1_7_0.xml" );
         }

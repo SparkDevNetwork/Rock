@@ -105,6 +105,11 @@ namespace Rock.SystemKey
         public const string ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER = "core_AlwaysShowBusinessInPersonPicker";
 
         /// <summary>
+        /// The setting to have Rock poll itself to keep it alive during times of inactivity. Usually this can stay disabled.
+        /// </summary>
+        public const string ENABLE_KEEP_ALIVE = "core_EnableKeepAlive";
+
+        /// <summary>
         /// The PDF external render endpoint to use for the <see cref="Pdf.PdfGenerator"/> instead of the local chrome engine
         /// For example: wss://chrome.browserless.io?token=YOUR-API-TOKEN
         /// </summary>
@@ -250,5 +255,15 @@ namespace Rock.SystemKey
         /// The statement generator configuration
         /// </summary>
         public const string STATEMENT_GENERATOR_CONFIG = "core_StatementGeneratorConfig";
+
+        /// <summary>
+        /// The default security grant token duration in minutes.
+        /// </summary>
+        public const string DEFAULT_SECURITY_GRANT_TOKEN_DURATION = "core_DefaultSecurityGrantTokenDuration";
+
+        /// <summary>
+        /// The security grant token earliest date. This provides support to revoke existing tokens.
+        /// </summary>
+        public const string SECURITY_GRANT_TOKEN_EARLIEST_DATE = "core_SecurityGrantTokenEarliestDate";
     }
 }

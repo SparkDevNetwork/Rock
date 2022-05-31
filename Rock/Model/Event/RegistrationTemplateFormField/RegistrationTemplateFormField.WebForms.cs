@@ -39,7 +39,7 @@ namespace Rock.Model
             switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
-                    var tbFirstName = new RockTextBox
+                    var tbFirstName = new FirstNameTextBox
                     {
                         ID = "tbFirstName",
                         Label = "First Name",
@@ -77,6 +77,12 @@ namespace Rock.Model
                         Enabled = !familyMemberSelected,
                         Text = setValue && fieldValue != null ? fieldValue.ToString() : string.Empty
                     };
+
+                    // Enable the middle name field if it is currently disabled but required and there is no value.
+                    if ( !tbMiddleName.Enabled && tbMiddleName.Required && tbMiddleName.Text.IsNullOrWhiteSpace() )
+                    {
+                        tbMiddleName.Enabled = true;
+                    }
 
                     personFieldControl = tbMiddleName;
                     break;

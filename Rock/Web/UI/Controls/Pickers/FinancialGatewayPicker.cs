@@ -86,7 +86,8 @@ namespace Rock.Web.UI.Controls
                 {
                     var entityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
                     GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
-                    if ( showAll || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
+
+                    if ( showAll || gateway.Id == selectedItem || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
                     {
                         this.Items.Add( new ListItem( gateway.Name, gateway.Id.ToString() ) );
                     }
@@ -94,7 +95,6 @@ namespace Rock.Web.UI.Controls
             }
 
             this.SetValue( selectedItem );
-
         }
     }
 }

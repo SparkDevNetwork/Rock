@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,11 +33,12 @@ using static Rock.Web.UI.Controls.SlidingDateRangePicker;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people based on the date of their first contribution " )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "First Contribution Date Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "B4B70487-E620-4BC1-8983-124578118BC0")]
     public class FirstContributionDateFilter : DataFilterComponent
     {
         #region Properties
@@ -84,7 +85,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -123,7 +124,7 @@ function() {
             string accountNames = string.Empty;
             if ( selectionConfig.AccountGuids != null && selectionConfig.AccountGuids.Any() )
             {
-                accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
+                accountNames = FinancialAccountCache.GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
             }
 
             string sundayDateString = selectionConfig.UseSundayDate == true ? "Sunday " : string.Empty;
@@ -189,12 +190,12 @@ function() {
 
             var accountIdList = ( controls[0] as AccountPicker ).SelectedValuesAsInt().ToList();
             string accountGuids = string.Empty;
-            var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIdList );
+            var accounts = FinancialAccountCache.GetByIds( accountIdList );
             if ( accounts != null && accounts.Any() )
             {
                 selectionConfig.AccountGuids = accounts.Select( a => a.Guid ).ToList();
             }
-            
+
             SlidingDateRangePicker slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
             selectionConfig.StartDate = slidingDateRangePicker.DateRangeModeStart;
             selectionConfig.EndDate = slidingDateRangePicker.DateRangeModeEnd;
@@ -256,7 +257,7 @@ function() {
                 .Queryable()
                 .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );
 
-            var accountIdList = new FinancialAccountService( ( RockContext ) serviceInstance.Context ).GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Id ).ToList();
+            var accountIdList = FinancialAccountCache.GetByGuids( selectionConfig.AccountGuids ).Select( a => a.Id ).ToList();
             if ( accountIdList.Any() )
             {
                 if ( accountIdList.Count == 1 )
@@ -446,7 +447,7 @@ function() {
                             // Try to get a DateRange from what we have
                             selectionConfig.DateRangeMode = SlidingDateRangeType.DateRange;
                             selectionConfig.StartDate = dateRangeValues[0].AsDateTime();
-                            
+
                             if ( dateRangeValues.Count() > 1 )
                             {
                                 selectionConfig.EndDate = dateRangeValues[1].AsDateTime();

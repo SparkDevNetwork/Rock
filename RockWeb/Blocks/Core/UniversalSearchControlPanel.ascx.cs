@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,12 +37,10 @@ using Rock.Tasks;
 
 namespace RockWeb.Blocks.Core
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Universal Search Control Panel" )]
     [Category( "Core" )]
     [Description( "Block to configure Rock's universal search features." )]
+    [Rock.SystemGuid.BlockTypeGuid( "59F03418-0638-48E0-877D-B2F15B52C540" )]
     public partial class UniversalSearchControlPanel : Rock.Web.UI.RockBlock
     {
         #region Fields

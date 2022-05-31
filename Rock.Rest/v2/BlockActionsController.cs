@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,8 +41,8 @@ namespace Rock.Rest.v2
     /// API controller for the /api/v2/BlockActions endpoints.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
-    [RockGuid( "31d6b6fc-7740-483a-81d2-d62283f67c0a" )]
-    public class BlockActionsController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "31D6B6FC-7740-483A-81D2-D62283F67C0A")]
+    public class BlockActionsController : ApiControllerBase 
     {
         #region API Methods
 
@@ -56,7 +56,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [HttpGet]
         [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        [RockGuid( "cc3de0c2-8703-4925-a16c-f47a31fe9c69" )]
+        [Rock.SystemGuid.RestActionGuid( "CC3DE0C2-8703-4925-A16C-F47A31FE9C69" )]
         public IHttpActionResult BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
         {
             return ProcessAction( this, pageGuid, blockGuid, actionName, null );
@@ -73,7 +73,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        [RockGuid( "05eaf919-0d36-496e-8924-88dc50a9cd8e" )]
+        [Rock.SystemGuid.RestActionGuid( "05EAF919-0D36-496E-8924-88DC50A9CD8E" )]
         public IHttpActionResult BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )

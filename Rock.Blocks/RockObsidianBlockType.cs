@@ -23,7 +23,7 @@ namespace Rock.Blocks
     /// Client Block Type
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
-    /// <seealso cref="IRockClientBlockType" />
+    /// <seealso cref="IRockObsidianBlockType" />
     public abstract class RockObsidianBlockType : RockBlockType, IRockObsidianBlockType
     {
         #region Properties
@@ -127,8 +127,8 @@ namespace Rock.Blocks
 $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializeBlock({{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializeBlock({{
             blockFileUrl: '{BlockFileUrl}',
             rootElement: document.getElementById('{rootElementId}'),
             blockGuid: '{BlockCache.Guid}',

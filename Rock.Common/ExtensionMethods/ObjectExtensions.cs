@@ -38,10 +38,12 @@ namespace Rock
         ///   <c>true</c> if the specified value is not null; otherwise, <c>false</c>.
         /// </returns>
         /// https://github.com/aljazsim/defensive-programming-framework-for-net
+        [RockObsolete("1.13.3")]
+        [Obsolete("Use the standard object != null instead.")]
         public static bool IsNotNull<T>( this T value )
             where T : class
         {
-            return !value.IsNull();
+            return value != null;
         }
 
         /// <summary>
@@ -53,6 +55,8 @@ namespace Rock
         ///   <c>true</c> if the specified value is null; otherwise, <c>false</c>.
         /// </returns>
         /// https://github.com/aljazsim/defensive-programming-framework-for-net
+        [RockObsolete("1.13.3")]
+        [Obsolete("Use the standard object == null instead.")]
         public static bool IsNull<T>( this T value ) where T : class
         {
             return value == null;

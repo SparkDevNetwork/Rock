@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// FollowingEventSubscriptions REST API
     /// </summary>
+    [RestControllerGuid( "A6A12A47-A389-48EC-A3B1-B6DFA24C39EB" )]
     public partial class FollowingEventSubscriptionsController : Rock.Rest.ApiController<Rock.Model.FollowingEventSubscription>
     {
         /// <summary>

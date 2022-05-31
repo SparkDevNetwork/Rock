@@ -72,7 +72,8 @@
                                 <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine"></Rock:RockTextBox>
                             </div>
                             <div class="col-md-6">
-                                <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" Label="Document File" RequiredErrorMessage="A Document File is required." FormGroupCssClass="label-hidden fileupload-group-lg" UploadButtonText="Drop File Here or Click to Select"></Rock:FileUploader>
+                                <Rock:NotificationBox ID="nbSelectDocumentType" runat="server" Text="Select a document type" Visible="true" NotificationBoxType="Info" Mode="PassThrough"></Rock:NotificationBox> 
+                                <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" Label="Document File" RequiredErrorMessage="A Document File is required." FormGroupCssClass="label-hidden fileupload-group-lg" UploadButtonText="Drop File Here or Click to Select" Visible="false"></Rock:FileUploader>
                             </div>
                         </div>
                         <div class="actions">

@@ -116,6 +116,11 @@ namespace Rock.Crm.ConnectionStatusChangeReport
         public DateTime? BirthDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the deceased date.
+        /// </summary>
+        public DateTime? DeceasedDate { get; set; }
+
+        /// <summary>
         /// The identifier of the person's Record Type.
         /// </summary>
         public Guid? RecordTypeValueGuid { get; set; }

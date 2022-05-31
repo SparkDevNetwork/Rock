@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Finance
 
     [BooleanField( "Only Public Accounts In URL",
         Key = AttributeKey.OnlyPublicAccountsInURL,
-        Description = "Set to true if using the 'Allow Account Options In Url' option to prevent non-public accounts to be specified.",
+        Description = "Set to true if using the 'Allow Account Options In URL' option to prevent non-public accounts to be specified.",
         DefaultBooleanValue = true,
         Category = CategoryKey.Advanced,
         Order = 2 )]
@@ -438,6 +438,7 @@ namespace RockWeb.Blocks.Finance
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "74EE3481-3E5A-4971-A02E-D463ABB45591" )]
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
     {
         #region Block Keys
@@ -571,7 +572,15 @@ namespace RockWeb.Blocks.Finance
         private bool _gatewaysIncompatible = false;
         private string _ccSavedAccountFreqSupported = "both";
         private string _achSavedAccountFreqSupported = "both";
-        protected bool FluidLayout = false;
+
+        protected bool FluidLayout
+        {
+            get
+            {
+                return GetAttributeValue( AttributeKey.LayoutStyle ) == "Fluid";
+            }
+        }
+
         private List<ParameterAccount> _parameterAccounts = new List<ParameterAccount>();
         private bool _allowAccountsInUrl = false;
         private bool _onlyPublicAccountsInUrl = true;
@@ -1796,8 +1805,6 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void SetControlOptions()
         {
-            FluidLayout = GetAttributeValue( AttributeKey.LayoutStyle ) == "Fluid";
-
             // Set page/panel titles
             lPanelTitle1.Text = GetAttributeValue( AttributeKey.PanelTitle );
             lPanelTitle2.Text = GetAttributeValue( AttributeKey.PanelTitle );
@@ -2580,6 +2587,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name" );
                 }
+
+                if ( !txtFirstName.IsValid )
+                {
+                    errorMessages.Add( txtFirstName.CustomValidator.ErrorMessage );
+                }
             }
 
             if ( givingAsBusiness && string.IsNullOrWhiteSpace( txtBusinessName.Text ) )
@@ -3122,16 +3134,7 @@ namespace RockWeb.Blocks.Finance
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
 
-            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
-            {
-                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.PaymentCommentTemplate ) )
-                    ? string.Format( "{0}: {1}", GetAttributeValue( AttributeKey.PaymentCommentTemplate ), txtCommentEntry.Text )
-                    : txtCommentEntry.Text;
-            }
-            else
-            {
-                paymentInfo.Comment1 = GetAttributeValue( AttributeKey.PaymentCommentTemplate );
-            }
+            SetPaymentComment( paymentInfo, txtCommentEntry.Text );
 
             var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
             if ( transactionAlreadyExists != null )
@@ -3213,31 +3216,7 @@ namespace RockWeb.Blocks.Finance
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
 
-            // get the payment comment
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
-
-            if ( paymentInfo != null )
-            {
-                mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
-            }
-            if ( SelectedAccounts != null )
-            {
-                mergeFields.Add( "TransactionAccountDetails", SelectedAccounts.Where( a => a.Amount != 0 ).ToList() );
-            }
-
-            string paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
-
-            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
-            {
-                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( paymentComment )
-                    ? string.Format( "{0}: {1}", paymentComment, txtCommentEntry.Text )
-                    : txtCommentEntry.Text;
-            }
-            else
-            {
-                paymentInfo.Comment1 = paymentComment;
-            }
+            SetPaymentComment( paymentInfo, txtCommentEntry.Text );
 
             errorMessage = string.Empty;
             return paymentInfo;
@@ -3747,6 +3726,46 @@ namespace RockWeb.Blocks.Finance
                     txtAccountAmount.Enabled = false;
                     txtAccountAmount.AddCssClass( "hidden" );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sets the comment field for a payment, incorporating the Lava template specified in the block settings if appropriate.
+        /// </summary>
+        /// <param name="paymentInfo"></param>
+        /// <param name="userComment"></param>
+        private void SetPaymentComment( PaymentInfo paymentInfo, string userComment )
+        {
+            // Create a payment comment using the Lava template specified in this block.
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
+
+            if ( paymentInfo != null )
+            {
+                mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
+            }
+            if ( SelectedAccounts != null )
+            {
+                mergeFields.Add( "TransactionAccountDetails", SelectedAccounts.Where( a => a.Amount != 0 ).ToList() );
+            }
+
+            var paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
+
+            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
+            {
+                if ( paymentComment.IsNotNullOrWhiteSpace() )
+                {
+                    // Append user comments to the block-specified payment comment.
+                    paymentInfo.Comment1 = string.Format( "{0}: {1}", paymentComment, userComment );
+                }
+                else
+                {
+                    paymentInfo.Comment1 = userComment;
+                }
+            }
+            else
+            {
+                paymentInfo.Comment1 = paymentComment;
             }
         }
 

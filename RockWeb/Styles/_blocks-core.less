@@ -729,7 +729,7 @@
     margin-bottom: 0;
   }
 
-  &:hover {
+  &.editable:hover {
     border-color: @brand-primary;
   }
 
@@ -760,6 +760,10 @@
   .form-action-rows .form-row {
     margin-bottom: 15px;
   }
+}
+
+.workflow-action.not-editable {
+  opacity: .5;
 }
 
 // panel for workflow entry/navigation
@@ -926,13 +930,58 @@
 
 // 4. Electronic Signatures
 
+.icon-property {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    color: @text-muted;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+  }
+
+  .property {
+    display: flex;
+    flex-direction: column;
+    margin-left: 8px;
+  }
+}
+
+.registrant-signature-document{
+  margin-top: 32px;
+}
+
 .signaturedocument-container {
-    width: 100%;
-    height: 450px;
-    margin-bottom: 24px;
+  width: 100%;
+  height: 450px;
+  margin-bottom: 20px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid @panel-border;
+  border-radius: @border-radius-base;
+}
+
+.signaturedocument-iframe {
+  width: 100%;
+  min-height: 450px;
 }
 
 .signature-entry-agreement {
-    margin-top: 6px;
+  margin-top: 6px;
 }
 
+.signature-entry-clear-col {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}

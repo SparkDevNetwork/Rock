@@ -109,17 +109,18 @@ namespace Rock.Model
 
                 lastModifiedDateTime = sectionLastModifiedDateTimeQuery.Union( linkLastModifiedDateTimeQuery ).Union( linkOrderLastModifiedDateTimeQuery ).Max( a => a );
 
+                if ( lastModifiedDateTime == null )
+                {
+                    // If LastModifiedDateTime is still null, they don't have any personal links,
+                    // So we'll set LastModifiedDateTime to Midnight (so it doesn't keep checking the database)
+                    lastModifiedDateTime = RockDateTime.Today;
+                }
+
                 if ( HttpContext.Current?.Session != null )
                 {
-                    if ( lastModifiedDateTime == null )
-                    {
-                        // If LastModifiedDateTime is still null, they don't have any personal links,
-                        // So we'll set LastModifiedDateTime to Midnight (so it doesn't keep checking the database)
-                        lastModifiedDateTime = RockDateTime.Today;
-                    }
-
                     // If we already got the LastModifiedDateTime, we'll store it in session so that we don't have to keep asking
                     HttpContext.Current.Session[SessionKey.PersonalLinksLastUpdateDateTime] = lastModifiedDateTime;
+                    HttpContext.Current.Items[SessionKey.PersonalLinksLastUpdateDateTime] = lastModifiedDateTime;
                 }
                 else
                 {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AuthScope" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "8926FE3B-5AB6-4E48-8191-09EB1682F743")]
     public class AuthScope : Model<AuthScope>, IHasActiveFlag
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,9 +30,6 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Tv
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Apple TV Application Detail" )]
     [Category( "TV > TV Apps" )]
     [Description( "Allows a person to edit an Apple TV application." )]
@@ -40,6 +37,7 @@ namespace RockWeb.Blocks.Tv
     #region Block Attributes
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "49F3D87E-BD8D-43D4-8217-340F3DFF4562" )]
     public partial class AppleTvAppDetail : Rock.Web.UI.RockBlock
     {
 
@@ -160,7 +158,7 @@ namespace RockWeb.Blocks.Tv
             var isNewSite = false;
 
             // Site is new so create one
-            if ( site.IsNull() )
+            if ( site == null )
             {
                 site = new Site();
                 siteService.Add( site );
@@ -305,7 +303,7 @@ namespace RockWeb.Blocks.Tv
             var rockContext = new RockContext();
             var site = new SiteService( rockContext ).Get( applicationId );
 
-            if ( site.IsNull() )
+            if ( site == null )
             {
                 nbMessages.Text = "Could not find the application.";
             }
@@ -364,7 +362,7 @@ namespace RockWeb.Blocks.Tv
             var rockContext = new RockContext();
             var site = new SiteService( rockContext ).Get( applicationId );
 
-            if ( site.IsNotNull() )
+            if ( site != null )
             {
                 hlblInactive.Visible = !site?.IsActive ?? true;
                 lBlockTitle.Text = site.Name;

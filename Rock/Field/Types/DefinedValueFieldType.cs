@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -37,6 +37,8 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M14.12,10.62V2.31A1.31,1.31,0,0,0,12.81,1H4.06A2.19,2.19,0,0,0,1.88,3.19v9.62A2.19,2.19,0,0,0,4.06,15h9.41a.66.66,0,0,0,0-1.31h-.22V11.86A1.32,1.32,0,0,0,14.12,10.62Zm-2.18,3.07H4.06a.88.88,0,0,1,0-1.75h7.88Zm.87-3.07H4.06a2.13,2.13,0,0,0-.87.19V3.19a.87.87,0,0,1,.87-.88h8.75Z""/></svg>" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE )]
     public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType
     {
         #region Configuration
@@ -49,6 +51,7 @@ namespace Rock.Field.Types
         private const string ALLOW_ADDING_NEW_VALUES_KEY = "AllowAddingNewValues";
         private const string REPEAT_COLUMNS_KEY = "RepeatColumns";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValuesId";
+        private const string VALUES_PUBLIC_KEY = "values";
         private const string SELECTABLE_VALUES_PUBLIC_KEY = "selectableValues";
 
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
@@ -87,7 +90,7 @@ namespace Rock.Field.Types
             // Get the defined types that are available to be selected.
             var definedTypes = DefinedTypeCache.All()
                 .OrderBy( t => t.Name )
-                .Select( t => new ListItemViewModel
+                .Select( t => new ListItemBag
                 {
                     Value = t.Guid.ToString(),
                     Text = t.Name
@@ -112,7 +115,7 @@ namespace Rock.Field.Types
                     .DefinedValues
                     .Where( v => v.IsActive || includeInactive )
                     .OrderBy( v => v.Order )
-                    .Select( v => new ListItemViewModel
+                    .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
                         Text = displayDescription ? v.Description : v.Value
@@ -126,68 +129,94 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationOptions( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var configurationOptions = privateConfigurationValues.ToDictionary( i => i.Key, i => i.Value );
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            // Convert the selectable values from integer identifiers to unique
-            // identifiers that are safe for public use.
-            var selectableValues = configurationOptions.GetValueOrDefault( SELECTABLE_VALUES_KEY, string.Empty )
-                .SplitDelimitedValues()
-                .AsIntegerList()
-                .Select( v => DefinedValueCache.Get( v ) )
-                .Where( v => v != null )
-                .Select( v => v.Guid.ToString() )
-                .ToList();
+            var definedTypeId = publicConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsIntegerOrNull();
+            var definedType = definedTypeId.HasValue ? DefinedTypeCache.Get( definedTypeId.Value ) : null;
 
-            configurationOptions[SELECTABLE_VALUES_PUBLIC_KEY] = selectableValues.JoinStrings( "," );
-            configurationOptions.Remove( SELECTABLE_VALUES_KEY );
+            if ( usage == ConfigurationValueUsage.View )
+            {
+                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
+                publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
+            }
+
+            // This will be converted later if needed.
+            if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
+            {
+                publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
+            }
 
             // Convert the defined type from an integer value to a guid.
-            var definedTypeId = configurationOptions.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsIntegerOrNull();
-            configurationOptions.Remove( DEFINED_TYPE_KEY );
-
-            if ( definedTypeId.HasValue )
+            if ( usage == ConfigurationValueUsage.Edit || usage == ConfigurationValueUsage.Configure )
             {
-                var definedTypeCache = DefinedTypeCache.Get( definedTypeId.Value );
-
-                if ( definedTypeCache != null )
+                if ( definedType == null )
                 {
-                    configurationOptions[DEFINED_TYPE_KEY] = definedTypeCache.Guid.ToString();
+                    definedType = DefinedTypeCache.All().OrderBy( t => t.Name ).FirstOrDefault();
+                }
+
+                publicConfigurationValues[DEFINED_TYPE_KEY] = definedType?.Guid.ToString();
+            }
+
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                // If in configure mode, get the selectable value options that
+                // have been set.
+                if ( privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
+                {
+                    var selectableValues = ConvertDelimitedIdsToGuids( privateConfigurationValues[SELECTABLE_VALUES_KEY], id => DefinedValueCache.Get( id )?.Guid );
+                    publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = selectableValues;
                 }
             }
-            else
+
+            // Get the list of values that can be selected.
+            if ( usage == ConfigurationValueUsage.Edit || usage == ConfigurationValueUsage.Configure )
             {
-                configurationOptions[DEFINED_TYPE_KEY] = DefinedTypeCache.All()
-                    .OrderBy( t => t.Name )
-                    .Select( t => t.Guid.ToString() )
-                    .FirstOrDefault() ?? string.Empty;
+                if ( definedType != null )
+                {
+                    int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
+                        ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
+                        : null;
+
+                    var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
+
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = definedType.DefinedValues
+                        .Where( v => ( includeInactive || v.IsActive )
+                            && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
+                        .OrderBy( v => v.Order )
+                        .Select( v => new
+                        {
+                            Value = v.Guid,
+                            Text = v.Value,
+                            v.Description
+                        } )
+                        .ToCamelCaseJson( false, true );
+                }
+                else
+                {
+                    publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
+                }
             }
 
-            return configurationOptions;
+            return publicConfigurationValues;
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPrivateConfigurationOptions( Dictionary<string, string> publicConfigurationValues )
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            var configurationOptions = publicConfigurationValues.ToDictionary( i => i.Key, i => i.Value );
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
             // Convert the selectable values from unique identifiers into
             // integer identifiers that can be stored in the database.
-            var selectableValues = publicConfigurationValues.GetValueOrDefault( SELECTABLE_VALUES_PUBLIC_KEY, string.Empty )
-                .SplitDelimitedValues()
-                .AsGuidList()
-                .Select( v => DefinedValueCache.Get( v ) )
-                .Where( v => v != null )
-                .Select( v => v.Id.ToString() )
-                .ToList();
+            var selectableValues = publicConfigurationValues.GetValueOrDefault( SELECTABLE_VALUES_PUBLIC_KEY, string.Empty );
+            selectableValues = ConvertDelimitedGuidsToIds( selectableValues, v => DefinedValueCache.Get( v )?.Id );
 
-            configurationOptions[SELECTABLE_VALUES_KEY] = selectableValues.JoinStrings( "," );
-            configurationOptions.Remove( SELECTABLE_VALUES_PUBLIC_KEY );
+            privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectableValues;
 
             // Convert the defined type value from a guid to an integer.
-            var definedTypeGuid = configurationOptions.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();
-            configurationOptions.Remove( DEFINED_TYPE_KEY );
+            var definedTypeGuid = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();
+            privateConfigurationValues.Remove( DEFINED_TYPE_KEY );
 
             if ( definedTypeGuid.HasValue )
             {
@@ -195,51 +224,11 @@ namespace Rock.Field.Types
 
                 if ( definedTypeCache != null )
                 {
-                    configurationOptions[DEFINED_TYPE_KEY] = definedTypeCache.Id.ToString();
+                    privateConfigurationValues[DEFINED_TYPE_KEY] = definedTypeCache.Id.ToString();
                 }
             }
 
-            return configurationOptions;
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
-        {
-            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues );
-            int? definedTypeId = publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? publicConfigurationValues[DEFINED_TYPE_KEY].AsIntegerOrNull() : null;
-
-            if ( definedTypeId.HasValue )
-            {
-                var definedType = DefinedTypeCache.Get( definedTypeId.Value );
-
-                int[] selectableValues = privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && privateConfigurationValues[SELECTABLE_VALUES_KEY].IsNotNullOrWhiteSpace()
-                    ? privateConfigurationValues[SELECTABLE_VALUES_KEY].Split( ',' ).Select( int.Parse ).ToArray()
-                    : null;
-
-                var includeInactive = privateConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBooleanOrNull() ?? false;
-
-                publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = definedType.DefinedValues
-                    .Where( v => ( includeInactive || v.IsActive )
-                        && ( selectableValues == null || selectableValues.Contains( v.Id ) ) )
-                    .OrderBy( v => v.Order )
-                    .Select( v => new
-                    {
-                        Value = v.Guid,
-                        Text = v.Value,
-                        v.Description
-                    } )
-                    .ToCamelCaseJson( false, true );
-
-                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
-            }
-            else
-            {
-                publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = "[]";
-            }
-
-            publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
-
-            return publicConfigurationValues;
+            return privateConfigurationValues;
         }
 
         /// <summary>
@@ -262,6 +251,7 @@ namespace Rock.Field.Types
             ddlDefinedType.SelectedIndexChanged += OnQualifierUpdated;
 
             var definedTypeService = new DefinedTypeService( new RockContext() );
+            ddlDefinedType.Items.Add( new ListItem() );
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
             {
                 ddlDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
@@ -332,7 +322,12 @@ namespace Rock.Field.Types
 
             tbRepeatColumns.TextChanged += OnQualifierUpdated;
 
-            var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+            List<(string, string)> definedValues = new List<(string, string)>();
+            if ( ddlDefinedType.SelectedValue.IsNotNullOrWhiteSpace() )
+            {
+                definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => (Text: v.Value, Value: v.Id.ToString()) ).ToList();
+            }
+
             var cblSelectableDefinedValues = new RockCheckBoxList
             {
                 AutoPostBack = true,
@@ -340,7 +335,8 @@ namespace Rock.Field.Types
                 Label = "Selectable Values",
                 DataTextField = "Text",
                 DataValueField = "Value",
-                DataSource = definedValues
+                DataSource = definedValues,
+                Visible = definedValues.Any()
             };
 
             cblSelectableDefinedValues.DataBind();
@@ -427,6 +423,7 @@ namespace Rock.Field.Types
                     var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
+                    cblSelectableValues.Visible = definedValues?.Any() ?? false;
 
                     if ( selectableValues != null && selectableValues.Any() )
                     {
@@ -498,7 +495,7 @@ namespace Rock.Field.Types
 
                 if ( cblSelectableValues != null )
                 {
-                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
                     cblSelectableValues.DataSource = definedValues;
                     cblSelectableValues.DataBind();
 

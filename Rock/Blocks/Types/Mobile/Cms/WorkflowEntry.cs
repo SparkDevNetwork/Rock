@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -94,6 +94,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_WORKFLOW_ENTRY_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED")]
     public class WorkflowEntry : RockMobileBlockType
     {
         #region Feature Keys
@@ -1208,7 +1210,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         Title = attribute.Name,
                         IsRequired = formAttribute.IsRequired,
                         ConfigurationValues = useClientValues
-                            ? attribute.FieldType.Field?.GetPublicConfigurationValues( attribute.ConfigurationValues )
+                            ? attribute.FieldType.Field?.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null )
                             : attribute.QualifierValues.ToDictionary( v => v.Key, v => v.Value.Value ),
                         FieldTypeGuid = attribute.FieldType.Guid,
 #pragma warning disable CS0618 // Type or member is obsolete: Required for Mobile Shell v2 support

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -83,6 +83,7 @@ namespace RockWeb.Blocks.Core
         Category = "CustomSetting",
         Key = AttributeKey.ExcludeCategories )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "ADE003C7-649B-466A-872B-B8AC952E7841" )]
     public partial class CategoryTreeView : RockBlockCustomSettings
     {
         public static class AttributeKey

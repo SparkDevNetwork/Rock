@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Lists all the REST API Keys" )]
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "C4FBF612-C1F6-428B-97FD-8AB0B8EA31FC" )]
     public partial class RestKeyList : RockBlock, ICustomGridColumns
     {
         #region Control Methods

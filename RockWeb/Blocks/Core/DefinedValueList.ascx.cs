@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" )]
     public partial class DefinedValueList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         public static class AttributeKey
@@ -436,14 +437,23 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-
             hfDefinedValueId.SetValue( definedValue.Id );
             tbValueName.Text = definedValue.Value;
             tbValueDescription.Text = definedValue.Description;
             cbValueActive.Checked = definedValue.IsActive;
-            cpCategory.SetValue( definedValue.CategoryId );
 
-            cpCategory.Visible = definedType.CategorizedValuesEnabled.GetValueOrDefault( false );
+            // If the Defined Type has categorized values, show the category picker and 
+            // filter for only categories of that type.
+            var hasCategorizedValues = definedType?.CategorizedValuesEnabled ?? false;
+
+            cpCategory.Visible = hasCategorizedValues;
+            if ( hasCategorizedValues )
+            {
+                cpCategory.EntityTypeQualifierColumn = "DefinedTypeId";
+                cpCategory.EntityTypeQualifierValue = definedType.Id.ToString();
+            }
+
+            cpCategory.SetValue( definedValue.CategoryId );
 
             avcDefinedValueAttributes.ValidationGroup = modalValue.ValidationGroup;
             avcDefinedValueAttributes.AddEditControls( definedValue );

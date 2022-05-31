@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -168,7 +169,7 @@ namespace Rock.Model
     /// Group View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Group ) )]
-    public partial class GroupViewModelHelper : ViewModelHelper<Group, Rock.ViewModel.GroupViewModel>
+    public partial class GroupViewModelHelper : ViewModelHelper<Group, GroupBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -177,22 +178,22 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupViewModel CreateViewModel( Group model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupBag CreateViewModel( Group model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupViewModel
+            var viewModel = new GroupBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AllowGuests = model.AllowGuests,
                 ArchivedByPersonAliasId = model.ArchivedByPersonAliasId,
                 ArchivedDateTime = model.ArchivedDateTime,
                 AttendanceRecordRequiredForCheckIn = ( int ) model.AttendanceRecordRequiredForCheckIn,
                 CampusId = model.CampusId,
+                ConfirmationAdditionalDetails = model.ConfirmationAdditionalDetails,
                 Description = model.Description,
                 DisableScheduleToolboxAccess = model.DisableScheduleToolboxAccess,
                 DisableScheduling = model.DisableScheduling,
@@ -213,6 +214,7 @@ namespace Rock.Model
                 Order = model.Order,
                 ParentGroupId = model.ParentGroupId,
                 RequiredSignatureDocumentTemplateId = model.RequiredSignatureDocumentTemplateId,
+                RSVPReminderAdditionalDetails = model.RSVPReminderAdditionalDetails,
                 RSVPReminderOffsetDays = model.RSVPReminderOffsetDays,
                 RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
                 ScheduleCancellationPersonAliasId = model.ScheduleCancellationPersonAliasId,
@@ -293,6 +295,7 @@ namespace Rock.Model
             target.ArchivedDateTime = source.ArchivedDateTime;
             target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
+            target.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             target.Description = source.Description;
             target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
             target.DisableScheduling = source.DisableScheduling;
@@ -315,6 +318,7 @@ namespace Rock.Model
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            target.RSVPReminderAdditionalDetails = source.RSVPReminderAdditionalDetails;
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
             target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
@@ -336,7 +340,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupViewModel ToViewModel( this Group model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupBag ToViewModel( this Group model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

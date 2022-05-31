@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Crm
     /// <summary>
     /// Shows changes of Connection Status for people within a specific period.
     /// </summary>
+    [Rock.SystemGuid.BlockTypeGuid( "FE50DDE5-3D8C-47EC-817D-21348717AD38" )]
     public partial class ConnectionStatusChangeReport : RockBlock
     {
         #region Attribute Keys

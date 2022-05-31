@@ -241,7 +241,19 @@ namespace Rock.Tasks
                 {
                     connectionRequest = new ConnectionRequestService( rockContext ).Get( message.ConnectionRequestGuid.Value );
 
+                    if ( connectionRequest == null )
+                    {
+                        // If the ConnectionRequest doesn't exist anymore, exit
+                        return;
+                    }
+
                     var workflow = Rock.Model.Workflow.Activate( workflowType, name );
+
+                    if ( workflow == null )
+                    {
+                        // if no workflow was created, exit
+                        return;
+                    }
 
                     workflow.InitiatorPersonAliasId = message.InitiatorPersonAliasId;
 

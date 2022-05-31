@@ -228,6 +228,38 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the component identifier by channel identifier and component name, and creates it if it doesn't exist.
+        /// </summary>
+        /// <param name="interactionChannelId">The interaction channel identifier.</param>
+        /// <param name="componentName">Name of the component. This value will only be used if a new record is created.</param>
+        /// <returns></returns>
+        public static int GetOrCreateComponentIdByName( int interactionChannelId, string componentName )
+        {
+            var lookupKey = $"{interactionChannelId}|name={componentName}";
+            if ( _interactionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
+            {
+                return componentId;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                int? interactionComponentId = null;
+                var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByComponentName( interactionChannelId, componentName );
+
+                // If a new component was added above we need to save the change
+                rockContext.SaveChanges();
+
+                if ( interactionComponent != null )
+                {
+                    interactionComponentId = Get( interactionComponent ).Id;
+                    _interactionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
+                }
+
+                return interactionComponentId.Value;
+            }
+        }
+
+        /// <summary>
         /// Gets the component identifier by foreign key and ChannelId, and creates it if it doesn't exist.
         /// If foreignKey is blank, this will throw a <seealso cref="ArgumentNullException" />
         /// If creating a new InteractionComponent with this, componentName must be specified

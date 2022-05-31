@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -28,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberAssignment" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "22BF14ED-E882-4BB0-9328-D12545BF5F61")]
     public class GroupMemberAssignment : Model<GroupMemberAssignment>
     {
         #region Entity Properties
@@ -62,6 +64,24 @@ namespace Rock.Model
         [DataMember]
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 2 )]
         public int? ScheduleId { get; set; }
+
+        /// <summary>
+        /// The date and time when the last RSVP reminder sent.
+        /// </summary>
+        /// <value>
+        /// The last RSVP reminder sent.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRSVPReminderSentDateTime { get; set; }
+
+        /// <summary>
+        /// The date and time when the confirmation is sent.
+        /// </summary>
+        /// <value>
+        /// The confirmation is sent.
+        /// </value>
+        [DataMember]
+        public DateTime? ConfirmationSentDateTime { get; set; }
 
         #endregion Entity Properties
 

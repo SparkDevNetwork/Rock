@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Core
 
     [BinaryFileTypeField( "Binary File Type",
         Key = AttributeKey.BinaryFileType)]
+    [Rock.SystemGuid.BlockTypeGuid( "26541C8A-9E54-4723-A739-21FAA5191014" )]
     public partial class BinaryFileList : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PageRoutes REST API
     /// </summary>
+    [RestControllerGuid( "2817A12C-70E8-4763-B6E5-0A6D07E07A82" )]
     public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Model.PageRoute>
     {
         /// <summary>

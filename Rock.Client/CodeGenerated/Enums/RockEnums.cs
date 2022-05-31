@@ -28,6 +28,14 @@ namespace Rock.Client.Enums
     #pragma warning disable CS1591
     /// <summary>
     /// </summary>
+    public enum AccountHierarchyDirection
+    {
+        CurrentAccountToParent = 0x0,
+        ParentAccountToLastDescendantAccount = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AddressInvalidReason
     {
         None = 0x0,
@@ -391,15 +399,6 @@ namespace Rock.Client.Enums
         Text = 0x6,
         HTML = 0x7,
         Undefined = -1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum Gender
-    {
-        Unknown = 0x0,
-        Male = 0x1,
-        Female = 0x2,
     }
 
     /// <summary>

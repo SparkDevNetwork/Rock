@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Meta" )]
     [Table( "MetaLastNameLookup" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "0FB0F456-6999-426D-9C86-973D54749565")]
     public class MetaLastNameLookup : Entity<MetaLastNameLookup>
     {
         #region Entity Properties

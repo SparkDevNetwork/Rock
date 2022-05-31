@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AuthAuditLogs REST API
     /// </summary>
+    [RestControllerGuid( "" )]
     public partial class AuthAuditLogsController : Rock.Rest.ApiController<Rock.Model.AuthAuditLog>
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Model
 
     // Support Analytics Tables, but only for GroupType Family
     [Analytics( "GroupTypeId", "10", true, true )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.GROUP )]
     public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable, ICacheable
     {
         #region Entity Properties
@@ -366,6 +367,24 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 250 )]
         public string GroupSalutationFull { get; set; }
+
+        /// <summary>
+        /// Gets or sets the rsvp additional reminder details.
+        /// </summary>
+        /// <value>
+        /// The rsvp additional reminder details.
+        /// </value>
+        [DataMember]
+        public string RSVPReminderAdditionalDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmation additional details.
+        /// </summary>
+        /// <value>
+        /// The confirmation additional details.
+        /// </value>
+        [DataMember]
+        public string ConfirmationAdditionalDetails { get; set; }
 
         #endregion
 

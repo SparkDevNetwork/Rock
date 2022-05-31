@@ -194,57 +194,57 @@ namespace Rock.Bus
         }
 
         /// <summary>
-        /// Publishes the message.
+        /// Publishes (Broadcasts) the event message. This will send the message to the MessageQueue, and Queue will broadcast it to <b>all endpoints.</b>
+        /// <para>
+        /// See https://triumph.slab.com/posts/event-bus-65nk4duh#hjiec-publish-method for how this works
+        /// </para>
         /// </summary>
         /// <param name="message">The message.</param>
-        public static async Task PublishAsync<TQueue, TMessage>( TMessage message )
+        public static Task PublishAsync<TQueue, TMessage>( TMessage message )
             where TQueue : IPublishEventQueue, new()
             where TMessage : class, IEventMessage<TQueue>
         {
-            await PublishAsync( message, typeof( TMessage ) );
+            return PublishAsync( message, typeof( TMessage ) );
         }
 
-        /// <summary>
-        /// Publishes the message.
-        /// </summary>
-        /// <typeparam name="TQueue">The type of the queue.</typeparam>
-        /// <param name="message">The message.</param>
-        /// <param name="messageType">Type of the message.</param>
-        public static async Task PublishAsync<TQueue>( IEventMessage<TQueue> message, Type messageType )
+        /// <inheritdoc cref="PublishAsync{TQueue, TMessage}(TMessage)"/>
+        public static Task PublishAsync<TQueue>( IEventMessage<TQueue> message, Type messageType )
             where TQueue : IPublishEventQueue, new()
         {
             if ( !IsReady() )
             {
                 ExceptionLogService.LogException( new BusException( $"A message was published before the message bus was ready: {RockMessage.GetLogString( message )}" ) );
-                return;
+                return Task.CompletedTask;
             }
 
             message.SenderNodeName = NodeName;
 
-            await _bus.Publish( message, messageType, context =>
+            // NOTE: Use Task.Run to wrap an async instead of directly using async, otherwise async will get an exception if it isn't done before the HttpContext is disposed.
+            return Task.Run( async () =>
             {
-                context.TimeToLive = RockQueue.GetTimeToLive<TQueue>();
+                await _bus.Publish( message, messageType, context =>
+                {
+                    context.TimeToLive = RockQueue.GetTimeToLive<TQueue>();
+                } );
             } );
         }
 
         /// <summary>
-        /// Sends the message.
+        /// Sends the command message. This will send the message to the MessageQueue, and Queue will direct the command to a <b>single endpoint</b>.
+        /// <para>
+        /// See https://triumph.slab.com/posts/event-bus-65nk4duh#hyx3e-send-method for how this works
+        /// </para>
         /// </summary>
         /// <param name="message">The message.</param>
-        public static async Task SendAsync<TQueue, TMessage>( TMessage message )
+        public static Task SendAsync<TQueue, TMessage>( TMessage message )
             where TQueue : ISendCommandQueue, new()
             where TMessage : class, ICommandMessage<TQueue>
         {
-            await SendAsync( message, typeof( TMessage ) );
+            return SendAsync( message, typeof( TMessage ) );
         }
 
-        /// <summary>
-        /// Sends the command message.
-        /// </summary>
-        /// <typeparam name="TQueue">The type of the queue.</typeparam>
-        /// <param name="message">The message.</param>
-        /// <param name="messageType">Type of the message.</param>
-        public static async Task SendAsync<TQueue>( ICommandMessage<TQueue> message, Type messageType )
+        /// <inheritdoc cref="SendAsync{TQueue, TMessage}(TMessage)"/>
+        public static Task SendAsync<TQueue>( ICommandMessage<TQueue> message, Type messageType )
             where TQueue : ISendCommandQueue, new()
         {
             RockLogger.Log.Debug( RockLogDomains.Core, "Send Message Async: {@message} Message Type: {1}", message, messageType );
@@ -252,18 +252,23 @@ namespace Rock.Bus
             if ( !IsReady() )
             {
                 ExceptionLogService.LogException( $"A message was sent before the message bus was ready: {RockMessage.GetLogString( message )}" );
-                return;
+                return Task.CompletedTask;
             }
 
             var queue = RockQueue.Get<TQueue>();
             var endpoint = _transportComponent.GetSendEndpoint( _bus, queue.NameForConfiguration );
             message.SenderNodeName = NodeName;
 
-            await endpoint.Send( message, messageType, context =>
+            // NOTE: Use Task.Run to wrap an async instead of directly using async, otherwise async will get an exception if it isn't done before the HttpContext is disposed.
+            return Task.Run( async () =>
             {
-                context.TimeToLive = RockQueue.GetTimeToLive( queue );
+                await endpoint.Send( message, messageType, context =>
+                {
+                    context.TimeToLive = RockQueue.GetTimeToLive( queue );
+                } );
             } );
         }
+
 
         /// <summary>
         /// Configures and starts the bus.

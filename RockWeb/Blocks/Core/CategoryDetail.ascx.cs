@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.Core
         Category = "CustomSetting",
         Key = AttributeKey.ExcludeCategories )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "7BC54887-21C2-4688-BD1D-C1C8B9C86F7C" )]
     public partial class CategoryDetail : RockBlockCustomSettings
     {
         public static class AttributeKey
@@ -278,7 +279,7 @@ namespace RockWeb.Blocks.Core
             category.Description = tbDescription.Text;
             category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
-            category.HighlightColor = tbHighlightColor.Text;
+            category.HighlightColor = cpHightlightColor.Text;            
 
             List<int> orphanedBinaryFileIdList = new List<int>();
 
@@ -476,7 +477,7 @@ namespace RockWeb.Blocks.Core
             cpParentCategory.SetValue( category.ParentCategoryId );
 
             tbIconCssClass.Text = category.IconCssClass;
-            tbHighlightColor.Text = category.HighlightColor;
+            cpHightlightColor.Text = category.HighlightColor;
         }
 
         /// <summary>

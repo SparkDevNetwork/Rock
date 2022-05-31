@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -128,6 +128,7 @@ namespace RockWeb.Blocks.Core
         Order = 6,
         Key = AttributeKey.HideColumnsOnGrid )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "E5EA2F6D-43A2-48E0-B59C-4409B78AC830" )]
     public partial class Attributes : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey

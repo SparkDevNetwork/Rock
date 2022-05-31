@@ -57,6 +57,12 @@ main {
   line-height: 18px;
 }
 
+.control-label-sm {
+  display: block;
+  font-size: @font-size-xs;
+  color: @text-muted;
+}
+
 .panel-body {
   // DOES NOT WORK WITH ROWS
   // > .row {
@@ -91,6 +97,8 @@ strong {
   gap: 8px;
 }
 
+.static-control-label,
+.static-control .control-label,
 dl:not(.dl-horizontal) dt{
   font-size: @font-size-sm;
   font-weight: 400;
@@ -401,6 +409,10 @@ textarea,
   box-shadow: none;
 }
 
+.dropdown-menu {
+  font-size: 14px;
+}
+
 .has-error {
   .form-control,
   .input-group-addon {
@@ -432,6 +444,7 @@ textarea,
 
 .grid-filter {
   .btn-filter-toggle {
+    top: 1px;
     left: 18px;
     padding: 4px;
     margin: 0;
@@ -589,20 +602,15 @@ textarea,
 // .panel-actions,
 .panel-body .actions:last-of-type { // unknown if .panel-body > is doing anything
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: (@panel-body-padding/2) @panel-body-padding;
+  padding: ((@panel-body-padding/2) - 4px) @panel-body-padding;
   margin: -@panel-body-padding;
   margin-top: @panel-body-padding;
   border-top: 1px solid #eee;
-  //gap: 8px;
 
-  > * + * {
-    margin-right: 8px;
-    margin-left: 8px;
-  }
-
-  > * + *:last-child {
-    margin-right: 0;
+  > * {
+    margin: 4px 8px 4px 0;
   }
 }
 
@@ -631,12 +639,19 @@ textarea,
   }
 }
 
-.modal {
-  .box-shadow(@shadow-modal);
-  border-radius: 0;
+.panel-analytics {
+  .panel-body {
+    > .row {
+      > * {
+        padding-right: @panel-body-padding;
+        padding-left: @panel-body-padding;
+      }
 
-  .modal-content {
-    .box-shadow(none);
+      .row {
+        margin-right: -@panel-body-padding;
+        margin-left: -@panel-body-padding;
+      }
+    }
   }
 }
 
@@ -739,7 +754,7 @@ textarea,
 
   .treeview-actions {
     display: flex;
-    margin: -6px -16px -6px 0 !important;
+    margin: -6px -12px -6px 0 !important;
 
     .btn-link {
       width: 28px;
@@ -748,7 +763,6 @@ textarea,
       font-size: @font-size-sm;
       color: @text-muted;
       border: 0;
-      // height: 19px;
 
       &:hover {
         color: @link-color;
@@ -1181,9 +1195,6 @@ body.nav-open {
     border: 0;
 
     a {
-      width: 100%;
-      line-height: 34px;
-
       &:hover {
         color: @white;
         background-color: @brand-primary;
@@ -1366,10 +1377,13 @@ body.nav-open {
         }
       }
 
+      &:hover,
       &.open {
         background-color: @navbarside-sub-bg;
         box-shadow: inset 3px 0 0 0 @brand-primary;
+      }
 
+      &.open {
         @media @sm {
           &::before {
             position: absolute;
@@ -1801,6 +1815,19 @@ body.navbar-side-open {
   &.active:hover {
     background: #cbeefa;
   }
+
+  &.btn-primary {
+    background: @btn-primary-bg;
+    border-radius: @btn-border-radius-base;
+
+    &:active,
+    &:active:focus,
+    &.active,
+    &.active:focus,
+    &.active:hover {
+      background: darken(@btn-primary-bg, 10%);
+    }
+  }
 }
 
 .btn-mergefield {
@@ -1871,6 +1898,25 @@ body.navbar-side-open {
   background-color: mix(lighten(@brand-success, 4%), #fff, 15%) !important;
 }
 
+.nav-sm {
+  > li > a {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+  }
+}
+
+.container-in-block {
+  max-width: 1020px;
+  margin: 0 auto;
+  @media (min-width: @screen-md-min) {
+    padding: 48px 30px;
+  }
+}
+
 /* #endregion */
+@import "_newprofile.less";
 @import "_print.less";
 @import "_css-overrides.less";
+

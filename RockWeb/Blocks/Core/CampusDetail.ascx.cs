@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Campus Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular campus." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E30354A1-A1B8-4BE5-ADCE-43EEDDEF6C65" )]
     public partial class CampusDetail : RockBlock
     {
         #region PageParameterKeys
@@ -55,6 +56,8 @@ namespace RockWeb.Blocks.Core
         private static readonly string _readOnlyIncludes = "LeaderPersonAlias,LeaderPersonAlias.Person,Location,TeamGroup";
 
         private List<CampusScheduleDTO> CampusSchedulesState { get; set; }
+
+        private List<CampusTopicDTO> CampusTopicsState { get; set; }
 
         #endregion
 
@@ -93,6 +96,21 @@ namespace RockWeb.Blocks.Core
             {
                 CampusSchedulesState = JsonConvert.DeserializeObject<List<CampusScheduleDTO>>( json );
             }
+
+            LoadCampusTopicsState();
+        }
+
+        private void LoadCampusTopicsState()
+        {
+            string json = ViewState["CampusTopicsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                CampusTopicsState = new List<CampusTopicDTO>();
+            }
+            else
+            {
+                CampusTopicsState = JsonConvert.DeserializeObject<List<CampusTopicDTO>>( json );
+            }
         }
 
         /// <summary>
@@ -109,6 +127,11 @@ namespace RockWeb.Blocks.Core
             gCampusSchedules.Actions.ShowAdd = true;
             gCampusSchedules.Actions.AddClick += gCampusSchedules_Add;
             gCampusSchedules.GridRebind += gCampusSchedules_GridRebind;
+
+            gCampusTopics.DataKeyNames = new string[] { "Guid" };
+            gCampusTopics.Actions.ShowAdd = true;
+            gCampusTopics.Actions.AddClick += gCampusTopics_Add;
+            gCampusTopics.GridRebind += GCampusTopics_GridRebind;
         }
 
         /// <summary>
@@ -140,6 +163,7 @@ namespace RockWeb.Blocks.Core
             };
 
             ViewState["CampusSchedulesState"] = JsonConvert.SerializeObject( CampusSchedulesState, Formatting.None, jsonSetting );
+            ViewState["CampusTopicsState"] = JsonConvert.SerializeObject( CampusTopicsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -287,6 +311,8 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            SaveCampusTopics(campus, rockContext);
+
             avcAttributes.GetEditValues( campus );
 
             if ( !campus.IsValid && campus.Location.IsValid )
@@ -302,6 +328,44 @@ namespace RockWeb.Blocks.Core
             } );
 
             NavigateToCurrentPage( new Dictionary<string, string> { { "CampusId", campus.Id.ToString() } } );
+        }
+
+        private void SaveCampusTopics(Campus campus, RockContext rockContext )
+        {
+            // Remove any CampusTopics that were removed in the UI
+            var selectedTopics = CampusTopicsState.Select( s => s.Guid );
+            var topicsToRemove = campus.CampusTopics.Where( s => !selectedTopics.Contains( s.Guid ) ).ToList();
+            foreach ( var campusTopic in topicsToRemove )
+            {
+                CampusTopicService campusTopicService = new CampusTopicService( rockContext );
+                campus.CampusTopics.Remove( campusTopic );
+                campusTopicService.Delete( campusTopic );
+            }
+
+            // Add/Update any CampusTopics that were added or changed in the UI.
+            foreach ( var campusTopicState in CampusTopicsState )
+            {
+                var campusTopic = campus.CampusTopics.FirstOrDefault( s => s.Guid == campusTopicState.Guid );
+                if ( campusTopic == null )
+                {
+                    campusTopic = new CampusTopic()
+                    {
+                        CampusId = campus.Id,
+                        Email = campusTopicState.Email,
+                        IsPublic = campusTopicState.IsPublic,
+                        TopicTypeValueId = campusTopicState.TopicTypeId,
+                        Guid = Guid.NewGuid()
+                    };
+
+                    campus.CampusTopics.Add( campusTopic );
+                }
+                else
+                {
+                    campusTopic.Email = campusTopicState.Email;
+                    campusTopic.TopicTypeValueId = campusTopicState.TopicTypeId;
+                    campusTopic.IsPublic = campusTopicState.IsPublic;
+                }
+            }
         }
 
         /// <summary>
@@ -339,6 +403,7 @@ namespace RockWeb.Blocks.Core
             dvpCampusStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CAMPUS_STATUS.AsGuid() ).Id;
             dvpCampusType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid() ).Id;
             dvpScheduleType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHEDULE_TYPE.AsGuid() ).Id;
+            dvpTopicType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.TOPIC_TYPE.AsGuid() ).Id;
         }
 
         /// <summary>
@@ -420,6 +485,11 @@ namespace RockWeb.Blocks.Core
             ShowCampusScheduleEdit( Guid.Empty );
         }
 
+        private void gCampusTopics_Add( object sender, EventArgs e )
+        {
+            ShowCampusTopicEdit( Guid.Empty );
+        }
+
         /// <summary>
         /// Handles the Edit event of the gCampusSchedules control.
         /// </summary>
@@ -432,12 +502,32 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the Edit event of the gCampusTopics control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gCampusTopics_Edit( object sender, RowEventArgs e )
+        {
+            Guid campusTopicGuid = ( Guid ) e.RowKeyValue;
+            ShowCampusTopicEdit( campusTopicGuid );
+        }
+
+        /// <summary>
         /// Gets the CampusSchedule.
         /// </summary>
         /// <param name="campusScheduleGuid">The CampusSchedule guid.</param>
         private CampusScheduleDTO GetCampusSchedule( Guid campusScheduleGuid )
         {
             return CampusSchedulesState.Where( s => s.Guid == campusScheduleGuid ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the CampusTopic.
+        /// </summary>
+        /// <param name="campusScheduleGuid">The CampusSchedule guid.</param>
+        private CampusTopicDTO GetCampusTopic( Guid campusScheduleGuid )
+        {
+            return CampusTopicsState.Find( s => s.Guid == campusScheduleGuid );
         }
 
         /// <summary>
@@ -453,6 +543,24 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the Delete event of the gCampusTopics control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gCampusTopics_Delete( object sender, RowEventArgs e )
+        {
+            Guid campusTopicGuid = ( Guid )e.RowKeyValue;
+
+            var item = CampusTopicsState.Find( a => a.Guid.Equals( campusTopicGuid ) );
+            if ( item != null )
+            {
+                CampusTopicsState.Remove( item );
+            }
+
+            BindCampusTopicsGrid();
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gCampusSchedules control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -460,6 +568,16 @@ namespace RockWeb.Blocks.Core
         protected void gCampusSchedules_GridRebind( object sender, EventArgs e )
         {
             BindCampusSchedulesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gCampusTopics control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void GCampusTopics_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindCampusTopicsGrid();
         }
 
         /// <summary>
@@ -504,6 +622,65 @@ namespace RockWeb.Blocks.Core
 
             dlgSchedule.Hide();
             BindCampusSchedulesGrid();
+        }
+
+        protected void dlgTopic_SaveClick( object sender, EventArgs e )
+        {
+            if ( !cvTopicType.IsValid )
+            {
+                return;
+            }
+
+            var campusTopicGuid = hfCampusTopicGuid.Value.AsGuidOrNull();
+
+            int topicTypeId = dvpTopicType.SelectedDefinedValueId.Value;
+            var topicType = new DefinedValueService( new RockContext() ).Get( topicTypeId );
+            CampusTopicDTO campusTopic = CampusTopicsState.Find( t => t.TopicTypeId == topicTypeId );
+
+            // If there is an existing campusTopic with the provided topic id just update the existing one, each campus can only
+            // have one instance of a topic type
+            if ( campusTopic == null )
+            {
+                if ( campusTopicGuid == null || campusTopicGuid == Guid.Empty )
+                {
+                    campusTopic = new CampusTopicDTO()
+                    {
+                        Guid = Guid.NewGuid(),
+                        IsPersisted = false
+                    };
+
+                    CampusTopicsState.Add( campusTopic );
+                }
+                else
+                {
+                    campusTopic = CampusTopicsState.Find( t => t.Guid.Equals( campusTopicGuid ) );
+                }
+            }
+
+            campusTopic.Email = ebEmail.Text;
+            campusTopic.TopicTypeId = topicTypeId;
+            campusTopic.IsPublic = cbIsPublic.Checked;
+            campusTopic.TopicType = topicType.Value;
+
+            // Clear controls
+            cbIsPublic.Checked = false;
+            ebEmail.Text = string.Empty;
+            dvpTopicType.ClearSelection();
+
+            dlgTopic.Hide();
+            BindCampusTopicsGrid();
+        }
+
+        /// <summary>
+        /// Handles the onServerValidate event of the cvTopicType control.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="args"></param>
+        protected void cvTopicType_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            int? topicTypeId = args.Value.AsIntegerOrNull();
+            var topicInstance = CampusTopicsState.Find( t => t.TopicTypeId == topicTypeId );
+            args.IsValid = topicInstance == null || topicInstance.IsPersisted;
         }
 
         #endregion CampusSchedule Grid/Dialog Events
@@ -565,6 +742,11 @@ namespace RockWeb.Blocks.Core
                 dl.Add( "Campus Schedules", scheduleText );
             }
 
+            if ( campus.CampusTopics.Any() )
+            {
+                dl.Add( "Topics", ConstructReadOnlyTopics( campus ) );
+            }
+
             lMainDetailsLeft.Text = dl.Html;
 
             // right column (col-md-6)
@@ -591,6 +773,31 @@ namespace RockWeb.Blocks.Core
             }
 
             lMainDetailsRight.Text = dl.Html;
+        }
+
+        private string ConstructReadOnlyTopics( Campus campus )
+        {
+            StringBuilder result = new StringBuilder( "<div class='row'>" );
+
+            const string template = @"<div class='col-md-3'>
+                                        <span>{0}</span>
+                                     </div>
+                                     <div class='col-md-6'>
+                                        <span>{1}</span>                            
+                                     </div>
+                                     <div class='col-md-3'> 
+                                         <span>{2}</span>
+                                     </div>";
+
+            foreach ( var campusTopic in campus.CampusTopics )
+            {
+                string status = campusTopic.IsPublic ? "Public" : "Internal";
+                result.AppendFormat( template, campusTopic.TopicTypeValue.Value, campusTopic.Email, status );
+            }
+
+            result.Append( "</div>" );
+
+            return result.ToString();
         }
 
         /// <summary>
@@ -644,7 +851,19 @@ namespace RockWeb.Blocks.Core
                     Order = s.Order
                 } ).ToList();
 
+            CampusTopicsState = campus.CampusTopics.Select(
+                t => new CampusTopicDTO
+                {
+                    Email = t.Email,
+                    Guid = t.Guid,
+                    IsPublic = t.IsPublic,
+                    TopicType = t.TopicTypeValue.Value,
+                    TopicTypeId = t.TopicTypeValueId,
+                    IsPersisted = true
+                } ).ToList();
+
             BindCampusSchedulesGrid();
+            BindCampusTopicsGrid();
 
             campus.LoadAttributes();
             avcAttributes.ExcludedAttributes = campus.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
@@ -659,6 +878,14 @@ namespace RockWeb.Blocks.Core
                 .ToList();
             gCampusSchedules.DataBind();
 
+        }
+
+        private void BindCampusTopicsGrid()
+        {
+            gCampusTopics.DataSource = CampusTopicsState
+                .OrderBy( t => t.TopicType )
+                .ToList();
+            gCampusTopics.DataBind();
         }
 
         /// <summary>
@@ -817,6 +1044,25 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Shows the CampusTopic edit dialog.
+        /// </summary>
+        /// <param name="campusTopicGuid">The CampusTopic guid.</param>
+        private void ShowCampusTopicEdit( Guid campusTopicGuid )
+        {
+            hfCampusTopicGuid.Value = campusTopicGuid.ToString();
+            dvpTopicType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.TOPIC_TYPE.AsGuid() ).Id;
+            dlgTopic.Show();
+
+            if ( campusTopicGuid != Guid.Empty )
+            {
+                var campusTopic = GetCampusTopic( campusTopicGuid );
+                dvpTopicType.SelectedValue = campusTopic.TopicTypeId.ToString();
+                ebEmail.Text = campusTopic.Email;
+                cbIsPublic.Checked = campusTopic.IsPublic;
+            }
+        }
+
+        /// <summary>
         /// Removes the schedule.
         /// </summary>
         /// <param name="campusScheduleGuid">The CampusSchedule guid.</param>
@@ -841,6 +1087,17 @@ namespace RockWeb.Blocks.Core
             public string ScheduleType { get; set; }
             public int ScheduleTypeId { get; set; }
             public int Order { get; set; }
+        }
+
+        private class CampusTopicDTO
+        {
+            public Guid Guid { get; set; }
+            public string TopicType { get; set; }
+            public int TopicTypeId { get; set; }
+            public string Email { get; set; }
+            public bool IsPublic { get; set; }
+            public int? CampusId { get; set; }
+            public bool IsPersisted { get; set; }
         }
 
         #endregion Helper Class

@@ -15,8 +15,8 @@
 // </copyright>
 //
 import { computed, defineComponent, onMounted, PropType, ref } from "vue";
-import LoadingIndicator from "../Elements/loadingIndicator";
-import { newGuid } from "../Util/guid";
+import LoadingIndicator from "./loadingIndicator";
+import { newGuid } from "@Obsidian/Utility/guid";
 import { GatewayEmitStrings, onSubmitPayment } from "./gatewayControl";
 import { CollectJSOptions, InputField, ResponseCallback, TimeoutCallback, TokenResponse, ValidationCallback } from "./nmiGatewayControlTypes";
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Activity", "The activity that should be activated", true, fieldTypeClassNames: new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
     [WorkflowTextOrAttribute("Workflow", "Workflow Attribute", "The ID or Guid of the workflow that should be activated", true, key:"WorkflowReference" )]
+    [Rock.SystemGuid.EntityTypeGuid( "DD266CDB-7D60-4312-B727-C2AA95C21128")]
     public class ActivateOtherActivity : ActionComponent
     {
         /// <summary>

@@ -75,6 +75,17 @@ namespace Rock.Mobile
 
 </ListView>";
 
+        private const string _defaultToastXaml = @"<StackLayout>
+    <Frame HasShadow=""False"">
+        <StackLayout>
+            {% if ToastTitle != '' %}
+            <Label StyleClass=""title"" Text=""{Binding ToastTitle}"" />
+            {% endif %}
+            <Label Text=""{Binding ToastMessage}"" />
+        </StackLayout>
+    </Frame>
+</StackLayout>";
+
         #endregion
 
         /// <summary>
@@ -192,6 +203,14 @@ namespace Rock.Mobile
         /// The xaml to use for the flyout shell menu.
         /// </value>
         public string FlyoutXaml { get; set; } = _defaultFlyoutXaml;
+
+        /// <summary>
+        /// Gets or sets the toast xaml.
+        /// </summary>
+        /// <value>
+        /// The toast xaml.
+        /// </value>
+        public string ToastXaml { get; set; } = _defaultToastXaml;
 
         /// <summary>
         /// Gets or sets the locked phone orientation.

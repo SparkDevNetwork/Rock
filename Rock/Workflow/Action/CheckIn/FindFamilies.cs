@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Finds families based on a given search criteria (i.e. phone, barcode, etc)" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Find Families" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E2F172A8-88E5-4F84-9805-73164516F5FB")]
     public class FindFamilies : CheckInActionComponent
     {
         /// <summary>

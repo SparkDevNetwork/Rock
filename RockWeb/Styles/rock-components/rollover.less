@@ -21,6 +21,44 @@
   opacity: 1;
 }
 
+.group-hover {
+  .group-hover-item {
+    transition: 200ms opacity ease-in-out;
+  }
+
+  .group-hover-show {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .group-hover-0-show {
+    width: 0;
+    height: 0;
+  }
+
+  .group-hover-hide {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  &:hover {
+    .group-hover-show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .group-hover-0-show {
+      width: auto;
+      height: auto;
+    }
+
+    .group-hover-hide {
+      visibility: hidden;
+      opacity: 0;
+    }
+  }
+}
+
 
 // always show item if on touch device
 .touch .rollover-item {

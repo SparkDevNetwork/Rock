@@ -37,10 +37,10 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="pnlHomePhone" runat="server">
                         <Rock:PhoneNumberBox ID="pnHome" runat="server" Label="Home Phone" />
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="pnlMobilePhone" runat="server">
                         <Rock:PhoneNumberBox ID="pnMobile" runat="server" Label="Mobile Phone" />
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,14 +26,28 @@ using Rock.Tasks;
 
 namespace Rock.Workflow.Action
 {
+    /// <summary>
+    /// Class RunJob.
+    /// Implements the <see cref="Rock.Workflow.ActionComponent" />
+    /// </summary>
+    /// <seealso cref="Rock.Workflow.ActionComponent" />
     [ActionCategory( "Utility" )]
     [Description( "Triggers a job to run" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Job Run" )]
 
     [CustomDropdownListField( "Job", "The job to run.", "SELECT j.[Guid] AS [Value], j.[Name] AS [Text] From [ServiceJob] j ORDER BY j.[Name]", true, "", "", 0)]
-    class RunJob : ActionComponent
+    [Rock.SystemGuid.EntityTypeGuid( "9269DD7C-027B-4032-9F4C-9A3CAB6FF841")]
+    public class RunJob : ActionComponent
     {
+        /// <summary>
+        /// Executes the action.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">The workflow action.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();

@@ -67,6 +67,25 @@
                                 <Rock:UrlLinkBox ID="urlCampus" runat="server" Label="URL" />
                                 <Rock:PhoneNumberBox ID="pnbPhoneNumber" runat="server" Label="Phone Number" />
                                 <Rock:LocationPicker ID="lpLocation" runat="server" AllowedPickerModes="Named" Required="true" Label="Location" Help="Select a Campus Location" />
+
+                                <div class="form-group data-text-box ">
+                                    <asp:Label ID="lblCampusTopics" runat="server" Text="Topics" CssClass="control-label" AssociatedControlID="gCampusTopics" />
+                                    <div class="control-wrapper">
+
+                                        <div class="grid">
+                                            <Rock:Grid ID="gCampusTopics" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Topic">
+                                                <Columns>
+                                                    <Rock:RockBoundField DataField="TopicType" HeaderText="Type" />
+                                                    <Rock:RockBoundField DataField="Email" HeaderText="Email" />
+                                                    <Rock:BoolField DataField="IsPublic" HeaderText="Public" />
+                                                    <Rock:EditField OnClick="gCampusTopics_Edit" />
+                                                    <Rock:DeleteField OnClick="gCampusTopics_Delete" />
+                                                </Columns>
+                                            </Rock:Grid>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
 
@@ -122,6 +141,23 @@
 
                 <Rock:SchedulePicker ID="spCampusSchedule" runat="server" Label="Schedule" Required="true" ValidationGroup="CampusSchedule" />
                 <Rock:DefinedValuePicker id="dvpScheduleType" runat="server" Label="Schedule Type" Required="true" ValidationGroup="CampusSchedule" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgTopic" runat="server" Title="Campus Topic" SaveButtonText="Ok" OnSaveClick="dlgTopic_SaveClick"  ValidationGroup="CampusTopic">
+            <Content>
+                <asp:HiddenField ID="hfCampusTopicGuid" runat="server" />
+                <asp:ValidationSummary ID="valSummaryCampusTopic" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="CampusTopic" />
+
+                <Rock:DefinedValuePicker ID="dvpTopicType" runat="server" Label="Topic Type" Required="true" ValidationGroup="CampusTopic" Help="A campus can only have one instance of a topic entry." />
+                <asp:CustomValidator runat="server"
+                            ID="cvTopicType"
+                            ErrorMessage="A campus can only have one instance of a topic entry."
+                            ControlToValidate="dvpTopicType"
+                            OnServerValidate="cvTopicType_ServerValidate"
+                            ValidationGroup="CampusTopic" />
+                <Rock:EmailBox ID="ebEmail" runat="server" Label="Email" Required="true" ValidationGroup="CampusTopic" />
+                <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Public" />
             </Content>
         </Rock:ModalDialog>
 

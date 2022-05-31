@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// Stored as BenevolenceRequest.Guid
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BENEVOLENCE_REQUEST )]
     public class BenevolenceRequestFieldType : FieldType, IEntityFieldType
     {
 

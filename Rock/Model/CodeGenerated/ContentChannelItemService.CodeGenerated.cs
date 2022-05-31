@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// ContentChannelItem View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ContentChannelItem ) )]
-    public partial class ContentChannelItemViewModelHelper : ViewModelHelper<ContentChannelItem, Rock.ViewModel.ContentChannelItemViewModel>
+    public partial class ContentChannelItemViewModelHelper : ViewModelHelper<ContentChannelItem, ContentChannelItemBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ContentChannelItemViewModel CreateViewModel( ContentChannelItem model, Person currentPerson = null, bool loadAttributes = true )
+        public override ContentChannelItemBag CreateViewModel( ContentChannelItem model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ContentChannelItemViewModel
+            var viewModel = new ContentChannelItemBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
                 ApprovedDateTime = model.ApprovedDateTime,
                 Content = model.Content,
@@ -202,7 +202,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ContentChannelItemViewModel ToViewModel( this ContentChannelItem model, Person currentPerson = null, bool loadAttributes = false )
+        public static ContentChannelItemBag ToViewModel( this ContentChannelItem model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ContentChannelItemViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

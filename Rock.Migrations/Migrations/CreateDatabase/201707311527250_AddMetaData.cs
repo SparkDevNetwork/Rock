@@ -84,8 +84,8 @@ namespace Rock.Migrations
 
         private void ExecuteSqlInsert( string insertIntoStatement, string columnValues )
         {
-            // Convert line-feed delimited values into string list
-            var valueLines = columnValues.Split( new[] { "\n" }, StringSplitOptions.None ).ToList();
+            // Convert line-feed delimited values into string list, and remove trailing newline
+            var valueLines = columnValues.Split( new[] { "\n" }, StringSplitOptions.None ).Select( s => s.Trim() ).ToList();
 
             // Build and execute an insert statement that inserts a group of values.
             int pos = 0;

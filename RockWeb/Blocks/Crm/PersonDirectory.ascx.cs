@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -158,6 +158,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "FAA234E0-9B34-4539-9987-F15E3318B4FF" )]
     public partial class PersonDirectory : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -653,6 +654,7 @@ namespace RockWeb.Blocks.Crm
                     BirthMonth = p.BirthMonth,
                     BirthDay = p.BirthDay,
                     BirthDate = p.BirthDate,
+                    DeceasedDate = p.DeceasedDate,
                     Gender = p.Gender,
                     PhotoId = p.PhotoId,
                     GraduationYear = p.GraduationYear
@@ -762,6 +764,7 @@ namespace RockWeb.Blocks.Crm
                             BirthMonth = p.BirthMonth,
                             BirthDay = p.BirthDay,
                             BirthDate = p.BirthDate,
+                            DeceasedDate = p.DeceasedDate,
                             Gender = p.Gender,
                             PhotoId = p.PhotoId,
                             GraduationYear = p.GraduationYear
@@ -962,11 +965,12 @@ namespace RockWeb.Blocks.Crm
             public int? BirthMonth { get; set; }
             public int? BirthDay { get; set; }
             public DateTime? BirthDate { get; set; }
+            public DateTime? DeceasedDate { get; set; }
             public int? Age
             {
                 get
                 {
-                    return Person.GetAge( this.BirthDate );
+                    return Person.GetAge( this.BirthDate, this.DeceasedDate );
                 }
             }
             public Gender Gender { get; set; }

@@ -29,7 +29,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// TaggedItems REST API
     /// </summary>
-    [RockGuid( "e6b8f324-857c-4624-a3d6-ce4a6672070d" )]
     public partial class TagsController
     {
         /// <summary>
@@ -46,7 +45,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        [RockGuid( "7e796516-837c-4cdd-8c76-7bdf297a764a" )]
+        [Rock.SystemGuid.RestActionGuid( "7E796516-837C-4CDD-8C76-7BDF297A764A" )]
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier = null, string entityQualifierValue = null, string categoryGuid = null, bool? includeInactive = false )
         {
             string tagName = WebUtility.UrlDecode( name );
@@ -81,7 +80,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/Tags/AvailableNames" )]
-        [RockGuid( "0611e622-841b-4150-a76c-fafa5109ccd1" )]
+        [Rock.SystemGuid.RestActionGuid( "0611E622-841B-4150-A76C-FAFA5109CCD1" )]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name = null, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             var tags = ( ( TagService ) Service )

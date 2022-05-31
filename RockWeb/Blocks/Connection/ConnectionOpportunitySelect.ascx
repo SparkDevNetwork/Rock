@@ -10,10 +10,10 @@
         transition: all 250ms ease-in-out 25ms;
     }
 
-    .badge-legend.expand-on-hover .badge:hover {
-        max-width: 250px;
-        padding: 5px 12px 0 12px;
-    }
+        .badge-legend.expand-on-hover .badge:hover {
+            max-width: 250px;
+            padding: 5px 12px 0 12px;
+        }
 
     .list-as-blocks ul li .follow-toggle {
         position: absolute;
@@ -26,17 +26,17 @@
         right: 15px; /* padding of the list-as-block li */
     }
 
-    .list-as-blocks ul li .follow-toggle:hover {
-        background: transparent;
-    }
+        .list-as-blocks ul li .follow-toggle:hover {
+            background: transparent;
+        }
 
-    .list-as-blocks ul li .follow-toggle:hover i {
-        color: #626262;
-    }
+            .list-as-blocks ul li .follow-toggle:hover i {
+                color: #626262;
+            }
 
-    .list-as-blocks ul li .follow-toggle i {
-        font-size: 16px;
-    }
+        .list-as-blocks ul li .follow-toggle i {
+            font-size: 16px;
+        }
 </style>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
@@ -55,9 +55,15 @@
             </div>
 
             <div class="panel-body">
-                <div class="small text-right">
-                    <Rock:Switch ID="tglMyActiveOpportunities" runat="server" OnCheckedChanged="tglMyActiveOpportunities_CheckedChanged" AutoPostBack="true" Text="My Active Opportunities" />
+                <div class="d-flex flex-wrap justify-content-end align-items-center">
+                    <div class="small">
+                        <Rock:Switch ID="tglMyActiveOpportunities" runat="server" CssClass="small" OnCheckedChanged="tglMyActiveOpportunities_CheckedChanged" AutoPostBack="true" Text="My Active Opportunities" />
+                    </div>
+                    <div class="form-horizontal label-auto label-min-w-0 form-group-sm ml-4">
+                        <Rock:CampusPicker ID="cpCampusFilter" runat="server" CssClass="input-width-lg" FormGroupCssClass="m-0" AutoPostBack="true" OnSelectedIndexChanged="cpCampusPicker_SelectedIndexChanged" />
+                    </div>
                 </div>
+
                 <Rock:NotificationBox ID="nbNoOpportunities" runat="server" NotificationBoxType="Info" CssClass="margin-t-md" Text="There are no current connection requests." />
 
                 <asp:Panel ID="pnlFavorites" runat="server">

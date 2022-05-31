@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Static Guids used by the Rock application */
 export const enum DefinedType {
     /** Background check package types */
     BackgroundCheckTypes = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF",
@@ -42,12 +43,14 @@ export const enum DefinedType {
     CommunicationMedium = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F",
     /** The domains that are safe to send from */
     CommunicationSafeSenderDomains = "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED",
-    /** The list of values that SMS messages can be sent from.  Depending on provider, these may
-be phone numbers or short codes.
-
-The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
-
-The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'. */
+    /**
+     * The list of values that SMS messages can be sent from.  Depending on provider, these may
+     * be phone numbers or short codes.
+     * 
+     * The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
+     * 
+     * The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
+     */
     CommunicationSmsFrom = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE",
     /** The list of phone country code formats and how to format their numbers  */
     CommunicationPhoneCountryCode = "45E9EF7C-91C7-45AB-92C1-1D6219293847",
@@ -165,7 +168,7 @@ The DefinedValue.Description will just be any description, such as 'Rock Solid C
     RestApiAllowedDomains = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8",
     /** The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset. */
     SchoolGrades = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D",
-    /** The section types defined type, which has values that determine which section type the workflow action form section is based. */
+    /** The section types defined type, which has values that determine the CSS class to apply to the section div. */
     SectionType = "A72D940B-2A69-44B8-931C-7FE99824D84C",
     /** Used to manage the topic options for small groups. */
     SmallGroupTopic = "D4111631-6B42-1CBD-4019-427D6BC6F475",
@@ -198,4 +201,3 @@ The DefinedValue.Description will just be any description, such as 'Rock Solid C
     /** The statement generator lava template (Legacy) */
     StatementGeneratorLavaTemplateLegacy = "74A23516-A20A-40C9-93B5-1AB5FDFF6750",
 }
-

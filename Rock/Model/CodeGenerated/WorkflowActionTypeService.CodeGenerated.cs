@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// WorkflowActionType View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( WorkflowActionType ) )]
-    public partial class WorkflowActionTypeViewModelHelper : ViewModelHelper<WorkflowActionType, Rock.ViewModel.WorkflowActionTypeViewModel>
+    public partial class WorkflowActionTypeViewModelHelper : ViewModelHelper<WorkflowActionType, WorkflowActionTypeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.WorkflowActionTypeViewModel CreateViewModel( WorkflowActionType model, Person currentPerson = null, bool loadAttributes = true )
+        public override WorkflowActionTypeBag CreateViewModel( WorkflowActionType model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.WorkflowActionTypeViewModel
+            var viewModel = new WorkflowActionTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ActivityTypeId = model.ActivityTypeId,
                 CriteriaAttributeGuid = model.CriteriaAttributeGuid,
                 CriteriaComparisonType = ( int ) model.CriteriaComparisonType,
@@ -194,7 +194,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.WorkflowActionTypeViewModel ToViewModel( this WorkflowActionType model, Person currentPerson = null, bool loadAttributes = false )
+        public static WorkflowActionTypeBag ToViewModel( this WorkflowActionType model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new WorkflowActionTypeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

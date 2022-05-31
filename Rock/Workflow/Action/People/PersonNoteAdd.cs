@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -82,6 +82,7 @@ namespace Rock.Workflow.Action
 
     #endregion Workflow Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( "B2C8B951-C41E-4DFB-9F92-F183223448AA")]
     public class PersonNoteAdd : ActionComponent
     {
         private static class AttributeKey
@@ -102,7 +103,7 @@ namespace Rock.Workflow.Action
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -110,7 +111,7 @@ namespace Rock.Workflow.Action
             if ( person != null )
             {
                 var mergeFields = GetMergeFields( action );
-                
+
                 NoteService noteService = new NoteService( rockContext );
 
                 Note note = new Note();
@@ -120,6 +121,22 @@ namespace Rock.Workflow.Action
                 note.IsPrivateNote = false;
                 note.Text = GetAttributeValue( action, AttributeKey.Text ).ResolveMergeFields( mergeFields );
                 note.EditedDateTime = RockDateTime.Now;
+
+                // Add a NoteUrl for a person based on the existing Person Profile page, routes, and parameters.
+                var personPageService = new PageService( rockContext );
+                var personPage = personPageService.Get( SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES.AsGuid() );
+
+                // If the Person Profile Page has at least one route and at least one Page Context, use those to build the Note URL.
+                if ( personPage.PageRoutes.Count > 0 && personPage.PageContexts.Count > 0 )
+                {
+                    var personPageRoute = personPage.PageRoutes.First();
+                    var personPageContext = personPage.PageContexts.First();
+                    var personIdParameter = personPageContext.IdParameter;
+
+                    var personPageParameter = new Dictionary<string, string> { { personIdParameter, person.Id.ToString() } };
+                    var personPageReference = new Web.PageReference( personPage.Id, personPageRoute.Id );
+                    note.NoteUrl = personPageReference.BuildRouteURL( personPageParameter );
+                }
 
                 var noteType = NoteTypeCache.Get( GetAttributeValue( action, AttributeKey.NoteType ).AsGuid() );
                 if ( noteType != null )

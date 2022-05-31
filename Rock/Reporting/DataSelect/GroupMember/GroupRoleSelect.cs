@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [Description( "Show Group Role" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Role" )]
+    [Rock.SystemGuid.EntityTypeGuid( "D68102CB-B11C-41ED-B0CE-411B922E5669")]
     public class GroupRoleSelect : DataSelectComponent
     {
         /// <summary>

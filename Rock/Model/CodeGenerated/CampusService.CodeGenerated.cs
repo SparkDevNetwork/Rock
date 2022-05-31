@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -134,7 +135,7 @@ namespace Rock.Model
     /// Campus View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Campus ) )]
-    public partial class CampusViewModelHelper : ViewModelHelper<Campus, Rock.ViewModel.CampusViewModel>
+    public partial class CampusViewModelHelper : ViewModelHelper<Campus, CampusBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -143,17 +144,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.CampusViewModel CreateViewModel( Campus model, Person currentPerson = null, bool loadAttributes = true )
+        public override CampusBag CreateViewModel( Campus model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.CampusViewModel
+            var viewModel = new CampusBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CampusStatusValueId = model.CampusStatusValueId,
                 CampusTypeValueId = model.CampusTypeValueId,
                 Description = model.Description,
@@ -270,7 +270,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.CampusViewModel ToViewModel( this Campus model, Person currentPerson = null, bool loadAttributes = false )
+        public static CampusBag ToViewModel( this Campus model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new CampusViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

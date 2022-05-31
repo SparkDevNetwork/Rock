@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// WorkflowAction View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( WorkflowAction ) )]
-    public partial class WorkflowActionViewModelHelper : ViewModelHelper<WorkflowAction, Rock.ViewModel.WorkflowActionViewModel>
+    public partial class WorkflowActionViewModelHelper : ViewModelHelper<WorkflowAction, WorkflowActionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.WorkflowActionViewModel CreateViewModel( WorkflowAction model, Person currentPerson = null, bool loadAttributes = true )
+        public override WorkflowActionBag CreateViewModel( WorkflowAction model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.WorkflowActionViewModel
+            var viewModel = new WorkflowActionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ActionTypeId = model.ActionTypeId,
                 ActivityId = model.ActivityId,
                 CompletedDateTime = model.CompletedDateTime,
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.WorkflowActionViewModel ToViewModel( this WorkflowAction model, Person currentPerson = null, bool loadAttributes = false )
+        public static WorkflowActionBag ToViewModel( this WorkflowAction model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new WorkflowActionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

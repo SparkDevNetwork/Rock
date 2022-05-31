@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -29,12 +30,43 @@ namespace Rock.Model
     /// </summary>
     public partial class RestControllerService
     {
+        private class DiscoveredControllerFromReflection
+        {
+            public string Name { get; set; }
+            public string ClassName { get; set; }
+            public Guid? ReflectedGuid { get; set; }
+            public List<DiscoveredRestAction> DiscoveredRestActions { get; set; } = new List<DiscoveredRestAction>();
+            public override string ToString()
+            {
+                return ClassName;
+            }
+        }
+
+        private class DiscoveredRestAction
+        {
+            public string ApiId { get; set; }
+            public string Method { get; set; }
+            public string Path { get; set; }
+            public Guid? ReflectedGuid { get; set; }
+            public override string ToString()
+            {
+                return ApiId;
+            }
+        }
+
         /// <summary>
         /// Registers the controllers.
         /// </summary>
         public static void RegisterControllers()
         {
             /*
+             * 05/13/2022 MDP/DMV
+             * 
+             * In addition to the 12/19/2019 BJW note, we also added a RockGuid attribute to 
+             * controllers and methods (except for inherited methods). This will prevent
+             * loosing security on methods that have changed their signature. 
+             * 
+             * 
              * 12/19/2019 BJW
              *
              * There was an issue with the SecuredAttribute not calculating API ID the same as was being calculated here.
@@ -52,10 +84,16 @@ namespace Rock.Model
 
             var rockContext = new RockContext();
             var restControllerService = new RestControllerService( rockContext );
-            var discoveredControllers = new List<RestController>();
+            var discoveredControllers = new List<DiscoveredControllerFromReflection>();
 
             var config = GlobalConfiguration.Configuration;
             var explorer = config.Services.GetApiExplorer();
+
+            if ( !explorer.ApiDescriptions.Any() )
+            {
+                // Just in case ApiDescriptions wasn't populated, exit and don't do anything
+                return;
+            }
 
             foreach ( var apiDescription in explorer.ApiDescriptions )
             {
@@ -67,37 +105,57 @@ namespace Rock.Model
                 var controller = discoveredControllers.Where( c => c.Name == name ).FirstOrDefault();
                 if ( controller == null )
                 {
-                    var controllerRockGuid = action.ControllerDescriptor.ControllerType.GetCustomAttribute<RockGuidAttribute>();
+                    var controllerRockGuid = action.ControllerDescriptor.ControllerType.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
 
-                    controller = new RestController
+                    controller = new DiscoveredControllerFromReflection
                     {
                         Name = name,
                         ClassName = action.ControllerDescriptor.ControllerType.FullName
                     };
 
-                    controller.SetGuidFromRockGuidAttribute( controllerRockGuid );
+                    if ( controllerRockGuid.HasValue )
+                    {
+                        controller.ReflectedGuid = controllerRockGuid.Value;
+                    }
+                    else
+                    {
+                        controller.ReflectedGuid = null;
+                    }
 
                     discoveredControllers.Add( controller );
                     controllerApiIdMap[controller.ClassName] = new Dictionary<string, string>();
                 }
 
                 var apiIdMap = controllerApiIdMap[controller.ClassName];
-                var apiId = GetApiId( reflectedHttpActionDescriptor.MethodInfo, method, controller.Name, out RockGuidAttribute methodRockGuid );
+                var apiId = GetApiId( reflectedHttpActionDescriptor.MethodInfo, method, controller.Name, out Guid? restActionGuid );
 
                 // Because we changed the format of the stored ApiId, it is possible some RestAction records will have the old
                 // style Id, which is apiDescription.ID
                 apiIdMap[apiId] = apiDescription.ID;
 
-                var restAction = new RestAction
+                var restAction = new DiscoveredRestAction
                 {
                     ApiId = apiId,
                     Method = method,
                     Path = apiDescription.RelativePath
                 };
 
-                restAction.SetGuidFromRockGuidAttribute( methodRockGuid );
+                if ( restActionGuid.HasValue )
+                {
+                    restAction.ReflectedGuid = restActionGuid.Value;
+                }
+                else
+                {
+                    restAction.ReflectedGuid = null;
+                }
 
-                controller.Actions.Add( restAction );
+                controller.DiscoveredRestActions.Add( restAction );
+            }
+
+            if ( !discoveredControllers.Any() )
+            {
+                // Just in case discoveredControllers somehow is empty, exit and don't do anything
+                return;
             }
 
             var actionService = new RestActionService( rockContext );
@@ -109,30 +167,40 @@ namespace Rock.Model
                     .Where( c => c.Name == discoveredController.Name ).FirstOrDefault();
                 if ( controller == null )
                 {
-                    controller = new RestController { Name = discoveredController.Name };
+                    controller = new RestController
+                    {
+                        Name = discoveredController.Name,
+                    };
+
                     restControllerService.Add( controller );
                 }
+
                 controller.ClassName = discoveredController.ClassName;
 
-                if ( discoveredController.GuidSetFromRockGuidAttribute &&
-                     !controller.Guid.Equals( discoveredController.Guid ) )
+                if ( discoveredController.ReflectedGuid.HasValue )
                 {
-                    controller.SetGuidFromRockGuidAttribute( new RockGuidAttribute( discoveredController.Guid ) );
+                    if ( controller.Guid != discoveredController.ReflectedGuid.Value )
+                    {
+                        controller.Guid = discoveredController.ReflectedGuid.Value;
+                    }
                 }
 
-                foreach ( var discoveredAction in discoveredController.Actions )
+                foreach ( var discoveredAction in discoveredController.DiscoveredRestActions )
                 {
                     var newFormatId = discoveredAction.ApiId;
                     var oldFormatId = apiIdMap[newFormatId];
-                    var apiGuid = discoveredAction.Guid;
 
-                    var action = controller.Actions.Where( a => a.ApiId == newFormatId || a.ApiId == oldFormatId || a.Guid == apiGuid ).FirstOrDefault();
+                    var action = controller.Actions.Where( a =>
+                        a.ApiId == newFormatId
+                        || a.ApiId == oldFormatId
+                        || ( discoveredAction.ReflectedGuid.HasValue && a.Guid == discoveredAction.ReflectedGuid.Value ) ).FirstOrDefault();
 
                     if ( action == null )
                     {
                         action = new RestAction { ApiId = newFormatId };
                         controller.Actions.Add( action );
                     }
+
                     action.Method = discoveredAction.Method;
                     action.Path = discoveredAction.Path;
 
@@ -143,14 +211,16 @@ namespace Rock.Model
                         action.ApiId = newFormatId;
                     }
 
-                    if ( discoveredAction.GuidSetFromRockGuidAttribute &&
-                         !action.Guid.Equals( discoveredAction.Guid ) )
+                    if ( discoveredAction.ReflectedGuid.HasValue )
                     {
-                        action.SetGuidFromRockGuidAttribute( new RockGuidAttribute( discoveredAction.Guid ) );
+                        if ( action.Guid != discoveredAction.ReflectedGuid.Value )
+                        {
+                            action.Guid = discoveredAction.ReflectedGuid.Value;
+                        }
                     }
                 }
 
-                var actions = discoveredController.Actions.Select( d => d.ApiId ).ToList();
+                var actions = discoveredController.DiscoveredRestActions.Select( d => d.ApiId ).ToList();
                 foreach ( var action in controller.Actions.Where( a => !actions.Contains( a.ApiId ) ).ToList() )
                 {
                     actionService.Delete( action );
@@ -164,7 +234,23 @@ namespace Rock.Model
                 restControllerService.Delete( controller );
             }
 
-            rockContext.SaveChanges();
+            try
+            {
+                rockContext.SaveChanges();
+            }
+            catch ( Exception thrownException )
+            {
+                // if the exception was due to a duplicate Guid, throw as a duplicateGuidException. That'll make it easier to troubleshoot.
+                var duplicateGuidException = Rock.SystemGuid.DuplicateSystemGuidException.CatchDuplicateSystemGuidException( thrownException, null );
+                if ( duplicateGuidException != null )
+                {
+                    throw duplicateGuidException;
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
     }
 }

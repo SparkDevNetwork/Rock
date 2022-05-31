@@ -380,7 +380,7 @@ namespace Rock.Web.UI.Controls
             target.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
 
             target.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
-            target.PersonEntryCampusTypeValueId= source.PersonEntryCampusTypeValueId;
+            target.PersonEntryCampusTypeValueId = source.PersonEntryCampusTypeValueId;
 
             target.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
             target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
@@ -766,10 +766,10 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow1.Controls.Add( pnlPersonEntryRow1Col2 );
             pnlPersonEntryRow1.Controls.Add( pnlPersonEntryRow1Col3 );
             pnlPersonEntryRow1.Controls.Add( pnlPersonEntryRow1Col4 );
-            pnlPersonEntryRow1Col1.Controls.Add( _cbPersonEntryShowCampus );
-            pnlPersonEntryRow1Col2.Controls.Add( _cbPersonEntryAutofillCurrentPerson );
-            pnlPersonEntryRow1Col3.Controls.Add( _cbPersonEntryHideIfCurrentPersonKnown );
-            pnlPersonEntryRow1Col4.Controls.Add( _ddlPersonEntrySpouseEntryOption );
+            pnlPersonEntryRow1Col1.Controls.Add( _cbPersonEntryAutofillCurrentPerson );
+            pnlPersonEntryRow1Col2.Controls.Add( _cbPersonEntryHideIfCurrentPersonKnown );
+            pnlPersonEntryRow1Col3.Controls.Add( _dvpPersonEntryRecordStatus );
+            pnlPersonEntryRow1Col4.Controls.Add( _dvpPersonEntryConnectionStatus );
 
             /* Person Entry - Row 2*/
             Panel pnlPersonEntryRow2 = new Panel
@@ -808,10 +808,9 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow2.Controls.Add( pnlPersonEntryRow2Col3 );
             pnlPersonEntryRow2.Controls.Add( pnlPersonEntryRow2Col4 );
 
-            pnlPersonEntryRow2Col1.Controls.Add( _ddlPersonEntryGenderEntryOption );
-            pnlPersonEntryRow2Col2.Controls.Add( _ddlPersonEntryEmailEntryOption );
-            pnlPersonEntryRow2Col3.Controls.Add( _ddlPersonEntryMobilePhoneEntryOption );
-            pnlPersonEntryRow2Col4.Controls.Add( _ddlPersonEntryBirthdateEntryOption );
+            pnlPersonEntryRow2Col1.Controls.Add( _cbPersonEntryShowCampus );
+            pnlPersonEntryRow2Col2.Controls.Add( _dvpPersonEntryCampusType );
+            pnlPersonEntryRow2Col3.Controls.Add( _dvpPersonEntryCampusStatus );
 
             /* Person Entry - Row 3*/
             Panel pnlPersonEntryRow3 = new Panel
@@ -851,10 +850,10 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow3.Controls.Add( pnlPersonEntryRow3Col3 );
             pnlPersonEntryRow3.Controls.Add( pnlPersonEntryRow3Col4 );
 
-            pnlPersonEntryRow3Col1.Controls.Add( _ddlPersonEntryAddressEntryOption );
-            pnlPersonEntryRow3Col2.Controls.Add( _ddlPersonEntryMaritalStatusEntryOption );
-            pnlPersonEntryRow3Col3.Controls.Add( _tbPersonEntrySpouseLabel );
-            pnlPersonEntryRow3Col4.Controls.Add( _dvpPersonEntryConnectionStatus );
+            pnlPersonEntryRow3Col1.Controls.Add( _ddlPersonEntryGenderEntryOption );
+            pnlPersonEntryRow3Col2.Controls.Add( _ddlPersonEntryEmailEntryOption );
+            pnlPersonEntryRow3Col3.Controls.Add( _ddlPersonEntryMobilePhoneEntryOption );
+            pnlPersonEntryRow3Col4.Controls.Add( _ddlPersonEntryBirthdateEntryOption );
 
             /* Person Entry - Row 4*/
             Panel pnlPersonEntryRow4 = new Panel
@@ -893,10 +892,9 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow4.Controls.Add( pnlPersonEntryRow4Col3 );
             pnlPersonEntryRow4.Controls.Add( pnlPersonEntryRow4Col4 );
 
-            pnlPersonEntryRow4Col1.Controls.Add( _dvpPersonEntryRecordStatus );
+            pnlPersonEntryRow4Col1.Controls.Add( _ddlPersonEntryAddressEntryOption );
             pnlPersonEntryRow4Col2.Controls.Add( _dvpPersonEntryGroupLocationType );
-            pnlPersonEntryRow4Col3.Controls.Add( _dvpPersonEntryCampusType );
-            pnlPersonEntryRow4Col4.Controls.Add( _dvpPersonEntryCampusStatus );
+            pnlPersonEntryRow4Col3.Controls.Add( _ddlPersonEntryMaritalStatusEntryOption );
 
             /* Person Entry - Row 5*/
             Panel pnlPersonEntryRow5 = new Panel
@@ -927,9 +925,41 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow5.Controls.Add( pnlPersonEntryRow5Col1 );
             pnlPersonEntryRow5.Controls.Add( pnlPersonEntryRow5Col2 );
             pnlPersonEntryRow5.Controls.Add( pnlPersonEntryRow5Col3 );
-            pnlPersonEntryRow5Col1.Controls.Add( _ddlPersonEntryPersonAttribute );
-            pnlPersonEntryRow5Col2.Controls.Add( _ddlPersonEntrySpouseAttribute );
-            pnlPersonEntryRow5Col3.Controls.Add( _ddlPersonEntryFamilyAttribute );
+            pnlPersonEntryRow5Col1.Controls.Add( _ddlPersonEntrySpouseEntryOption );
+            pnlPersonEntryRow5Col2.Controls.Add( _tbPersonEntrySpouseLabel );
+
+            /* Person Entry - Row 6*/
+            Panel pnlPersonEntryRow6 = new Panel
+            {
+                ID = "pnlPersonEntryRow6",
+                CssClass = "row"
+            };
+
+            Panel pnlPersonEntryRow6Col1 = new Panel
+            {
+                ID = "pnlPersonEntryRow6Col1",
+                CssClass = "col-xs-6"
+            };
+
+            Panel pnlPersonEntryRow6Col2 = new Panel
+            {
+                ID = "pnlPersonEntryRow6Col2",
+                CssClass = "col-xs-6"
+            };
+
+            Panel pnlPersonEntryRow6Col3 = new Panel
+            {
+                ID = "pnlPersonEntryRow6Col3",
+                CssClass = "col-xs-6"
+            };
+
+            _pnlPersonEntry.Controls.Add( pnlPersonEntryRow6 );
+            pnlPersonEntryRow6.Controls.Add( pnlPersonEntryRow6Col1 );
+            pnlPersonEntryRow6.Controls.Add( pnlPersonEntryRow6Col2 );
+            pnlPersonEntryRow6.Controls.Add( pnlPersonEntryRow6Col3 );
+            pnlPersonEntryRow6Col1.Controls.Add( _ddlPersonEntryPersonAttribute );
+            pnlPersonEntryRow6Col2.Controls.Add( _ddlPersonEntrySpouseAttribute );
+            pnlPersonEntryRow6Col3.Controls.Add( _ddlPersonEntryFamilyAttribute );
 
             /* Person Entry - Post-HTML*/
             _pnlPersonEntry.Controls.Add( _cePersonEntryPostHtml );

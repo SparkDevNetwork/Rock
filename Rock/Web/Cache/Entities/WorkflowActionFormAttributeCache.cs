@@ -113,14 +113,17 @@ namespace Rock.Web.Cache
         [DataMember]
         public string PostHtml { get; private set; }
 
-        /// <summary>
-        /// Gets the field visibility rules.
-        /// </summary>
-        /// <value>
-        /// The field visibility rules.
-        /// </value>
+        /// <inheritdoc cref="WorkflowActionFormAttribute.FieldVisibilityRules"/>
         [DataMember]
         public virtual Field.FieldVisibilityRules FieldVisibilityRules { get; private set; }
+        
+        /// <inheritdoc cref="WorkflowActionFormAttribute.ColumnSize"/>
+        [DataMember]
+        public int? ColumnSize { get; private set; }
+
+        /// <inheritdoc cref="WorkflowActionFormAttribute.ActionFormSectionId"/>
+        [DataMember]
+        public int? ActionFormSectionId { get; private set; }
 
         /// <summary>
         /// Gets the workflow action form.
@@ -163,6 +166,8 @@ namespace Rock.Web.Cache
             PreHtml = workflowActionFormAttribute.PreHtml;
             PostHtml = workflowActionFormAttribute.PostHtml;
             FieldVisibilityRules = workflowActionFormAttribute.FieldVisibilityRules;
+            ColumnSize = workflowActionFormAttribute.ColumnSize;
+            ActionFormSectionId = workflowActionFormAttribute.ActionFormSectionId;
         }
 
         #endregion

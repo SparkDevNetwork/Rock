@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { Guid } from "../Util/guid";
-import { PublicAttributeValue } from "./publicAttributeValue";
+
+import { PublicAttributeBag } from "./Utility/publicAttributeBag";
 
 export interface IEntity {
-    id: number;
-    guid: Guid;
-    attributes: Record<string, PublicAttributeValue> | null;
+    idKey: string;
+    attributes?: Record<string, PublicAttributeBag> | null;
+    attributeValues?: Record<string, string> | null;
 }

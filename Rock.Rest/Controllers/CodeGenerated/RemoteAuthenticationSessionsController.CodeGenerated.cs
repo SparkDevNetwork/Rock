@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// RemoteAuthenticationSessions REST API
     /// </summary>
+    [RestControllerGuid( "B542F037-4FA7-4548-A6E9-A069ED346FE8" )]
     public partial class RemoteAuthenticationSessionsController : Rock.Rest.ApiController<Rock.Model.RemoteAuthenticationSession>
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -185,6 +185,7 @@ namespace RockWeb.Blocks.CheckIn
         DefaultIntegerValue = 180,
         Order = 15 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "3CD3411C-C076-4344-A9D5-8F3B4F01E31D" )]
     public partial class AttendanceAnalytics : RockBlock
     {
         private static class AttributeKeys
@@ -1454,8 +1455,9 @@ function(item) {
                         person.Email = row["Email"].ToString();
                         person.GivingId = row["GivingId"].ToString();
                         person.Birthdate = row["BirthDate"] as DateTime?;
+                        person.DeceasedDate = row["DeceasedDate"] as DateTime?;
                         person.Gender = row["Gender"].ToString().ConvertToEnum<Gender>();
-                        person.Age = Person.GetAge( person.Birthdate );
+                        person.Age = Person.GetAge( person.Birthdate, person.DeceasedDate );
                         person.Grade = dtNonAttenders.Columns.Contains( "GraduationYear" ) ? Person.GradeFormattedFromGraduationYear( row["GraduationYear"] as int? ) : null;
 
                         person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
@@ -1470,8 +1472,9 @@ function(item) {
                             parent.Email = row["ParentEmail"].ToString();
                             parent.GivingId = row["ParentGivingId"].ToString();
                             parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                            parent.DeceasedDate = row["ParentDeceasedDate"] as DateTime?;
                             parent.Gender = row["ParentGender"].ToString().ConvertToEnum<Gender>();
-                            parent.Age = Person.GetAge( parent.Birthdate );
+                            parent.Age = Person.GetAge( parent.Birthdate, parent.DeceasedDate );
                             result.Parent = parent;
                         }
 
@@ -1484,9 +1487,10 @@ function(item) {
                             child.Email = row["ChildEmail"].ToString();
                             child.GivingId = row["ChildGivingId"].ToString();
                             child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                            child.DeceasedDate = row["ChildDeceasedDate"] as DateTime?;
                             child.Gender = row["ChildGender"].ToString().ConvertToEnum<Gender>();
                             child.Grade = Person.GradeFormattedFromGraduationYear( row["ChildGraduationYear"] as int? );
-                            child.Age = Person.GetAge( child.Birthdate );
+                            child.Age = Person.GetAge( child.Birthdate, child.DeceasedDate );
                             result.Child = child;
                         }
 
@@ -1626,8 +1630,9 @@ function(item) {
                             person.Email = row["Email"].ToString();
                             person.GivingId = row["GivingId"].ToString();
                             person.Birthdate = row["BirthDate"] as DateTime?;
+                            person.DeceasedDate = row["DeceasedDate"] as DateTime?;
                             person.Gender = row["Gender"].ToString().ConvertToEnum<Gender>();
-                            person.Age = Person.GetAge( person.Birthdate );
+                            person.Age = Person.GetAge( person.Birthdate, person.DeceasedDate );
                             person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
                             person.Grade = dtAttendees.Columns.Contains( "GraduationYear" ) ? Person.GradeFormattedFromGraduationYear( row["GraduationYear"] as int? ) : null;
                             result.Person = person;
@@ -1641,8 +1646,9 @@ function(item) {
                                 parent.Email = row["ParentEmail"].ToString();
                                 parent.GivingId = row["ParentGivingId"].ToString();
                                 parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                                person.DeceasedDate = row["ParentDeceasedDate"] as DateTime?;
                                 parent.Gender = row["ParentGender"].ToString().ConvertToEnum<Gender>();
-                                parent.Age = Person.GetAge( parent.Birthdate );
+                                parent.Age = Person.GetAge( parent.Birthdate, parent.DeceasedDate );
                                 result.Parent = parent;
                             }
 
@@ -1655,9 +1661,10 @@ function(item) {
                                 child.Email = row["ChildEmail"].ToString();
                                 child.GivingId = row["ChildGivingId"].ToString();
                                 child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                                child.DeceasedDate = row["ChildDeceasedDate"] as DateTime?;
                                 child.Gender = row["ChildGender"].ToString().ConvertToEnum<Gender>();
                                 child.Grade = Person.GradeFormattedFromGraduationYear( row["ChildGraduationYear"] as int? );
-                                child.Age = Person.GetAge( child.Birthdate );
+                                child.Age = Person.GetAge( child.Birthdate, child.DeceasedDate );
                                 result.Child = child;
                             }
 
@@ -2653,6 +2660,8 @@ function(item) {
             public string GivingId { get; set; }
 
             public DateTime? Birthdate { get; set; }
+
+            public DateTime? DeceasedDate { get; set; }
 
             public string Grade { get; set; }
 

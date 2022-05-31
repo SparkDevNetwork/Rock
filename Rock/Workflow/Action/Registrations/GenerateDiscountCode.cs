@@ -61,6 +61,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Discount Code Attribute", "Attribute to save the discount code into.", false, "", "", 8, null,
         new string[] { "Rock.Field.Types.TextFieldType" } )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "EAE81C0A-A61F-45F2-BE45-8C5B664494B4")]
     public class GenerateDiscountCode : ActionComponent
     {
         /// <summary>

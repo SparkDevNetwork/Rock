@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.DetailPage )]
 
     [ContextAware( typeof( Person ) )]
+    [Rock.SystemGuid.BlockTypeGuid( "256F6FDB-B241-4DE6-9C38-0E9DA0270A22" )]
     public partial class SignatureDocumentList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         public static class AttributeKey
@@ -72,10 +73,9 @@ namespace RockWeb.Blocks.Core
             TargetPerson = ContextEntity<Person>();
 
             gSignatureDocuments.DataKeyNames = new string[] { "Id" };
-            gSignatureDocuments.Actions.ShowAdd = true;
             gSignatureDocuments.Actions.AddClick += gSignatureDocuments_Add;
+            gSignatureDocuments.Actions.ShowAdd = false;
             gSignatureDocuments.GridRebind += gSignatureDocuments_GridRebind;
-            gSignatureDocuments.Actions.ShowAdd = true;
             gSignatureDocuments.IsDeleteEnabled = true;
         }
 
@@ -195,6 +195,9 @@ namespace RockWeb.Blocks.Core
                 int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
                 if ( documentTypeId.HasValue )
                 {
+                    var isLegacyTemplate = new SignatureDocumentTemplateService( new RockContext() ).GetSelect( documentTypeId.Value, s => s.ProviderEntityTypeId.HasValue );
+                    gSignatureDocuments.Actions.ShowAdd = isLegacyTemplate;
+
                     qry = qry.Where( d =>
                         d.SignatureDocumentTemplateId == documentTypeId.Value );
 

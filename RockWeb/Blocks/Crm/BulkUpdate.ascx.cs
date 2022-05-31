@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -95,6 +95,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.BULK_UPDATE )]
     public partial class BulkUpdate : RockBlock
     {
         #region Attribute Keys
@@ -317,9 +318,11 @@ namespace RockWeb.Blocks.Crm
             }});
         }});
         $('#{0}').val(newValue);
-
+        if($(this).closest('.form-group.attribute-matrix-editor').length){{
+        __doPostBack('{3}', null);
+        }}
     }});
-", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID );
+", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID, pnlEntry.ClientID );
             ScriptManager.RegisterStartupScript( hfSelectedItems, hfSelectedItems.GetType(), "select-items-" + BlockId.ToString(), script, true );
 
             ddlGroupAction.SelectedValue = "Add";

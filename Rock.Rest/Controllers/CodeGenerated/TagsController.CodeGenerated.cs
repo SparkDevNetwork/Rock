@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Tags REST API
     /// </summary>
+    [RestControllerGuid( "E6B8F324-857C-4624-A3D6-CE4A6672070D" )]
     public partial class TagsController : Rock.Rest.ApiController<Rock.Model.Tag>
     {
         /// <summary>

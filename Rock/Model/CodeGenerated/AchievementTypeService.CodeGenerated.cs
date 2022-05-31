@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// AchievementType View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( AchievementType ) )]
-    public partial class AchievementTypeViewModelHelper : ViewModelHelper<AchievementType, Rock.ViewModel.AchievementTypeViewModel>
+    public partial class AchievementTypeViewModelHelper : ViewModelHelper<AchievementType, AchievementTypeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AchievementTypeViewModel CreateViewModel( AchievementType model, Person currentPerson = null, bool loadAttributes = true )
+        public override AchievementTypeBag CreateViewModel( AchievementType model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AchievementTypeViewModel
+            var viewModel = new AchievementTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AchievementFailureWorkflowTypeId = model.AchievementFailureWorkflowTypeId,
                 AchievementIconCssClass = model.AchievementIconCssClass,
                 AchievementStartWorkflowTypeId = model.AchievementStartWorkflowTypeId,
@@ -96,12 +96,14 @@ namespace Rock.Model
                 AchievementSuccessWorkflowTypeId = model.AchievementSuccessWorkflowTypeId,
                 AchieverEntityTypeId = model.AchieverEntityTypeId,
                 AllowOverAchievement = model.AllowOverAchievement,
+                AlternateImageBinaryFileId = model.AlternateImageBinaryFileId,
                 BadgeLavaTemplate = model.BadgeLavaTemplate,
                 CategoryId = model.CategoryId,
                 ComponentConfigJson = model.ComponentConfigJson,
                 ComponentEntityTypeId = model.ComponentEntityTypeId,
                 CustomSummaryLavaTemplate = model.CustomSummaryLavaTemplate,
                 Description = model.Description,
+                HighlightColor = model.HighlightColor,
                 ImageBinaryFileId = model.ImageBinaryFileId,
                 IsActive = model.IsActive,
                 IsPublic = model.IsPublic,
@@ -186,6 +188,7 @@ namespace Rock.Model
             target.AchievementSuccessWorkflowTypeId = source.AchievementSuccessWorkflowTypeId;
             target.AchieverEntityTypeId = source.AchieverEntityTypeId;
             target.AllowOverAchievement = source.AllowOverAchievement;
+            target.AlternateImageBinaryFileId = source.AlternateImageBinaryFileId;
             target.BadgeLavaTemplate = source.BadgeLavaTemplate;
             target.CategoryId = source.CategoryId;
             target.ComponentConfigJson = source.ComponentConfigJson;
@@ -194,6 +197,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HighlightColor = source.HighlightColor;
             target.ImageBinaryFileId = source.ImageBinaryFileId;
             target.IsActive = source.IsActive;
             target.IsPublic = source.IsPublic;
@@ -216,7 +220,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AchievementTypeViewModel ToViewModel( this AchievementType model, Person currentPerson = null, bool loadAttributes = false )
+        public static AchievementTypeBag ToViewModel( this AchievementType model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AchievementTypeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

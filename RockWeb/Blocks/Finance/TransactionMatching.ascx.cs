@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -125,6 +126,7 @@ namespace RockWeb.Blocks.Finance
         Description = "Determines if the email address field should be shown.",
         Order = 9 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "1A8BEE2A-E5BE-4BA5-AFDB-E9C9278419BA" )]
     public partial class TransactionMatching : RockBlock
     {
         #region Attribute Keys
@@ -392,15 +394,19 @@ namespace RockWeb.Blocks.Finance
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
-            var accountQry = new FinancialAccountService( rockContext )
-                .GetTree()
-                .Where( a => a.IsActive );
+            IEnumerable<FinancialAccountCache> financialAccountList;
 
             // no accounts specified means "all Active"
             if ( blockAccountGuidList.Any() )
             {
-                accountQry = accountQry.Where( a => blockAccountGuidList.Contains( a.Guid ) );
+                financialAccountList = FinancialAccountCache.GetByGuids( blockAccountGuidList );
             }
+            else
+            {
+                financialAccountList = FinancialAccountCache.All();
+            }
+
+            financialAccountList = financialAccountList.Where( a => a.IsActive );
 
             if ( !personalAccountGuidList.Any() )
             {
@@ -410,26 +416,27 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    // if no personal accounts are selected, but there are optional accounts, only show the optional accounts
-                    accountQry = accountQry.Where( a => false );
+                    // if no personal accounts are selected, but there are optional accounts, only show the optional accounts (added manually)
+                    financialAccountList = financialAccountList.Where( a => false );
                 }
             }
             else
             {
                 // if there are person accounts selected, limit accounts to personal accounts
-                var selectedAccountQry = accountQry.Where( a => personalAccountGuidList.Contains( a.Guid ) );
+                var selectedAccountList = financialAccountList.Where( a => personalAccountGuidList.Contains( a.Guid ) );
 
                 // If include child accounts is selected, then also select all child accounts of the selected accounts.
                 if ( ( this.GetUserPreference( keyPrefix + "include-child-accounts" ) ?? string.Empty ).AsBoolean() )
                 {
-                    var selectedParentIds = selectedAccountQry.Select( a => a.Id ).ToList();
+                    var selectedParentIds = selectedAccountList.Select( a => a.Id ).ToList();
+
                     // Now find only those accounts that are descendants of one of the selected (parent) Ids
                     // OR if it is one of the selected Ids.
-                    accountQry = accountQry.Where( a => a.ParentAccountIds.Any( x => selectedParentIds.Contains( x ) ) || selectedParentIds.Contains( a.Id ) );
+                    financialAccountList = financialAccountList.Where( a => a.GetAncestorFinancialAccountIds().Any( x => selectedParentIds.Contains( x ) ) || selectedParentIds.Contains( a.Id ) );
                 }
                 else
                 {
-                    accountQry = selectedAccountQry;
+                    financialAccountList = selectedAccountList;
                 }
             }
 
@@ -443,16 +450,16 @@ namespace RockWeb.Blocks.Finance
                 hlCampus.Visible = true;
 
                 // Filter out anything that does not match the batch's campus.
-                accountQry = accountQry.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
+                financialAccountList = financialAccountList.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
             }
 
             int? campusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
             if ( campusId.HasValue )
             {
-                accountQry = accountQry.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
+                financialAccountList = financialAccountList.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
             }
 
-            _visibleDisplayedAccountIds = new List<int>( accountQry.Select( a => a.Id ).ToList() );
+            _visibleDisplayedAccountIds = new List<int>( financialAccountList.Select( a => a.Id ).ToList() );
             _visibleOptionalAccountIds = new List<int>();
 
             // make the datasource all accounts, but only show the ones that are in _visibleAccountIds or have a non-zero amount
@@ -970,7 +977,7 @@ namespace RockWeb.Blocks.Finance
                 int accountBoxAccountId = accountBox.Attributes["data-account-id"].AsInteger();
                 accountBox.Visible = !onlyShowSelectedAccounts && ( _visibleDisplayedAccountIds.Contains( accountBoxAccountId ) || _visibleOptionalAccountIds.Contains( accountBoxAccountId ) );
 
-                if ( !accountBox.Visible && (accountBox.Value ?? 0.0M) != 0 )
+                if ( !accountBox.Visible && ( accountBox.Value ?? 0.0M ) != 0 )
                 {
                     // if there is a non-zero amount, show the edit box regardless of the account filter settings
                     accountBox.Visible = true;
@@ -1238,12 +1245,12 @@ namespace RockWeb.Blocks.Finance
             var accountNumberSecured = hfCheckMicrHashed.Value;
 
 
-            /* 07/24/2014 (added engineer note on 2020-09-23) MDP 
-             * 
+            /* 07/24/2014 (added engineer note on 2020-09-23) MDP
+             *
              * Note: The logic for this isn't what you might expect!
-             * 
+             *
              * A FinancialTransaction should only have amounts if it is matched to a person, so
-             
+
              - If individual is not selected, don't save any amounts, even if they entered amounts on the UI. So we will ignore them since an individual wasn't selected.
              - If they 'Unmatched' (the transaction had previously been matched to an individual, but now it isn't) clear out any amounts (even if amounts were specified in the UI)
 
@@ -2009,7 +2016,7 @@ namespace RockWeb.Blocks.Finance
             var isMarried = IsNewPersonMarried();
 
             // only prompt for Spouse if the selected marital status is married (and they aren't a child)
-            divAddPersonSpouse.Visible = !isChild && ( isMarried  );
+            divAddPersonSpouse.Visible = !isChild && ( isMarried );
             dvpAddPersonMaritalStatus.Visible = !isChild;
         }
 
@@ -2099,6 +2106,16 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private Location GetAddressLocation( RockContext rockContext, AddressControl addressControl )
         {
+            // Only verify if at least one address field contains a value.
+            // Ignore State as it is always prefilled with a value.
+            if ( acAddPersonAddress.Street1.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.Street2.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.City.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.PostalCode.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             var locationService = new LocationService( rockContext );
             return locationService.Get(
                 addressControl.Street1,

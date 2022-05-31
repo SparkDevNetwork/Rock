@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,7 +32,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "717fb517-c412-4654-962f-e67e6b4b613b" )]
     public partial class PrayerRequestsController
     {
         /// <summary>
@@ -43,7 +42,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [EnableQuery]
         [System.Web.Http.Route( "api/PrayerRequests/Public" )]
-        [RockGuid( "2fdaa0cf-37f4-4b1f-9847-8e028759871d" )]
+        [Rock.SystemGuid.RestActionGuid( "2FDAA0CF-37F4-4B1F-9847-8E028759871D" )]
         public IQueryable<PrayerRequest> Public()
         {
             var now = RockDateTime.Now;
@@ -66,7 +65,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [EnableQuery]
         [System.Web.Http.Route( "api/PrayerRequests/GetByCategory/{categoryId}" )]
-        [RockGuid( "1ea8efaa-1481-4fc0-9681-ca940ab25309" )]
+        [Rock.SystemGuid.RestActionGuid( "1EA8EFAA-1481-4FC0-9681-CA940AB25309" )]
         public IQueryable<PrayerRequest> GetByCategory( int categoryId )
         {
             var rockContext = ( this.Service.Context as RockContext ) ?? new RockContext();
@@ -83,7 +82,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Prayed/{prayerId}/{personAliasId}" )]
-        [RockGuid( "b5a3a2c4-a841-4309-8952-34a86b872478" )]
+        [Rock.SystemGuid.RestActionGuid( "B5A3A2C4-A841-4309-8952-34A86B872478" )]
         public virtual void Prayed( int prayerId, int personAliasId )
         {
             SetProxyCreation( true );
@@ -109,7 +108,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Flag/{id}" )]
-        [RockGuid( "170fbfd5-cb6a-4a4c-88f0-e730e8af7321" )]
+        [Rock.SystemGuid.RestActionGuid( "170FBFD5-CB6A-4A4C-88F0-E730E8AF7321" )]
         public virtual void Flag( int id )
         {
             SetProxyCreation( true );
@@ -137,7 +136,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Prayed/{id:int}" )]
-        [RockGuid( "86675411-d420-4d8b-a421-2bd8c92f4069" )]
+        [Rock.SystemGuid.RestActionGuid( "86675411-D420-4D8B-A421-2BD8C92F4069" )]
         public virtual void Prayed( int id )
         {
             SetProxyCreation( true );
@@ -163,7 +162,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/PrayerRequests/Prayed/{guid:guid}" )]
-        [RockGuid( "9696db0a-4ccc-4530-bc8d-e4e54a438bfa" )]
+        [Rock.SystemGuid.RestActionGuid( "9696DB0A-4CCC-4530-BC8D-E4E54A438BFA" )]
         public IHttpActionResult Prayed( Guid guid, Guid? workflowTypeGuid = null, bool recordInteraction = true )
         {
             System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// FinancialTransactionRefunds REST API
     /// </summary>
+    [RestControllerGuid( "0BCF1BF7-BCF7-4174-BADA-CF57A3250ED2" )]
     public partial class FinancialTransactionRefundsController : Rock.Rest.ApiController<Rock.Model.FinancialTransactionRefund>
     {
         /// <summary>

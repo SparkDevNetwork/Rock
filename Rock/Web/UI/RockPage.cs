@@ -41,7 +41,8 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Utility.Settings;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using static Rock.Security.Authorization;
@@ -1362,15 +1363,22 @@ Rock.settings.initialize({{
                     if ( _pageNeedsObsidian )
                     {
                         AddScriptLink( "~/Obsidian/obsidian-core.js", true );
+                        AddCSSLink( "~/Obsidian/obsidian-vendor.min.css", true );
 
                         Page.Trace.Warn( "Initializing Obsidian" );
+
+                        var body = ( HtmlGenericControl ) this.Master.FindControl( "body" );
+                        if ( body != null )
+                        {
+                            body.AddCssClass( "obsidian-loading" );
+                        }
 
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
                             var script = $@"
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializePage({{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializePage({{
             executionStartTime: new Date().getTime(),
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
@@ -1690,8 +1698,8 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     {
                         var script = $@"
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializePageTimings({{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializePageTimings({{
             elementId: '{_obsidianPageTimingControlId}',
             debugTimingViewModels: { _debugTimingViewModels.ToCamelCaseJson( false, true ) }
         }});
@@ -1874,14 +1882,14 @@ Obsidian.onReady(() => {{
 
             _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
 
-            // create a page view transaction if enabled
+            // Create a page view transaction if enabled
             // Earlier it was moved to OnLoadComplete from OnLoad so we could get the updated title (if Lava or the block changed it)
             // Then it was moved from OnLoadComplete so we could get the Page Load Time
             if ( !Page.IsPostBack && _pageCache != null )
             {
                 if ( _pageCache.Layout.Site.EnablePageViews )
                 {
-                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache, new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds } );
+                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache, new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
                     pageViewTransaction.Enqueue();
                 }
             }
@@ -3540,7 +3548,7 @@ Sys.Application.add_load(function () {
         /// <returns></returns>
         public static string GetClientIpAddress()
         {
-            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current.Request ) );
+            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current?.Request ) );
         }
 
         /// <summary>

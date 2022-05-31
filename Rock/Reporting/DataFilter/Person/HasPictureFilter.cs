@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have a picture or not" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "569CD481-0C0A-4A05-8EB5-4836CF13E853")]
     public class HasPictureFilter : DataFilterComponent
     {
         #region Properties

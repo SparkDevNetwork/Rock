@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,6 +56,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_CALENDAREVENTITEMOCCURRENCEVIEW_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "15DD270A-A0BB-45BF-AA36-FE37856C60DE")]
     public class CalendarEventItemOccurrenceView : RockMobileBlockType
     {
         #region Block Attributes

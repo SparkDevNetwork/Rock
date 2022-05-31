@@ -30,7 +30,8 @@ using Rock.Field;
 using Rock.Model;
 using Rock.Lava;
 using Rock.Security;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Web.Cache
@@ -492,7 +493,7 @@ namespace Rock.Web.Cache
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public AttributeViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
+        public AttributeBag ToViewModel( Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AttributeCacheViewModelHelper();
             var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
@@ -613,11 +614,16 @@ namespace Rock.Web.Cache
 
             if ( rockControl != null )
             {
+                var isRequired = options.Required ?? IsRequired;
                 rockControl.Label = options.LabelText;
                 rockControl.Help = options.HelpText;
                 rockControl.Warning = options.WarningText;
-                rockControl.Required = options.Required ?? IsRequired;
+                rockControl.Required = isRequired;
                 rockControl.ValidationGroup = options.ValidationGroup;
+                if ( options.LabelText.IsNullOrWhiteSpace() && isRequired )
+                {
+                    rockControl.RequiredErrorMessage = $"{Name} is required.";
+                }
 
                 controls.Add( attributeControl );
             }
@@ -923,7 +929,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// AttributeValueCache View Model Helper
     /// </summary>
-    public partial class AttributeCacheViewModelHelper : ViewModelHelper<AttributeCache, AttributeViewModel>
+    public partial class AttributeCacheViewModelHelper : ViewModelHelper<AttributeCache, AttributeBag>
     {
         /// <summary>
         /// Converts to viewmodel.
@@ -932,17 +938,16 @@ namespace Rock.Web.Cache
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override AttributeViewModel CreateViewModel( AttributeCache model, Person currentPerson = null, bool loadAttributes = true )
+        public override AttributeBag CreateViewModel( AttributeCache model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new AttributeViewModel
+            var viewModel = new AttributeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.Id != 0 ? Utility.IdHasher.Instance.GetHash( model.Id ) : string.Empty,
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,
                 ConfigurationValues = model.ConfigurationValues,
@@ -984,18 +989,13 @@ namespace Rock.Web.Cache
         /// <param name="viewModel">The view model.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeCache model, AttributeViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeCache model, AttributeBag viewModel, Person currentPerson = null, bool loadAttributes = true )
         {
             viewModel.FieldTypeGuid = FieldTypeCache.Get( model.FieldTypeId ).Guid;
-            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToArray();
+            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToList();
             viewModel.QualifierValues = model.QualifierValues.ToDictionary(
                 kvp => kvp.Key,
-                kvp => new ViewModel.NonEntities.AttributeConfigurationValue
-                {
-                    Name = kvp.Value.Name,
-                    Value = kvp.Value.Value,
-                    Description = kvp.Value.Description
-                } );
+                kvp => kvp.Value.Value );
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,21 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -62,6 +60,7 @@ namespace RockWeb.Blocks.Finance
 
     [SystemCommunicationField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, "", Order = 10 )]
     [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a selection of groups that current user belongs to that can then be associated with the pledge", false, "", "", 12 )]
+    [Rock.SystemGuid.BlockTypeGuid( "20B5568E-A010-4E15-9127-E63CF218D6E5" )]
     public partial class PledgeEntry : RockBlock
     {
         /// <summary>
@@ -298,7 +297,9 @@ namespace RockWeb.Blocks.Finance
             drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
 
             ddlFrequency.Items.Clear();
-            var frequencies = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Value );
+            var frequencies = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() )
+                .DefinedValues.Where( dv => dv.IsActive ).OrderBy( a => a.Order ).ThenBy( a => a.Value );
+
             foreach ( var frequency in frequencies )
             {
                 ddlFrequency.Items.Add( new ListItem( frequency.Value, frequency.Id.ToString() ) );
@@ -351,7 +352,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Same logic as TransactionEntry.ascx.cs
-                var personQuery = new PersonService.PersonMatchQuery( firstName, tbLastName.Text, tbEmail.Text, string.Empty);
+                var personQuery = new PersonService.PersonMatchQuery( firstName, tbLastName.Text, tbEmail.Text, string.Empty );
                 person = personService.FindPerson( personQuery, true );
             }
 

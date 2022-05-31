@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Follow.Event
 
     [GroupTypeField( "Group Type", "The group type to evaluate if person has just joined for the first time", true, order: 0 )]
     [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 1)]
+    [Rock.SystemGuid.EntityTypeGuid( "4CDE3741-D284-4B32-9F8A-DFB63C600594")]
     public class PersonFirstJoinedGroupType : EventComponent
     {
         #region Event Component Implementation

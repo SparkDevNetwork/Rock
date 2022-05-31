@@ -182,7 +182,7 @@ namespace Rock.Model
 
                         code = alphaNumericCode + alphaCode + numericCode;
 
-                        // Check if code is already in use or contains bad unallowed strings.
+                        // Check if code is already in use or contains bad/non-allowed strings.
                         if ( NoGood.Any( s => code.Contains( s ) ) || _todaysUsedCodes.Contains( code ) )
                         {
                             lastCode = code;
@@ -245,7 +245,22 @@ namespace Rock.Model
                 numericCode = GenerateRandomNumericCode( numericLength );
 
                 // Leaving the noGood check here because it is possible that this method used outside of GetNew().
-                while ( NoGood.Any( s => numericCode.Contains( s ) ) || _todaysUsedCodes.Any( c => c.EndsWith( numericCode ) ) )
+                /*
+                     4/4/2022 - NA
+
+                     Formerly, the numeric portion of the code was ALSO being checked to verify it was not
+                     *contained* within any of the _todaysUsedCodes. Not only was that was not intuitive, it
+                     lead to situations where use of only 1 or 2 numeric codes would immediately run out of 
+                     codes since the comparison would ignore the other parts of the full code (i.e., any
+                     alphanumeric or alpha prefixed characters which otherwise would make the new code unique).
+
+                     Therefore this is being changed to only verify that the numeric code is not in the NoGood
+                     list.
+
+                     Reason: Nothing less than a "4" could be practically used -- even if using a alphanumeric or alpha
+                             prefix.
+                */
+                while ( NoGood.Any( s => numericCode.Contains( s ) ) )
                 {
                     attempts++;
 

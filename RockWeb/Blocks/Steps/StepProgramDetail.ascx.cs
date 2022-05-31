@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -67,6 +67,7 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "CF372F6E-7131-4FF7-8BCD-6053DBB67D34" )]
     public partial class StepProgramDetail : RockBlock
     {
         #region Attribute Keys
@@ -288,7 +289,6 @@ namespace RockWeb.Blocks.Steps
         private void InitializeActionButtons()
         {
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated Step Types and Step Participants will also be deleted!');", StepProgram.FriendlyTypeName );
-
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;
         }
 
@@ -353,6 +353,16 @@ namespace RockWeb.Blocks.Steps
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             CancelEditMode();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click ( object sender, EventArgs e )
+        {
+            this.DeleteRecord();
         }
 
         /// <summary>
@@ -1114,51 +1124,63 @@ namespace RockWeb.Blocks.Steps
                 pdAuditDetails.Visible = false;
             }
 
-            /*
-             SK - 10/28/2021
-             Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
-             */
-            bool editAllowed = stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson );
             pnlDetails.Visible = true;
-            hfStepProgramId.Value = stepProgram.Id.ToString();
-            lIcon.Text = string.Format( "<i class='{0}'></i>", stepProgram.IconCssClass );
-            bool readOnly = false;
-
-            nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed )
+            if ( stepProgram != null && stepProgram.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
-            }
+                /*
+                SK - 10/28/2021
+                Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+                */
+                bool editAllowed = stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                hfStepProgramId.Value = stepProgram.Id.ToString();
+                lIcon.Text = string.Format( "<i class='{0}'></i>", stepProgram.IconCssClass );
+                bool readOnly = false;
 
-            rblDefaultListView.Items.Clear();
-            rblDefaultListView.Items.Add( new ListItem( "Cards", StepProgram.ViewMode.Cards.ToString() ) );
-            rblDefaultListView.Items.Add( new ListItem( "Grid", StepProgram.ViewMode.Grid.ToString() ) );
-
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-                btnSecurity.Visible = false;
-                ShowReadonlyDetails( stepProgram );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                btnDelete.Visible = true;
-                btnSecurity.Visible = true;
-
-                btnSecurity.Title = "Secure " + stepProgram.Name;
-                btnSecurity.EntityId = stepProgram.Id;
-
-                if ( !stepProgramId.Equals( 0 ) )
+                nbEditModeMessage.Visible = false;
+                nbEditModeMessage.Text = string.Empty;
+                if ( !editAllowed )
                 {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
+                }
+
+                rblDefaultListView.Items.Clear();
+                rblDefaultListView.Items.Add( new ListItem( "Cards", StepProgram.ViewMode.Cards.ToString() ) );
+                rblDefaultListView.Items.Add( new ListItem( "Grid", StepProgram.ViewMode.Grid.ToString() ) );
+
+                if ( readOnly )
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
+                    btnSecurity.Visible = false;
                     ShowReadonlyDetails( stepProgram );
                 }
                 else
                 {
-                    ShowEditDetails( stepProgram );
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    btnSecurity.Visible = true;
+                    btnSecurity.Visible = stepProgram.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    btnSecurity.Title = "Secure " + stepProgram.Name;
+                    btnSecurity.EntityId = stepProgram.Id;
+
+                    if ( !stepProgramId.Equals( 0 ) )
+                    {
+                        ShowReadonlyDetails( stepProgram );
+                    }
+                    else
+                    {
+                        ShowEditDetails( stepProgram );
+                    }
                 }
+            }
+            else
+            {
+                nbEditModeMessage.Visible = true;
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToView( ContentChannel.FriendlyTypeName );
+                pnlEditDetails.Visible = false;
+                pnlViewDetails.Visible = false;
+                this.HideSecondaryBlocks( true );
             }
         }
 

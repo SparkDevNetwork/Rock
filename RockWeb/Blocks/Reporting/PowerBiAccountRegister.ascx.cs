@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Power Bi Account Register" )]
     [Category( "Reporting" )]
     [Description( "This block registers a Power BI account for Rock to use." )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.POWERBI_ACCOUNT_REGISTRATION )]
     public partial class PowerBiAccountRegister : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

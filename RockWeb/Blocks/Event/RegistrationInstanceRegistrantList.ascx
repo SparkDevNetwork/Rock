@@ -41,6 +41,7 @@
                                 </Rock:RockTemplateField>
                                 <Rock:RockBoundField HeaderText="First Name" DataField="Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:RockBoundField HeaderText="Last Name" DataField="Person.LastName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                <Rock:RockLiteralField ID="rlSignedDocument" HeaderText="Signed Documents" Text="" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" Visible="false" />
                                 <Rock:RockTemplateFieldUnselected HeaderText="Group">
                                     <ItemTemplate>
                                         <asp:Literal ID="lGroup" runat="server"></asp:Literal>

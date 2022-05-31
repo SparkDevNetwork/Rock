@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// <seealso cref="Rock.Field.FieldType" />
     [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8")]
     public sealed class MobileNavigationActionFieldType : FieldType
     {
         #region Formatting

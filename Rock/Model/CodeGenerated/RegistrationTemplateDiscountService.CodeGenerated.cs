@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// RegistrationTemplateDiscount View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( RegistrationTemplateDiscount ) )]
-    public partial class RegistrationTemplateDiscountViewModelHelper : ViewModelHelper<RegistrationTemplateDiscount, Rock.ViewModel.RegistrationTemplateDiscountViewModel>
+    public partial class RegistrationTemplateDiscountViewModelHelper : ViewModelHelper<RegistrationTemplateDiscount, RegistrationTemplateDiscountBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.RegistrationTemplateDiscountViewModel CreateViewModel( RegistrationTemplateDiscount model, Person currentPerson = null, bool loadAttributes = true )
+        public override RegistrationTemplateDiscountBag CreateViewModel( RegistrationTemplateDiscount model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.RegistrationTemplateDiscountViewModel
+            var viewModel = new RegistrationTemplateDiscountBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AutoApplyDiscount = model.AutoApplyDiscount,
                 Code = model.Code,
                 DiscountAmount = model.DiscountAmount,
@@ -190,7 +190,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.RegistrationTemplateDiscountViewModel ToViewModel( this RegistrationTemplateDiscount model, Person currentPerson = null, bool loadAttributes = false )
+        public static RegistrationTemplateDiscountBag ToViewModel( this RegistrationTemplateDiscount model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new RegistrationTemplateDiscountViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -140,6 +140,7 @@ namespace RockWeb.Blocks.Communication
         Order = 13 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD )]
     public partial class CommunicationEntryWizard : RockBlock
     {
         #region Attribute Keys
@@ -253,6 +254,34 @@ namespace RockWeb.Blocks.Communication
             componentImageUploader.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.ImageBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             fupEmailAttachments.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             fupMobileAttachment.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+
+            componentAssetManager.PickerButtonTemplate = @"
+{% assign iconPath = SelectedValue | FromJSON | Property:'IconPath' %}
+{% assign fileName = SelectedValue | FromJSON | Property:'Name' %}
+
+{% if iconPath != '' and fileName != '' %}
+    {% assign escFileName = fileName | UrlEncode %}
+    {% assign imageTypeUrl = iconPath | Replace: fileName, escFileName %}
+{% endif %}
+
+<div class='js-asset-thumbnail fileupload-thumbnail{% if imageTypeUrl contains '/Assets/Icons/FileTypes/' %} fileupload-thumbnail-icon{% endif %}' {% if fileName != '' %}style='background-image:url({{ imageTypeUrl }}) !important;' title='{{ fileName }}'{% endif %}>
+    {% if fileName != '' %}
+        <span class='js-asset-thumbnail-name file-link' style='background-color: transparent'>{{ fileName }}</span>
+    {% else %}
+        <span class='js-asset-thumbnail-name file-link file-link-default'></span>
+    {% endif %}
+</div>
+<div class='imageupload-dropzone'>
+    <span>
+        Select Asset
+    </span>
+</div>";
+
+            componentAssetManager.JsScriptToRegister = @"
+    Sys.Application.add_load(function (e) {
+        var data = '{{ SelectedValue }}';
+        handleAssetUpdate(e, data);
+    });";
 
             var videoProviders = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key );
             lbVideoUrlHelpText.Attributes["data-original-title"] += ( videoProviders.Count() > 1 ? string.Join( ", ", videoProviders.Take( videoProviders.Count() - 1 ) ) + " and " + videoProviders.Last() : videoProviders.FirstOrDefault() ) + ".";
@@ -3148,7 +3177,7 @@ function onTaskCompleted( resultData )
 
             if ( pushData.Url.IsNotNullOrWhiteSpace() )
             {
-                openActionDetails.Append( string.Format( "<b>Url:</b> {0}<br />", pushData.Url ) );
+                openActionDetails.Append( string.Format( "<b>URL:</b> {0}<br />", pushData.Url ) );
             }
 
             if ( communication.PushOpenMessage.IsNotNullOrWhiteSpace() )

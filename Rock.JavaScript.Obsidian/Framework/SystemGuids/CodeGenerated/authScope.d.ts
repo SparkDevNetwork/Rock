@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** List of System Guids for OIDC Scopes. */
 export const enum AuthScope {
     /** The address scope */
     Address = "F12EEBE7-7CE4-46C5-80DA-A2208011216E",
@@ -33,4 +34,3 @@ export const enum AuthScope {
     /** The profile scope */
     Profile = "5FE34F25-288A-48C7-AAE1-F471EADCE1EE",
 }
-

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [Table( "AnalyticsDimPersonCurrent" )]
     [DataContract]
     [CodeGenExclude( CodeGenFeature.ViewModelFile )]
+    [Rock.SystemGuid.EntityTypeGuid( "30CBF82B-4C90-4767-9C2D-622308439BF2")]
     public class AnalyticsDimPersonCurrent : AnalyticsDimPersonBase<AnalyticsDimPersonCurrent>
     {
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields

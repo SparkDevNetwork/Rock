@@ -217,6 +217,12 @@ a.aspNetDisabled.picker-label,
       }
     }
   }
+
+  &.label-min-w-0 {
+    .control-label {
+      min-width: 0 !important;
+    }
+  }
 }
 
 
@@ -306,7 +312,8 @@ dl:not(.dl-horizontal) {
   .clearfix();
 
   .form-control,
-  .input-group {
+  .input-group,
+  .chosen-container {
     float: left;
     margin-right: 6px;
   }

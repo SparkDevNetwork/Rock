@@ -15,11 +15,11 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType } from "vue";
-import { getFieldType } from "../Fields/index";
-import { ComparisonValue } from "../Reporting/comparisonValue";
-import { FilterMode } from "../Reporting/filterMode";
-import { useVModelPassthrough } from "../Util/component";
-import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export default defineComponent({
     name: "RockAttributeFilter",
@@ -30,7 +30,7 @@ export default defineComponent({
             default: { value: "" }
         },
         attribute: {
-            type: Object as PropType<PublicFilterableAttribute>,
+            type: Object as PropType<PublicAttributeBag>,
             required: true
         },
         required: {
@@ -53,7 +53,7 @@ export default defineComponent({
 
         /** The field type instance being edited. */
         const field = computed(() => {
-            return getFieldType(props.attribute.fieldTypeGuid);
+            return getFieldType(props.attribute.fieldTypeGuid ?? "");
         });
 
         /** The filter component to use to display and edit the value. */

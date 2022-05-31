@@ -16,12 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.Owin;
+
+using Owin;
+
 using Rock;
 using Rock.Model;
 using Rock.Utility;
-using System.Linq;
-using Owin;
-using Microsoft.Owin;
 
 [assembly: OwinStartup( typeof( RockWeb.Startup ) )]
 namespace RockWeb
@@ -38,6 +43,14 @@ namespace RockWeb
         public void Configuration( IAppBuilder app )
         {
             app.MapSignalR();
+
+            /* 02/18/2022 MDP
+             By default, Signal R will use reflection to find classes that inherit from Microsoft.AspNet.SignalR.
+             It looks in *all* DLLs in RockWeb/bin. It does this on the first page that includes <script src="/SignalR/hubs"></script>.
+             This initial hit can take 30-60 seconds, so we'll register our own assembly locator to only look in Rock and Rock Plugins.
+             RockWeb.RockMessageHub will be the only Hub. So it doesn't make sense to look in all DLL for any more.
+            */
+            Microsoft.AspNet.SignalR.GlobalHost.DependencyResolver.Register( typeof( IAssemblyLocator ), () => new RockHubAssemblyLocator() );
 
             try
             {
@@ -71,6 +84,23 @@ namespace RockWeb
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
+            }
+        }
+
+        /// <summary>
+        /// Class RockHubAssemblyLocator.
+        /// Implements the <see cref="Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator" />
+        /// </summary>
+        /// <seealso cref="Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator" />
+        private class RockHubAssemblyLocator : IAssemblyLocator
+        {
+            /// <summary>
+            /// Gets the assemblies.
+            /// </summary>
+            /// <returns>IList&lt;Assembly&gt;.</returns>
+            public IList<Assembly> GetAssemblies()
+            {
+                return Rock.Reflection.GetRockAndPluginAssemblies();
             }
         }
     }

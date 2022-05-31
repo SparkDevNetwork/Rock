@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [DataContract]
     [HideFromReporting]
     [CodeGenExclude( CodeGenFeature.ViewModelFile )]
+    [Rock.SystemGuid.EntityTypeGuid( "F970FF85-F3ED-41BD-90D9-5511BACED928")]
     public class AnalyticsDimFinancialBatch : Entity<AnalyticsDimFinancialBatch>
     {
         #region Entity Properties

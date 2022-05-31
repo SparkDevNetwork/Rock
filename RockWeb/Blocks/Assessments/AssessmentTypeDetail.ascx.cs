@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Assessments
     [Category( "Assessments" )]
     [Description( "Displays the details of the given Assessment Type for editing." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "A81AB554-B438-4C7F-9C45-1A9AE2F889C5" )]
     public partial class AssessmentTypeDetail : RockBlock
     {
         #region Page Parameter Keys

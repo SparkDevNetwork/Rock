@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// MetricValues REST API
     /// </summary>
+    [RestControllerGuid( "85D083E0-5511-427C-9CD2-B5A516EFDEB3" )]
     public partial class MetricValuesController : Rock.Rest.ApiController<Rock.Model.MetricValue>
     {
         /// <summary>

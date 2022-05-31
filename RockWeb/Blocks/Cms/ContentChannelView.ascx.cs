@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -186,6 +186,7 @@ namespace RockWeb.Blocks.Cms
         Category = "CustomSetting",
         Key = AttributeKey.EnableArchiveSummary )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW )]
     public partial class ContentChannelView : RockBlockCustomSettings
     {
 
@@ -642,6 +643,14 @@ $(document).ready(function() {
             nbContentError.Visible = false;
             upnlContent.Update();
 
+            // Disable content rendering for configuration mode to improve efficiency.
+            // This is also necessary to avoid an issue where Lava content may fail to render if the template
+            // uses {% include %} to reference files that do not exist in the filesystem of the current theme.
+            if ( this.ConfigurationRenderModeIsEnabled )
+            {
+                return;
+            }
+
             string outputContents = null;
 
             bool isMergeContentEnabled = GetAttributeValue( AttributeKey.MergeContent ).AsBoolean();
@@ -831,24 +840,25 @@ $(document).ready(function() {
                     }
                 }
 
+                // Render the Lava content.
+                var isRendered = true;
                 if ( LavaService.RockLiquidIsEnabled )
                 {
                     var template = GetTemplate();
-
                     outputContents = template.Render( Hash.FromDictionary( mergeFields ) );
                 }
                 else
                 {
                     var template = GetLavaTemplate();
-
                     var lavaContext = LavaService.NewRenderContext( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ).SplitDelimitedValues() );
 
                     var renderResult = LavaService.RenderTemplate( template, lavaContext );
-
+                    isRendered = !renderResult.HasErrors;
                     outputContents = renderResult.Text;
                 }
 
-                if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
+                // Cache the result if caching is enabled and the template was rendered successfully.
+                if ( isRendered && OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
                     string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                     // When our cache supports regions, add the pagination page to the cache key and set them all with the same region.

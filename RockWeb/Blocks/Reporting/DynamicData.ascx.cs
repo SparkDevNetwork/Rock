@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI;
@@ -195,6 +196,12 @@ namespace RockWeb.Blocks.Reporting
         Category = "CustomSetting",
         Key = AttributeKey.ShowGridFilter )]
 
+    [BooleanField( "Enable Sticky Header on Grid",
+        Description = "Determines whether the header on the grid will be stick at the top of the page.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.EnableStickyHeaderOnGrid )]
+
     [BooleanField( "Wrap In Panel",
         Description = "This will wrap the results grid in a panel.",
         DefaultBooleanValue = false,
@@ -229,6 +236,7 @@ namespace RockWeb.Blocks.Reporting
         Category = "CustomSetting",
         Key = AttributeKey.GridFooterContent )]
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126" )]
     public partial class DynamicData : RockBlockCustomSettings
     {
         #region Keys
@@ -260,6 +268,7 @@ namespace RockWeb.Blocks.Reporting
             public const string PageTitleLava = "PageTitleLava";
             public const string PaneledGrid = "PaneledGrid";
             public const string ShowGridFilter = "ShowGridFilter";
+            public const string EnableStickyHeaderOnGrid = "EnableStickyHeaderOnGrid";
             public const string WrapInPanel = "WrapInPanel";
             public const string PanelTitle = "PanelTitle";
             public const string PanelTitleCssClass = "PanelTitleCssClass";
@@ -446,6 +455,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.ShowMergeTemplate, cbShowMergeTemplate.Checked.ToString() );
             SetAttributeValue( AttributeKey.ShowLaunchWorkflow, ( cbPersonReport.Checked && cbShowLaunchWorkflow.Checked ).ToString() );
             SetAttributeValue( AttributeKey.ShowGridFilter, cbShowGridFilter.Checked.ToString() );
+            SetAttributeValue( AttributeKey.EnableStickyHeaderOnGrid, cbEnableStickyHeaderOnGrid.Checked.ToString() );
             SetAttributeValue( AttributeKey.MergeFields, tbMergeFields.Text );
             SetAttributeValue( AttributeKey.EncryptedFields, tbEncryptedFields.Text );
             SetAttributeValue( AttributeKey.WrapInPanel, swWrapInPanel.Checked.ToString() );
@@ -618,6 +628,7 @@ namespace RockWeb.Blocks.Reporting
             cbShowMergeTemplate.Checked = GetAttributeValue( AttributeKey.ShowMergeTemplate ).AsBoolean();
             cbShowLaunchWorkflow.Checked = GetAttributeValue( AttributeKey.ShowLaunchWorkflow ).AsBoolean();
             cbShowGridFilter.Checked = GetAttributeValue( AttributeKey.ShowGridFilter ).AsBoolean();
+            cbEnableStickyHeaderOnGrid.Checked = GetAttributeValue( AttributeKey.EnableStickyHeaderOnGrid ).AsBoolean();
             tbMergeFields.Text = GetAttributeValue( AttributeKey.MergeFields );
             tbEncryptedFields.Text = GetAttributeValue( AttributeKey.EncryptedFields );
             swWrapInPanel.Checked = GetAttributeValue( AttributeKey.WrapInPanel ).AsBoolean();
@@ -887,6 +898,7 @@ namespace RockWeb.Blocks.Reporting
                             grid.Actions.ShowExcelExport = GetAttributeValue( AttributeKey.ShowExcelExport ).AsBoolean();
                             grid.Actions.ShowMergeTemplate = GetAttributeValue( AttributeKey.ShowMergeTemplate ).AsBoolean();
                             grid.ShowWorkflowOrCustomActionButtons = GetAttributeValue( AttributeKey.ShowLaunchWorkflow ).AsBoolean();
+                            grid.EnableStickyHeaders = GetAttributeValue( AttributeKey.EnableStickyHeaderOnGrid ).AsBoolean();
 
                             grid.GridRebind += gReport_GridRebind;
                             grid.RowSelected += gReport_RowSelected;
@@ -1223,12 +1235,12 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( minValue.HasValue )
                     {
-                        query.Add( string.Format( "[{0}] >= #{1}#", colName, minValue.Value ) );
+                        query.Add( string.Format( "[{0}] >= #{1}#", colName, minValue.Value.ToISO8601DateString() ) );
                     }
 
                     if ( maxValue.HasValue )
                     {
-                        query.Add( string.Format( "[{0}] < #{1}#", colName, maxValue.Value.AddDays( 1 ) ) );
+                        query.Add( string.Format( "[{0}] < #{1}#", colName, maxValue.Value.AddDays( 1 ).ToISO8601DateString() ) );
                     }
                 }
                 else if ( control is RockDropDownList )
@@ -1305,7 +1317,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion
-  
+
         private class DataRowLavaData : LavaDataObject
         {
             private readonly DataRow _dataRow;

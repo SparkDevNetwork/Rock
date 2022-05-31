@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Entity Badge */
 export const enum Badge {
     /** Assessments badge */
     Assessments = "CCE09793-89F6-4042-A98A-ED38392BCFCC",
@@ -53,4 +54,3 @@ export const enum Badge {
     /** Top Person Signal badge */
     TopPersonSignal = "B4B336CE-137E-44BE-9123-27740D0064C2",
 }
-

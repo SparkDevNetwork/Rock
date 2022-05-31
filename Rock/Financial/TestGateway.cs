@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -72,12 +72,30 @@ namespace Rock.Financial
 
     [EnumsField(
         "Gateway Mode",
-        Description = "Selected the gateway mode",
+        Description = "Select the gateway mode",
         Key = AttributeKey.GatewayMode,
         EnumSourceType = typeof( HostedGatewayMode ),
         DefaultValue = "Unhosted",
         Order = 5 )]
-    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent
+
+    [DecimalField(
+        "Credit Card Fee Coverage Percentage",
+        Key = AttributeKey.CreditCardFeeCoveragePercentage,
+        Description = @"The credit card fee percentage that will be used to determine what to add to the person's donation, if they want to cover the fee.",
+        IsRequired = false,
+        DefaultValue = null,
+        Order = 6 )]
+
+    [CurrencyField(
+        "ACH Transaction Fee Coverage Amount",
+        Key = AttributeKey.ACHTransactionFeeCoverageAmount,
+        Description = "The  dollar amount to add to an ACH transaction, if they want to cover the fee.",
+        IsRequired = false,
+        DefaultValue = null,
+        Order = 7 )]
+
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY )]
+    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent
     {
         #region Attribute Keys
 
@@ -92,6 +110,16 @@ namespace Rock.Financial
             public const string DeclinedCVV = "DeclinedCVV";
             public const string PromptForNameOnCard = "PromptForNameOnCard";
             public const string GatewayMode = "GatewayMode";
+
+            /// <summary>
+            /// The credit card fee coverage percentage
+            /// </summary>
+            public const string CreditCardFeeCoveragePercentage = "CreditCardFeeCoveragePercentage";
+
+            /// <summary>
+            /// The ach transaction fee coverage amount
+            /// </summary>
+            public const string ACHTransactionFeeCoverageAmount = "ACHTransactionFeeCoverageAmount";
         }
 
         #endregion
@@ -669,6 +697,22 @@ namespace Rock.Financial
         }
 
         #endregion IHostedGatewayComponent
+
+        #region IFeeCoverageGatewayComponent
+
+        /// <inheritdoc/>
+        public decimal? GetCreditCardFeeCoveragePercentage( FinancialGateway financialGateway )
+        {
+            return this.GetAttributeValue( financialGateway, AttributeKey.CreditCardFeeCoveragePercentage )?.AsDecimalOrNull();
+        }
+
+        /// <inheritdoc/>
+        public decimal? GetACHFeeCoverageAmount( FinancialGateway financialGateway )
+        {
+            return this.GetAttributeValue( financialGateway, AttributeKey.ACHTransactionFeeCoverageAmount )?.AsDecimalOrNull();
+        }
+
+        #endregion IFeeCoverageGatewayComponent
     }
 
     /// <summary>

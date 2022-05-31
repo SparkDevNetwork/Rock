@@ -16,8 +16,7 @@
 //
 
 import assert = require("assert");
-import exp = require("constants");
-import { validateValue } from "../../Framework/Rules/index";
+import { validateValue } from "../../Framework/ValidationRules/index";
 
 const expectedGreaterThanErrorText = (value: unknown): string => `must be greater than ${value}`;
 

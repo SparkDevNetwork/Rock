@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -104,20 +104,28 @@ namespace RockWeb.Blocks.Core
         Order = 5,
         Key = AttributeKey.LavaTemplate )]
 
+    [LavaCommandsField(
+        "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled for this block.",
+        IsRequired = false,
+        Order = 6,
+        Key = AttributeKey.EnabledLavaCommands )]
+
     [TextField( "Header Title",
         Description = "The title for the panel heading.",
         IsRequired = false,
         DefaultValue = "Related Entity List",
-        Order = 6,
+        Order = 7,
         Key = AttributeKey.HeaderTitle )]
 
     [TextField( "Header Icon CSS Class",
         Description = "The CSS icon for the panel heading.",
         IsRequired = false,
         DefaultValue = "fa fa-link",
-        Order = 7,
+        Order = 8,
         Key = AttributeKey.HeaderIconCssClass )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "28516B18-7423-4A97-9223-B97537BD0F79" )]
     public partial class RelatedEntityList : RockBlock
     {
         public static class AttributeKey
@@ -130,6 +138,7 @@ namespace RockWeb.Blocks.Core
             public const string LavaTemplate = "LavaTemplate";
             public const string HeaderTitle = "HeaderTitle";
             public const string HeaderIconCssClass = "HeaderIconCssClass";
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
         }
 
         public static class PageParameterKey
@@ -173,7 +182,7 @@ namespace RockWeb.Blocks.Core
         {
             get
             {
-                if ( _purposeKeys.IsNull() )
+                if ( _purposeKeys == null )
                 {
                     _purposeKeys = GetAttributeValue( AttributeKey.PurposeKey ).Split(',').Select( p => p.Trim() ).ToList();
                 }
@@ -387,7 +396,7 @@ namespace RockWeb.Blocks.Core
 
             if ( SourceIsCurrentPerson )
             {
-                if ( CurrentPerson.IsNull() )
+                if ( CurrentPerson == null )
                 {
                     return false;
                 }
@@ -434,7 +443,7 @@ namespace RockWeb.Blocks.Core
             var existingRelationships = GetExistingRelationships();
             mergeFields.Add( "ExistingRelationships", existingRelationships );
 
-            lContent.Text = LavaTemplate.ResolveMergeFields( mergeFields );
+            lContent.Text = LavaTemplate.ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
         }
 
         /// <summary>

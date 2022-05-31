@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,6 +51,7 @@ namespace Rock.Bus.Transport
         Order = 0,
         Key = AttributeKey.Password )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "64437280-5BB3-4274-B39F-EE31782438DE")]
     public class RabbitMq : TransportComponent
     {
         #region Attribute Keys
@@ -78,7 +79,7 @@ namespace Rock.Bus.Transport
             return MassTransit.Bus.Factory.CreateUsingRabbitMq( configurator =>
             {
                 var user = GetUser();
-                var url = $"rabbitmq://{user}:{GetPassword()}@{GetHost()}/{user}";
+                var url = $"amqps://{user}:{GetPassword()}@{GetHost()}/{user}";
                 configurator.Host( new Uri( url ), host => { } );
                 configureEndpoints( configurator );
             } );
@@ -92,6 +93,16 @@ namespace Rock.Bus.Transport
         /// <returns></returns>
         public override ISendEndpoint GetSendEndpoint( IBusControl bus, string queueName )
         {
+            /* 
+                 4/6/2022 - SMC
+
+                 This URL should probably be changed to use the amqps:// protocol prefix (like
+                 the one used in the GetBusControl() method above) , instead of rabbitmq://
+                 with the TLS port number (5671) hard-coded, but it is being left in a
+                 known-working configuration for the moment.
+
+            */
+
             var url = $"rabbitmq://{GetHost()}:5671/{GetUser()}/{queueName}";
             return bus.GetSendEndpoint( new Uri( url ) ).Result;
         }

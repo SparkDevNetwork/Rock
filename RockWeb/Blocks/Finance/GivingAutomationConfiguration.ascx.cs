@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block used to view and create new alert types for the giving automation system." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "A91ACA78-68FD-41FC-B652-17A37789EA32" )]
     public partial class GivingAutomationConfiguration : Rock.Web.UI.RockBlock
     {
         #region Constants
@@ -389,6 +390,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowDetail()
         {
+            var rockContext = new RockContext();
             var transactionTypes = BindTransactionTypes();
             BindAccounts();
 
@@ -406,14 +408,11 @@ namespace RockWeb.Blocks.Finance
 
             if ( savedAccountGuids.Any() )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var accountService = new FinancialAccountService( rockContext );
-                    accounts = accountService.Queryable()
-                        .AsNoTracking()
-                        .Where( a => savedAccountGuids.Contains( a.Guid ) )
-                        .ToList();
-                }
+                var accountService = new FinancialAccountService( rockContext );
+                accounts = accountService.Queryable()
+                    .AsNoTracking()
+                    .Where( a => savedAccountGuids.Contains( a.Guid ) )
+                    .ToList();
             }
 
             // Sync the system setting values to the controls

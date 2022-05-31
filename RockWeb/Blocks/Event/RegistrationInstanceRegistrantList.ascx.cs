@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -70,8 +70,16 @@ namespace RockWeb.Blocks.Event
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "4D4FBC7B-068C-499A-8BA4-C9209CA9BB6E" )]
     public partial class RegistrationInstanceRegistrantList : RegistrationInstanceBlock, ISecondaryBlock, ICustomGridOptions
     {
+        #region Properties
+
+        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}?id={1}' target='_blank' style='color: black;'><i class='fa fa-file-signature'></i></a>";
+        private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='Document not signed'></i>";
+
+        #endregion
+
         #region Attribute Keys
 
         /// <summary>
@@ -115,6 +123,7 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, PhoneNumber> _mobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private Dictionary<int, PhoneNumber> _workPhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private Dictionary<int, SignatureDocument> _signatureDocuments = new Dictionary<int, SignatureDocument>();
         private List<RegistrationTemplatePlacement> _registrationTemplatePlacements = null;
         private List<PlacementGroupInfo> _placementGroupInfoList = null;
         private RockLiteralField _placementsField = null;
@@ -675,8 +684,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
-                    lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
-                        ( SignersPersonAliasIds != null && !SignersPersonAliasIds.Contains( registrant.PersonAlias.PersonId ) ? " <i class='fa fa-edit text-danger'></i>" : string.Empty );
+                    lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed;
                 }
                 else
                 {
@@ -753,6 +761,21 @@ namespace RockWeb.Blocks.Event
             if ( lPlacements != null )
             {
                 SetPlacementFieldHtml( registrant, lPlacements );
+            }
+
+            if ( registrant.Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
+            {
+                var lSignedDocument = e.Row.FindControl( "rlSignedDocument" ) as Literal;
+
+                if ( _signatureDocuments.ContainsKey( registrant.PersonId.Value ) )
+                {
+                    var document = _signatureDocuments[registrant.PersonId.Value];
+                    lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                }
+                else
+                {
+                    lSignedDocument.Text = SIGNATURE_NOT_SIGNED_INDICATOR;
+                }
             }
 
             if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
@@ -986,8 +1009,34 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void LbRegistrarCommunication_Click( object sender, EventArgs e )
         {
+            /*
+                04/01/2022 - CWR
+                This click event mirrors the Grid.cs -> Actions_Communicate event, without access to the private methods and properties.
+                Clicking a Grid Action button without selecting any rows assumes that all rows are desired (the behavior of Grid's Actions_Communicate).
+                In order to achieve this, we need to use the BindRegistrantsGrid method without paging to bring back all the Grid's DataKeys.
+             */
             var itemsSelected = new List<int>();
-            gRegistrants.SelectedKeys.ToList().ForEach( f => itemsSelected.Add( f.ToString().AsInteger() ) );
+            if ( gRegistrants.SelectedKeys.Any() )
+            {
+                gRegistrants.SelectedKeys.ToList().ForEach( f => itemsSelected.Add( f.ToString().AsInteger() ) );
+            }
+            else
+            {
+                // If nothing is selected, assume all, and add all the data keys to the itemsSelected list.
+
+                // If the grid allows paging and there's more than one page, rebind the grid without paging so that all keys are available.
+                if ( gRegistrants.AllowPaging && gRegistrants.PageCount > 1 )
+                {
+                    gRegistrants.AllowPaging = false;
+
+                    BindRegistrantsGrid();
+                }
+
+                foreach ( DataKey dataKey in gRegistrants.DataKeys )
+                {
+                    itemsSelected.Add( dataKey.Value.ToString().AsInteger() );
+                }
+            }
 
             // Create a dictionary of the additional merge fields that were created for the communication
             var communicationMergeFields = new Dictionary<string, string>();
@@ -1190,6 +1239,8 @@ namespace RockWeb.Blocks.Event
 
                 if ( requiredSignatureDocumentTemplateId.HasValue )
                 {
+                    rlSignedDocument.Visible = true;
+
                     SignersPersonAliasIds = new SignatureDocumentService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( d =>
@@ -1336,6 +1387,7 @@ namespace RockWeb.Blocks.Event
                     _mobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
                     _homePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
                     _workPhoneNumbers = GetPersonWorkPhoneLookup( rockContext, this.RegistrantFields, personIds );
+                    _signatureDocuments = GetPersonSignatureDocumentLookup( rockContext, personIds, registrationInstance );
 
                     // Filter by any selected
                     foreach ( var personFieldType in RegistrantFields
@@ -1758,6 +1810,38 @@ namespace RockWeb.Blocks.Event
 
                 gRegistrants.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Gets the person signature document lookup.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personIds">The person ids.</param>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <returns></returns>
+        private Dictionary<int, SignatureDocument> GetPersonSignatureDocumentLookup( RockContext rockContext, List<int> personIds, RegistrationInstance registrationInstance )
+        {
+            var signatureDocuments = new Dictionary<int, SignatureDocument>();
+            var documents = new SignatureDocumentService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d =>
+                        d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
+                        d.Status == SignatureDocumentStatus.Signed &&
+                        d.BinaryFileId.HasValue &&
+                        d.AppliesToPersonAlias != null && personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
+                    .OrderByDescending( d => d.LastStatusDate )
+                    .ToList();
+
+            foreach ( var personId in personIds )
+            {
+                var document = documents.Find( d => d.AppliesToPersonAlias.PersonId == personId );
+                if ( document != null )
+                {
+                    signatureDocuments[personId] = document;
+                }
+            }
+
+            return signatureDocuments;
         }
 
         /// <summary>

@@ -92,6 +92,7 @@
   overflow-y: scroll;
   .panel.panel-block {
     height: auto;
+    overflow: visible;
   }
 }
 
@@ -253,7 +254,7 @@
   }
 
   .dropdown-menu {
-    font-size: (@font-size-base * .75);
+    font-size: 14px;
   }
 
   .resource-blackout-status {
@@ -651,7 +652,7 @@
 }
 
 .overflow-scroll {
-  height: calc(100vh - 290px);
+  height: ~"calc(100vh - 290px)";
   min-height: 200px;
   overflow-x: auto;
   overflow-y: hidden;
@@ -704,9 +705,16 @@
   border-radius: 2px;
 }
 .board-cards {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   padding: 1px 16px 130px;
   overflow-x: hidden;
   overflow-y: scroll;
+
+  .tooltip-inner {
+    max-width: 200px;
+  }
 }
 
 .styled-scroll ::-webkit-scrollbar {

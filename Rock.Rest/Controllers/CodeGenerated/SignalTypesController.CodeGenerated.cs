@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// SignalTypes REST API
     /// </summary>
+    [RestControllerGuid( "A2F9F41B-0D41-444A-84DE-6EABBD2CB252" )]
     public partial class SignalTypesController : Rock.Rest.ApiController<Rock.Model.SignalType>
     {
         /// <summary>

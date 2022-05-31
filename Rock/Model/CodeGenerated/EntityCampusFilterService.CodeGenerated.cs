@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// EntityCampusFilter View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( EntityCampusFilter ) )]
-    public partial class EntityCampusFilterViewModelHelper : ViewModelHelper<EntityCampusFilter, Rock.ViewModel.EntityCampusFilterViewModel>
+    public partial class EntityCampusFilterViewModelHelper : ViewModelHelper<EntityCampusFilter, EntityCampusFilterBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.EntityCampusFilterViewModel CreateViewModel( EntityCampusFilter model, Person currentPerson = null, bool loadAttributes = true )
+        public override EntityCampusFilterBag CreateViewModel( EntityCampusFilter model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.EntityCampusFilterViewModel
+            var viewModel = new EntityCampusFilterBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CampusId = model.CampusId,
                 EntityId = model.EntityId,
                 EntityTypeId = model.EntityTypeId,
@@ -174,7 +174,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.EntityCampusFilterViewModel ToViewModel( this EntityCampusFilter model, Person currentPerson = null, bool loadAttributes = false )
+        public static EntityCampusFilterBag ToViewModel( this EntityCampusFilter model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new EntityCampusFilterViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

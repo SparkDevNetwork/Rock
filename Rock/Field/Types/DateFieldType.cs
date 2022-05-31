@@ -33,14 +33,17 @@ namespace Rock.Field.Types
     /// Field used to save and display a date value
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Common )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
+    [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M6,8.88H4.89a.33.33,0,0,1-.32-.33V7.45a.33.33,0,0,1,.32-.33H6a.33.33,0,0,1,.33.33v1.1A.33.33,0,0,1,6,8.88Zm2.9-.33V7.45a.33.33,0,0,0-.32-.33H7.46a.33.33,0,0,0-.32.33v1.1a.33.33,0,0,0,.32.33H8.54A.33.33,0,0,0,8.86,8.55Zm2.57,0V7.45a.33.33,0,0,0-.32-.33H10a.33.33,0,0,0-.33.33v1.1a.33.33,0,0,0,.33.33h1.07A.33.33,0,0,0,11.43,8.55ZM8.86,11.17V10.08a.33.33,0,0,0-.32-.33H7.46a.33.33,0,0,0-.32.33v1.09a.33.33,0,0,0,.32.33H8.54A.33.33,0,0,0,8.86,11.17Zm-2.57,0V10.08A.33.33,0,0,0,6,9.75H4.89a.33.33,0,0,0-.32.33v1.09a.33.33,0,0,0,.32.33H6A.33.33,0,0,0,6.29,11.17Zm5.14,0V10.08a.33.33,0,0,0-.32-.33H10a.33.33,0,0,0-.33.33v1.09a.33.33,0,0,0,.33.33h1.07A.33.33,0,0,0,11.43,11.17ZM14,4.06v9.63A1.3,1.3,0,0,1,12.71,15H3.29A1.3,1.3,0,0,1,2,13.69V4.06A1.3,1.3,0,0,1,3.29,2.75H4.57V1.33A.33.33,0,0,1,4.89,1H6a.33.33,0,0,1,.33.33V2.75H9.71V1.33A.33.33,0,0,1,10,1h1.07a.33.33,0,0,1,.32.33V2.75h1.28A1.3,1.3,0,0,1,14,4.06Zm-1.29,9.46V5.38H3.29v8.14a.17.17,0,0,0,.16.17h9.1A.17.17,0,0,0,12.71,13.52Z""/></svg>" )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DATE )]
     public class DateFieldType : FieldType
     {
 
         #region enums
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum DatePickerControlType
         {
@@ -48,7 +51,7 @@ namespace Rock.Field.Types
             /// The date picker
             /// </summary>
             DatePicker,
-            
+
             /// <summary>
             /// The date parts picker
             /// </summary>
@@ -72,6 +75,41 @@ namespace Rock.Field.Types
             keys.Add( "datePickerControlType" );
             keys.Add( "futureYearCount" );
             return keys;
+        }
+
+        /// <summary>
+        /// This event handler is triggerend when the Control Type is modified to show or hide related
+        /// options ('Future Years' or 'Display Current Option').
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnControlTypeChanged( object sender, EventArgs e )
+        {
+            var senderControl = ( sender as Control );
+            if ( senderControl == null || senderControl.Parent == null )
+            {
+                OnQualifierUpdated( sender, e );
+                return;
+            }
+
+            // Reset the visibility of the nbFutureYearCount control when the Control Type changes.
+            var controls = senderControl.Parent.Controls;
+            if ( controls != null && controls.Count >= 5 )
+            {
+                var ddlDatePickerMode = controls[2] as RockDropDownList;
+                var cbDisplayCurrent = controls[3] as RockCheckBox;
+                var nbFutureYearCount = controls[4] as NumberBox;
+
+                DatePickerControlType datePickerControlType = ddlDatePickerMode.SelectedValue.ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
+
+                // only support the 'Use Current' option of they are using the DatePicker
+                cbDisplayCurrent.Visible = datePickerControlType == DatePickerControlType.DatePicker;
+
+                // only support the 'Future Years' option of they are using the DatePartsPicker
+                nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
+            }
+
+            OnQualifierUpdated( sender, e );
         }
 
         /// <summary>
@@ -101,7 +139,7 @@ namespace Rock.Field.Types
             ddlDatePickerMode.Label = "Control Type";
             ddlDatePickerMode.Help = "Select 'Date Picker' to use a DatePicker, or 'Date Parts Picker' to select Month, Day and Year individually";
             ddlDatePickerMode.AutoPostBack = true;
-            ddlDatePickerMode.SelectedIndexChanged += OnQualifierUpdated;
+            ddlDatePickerMode.SelectedIndexChanged += OnControlTypeChanged;
 
             var cbDisplayCurrent = new RockCheckBox();
             controls.Add( cbDisplayCurrent );
@@ -178,6 +216,7 @@ namespace Rock.Field.Types
                     nbFutureYearCount.Text = configurationValues["futureYearCount"].Value;
                 }
 
+                // only support the 'Future Years' option of they are using the DatePartsPicker
                 nbFutureYearCount.Visible = datePickerControlType == DatePickerControlType.DatePartsPicker;
             }
         }
@@ -347,6 +386,18 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Try to ensure the value is the proper format.
+            if ( DateTime.TryParse( publicValue, out var dateTimeValue ) )
+            {
+                return dateTimeValue.ToString( "o" );
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -526,7 +577,7 @@ namespace Rock.Field.Types
                     break;
             }
 
-            
+
 
             var slidingDateRangePicker = new SlidingDateRangePicker();
             slidingDateRangePicker.ID = string.Format( "{0}_dtSlidingDateRange", id );
@@ -534,7 +585,7 @@ namespace Rock.Field.Types
             slidingDateRangePicker.Label = string.Empty;
             slidingDateRangePicker.PreviewLocation = SlidingDateRangePicker.DateRangePreviewLocation.Right;
             dateFiltersPanel.Controls.Add( slidingDateRangePicker );
-            
+
             return dateFiltersPanel;
         }
 
@@ -613,7 +664,7 @@ namespace Rock.Field.Types
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets the filter format script.
         /// </summary>
@@ -684,7 +735,7 @@ namespace Rock.Field.Types
 
                 // Parse for RelativeValue of DateTime (if specified)
                 filterValueValues[0] = ParseRelativeValue( filterValueValues[0] );
-            
+
                 string comparisonValue = filterValues[0];
                 if ( comparisonValue != "0" && comparisonValue.IsNotNullOrWhiteSpace() )
                 {
@@ -693,7 +744,7 @@ namespace Rock.Field.Types
                     if (comparisonType == ComparisonType.Between && filterValueValues.Length > 1)
                     {
                         var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( filterValueValues[1] );
-                        ConstantExpression constantExpressionLower = dateRange.Start.HasValue 
+                        ConstantExpression constantExpressionLower = dateRange.Start.HasValue
                             ? Expression.Constant( dateRange.Start, typeof( DateTime ) )
                             : null;
 
@@ -734,8 +785,8 @@ namespace Rock.Field.Types
                             if (propertyType == typeof( int ) || propertyType == typeof( int? ) )
                             {
                                 constantExpression = Expression.Constant( dateTime?.ToString( "yyyyMMdd" ).AsInteger(), typeof( int ) );
-                            } 
-                            
+                            }
+
                             return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                         }
                         else

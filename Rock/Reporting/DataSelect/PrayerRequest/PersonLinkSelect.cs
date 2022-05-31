@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataSelect.PrayerRequest
     [ExportMetadata("ComponentName", "Select Person Name")]
     [BooleanField("Show As Link", "", true)]
     [CustomRadioListField("Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0")]
+    [Rock.SystemGuid.EntityTypeGuid( "1EEC14BE-330E-4F94-9198-E33886DEEA55")]
     public class PersonLinkSelect : DataSelectComponent, IRecipientDataSelect
     {
         /// <summary>

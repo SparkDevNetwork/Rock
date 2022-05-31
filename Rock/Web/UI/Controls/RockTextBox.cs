@@ -343,6 +343,18 @@ namespace Rock.Web.UI.Controls
             set { ViewState["ShowCountDown"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the default text trim behaviour should be disabled
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable text trim]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisableTextTrim
+        {
+            get { return ViewState["DisableTextTrim"] as bool? ?? false; }
+            set { ViewState["DisableTextTrim"] = value; }
+        }
+
         #endregion
 
         private HiddenField _hfDisableVrm;
@@ -561,6 +573,10 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
+                    if ( DisableTextTrim )
+                    {
+                        return base.Text;
+                    }
                     return base.Text.Trim();
                 }
             }

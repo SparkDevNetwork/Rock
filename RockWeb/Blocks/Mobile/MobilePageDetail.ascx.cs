@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Mobile
     [DisplayName( "Mobile Page Detail" )]
     [Category( "Mobile" )]
     [Description( "Edits and configures the settings of a mobile page." )]
+    [Rock.SystemGuid.BlockTypeGuid( "E3C4547A-E29B-4CBA-9610-6C19D939183B" )]
     public partial class MobilePageDetail : RockBlock
     {
         #region PageParameterKeys
@@ -569,9 +570,9 @@ namespace RockWeb.Blocks.Mobile
             hfPageId.Value = page.Id.ToString();
             lPageName.Text = page.InternalName;
 
-            var fields = new List<KeyValuePair<string, string>>();
+            lDescription.Text = $"<dl><dt>Description</dt><dd>{page.Description}</dd></dl>";
 
-            fields.Add( new KeyValuePair<string, string>( "Title", page.PageTitle ) );
+            var fields = new List<KeyValuePair<string, string>>();
 
             if ( additionalSettings.PageType == MobilePageType.NativePage )
             {
@@ -590,7 +591,7 @@ namespace RockWeb.Blocks.Mobile
             }
 
             // TODO: I'm pretty sure something like this already exists in Rock, but I can never find it. - dh
-            ltDetails.Text = string.Join( "", fields.Select( f => string.Format( "<div class=\"col-md-6\"><dl><dt>{0}</dt><dd>{1}</dd></dl></div>", f.Key, f.Value ) ) );
+            lDetails.Text = string.Join( "", fields.Select( f => string.Format( "<div class=\"col-md-6\"><dl><dt>{0}</dt><dd>{1}</dd></dl></div>", f.Key, f.Value ) ) );
 
             pnlDetails.Visible = true;
             pnlEditPage.Visible = false;

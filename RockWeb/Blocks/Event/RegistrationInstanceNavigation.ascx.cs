@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Event
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE_PLACEMENT_GROUPS,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "AF0740C9-BC60-434B-A360-EB70A7CEA108" )]
     public partial class RegistrationInstanceNavigation : RegistrationInstanceBlock, ISecondaryBlock
     {
         #region Attribute Keys

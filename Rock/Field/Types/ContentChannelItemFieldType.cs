@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,12 +20,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
-using Rock.Attribute;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -33,9 +32,9 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) content channel item filtered by a selected content channel
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNEL_ITEM )]
     public class ContentChannelItemFieldType : FieldType, IEntityFieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -73,11 +72,9 @@ namespace Rock.Field.Types
             ddl.Help = "Content Channel to select items from, if left blank any content channel's item can be selected.";
 
             ddl.Items.Add( new ListItem() );
-            
+
             var contentChannels = ContentChannelCache.All().OrderBy( a => a.Name ).ToList();
-            contentChannels.ForEach( g =>
-                ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) )
-            );
+            contentChannels.ForEach( g => ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) ) );
 
             return controls;
         }
@@ -90,7 +87,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( CONTENT_CHANNEL_KEY, new ConfigurationValue( "Content Channel", "Content Channel to select items from, if left blank any content channel's item can be selected.", "" ) );
+            configurationValues.Add( CONTENT_CHANNEL_KEY, new ConfigurationValue( "Content Channel", "Content Channel to select items from, if left blank any content channel's item can be selected.", string.Empty ) );
 
             if ( controls != null && controls.Count == 1 )
             {
@@ -170,7 +167,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) )
             {
                 int contentChannelId = 0;
-                if ( Int32.TryParse( configurationValues[CONTENT_CHANNEL_KEY].Value, out contentChannelId ) && contentChannelId > 0 )
+                if ( int.TryParse( configurationValues[CONTENT_CHANNEL_KEY].Value, out contentChannelId ) && contentChannelId > 0 )
                 {
                     editControl.ContentChannelId = contentChannelId;
                 }
@@ -191,12 +188,26 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 int? itemId = picker.ContentChannelItemId;
+                int? configurationChannelId = configurationValues[CONTENT_CHANNEL_KEY].Value.AsIntegerOrNull();
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        // If the configuration Content Channel has a selected value, include that value in the clause.
+                        if ( configurationChannelId.HasValue )
+                        {
+                            itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
+                                .Where( a => a.Id == itemId.Value
+                                && a.ContentChannelId == configurationChannelId.Value )
+                                .Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        }
+                        else
+                        {
+                            itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
+                                .Where( a => a.Id == itemId.Value )
+                                .Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        }
                     }
                 }
 

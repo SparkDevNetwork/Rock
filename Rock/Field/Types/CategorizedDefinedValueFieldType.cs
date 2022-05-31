@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a selection from a Defined Type that supports categorized values.
     /// </summary>
     [Serializable]
+    [Rock.SystemGuid.FieldTypeGuid( "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D")]
     public class CategorizedDefinedValueFieldType : FieldType
     {
         #region Configuration
@@ -282,6 +283,8 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        private const string AllCategoriesListItemText = "All Categories";
+
         /// <inheritdoc/>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
@@ -480,14 +483,14 @@ namespace Rock.Field.Types
 
             if ( childCategoryNodes.Any() )
             {
-                var allCategoriesNode = childCategoryNodes.FirstOrDefault( x => x.Value.Text == "(All Categories)" );
+                var allCategoriesNode = childCategoryNodes.FirstOrDefault( x => x.Value.Text == AllCategoriesListItemText );
 
                 if ( allCategoriesNode == null )
                 {
                     var allCategoriesItem = new DefinedValueTreeNode
                     {
                         Key = parentNode.Value.Key + "_all",
-                        Text = "(All Categories)",
+                        Text = AllCategoriesListItemText,
                         CategoryLabel = definedValue.DefinedType.Name,
                         IsDefaultSelection = true
                     };

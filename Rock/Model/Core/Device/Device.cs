@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Device" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "C06EE1FE-AF12-410A-A364-7A366CD72414")]
     public partial class Device : Model<Device>, ICacheable
     {
         #region Entity Properties

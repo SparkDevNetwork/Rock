@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "5E795620-9F16-49D2-9030-947C0E348A8E")]
     public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag, ICacheable
     {
         #region Constants

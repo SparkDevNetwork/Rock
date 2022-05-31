@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
     [AttributeField( "72657ED8-D16E-492E-AC12-144C5E7567E7", "Person Attribute", "The person attribute that should be updated with the provided value.", true, false, "", "", 1 )]
     [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the person attribute to. <span class='tip tip-lava'></span>", false, "", "", 2, "Value" )]
     
+    [Rock.SystemGuid.EntityTypeGuid( "320622DA-52E0-41AE-AF90-2BF78B488552")]
     public class SetPersonAttribute : ActionComponent
     {
         /// <summary>
@@ -105,12 +106,7 @@ namespace Rock.Workflow.Action
                                             person.LoadAttributes();
                                             string originalValue = person.GetAttributeValue( attribute.Key );
 
-                                            // Handle encrypted text fields as well.
-                                            if ( attribute.FieldType.Field is Field.Types.EncryptedTextFieldType )
-                                            {
-                                                updateValue = Security.Encryption.EncryptString( updateValue );
-                                            }
-
+                                            SetWorkflowAttributeValue( action, attribute.Guid, updateValue );
                                             Rock.Attribute.Helper.SaveAttributeValue( person, attribute, updateValue, rockContext );
 
                                             action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, updateValue ) );

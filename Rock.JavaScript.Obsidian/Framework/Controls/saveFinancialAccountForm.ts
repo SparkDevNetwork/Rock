@@ -15,16 +15,16 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject, PropType } from "vue";
-import Alert from "../Elements/alert";
-import InlineCheckBox from "../Elements/inlineCheckBox";
-import RockButton from "../Elements/rockButton";
-import TextBox from "../Elements/textBox";
-import { Guid } from "../Util/guid";
-import { Person } from "../ViewModels";
-import { BlockHttp } from "../Util/block";
+import Alert from "./alert";
+import InlineCheckBox from "./inlineCheckBox";
+import RockButton from "./rockButton";
+import TextBox from "./textBox";
+import { BlockHttp } from "@Obsidian/Utility/block";
 import RockForm from "./rockForm";
-import { useStore } from "../Store/index";
+import { useStore } from "@Obsidian/PageState";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
 
 const store = useStore();
 
@@ -91,7 +91,7 @@ const SaveFinancialAccountForm = defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson (): Person | null {
+        currentPerson (): PersonBag | null {
             return store.state.currentPerson;
         },
 
@@ -113,7 +113,8 @@ const SaveFinancialAccountForm = defineComponent({
 
             this.isLoading = true;
 
-            const result = await this.http.post<SaveFinancialAccountFormResult>(`/api/v2/controls/savefinancialaccountforms/${this.gatewayGuid}`, null, {
+            const result = await this.http.post<SaveFinancialAccountFormResult>("/api/v2/Controls/SaveFinancialAccountFormSaveAccount", null, {
+                GatewayGuid: this.gatewayGuid,
                 Password: this.password,
                 SavedAccountName: this.savedAccountName,
                 TransactionCode: this.transactionCode,

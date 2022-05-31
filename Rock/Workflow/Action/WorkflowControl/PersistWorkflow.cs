@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Workflow Persist" )]
 
     [BooleanField( "Persist Immediately", "This action will normally cause the workflow to be persisted (saved) once all the current activities/actions have completed processing. Set this flag to true, if the workflow should be persisted immediately. This is only required if a subsequent action needs a persisted workflow with a valid id.",  false )]
+    [Rock.SystemGuid.EntityTypeGuid( "F1A39347-6FE0-43D4-89FB-544195088ECF")]
     public class PersistWorkflow : ActionComponent
     {
         /// <summary>

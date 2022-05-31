@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the names of the Person's Children" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Children's Names" )]
+    [Rock.SystemGuid.EntityTypeGuid( "8DE06919-D68C-4A29-989B-359A0379F1F3")]
     public class ChildNamesSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties
@@ -120,6 +121,8 @@ namespace Rock.Reporting.DataSelect.Person
 
             public DateTime? BirthDate { get; set; }
 
+            public DateTime? DeceasedDate { get; set; }
+
             public int? GraduationYear { get; set; }
         }
 
@@ -153,7 +156,7 @@ namespace Rock.Reporting.DataSelect.Person
                             formattedGenderAgeGrade = person.Gender == Gender.Female ? "F" : "M";
                         }
 
-                        int? age = Rock.Model.Person.GetAge( person.BirthDate );
+                        int? age = Rock.Model.Person.GetAge( person.BirthDate, person.DeceasedDate );
 
                         if ( includeAge && age.HasValue )
                         {
@@ -247,6 +250,7 @@ namespace Rock.Reporting.DataSelect.Person
                         SuffixValueId = m.Person.SuffixValueId,
                         Gender = m.Person.Gender,
                         BirthDate = m.Person.BirthDate,
+                        DeceasedDate = m.Person.DeceasedDate,
                         GraduationYear = m.Person.GraduationYear
                     }).AsEnumerable() );
 

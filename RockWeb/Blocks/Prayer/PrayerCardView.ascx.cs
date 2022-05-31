@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -142,6 +142,7 @@ namespace RockWeb.Blocks.Prayer
         Key = AttributeKey.LoadLastPrayedCollection )]
     
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "1FEE129E-E46A-4805-AF5A-6F98E1DA7A16" )]
     public partial class PrayerCardView : RockBlock
     {
         #region Constants

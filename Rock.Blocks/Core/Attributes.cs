@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 /*
@@ -146,13 +146,13 @@ namespace Rock.Blocks.Core
         /// Gets a list of the entity types that can be selected in the picker.
         /// </summary>
         /// <returns>A collection of ListItemViewModel objects that represent the entity types.</returns>
-        private List<ListItemViewModel> GetEntityTypes()
+        private List<ListItemBag> GetEntityTypes()
         {
             var entityTypes = EntityTypeCache.All()
                 .Where( t => t.IsEntity )
                 .OrderByDescending( t => t.IsCommon )
                 .ThenBy( t => t.FriendlyName )
-                .Select( t => new ListItemViewModel
+                .Select( t => new ListItemBag
                 {
                     Value = t.Guid.ToString(),
                     Text = t.FriendlyName,
@@ -160,7 +160,7 @@ namespace Rock.Blocks.Core
                 } )
                 .ToList();
 
-            entityTypes.Insert( 0, new ListItemViewModel
+            entityTypes.Insert( 0, new ListItemBag
             {
                 Value = Guid.Empty.ToString(),
                 Text = "None (Global Attributes)"
@@ -204,7 +204,8 @@ namespace Rock.Blocks.Core
                 Categories = attribute.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " ),
                 IsActive = attribute.IsActive,
                 Qualifier = GetAttributeQualifier( attribute ),
-                Value = GetAttributeValue( rockContext, attribute ),
+                Attribute = GetPublicAttribute( rockContext, attribute ),
+                Value = GetPublicAttributeValue( rockContext, attribute ),
                 IsDeleteEnabled = !attribute.IsSystem,
                 IsSecurityEnabled = false
             };
@@ -310,8 +311,8 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="rockContext">The rock database context.</param>
         /// <param name="attribute">The attribute whose value will be viewed.</param>
-        /// <returns>A <see cref="ClientAttributeValueViewModel"/> that represents the attribute value.</returns>
-        private PublicAttributeValueViewModel GetAttributeValue( RockContext rockContext, AttributeCache attribute )
+        /// <returns>A <see cref="PublicAttributeValueViewModel"/> that represents the attribute value.</returns>
+        private PublicAttributeBag GetPublicAttribute( RockContext rockContext, AttributeCache attribute )
         {
             var entityId = GetEntityId();
 
@@ -322,16 +323,48 @@ namespace Rock.Blocks.Core
 
                 if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
                 {
-                    return PublicAttributeHelper.ToPublicAttributeValue( attribute, attributeValue.Value );
+                    return PublicAttributeHelper.GetPublicAttributeForView( attribute, attributeValue.Value );
                 }
                 else
                 {
-                    return PublicAttributeHelper.ToPublicAttributeValue( attribute, attribute.DefaultValue );
+                    return PublicAttributeHelper.GetPublicAttributeForView( attribute, attribute.DefaultValue );
                 }
             }
             else
             {
-                return PublicAttributeHelper.ToPublicAttributeValue( attribute, attribute.DefaultValue );
+                return PublicAttributeHelper.GetPublicAttributeForView( attribute, attribute.DefaultValue );
+            }
+        }
+
+        /// <summary>
+        /// Gets the attribute value as a model that can be displayed on the
+        /// user's device. This handles special block settings that change what
+        /// value is available.
+        /// </summary>
+        /// <param name="rockContext">The rock database context.</param>
+        /// <param name="attribute">The attribute whose value will be viewed.</param>
+        /// <returns>A <see cref="PublicAttributeValueViewModel"/> that represents the attribute value.</returns>
+        private string GetPublicAttributeValue( RockContext rockContext, AttributeCache attribute )
+        {
+            var entityId = GetEntityId();
+
+            if ( GetAttributeValue( AttributeKey.AllowSettingofValues ).AsBooleanOrNull() ?? false )
+            {
+                AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
+
+                if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
+                {
+                    return PublicAttributeHelper.GetPublicValueForView( attribute, attributeValue.Value );
+                }
+                else
+                {
+                    return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
+                }
+            }
+            else
+            {
+                return PublicAttributeHelper.GetPublicValueForView( attribute, attribute.DefaultValue );
             }
         }
 
@@ -382,7 +415,11 @@ namespace Rock.Blocks.Core
             var attributeValue = new AttributeValueService( new RockContext() ).GetByAttributeIdAndEntityId( attribute.Id, entityId );
             string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
 
-            return ActionOk( PublicAttributeHelper.ToPublicEditableAttributeValue( attribute, value ) );
+            return ActionOk( new
+            {
+                Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( attribute ),
+                Value = PublicAttributeHelper.GetPublicEditValue( attribute, value )
+            } );
         }
 
         /// <summary>
@@ -450,7 +487,7 @@ namespace Rock.Blocks.Core
 
                 return ActionOk( new EditAttributeViewModel
                 {
-                    Attribute = Helper.GetPublicEditableAttributeViewModel( attribute ),
+                    Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
                     EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = attribute.EntityTypeQualifierValue
                 } );
@@ -466,7 +503,7 @@ namespace Rock.Blocks.Core
         /// <param name="attribute">The attribute to be created or updated.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveEditAttribute( Guid? entityTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, PublicEditableAttributeViewModel attribute )
+        public BlockActionResult SaveEditAttribute( Guid? entityTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, PublicEditableAttributeBag attribute )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -566,7 +603,7 @@ namespace Rock.Blocks.Core
 
         public string EntityTypeQualifierValue { get; set; }
 
-        public PublicEditableAttributeViewModel Attribute { get; set; }
+        public PublicEditableAttributeBag Attribute { get; set; }
     }
 
     public class GridRow
@@ -583,7 +620,9 @@ namespace Rock.Blocks.Core
 
         public bool IsActive { get; set; }
 
-        public PublicAttributeValueViewModel Value { get; set; }
+        public PublicAttributeBag Attribute { get; set; }
+
+        public string Value { get; set; }
 
         public bool IsDeleteEnabled { get; set; }
 

@@ -56,6 +56,6 @@ namespace Rock.Workflow.FormBuilder
         /// Determines how <see cref="Rock.Model.Workflow.CampusId"/> will be
         /// automatically set when the form executes.
         /// </summary>
-        public int? CampusSetFrom { get; set; }
+        public CampusSetFrom? CampusSetFrom { get; set; }
     }
 }

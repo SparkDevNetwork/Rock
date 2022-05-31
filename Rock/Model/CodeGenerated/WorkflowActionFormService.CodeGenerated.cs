@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// WorkflowActionForm View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( WorkflowActionForm ) )]
-    public partial class WorkflowActionFormViewModelHelper : ViewModelHelper<WorkflowActionForm, Rock.ViewModel.WorkflowActionFormViewModel>
+    public partial class WorkflowActionFormViewModelHelper : ViewModelHelper<WorkflowActionForm, WorkflowActionFormBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.WorkflowActionFormViewModel CreateViewModel( WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = true )
+        public override WorkflowActionFormBag CreateViewModel( WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.WorkflowActionFormViewModel
+            var viewModel = new WorkflowActionFormBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ActionAttributeGuid = model.ActionAttributeGuid,
                 Actions = model.Actions,
                 AllowNotes = model.AllowNotes,
@@ -103,6 +103,7 @@ namespace Rock.Model
                 PersonEntryCampusStatusValueId = model.PersonEntryCampusStatusValueId,
                 PersonEntryCampusTypeValueId = model.PersonEntryCampusTypeValueId,
                 PersonEntryConnectionStatusValueId = model.PersonEntryConnectionStatusValueId,
+                PersonEntryDescription = model.PersonEntryDescription,
                 PersonEntryEmailEntryOption = ( int ) model.PersonEntryEmailEntryOption,
                 PersonEntryFamilyAttributeGuid = model.PersonEntryFamilyAttributeGuid,
                 PersonEntryGenderEntryOption = ( int ) model.PersonEntryGenderEntryOption,
@@ -114,9 +115,12 @@ namespace Rock.Model
                 PersonEntryPostHtml = model.PersonEntryPostHtml,
                 PersonEntryPreHtml = model.PersonEntryPreHtml,
                 PersonEntryRecordStatusValueId = model.PersonEntryRecordStatusValueId,
+                PersonEntrySectionTypeValueId = model.PersonEntrySectionTypeValueId,
+                PersonEntryShowHeadingSeparator = model.PersonEntryShowHeadingSeparator,
                 PersonEntrySpouseAttributeGuid = model.PersonEntrySpouseAttributeGuid,
                 PersonEntrySpouseEntryOption = ( int ) model.PersonEntrySpouseEntryOption,
                 PersonEntrySpouseLabel = model.PersonEntrySpouseLabel,
+                PersonEntryTitle = model.PersonEntryTitle,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -206,6 +210,7 @@ namespace Rock.Model
             target.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
             target.PersonEntryCampusTypeValueId = source.PersonEntryCampusTypeValueId;
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
+            target.PersonEntryDescription = source.PersonEntryDescription;
             target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
             target.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
@@ -217,9 +222,12 @@ namespace Rock.Model
             target.PersonEntryPostHtml = source.PersonEntryPostHtml;
             target.PersonEntryPreHtml = source.PersonEntryPreHtml;
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
+            target.PersonEntrySectionTypeValueId = source.PersonEntrySectionTypeValueId;
+            target.PersonEntryShowHeadingSeparator = source.PersonEntryShowHeadingSeparator;
             target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             target.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
             target.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
+            target.PersonEntryTitle = source.PersonEntryTitle;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -235,7 +243,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.WorkflowActionFormViewModel ToViewModel( this WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = false )
+        public static WorkflowActionFormBag ToViewModel( this WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new WorkflowActionFormViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

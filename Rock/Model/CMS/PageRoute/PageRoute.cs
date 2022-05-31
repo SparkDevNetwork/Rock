@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PageRoute" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "42C14361-67B2-472C-95BE-EA8A9C511837")]
     public partial class PageRoute : Model<PageRoute>
     {
         #region Entity Properties

@@ -289,7 +289,7 @@ namespace Rock.Web.UI.Controls.Communication
             iupPushImage.BinaryFileId = communication.PushImageBinaryFileId;
             if ( communication.PushOpenAction != null )
             {
-                rbOpenAction.SelectedValue = communication.PushOpenAction.ConvertToInt().ToString();
+                rbOpenAction.SetValue( communication.PushOpenAction.ConvertToInt().ToString() );
             }
 
             var pushData = new PushData();

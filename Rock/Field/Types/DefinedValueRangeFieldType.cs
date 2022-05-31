@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE_RANGE )]
     public class DefinedValueRangeFieldType : FieldType
     {
         #region Configuration
@@ -55,9 +56,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues )
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues );
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
             var definedTypeGuid = publicConfigurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? publicConfigurationValues[DEFINED_TYPE_KEY].AsGuidOrNull() : null;
 
             if ( definedTypeGuid.HasValue )
@@ -73,12 +74,15 @@ namespace Rock.Field.Types
                         v.Description
                     } )
                     .ToCamelCaseJson( false, true );
-
-                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
             }
             else
             {
                 publicConfigurationValues[PUBLIC_VALUES] = "[]";
+            }
+
+            if ( usage != ConfigurationValueUsage.Configure )
+            {
+                publicConfigurationValues.Remove( DEFINED_TYPE_KEY );
             }
 
             return publicConfigurationValues;

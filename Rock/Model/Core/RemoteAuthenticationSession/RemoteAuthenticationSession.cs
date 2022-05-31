@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "RemoteAuthenticationSession" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "2FDEE857-08BE-47F3-8E86-B2027F545EE8")]
     public partial class RemoteAuthenticationSession : Model<RemoteAuthenticationSession>
     {
         #region Entity Properties

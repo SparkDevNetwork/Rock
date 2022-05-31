@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ConnectionActivityTypes REST API
     /// </summary>
+    [RestControllerGuid( "5F82C416-28CE-4797-98C9-FF73595ACE9F" )]
     public partial class ConnectionActivityTypesController : Rock.Rest.ApiController<Rock.Model.ConnectionActivityType>
     {
         /// <summary>

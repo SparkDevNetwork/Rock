@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-gift"></i> Package Install</h1>
             </div>
@@ -15,8 +15,6 @@
                         <asp:Image ID="imgPackageImage" runat="server" CssClass="packagedetail-image" />
                     </div>
 
-                    
-                    
                     <div class="row">
                         <div class="col-md-4">
                             <div class="alert alert-warning">
@@ -28,10 +26,8 @@
                             </div>
                         </div>
                         <div class="col-md-8">
-                            
-                            <p>
-                                <asp:Literal ID="lInstallMessage" runat="server" />
-                            </p>
+
+                            <asp:Literal ID="lInstallMessage" runat="server" />
 
                             <Rock:RockTextBox ID="txtUsername" runat="server" Label="Store Username" />
                             <Rock:RockTextBox ID="txtPassword" runat="server" TextMode="Password" Label="Store Password" />
@@ -44,7 +40,7 @@
                         </div>
                     </div>
                 </asp:Panel>
-                
+
                 <asp:Panel ID="pnlError" runat="server" Visible="false">
                     <div class="alert alert-warning">
                         <h4>Store Currently Not Available</h4>
@@ -54,7 +50,7 @@
                 </asp:Panel>
 
             </div>
-        
+
         </asp:Panel>
 
     </ContentTemplate>

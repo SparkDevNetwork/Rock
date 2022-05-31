@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -74,7 +75,7 @@ namespace Rock.Model
     /// ConnectionStatus View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ConnectionStatus ) )]
-    public partial class ConnectionStatusViewModelHelper : ViewModelHelper<ConnectionStatus, Rock.ViewModel.ConnectionStatusViewModel>
+    public partial class ConnectionStatusViewModelHelper : ViewModelHelper<ConnectionStatus, ConnectionStatusBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -83,17 +84,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ConnectionStatusViewModel CreateViewModel( ConnectionStatus model, Person currentPerson = null, bool loadAttributes = true )
+        public override ConnectionStatusBag CreateViewModel( ConnectionStatus model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ConnectionStatusViewModel
+            var viewModel = new ConnectionStatusBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AutoInactivateState = model.AutoInactivateState,
                 ConnectionTypeId = model.ConnectionTypeId,
                 Description = model.Description,
@@ -198,7 +198,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ConnectionStatusViewModel ToViewModel( this ConnectionStatus model, Person currentPerson = null, bool loadAttributes = false )
+        public static ConnectionStatusBag ToViewModel( this ConnectionStatus model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ConnectionStatusViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

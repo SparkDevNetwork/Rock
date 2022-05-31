@@ -15,12 +15,12 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import RockFormField from "../Elements/rockFormField";
-import DropDownList from "../Elements/dropDownList";
-import RockLabel from "../Elements/rockLabel";
-import TextBox from "../Elements/textBox";
-import { newGuid } from "../Util/guid";
-import { ListItem } from "../ViewModels";
+import RockFormField from "./rockFormField";
+import DropDownList from "./dropDownList";
+import RockLabel from "./rockLabel";
+import TextBox from "./textBox";
+import { newGuid } from "@Obsidian/Utility/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type AddressControlValue = {
     street1?: string;
@@ -38,7 +38,7 @@ export function getDefaultAddressControlModel(): AddressControlValue {
     };
 }
 
-const stateOptions: ListItem[] = [
+const stateOptions: ListItemBag[] = [
     "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM",
     "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
     "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV",
@@ -69,7 +69,7 @@ export const AddressControlBase = defineComponent({
     },
 
     setup(props) {
-        const uniqueId = props.id || `rock-addresscontrol-${newGuid}`;
+        const uniqueId = props.id || `rock-addresscontrol-${newGuid()}`;
 
         return {
             uniqueId,
@@ -79,12 +79,22 @@ export const AddressControlBase = defineComponent({
 
     template: `
 <div :id="uniqueId">
-    <TextBox placeholder="Address Line 1" :rules="rules" v-model="modelValue.street1" validationTitle="Address Line 1" />
-    <TextBox placeholder="Address Line 2" v-model="modelValue.street2" validationTitle="Address Line 2" />
+    <div class="form-group">
+        <TextBox placeholder="Address Line 1" :rules="rules" v-model="modelValue.street1" validationTitle="Address Line 1" />
+    </div>
+    <div class="form-group">
+        <TextBox placeholder="Address Line 2" v-model="modelValue.street2" validationTitle="Address Line 2" />
+    </div>
     <div class="form-row">
-        <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" form-group-classes="col-sm-6" validationTitle="City" />
-        <DropDownList :showBlankItem="false" v-model="modelValue.state" form-group-classes="col-sm-3" :options="stateOptions" />
-        <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" form-group-classes="col-sm-3" validationTitle="Zip" />
+        <div class="form-group col-sm-6">
+            <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" validationTitle="City" />
+        </div>
+        <div class="form-group col-sm-3">
+            <DropDownList :showBlankItem="false" v-model="modelValue.state" :items="stateOptions" />
+        </div>
+        <div class="form-group col-sm-3">
+            <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" validationTitle="Zip" />
+        </div>
     </div>
 </div>
 `

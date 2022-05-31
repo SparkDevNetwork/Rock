@@ -22,7 +22,7 @@ using System.Linq;
 using Rock.ClientService.Core.DefinedValue.Options;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.ClientService.Core.DefinedValue
@@ -65,14 +65,14 @@ namespace Rock.ClientService.Core.DefinedValue
         /// </summary>
         /// <param name="definedTypeId">The defined type identifier.</param>
         /// <param name="options">The options that specify the behavior of which items to include.</param>
-        /// <returns>A list of <see cref="ListItemViewModel"/> that represent the defined values.</returns>
-        public List<ListItemViewModel> GetDefinedValuesAsListItems( int definedTypeId, DefinedValueOptions options = null )
+        /// <returns>A list of <see cref="ListItemBag"/> that represent the defined values.</returns>
+        public List<ListItemBag> GetDefinedValuesAsListItems( int definedTypeId, DefinedValueOptions options = null )
         {
             var definedType = DefinedTypeCache.Get( definedTypeId, RockContext );
 
             if ( definedType == null )
             {
-                return new List<ListItemViewModel>();
+                return new List<ListItemBag>();
             }
 
             return this.GetDefinedValuesAsListItems( definedType, options );
@@ -84,14 +84,14 @@ namespace Rock.ClientService.Core.DefinedValue
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
         /// <param name="options">The options that specify the behavior of which items to include.</param>
-        /// <returns>A list of <see cref="ListItemViewModel"/> that represent the defined values.</returns>
-        public List<ListItemViewModel> GetDefinedValuesAsListItems( Guid definedTypeGuid, DefinedValueOptions options = null )
+        /// <returns>A list of <see cref="ListItemBag"/> that represent the defined values.</returns>
+        public List<ListItemBag> GetDefinedValuesAsListItems( Guid definedTypeGuid, DefinedValueOptions options = null )
         {
             var definedType = DefinedTypeCache.Get( definedTypeGuid, RockContext );
 
             if ( definedType == null )
             {
-                return new List<ListItemViewModel>();
+                return new List<ListItemBag>();
             }
 
             return GetDefinedValuesAsListItems( definedType, options );
@@ -103,8 +103,8 @@ namespace Rock.ClientService.Core.DefinedValue
         /// </summary>
         /// <param name="definedType">The defined type.</param>
         /// <param name="options">The options that specify the behavior of which items to include.</param>
-        /// <returns>A list of <see cref="ListItemViewModel"/> that represent the defined values.</returns>
-        public List<ListItemViewModel> GetDefinedValuesAsListItems( DefinedTypeCache definedType, DefinedValueOptions options = null )
+        /// <returns>A list of <see cref="ListItemBag"/> that represent the defined values.</returns>
+        public List<ListItemBag> GetDefinedValuesAsListItems( DefinedTypeCache definedType, DefinedValueOptions options = null )
         {
             IEnumerable<DefinedValueCache> source = definedType.DefinedValues;
 
@@ -118,7 +118,7 @@ namespace Rock.ClientService.Core.DefinedValue
             source = CheckSecurity( source );
 
             return source.OrderBy( v => v.Order )
-                .Select( v => new ListItemViewModel
+                .Select( v => new ListItemBag
                 {
                     Value = v.Guid.ToString(),
                     Text = options.UseDescription ? v.Description : v.Value

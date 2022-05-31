@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Crm
         DefaultIntegerValue = 65,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "160DABF9-3549-447C-9E76-6CFCCCA481C0" )]
     public partial class PhotoVerify : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

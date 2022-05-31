@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,13 +31,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Tv
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    ///
-    /// 10/15/2021 - JME
-    /// The code from this block was taken primarily from the MobileApplicationDetail.ascx block.
-    /// 
-    /// </summary>
+    /*
+    
+    10/15/2021 - JME
+    The code from this block was taken primarily from the MobileApplicationDetail.ascx block.
+    
+    */
     [DisplayName( "TV Page List" )]
     [Category( "TV > TV Apps" )]
     [Description( "Lists pages for TV apps (Apple or other)." )]
@@ -46,6 +45,7 @@ namespace RockWeb.Blocks.Tv
     [LinkedPage( "Page Detail", "", true, "", "", 0, AttributeKey.PageDetail )]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "7BD1B79C-BF27-42C6-8359-F80EC7FEE397" )]
     public partial class TvPageList : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
         #region Attribute Keys

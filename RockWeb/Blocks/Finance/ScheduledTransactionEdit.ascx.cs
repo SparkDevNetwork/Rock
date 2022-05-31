@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -108,6 +108,7 @@ achieve our mission.  We are so grateful for your commitment.
 
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "5171C4E5-7698-453E-9CC8-088D362296DE" )]
     public partial class ScheduledTransactionEdit : RockBlock
     {
         /// <summary>
@@ -549,7 +550,7 @@ achieve our mission.  We are so grateful for your commitment.
         {
             var qryParams = new Dictionary<string, string>();
 
-            var scheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+            var scheduledTransactionGuid = GetScheduledTransactionGuidFromUrl();
             if ( scheduledTransactionGuid.HasValue )
             {
                 qryParams.Add( PageParameterKey.ScheduledTransactionGuid, scheduledTransactionGuid.ToString() );
@@ -599,6 +600,32 @@ achieve our mission.  We are so grateful for your commitment.
         #region Initialization
 
         /// <summary>
+        /// Gets the scheduled transaction Guid based on what is specified in the URL
+        /// </summary>
+        /// <param name="refresh">if set to <c>true</c> [refresh].</param>
+        /// <returns></returns>
+        private Guid? GetScheduledTransactionGuidFromUrl()
+        {
+            var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+
+#pragma warning disable CS0618
+            var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
+#pragma warning restore CS0618
+
+            if ( financialScheduledTransactionGuid.HasValue )
+            {
+                return financialScheduledTransactionGuid.Value;
+            }
+
+            if ( financialScheduledTransactionId.HasValue )
+            {
+                return new FinancialScheduledTransactionService( new RockContext() ).GetGuid( financialScheduledTransactionId.Value );
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the scheduled transaction.
         /// </summary>
         /// <param name="refresh">if set to <c>true</c> [refresh].</param>
@@ -610,13 +637,9 @@ achieve our mission.  We are so grateful for your commitment.
 
             using ( var rockContext = new RockContext() )
             {
-                var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
+                var financialScheduledTransactionGuid = GetScheduledTransactionGuidFromUrl();
 
-                #pragma warning disable CS0618
-                var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
-                #pragma warning restore CS0618
-
-                if ( !financialScheduledTransactionGuid.HasValue && !financialScheduledTransactionId.HasValue )
+                if ( !financialScheduledTransactionGuid.HasValue )
                 {
                     return null;
                 }
@@ -624,7 +647,7 @@ achieve our mission.  We are so grateful for your commitment.
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var scheduledTransactionQuery = financialScheduledTransactionService
                     .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
-                    .Where( t => financialScheduledTransactionGuid != null ? t.Guid == financialScheduledTransactionGuid : t.Id == financialScheduledTransactionId.Value );
+                    .Where( t => t.Guid == financialScheduledTransactionGuid.Value );
 
                 // If the block allows impersonation then just get the scheduled transaction
                 if ( !GetAttributeValue( AttributeKey.Impersonation ).AsBoolean() )
