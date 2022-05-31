@@ -110,7 +110,6 @@ export default defineComponent({
     template: `
 <BaseAsyncPicker v-model="internalValue"
     v-bind="standardProps"
-    grouped
     :items="actualItems" />
 `
 });
