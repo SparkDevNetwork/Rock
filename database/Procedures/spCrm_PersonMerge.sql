@@ -241,6 +241,16 @@ BEGIN
 		-----------------------------------------------------------------------------------------------
 		-- Update any followings that are associated to the old person to be associated to the new 
 		-- person. 
+        /*
+		  NEXT 2 QUERIES TO BE DELETED?
+
+		  5/26/2022 - CWR
+		  These "Following" queries do not work as intended to update or delete, and should be removed.
+		  These queries use the "Person" Entity Type (@PersonEntityTypeId), and "Following" people should use "PersonAlias" Entity Type.
+          Because "Following" uses a different entity type, these queries do not alter data.
+		  Person-related "Following" records use PersonAliasId (of the followed person) as EntityId and PersonAliasId (of the follower person) as PersonAliasId.
+		  This query also does not update "follower" records, which should set the PersonAliasId value to the Merge Person's primary alias Id.
+		*/
 		UPDATE F
 			SET [EntityId] = @NewId
 		FROM [Following] F

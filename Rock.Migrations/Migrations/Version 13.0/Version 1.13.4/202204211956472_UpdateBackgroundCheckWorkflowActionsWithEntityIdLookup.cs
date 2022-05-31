@@ -30,7 +30,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            UpdateBackgroundCheckWorkflowActions();
+            // UpdateBackgroundCheckWorkflowActions();
         }
 
         /// <summary>

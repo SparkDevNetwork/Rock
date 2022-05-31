@@ -87,12 +87,10 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns> 
         private Expression BuildExpression( IService serviceInstance, IQueryable<int> idQuery, ParameterExpression parameterExpression )
         {
-            // Will return all the Giving leader Persons for the specified idQuery filter list
+            // Returns all the Giving leader persons for the specified people (Ids) in the idQuery filter list.
+            var selected = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable().Where( p => idQuery.Contains( p.Id ) ).Select( p => p.GivingLeaderId ).Distinct();
+            var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable().Where( p => selected.Contains( p.Id ) );
 
-            var selected = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable().Where( p => idQuery.Contains( p.Id )).Select(p=>p.GivingLeaderId).Distinct();
-
-            var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable().Where( p => selected.Contains(p.Id ));
-            
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
         }
     }

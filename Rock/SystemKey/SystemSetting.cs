@@ -265,5 +265,10 @@ namespace Rock.SystemKey
         /// The security grant token earliest date. This provides support to revoke existing tokens.
         /// </summary>
         public const string SECURITY_GRANT_TOKEN_EARLIEST_DATE = "core_SecurityGrantTokenEarliestDate";
+
+        /// <summary>
+        /// Security Settings (Account Protection profiles)
+        /// </summary>
+        public const string ROCK_SECURITY_SETTINGS = "core_RockSecuritySettings";
     }
 }

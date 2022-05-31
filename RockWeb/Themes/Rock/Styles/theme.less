@@ -1293,6 +1293,10 @@ body.nav-open {
   background-color: @navbarside-background-color;
   background-color: var(--navbarside-background-color);
 
+  .nav-open & {
+    z-index: 2000;
+  }
+
   &::-webkit-scrollbar {
     width: 6px;
     background-color: transparent;
@@ -1419,7 +1423,6 @@ body.nav-open {
         top: 0;
         bottom: 0;
         left: @navbarside-width;
-        z-index: 2000;
         display: none;
         width: 280px;
         padding: 0 10px 0 12px;
