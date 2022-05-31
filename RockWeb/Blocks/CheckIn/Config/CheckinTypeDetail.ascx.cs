@@ -646,7 +646,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( "core_checkin_SecurityCodeNumericRandom" );
             excludeList.Add( "core_checkin_AutoSelectDaysBack" );
             excludeList.Add( "core_checkin_AutoSelectOptions" );
+#pragma warning disable CS0618 // Type or member is obsolete
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT );
+#pragma warning restore CS0618 // Type or member is obsolete
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE );

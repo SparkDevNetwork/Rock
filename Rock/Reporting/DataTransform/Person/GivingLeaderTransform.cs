@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Reporting.DataTransform.Person
     [Description( "Transform result to Giving Leader" )]
     [Export( typeof( DataTransformComponent ) )]
     [ExportMetadata( "ComponentName", "Giving Leader Transformation" )]
+    [Rock.SystemGuid.EntityTypeGuid( "BEB3A29B-3CCD-432F-96EA-E7EBEA69D460")]
     public class GivingLeaderTransform : DataTransformComponent<Rock.Model.Person>
     {
         /// <summary>

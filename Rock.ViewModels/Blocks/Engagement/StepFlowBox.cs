@@ -34,6 +34,9 @@ namespace Rock.ViewModels.Blocks.Engagement.Steps
         public List<ListItemBag> Campuses { get; set; }
     }
 
+    /// <summary>
+    /// Class StepFlowGetDataBag.
+    /// </summary>
     public class StepFlowGetDataBag
     {
         /// <summary>
