@@ -1323,6 +1323,7 @@
     <Compile Include="Reporting\DataFilter\Person\WebsitePageViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\WebsiteSessionFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\DocumentTypeFilter.cs" />
+    <Compile Include="Reporting\DataTransform\Person\GivingLeaderTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\HeadOfHouseholdTransform.cs" />
     <Compile Include="Search\Finance\FinancialAccount.cs" />
     <Compile Include="Security\Options\PasswordRequirementOptions.cs" />
