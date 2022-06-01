@@ -53,7 +53,7 @@ namespace Rock.Jobs
         Key = AttributeKey.LookbackMaximumInDays )]
     [IntegerField(
         "Max Records To Process Per Run",
-        Description = "The number of interaction session records to process on each run of this job.",
+        Description = "The number of unique IP addresses to process on each run of this job.",
         IsRequired = false,
         DefaultIntegerValue = 50000,
         Order = 2,
@@ -504,8 +504,8 @@ namespace Rock.Jobs
                     _errors.Add( string.Format( @"IP Lookup Component failed with batch of {0} IP with error message {1}.", ipAddressSessionKeyValue.Count, errorMessage ) );
                 }
 
-                // Return the number of IP addresses that we found locations for
-                return lookupResults.Where( l => l.IsValid ).Count();
+                // Return the number sessions that we're updated
+                return ipAddressSessionKeyValue.Values.Sum( v => v.Count());
             }
             catch ( Exception ex )
             {

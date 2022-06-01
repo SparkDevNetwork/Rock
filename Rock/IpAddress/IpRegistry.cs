@@ -81,9 +81,13 @@ namespace Rock.IpAddress
             return BulkLookup( new List<string> { ipAddress }, out resultMsg ).FirstOrDefault();
         }
 
+
         /// <summary>
-        /// Gets all the IP Address result through IPRegistry
+        /// Takes a list of IP Addresses and returns the location information associated with them.
         /// </summary>
+        /// <param name="ipAddresses"></param>
+        /// <param name="resultMsg"></param>
+        /// <returns></returns>
         public override List<IpLocation> BulkLookup( List<string> ipAddresses, out string resultMsg )
         {
             resultMsg = string.Empty;
