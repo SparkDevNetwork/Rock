@@ -34,122 +34,123 @@ namespace Rock.ViewModels.Entities
     public partial class ReportBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the CategoryId of the Rock.Model.Category that the Report belongs to.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// A System.Int32 representing the CateogryId of the Rock.Model.Category that the report belongs to. If the Report does not belong to
+        /// a Rock.Model.Category this value will be null.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DataViewId.
+        /// Gets or the DataViewId of the root Rock.Model.DataView that this Report is based on.
         /// </summary>
         /// <value>
-        /// The DataViewId.
+        /// A System.Int32 representing the DataViewId of the root Rock.Model.DataView that this Report is based on.
         /// </value>
         public int? DataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the Report's Description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the Report's Description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType that is being reported on.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that is being reported on.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FetchTop.
+        /// Gets or sets the number of records to fetch in the report.  Null means all records.
         /// </summary>
         /// <value>
-        /// The FetchTop.
+        /// The fetch top.
         /// </value>
         public int? FetchTop { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Report is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        ///  A System.Boolean that is true if the Report is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRunDateTime.
+        /// Gets or sets the last run date time.
         /// </summary>
         /// <value>
-        /// The LastRunDateTime.
+        /// The last run date time.
         /// </value>
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the Report. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the Name of the Report.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the QueryHint.
+        /// Gets or sets the query hint that is included in the SQL that is executed on the database server
         /// </summary>
         /// <value>
-        /// The QueryHint.
+        /// The query hint.
         /// </value>
         public string QueryHint { get; set; }
 
         /// <summary>
-        /// Gets or sets the RunCount.
+        /// Gets or sets the persisted last run duration in mulliseconds.
         /// </summary>
         /// <value>
-        /// The RunCount.
+        /// The persisted last run duration in mulliseconds.
         /// </value>
         public int? RunCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the TimeToRunDurationMilliseconds.
+        /// The amount of time in milliseconds that it took to run the Rock.Model.Report.DataView
         /// </summary>
         /// <value>
-        /// The TimeToRunDurationMilliseconds.
+        /// The time to run in ms.
         /// </value>
         public int? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

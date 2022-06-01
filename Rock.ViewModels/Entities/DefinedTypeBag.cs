@@ -34,114 +34,116 @@ namespace Rock.ViewModels.Entities
     public partial class DefinedTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CategorizedValuesEnabled.
+        /// Gets or sets a flag indicating if the Defined Values associated with this Defined Type can be grouped into categories.
         /// </summary>
         /// <value>
-        /// The CategorizedValuesEnabled.
+        /// true if this DefinedType supports values that can be grouped into categories; otherwise false.
         /// </value>
         public bool? CategorizedValuesEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// The category identifier.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description of the DefinedType.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the DefinedType.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableSecurityOnValues.
+        /// Gets or sets a value indicating whether the DefinedValues for this DefinedType should allow security settings.
         /// </summary>
         /// <value>
-        /// The EnableSecurityOnValues.
+        ///   true if [enable security on values]; otherwise, false.
         /// </value>
         public bool EnableSecurityOnValues { get; set; }
 
         /// <summary>
-        /// Gets or sets the FieldTypeId.
+        /// Gets or sets the FieldTypeId of the Rock.Model.FieldType that is used to set/select, and at times display the DefinedValues that are associated with
+        /// NOTE: Currently, Text is the only supported fieldType for DefinedTypes.
+        /// this DefinedType. 
         /// </summary>
         /// <value>
-        /// The FieldTypeId.
+        /// A System.Int32 representing the FieldTypeId of the Rock.Model.FieldType that is used for DefinedType.
         /// </value>
         public int? FieldTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the HelpText.
+        /// Gets or sets the help text for the defined type.
         /// </summary>
         /// <value>
-        /// The HelpText.
+        /// A System.String representing the help text.
         /// </value>
         public string HelpText { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this Defined Type is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this DefinedType is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if this DefinedType is part of the Rock core system/framework; otherwise this value is false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the DefinedType.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the name of the DefinedType.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order of this DefinedType.  The lower the number the higher the display priority.  This property is required.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 that represents the display order of this DefinedType.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

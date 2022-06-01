@@ -21,6 +21,7 @@ import { defineComponent, inject } from "vue";
 import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
 import Alert from "@Obsidian/Controls/alert";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
 type AuthCookie = {
     expires: string;
@@ -79,8 +80,7 @@ export default defineComponent({
             const returnUrl = urlParams.get("returnurl");
 
             if (returnUrl) {
-                // TODO make this force relative URLs (no absolute URLs)
-                window.location.href = decodeURIComponent(returnUrl);
+                window.location.href = makeUrlRedirectSafe(decodeURIComponent(returnUrl));
             }
         },
         async onHelpClick (): Promise<void> {
@@ -94,8 +94,7 @@ export default defineComponent({
                     this.errorMessage = result.errorMessage || "An unknown error occurred communicating with the server";
                 }
                 else if (result.data) {
-                    // TODO make this force relative URLs (no absolute URLs)
-                    window.location.href = result.data;
+                    window.location.href = makeUrlRedirectSafe(result.data);
                 }
             }
             catch (e) {

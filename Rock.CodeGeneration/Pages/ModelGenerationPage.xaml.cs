@@ -21,6 +21,8 @@ using System.Windows.Input;
 using System.Xml;
 
 using Rock;
+using Rock.CodeGeneration.Utility;
+using Rock.CodeGeneration.XmlDoc;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
 
@@ -39,9 +41,22 @@ namespace Rock.CodeGeneration.Pages
 
         private readonly System.Windows.Forms.FolderBrowserDialog _fbdOutput = new System.Windows.Forms.FolderBrowserDialog();
 
+        private readonly XmlDocReader _xmlDoc = SupportTools.GetXmlDocReader();
+
         #endregion
 
         #region Properties
+
+        public string DisplayedAssemblyPath
+        {
+            get => _displayedAssemblyPath;
+            set
+            {
+                _displayedAssemblyPath = value;
+                OnPropertyChanged();
+            }
+        }
+        private string _displayedAssemblyPath;
 
         public string AssemblyPath
         {
@@ -273,10 +288,23 @@ namespace Rock.CodeGeneration.Pages
             string assemblyFileName = fi.FullName;
 
             AssemblyPath = assemblyFileName;
+            DisplayedAssemblyPath = assemblyFileName;
             AssemblyDateTimeElapsed = fi.LastWriteTime.ToElapsedString();
             AssemblyDateTime = fi.LastWriteTime.ToString();
 
             var assembly = Assembly.LoadFrom( assemblyFileName );
+
+            var rockWebBinRockDllFileName = Path.Combine( RootFolder().FullName, "RockWeb\\Bin\\Rock.dll" );
+            if ( File.Exists( rockWebBinRockDllFileName ) )
+            {
+                var rockWebBinRockDll = Assembly.ReflectionOnlyLoadFrom( rockWebBinRockDllFileName );
+
+                // if the files are identical (they should be), display the path of the RockWeb\Bin Rock.dll
+                if ( rockWebBinRockDll.ManifestModule.ModuleVersionId == rockAssembly.ManifestModule.ModuleVersionId )
+                {
+                    DisplayedAssemblyPath = rockWebBinRockDllFileName;
+                }
+            }
 
             foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
             {
@@ -1181,13 +1209,36 @@ namespace Rock.ViewModels.Entities
 
             foreach ( var property in properties )
             {
-                sb.AppendLine( $@"        /// <summary>
+                if ( property.SummaryComment.IsNotNullOrWhiteSpace() )
+                {
+                    sb.AppendLine( "        /// <summary>" );
+                    foreach ( var line in property.SummaryComment.Split( new string[] { "\r\n" }, StringSplitOptions.None ) )
+                    {
+                        sb.AppendLine( $"        /// {line}" );
+                    }
+                    sb.AppendLine( "        /// </summary>" );
+
+                    if ( property.ValueComment.IsNotNullOrWhiteSpace() )
+                    {
+                        sb.AppendLine( "        /// <value>" );
+                        foreach ( var line in property.ValueComment.Split( new string[] { "\r\n" }, StringSplitOptions.None ) )
+                        {
+                            sb.AppendLine( $"        /// {line}" );
+                        }
+                        sb.AppendLine( "        /// </value>" );
+                    }
+                }
+                else
+                {
+                    sb.AppendLine( $@"        /// <summary>
         /// Gets or sets the {property.Name}.
         /// </summary>
         /// <value>
         /// The {property.Name}.
-        /// </value>
-        public {property.TypeName} {property.Name} {{ get; set; }}
+        /// </value>" );
+                }
+
+                sb.AppendLine( $@"        public {property.TypeName} {property.Name} {{ get; set; }}
 " );
             }
 
@@ -1272,18 +1323,22 @@ namespace Rock.ViewModels.Entities
                         imports = new HashSet<string> { typeAttribute.ImportStatement };
                     }
 
+                    var comments = _xmlDoc.GetMemberComments( p.Value );
+
                     return new ViewModelProperty
                     {
                         Name = p.Key,
                         IsObsolete = obsolete != null,
                         IsEnum = isEnum,
                         IsNullable = isNullable,
+                        SummaryComment = comments.Summary?.PlainText,
                         TypeName =
                             ( isNullable && isEnum ) ? "int?" :
                             isEnum ? "int" :
                             PropertyTypeName( p.Value.PropertyType ),
                         TypeScriptImports = imports,
-                        TypeScriptType = tsType
+                        TypeScriptType = tsType,
+                        ValueComment = comments.Value?.PlainText
                     };
                 } )
                 .Where( p => !p.IsObsolete )
@@ -1625,7 +1680,7 @@ namespace Rock.ViewModels.Entities
             var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
             var rockObsolete = type.GetCustomAttribute<RockObsolete>();
             var fullClassName = $"{restNamespace}.{pluralizedName}Controller";
-            var restControllerType = Type.GetType( $"{fullClassName}, {typeof(Rock.Rest.ApiControllerBase).Assembly.FullName}" );
+            var restControllerType = Type.GetType( $"{fullClassName}, {typeof( Rock.Rest.ApiControllerBase ).Assembly.FullName}" );
             var restControllerGuid = restControllerType?.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
 
             if ( restControllerGuid == null )
@@ -2784,6 +2839,18 @@ namespace Rock.ViewModels.Entities
         /// The name of the type.
         /// </value>
         public string TypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the summary comment.
+        /// </summary>
+        /// <value>The summary comment.</value>
+        public string SummaryComment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value comment.
+        /// </summary>
+        /// <value>The value comment.</value>
+        public string ValueComment { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the type script.

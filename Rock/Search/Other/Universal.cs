@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Rock.UniversalSearch;
 
@@ -57,6 +58,9 @@ namespace Rock.Search.Other
         /// <returns>A queryable of index models that match the search term.</returns>
         private List<UniversalSearch.IndexModels.IndexModelBase> GetSearchResults( string searchTerm )
         {
+            // Strip off the special HTML that might have been prepended
+            searchTerm = Regex.Replace( searchTerm, @"\<data.*\</i\>", string.Empty )?.Trim();
+
             // get configured entities and turn it into a list of entity ids
             List<int> entityIds = new List<int>();
 

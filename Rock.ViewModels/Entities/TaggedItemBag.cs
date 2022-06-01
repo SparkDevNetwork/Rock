@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class TaggedItemBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the EntityGuid.
+        /// Gets or sets the GUID identifier of the tagged entity.
         /// </summary>
         /// <value>
-        /// The EntityGuid.
+        /// A System.Guid representing the GUID identifier of the tagged entity.
         /// </value>
         public Guid EntityGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the entity type identifier.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The entity type identifier.
         /// </value>
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this TaggedItem is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if this TaggedItem is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Quantity.
+        /// Gets or sets the quantity.  Used if tagging the same entity multiple times is supported.
         /// </summary>
         /// <value>
-        /// The Quantity.
+        /// The quantity.
         /// </value>
         public int Quantity { get; set; }
 
         /// <summary>
-        /// Gets or sets the TagId.
+        /// Gets or sets the TagId of the Rock.Model.Tag that this TaggedItem is tagged with.
         /// </summary>
         /// <value>
-        /// The TagId.
+        /// A System.Int32 representing the TagId of the Rock.Model.Tag that this TaggedItem is tagged with.
         /// </value>
         public int TagId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

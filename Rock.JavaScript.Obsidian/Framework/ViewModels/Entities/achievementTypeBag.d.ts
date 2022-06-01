@@ -25,85 +25,94 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AchievementType View Model */
 export type AchievementTypeBag = {
-    /** Gets or sets the AchievementFailureWorkflowTypeId. */
+    /** Gets or sets the Id of the Rock.Model.WorkflowType to be triggered when an achievement is failed (closed and not successful) */
     achievementFailureWorkflowTypeId?: number | null;
 
-    /** Gets or sets the AchievementIconCssClass. */
+    /** Gets or sets the icon CSS class. */
     achievementIconCssClass?: string | null;
 
-    /** Gets or sets the AchievementStartWorkflowTypeId. */
+    /** Gets or sets the Id of the Rock.Model.WorkflowType to be triggered when an achievement is started */
     achievementStartWorkflowTypeId?: number | null;
 
-    /** Gets or sets the AchievementStepStatusId. */
+    /** Gets or sets the Id of the Rock.Model.StepStatus of which a Rock.Model.Step will be created when an achievement is completed */
     achievementStepStatusId?: number | null;
 
-    /** Gets or sets the AchievementStepTypeId. */
+    /** Gets or sets the Id of the Rock.Model.StepType of which a Rock.Model.Step will be created when an achievement is completed */
     achievementStepTypeId?: number | null;
 
-    /** Gets or sets the AchievementSuccessWorkflowTypeId. */
+    /** Gets or sets the Id of the Rock.Model.WorkflowType to be triggered when an achievement is successful */
     achievementSuccessWorkflowTypeId?: number | null;
 
-    /** Gets or sets the AchieverEntityTypeId. */
+    /**
+     * Gets or sets the achiever entity type. The achiever is the object that earns the achievement.
+     * The original achiever was a Rock.Model.PersonAlias via Rock.Model.Streak.PersonAliasId.
+     */
     achieverEntityTypeId: number;
 
-    /** Gets or sets the AllowOverAchievement. */
+    /** Gets or sets whether over achievement is allowed. This cannot be true if Rock.Model.AchievementType.MaxAccomplishmentsAllowed is greater than 1. */
     allowOverAchievement: boolean;
 
-    /** Gets or sets the AlternateImageBinaryFileId. */
+    /** An alternate image that can be used for custom purposes. */
     alternateImageBinaryFileId?: number | null;
 
-    /** Gets or sets the BadgeLavaTemplate. */
+    /** Gets or sets the lava template used to render a badge. */
     badgeLavaTemplate?: string | null;
 
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the Rock.Model.Category identifier. */
     categoryId?: number | null;
 
-    /** Gets or sets the ComponentConfigJson. */
+    /** Gets or sets the configuration from the Rock.Model.AchievementType.ComponentEntityTypeId. */
     componentConfigJson?: string | null;
 
-    /** Gets or sets the ComponentEntityTypeId. */
+    /** Gets or sets the Id of the achievement component Rock.Model.EntityType */
     componentEntityTypeId: number;
 
-    /** Gets or sets the CustomSummaryLavaTemplate. */
+    /** Gets or sets the lava template used to render the status summary of the achievement. */
     customSummaryLavaTemplate?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a description of the achievement type. */
     description?: string | null;
 
-    /** Gets or sets the HighlightColor. */
+    /** Gets or sets the color of the highlight. */
     highlightColor?: string | null;
 
-    /** Gets or sets the ImageBinaryFileId. */
+    /**
+     * Gets or sets the image binary file identifier. This would be the image
+     * that would be shown in the achievement summary (for example, a trophy).
+     */
     imageBinaryFileId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the IsPublic. */
+    /** Gets or sets a value indicating whether this instance is public. */
     isPublic: boolean;
 
-    /** Gets or sets the MaxAccomplishmentsAllowed. */
+    /** Gets or sets the maximum accomplishments allowed. */
     maxAccomplishmentsAllowed?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the achievement type. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the ResultsLavaTemplate. */
+    /** Gets or sets the lava template used to render results. */
     resultsLavaTemplate?: string | null;
 
-    /** Gets or sets the SourceEntityTypeId. */
+    /**
+     * Gets or sets the source entity type. The source supplies the data framework from which achievements are computed.
+     * The original achievement sources were Streaks.
+     */
     sourceEntityTypeId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

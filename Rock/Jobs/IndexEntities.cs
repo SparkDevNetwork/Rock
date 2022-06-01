@@ -89,6 +89,7 @@ namespace Rock.Jobs
                 IndexContainer.CreateIndex( entityType.IndexModelType );
 
                 Type type = entityTypeCache.GetEntityType();
+                context.UpdateLastStatusMessage( $"Indexing {entityTypeCache.FriendlyName}..." );
 
                 if ( type != null )
                 {

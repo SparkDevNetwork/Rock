@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FieldType View Model */
 export type FieldTypeBag = {
-    /** Gets or sets the Assembly. */
+    /** Gets or sets the Assembly name of the .dll file that contains the FieldType class. This property is required. */
     assembly?: string | null;
 
-    /** Gets or sets the Class. */
+    /** Gets or sets the fully qualified name, with Namespace, of the FieldType class. This property is required. */
     class?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a user defined description of the FieldType. */
     description?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this FieldType is part of of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the FieldType. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

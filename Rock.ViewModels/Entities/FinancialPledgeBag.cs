@@ -34,90 +34,91 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialPledgeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AccountId.
+        /// Gets or sets the AccountId of the Rock.Model.FinancialAccount that the pledge is directed toward.
         /// </summary>
         /// <value>
-        /// The AccountId.
+        /// A System.Int32 representing the AccountId of the Rock.Model.FinancialAccount that the pledge is directed toward.
         /// </value>
         public int? AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EndDate.
+        /// Gets or sets the end date of the pledge period.
         /// </summary>
         /// <value>
-        /// The EndDate.
+        /// A System.DateTime representing the end date of the pledge period.
         /// </value>
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// If a person belongs to one or more groups a particular type (i.e. Family), this field 
+        /// is used to distinguish which group the pledge should be associated with.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// The group identifier.
         /// </value>
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PledgeFrequencyValueId.
+        /// Gets or sets the DefinedValueId of the pledge frequency Rock.Model.DefinedValue representing how often the pledgor is promising to give a portion of the pledge amount.
         /// </summary>
         /// <value>
-        /// The PledgeFrequencyValueId.
+        /// A System.Int32 representing the pledge frequency Rock.Model.DefinedValue.
         /// </value>
         public int? PledgeFrequencyValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDate.
+        /// Gets or sets the start date of the pledge period.
         /// </summary>
         /// <value>
-        /// The StartDate.
+        /// A System.DateTime representing the start date of the pledge period.
         /// </value>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the TotalAmount.
+        /// Gets or sets the pledge amount that is promised to be given.
         /// </summary>
         /// <value>
-        /// The TotalAmount.
+        /// A System.Decimal representing the total amount to be pledged.
         /// </value>
         public decimal TotalAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

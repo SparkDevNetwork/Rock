@@ -27,6 +27,7 @@
       "@Obsidian/Directives/*": [ "./Directives/*" ],
       "@Obsidian/Enums/*": [ "./Enums/*" ],
       "@Obsidian/FieldTypes/*": [ "./FieldTypes/*" ],
+      "@Obsidian/Libs/*": [ "./Libs/*" ],
       "@Obsidian/PageState": [ "./PageState" ],
       "@Obsidian/SystemGuids": [ "./SystemGuids" ],
       "@Obsidian/Types": [ "./Types" ],

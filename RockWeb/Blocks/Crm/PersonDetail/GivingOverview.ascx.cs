@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Description( "Block used to view the giving." )]
 
     [IntegerField(
-        "Inactive Giver Cutoff (Days)",
+        "Inactive Giver Cutoff (days)",
         Key = AttributeKey.InactiveGiverCutoff,
         Description = "The number of days after which a person is considered an inactive giver.",
         IsRequired = true,

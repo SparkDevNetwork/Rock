@@ -426,6 +426,7 @@ namespace RockWeb.Blocks.Administration
             pnlCampusUpdate.Enabled = _campusSettings.IsEnabled;
             cbMostFamilyAttendance.Checked = _campusSettings.IsMostFamilyAttendanceEnabled;
             nbMostFamilyAttendance.Text = _campusSettings.MostFamilyAttendancePeriod.ToStringSafe();
+            nbTimesToTriggerCampusChange.Text = _campusSettings.TimesToTriggerCampusChange.ToStringSafe();
             cbMostFamilyGiving.Checked = _campusSettings.IsMostFamilyGivingEnabled;
             nbMostFamilyGiving.Text = _campusSettings.MostFamilyGivingPeriod.ToStringSafe();
             ddlAttendanceOrGiving.SetValue( _campusSettings.MostAttendanceOrGiving.ConvertToInt() );
@@ -604,6 +605,7 @@ namespace RockWeb.Blocks.Administration
 
             _campusSettings.IsMostFamilyAttendanceEnabled = cbMostFamilyAttendance.Checked;
             _campusSettings.MostFamilyAttendancePeriod = nbMostFamilyAttendance.Text.AsInteger();
+            _campusSettings.TimesToTriggerCampusChange = nbTimesToTriggerCampusChange.Text.AsInteger();
 
             _campusSettings.IsMostFamilyGivingEnabled = cbMostFamilyGiving.Checked;
             _campusSettings.MostFamilyGivingPeriod = nbMostFamilyGiving.Text.AsInteger();

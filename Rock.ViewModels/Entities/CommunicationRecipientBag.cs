@@ -34,146 +34,153 @@ namespace Rock.ViewModels.Entities
     public partial class CommunicationRecipientBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AdditionalMergeValuesJson.
+        /// Gets or sets the AdditionalMergeValues as a Json string.
         /// </summary>
         /// <value>
-        /// The AdditionalMergeValuesJson.
+        /// A Json formatted System.String containing the AdditionalMergeValues for the communication recipient. 
         /// </value>
         public string AdditionalMergeValuesJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the CommunicationId.
+        /// Gets or sets the CommunicationId of the Rock.Model.Communication.
         /// </summary>
         /// <value>
-        /// The CommunicationId.
+        /// A System.Int32 representing the CommunicationId of the Rock.Model.Communication.
         /// </value>
         public int CommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the MediumEntityTypeId.
+        /// Gets or sets the medium entity type identifier.
         /// </summary>
         /// <value>
-        /// The MediumEntityTypeId.
+        /// The medium entity type identifier.
         /// </value>
         public int? MediumEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the OpenedClient.
+        /// Gets or sets type of client that the recipient used to open the communication.
         /// </summary>
         /// <value>
-        /// The OpenedClient.
+        /// The client.
         /// </value>
         public string OpenedClient { get; set; }
 
         /// <summary>
-        /// Gets or sets the OpenedDateTime.
+        /// Gets or sets the datetime that communication was opened by recipient.
         /// </summary>
         /// <value>
-        /// The OpenedDateTime.
+        /// The opened date time.
         /// </value>
         public DateTime? OpenedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonalDeviceId.
+        /// Gets or sets the personal device identifier.
         /// </summary>
         /// <value>
-        /// The PersonalDeviceId.
+        /// The personal device identifier.
         /// </value>
         public int? PersonalDeviceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the PersonId of the Rock.Model.Person who is being sent the Rock.Model.Communication.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// A System.Int32 representing the PersonId of the Rock.Model.Person who is being sent the Rock.Model.Communication.
         /// </value>
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResponseCode.
+        /// The response code from 100-99999 (excluding 666 and 911)
+        /// with a prefix of '@'. For example, '@126345'
+        /// Note: this numeric portion must be between 3 and 5 digits due
+        /// to a regex that parses the message to find response codes
         /// </summary>
         /// <value>
-        /// The ResponseCode.
+        /// The response code.
         /// </value>
         public string ResponseCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the SendDateTime.
+        /// Gets or sets the datetime that communication was sent.
         /// </summary>
         /// <value>
-        /// The SendDateTime.
+        /// The send date time.
         /// </value>
         public DateTime? SendDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SentMessage.
+        /// Gets or sets the message as it was sent to the recipient (i.e. after lava merge).
         /// </summary>
         /// <value>
-        /// The SentMessage.
+        /// The sent message.
         /// </value>
         public string SentMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the status of the Communication submission to the recipient.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// A Rock.Model.CommunicationRecipientStatus Enum representing the status of Rock.Model.Communication submission to the recipient.
+        /// This property will be  CommunicationRecipientStatus.Pending when Rock is waiting to send the Rock.Model.Communication to the recipient;
+        /// CommunicationRecipientStatus.Success when Rock has successfully sent the Rock.Model.Communication to the recipient;
+        /// CommunicationRecipientStatus.Failed when the attempt to send the Rock.Model.Communication failed.
+        /// CommunicationRecipientStatus.Cancelled when the attempt to send the Rock.Model.Communication was canceled.
         /// </value>
         public int Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the StatusNote.
+        /// Gets or sets the status note.
         /// </summary>
         /// <value>
-        /// The StatusNote.
+        /// A System.String representing the status note.
         /// </value>
         public string StatusNote { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransportEntityTypeName.
+        /// Gets or sets the transport entity type identifier.
         /// </summary>
         /// <value>
-        /// The TransportEntityTypeName.
+        /// The transport identifier.
         /// </value>
         public string TransportEntityTypeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the UniqueMessageId.
+        /// Gets or sets the unique message identifier.
         /// </summary>
         /// <value>
-        /// The UniqueMessageId.
+        /// The unique message identifier.
         /// </value>
         public string UniqueMessageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

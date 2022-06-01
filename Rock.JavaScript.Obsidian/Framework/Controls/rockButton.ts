@@ -66,10 +66,16 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: false
         },
+
+        /**
+         * Automatically disables the button when it is in a loading state or
+         * the click handler is processing. This can prevent duplicate clicks.
+         */
         autoDisable: {
             type: Boolean as PropType<boolean>,
             default: false
         },
+
         onClick: {
             type: Function as PropType<((event: MouseEvent) => void | PromiseLike<void>)>,
             required: false
@@ -83,7 +89,7 @@ export default defineComponent({
         const isProcessing = ref(false);
 
         const isButtonDisabled = computed((): boolean => {
-            return props.disabled || (props.autoDisable && isProcessing.value);
+            return props.disabled || (props.autoDisable && isProcessing.value) || props.isLoading;
         });
 
         const isButtonLoading = computed((): boolean => {

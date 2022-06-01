@@ -25,43 +25,43 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AuthClient View Model */
 export type AuthClientBag = {
-    /** Gets or sets the AllowedClaims. */
+    /** Gets or sets the allowed claims. */
     allowedClaims?: string | null;
 
-    /** Gets or sets the AllowedScopes. */
+    /** Gets or sets the allowed scopes. */
     allowedScopes?: string | null;
 
-    /** Gets or sets the AllowUserApiAccess. */
+    /** Gets or sets a value indicating whether [allow user API access]. */
     allowUserApiAccess: boolean;
 
-    /** Gets or sets the ClientId. */
+    /** Gets or sets the client identifier. */
     clientId?: string | null;
 
-    /** Gets or sets the ClientSecretHash. */
+    /** Gets or sets the client secret hash. */
     clientSecretHash?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the PostLogoutRedirectUri. */
+    /** Gets or sets the post logout redirect URI. */
     postLogoutRedirectUri?: string | null;
 
-    /** Gets or sets the RedirectUri. */
+    /** Gets or sets the redirect URL. */
     redirectUri?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

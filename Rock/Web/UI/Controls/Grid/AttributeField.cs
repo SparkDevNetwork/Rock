@@ -147,6 +147,9 @@ namespace Rock.Web.UI.Controls
                                 this.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
                             }
 
+                            var grid = row.NamingContainer as Grid;
+                            var columnIndex = grid.GetColumnIndex( this );
+                            row.Cells[columnIndex].AddCssClass( "grid-bool-field" );
                             var boolValue = rawValue.AsBoolean();
                             return boolValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
                         }

@@ -25,28 +25,28 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PageContext View Model */
 export type PageContextBag = {
-    /** Gets or sets the Entity. */
+    /** Gets or sets the object type name of the entity object that is being shared through this PageContext. This property is required. */
     entity?: string | null;
 
-    /** Gets or sets the IdParameter. */
+    /** Gets or sets the name of the Page Attribute/Parameter that stores the Id of the shared entity object. This property is required. */
     idParameter?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this PageContext is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the PageId. */
+    /** Gets or sets the Id of the Rock.Model.Page that this PageContext is used on. This property is required. */
     pageId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

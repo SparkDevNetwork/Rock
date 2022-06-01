@@ -104,16 +104,17 @@ namespace Rock
         #region IModel Extensions
 
         /// <summary>
-        /// Gets the <see cref="AuditDetailBag"/> that contains the information
-        /// used by the standard (Obsidian) audit drawer details.
+        /// Gets the <see cref="EntityAuditBag"/> that contains the information
+        /// used by the standard (Obsidian) audit detail control.
         /// </summary>
         /// <param name="model">The model whose audit details are requested.</param>
-        /// <returns>An instance of <see cref="AuditDetailBag"/> that represents the audit information.</returns>
-        internal static AuditDetailBag GetAuditDetailViewModel( this IModel model )
+        /// <returns>An instance of <see cref="EntityAuditBag"/> that represents the audit information.</returns>
+        internal static EntityAuditBag GetEntityAuditBag( this IModel model )
         {
-            return new AuditDetailBag
+            return new EntityAuditBag
             {
                 Id = model.Id,
+                IdKey = model.IdKey,
                 Guid = model.Guid,
                 CreatedByPersonId = model.CreatedByPersonAlias?.PersonId,
                 CreatedByName = model.CreatedByPersonAlias?.Person?.FullName,

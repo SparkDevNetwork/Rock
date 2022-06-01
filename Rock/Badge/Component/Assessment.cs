@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -91,14 +91,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -129,7 +125,7 @@ namespace Rock.Badge.Component
                 .Queryable()
                 .AsNoTracking()
                 .Where( a => a.PersonAlias != null
-                             && a.PersonAlias.PersonId == Person.Id
+                             && a.PersonAlias.PersonId == person.Id
                              && availableTypes.Contains( a.AssessmentTypeId ) )
                 .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
                 .Select( a => new PersonBadgeAssessment { AssessmentTypeId = a.AssessmentTypeId, RequestedDateTime = a.RequestedDateTime, Status = a.Status } )
@@ -151,7 +147,7 @@ namespace Rock.Badge.Component
                 badgeIcons = i % 2 == 0 ? badgeRow1 : badgeRow2;
 
                 var assessmentType = assessmentTypes[i];
-                var resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{assessmentType.AssessmentResultsPath}?Person={this.Person.GetPersonActionIdentifier( "Assessment" ) }" );
+                var resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{assessmentType.AssessmentResultsPath}?Person={person.GetPersonActionIdentifier( "Assessment" ) }" );
                 var assessmentTitle = assessmentType.Title;
                 var mergeFields = new Dictionary<string, object>();
                 var mergedBadgeSummaryLava = "Not requested";
@@ -162,9 +158,9 @@ namespace Rock.Badge.Component
 
                         var conflictsThemes = new Dictionary<string, decimal>
                         {
-                            { "Winning", Person.GetAttributeValue( "core_ConflictThemeWinning" ).AsDecimalOrNull() ?? 0 },
-                            { "Solving", Person.GetAttributeValue( "core_ConflictThemeSolving" ).AsDecimalOrNull() ?? 0 },
-                            { "Accommodating", Person.GetAttributeValue( "core_ConflictThemeAccommodating" ).AsDecimalOrNull() ?? 0 }
+                            { "Winning", person.GetAttributeValue( "core_ConflictThemeWinning" ).AsDecimalOrNull() ?? 0 },
+                            { "Solving", person.GetAttributeValue( "core_ConflictThemeSolving" ).AsDecimalOrNull() ?? 0 },
+                            { "Accommodating", person.GetAttributeValue( "core_ConflictThemeAccommodating" ).AsDecimalOrNull() ?? 0 }
                         };
 
                         string highestScoringTheme = conflictsThemes.Where( x => x.Value == conflictsThemes.Max( v => v.Value ) ).Select( x => x.Key ).FirstOrDefault() ?? string.Empty;
@@ -218,7 +214,7 @@ namespace Rock.Badge.Component
                         badgeIcons.AppendLine( $@"<div {badgeColorHtml} class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
                         badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
 
-                        mergeFields.Add( "Person", Person );
+                        mergeFields.Add( "Person", person );
                         mergedBadgeSummaryLava = assessmentType.BadgeSummaryLava.ResolveMergeFields( mergeFields );
                     }
 
@@ -275,12 +271,8 @@ namespace Rock.Badge.Component
             writer.Write( "</div></div>" );
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
             return $"$('.badge-id-{badge.Id}').children('.badge-grid').tooltip({{ sanitize: false }});";
         }

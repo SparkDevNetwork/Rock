@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
 using Ical.Net;
+using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 
 namespace Rock.Model
@@ -45,7 +46,7 @@ namespace Rock.Model
         /// <returns></returns>
         [RockObsolete( "1.12.4" )]
         [Obsolete( "Use CreateCalendarEvent instead" )]
-        public static Ical.Net.Event GetCalendarEvent( string iCalendarContent )
+        public static CalendarEvent GetCalendarEvent( string iCalendarContent )
         {
             // changed to obsolete because this used to return a shared object that could be altered or create thread-safety issues
             return CreateCalendarEvent( iCalendarContent );
@@ -56,11 +57,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <returns></returns>
-        public static Event CreateCalendarEvent( string iCalendarContent )
+        public static CalendarEvent CreateCalendarEvent( string iCalendarContent )
         {
-            StringReader stringReader = new StringReader( iCalendarContent );
-            var calendarList = Calendar.LoadFromStream( stringReader );
-            Event calendarEvent = null;
+            var stringReader = new StringReader( iCalendarContent );
+            var calendarList = CalendarCollection.Load( stringReader );
+            CalendarEvent calendarEvent = null;
 
             //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
             //// We just need one Calendar and one Event
@@ -69,7 +70,7 @@ namespace Rock.Model
                 var calendar = calendarList[0] as Calendar;
                 if ( calendar != null )
                 {
-                    calendarEvent = calendar.Events[0] as Event;
+                    calendarEvent = calendar.Events[0] as CalendarEvent;
                 }
             }
 
@@ -84,7 +85,7 @@ namespace Rock.Model
         /// <returns></returns>
         [Obsolete( "Use the override with the string instead of the Ical.Net.Event." )]
         [RockObsolete( "1.12.4" )]
-        public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime )
+        public static IList<Occurrence> GetOccurrences( CalendarEvent icalEvent, DateTime startTime )
         {
             return icalEvent.GetOccurrences( startTime ).ToList();
         }
@@ -98,7 +99,7 @@ namespace Rock.Model
         /// <returns></returns>
         [Obsolete( "Use the override with the string instead of the Ical.Net.Event." )]
         [RockObsolete( "1.12.4" )]
-        public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime, DateTime endTime )
+        public static IList<Occurrence> GetOccurrences( CalendarEvent icalEvent, DateTime startTime, DateTime endTime )
         {
             return icalEvent.GetOccurrences( startTime, endTime ).ToList();
         }

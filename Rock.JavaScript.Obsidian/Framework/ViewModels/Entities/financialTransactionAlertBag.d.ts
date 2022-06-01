@@ -25,61 +25,61 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialTransactionAlert View Model */
 export type FinancialTransactionAlertBag = {
-    /** Gets or sets the AlertDateKey. */
+    /** Gets or sets the alert date key. */
     alertDateKey: number;
 
-    /** Gets or sets the AlertDateTime. */
+    /** Gets or sets the alert date time. */
     alertDateTime?: string | null;
 
-    /** Gets or sets the AlertTypeId. */
+    /** Gets or sets the financial transaction alert type identifier. */
     alertTypeId: number;
 
-    /** Gets or sets the Amount. */
+    /** Gets or sets the amount of financial transaction */
     amount?: number | null;
 
-    /** Gets or sets the AmountCurrentIqr. */
+    /** Gets or sets the amount current interquartile range. */
     amountCurrentIqr?: number | null;
 
-    /** Gets or sets the AmountCurrentMedian. */
+    /** Gets or sets the amount current median */
     amountCurrentMedian?: number | null;
 
-    /** Gets or sets the AmountIqrMultiplier. */
+    /** Gets or sets the amount interquartile range multiplier. */
     amountIqrMultiplier?: number | null;
 
-    /** Gets or sets the FrequencyCurrentMean. */
+    /** Gets or sets the frequency current mean. */
     frequencyCurrentMean?: number | null;
 
-    /** Gets or sets the FrequencyCurrentStandardDeviation. */
+    /** Gets or sets the frequency current standard deviation. */
     frequencyCurrentStandardDeviation?: number | null;
 
-    /** Gets or sets the FrequencyDifferenceFromMean. */
+    /** Gets or sets the frequency difference from mean. */
     frequencyDifferenceFromMean?: number | null;
 
-    /** Gets or sets the FrequencyZScore. */
+    /** Gets or sets the frequency Z score. */
     frequencyZScore?: number | null;
 
-    /** Gets or sets the GivingId. */
+    /** Gets or sets the giving identifier. */
     givingId?: string | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Id of the person Rock.Model.Person who is associated with the transaction. */
     personAliasId: number;
 
-    /** Gets or sets the ReasonsKey. */
+    /** Gets or sets the reason key. */
     reasonsKey?: string | null;
 
-    /** Gets or sets the TransactionId. */
+    /** Gets or sets the transaction identifier. */
     transactionId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

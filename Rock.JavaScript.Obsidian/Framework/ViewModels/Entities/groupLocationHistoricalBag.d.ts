@@ -25,46 +25,57 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupLocationHistorical View Model */
 export type GroupLocationHistoricalBag = {
-    /** Gets or sets the CurrentRowIndicator. */
+    /**
+     * Gets or sets a value indicating whether [current row indicator].
+     * This will be True if this represents the same values as the current tracked record for this
+     */
     currentRowIndicator: boolean;
 
-    /** Gets or sets the EffectiveDateTime. */
+    /**
+     * Gets or sets the effective date.
+     * This is the starting date that the tracked record had the values reflected in this record
+     */
     effectiveDateTime?: string | null;
 
-    /** Gets or sets the ExpireDateTime. */
+    /**
+     * Gets or sets the expire date time
+     * This is the last date that the tracked record had the values reflected in this record
+     * For example, if a tracked record's Name property changed on '2016-07-14', the ExpireDate of the previously current record will be '2016-07-13', and the EffectiveDate of the current record will be '2016-07-14'
+     * If this is most current record, the ExpireDate will be '9999-01-01'
+     */
     expireDateTime?: string | null;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the Rock.Model.Group id for this group's location at this point in history */
     groupId: number;
 
-    /** Gets or sets the GroupLocationId. */
+    /** Gets or sets the group location identifier that this is a Historical snapshot for */
     groupLocationId?: number | null;
 
-    /** Gets or sets the GroupLocationTypeName. */
+    /** Gets or sets the group's location type name at this point in history (Group.GroupLocation.GroupLocationTypeValue.Value) */
     groupLocationTypeName?: string | null;
 
-    /** Gets or sets the GroupLocationTypeValueId. */
+    /** Gets or sets the group location type value identifier for this group location at this point in history */
     groupLocationTypeValueId?: number | null;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the Rock.Model.Location id of this group's location at this point in history */
     locationId: number;
 
-    /** Gets or sets the LocationModifiedDateTime. */
+    /** Gets or sets the Location's ModifiedDateTime. This is used internally to detect if the group's location has changed */
     locationModifiedDateTime?: string | null;
 
-    /** Gets or sets the LocationName. */
+    /** Gets or sets the Rock.Model.Location name of this group's location at this point in history (Group.GroupLocation.Location.ToString()) */
     locationName?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

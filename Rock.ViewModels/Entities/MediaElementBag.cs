@@ -34,122 +34,121 @@ namespace Rock.ViewModels.Entities
     public partial class MediaElementBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the Element.
         /// </summary>
-        /// <value>
-        /// The Description.
-        /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DurationSeconds.
+        /// Gets or set the duration in seconds of media element.
         /// </summary>
         /// <value>
-        /// The DurationSeconds.
+        /// A integer representing the duration in seconds of media element.
         /// </value>
         public int? DurationSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the FileDataJson.
+        /// Gets or sets the file data JSON content that will be stored in
+        /// the database.
         /// </summary>
         /// <value>
-        /// The FileDataJson.
+        /// The file data.
         /// </value>
         public string FileDataJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the MediaFolderId.
+        /// Gets or sets the MediaFolderId of the Rock.Model.MediaFolder that this MediaElement belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// The MediaFolderId.
+        /// A System.Int32 representing the MediaFolderId of the Rock.Model.MediaFolder that this MediaElement belongs to.
         /// </value>
         public int MediaFolderId { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetricData.
+        /// Gets or sets the custom provider metric data for this instance.
         /// </summary>
         /// <value>
-        /// The MetricData.
+        /// The custom provider metric data for this instance.
         /// </value>
         public string MetricData { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the Element. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the name of the Element.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceCreatedDateTime.
+        /// Gets or sets the System.DateTime this instance was created on the provider.
         /// </summary>
         /// <value>
-        /// The SourceCreatedDateTime.
+        /// The System.DateTime this instance was created on the provider.
         /// </value>
         public DateTime? SourceCreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceData.
+        /// Gets or sets the custom provider data for this instance.
         /// </summary>
         /// <value>
-        /// The SourceData.
+        /// The custom provider data for this instance.
         /// </value>
         public string SourceData { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceKey.
+        /// Gets or sets the provider's unique identifier for this instance.
         /// </summary>
         /// <value>
-        /// The SourceKey.
+        /// The provider's unique identifier for this instance.
         /// </value>
         public string SourceKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceModifiedDateTime.
+        /// Gets or sets the System.DateTime this instance was modified on the provider.
         /// </summary>
         /// <value>
-        /// The SourceModifiedDateTime.
+        /// The System.DateTime this instance was modified on the provider.
         /// </value>
         public DateTime? SourceModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ThumbnailDataJson.
+        /// Gets or sets the thumbnail data JSON content that will stored
+        /// in the database.
         /// </summary>
         /// <value>
-        /// The ThumbnailDataJson.
+        /// The thumbnail data.
         /// </value>
         public string ThumbnailDataJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

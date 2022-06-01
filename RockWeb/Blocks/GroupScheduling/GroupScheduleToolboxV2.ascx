@@ -72,6 +72,7 @@
 
                 <%-- Sign-up --%>
                 <asp:Panel ID="pnlSignup" CssClass="schedule-toolbox-signup js-navigation-panel" runat="server">
+                    <asp:Literal ID="lSignupHeader" runat="server" />
                     <asp:Literal ID="lSignupMsg" runat="server" />
                     <div class="row">
                         <div class="col-md-8">
@@ -86,6 +87,7 @@
                 </asp:Panel>
                 <%-- Preferences --%>
                 <asp:Panel ID="pnlPreferences" CssClass="schedule-toolbox-preferences js-navigation-panel" runat="server">
+                    <asp:Literal ID="lPreferencesHeader" runat="server" />
                     <Rock:NotificationBox ID="nbNoScheduledGroups" runat="server" Visible="false" Text="You are currently not in any scheduled groups." NotificationBoxType="Info" />
 
                     <%-- Per Group Preferences --%>
@@ -157,6 +159,7 @@
                 </asp:Panel>
                 <%-- Unavailability Schedule --%>
                 <asp:Panel ID="pnlUnavailabilitySchedule" CssClass="schedule-toolbox-unavailability js-navigation-panel" runat="server">
+                    <asp:Literal ID="lUnavailabilityScheduleHeader" runat="server" />
                     <asp:ValidationSummary ID="valSummaryAddBlackoutDates" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="UnavailabilitySchedule" />
                     <Rock:DateRangePicker ID="drpUnavailabilityDateRange" runat="server" Label="Date Range" ValidationGroup="UnavailabilitySchedule" Required="true" RequiredErrorMessage="Date Range is required" />
                     <Rock:RockTextBox ID="tbUnavailabilityDateDescription" runat="server" Label="Description" MaxLength="100" Help="A short description of why you'll be unavailable" ValidationGroup="UnavailabilitySchedule" />

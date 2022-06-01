@@ -34,114 +34,115 @@ namespace Rock.ViewModels.Entities
     public partial class CategoryBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType that this Category belongs to.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that this Category belongs to.
         /// </value>
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierColumn.
+        /// Gets or sets the entity type qualifier column that contains the value (see Rock.Model.Category.EntityTypeQualifierValue) that is used to narrow the scope of the Category.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierColumn.
+        /// A System.String representing the name of the Qualifier Column/Property that contains the Rock.Model.Category.EntityTypeQualifierValue that is used to 
+        /// narrow the scope of the Category.
         /// </value>
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierValue.
+        /// Gets or sets the entity type qualifier value that is used to narrow the scope of the Category to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierValue.
+        /// A System.String that represents the value that is used to narrow the scope of the Category.
         /// </value>
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the HighlightColor.
+        /// Gets or sets the color of the highlight.
         /// </summary>
         /// <value>
-        /// The HighlightColor.
+        /// The color of the highlight.
         /// </value>
         public string HighlightColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// A System.String representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Category is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if the Category is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the Category
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the Name of the Category.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the ParentCategoryId.
+        /// Gets or sets the CategoryId of the parent Category. 
         /// </summary>
         /// <value>
-        /// The ParentCategoryId.
+        /// A System.Int32 representing the CategoryId of the parent Category.
         /// </value>
         public int? ParentCategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

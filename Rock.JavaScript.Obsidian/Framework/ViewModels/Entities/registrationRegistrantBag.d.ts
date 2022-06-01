@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationRegistrant View Model */
 export type RegistrationRegistrantBag = {
-    /** Gets or sets the Cost. */
+    /** Gets or sets the cost. */
     cost?: number;
 
-    /** Gets or sets the DiscountApplies. */
+    /** Gets or sets a flag indicating if the registration's discount code applies to this registrant. */
     discountApplies: boolean;
 
-    /** Gets or sets the GroupMemberId. */
+    /** Gets or sets the Rock.Model.GroupMember identifier. */
     groupMemberId?: number | null;
 
-    /** Gets or sets the OnWaitList. */
+    /** Gets or sets a value indicating whether registrant is on a wait list. */
     onWaitList: boolean;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Rock.Model.PersonAlias identifier. */
     personAliasId?: number | null;
 
-    /** Gets or sets the RegistrationId. */
+    /** Gets or sets the Rock.Model.Registration identifier. */
     registrationId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

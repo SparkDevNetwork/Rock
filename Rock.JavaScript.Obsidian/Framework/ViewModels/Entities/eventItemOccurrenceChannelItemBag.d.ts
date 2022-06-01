@@ -25,22 +25,22 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EventItemOccurrenceChannelItem View Model */
 export type EventItemOccurrenceChannelItemBag = {
-    /** Gets or sets the ContentChannelItemId. */
+    /** Gets or sets the Rock.Model.ContentChannelItem. */
     contentChannelItemId: number;
 
-    /** Gets or sets the EventItemOccurrenceId. */
+    /** Gets or sets the Rock.Model.EventItemOccurrence identifier. */
     eventItemOccurrenceId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

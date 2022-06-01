@@ -34,82 +34,84 @@ namespace Rock.ViewModels.Entities
     public partial class PersonScheduleExclusionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the EndDate.
+        /// Gets or sets the end date.
         /// </summary>
         /// <value>
-        /// The EndDate.
+        /// The end date.
         /// </value>
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// The GroupId if there is a specific group for this exclusion.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// The group identifier.
         /// </value>
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ParentPersonScheduleExclusionId.
+        /// Gets or sets the parent person schedule exclusion identifier.
+        /// Use this to associate this exclusion with another PersonScheduleExclusion.
+        /// This can be used support family based blackout dates (A person can indicate a blackout date and also include other members of their family).
         /// </summary>
         /// <value>
-        /// The ParentPersonScheduleExclusionId.
+        /// The parent person schedule exclusion identifier.
         /// </value>
         public int? ParentPersonScheduleExclusionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier of the Person that this exclusion is for
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDate.
+        /// Gets or sets the start date.
         /// </summary>
         /// <value>
-        /// The StartDate.
+        /// The start date.
         /// </value>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the title (optional)
         /// </summary>
         /// <value>
-        /// The Title.
+        /// The title.
         /// </value>
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

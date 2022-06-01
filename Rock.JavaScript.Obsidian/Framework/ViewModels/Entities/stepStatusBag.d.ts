@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** StepStatus View Model */
 export type StepStatusBag = {
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
 
-    /** Gets or sets the IsCompleteStatus. */
+    /** Gets or sets a flag indicating if this status means that the step is complete. */
     isCompleteStatus: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the status. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the StatusColor. */
+    /** Gets or sets the color of the status. */
     statusColor?: string | null;
 
-    /** Gets or sets the StepProgramId. */
+    /** Gets or sets the Id of the Rock.Model.StepProgram to which this status belongs. This property is required. */
     stepProgramId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

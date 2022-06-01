@@ -34,90 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialScheduledTransactionDetailBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AccountId.
+        /// Gets or sets the AccountId of the Rock.Model.FinancialAccount/account that that the transaction detail Rock.Model.FinancialScheduledTransactionDetail.Amount should be directed toward.
         /// </summary>
         /// <value>
-        /// The AccountId.
+        /// A System.Int32 representing the AccountId of the Rock.Model.FinancialAccount/account that this transaction detail is directed toward.
         /// </value>
         public int AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Amount.
+        /// Gets or sets the purchase/gift amount.
         /// </summary>
         /// <value>
-        /// The Amount.
+        /// A System.Decimal representing the purchase/gift amount.
         /// </value>
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the entity id.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The entity id.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the entity.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The entity.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FeeCoverageAmount.
+        /// Gets or sets the fee coverage amount.
         /// </summary>
         /// <value>
-        /// The FeeCoverageAmount.
+        /// The fee coverage amount.
         /// </value>
         public decimal? FeeCoverageAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduledTransactionId.
+        /// Gets or sets the ScheduledTransactionId of the Rock.Model.FinancialScheduledTransaction that this detail item belongs to.
         /// </summary>
         /// <value>
-        /// The ScheduledTransactionId.
+        /// A System.Int32 representing the ScheudledTransactionId of the Rock.Model.FinancialScheduledTransaction that this detail item belongs to.
         /// </value>
         public int ScheduledTransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Summary.
+        /// Gets or sets the summary of this scheduled transaction detail.
         /// </summary>
         /// <value>
-        /// The Summary.
+        /// A System.String representing the summary of this scheduled transaction detail.
         /// </value>
         public string Summary { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

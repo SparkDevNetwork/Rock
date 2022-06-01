@@ -25,22 +25,22 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AchievementTypePrerequisite View Model */
 export type AchievementTypePrerequisiteBag = {
-    /** Gets or sets the AchievementTypeId. */
+    /** Gets or sets the Id of the Rock.Model.AchievementType to which this prerequisite belongs. This property is required. */
     achievementTypeId: number;
 
-    /** Gets or sets the PrerequisiteAchievementTypeId. */
+    /** Gets or sets the Id of the Rock.Model.AchievementType that is the prerequisite. This property is required. */
     prerequisiteAchievementTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

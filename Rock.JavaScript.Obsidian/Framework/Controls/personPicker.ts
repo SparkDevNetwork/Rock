@@ -16,6 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, Ref, ref, watch } from "vue";
+import { PersonPickerSearchOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/personPickerSearchOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
 import Panel from "./panel";
@@ -141,13 +142,13 @@ export default defineComponent({
                 return;
             }
 
-            const params = {
+            const options: Partial<PersonPickerSearchOptionsBag> = {
                 name: text,
                 includeDetails: true
             };
 
             // Make the API call to get the search results.
-            const result = await doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPickerSearch", undefined, params);
+            const result = await doApiCall<PersonSearchResult[]>("POST", "/api/v2/Controls/PersonPickerSearch", undefined, options);
 
             // Check again if we have been cancelled before we do the update.
             if (cancellationToken.value) {

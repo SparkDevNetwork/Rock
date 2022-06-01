@@ -25,46 +25,46 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Step View Model */
 export type StepBag = {
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the Id of the Rock.Model.Campus associated with this step. */
     campusId?: number | null;
 
-    /** Gets or sets the CompletedDateTime. */
+    /** Gets or sets the System.DateTime associated with the completion of this step. */
     completedDateTime?: string | null;
 
-    /** Gets or sets the EndDateTime. */
+    /** Gets or sets the System.DateTime associated with the end of this step. */
     endDateTime?: string | null;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note. */
     note?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Id of the Rock.Model.PersonAlias that identifies the Person associated with taking this step. This property is required. */
     personAliasId: number;
 
-    /** Gets or sets the StartDateTime. */
+    /** Gets or sets the System.DateTime associated with the start of this step. */
     startDateTime?: string | null;
 
-    /** Gets or sets the StepProgramCompletionId. */
+    /** Gets or sets the Id of the Rock.Model.StepProgramCompletion to which this step belongs. */
     stepProgramCompletionId?: number | null;
 
-    /** Gets or sets the StepStatusId. */
+    /** Gets or sets the Id of the Rock.Model.StepStatus to which this step belongs. */
     stepStatusId?: number | null;
 
-    /** Gets or sets the StepTypeId. */
+    /** Gets or sets the Id of the Rock.Model.StepType to which this step belongs. This property is required. */
     stepTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

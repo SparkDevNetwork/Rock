@@ -25,46 +25,46 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** LavaShortcode View Model */
 export type LavaShortcodeBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the Description of the Lava Shortcode. */
     description?: string | null;
 
-    /** Gets or sets the Documentation. */
+    /** Gets or sets the documentation. This serves as the technical description of the internals of the shortcode. */
     documentation?: string | null;
 
-    /** Gets or sets the EnabledLavaCommands. */
+    /** Gets or sets a comma-delimited list of enabled LavaCommands */
     enabledLavaCommands?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a value indicating whether this instance is system. */
     isSystem: boolean;
 
-    /** Gets or sets the Markup. */
+    /** Gets or sets the token. */
     markup?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the public name of the shortcode. */
     name?: string | null;
 
-    /** Gets or sets the Parameters. */
+    /** Gets or sets the parameters. */
     parameters?: string | null;
 
-    /** Gets or sets the TagName. */
+    /** Gets or sets the name of the tag. */
     tagName?: string | null;
 
-    /** Gets or sets the TagType. */
+    /** Gets or sets the type of the tag (inline or block). A tag type of block requires an end tag. */
     tagType: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

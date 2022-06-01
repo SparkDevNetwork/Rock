@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -395,7 +395,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var groupTypeIdsWithAllowCheckout = selectedGroupTypeIds
                 .Select( a => GroupTypeCache.Get( a ) )
                 .Where( a => a != null )
-                .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() )
+                .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean() )
                 .Select( a => a.Id )
                 .Distinct().ToList();
 

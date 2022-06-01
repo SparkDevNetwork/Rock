@@ -34,82 +34,82 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationRegistrantFeeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Cost.
+        /// Gets or sets the cost.
         /// </summary>
         /// <value>
-        /// The Cost.
+        /// The cost.
         /// </value>
         public decimal Cost { get; set; }
 
         /// <summary>
-        /// Gets or sets the Option.
+        /// Gets or sets the name of the FeeItem that was selected at the time of the registration. See also Rock.Model.RegistrationRegistrantFee.RegistrationTemplateFeeItem.
         /// </summary>
         /// <value>
-        /// The Option.
+        /// The option.
         /// </value>
         public string Option { get; set; }
 
         /// <summary>
-        /// Gets or sets the Quantity.
+        /// Gets or sets the quantity.
         /// </summary>
         /// <value>
-        /// The Quantity.
+        /// The quantity.
         /// </value>
         public int Quantity { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationRegistrantId.
+        /// Gets or sets the registration registrant identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationRegistrantId.
+        /// The registration registrant identifier.
         /// </value>
         public int RegistrationRegistrantId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationTemplateFeeId.
+        /// Gets or sets the registration template fee identifier. See also Rock.Model.RegistrationRegistrantFee.RegistrationTemplateFeeItemId.
         /// </summary>
         /// <value>
-        /// The RegistrationTemplateFeeId.
+        /// The registration template fee identifier.
         /// </value>
         public int RegistrationTemplateFeeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationTemplateFeeItemId.
+        /// Gets or sets the registration template fee item identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationTemplateFeeItemId.
+        /// The registration template fee item identifier.
         /// </value>
         public int? RegistrationTemplateFeeItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

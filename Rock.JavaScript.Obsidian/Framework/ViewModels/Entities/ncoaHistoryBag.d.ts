@@ -25,94 +25,94 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** NcoaHistory View Model */
 export type NcoaHistoryBag = {
-    /** Gets or sets the AddressInvalidReason. */
+    /** Gets or sets the address invalid reason. */
     addressInvalidReason: number;
 
-    /** Gets or sets the AddressStatus. */
+    /** Gets or sets the address status. */
     addressStatus: number;
 
-    /** Gets or sets the FamilyId. */
+    /** Gets or sets the family group identifier. */
     familyId: number;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the location identifier. */
     locationId?: number | null;
 
-    /** Gets or sets the MatchFlag. */
+    /** Gets or sets the match flag. */
     matchFlag: number;
 
-    /** Gets or sets the MoveDate. */
+    /** Gets or sets the date when moved. */
     moveDate?: string | null;
 
-    /** Gets or sets the MoveDistance. */
+    /** Gets or sets the moving distance. */
     moveDistance?: number | null;
 
-    /** Gets or sets the MoveType. */
+    /** Gets or sets the move type value identifier. */
     moveType: number;
 
-    /** Gets or sets the NcoaNote. */
+    /** Gets or sets the note for NCOA. */
     ncoaNote?: string | null;
 
-    /** Gets or sets the NcoaRunDateTime. */
+    /** Gets or sets the date and time for NCOA Run. */
     ncoaRunDateTime?: string | null;
 
-    /** Gets or sets the NcoaType. */
+    /** Gets or sets the NCOA type. */
     ncoaType: number;
 
-    /** Gets or sets the OriginalCity. */
+    /** Gets or sets the Original city. */
     originalCity?: string | null;
 
-    /** Gets or sets the OriginalPostalCode. */
+    /** Gets or sets the Original postal code. */
     originalPostalCode?: string | null;
 
-    /** Gets or sets the OriginalState. */
+    /** Gets or sets the Original state. */
     originalState?: string | null;
 
-    /** Gets or sets the OriginalStreet1. */
+    /** Gets or sets the Original street 1. */
     originalStreet1?: string | null;
 
-    /** Gets or sets the OriginalStreet2. */
+    /** Gets or sets the Original street 2. */
     originalStreet2?: string | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId: number;
 
-    /** Gets or sets the Processed. */
+    /** Gets or sets the processed. */
     processed: number;
 
-    /** Gets or sets the UpdatedAddressType. */
+    /** Gets or sets the Updated address type. */
     updatedAddressType: number;
 
-    /** Gets or sets the UpdatedBarcode. */
+    /** Gets or sets the Updated barcode. */
     updatedBarcode?: string | null;
 
-    /** Gets or sets the UpdatedCity. */
+    /** Gets or sets the Updated city. */
     updatedCity?: string | null;
 
-    /** Gets or sets the UpdatedCountry. */
+    /** Gets or sets the Updated country. */
     updatedCountry?: string | null;
 
-    /** Gets or sets the UpdatedPostalCode. */
+    /** Gets or sets the Updated postal code. */
     updatedPostalCode?: string | null;
 
-    /** Gets or sets the UpdatedState. */
+    /** Gets or sets the Updated state. */
     updatedState?: string | null;
 
-    /** Gets or sets the UpdatedStreet1. */
+    /** Gets or sets the Updated street 1. */
     updatedStreet1?: string | null;
 
-    /** Gets or sets the UpdatedStreet2. */
+    /** Gets or sets the Updated street 2. */
     updatedStreet2?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

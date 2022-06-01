@@ -151,6 +151,16 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the Guid for the cache object, or NULL if it doesn't exist
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        internal static Guid? GetGuid( int id )
+        {
+            return Get( id, null )?.Guid;
+        }
+
+        /// <summary>
         /// Gets the cached object by guid using the included RockContext if needed.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>

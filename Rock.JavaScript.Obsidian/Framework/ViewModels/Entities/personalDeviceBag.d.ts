@@ -25,61 +25,67 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PersonalDevice View Model */
 export type PersonalDeviceBag = {
-    /** Gets or sets the DeviceRegistrationId. */
+    /** Gets or sets the registration id of the device. */
     deviceRegistrationId?: string | null;
 
-    /** Gets or sets the DeviceUniqueIdentifier. */
+    /** Gets or sets the device unique identifier (MEID/IMEI) */
     deviceUniqueIdentifier?: string | null;
 
-    /** Gets or sets the DeviceVersion. */
+    /** Gets or sets the device version. */
     deviceVersion?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this is an active personal device. This value is required. */
     isActive: boolean;
 
-    /** Gets or sets the LastSeenDateTime. */
+    /**
+     * Gets or sets the date and time this device was last seen initiating
+     * contact to the Rock server.
+     */
     lastSeenDateTime?: string | null;
 
-    /** Gets or sets the LastVerifiedDateTime. */
+    /**
+     * Gets or sets the date and time this device was last verified as active
+     * and available for contact.
+     */
     lastVerifiedDateTime?: string | null;
 
-    /** Gets or sets the MACAddress. */
+    /** Gets or sets the MAC address. */
     mACAddress?: string | null;
 
-    /** Gets or sets the Manufacturer. */
+    /** Gets or sets the manufacturer. */
     manufacturer?: string | null;
 
-    /** Gets or sets the Model. */
+    /** Gets or sets the model. */
     model?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the NotificationsEnabled. */
+    /** Gets or sets whether or not notifications are enabled for this device. */
     notificationsEnabled: boolean;
 
-    /** Gets or sets the PersonalDeviceTypeValueId. */
+    /** Gets or sets the Id of the Device Type Rock.Model.DefinedValue representing what type of device this is. */
     personalDeviceTypeValueId?: number | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId?: number | null;
 
-    /** Gets or sets the PlatformValueId. */
+    /** Gets or sets the platform value identifier (i.e. iOS, Android, etc) */
     platformValueId?: number | null;
 
-    /** Gets or sets the SiteId. */
+    /** Gets or sets the site identifier. */
     siteId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

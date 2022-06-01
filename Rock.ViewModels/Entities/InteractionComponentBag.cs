@@ -34,98 +34,111 @@ namespace Rock.ViewModels.Entities
     public partial class InteractionComponentBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ChannelCustom1.
+        /// Gets or sets the channel custom 1.
         /// </summary>
         /// <value>
-        /// The ChannelCustom1.
+        /// The channel custom 1.
         /// </value>
         public string ChannelCustom1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the ChannelCustom2.
+        /// Gets or sets the channel custom 2.
         /// </summary>
         /// <value>
-        /// The ChannelCustom2.
+        /// The channel custom 2.
         /// </value>
         public string ChannelCustom2 { get; set; }
 
         /// <summary>
-        /// Gets or sets the ChannelCustomIndexed1.
+        /// Gets or sets the channel custom indexed 1.
         /// </summary>
         /// <value>
-        /// The ChannelCustomIndexed1.
+        /// The channel custom indexed 1.
         /// </value>
         public string ChannelCustomIndexed1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the ComponentData.
+        /// Gets or sets the interaction component data.
         /// </summary>
         /// <value>
-        /// The ComponentData.
+        /// The interaction component data.
         /// </value>
         public string ComponentData { get; set; }
 
         /// <summary>
-        /// Gets or sets the ComponentSummary.
+        /// Gets or sets the component summary.
         /// </summary>
         /// <value>
-        /// The ComponentSummary.
+        /// The component summary.
         /// </value>
         public string ComponentSummary { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the Id of the entity that this interaction component is related to (determined by Rock.Model.InteractionChannel.ComponentEntityTypeId )
+        /// 
+        /// <item>
+        ///     <term>Page Views</term>
+        ///     <description><see cref="T:Rock.Model.Site" /> Id</description></item>
+        /// <item>
+        ///     <term>Communication Recipient Activity</term>
+        ///     <description><see cref="T:Rock.Model.Communication" /> Id</description></item>
+        /// <item>
+        ///     <term>Content Channel Activity</term>
+        ///     <description><see cref="T:Rock.Model.ContentChannel" /> Id</description></item>
+        /// <item>
+        ///     <term>System Events, like Workflow Form Entry</term>
+        ///     <description>Depends on <see cref="T:Rock.Model.ContentChannelType"></see></description></item>
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// A System.Int32 representing the Id of the entity (object) that this interaction component is related to.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionChannelId.
+        /// Gets or sets the Id of the Rock.Model.InteractionChannel channel that is associated with this Component.
         /// </summary>
         /// <value>
-        /// The InteractionChannelId.
+        /// An System.Int32 representing the Id of the Rock.Model.InteractionChannel channel that this Component is associated with.
         /// </value>
         public int InteractionChannelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the interaction component name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The interaction component name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

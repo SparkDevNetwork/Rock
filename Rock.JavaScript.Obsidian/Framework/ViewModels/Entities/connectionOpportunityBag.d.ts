@@ -25,52 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionOpportunity View Model */
 export type ConnectionOpportunityBag = {
-    /** Gets or sets the ConnectionTypeId. */
+    /** Gets or sets the Rock.Model.ConnectionType identifier. */
     connectionTypeId: number;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the PhotoId. */
+    /** Gets or sets the photo identifier. */
     photoId?: number | null;
 
-    /** Gets or sets the PublicName. */
+    /** Gets or sets the name of the public. */
     publicName?: string | null;
 
-    /** Gets or sets the ShowCampusOnTransfer. */
+    /** Gets or sets a value indicating whether [show campus on transfer]. */
     showCampusOnTransfer: boolean;
 
-    /** Gets or sets the ShowConnectButton. */
+    /** Gets or sets a value indicating whether [show connect button]. */
     showConnectButton: boolean;
 
-    /** Gets or sets the ShowStatusOnTransfer. */
+    /** Gets or sets a value indicating whether [show status on transfer]. */
     showStatusOnTransfer: boolean;
 
-    /** Gets or sets the Summary. */
+    /** Gets or sets the summary. */
     summary?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

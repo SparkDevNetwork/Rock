@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EntityCampusFilter View Model */
 export type EntityCampusFilterBag = {
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the campus identifier. */
     campusId: number;
 
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the entity identifier. */
     entityId: number;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the entity type identifier. */
     entityTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

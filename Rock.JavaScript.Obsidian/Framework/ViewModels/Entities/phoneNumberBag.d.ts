@@ -25,46 +25,46 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PhoneNumber View Model */
 export type PhoneNumberBag = {
-    /** Gets or sets the CountryCode. */
+    /** Gets or sets the country code. */
     countryCode?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets an optional description of the PhoneNumber. */
     description?: string | null;
 
-    /** Gets or sets the Extension. */
+    /** Gets or sets the extension (if any) that would need to be dialed to contact the owner.  */
     extension?: string | null;
 
-    /** Gets or sets the IsMessagingEnabled. */
+    /** Gets or sets a flag indicating whether the number has been opted in for SMS */
     isMessagingEnabled: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if the PhoneNumber is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the IsUnlisted. */
+    /** Gets or sets a flag indicating whether the PhoneNumber is unlisted or not. */
     isUnlisted: boolean;
 
-    /** Gets or sets the Number. */
+    /** Gets or sets the phone number without country code. The number is stored without any string formatting. (i.e. (502) 555-1212 will be stored as 5025551212). This property is required. */
     number?: string | null;
 
-    /** Gets or sets the NumberFormatted. */
+    /** Gets or sets the formatted number. Note: value is recalculated on every add/modify of entity during context's default SaveChanges() method. */
     numberFormatted?: string | null;
 
-    /** Gets or sets the NumberTypeValueId. */
+    /** Gets the Phone Number's Number Type Rock.Model.DefinedValue Id. */
     numberTypeValueId?: number | null;
 
-    /** Gets or sets the PersonId. */
+    /** Gets or sets the PersonId of the Rock.Model.Person that the PhoneNumber belongs to. This property is required. */
     personId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

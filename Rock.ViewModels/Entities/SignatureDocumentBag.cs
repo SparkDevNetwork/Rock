@@ -34,210 +34,214 @@ namespace Rock.ViewModels.Entities
     public partial class SignatureDocumentBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AppliesToPersonAliasId.
+        /// Gets or sets the applies to person alias identifier.
         /// </summary>
         /// <value>
-        /// The AppliesToPersonAliasId.
+        /// The applies to person alias identifier.
         /// </value>
         public int? AppliesToPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AssignedToPersonAliasId.
+        /// Gets or sets the assigned to person alias identifier.
         /// </summary>
         /// <value>
-        /// The AssignedToPersonAliasId.
+        /// The assigned to person alias identifier.
         /// </value>
         public int? AssignedToPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the BinaryFileId.
+        /// Gets or sets the binary file identifier.
         /// </summary>
         /// <value>
-        /// The BinaryFileId.
+        /// The binary file identifier.
         /// </value>
         public int? BinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CompletionEmailSentDateTime.
+        /// The date and time the document completion email was sent.
         /// </summary>
         /// <value>
-        /// The CompletionEmailSentDateTime.
+        /// The completion email sent date and time.
         /// </value>
         public DateTime? CompletionEmailSentDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentKey.
+        /// Gets or sets the document key.
         /// </summary>
         /// <value>
-        /// The DocumentKey.
+        /// The document key.
         /// </value>
         public string DocumentKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// The ID of the entity to which the document is related.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// A System.Int32 representing the EntityId of the entity that this signature document entity applies to.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// The EntityType that this document is related to (example Rock.Model.Registration)
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType of the entity that this signature document applies to.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the InviteCount.
+        /// Gets or sets the invite count.
         /// </summary>
         /// <value>
-        /// The InviteCount.
+        /// The invite count.
         /// </value>
         public int InviteCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastInviteDate.
+        /// Gets or sets the request date.
         /// </summary>
         /// <value>
-        /// The LastInviteDate.
+        /// The request date.
         /// </value>
         public DateTime? LastInviteDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastStatusDate.
+        /// Gets or sets the last status date.
         /// </summary>
         /// <value>
-        /// The LastStatusDate.
+        /// The last status date.
         /// </value>
         public DateTime? LastStatusDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignatureDataEncrypted.
+        /// The encrypted data that was collected during a drawn signature type.
+        /// Use Rock.Model.SignatureDocument.SignatureData to set this from the unencrypted drawn signature.
         /// </summary>
         /// <value>
-        /// The SignatureDataEncrypted.
+        /// A System.String representing the signature data.
         /// </value>
         public string SignatureDataEncrypted { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignatureDocumentTemplateId.
+        /// Gets or sets the SignatureDocumentTemplateId of the Rock.Model.SignatureDocumentTemplate that this SignatureDocument instance is executing.
         /// </summary>
         /// <value>
-        /// The SignatureDocumentTemplateId.
+        /// A System.Int32 representing the SignatureDocumentTemplateId fo the Rock.Model.SignatureDocumentTemplate that is being executed.
         /// </value>
         public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignatureVerificationHash.
+        /// The computed SHA1 hash for the SignedDocumentText, SignedClientIP address, SignedClientUserAgent, SignedDateTime, SignedByPersonAliasId, SignatureData, and SignedName.
+        /// This hash can be used to prove the authenticity of the unaltered signature document.
+        /// This is only calculated once during the pre-save event when the SignedDateTime was originally null/empty but now has a value.
         /// </summary>
         /// <value>
-        /// The SignatureVerificationHash.
+        /// A System.String representing the signature data.
         /// </value>
         public string SignatureVerificationHash { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignedByEmail.
+        /// The email address that was used to send the completion receipt.
         /// </summary>
         /// <value>
-        /// The SignedByEmail.
+        /// A System.String representing the signed by email address.
         /// </value>
         public string SignedByEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignedByPersonAliasId.
+        /// Gets or sets the signed by person alias identifier.
         /// </summary>
         /// <value>
-        /// The SignedByPersonAliasId.
+        /// The signed by person alias identifier.
         /// </value>
         public int? SignedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignedClientIp.
+        /// The observed IP address of the client system of the individual who signed the document.
         /// </summary>
         /// <value>
-        /// The SignedClientIp.
+        /// A System.String representing the signed client IP address.
         /// </value>
         public string SignedClientIp { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignedClientUserAgent.
+        /// The observed 'user agent' of the client system of the individual who signed the document.
         /// </summary>
         /// <value>
-        /// The SignedClientUserAgent.
+        /// A System.String representing the signed client user agent.
         /// </value>
         public string SignedClientUserAgent { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignedDateTime.
+        /// The date and time the document was signed.
         /// </summary>
         /// <value>
-        /// The SignedDateTime.
+        /// The signed date and time.
         /// </value>
         public DateTime? SignedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignedDocumentText.
+        /// The resulting text/document using the Lava template from the Rock.Model.SignatureDocumentTemplate at the time the document was signed.
+        /// Does not include the signature data. It would be what they saw just prior to signing.
         /// </summary>
         /// <value>
-        /// The SignedDocumentText.
+        /// The signed document text.
         /// </value>
         public string SignedDocumentText { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignedName.
+        /// The name of the individual who signed the document.
         /// </summary>
         /// <value>
-        /// The SignedName.
+        /// The signed name.
         /// </value>
         public string SignedName { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the status.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// The status.
         /// </value>
         public int Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

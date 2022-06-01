@@ -28,6 +28,6 @@ export type PersonScheduleSignupBag = {
     /** Gets or sets a string representing the group name. */
     groupName?: string | null;
 
-    /** Gets or sets a list of  to pass down to mobile. */
+    /** Gets or sets a list of Rock.ViewModels.Blocks.Groups.GroupScheduleSignup.PersonScheduleSignupDataBag to pass down to mobile. */
     personScheduleSignups?: PersonScheduleSignupDataBag[] | null;
 };

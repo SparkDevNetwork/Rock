@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class WebFarmNodeMetricBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the MetricType.
+        /// Gets or sets the type of the metric.
         /// </summary>
         /// <value>
-        /// The MetricType.
+        /// The type of the metric.
         /// </value>
         public int MetricType { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetricValue.
+        /// Gets or sets the metric value.
         /// </summary>
         /// <value>
-        /// The MetricValue.
+        /// The metric value.
         /// </value>
         public decimal MetricValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetricValueDateTime.
+        /// Gets or sets the metric value date time.
         /// </summary>
         /// <value>
-        /// The MetricValueDateTime.
+        /// The metric value date time.
         /// </value>
         public DateTime MetricValueDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note.
+        /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// The Note.
+        /// The note.
         /// </value>
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the WebFarmNodeId.
+        /// Gets or sets the Rock.Model.WebFarmNode identifier.
         /// </summary>
         /// <value>
-        /// The WebFarmNodeId.
+        /// The web farm node identifier.
         /// </value>
         public int WebFarmNodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
