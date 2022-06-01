@@ -459,7 +459,7 @@ BD8F1DCA377B95D905033E5FFC41CFCF8D4C11AE14A9BC964DFBD4BCEEB618F9795BE7F71295D3B7
 <h4>Current Person's Campus</h4>
 {% assign campus = CurrentPerson.PrimaryCampusId | FromCache:'Campus' %}
 Current Person's Campus Is: {{ campus.Name }}
-{% assign allCampuses = 'All' | FromCache:'Campus' %}
+{% assign allCampuses = 'All' | FromCache:'Campus' | OrderBy:'Name' %}
 <h4>All Campuses</h4>
 <ul>
 {% for c in allCampuses %}
@@ -473,8 +473,8 @@ Current Person's Campus Is: {{ campus.Name }}
 Current Person's Campus Is: Main Campus
 <h4>All Campuses</h4>
 <ul>
-    <li>Stepping Stone</li>
     <li>Main Campus</li>
+    <li>Stepping Stone</li>
 </ul>
 ";
 
