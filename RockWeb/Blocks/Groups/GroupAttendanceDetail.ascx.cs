@@ -1049,7 +1049,7 @@ namespace RockWeb.Blocks.Groups
             }}
         }});
 
-        $('.js-add-member').on('click', function ( e ) {{
+        $('.js-add-member').off('click').on('click', function ( e ) {{
             e.preventDefault();
             var $a = $(this);
             var memberName = $(this).parent().find('span').html();
