@@ -3257,6 +3257,10 @@ namespace Rock.Lava
         public static object Campus( ILavaRenderContext context, object input, object option = null )
         {
             var person = GetPerson( input, context );
+            if ( person == null )
+            {
+                return null;
+            }
 
             bool getAll = false;
             if ( option != null && option.GetType() == typeof( string ) )

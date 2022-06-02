@@ -47,19 +47,21 @@ namespace Rock.Lava
         #endregion
 
         /// <summary>
-        /// Gets the rock context from lava context or returns a new one if one does not exist.
+        /// Gets the current data context from the specified lava context or returns a new data context if either context does not exist.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
         public static RockContext GetRockContextFromLavaContext( ILavaRenderContext context )
         {
-            var rockContext = context.GetInternalField( "rock_context", null ) as RockContext;
+            var rockContext = context?.GetInternalField( "rock_context", null ) as RockContext;
 
             if ( rockContext == null )
             {
                 rockContext = new RockContext();
-
-                context.SetInternalField( "rock_context", rockContext );
+                if ( context != null )
+                {
+                    context.SetInternalField( "rock_context", rockContext );
+                }
             }
 
             return rockContext;

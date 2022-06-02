@@ -3590,27 +3590,10 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Campus( Context context, object input, object option = null )
         {
-            var person = GetPerson( input );
-
-            bool getAll = false;
-            if ( option != null && option.GetType() == typeof( string ) )
-            {
-                // if a string of "all" is specified for the option, return all of the campuses (if they are part of multiple families from different campuses)
-                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    getAll = true;
-                }
-            }
-
-            if ( getAll )
-            {
-                return person.GetFamilies().Select( a => a.Campus ).OrderBy( a => a.Name );
-            }
-            else
-            {
-                return person.GetCampus();
-            }
-
+            // Call the newer Lava Filter implementation, and inject a null Lava context.
+            // This is safe, because the Lava context is only used to retrieve the current data context,
+            // and the fallback for that process creates a new data context instead.
+            return LavaFilters.Campus( null, input, option );
         }
 
         /// <summary>
