@@ -35,7 +35,7 @@ namespace Rock.Blocks.Engagement.Steps
 
     [DisplayName( "Step Flow" )]
     [Category( "Steps" )]
-    [Description( "Show the flow of individuals as they move through the four step types in the Discipleship Path program." )]
+    [Description( "Show the flow of individuals as they move through different steps in a given step program." )]
     [IconCssClass( "fa fa-users" )]
     [Rock.SystemGuid.EntityTypeGuid( "308D8252-7712-4A45-8DE4-737C3EEAEA8F" )]
     [Rock.SystemGuid.BlockTypeGuid( "2B4E0128-BCDF-48BF-AEC9-85001169DA3E" )]
