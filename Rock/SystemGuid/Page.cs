@@ -1861,6 +1861,18 @@ namespace Rock.SystemGuid
         public const string STEP_PROGRAMS = "F5E8A369-4856-42E5-B187-276DFCEB1F3F";
 
         /// <summary>
+        /// Gets the Step Program Detail page guid
+        /// ParentPage: Step Programs
+        /// </summary>
+        public const string STEP_PROGRAM_DETAIL = "6E46BC35-1FCB-4619-84F0-BB6926D2DDD5";
+
+        /// <summary>
+        /// Gets the Step Flow page guid
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string STEP_FLOW = "A5FE5D33-C9E2-496D-AD8F-5B7AA496B2AC";
+
+        /// <summary>
         /// Gets the Streak page guid
         /// ParentPage: Streak Type Detail
         /// </summary>
