@@ -70,7 +70,7 @@ namespace Rock.IpAddress
         #endregion
 
         /// <summary>
-        /// Lookups the specified IP Address and returns it's location.
+        /// It takes the single IpAddress and returns the location.
         /// </summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="resultMsg">The result MSG.</param>
@@ -90,35 +90,22 @@ namespace Rock.IpAddress
             request.AddHeader( "Accept", "application/json" );
 
             var response = client.Execute( request );
-            var rateLimitResetInSeconds = response.Headers.Where( a => a.Name == "X-Rate-Limit-Reset" ).FirstOrDefault()?.Value.ToString().AsIntegerOrNull();
+
             // Process successful response
             if ( response.StatusCode == HttpStatusCode.OK )
             {
                 var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Result ) ) as Result;
                 result = ConvertResultToIpLocation( responseContent );
             }
-            else if ( response.StatusCode == HttpStatusCode.BadRequest )
+            else if ( response.StatusCode == HttpStatusCode.BadRequest || ( int ) response.StatusCode == 429 )
             {
                 var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Result ) ) as Result;
                 result = ConvertResultToIpLocation( responseContent );
-                resultMsg = response.StatusDescription;
-            }
-            else if ( ( int ) response.StatusCode == 429 ) // HTTP: Too many requests
-            {
-                // If they didn't give us rate limit instructions then bail
-                if ( !rateLimitResetInSeconds.HasValue )
+                resultMsg = $"{response.StatusDescription}.";
+                if ( responseContent.Resolution.IsNotNullOrWhiteSpace() )
                 {
-                    resultMsg = response.StatusDescription;
+                    resultMsg += responseContent.Resolution;
                 }
-
-                // If the reset period is a long time (5 mins) then bail
-                if ( rateLimitResetInSeconds.Value > 300 )
-                {
-                    resultMsg = response.StatusDescription;
-                }
-
-                // Otherwise take a break and wait
-                System.Threading.Thread.Sleep( rateLimitResetInSeconds.Value );
             }
             else // Some other HTTP result
             {
@@ -348,6 +335,15 @@ namespace Rock.IpAddress
         /// </value>
         [JsonProperty( "message" )]
         public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the resolution.
+        /// </summary>
+        /// <value>
+        /// The resolution.
+        /// </value>
+        [JsonProperty( "resolution" )]
+        public string Resolution { get; set; }
 
         /// <summary>
         /// Gets or sets the IP
