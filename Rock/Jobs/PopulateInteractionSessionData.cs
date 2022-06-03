@@ -100,7 +100,7 @@ namespace Rock.Jobs
         /// </summary>
         private static class AttributeDefaultValue
         {
-            public const int CommandTimeout = 60 * 60;
+            public const int CommandTimeout = 3600; // one hour in seconds
         }
 
         #endregion Keys
