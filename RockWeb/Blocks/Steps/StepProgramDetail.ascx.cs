@@ -196,8 +196,8 @@ namespace RockWeb.Blocks.Steps
             InitializeActionButtons();
             InitializeChartScripts();
             InitializeChartFilter();
-            InitializeStepFlowLink();
             InitializeSettingsNotification( upStepProgram );
+            hlStepFlow.NavigateUrl = ResolveUrl( string.Format( "~//steps/program/{0}/flow", _stepProgramId ) );
 
             var editAllowed = IsUserAuthorized( Authorization.EDIT );
             if ( !editAllowed && _program != null )
@@ -1588,31 +1588,6 @@ namespace RockWeb.Blocks.Steps
                 // Default to current year
                 drpSlidingDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
                 drpSlidingDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
-            }
-        }
-
-        /// <summary>
-        /// Initialize the Step Flow Button URL from page parameters.
-        /// </summary>
-        private void InitializeStepFlowLink()
-        {
-            var stepFlowPageService = new PageService( this.GetDataContext() );
-            var stepFlowPage = stepFlowPageService.Get( Rock.SystemGuid.Page.STEP_FLOW.AsGuid() );
-
-            // If the Step Flow page does not exist, return without changing the control.
-            if ( stepFlowPage == null )
-            {
-                return;
-            }
-
-            // If the Step Flow Page has at least one route, use that to build the StepFlow URL.
-            if ( stepFlowPage.PageRoutes.Count > 0 )
-            {
-                var stepFlowPageRoute = stepFlowPage.PageRoutes.First();
-                var stepFlowPageParameter = new Dictionary<string, string> { { PageParameterKey.StepProgramId, _stepProgramId.ToString() } };
-                var stepFlowPageReference = new PageReference( stepFlowPage.Id, stepFlowPageRoute.Id, stepFlowPageParameter );
-                hlStepFlow.NavigateUrl = stepFlowPageReference.BuildUrl();
-                hlStepFlow.Enabled = true;
             }
         }
 
