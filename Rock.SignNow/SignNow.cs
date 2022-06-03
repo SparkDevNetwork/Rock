@@ -46,6 +46,8 @@ namespace Rock.SignNow
     [BooleanField( "Use API Sandbox", "Use the SignNow API Sandbox (vs. Production Environment)", false, "", 4 )]
     [TextField( "Webhook Url", "The URL of the webhook that SignNow should post to when a document is updated (signed).", true, "", "", 5 )]
     [TextField( "Cookie Initialization Url", "The URL of the SignNow page to use for setting an initial cookie.", true, "https://mw.signnow.com/setcookie", "Advanced", 0)]
+
+    [Obsolete]
     public class SignNow : DigitalSignatureComponent
     {
         /// <summary>
