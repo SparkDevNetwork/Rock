@@ -60,7 +60,7 @@ namespace Rock.Badge.Component
   {% capture tooltipText %}{{ Person.NickName }} has not attended a group of type {{ GroupType.Name }}{{ dateRangeText }}.{% endcapture %}
 {% endif %}
 
-<div class='badge badge-grouptypeattendance badge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText }}'>
+<div class='rockbadge rockbadge-grouptypeattendance rockbadge-id-{{Badge.Id}}' data-toggle='tooltip' data-original-title='{{ tooltipText }}'>
   <i class='badge-icon {{ groupIcon }}' style='color: {{ iconColor }}'></i>
 </div>
 " )]
@@ -109,8 +109,8 @@ namespace Rock.Badge.Component
                         .Queryable()
                         .Where( a =>
                             a.Occurrence.Group != null &&
-                            a.Occurrence.Group.GroupTypeId == groupTypeId && 
-                            a.DidAttend == true && 
+                            a.Occurrence.Group.GroupTypeId == groupTypeId &&
+                            a.DidAttend == true &&
                             personAliasIds.Contains( a.PersonAliasId.Value ) );
 
                     if ( dateRange.Start.HasValue )

@@ -56,7 +56,7 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            writer.Write( $"<div class='badge badge-lastvisitonsite badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( $"<div class='rockbadge rockbadge-overlay rockbadge-lastvisitonsite rockbadge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
             writer.Write( "</div>" );
         }
 
@@ -109,9 +109,9 @@ namespace Rock.Badge.Component
                             var siteName = '{JavaScriptEncoder.Default.Encode( siteName )}';
 
                             if (daysSinceVisit >= 0 && daysSinceVisit < 1000) {{
-        
-                                labelContent = 'It has been ' + daysSinceVisit + ' day(s) since the last visit to the ' + siteName + ' site.';                                    
-        
+
+                                labelContent = 'It has been ' + daysSinceVisit + ' day(s) since the last visit to the ' + siteName + ' site.';
+
                                 if (daysSinceVisit == 0) {{
                                     daysSinceVisit = 'Today';
                                     cssClass = 'today';
@@ -126,16 +126,15 @@ namespace Rock.Badge.Component
                                     cssClass = 'not-recent';
                                 }} else {{
                                     cssClass = 'old';
-                                }}                                   
-                                            
-                                if (linkUrl != '') {{
-                                    badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div></a>';
-                                }} else {{
-                                    badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div>';
                                 }}
 
-                                $('.badge-lastvisitonsite.badge-id-{badge.Id}').html(badgeContent);
-                                $('.badge-lastvisitonsite.badge-id-{badge.Id}').attr('data-original-title', labelContent);
+                                if (linkUrl != '') {{
+                                    badgeContent = '<a href=\'' + linkUrl + '\' class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'metric-value\'>' + daysSinceVisit + '</span></a>';
+                                }} else {{
+                                    badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'metric-value\'>' + daysSinceVisit + '</span></div>';
+                                }}
+
+                                $('.rockbadge-lastvisitonsite.rockbadge-id-{badge.Id}').html(badgeContent).attr('data-original-title', labelContent);
                             }}
                         }}
                     }},

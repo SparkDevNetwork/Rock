@@ -181,7 +181,7 @@ namespace Rock.Badge.Component
 
             var tooltip = $"{person.NickName.ToPossessive()} engagement in the streak '{streakTypeCache.Name}' for the last {unitsToDisplay} {timeUnits}. Each bar is a {timeUnit}.";
 
-            var chartHtml = $"<div class='badge badge-attendance{animateClass} badge-id-{badge.Id}' data-toggle='tooltip' data-original-title='{tooltip.EncodeHtml()}'></div>";
+            var chartHtml = $"<div class='rockbadge rockbadge-attendance{animateClass} rockbadge-id-{badge.Id}' data-toggle='tooltip' data-original-title='{tooltip.EncodeHtml()}'></div>";
             var linkedPageGuid = GetAttributeValue( badge, AttributeKey.StreakDetailPage ).AsGuidOrNull();
             var linkedPageId = linkedPageGuid.HasValue ? PageCache.GetId( linkedPageGuid.Value ) : null;
 
@@ -233,7 +233,7 @@ $.ajax({{
             }}
 
             chartHtml.push('</ul>');
-            $('.badge-attendance.badge-id-{badge.Id}').html(chartHtml.join(''));
+            $('.rockbadge-attendance.rockbadge-id-{badge.Id}').html(chartHtml.join(''));
         }}
     }},
 }});";

@@ -67,6 +67,9 @@
 
 @import "./Bootstrap/mixins.less";
 
+.imports(true) { @import "_legacy-badges.less"; }
+.imports(false) {  }
+.imports(@enable-legacy-badges);
 
 // 2. HTML Overrides
 //--------------------------------

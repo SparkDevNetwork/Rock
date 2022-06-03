@@ -58,7 +58,7 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            writer.Write( String.Format( "<div class='badge badge-ingroupwithpurpose badge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
+            writer.Write( String.Format( "<div class='rockbadge rockbadge-ingroupwithpurpose rockbadge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
 
             writer.Write( "</div>" );
         }
@@ -96,8 +96,8 @@ $.ajax({{
                 badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\'></i>';
                 var labelText = data.NickName + ' is not in a group with the ' + data.Purpose + ' purpose.';
             }}
-            $('.badge-ingroupwithpurpose.badge-id-{3}').html(badgeHtml);
-            $('.badge-ingroupwithpurpose.badge-id-{3}').attr('data-original-title', labelText);
+            $('.rockbadge-ingroupwithpurpose.rockbadge-id-{3}').html(badgeHtml);
+            $('.rockbadge-ingroupwithpurpose.rockbadge-id-{3}').attr('data-original-title', labelText);
         }}
     }},
 }});", person.Id.ToString(), groupTypePurposeGuid.ToString(), badgeColor, badge.Id, GetAttributeValue( badge, "BadgeIconCss" ) );
