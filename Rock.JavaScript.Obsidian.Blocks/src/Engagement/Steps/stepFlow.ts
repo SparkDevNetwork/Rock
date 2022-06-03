@@ -143,6 +143,7 @@ export default defineComponent({
             campus,
             campusOptions,
             settings,
+            configurationValues,
             fetchData
         };
     },
@@ -150,9 +151,8 @@ export default defineComponent({
     // #region Template
     template: `
 <Block title="Step Flow">
-
-    <template #default>
-        <SectionHeader title="Discipleship Path Flow" description="The flow below shows how individuals move through the four step types in the Discipleship Path program. You can filter the steps shown by date range or the number of levels to limit&nbsp;to." />
+    <template v-if="configurationValues.programName" #default>
+        <SectionHeader :title="configurationValues.programName + ' Path Flow'" :description="'The flow below shows how individuals move through the ' + configurationValues.stepTypeCount + ' step types in the ' + configurationValues.programName + ' Path program. You can filter the steps shown by date range or the number of levels to limit&nbsp;to.'" />
 
         <RockForm class="row mb-5" @submit="fetchData">
             <DateRangePicker v-model="dateRange" rules="required" formGroupClasses="col-sm-5" label="Step Completion Date Range" help="Limit steps to those that have been completed in the provided date range." />
@@ -164,6 +164,10 @@ export default defineComponent({
         </RockForm>
 
         <FlowNodeDiagram :flowNodes="flowNodes" :flowEdges="flowEdges" :isLoading="isLoading" :settings="settings" />
+    </template>
+
+    <template v-else #default>
+        <Alert alert-type="warning">No Step Program ID Provided</Alert>
     </template>
 </Block>`
     // #endregion

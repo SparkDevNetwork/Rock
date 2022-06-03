@@ -113,13 +113,19 @@ namespace Rock.Blocks.Engagement.Steps
             var campusClientService = new Rock.ClientService.Core.Campus.CampusClientService( rockContext, RequestContext.CurrentPerson );
             Campuses = campusClientService.GetCampusesAsListItems();
 
+            var Program = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ).AsInteger() );
+            var ProgramName = Program?.Name ?? "";
+            var StepTypeCount = Program?.StepTypes?.Count;
+
             return new StepFlowInitializationBox
             {
                 Campuses = Campuses,
                 NodeWidth = GetAttributeValue( AttributeKey.NodeWidth ).AsInteger(),
                 NodeVerticalSpacing = GetAttributeValue( AttributeKey.NodeVerticalSpacing ).AsInteger(),
                 NodeHorizontalSpacing = GetAttributeValue( AttributeKey.NodeHorizontalSpacing ).AsInteger(),
-                ChartHeight = GetAttributeValue( AttributeKey.ChartHeight ).AsInteger()
+                ChartHeight = GetAttributeValue( AttributeKey.ChartHeight ).AsInteger(),
+                ProgramName = ProgramName,
+                StepTypeCount = StepTypeCount
             };
         }
 
