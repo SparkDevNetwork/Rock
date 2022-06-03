@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField(
         "Show Addresses",
         Key = AttributeKey.ShowAddresses,
-        Description = "Whether the address section is shown or not.",
+        Description = "Whether the address section is shown or not during editing.",
         DefaultBooleanValue = true,
         Order = 8 )]
 
