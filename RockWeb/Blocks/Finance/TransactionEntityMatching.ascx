@@ -29,16 +29,11 @@
                                 <asp:PlaceHolder ID="phTableRows" runat="server" />
                             </tbody>
                         </table>
-
-                        <br />
-                        <div class="margin-all-md">
-                            <Rock:NotificationBox ID="nbSaveSuccess" runat="server" NotificationBoxType="Success" Text="Changes Saved" Visible="false" />
-                            <div class="actions">
-                                <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            </div>
-
-                        </div>
                     </asp:Panel>
+                </div>
+                <Rock:NotificationBox ID="nbSaveSuccess" runat="server" NotificationBoxType="Success" Text="Changes Saved" Visible="false" />
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                 </div>
 
             </div>

@@ -38,48 +38,56 @@ namespace RockWeb.Blocks.Tv
 
     #region Block Attributes
     [SiteField( "Site",
-        Description = "The optional site that the remote authentication is tied to.",
-        IsRequired = false,
-        Order = 0,
-        Key = AttributeKey.Site)]
+                "The optional site that the remote authentication is tied to.",
+                false, "", "", 0,
+                AttributeKey.Site)]
 
     [CodeEditorField( "Header Content",
-        Description = "Lava template to create the header.",
-        EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
-        EditorHeight = 300,
-        IsRequired = false,
-        Order = 1,
-        Key = AttributeKey.HeaderContent )]
+        "Lava template to create the header.",
+        CodeEditorMode.Lava,
+        CodeEditorTheme.Rock,
+        300,
+        false,
+        "default",
+        @"<div class=""mb-4"">
+    <h1>Hello
+    {{ CurrentPerson.NickName }}</h1>
+    <span>Enter your security code below to authenicate to your application.</span>
+</div>",
+        1,
+        AttributeKey.HeaderContent)]
 
     [CodeEditorField( "Footer Content",
-        Description = "Lava template to create the footer.",
-        EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
-        EditorHeight = 300,
-        IsRequired = false,
-        Order = 2,
-        Key = AttributeKey.FooterContent )]
+        "Lava template to create the footer.",
+        CodeEditorMode.Lava,
+        CodeEditorTheme.Rock,
+        300,
+        false,
+        "",@"<div>
+    <h1>Success!</h1>
+    <span>{{ CurrentPerson.NickName }}, you have successfully authenicated to your application.</span>
+</div>",
+        2,
+        AttributeKey.FooterContent )]
 
     [CodeEditorField( "Success Message",
-        Description = "Lava template that will be displayed after a successful authentication.",
-        EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
-        EditorHeight = 300,
-        IsRequired = false,
-        DefaultValue = @"<div>
-    <h1>Success!</h1>
-    <span>{{ CurrentPerson.NickName }}, you have successfully authenticated to your application.</span>
-</div>",
-        Order = 3,
-        Key = AttributeKey.SuccessMessage )]
+        "Lava template that will be displayed after a successful authentication.",
+        CodeEditorMode.Lava,
+        CodeEditorTheme.Rock,
+        300,
+        false,
+        "default",
+        "",
+        3,
+        AttributeKey.SuccessMessage )]
 
     [IntegerField(  "Code Expiration Duration",
-        Description = "The length of time in minutes that a code is good for.",
-        IsRequired = true,
-        DefaultIntegerValue = 10,
-        Order = 4,
-        Key = AttributeKey.CodeExpirationDuration)]
+        "The length of time in minutes that a code is good for.",
+        true,
+        10,
+        "",
+        4,
+        AttributeKey.CodeExpirationDuration)]
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "3080C707-4594-4DDD-95B5-DEF82141DE6A" )]
