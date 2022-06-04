@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -46,6 +46,7 @@ namespace Rock.Blocks.Core
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( "A61EAF51-5DB4-451E-9F88-9D4C6ACCE73B")]
     public class CampusDetail : RockObsidianDetailBlockType
     {
         #region Keys

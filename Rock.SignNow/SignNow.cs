@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace Rock.SignNow
     [TextField( "Cookie Initialization Url", "The URL of the SignNow page to use for setting an initial cookie.", true, "https://mw.signnow.com/setcookie", "Advanced", 0)]
 
     [Obsolete]
+    [Rock.SystemGuid.EntityTypeGuid( "6A172772-643F-4674-A487-D13A9D9EE9C4")]
     public class SignNow : DigitalSignatureComponent
     {
         /// <summary>

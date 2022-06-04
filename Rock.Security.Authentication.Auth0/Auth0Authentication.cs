@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Security.Authentication.Auth0
 
     [TextField( "Login Button Text", "The text shown on the log in button.", defaultValue: "Auth0 Login", required: false, order: 3 )]
     [TextField( "Login Button CSS Class", "The CSS class applied to the log in button.", required: false, order: 4 )]
+    [Rock.SystemGuid.EntityTypeGuid( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F")]
     public class Auth0Authentication : AuthenticationComponent
     {
         /// <summary>

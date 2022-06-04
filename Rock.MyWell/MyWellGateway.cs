@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -93,6 +93,7 @@ namespace Rock.MyWell
         Order = 6 )]
 
     #endregion Component Attributes
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MYWELL_FINANCIAL_GATEWAY )]
     public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent/*, IObsidianFinancialGateway*/
     {
         #region Attribute Keys

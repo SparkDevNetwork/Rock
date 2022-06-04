@@ -48,6 +48,7 @@ namespace Rock.Communication.Transport
     [BooleanField( "Track Opens", "Allow Mailgun to track opens, clicks, and unsubscribes.", true, "", 4, "TrackOpens" )]
     [BooleanField( "Replace Unsafe Sender", "Defaults to \"Yes\".  If set to \"No\" Mailgun will allow relaying email \"on behalf of\" regardless of the sender's domain.  The safe sender list will still be used for adding a \"Sender\" header.", true, "", 5 )]
     [IntegerField( "Concurrent Send Workers", "", false, 10, "", 6, key: "MaxParallelization" )]
+    [Rock.SystemGuid.EntityTypeGuid( "35E39CA7-9383-421C-BBFA-0A6CC7AF1BAC")]
     public class MailgunHttp : EmailTransportComponent, IAsyncTransport
     {
         /// <summary>
