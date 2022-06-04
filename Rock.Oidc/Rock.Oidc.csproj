@@ -259,6 +259,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="Authorization\AuthorizationProvider.cs" />
     <Compile Include="Authorization\RockIdentityHelper.cs" />
     <Compile Include="Configuration\IRockOidcSigningCredentials.cs" />

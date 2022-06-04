@@ -65,6 +65,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="Enums\DotNetVersionCheckResult.cs" />
     <Compile Include="Exceptions\PackageNotFoundException.cs" />
     <Compile Include="Helpers\FileManagementHelper.cs" />
