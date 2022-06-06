@@ -210,8 +210,10 @@ console.log(websiteNames);
 
         private List<ListItem> GetInteractionChannelListItems()
         {
-            var channels = InteractionChannelCache.All()
-                .Where( x => x.ChannelTypeMediumValue?.Guid == SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() )
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var channels = new InteractionChannelService( new RockContext() )
+                .Queryable()
+                .Where( x => x.ChannelTypeMediumValue.Guid == websiteGuid )
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
                 .ToList();
 
