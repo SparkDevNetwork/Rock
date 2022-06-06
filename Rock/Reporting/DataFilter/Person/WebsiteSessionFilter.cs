@@ -245,7 +245,7 @@ function() {
         private List<ListItem> GetInteractionChannelListItems()
         {
             var channels = InteractionChannelCache.All()
-                .Where( x => x.ChannelTypeMediumValue?.Value == "Website" )
+                .Where( x => x.ChannelTypeMediumValue?.Guid == SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() )
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
                 .ToList();
             return channels;
@@ -254,7 +254,7 @@ function() {
         private List<ListItem> GetInteractionComponentListItems()
         {
             var components = InteractionComponentCache.All()
-                .Where( x => x.InteractionChannel?.ChannelTypeMediumValue?.Value == "Website" )
+                .Where( x => x.InteractionChannel?.ChannelTypeMediumValue?.Guid == SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() )
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
                 .ToList();
             return components;
