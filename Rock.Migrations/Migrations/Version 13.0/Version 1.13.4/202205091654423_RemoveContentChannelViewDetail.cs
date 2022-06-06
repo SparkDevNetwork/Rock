@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            Sql( MigrationSQL._202205091654423_RemoveContentChannelViewDetail_Script );
+            //Sql( MigrationSQL._202205091654423_RemoveContentChannelViewDetail_Script );
         }
         
         /// <summary>
