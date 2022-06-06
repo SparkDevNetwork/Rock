@@ -211,7 +211,7 @@ console.log(websiteNames);
         private List<ListItem> GetInteractionChannelListItems()
         {
             var channels = InteractionChannelCache.All()
-                .Where( x => x.ChannelTypeMediumValue.Value == "Website" )
+                .Where( x => x.ChannelTypeMediumValue?.Value == "Website" )
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
                 .ToList();
 
