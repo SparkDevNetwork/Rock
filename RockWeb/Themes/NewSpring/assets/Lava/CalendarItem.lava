@@ -1,46 +1,4 @@
-{% comment %}
-
-{% assign defaultImage = 'Global' | Attribute:'ImageSquare' %}
-{% assign eventOccurrenceId = 'Global' | PageParameter:'EventOccurrenceId' %}
-{% assign EventItemOccurrence = Event.EventItemOccurrences | Where:'Id',eventOccurrenceId | First %}
-
-{% assign title = Event.Name | Replace:"'","’" %}
-{% assign imageSquare = Event | Attribute:'ImageSquare' %}
-{% assign imageLandscape = Event | Attribute:'ImageLandscape' %}
-{% assign imageurl = imageSquare | WithFallback:'', imageLandscape | WithFallback:'', defaultImage %}
-{% assign subtitle = eventItemOccurrence.EventItemOccurrence.Campus.Name | WithFallback:'', 'All Campuses' %}
-{% assign childcare = EventItemOccurrence | Attribute:'Childcare' %}
-{% assign food = EventItemOccurrence | Attribute:'Food' %}
-
-{% assign effectiveStartDate = EventItemOccurrence.Schedule.EffectiveStartDate %}
-{% capture formattedStartDate %}{[ formatDate date:effectiveStartDate ]}{% endcapture %}
-
-{% sql %}
-  SELECT
-    eiogm.UrlSlug,
-    eiogm.RegistrationInstanceId
-  FROM EventItemOccurrence eio
-  JOIN EventItemOccurrenceGroupMap eiogm
-  ON eiogm.EventItemOccurrenceId = eio.Id
-  WHERE eio.Id = {{ EventItemOccurrence.Id }}
-{% endsql %}
-
-{% assign urlSlug = results | First | Property:'UrlSlug' %}
-{% assign registrationInstanceId = results | First | Property:'RegistrationInstanceId' %}
-
-{% capture content %}
-  {{ Event.Description | Replace:"'","’" }}
-  {% if childcare == 'Yes' or food != empty %}
-    <ul>
-      {% if childcare == 'Yes' %}<li><small>Childcare Provided</small></li>{% endif %}
-      {% if food and food != empty %}<li><small>{{ food }} Provided</small></li>{% endif %}
-    </ul>
-  {% endif %}
-{% endcapture %}
-
-{[ sideBySide id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'No' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
-
-{% endcomment %}
+{% assign event = 'events' | PersistedDataset | Where:'Id',EventItemOccurrence.Id | First %}
 
 {% if Event.Summary != '' %}
   {{ Event.Summary | AddMetaTagToHead:'name','description' }}
@@ -63,68 +21,75 @@
   {{ twitterPhoto.Url | AddMetaTagToHead:'property','twitter:image' }}
 {% endif %}
 
-{% assign eventName = Event | Attribute:'PublicName' | Default:Event.Name %}
-{% assign eventImage = Event | Attribute:'ImageLandscape','Url' %}
+{% assign eventName = Event | Attribute:'PublicEventName' | Default:Event.Name %}
+{% assign eventImage = event.ImageLandscape %}
 
-<div class="container-fluid push-top" data-column="none">
+<div class="container-fluid" data-column="none">
 
   <div class="row flush-sides">
-    <div class="col-md-8 col-md-push-4 col-xs-12 margin-b-md">
-
-      {% if eventImage %}
-        <div class="ratio-landscape background-cover background-center rounded-lg push-bottom xs-push-half-bottom" style="background-image:url('{{ eventImage }}');"></div>
+    <div class="col-md-8 col-xs-12 margin-b-md">
+      {% if Event.Description and Event.Description != empty %}
+        <div class="bg-white soft xs-soft-half hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
+          {{ Event.Description }}
+        </div>
       {% endif %}
 
-      <h1 class="h2">{{ eventName }}</h1>
+    </div><div class="col-md-4 col-xs-12">
 
-      <p>{{ Event.Summary }}</p>
+      <div class="bg-white soft xs-soft-half hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
 
-
-
-    </div><div class="col-md-4 col-md-pull-8 col-xs-12">
-
-      <div class="bg-white soft xs-soft-half rounded-lg push-bottom xs-push-half-bottom">
-
-        {% if EventItemOccurrence.Campus != null %}
-          <p>
-            <span class="label label-default sans-serif circular">{{ EventItemOccurrence.Campus.Name }}</span>
-          </p>
-        {% endif %}
-
-        {% if EventItemOccurrence.Note != '' %}
+        {% assign note = EventItemOccurrence.Note | StripHtml | StripNewlines | Trim %}
+        {% if note and note != '' %}
           <h4 class="push-half-bottom">Additional Information</h4>
           {{ EventItemOccurrence.Note }}
         {% endif %}
 
+        {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
+        {% assign datesCount = scheduledDates | Size %}
+        <h4 class="push-half-bottom">Date{% if datesCount > 1 %}s{% endif %} & Time{% if datesCount > 1 %}s{% endif %}</h4>
+        <ul class="list-unstyled">
+        {% for scheduledDate in scheduledDates limit:5 %}
+          {% assign datetime = scheduledDate | Date:'HHmm' %}
+          <li>{[ formatDate date:scheduledDate ]}{% if datetime != '0000' %} at <span class="text-lowercase">{{ scheduledDate | Date:'h:mmtt' | Replace:':00','' }}</span>{% endif %}</li>
+        {% endfor %}
+        </ul>
+
+        <h4 class="push-half-bottom">Location</h4>
+        <p>
+          {% if event.Campus.Name and event.Campus.Name != empty %}<a href="/locations/{{ event.Campus.Name | Downcase | Replace:' ','-' }}">{% endif %}
+            {{ event.Campus.Name | Prepend:'NewSpring ' | Default:'All Campuses' }}
+          {% if event.Campus.Name and event.Campus.Name != empty %}</a>{% endif %}
+        </p>
+        {% if EventItemOccurrence.Location != '' %}
+          <p>{{ EventItemOccurrence.Location }}</p>
+        {% endif %}
+
         {% if EventItemOccurrence.ContactPersonAliasId != null or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
-          <h4 class="push-half-bottom">Contact Information</h4>
+          <h4 class="push-half-bottom">Contact</h4>
           <p>
             {% if EventItemOccurrence.ContactPersonAliasId != null %}
-            {{ EventItemOccurrence.ContactPersonAlias.Person.FullName }} <br />
+            <b>{{ EventItemOccurrence.ContactPersonAlias.Person.FullName }}</b><br />
             {% endif %}
 
             {% if EventItemOccurrence.ContactEmail != '' %}
-            {{ EventItemOccurrence.ContactEmail }} <br />
+            <a href="mailto:{{ EventItemOccurrence.ContactEmail }}">{{ EventItemOccurrence.ContactEmail }}</a> <br />
             {% endif %}
 
             {{ EventItemOccurrence.ContactPhone }}
           </p>
         {% endif %}
 
-        {% if EventItemOccurrence.Location != '' %}
-          <h4 class="push-half-bottom">Location</h4>
-          <p>
-            <strong> Location</strong> <br />
-            {{ EventItemOccurrence.Location }}
-          </p>
-        {% endif %}
-
         {% assign eventItemOccurrenceLinkages = EventItemOccurrence.Linkages %}
-
         {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
         {% if eventItemOccurrenceLinkagesCount > 0 %}
           {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
               {% if eventItemOccurrenceLinkage.RegistrationInstance != null and eventItemOccurrenceLinkage.RegistrationInstance.IsActive == true %}
+
+                {% if headingDisplayed != true %}
+                  <h4 class="push-half-bottom">Registration</h4>
+                {% endif %}
+                {% assign headingDisplayed = true %}
+
                 {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
                 {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
                 {% assign showRegistration = true %}
@@ -165,9 +130,9 @@
                         <div class='label label-default text-center margin-t-md' style='display: block; padding: 8px;'>{{ registrationButtonText }}</div>
                     {% else %}
                         {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
-                            <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{eventItemOccurrenceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
+                            <p><a href='{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{eventItemOccurrenceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a></p>
                         {% else %}
-                            <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-block margin-t-md">{{ registrationButtonText }}</a>
+                            <p><a href="{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-block margin-t-md">{{ registrationButtonText }}</a></p>
                         {% endif %}
                     {% endif %}
                 {% else %}
@@ -176,44 +141,34 @@
               {% endif %}
           {% endfor %}
         {% endif %}
+
+
+        <h4 class="push-half-bottom">Share This</h4>
+        <script>function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
+        <script>function ics_click(e) { e.preventDefault(); text = `{{ EventItemOccurrence.Schedule.iCalendarContent }}`.replace('END:VEVENT', 'SUMMARY: {{ eventName }}\r\nLOCATION: {{ EventItemOccurrence.Location }}\r\nEND:VEVENT'); var element = document.createElement('a'); element.setAttribute('href', 'data:text/calendar;charset=utf-8,' + encodeURIComponent(text)); element.setAttribute('download', '{{ eventName }}.ics'); element.style.display = 'none'; document.body.appendChild(element); element.click(); document.body.removeChild(element); }</script>
+        <ul class="socialsharing">
+          <li>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" title="" data-original-title="Share via Facebook">
+              <i class="fab fa-lg fa-fw fa-facebook text-facebook"></i>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" title="" data-original-title="Share via Twitter">
+              <i class="fab fa-lg fa-fw fa-twitter text-twitter"></i>
+            </a>
+          </li>
+          <li>
+            <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' | EscapeDataString }}" title="Share via Email" data-original-title="Share via Email">
+              <i class="fas fa-lg fa-fw fa-envelope text-gray"></i>
+            </a>
+          </li>
+          <li>
+            <a href="" onclick="return ics_click(event);" title="Download Event" data-original-title="Download Event">
+              <i class="fas fa-lg fa-fw fa-calendar text-danger"></i>
+            </a>
+          </li>
+        </ul>
       </div>
-
-      <ul class="list-group">
-        <li class="list-group-item">
-          <h4 class="h5 push-half-ends">Upcoming Dates</h4>
-        </li>
-        {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
-        {% for scheduledDate in scheduledDates limit:5 %}
-          <li class="list-group-item {% if forloop.first %}bg-info text-white stronger letter-spacing-condensed{% endif %}">{[ formatDate date:scheduledDate ]} @ {{ scheduledDate | Date:'h:mm tt' }}</li>
-        {% endfor %}
-      </ul>
-
-      <script>function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
-      <script>function ics_click(e) { e.preventDefault(); text = `{{ EventItemOccurrence.Schedule.iCalendarContent }}`.replace('END:VEVENT', 'SUMMARY: {{ eventName }}\r\nLOCATION: {{ EventItemOccurrence.Location }}\r\nEND:VEVENT'); var element = document.createElement('a'); element.setAttribute('href', 'data:text/calendar;charset=utf-8,' + encodeURIComponent(text)); element.setAttribute('download', '{{ eventName }}.ics'); element.style.display = 'none'; document.body.appendChild(element); element.click(); document.body.removeChild(element); }</script>
-      <ul class="socialsharing">
-        <li>
-          <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
-            <i class="fab fa-fw fa-facebook"></i>
-          </a>
-        </li>
-        <li>
-          <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
-            <i class="fab fa-fw fa-twitter"></i>
-          </a>
-        </li>
-        <li>
-          <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' | EscapeDataString }}"  class="socialicon socialicon-email" title="" data-original-title="Share via Email">
-            <i class="fas fa-fw fa-envelope"></i>
-          </a>
-        </li>
-        <li>
-          <a href="" onclick="return ics_click(event);" class="socialicon socialicon-calendar" title="" data-original-title="Download Event">
-            <i class="fas fa-fw fa-calendar"></i>
-          </a>
-        </li>
-      </ul>
-
-      <a href="/events" class="btn btn-sm btn-primary btn-block push-bottom xs-push-half-bottom"><i class="fas fa-chevron-left"></i>&nbsp; See More Events</a>
 
     </div>
   </div>

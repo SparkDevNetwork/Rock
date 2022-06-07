@@ -1,7 +1,7 @@
 {% assign totalpages = itemcount | DividedBy:pagesize | Ceiling | AsInteger %}
 {% assign currentpage = 'Global' | PageParameter:'Page' | WithFallback:'', '1' | AsInteger %}
 
-{% if currentpage > totalpages %}{{ '/page-not-found' | PageRedirect }}{% endif %}
+{% if totalpages > 0 and currentpage > totalpages %}{{ '/page-not-found' | PageRedirect }}{% endif %}
 
 {% capture paginationJSON %}{
   "ItemCount": {{ itemcount }},

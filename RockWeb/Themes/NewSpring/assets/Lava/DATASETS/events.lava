@@ -22,13 +22,11 @@
             "LocationDescription": {{ occurrence.Location | Trim | Escape | ToJSON }},
             "Description": {{ occurrence.EventItem.Description | Trim | Escape | ToJSON }},
             "Summary": {{ occurrence.EventItem.Summary | Trim | Escape | ToJSON }},
-            "Childcare": {{ calendarItem | Attribute:'Childcare' | ToJSON }},
-            "IsFeatured": {{ calendarItem | Attribute:'IsFeatured' | ToJSON }},
+            "Childcare": {{ occurrence.EventItem | Attribute:'Childcare' | ToJSON }},
+            "IsFeatured": {{ occurrence.EventItem | Attribute:'IsFeatured' | ToJSON }},
             "IsFeaturedOccurrence": {{ occurrence | Attribute:'IsFeaturedOccurrence' | ToJSON }},
-            {% assign calendarItemImageLandscape = calendarItem | Attribute:'ImageLandscape' %}
-            {% assign calendarItemImageSquare = calendarItem | Attribute:'ImageSquare' %}
-            "ImageLandscape": {{ occurrence | Attribute:'ImageLandscape' | Default:calendarItemImageLandscape | ToJSON }},
-            "ImageSquare": {{ occurrence | Attribute:'ImageSquare' | Default:calendarItemImageSquare | ToJSON }},
+            "ImageLandscape": {{ occurrence.EventItem | Attribute:'ImageLandscape' | ToJSON }},
+            "ImageSquare": {{ occurrence.EventItem | Attribute:'ImageSquare' | ToJSON }},
             "Contact": {
                 "PersonAliasId": {{ occurrence.ContactPersonAliasId | ToJSON }},
                 "Email": {{ occurrence.ContactEmail | Default:null | ToJSON }},

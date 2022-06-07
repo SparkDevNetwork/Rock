@@ -13,8 +13,8 @@
 {% assign nsImageUrl = campus.LandscapeImage %}
 
 {% capture id %}{% endcapture %}
-{% capture title %}{{ campus.Name }}, SC{% endcapture %}
-{% capture titlesize %}display-1 uppercase{% endcapture %}
+{% capture title %}{{ campus.Name }}{% endcapture %}
+{% capture titlesize %}display-2 uppercase{% endcapture %}
 {% capture content %}{% endcapture %}
 {% capture textalignment %}left{% endcapture %}
 {% capture label %}{% endcapture %}

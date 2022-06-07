@@ -36,9 +36,10 @@
     <div class="panel">
         <div class="panel-body soft-double-ends soft-sides xs-text-center clearfix">
             <div class="row">
-                <div class="col-xs-12 col-sm-12 col-md-3 xs-push-bottom">
-                    <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ leader | Attribute:'StaffImage','Url' }}'); border: 5px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.4);"></div>
-                </div><div class="col-xs-12 col-sm-12 col-md-9">
+                <div class="col-xs-12 col-sm-12 col-md-4 xs-push-bottom">
+                    {% assign staffImage = leader | Attribute:'StaffImage','Url' %}
+                    <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ leader | Attribute:'StaffFamilyImage','Url' | Default:staffImage }}'); border: 5px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.4);"></div>
+                </div><div class="col-xs-12 col-sm-12 col-md-8">
                     <h4 class="h5 text-gray-light push-half-bottom">{{ leader | Attribute:'StaffTitle' }}</h4>
                     <h2 class="h2 push-half-bottom">{{ leader.FullName }}</h2>
                     <p>{{ leader | Attribute:'StaffBio' }}</p>

@@ -1,4 +1,8 @@
+{% assign campusName = PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
 {% assign campusId = PageParameter:'CampusId' | AsInteger %}
+{% if campusName != empty %}
+    {% assign campusId = 'All' | FromCache:'Campus' | Where:'Name',campusName | First | Property:'Id' | AsInteger %}
+{% endif %}
 {% assign defaultStartDate = 'Now' | Date:'MM/dd/yyyy' %}
 {% assign defaultEndDate = 'Now' | DateAdd:1,'M' | Date:'MM/dd/yyyy' %}
 {% assign startDate = PageParameter:'StartDate' | Default:defaultStartDate %}
@@ -37,56 +41,50 @@
     {% assign featuredEventsByEventItem = featuredEventsByEventItem |  AddToArray:featuredEvent %}
 {% endfor %}
 
-{% assign featuredEventsByEventItem = featuredEventsByEventItem | OrderBy:'IsFeatured desc, StartDateTime' %}
+{% assign featuredEventsByEventItem = featuredEventsByEventItem | OrderBy:'IsFeatured desc, StartDateTime' | OrderBy:'StartDateTime' %}
 
 {% assign firstId = featuredEvents | First | Property:'Id' %}
 {% if firstId != empty %}
-<div class="row push-bottom xs-push-half-bottom">
+<div class="row">
     {% for event in featuredEventsByEventItem limit:3 %}<div class="col-md-4 col-sm-6 col-xs-12 push-bottom xs-push-half-bottom">
 
         //- Set campus-specific slug if it exists, then use all campuses linkage, then event item details url
         {% assign linkages = event.Linkages %}
         {% assign campusLinkage = linkages | Where:'GroupCampusId',campusId | First %}
         {% if campusId != empty and campusLinkage != null %}
-            {% assign slug = campusLinkage.UrlSlug %}
+            {% assign slug = campusLinkage.UrlSlug | Prepend:'/events/' %}
         {% elseif linkages != empty %}
-            {% assign slug = linkages | First | Property:'UrlSlug' %}
+            {% assign slug = linkages | First | Property:'UrlSlug' | Prepend:'/events/' %}
         {% else %}
             {% assign slug = event.DetailsUrl %}
         {% endif %}
 
         {% capture imageurl %}{{ event.ImageSquare | Default:fallbackImage }}{% endcapture %}
 
-        <a href="#" class="text-decoration-none">
-        <div class="card ratio ratio-shuare bg-black text-white soft rounded-lg overflow-hidden">
-            <div class="full-screen background-cover background-center" style="background-image:url('{{ imageurl }}'); opacity: 1;"></div>
+        {% if slug and slug != empty %}
+        <a href="{{ slug }}" class="text-decoration-none">
+        {% endif %}
 
-            <div class="ratio-item bring-forward soft hard-bottom clearfix floating floating-left floating-bottom">
-                <div class="floating-item">
-                    <h4 class="text-white push-half-bottom">{{ event.Name }}</h4>
-                    <p class="label label-info sans-serif circular display-inline-block push-half-bottom">{{ event.Campus.Name | Default:'All Campuses' }}</p>
-                    <p>{[ formatDate date:'{{ event.StartDateTime }}' ]} - {{ event.StartDateTime | Date:'h:mm tt' }}</p>
+            <div class="card ratio ratio-shuare bg-black text-white soft rounded-lg overflow-hidden">
+                <div class="full-screen background-cover background-center" style="background-image:url('{{ imageurl }}'); opacity: 1;"></div>
+
+                <div class="ratio-item bring-forward soft hard-bottom clearfix floating floating-left floating-bottom">
+
+                    <p class="position-absolute top-zero right-zero push-top push-right label label-info sans-serif circular display-inline-block push-half-bottom">{{ event.Campus.Name | Default:'All Campuses' }}</p>
+
+                    <div class="floating-item">
+                        <h4 class="text-white push-quarter-bottom">{{ event.Name }}</h4>
+                        <p>{[ formatDate date:'{{ event.StartDateTime }}' ]} - {{ event.StartDateTime | Date:'h:mm tt' }}</p>
+                    </div>
                 </div>
+
+                <div class="card-gradient"></div>
             </div>
 
-            <div class="card-gradient"></div>
-        </div>
+        {% if slug and slug != empty %}
         </a>
+        {% endif %}
 
     </div>{% endfor %}
 </div>
 {% endif %}
-
-<style>
-    .card-gradient {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        background: rgb(0,0,0);
-        background: linear-gradient(180deg, transparent 0%, #000 100%);
-        opacity: .9;
-    }
-</style>

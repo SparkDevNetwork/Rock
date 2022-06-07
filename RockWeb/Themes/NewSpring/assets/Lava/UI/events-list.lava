@@ -32,7 +32,18 @@
     {% endif %}
     {% assign prevEventMonth = eventMonth %}
 
-    <a href="/events/{{ eventSlug }}" class="text-decoration-none text-gray-dark">
+    //- Set campus-specific slug if it exists, then use all campuses linkage, then event item details url
+    {% assign linkages = event.Linkages %}
+    {% assign campusLinkage = linkages | Where:'GroupCampusId',campusId | First %}
+    {% if campusId != empty and campusLinkage != null %}
+        {% assign slug = campusLinkage.UrlSlug | Prepend:'/events/' %}
+    {% elseif linkages != empty %}
+        {% assign slug = linkages | First | Property:'UrlSlug' | Prepend:'/events/' %}
+    {% else %}
+        {% assign slug = event.DetailsUrl %}
+    {% endif %}
+
+    <a href="{{ slug }}" class="text-decoration-none text-gray-dark">
         <div class="bg-white soft-half rounded-lg push-half-bottom">
             <div class="floating floating-left row">
                 <div class="floating-item col-md-1 col-sm-2 hidden-xs">
