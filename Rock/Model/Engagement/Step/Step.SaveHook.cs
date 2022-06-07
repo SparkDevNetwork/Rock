@@ -55,7 +55,7 @@ namespace Rock.Model
                     StepTypeId = Entity.StepTypeId,
                     CurrentStepStatusId = Entity.StepStatusId,
                     PreviousStepStatusId = previousStepStatusId
-                }.Send();
+                }.SendWhen( this.DbContext.WrappedTransactionCompletedTask );
 
                 PersonHistoryChangeList = new History.HistoryChangeList();
                 var rockContext = ( RockContext ) this.RockContext;
