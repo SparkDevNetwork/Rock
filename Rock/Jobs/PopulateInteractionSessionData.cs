@@ -329,6 +329,12 @@ namespace Rock.Jobs
                     // Get next batch of Interaction Sessions
                     var interactionSessions = GetInteractionSessions( rockContext, maxRecordsToReturn, lookBackStartDate, minSessionId );
 
+                    // If there are no more sessions to process then exit the loop
+                    if ( interactionSessions.Count() == 0 )
+                    {
+                        break;
+                    }
+
                     // Update the min session id for the next batch run. This ensures we don't process the same batch of sessions over and over in the loop
                     minSessionId = interactionSessions.Max( s => s.Id );
 
@@ -386,12 +392,6 @@ namespace Rock.Jobs
 
                     rockContext.SaveChanges();
 
-                    // If there are no more sessions to process then exit
-                    if ( interactionSessions.Count() == 0 )
-                    {
-                        break;
-                    }
-
                     // If we processed the max number we're allowed per run exit
                     if ( ipAddressSessionKeyValue.Count() >= numberOfRecordsToProcess )
                     {
@@ -408,7 +408,7 @@ namespace Rock.Jobs
                     _exceptions.Add( exceptionWrapper );
                     ExceptionLogService.LogException( exceptionWrapper, null );
 
-                    continue;
+                    break;
                 }
             }
 
