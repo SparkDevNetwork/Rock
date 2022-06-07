@@ -731,6 +731,30 @@ UNION
         }
 
         /// <summary>
+        /// Verify that a nullable database column is mapped to a Nullable<> System.Type.
+        /// </summary>
+        [TestMethod]
+        public void SqlBlock_NullableDatabaseColumn_IsReturnedAsNullableType()
+        {
+            var input = @"
+{% sql return:'Items' %}
+    SELECT TOP 1 p.[PhotoId] FROM [Person] as p WHERE [PhotoId] IS NULL
+{% endsql %}
+{% for item in Items %}
+    {% if item.PhotoId == null %}
+    Is Null
+    {% endif %}
+{% endfor %}
+";
+
+            var expectedOutput = @"Is Null";
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        /// <summary>
         /// Verify that the Select filter operates correctly on the result set returned by the Sql Lava block.
         /// Verifies Issue #4938 ⁃ Select Lava Filter Does Not See Values In A SQL Results Array.
         /// Refer https://github.com/SparkDevNetwork/Rock/issues/4938.
