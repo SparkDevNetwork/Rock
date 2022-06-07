@@ -7,10 +7,12 @@ using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Jobs
 {
+    /// <summary>
+    /// Defines test class SendFollowingEventNotificationTests.
+    /// </summary>
     [TestClass]
     public class SendFollowingEventNotificationTests
     {
-
         #region Tests
 
         /// <summary>
@@ -25,7 +27,7 @@ namespace Rock.Tests.Integration.Jobs
             var groupTypeService = new GroupTypeService( rockContext );
             var personService = new PersonService( rockContext );
 
-            var rsrStaffWorkersGroupGuid = "2C112948-FF4C-46E7-981A-0257681EADF4".AsGuid();
+            var rsrStaffWorkersGroupGuid = SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid();
             var rsrStaffWorkers = groupService.GetByGuid( rsrStaffWorkersGroupGuid );
             Assert.IsNotNull( rsrStaffWorkers );
 
@@ -70,13 +72,13 @@ namespace Rock.Tests.Integration.Jobs
             var eventTypeService = new FollowingEventTypeService( rockContext );
 
             // JoinedSmallGroup
-            var eventTypeGuid = "CDFB247B-B868-49BD-A080-0B2E8679DA4C".AsGuid();
+            var eventTypeGuid = SystemGuid.FollowingEventType.JOINED_SMALL_GROUP.AsGuid();
             var eventType = eventTypeService.Get( eventTypeGuid );
             Assert.IsNotNull( eventType );
 
             var followingEventSubscriptionService = new FollowingEventSubscriptionService( rockContext );
 
-            //Person event subscription
+            // Person event subscription
             var personEventSubscriptionGuid = "50D538EA-BAAD-4E75-9843-26165E8DFE92".AsGuid();
             var personEventSubscription = followingEventSubscriptionService.Get( personEventSubscriptionGuid );
 
@@ -93,7 +95,7 @@ namespace Rock.Tests.Integration.Jobs
                 rockContext.SaveChanges();
             }
 
-            //Admin event subscription
+            // Admin event subscription
             var adminEventSubscriptionGuid = "50874360-8A6C-4FC3-8A94-C1BEDE874664".AsGuid();
             var adminEventSubscription = followingEventSubscriptionService.Get( adminEventSubscriptionGuid );
 
@@ -110,7 +112,7 @@ namespace Rock.Tests.Integration.Jobs
                 rockContext.SaveChanges();
             }
 
-            //Add following
+            // Add following
             var followingService = new FollowingService( rockContext );
             var personAliasEntityType = EntityTypeCache.Get( typeof( Rock.Model.PersonAlias ) );
 
@@ -122,8 +124,8 @@ namespace Rock.Tests.Integration.Jobs
                 {
                     Guid = followingGuid,
                     EntityTypeId = personAliasEntityType.Id,
-                    EntityId = personAlias.Id, //folowee
-                    PersonAliasId = adminAlias.Id //follower
+                    EntityId = personAlias.Id, // folowee
+                    PersonAliasId = adminAlias.Id // follower
                 };
 
                 followingService.Add( following );
@@ -136,10 +138,8 @@ namespace Rock.Tests.Integration.Jobs
             jobContext.JobDetail.JobDataMap.Add( "EligibleFollowers", rsrStaffWorkersGroupGuid.ToString() );
             jobContext.JobDetail.JobDataMap.Add( "EmailTemplate", followingEventSystemEmailGuid.ToString());
             job.Execute( jobContext );
-            Assert.IsNotNull( "", "Expected error not found." );
         }
 
         #endregion Tests
-
     }
 }
