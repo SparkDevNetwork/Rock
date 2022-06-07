@@ -62,7 +62,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             // Set the test timezone.
             LavaTestHelper.SetRockDateTimeToAlternateTimezone();
-              
+
             // Initialize the test calendar data.
             _tzId = RockDateTime.OrgTimeZoneInfo.Id;
             _today = RockDateTime.Today;
@@ -943,6 +943,43 @@ namespace Rock.Tests.UnitTests.Lava
 
                 TestHelper.AssertTemplateOutput( engine, "today", "{{ dateTimeInput | DaysFromNow }}", mergeValues2 );
             } );
+        }
+
+        #endregion
+
+        #region Filter Tests: IsDateBetween
+
+        /// <summary>
+        /// Verifies when no format string is provided, the start and end date ranges default to SOD and EOD respectively.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithoutFormatString_AdjustsStartAndEndTimes()
+        {
+            var template = "{{ '2022-05-01 09:00' | IsDateBetween:'2022-05-01 12:00','2022-05-01 07:00' }}";
+
+            TestHelper.AssertTemplateOutput( "true", template );
+        }
+
+        /// <summary>
+        /// Verifies when a format string if provided, the start and end date ranges maintain their given times.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithFormatString_DoesNotAdjustTimes()
+        {
+            var template = "{{ '2022-05-01 09:00' | IsDateBetween:'2022-05-01 12:00','2022-05-01 07:00','yyyy-MM-dd HH:mm' }}";
+
+            TestHelper.AssertTemplateOutput( "false", template );
+        }
+
+        /// <summary>
+        /// Verifies that filter works when DateTime or DateTimeOffset input is sent.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithDateTimeOrDateTimeOffsetAsInput()
+        {
+            var template = "{{ targetDate | IsDateBetween:startDate,endDate }}";
+            var mergeValues = new LavaDataDictionary() { { "targetDate", DateTime.Parse( "2022-05-02" ) }, { "startDate", DateTime.Parse( "2022-05-01" ) }, { "endDate", DateTime.Parse( "2022-05-03" ) } };
+            TestHelper.AssertTemplateOutput( "true", template, mergeValues );
         }
 
         #endregion
