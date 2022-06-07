@@ -246,12 +246,14 @@ function() {
         private List<ListItem> GetInteractionChannelListItems( RockContext rockContext )
         {
             var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+
             var channels = new InteractionChannelService( rockContext )
                 .Queryable()
                 .Where( x => x.ChannelTypeMediumValue.Guid == websiteGuid )
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
                 .ToList();
-            return channels;
+
+            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -391,8 +393,15 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
             var rockContext = ( RockContext ) serviceInstance.Context;
+
+            var websiteInteractionChannel = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
+            var interactionComponentIds = new InteractionComponentService( rockContext )
+                .Queryable()
+                .Where( m => m.InteractionChannel.ChannelTypeMediumValueId == websiteInteractionChannel.Id && selectionConfig.WebsiteIds.Contains( m.InteractionChannelId ) )
+                .Select( m => m.Id );
+
             var interactionQry = new InteractionSessionService( rockContext ).Queryable()
-                .Where( m => m.Interactions.Any( x => ( selectionConfig.WebsiteIds.Contains( x.InteractionComponent.InteractionChannelId ) && x.Operation == "View" ) ) );
+                .Where( m => m.Interactions.Any( x => ( interactionComponentIds.Contains( x.InteractionComponent.InteractionChannelId ) && x.Operation == "View" ) ) );
 
             if ( selectionConfig.PageIds.Count > 0 )
             {

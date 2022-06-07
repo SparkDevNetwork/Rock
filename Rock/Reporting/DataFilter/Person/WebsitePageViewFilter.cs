@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -217,7 +218,7 @@ console.log(websiteNames);
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
                 .ToList();
 
-            return channels;
+            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -339,11 +340,18 @@ console.log(websiteNames);
         /// <exception cref="System.NotImplementedException"></exception>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var selectionConfig = SelectionConfig.Parse( selection );
-            var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
             var rockContext = ( RockContext ) serviceInstance.Context;
-            var interactionQry = new InteractionService( rockContext ).Queryable()
-                .Where( m => selectionConfig.WebsiteIds.Contains( m.InteractionComponent.InteractionChannelId ) && m.Operation == "View" );
+            var selectionConfig = SelectionConfig.Parse( selection );
+            rockContext.Database.Log = s => Debug.WriteLine( s );
+
+            var websiteInteractionChannel = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
+            var interactionComponentIds = new InteractionComponentService( rockContext )
+                .Queryable()
+                .Where( m => m.InteractionChannel.ChannelTypeMediumValueId == websiteInteractionChannel.Id && selectionConfig.WebsiteIds.Contains( m.InteractionChannelId ) )
+                .Select( m => m.Id );
+
+            var interactionQry = new InteractionService( rockContext ).Queryable().Where( m => interactionComponentIds.Contains( m.InteractionComponentId ) && m.Operation == "View" );
+            var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
 
             if ( selectionConfig.DelimitedDateRangeValues.IsNotNullOrWhiteSpace() )
             {
