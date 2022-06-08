@@ -46,8 +46,12 @@ namespace Rock.Migrations
         private void UpdateContentChannelViewDetail()
         {
             Sql( @"
+                -- Get the old ContentChannelViewDetail block type
+                DECLARE @ContentChannelViewDetailId int = ( SELECT TOP 1 [Id] FROM [BlockType] WHERE [Path]='~/Blocks/Cms/ContentChannelViewDetail.ascx' )
+                
                 -- Get the new ContentChannelItemView block type
-                DECLARE @ContentChannelViewDetailId int = ( SELECT TOP 1 [Id] FROM [BlockType] WHERE [Guid] = '63659EBE-C5AF-4157-804A-55C7D565110E' )
+                DECLARE @ContentChannelItemViewId int = ( SELECT TOP 1 [Id] FROM [BlockType] WHERE [Guid] = '63659EBE-C5AF-4157-804A-55C7D565110E' )
+
                 DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
 
                 DECLARE @BlockId int
@@ -61,19 +65,21 @@ namespace Rock.Migrations
 		                -- update block of ContentChannelItemView block type with Content Channel Item View Block Type Id
 		                UPDATE 
 			                [dbo].[Block]
-		                SET [BlockTypeId] = @ContentChannelViewDetailId
+		                SET [BlockTypeId] = @ContentChannelItemViewId
 		                WHERE
 			                [Id] = @BlockId
 
-		                UPDATE
-			                a
+		                UPDATE a
 		                SET a.AttributeId=c.[Id]
-		                FROM [dbo].[AttributeValue] a INNER JOIN [dbo].[Attribute] b ON a.AttributeId = b.[Id] AND b.[EntityTypeQualifierColumn] = 'BlockTypeId' 
-		                INNER JOIN [dbo].[Attribute] c ON c.[EntityTypeQualifierColumn] = 'BlockTypeId' AND c.[EntityTypeQualifierValue] = @ContentChannelViewDetailId AND c.[Key] = b.[Key]
+		                FROM [dbo].[AttributeValue] a
+                        INNER JOIN [dbo].[Attribute] b ON a.AttributeId = b.[Id] AND b.[EntityTypeQualifierColumn] = 'BlockTypeId' AND b.[EntityTypeQualifierValue] = @ContentChannelViewDetailId
+		                INNER JOIN [dbo].[Attribute] c ON c.[EntityTypeQualifierColumn] = 'BlockTypeId' AND c.[EntityTypeQualifierValue] = @ContentChannelItemViewId AND c.[Key] = b.[Key]
 		                WHERE a.[EntityId] = @BlockId
 	                END
+
 	                FETCH NEXT FROM cursor_table INTO @BlockId
                 END
+
                 CLOSE cursor_table
                 DEALLOCATE cursor_table
 

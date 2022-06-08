@@ -5514,7 +5514,8 @@ namespace RockWeb.Blocks.Connection
     campusId: {10},
     lastActivityTypeIds: {11},
     controlClientId: {12},
-    pastDueOnly: {13}
+    pastDueOnly: {13},
+    connectionRequestId: {14}
 }});",
                 ToJavaScript( ConnectionOpportunityId ), // 0
                 ToJavaScript( GetMaxCardsPerColumn() ), // 1
@@ -5529,7 +5530,8 @@ namespace RockWeb.Blocks.Connection
                 ToJavaScript( CampusId ), // 10
                 ToJavaScript( cblLastActivityFilter.SelectedValuesAsInt ), // 11
                 ToJavaScript( lbJavaScriptCommand.ClientID ), // 12
-                ToJavaScript( rcbPastDueOnly.Checked ) /* 13 */ );
+                ToJavaScript( rcbPastDueOnly.Checked ), //13
+                ToJavaScript( ConnectionRequestId ) /* 14 */ );
 
             ScriptManager.RegisterStartupScript(
                 upnlJavaScript,
