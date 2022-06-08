@@ -578,7 +578,7 @@ namespace Rock.Lava.Filters
             {
                 return null;
             }
-            
+
             bool includeCurrent = includeCurrentDay.ToStringSafe().AsBoolean( false );
 
             // Check for invalid number of weeks
@@ -728,6 +728,31 @@ namespace Rock.Lava.Filters
             return response;
         }
 
+        /// <summary>
+        /// Return true if the date is within the provided range, false if outside of range
+        /// </summary>
+        /// <param name="input">The input date.</param>
+        /// <param name="start">The range start date.</param>
+        /// <param name="end">The range end date.</param>
+        /// <param name="format">Optional format string.</param>
+        /// <returns>boolean value of input being between the start and end dates.</returns>
+        public static bool IsDateBetween( object input, object start, object end, string format = null )
+        {
+            DateTime? target = ParseInputForIsDateBetween( input, "target", format );
+            DateTime? rangeStart = ParseInputForIsDateBetween( start, "start", format );
+            DateTime? rangeEnd = ParseInputForIsDateBetween( end, "end", format );
+
+            if ( target.HasValue && rangeEnd.HasValue && rangeStart.HasValue )
+            {
+                if ( DateTime.Compare( target.Value, rangeStart.Value ) >= 0 && DateTime.Compare( target.Value, rangeEnd.Value ) <= 0 )
+                {
+                    return true;
+                }
+                return false;
+            }
+            throw new Exception( "Unable to parse input, start, and end" );
+        }
+
         #region Support Functions
 
         /// <summary>
@@ -838,6 +863,62 @@ namespace Rock.Lava.Filters
             {
                 return monthDiff;
             }
+        }
+
+        /// <summary>
+        /// This filter parses the user input for the lava filter for the IsDateBetween method. Should not be modified without testing with that filter.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parameter">Which parameter from lava filter, used to set time of day in some cases.</param>
+        /// <param name="format">Optional format string for parsing string to datetime.</param>
+        /// <returns></returns>
+        private static DateTime ParseInputForIsDateBetween( object input, string parameter, string format = null )
+        {
+            DateTime result;
+            if ( input.GetType() == typeof( string ) )
+            {
+                if ( format != null )
+                {
+                    var isValid = DateTime.TryParseExact( input.ToString(), format, CultureInfo.InvariantCulture, DateTimeStyles.None, out result );
+                    if ( !isValid )
+                    {
+                        throw new Exception( "Unable to parse " + parameter + " input as date with format: \"" + format + "\"." );
+                    }
+                }
+                else
+                {
+                    var isValid = DateTime.TryParse( input.ToString(), out result );
+                    if ( isValid )
+                    {
+                        if ( parameter == "end" )
+                        {
+                            result = new DateTime( result.Year, result.Month, result.Day, 23, 59, 59 );
+                        }
+                        else if ( parameter == "start" )
+                        {
+                            result = new DateTime( result.Year, result.Month, result.Day, 0, 0, 0 );
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception( "Unable to parse " + parameter + " input as date." );
+                    }
+                }
+            }
+            else if ( input.GetType() == typeof( DateTimeOffset ) )
+            {
+                var offset = ( DateTimeOffset ) input;
+                result = offset.DateTime;
+            }
+            else if ( input.GetType() == typeof( DateTime ) )
+            {
+                result = ( DateTime ) input;
+            }
+            else
+            {
+                throw new Exception( "Invalid Input: " + parameter + " input must be of type string or date" );
+            }
+            return result;
         }
 
         #endregion
