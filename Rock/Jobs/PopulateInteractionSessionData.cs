@@ -39,7 +39,7 @@ namespace Rock.Jobs
 
     [ComponentField(
         "Rock.IpAddress.IpAddressLookupContainer, Rock",
-        Name = "IP Address GeoCoding Component",
+        Name = "IP Address Geocoding Component",
         Description = "The service that will perform the IP GeoCoding lookup for any new IPs that have not been GeoCoded. Not required to be set here because the job will use the first active component if one is not configured here.",
         IsRequired = false,
         Order = 0,
