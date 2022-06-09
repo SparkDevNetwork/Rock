@@ -491,6 +491,8 @@ namespace Rock.Tests.UnitTests.Lava
 
         #endregion
 
+        #region Filter Tests: Trim
+
         /// <summary>
         /// Leading and trailing whitespace should be removed, while internal whitespace is preserved.
         /// </summary>
@@ -500,12 +502,103 @@ namespace Rock.Tests.UnitTests.Lava
         [DataRow( "   Ted Decker    ", "Ted Decker" )]
         [DataRow( "   ", "" )]
         [DataRow( "", "" )]
-        public void Trim_LeadingAndTrailingWhitespaceIsRemoved( string input, string expected )
+        public void Trim_WithNoParameters_RemovesLeadingAndTrailingWhitespace( string input, string expected )
         {
             var template = "{{ '" + input + "' | Trim }}";
 
+            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: false );
+        }
+
+        /// <summary>
+        /// Leading and trailing character sequences should be removed, while other characters are preserved.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "Ted#Decker", "#", "Ted#Decker" )]
+        [DataRow( "#Ted Decker", "#", "Ted Decker" )]
+        [DataRow( "#Ted Decker#", "#", "Ted Decker" )]
+        [DataRow( "###Ted##Decker###", "##", "#Ted##Decker#" )]
+        [DataRow( "###", "#", "" )]
+        [DataRow( "#$#$Ted#$Decker#$#$", "#$", "Ted#$Decker" )]
+        [DataRow( "#$#$#$#$", "#$", "" )]
+        [DataRow( "", "###", "" )]
+        public void Trim_WithSpecifiedTextToRemove_RemovesTextFromStartAndEndOfString( string input, string textToRemove, string expected )
+        {
+            var template = "{{ '" + input + "' | Trim:'" + textToRemove + "' }}";
+
             TestHelper.AssertTemplateOutput( expected, template );
         }
+
+        /// <summary>
+        /// Leading and trailing whitespace should be removed, while internal whitespace is preserved.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "Ted Decker   ", "Ted Decker" )]
+        [DataRow( "   Ted Decker", "   Ted Decker" )]
+        [DataRow( "   Ted Decker   ", "   Ted Decker" )]
+        [DataRow( "   ", "" )]
+        [DataRow( "", "" )]
+        public void TrimEnd_WithNoParameters_RemovesTrailingWhitespace( string input, string expected )
+        {
+            var template = "{{ '" + input + "' | TrimEnd }}";
+
+            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace:false );
+        }
+
+        /// <summary>
+        /// Trailing characters should be removed, while other characters are preserved.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "Ted#Decker", "#", "Ted#Decker" )]
+        [DataRow( "Ted Decker#", "#", "Ted Decker" )]
+        [DataRow( "#Ted Decker#", "#", "#Ted Decker" )]
+        [DataRow( "###Ted##Decker###", "##", "###Ted##Decker#" )]
+        [DataRow( "###", "#", "" )]
+        [DataRow( "#$#$Ted#$Decker#$#$", "#$", "#$#$Ted#$Decker" )]
+        [DataRow( "#$#$#$#$", "#$", "" )]
+        [DataRow( "", "###", "" )]
+        public void TrimEnd_WithSpecifiedTextToRemove_RemovesTextFromEndOfString( string input, string textToRemove, string expected )
+        {
+            var template = "{{ '" + input + "' | TrimEnd:'" + textToRemove + "' }}";
+
+            TestHelper.AssertTemplateOutput( expected, template );
+        }
+
+        /// <summary>
+        /// Leading and trailing whitespace should be removed, while internal whitespace is preserved.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "Ted Decker   ", "Ted Decker   " )]
+        [DataRow( "   Ted Decker", "Ted Decker" )]
+        [DataRow( "Ted Decker   ", "Ted Decker   " )]
+        [DataRow( "   ", "" )]
+        [DataRow( "", "" )]
+        public void TrimStart_WithNoParameters_RemovesLeadingWhitespace( string input, string expected )
+        {
+            var template = "{{ '" + input + "' | TrimStart }}";
+
+            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: false );
+        }
+
+        /// <summary>
+        /// Leading characters should be removed, while other characters are preserved.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "Ted*Decker", "*", "Ted*Decker" )]
+        [DataRow( "*Ted Decker", "*", "Ted Decker" )]
+        [DataRow( "*Ted Decker*", "*", "Ted Decker*" )]
+        [DataRow( "***Ted**Decker***", "**", "*Ted**Decker***" )]
+        [DataRow( "***", "*", "" )]
+        [DataRow( "*$*$Ted*$Decker*$*$", "*$", "Ted*$Decker*$*$" )]
+        [DataRow( "*$*$*$*$", "*$", "" )]
+        [DataRow( "", "***", "" )]
+        public void TrimStart_WithSpecifiedTextToRemove_RemovesTextFromStartOfString( string input, string textToRemove, string expected )
+        {
+            var template = "{{ '" + input + "' | TrimStart:'" + textToRemove + "' }}";
+
+            TestHelper.AssertTemplateOutput( expected, template );
+        }
+
+        #endregion
 
         /// <summary>
         /// Url parts queries return the correct segment of the Url.

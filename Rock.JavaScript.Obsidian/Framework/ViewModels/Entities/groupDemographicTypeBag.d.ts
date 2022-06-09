@@ -25,40 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupDemographicType View Model */
 export type GroupDemographicTypeBag = {
-    /** Gets or sets the ComponentEntityTypeId. */
+    /** Gets or sets the component entity type identifier. This is an FK of EntityType.Id. */
     componentEntityTypeId: number;
 
-    /** Gets or sets the Description. */
+    /** The description of the Group Demographic Type. Previewable. */
     description?: string | null;
 
-    /** Gets or sets the GroupTypeId. */
+    /** The Rock.Model.GroupType identifier of the group this Group Demographic Type is associated with. */
     groupTypeId: number;
 
-    /** Gets or sets the IsAutomated. */
+    /** Specify if this GroupDemographicType is automated. If true the UI will not allow manual entry. */
     isAutomated: boolean;
 
-    /** Gets or sets the LastRunDurationSeconds. */
+    /** How long a component took to get its values in seconds. */
     lastRunDurationSeconds?: number | null;
 
-    /** Gets or sets the Name. */
+    /** The name of the Group Demographic Type. Previewable. */
     name?: string | null;
 
-    /** Gets or sets the RoleFilter. */
+    /** A comma delimited list of GroupTypeRoles IDs */
     roleFilter?: string | null;
 
-    /** Gets or sets the RunOnPersonUpdate. */
+    /** Indicates if the component for this Group Demographic Type should be run everytime a person is updated. */
     runOnPersonUpdate: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

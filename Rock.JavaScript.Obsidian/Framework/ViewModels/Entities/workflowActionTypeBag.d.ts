@@ -26,46 +26,46 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowActionType View Model */
 export type WorkflowActionTypeBag = {
-    /** Gets or sets the ActivityTypeId. */
+    /** Gets or sets the ActivityTypeId of the Rock.Model.WorkflowActivityType that performs this Action Type. */
     activityTypeId: number;
 
-    /** Gets or sets the CriteriaAttributeGuid. */
+    /** Gets or sets the criteria attribute unique identifier. */
     criteriaAttributeGuid?: Guid | null;
 
-    /** Gets or sets the CriteriaComparisonType. */
+    /** Gets or sets the type of the criteria comparison. */
     criteriaComparisonType: number;
 
-    /** Gets or sets the CriteriaValue. */
+    /** Gets or sets the criteria value. */
     criteriaValue?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType that the action is operating against. */
     entityTypeId: number;
 
-    /** Gets or sets the IsActionCompletedOnSuccess. */
+    /** Gets or sets a value indicating whether this instance is action completed on success. */
     isActionCompletedOnSuccess: boolean;
 
-    /** Gets or sets the IsActivityCompletedOnSuccess. */
+    /** Gets or sets a value indicating whether this instance is activity completed on success. */
     isActivityCompletedOnSuccess: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the friendly name of the ActionType */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order of the ActionType in the Rock.Model.WorkflowActivityType */
     order: number;
 
-    /** Gets or sets the WorkflowFormId. */
+    /** Gets or sets the workflow form identifier. */
     workflowFormId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

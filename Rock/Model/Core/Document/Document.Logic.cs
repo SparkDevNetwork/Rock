@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -78,30 +79,33 @@ namespace Rock.Model
         {
             var result = base.IsValid;
             errorMessage = string.Empty;
-            if ( result )
+            if ( !result )
             {
-                var documentType = DocumentType ?? new DocumentTypeService( rockContext ).Get( DocumentTypeId );
+                errorMessage = this.ValidationResults.FirstOrDefault()?.ErrorMessage;
+                return false;
+            }
 
-                if ( documentType == null )
+            var documentType = DocumentType ?? new DocumentTypeService( rockContext ).Get( DocumentTypeId );
+
+            if ( documentType == null )
+            {
+                errorMessage = $"Invalid document type found.";
+                ValidationResults.Add( new ValidationResult( errorMessage ) );
+                result = false;
+            }
+
+            if ( documentType != null && documentType.MaxDocumentsPerEntity.HasValue )
+            {
+                var documentsPerEntityCount = new DocumentService( rockContext )
+                    .Queryable()
+                    .Where( a => a.DocumentTypeId == DocumentTypeId && EntityId == this.EntityId )
+                    .Count();
+
+                if ( documentsPerEntityCount >= documentType.MaxDocumentsPerEntity.Value )
                 {
-                    errorMessage = $"Invalid document type found.";
+                    errorMessage = $"Unable to add document because there is a limit of {documentType.MaxDocumentsPerEntity} documents for this type.";
                     ValidationResults.Add( new ValidationResult( errorMessage ) );
                     result = false;
-                }
-
-                if ( documentType != null && documentType.MaxDocumentsPerEntity.HasValue )
-                {
-                    var documentsPerEntityCount = new DocumentService( rockContext )
-                        .Queryable()
-                        .Where( a => a.DocumentTypeId == DocumentTypeId && EntityId == this.EntityId )
-                        .Count();
-
-                    if ( documentsPerEntityCount >= documentType.MaxDocumentsPerEntity.Value )
-                    {
-                        errorMessage = $"Unable to add document because there is a limit of {documentType.MaxDocumentsPerEntity} documents for this type.";
-                        ValidationResults.Add( new ValidationResult( errorMessage ) );
-                        result = false;
-                    }
                 }
             }
 

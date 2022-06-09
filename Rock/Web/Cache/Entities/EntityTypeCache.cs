@@ -225,6 +225,14 @@ namespace Rock.Web.Cache
         public bool IsIndexingSupported { get; private set; }
 
         /// <summary>
+        /// Gets the name of the get index model.
+        /// </summary>
+        /// <value>
+        /// The name of the get index model.
+        /// </value>
+        public Type IndexModelType { get; private set; }
+
+        /// <summary>
         /// Determines whether [is analytics supported] [the specified entity type qualifier column].
         /// </summary>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
@@ -441,6 +449,8 @@ namespace Rock.Web.Cache
             IndexResultTemplate = entityType.IndexResultTemplate;
             IndexDocumentUrl = entityType.IndexDocumentUrl;
             LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
+
+            IndexModelType = entityType.IndexModelType;
 
             EntityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
         }

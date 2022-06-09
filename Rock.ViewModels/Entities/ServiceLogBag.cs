@@ -34,82 +34,82 @@ namespace Rock.ViewModels.Entities
     public partial class ServiceLogBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Input.
+        /// Gets or sets the data that was sent to the service.
         /// </summary>
         /// <value>
-        /// The Input.
+        /// A System.String containing the data that was sent to the service.
         /// </value>
         public string Input { get; set; }
 
         /// <summary>
-        /// Gets or sets the LogDateTime.
+        /// Gets or sets the date and time that the log entry was created 
         /// </summary>
         /// <value>
-        /// The LogDateTime.
+        /// A System.DateTime representing when the log entry was created.
         /// </value>
         public DateTime? LogDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the component name for the service.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the component name for the service.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Result.
+        /// Gets or sets the result that was returned from the service.
         /// </summary>
         /// <value>
-        /// The Result.
+        /// A System.String representing the result that was returned from the service.
         /// </value>
         public string Result { get; set; }
 
         /// <summary>
-        /// Gets or sets the Success.
+        /// Gets or sets a flag indicating if the service returned a successful result. This property is required.
         /// </summary>
         /// <value>
-        /// The Success.
+        /// A System.Boolean that is true if the service returned a successful result; otherwise false.
         /// </value>
         public bool Success { get; set; }
 
         /// <summary>
-        /// Gets or sets the Type.
+        /// Gets or sets the type of service that was run
         /// </summary>
         /// <value>
-        /// The Type.
+        /// A System.String representing the type of service that was run.
         /// </value>
         public string Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

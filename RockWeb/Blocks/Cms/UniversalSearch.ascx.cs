@@ -374,7 +374,19 @@ namespace RockWeb.Blocks.Cms
             {
                 long totalResultsAvailable = 0;
 
-                var results = client.Search( term, searchType, selectedEntities, fieldCriteria, _itemsPerPage, _currentPageNum * _itemsPerPage, out totalResultsAvailable );
+                List<Rock.UniversalSearch.IndexModels.IndexModelBase> results;
+
+                try
+                {
+
+                    results = client.Search( term, searchType, selectedEntities, fieldCriteria, _itemsPerPage, _currentPageNum * _itemsPerPage, out totalResultsAvailable );
+                }
+                catch ( Exception ex )
+                {
+                    nbWarnings.Text = "An Error Occurred";
+                    nbWarnings.Details = ex.Message;
+                    return;
+                }
 
                 if ( GetAttributeValue( AttributeKey.UseCustomResults ).AsBoolean() )
                 {

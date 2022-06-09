@@ -34,90 +34,86 @@ namespace Rock.ViewModels.Entities
     public partial class AchievementAttemptBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AchievementAttemptEndDateTime.
+        /// Gets or sets the achievement attempt end date time.
         /// </summary>
         /// <value>
-        /// The AchievementAttemptEndDateTime.
+        /// The achievement attempt start date time.
         /// </value>
         public DateTime? AchievementAttemptEndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchievementAttemptStartDateTime.
+        /// Gets or sets the achievement attempt start date time.
         /// </summary>
         /// <value>
-        /// The AchievementAttemptStartDateTime.
+        /// The achievement attempt start date time.
         /// </value>
         public DateTime AchievementAttemptStartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchievementTypeId.
+        /// Gets or sets the Id of the Rock.Model.AchievementType to which this attempt belongs. This property is required.
         /// </summary>
-        /// <value>
-        /// The AchievementTypeId.
-        /// </value>
         public int AchievementTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchieverEntityId.
+        /// Gets or sets the achiever entity identifier. The type of AchieverEntity is determined by Rock.Model.AchievementType.AchieverEntityTypeId.
+        /// NOTE: In the case of a Person achievement, this could either by PersonAliasId or PersonId (but probably PersonAliasId)
+        /// depending on Rock.Model.AchievementType.AchievementEntityType
         /// </summary>
-        /// <value>
-        /// The AchieverEntityId.
-        /// </value>
         public int AchieverEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsClosed.
+        /// Gets or sets a value indicating whether this attempt is closed.
         /// </summary>
         /// <value>
-        /// The IsClosed.
+        ///   true if this instance is closed; otherwise, false.
         /// </value>
         public bool IsClosed { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSuccessful.
+        /// Gets or sets a value indicating whether this attempt was a success.
         /// </summary>
         /// <value>
-        /// The IsSuccessful.
+        ///   true if this instance is closed; otherwise, false.
         /// </value>
         public bool IsSuccessful { get; set; }
 
         /// <summary>
-        /// Gets or sets the Progress.
+        /// Gets or sets the progress. This is a percentage so .25 is 25% and 1 is 100%.
         /// </summary>
         /// <value>
-        /// The Progress.
+        /// The progress.
         /// </value>
         public decimal Progress { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

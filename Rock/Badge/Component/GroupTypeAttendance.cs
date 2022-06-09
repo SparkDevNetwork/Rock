@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -76,14 +77,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -97,7 +94,7 @@ namespace Rock.Badge.Component
                 var dateRangeSummary = SlidingDateRangePicker.FormatDelimitedValues( slidingDateRangeDelimitedValues );
 
                 var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                mergeFields.Add( "Person", this.Person );
+                mergeFields.Add( "Person", person );
                 using ( var rockContext = new RockContext() )
                 {
                     var groupType = GroupTypeCache.Get( groupTypeGuid.Value );
@@ -106,7 +103,7 @@ namespace Rock.Badge.Component
                     mergeFields.Add( "Badge", badge );
                     mergeFields.Add( "DateRange", new { Dates = dateRange, Summary = dateRangeSummary } );
 
-                    var personAliasIds = Person.Aliases.Select( a => a.Id ).ToList();
+                    var personAliasIds = person.Aliases.Select( a => a.Id ).ToList();
 
                     var attendanceQuery = new AttendanceService( rockContext )
                         .Queryable()

@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class InteractionSessionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the DeviceTypeId.
+        /// Gets or sets the Id of the Rock.Model.InteractionDeviceType device type that that is associated with this Session.
         /// </summary>
         /// <value>
-        /// The DeviceTypeId.
+        /// An System.Int32 representing the Id of the Rock.Model.InteractionDeviceType device type that this session is associated with.
         /// </value>
         public int? DeviceTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DurationLastCalculatedDateTime.
+        /// Gets or sets the last date and time when this was calculated.
         /// </summary>
         /// <value>
-        /// The DurationLastCalculatedDateTime.
+        /// The last calculated date time.
         /// </value>
         public DateTime? DurationLastCalculatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the DurationSeconds.
+        /// Gets or set the duration in seconds.
         /// </summary>
         /// <value>
-        /// The DurationSeconds.
+        /// A integer representing the duration in seconds.
         /// </value>
         public int? DurationSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionCount.
+        /// Gets or sets the Interaction Count.
         /// </summary>
         /// <value>
-        /// The InteractionCount.
+        /// A System.Int32 representing Interaction count.
         /// </value>
         public int? InteractionCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionMode.
+        /// Gets or sets the interaction mode.
         /// </summary>
         /// <value>
-        /// The InteractionMode.
+        /// The interaction mode.
         /// </value>
         public string InteractionMode { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionSessionLocationId.
+        /// Gets or sets the Id of the Rock.Model.InteractionSessionLocation Session Location that that is associated with this Interaction Session.
         /// </summary>
         /// <value>
-        /// The InteractionSessionLocationId.
+        /// An System.Int32 representing the Id of the Rock.Model.InteractionSessionLocation session location that this Interaction Session is associated with.
         /// </value>
         public int? InteractionSessionLocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IpAddress.
+        /// Gets or sets the IP address of the request.
         /// </summary>
         /// <value>
-        /// The IpAddress.
+        /// A System.String of the IP address of the request.
         /// </value>
         public string IpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionData.
+        /// Gets or sets the interaction session data.
         /// </summary>
         /// <value>
-        /// The SessionData.
+        /// The interaction session data.
         /// </value>
         public string SessionData { get; set; }
 
         /// <summary>
-        /// Gets or sets the SessionStartDateKey.
+        /// Gets or sets the session start date key which is the form YYYYMMDD.
         /// </summary>
         /// <value>
-        /// The SessionStartDateKey.
+        /// The session start date key.
         /// </value>
         public int? SessionStartDateKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

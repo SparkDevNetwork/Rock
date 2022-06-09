@@ -34,242 +34,242 @@ namespace Rock.ViewModels.Entities
     public partial class NcoaHistoryBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AddressInvalidReason.
+        /// Gets or sets the address invalid reason.
         /// </summary>
         /// <value>
-        /// The AddressInvalidReason.
+        /// The address invalid reason.
         /// </value>
         public int AddressInvalidReason { get; set; }
 
         /// <summary>
-        /// Gets or sets the AddressStatus.
+        /// Gets or sets the address status.
         /// </summary>
         /// <value>
-        /// The AddressStatus.
+        /// The address status.
         /// </value>
         public int AddressStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the FamilyId.
+        /// Gets or sets the family group identifier.
         /// </summary>
         /// <value>
-        /// The FamilyId.
+        /// The family group identifier.
         /// </value>
         public int FamilyId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LocationId.
+        /// Gets or sets the location identifier.
         /// </summary>
         /// <value>
-        /// The LocationId.
+        /// The location identifier.
         /// </value>
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the MatchFlag.
+        /// Gets or sets the match flag.
         /// </summary>
         /// <value>
-        /// The MatchFlag.
+        /// The match flag.
         /// </value>
         public int MatchFlag { get; set; }
 
         /// <summary>
-        /// Gets or sets the MoveDate.
+        /// Gets or sets the date when moved.
         /// </summary>
         /// <value>
-        /// The MoveDate.
+        /// The move date.
         /// </value>
         public DateTime? MoveDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the MoveDistance.
+        /// Gets or sets the moving distance.
         /// </summary>
         /// <value>
-        /// The MoveDistance.
+        /// The moving distance.
         /// </value>
         public decimal? MoveDistance { get; set; }
 
         /// <summary>
-        /// Gets or sets the MoveType.
+        /// Gets or sets the move type value identifier.
         /// </summary>
         /// <value>
-        /// The MoveType.
+        /// The move type value identifier.
         /// </value>
         public int MoveType { get; set; }
 
         /// <summary>
-        /// Gets or sets the NcoaNote.
+        /// Gets or sets the note for NCOA.
         /// </summary>
         /// <value>
-        /// The NcoaNote.
+        /// The note for NCOA.
         /// </value>
         public string NcoaNote { get; set; }
 
         /// <summary>
-        /// Gets or sets the NcoaRunDateTime.
+        /// Gets or sets the date and time for NCOA Run.
         /// </summary>
         /// <value>
-        /// The NcoaRunDateTime.
+        /// The date and time for NCOA Run.
         /// </value>
         public DateTime NcoaRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the NcoaType.
+        /// Gets or sets the NCOA type.
         /// </summary>
         /// <value>
-        /// The NcoaType.
+        /// The NCOA type.
         /// </value>
         public int NcoaType { get; set; }
 
         /// <summary>
-        /// Gets or sets the OriginalCity.
+        /// Gets or sets the Original city.
         /// </summary>
         /// <value>
-        /// The OriginalCity.
+        /// The original city.
         /// </value>
         public string OriginalCity { get; set; }
 
         /// <summary>
-        /// Gets or sets the OriginalPostalCode.
+        /// Gets or sets the Original postal code.
         /// </summary>
         /// <value>
-        /// The OriginalPostalCode.
+        /// The original postal code.
         /// </value>
         public string OriginalPostalCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the OriginalState.
+        /// Gets or sets the Original state.
         /// </summary>
         /// <value>
-        /// The OriginalState.
+        /// The original state.
         /// </value>
         public string OriginalState { get; set; }
 
         /// <summary>
-        /// Gets or sets the OriginalStreet1.
+        /// Gets or sets the Original street 1.
         /// </summary>
         /// <value>
-        /// The OriginalStreet1.
+        /// The original street 1.
         /// </value>
         public string OriginalStreet1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the OriginalStreet2.
+        /// Gets or sets the Original street 2.
         /// </summary>
         /// <value>
-        /// The OriginalStreet2.
+        /// The original street 2.
         /// </value>
         public string OriginalStreet2 { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Processed.
+        /// Gets or sets the processed.
         /// </summary>
         /// <value>
-        /// The Processed.
+        /// The processed.
         /// </value>
         public int Processed { get; set; }
 
         /// <summary>
-        /// Gets or sets the UpdatedAddressType.
+        /// Gets or sets the Updated address type.
         /// </summary>
         /// <value>
-        /// The UpdatedAddressType.
+        /// The updated address type.
         /// </value>
         public int UpdatedAddressType { get; set; }
 
         /// <summary>
-        /// Gets or sets the UpdatedBarcode.
+        /// Gets or sets the Updated barcode.
         /// </summary>
         /// <value>
-        /// The UpdatedBarcode.
+        /// The updated barcode.
         /// </value>
         public string UpdatedBarcode { get; set; }
 
         /// <summary>
-        /// Gets or sets the UpdatedCity.
+        /// Gets or sets the Updated city.
         /// </summary>
         /// <value>
-        /// The UpdatedCity.
+        /// The updated city.
         /// </value>
         public string UpdatedCity { get; set; }
 
         /// <summary>
-        /// Gets or sets the UpdatedCountry.
+        /// Gets or sets the Updated country.
         /// </summary>
         /// <value>
-        /// The UpdatedCountry.
+        /// The updated country.
         /// </value>
         public string UpdatedCountry { get; set; }
 
         /// <summary>
-        /// Gets or sets the UpdatedPostalCode.
+        /// Gets or sets the Updated postal code.
         /// </summary>
         /// <value>
-        /// The UpdatedPostalCode.
+        /// The updated postal code.
         /// </value>
         public string UpdatedPostalCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the UpdatedState.
+        /// Gets or sets the Updated state.
         /// </summary>
         /// <value>
-        /// The UpdatedState.
+        /// The updated state.
         /// </value>
         public string UpdatedState { get; set; }
 
         /// <summary>
-        /// Gets or sets the UpdatedStreet1.
+        /// Gets or sets the Updated street 1.
         /// </summary>
         /// <value>
-        /// The UpdatedStreet1.
+        /// The updated street 1.
         /// </value>
         public string UpdatedStreet1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the UpdatedStreet2.
+        /// Gets or sets the Updated street 2.
         /// </summary>
         /// <value>
-        /// The UpdatedStreet2.
+        /// The updated street 2.
         /// </value>
         public string UpdatedStreet2 { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

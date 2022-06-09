@@ -14,7 +14,17 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
     <div class="position-relative">
-        <Rock:Zone Name="Profile Navigation" CssClass="profile-sticky-nav" runat="server" />
+        <div id="profilenavigation" class="profile-sticky-nav">
+            <div class="profile-sticky-nav-placeholder"></div>
+            <div class="profile-nav">
+                <Rock:Zone Name="Profile Navigation Left" CssClass="flex-1 z-10" runat="server" />
+                <div class="overflow-nav-container" id="overflow-nav">
+                    <Rock:Zone Name="Profile Navigation" CssClass="profile-sticky-nav" runat="server" />
+                </div>
+                <Rock:Zone Name="Profile Navigation Right" CssClass="d-flex flex-1 justify-content-end overflow-hidden" runat="server" />
+            </div>
+        </div>
+
         <div class="person-profile person-profile-ext">
             <!-- Ajax Error -->
             <div class="alert alert-danger ajax-error no-index" style="display:none">

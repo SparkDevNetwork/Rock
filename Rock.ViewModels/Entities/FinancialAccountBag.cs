@@ -34,162 +34,168 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialAccountBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AccountTypeValueId.
+        /// Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the FinancialAccountType for this FinancialAccount.
         /// </summary>
         /// <value>
-        /// The AccountTypeValueId.
+        /// A System.Int32 representing DefinedValueId of the FinancialAccountType's Rock.Model.DefinedValue for this FinancialAccount.
         /// </value>
         public int? AccountTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the CampusId of the Rock.Model.Campus that this FinancialAccount is associated with. If this FinancialAccount is not
+        /// associated with a Rock.Model.Campus this property will be null.
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// A System.Int32 representing the CampusId of the Rock.Model.Campus that the FinancialAccount is associated with.
         /// </value>
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the FinancialAccount.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the user defined description of the FinancialAccount.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EndDate.
+        /// Gets or sets the closing/end date for this FinancialAccount. This is the last day that transactions can be posted to this account. If there is not a end date
+        /// for this account, transactions can be posted for an indefinite period of time.  Ongoing FinancialAccounts will not have an end date.
         /// </summary>
         /// <value>
-        /// The EndDate.
+        /// A System.DateTime representing the closing/end date for this FinancialAccounts. Transactions can be posted to this account until this date.  If this is 
+        /// an ongoing account, this property will be null.
         /// </value>
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the GlCode.
+        /// Gets or sets the General Ledger account code for this FinancialAccount.
         /// </summary>
         /// <value>
-        /// The GlCode.
+        /// A System.String representing the General Ledger account code for this FinancialAccount.
         /// </value>
         public string GlCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the ImageBinaryFileId.
+        /// Gets or sets the Image Id that can be used when displaying this Financial Account
         /// </summary>
         /// <value>
-        /// The ImageBinaryFileId.
+        /// The image binary file identifier.
         /// </value>
         public int? ImageBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating if this FinancialAccount is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///  A System.Boolean that is true if this FinancialAccount is active, otherwise false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPublic.
+        /// Gets or sets a value indicating if this FinancialAccount is public.
         /// </summary>
         /// <value>
-        /// The IsPublic.
+        ///  A System.Boolean that is true if this FinancialAccount is public, otherwise false.
         /// </value>
         public bool? IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsTaxDeductible.
+        /// Gets or sets a flag indicating if transactions posted to this FinancialAccount are tax-deductible.
         /// </summary>
         /// <value>
-        /// The IsTaxDeductible.
+        /// A System.Boolean that is true if transactions posted to this FinancialAccount are tax-deductible; otherwise false.
         /// </value>
         public bool IsTaxDeductible { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the (internal) Name of the FinancialAccount. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the (internal) name of the FinancialAccount.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the sort and display order of the FinancialAccount.  This is an ascending order, so the lower the value the higher the sort priority.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 representing the sort order of the FinancialAccount.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the ParentAccountId.
+        /// Gets or sets the FinancialAccountId of the parent FinancialAccount to this FinancialAccount. If this
+        /// FinancialAccount does not have a parent, this property will be null.
         /// </summary>
         /// <value>
-        /// The ParentAccountId.
+        /// A System.Int32 representing the FinancialAccountId of the parent FinancialAccount to this FinancialAccount. 
+        /// This property will be null if the FinancialAccount does not have a parent.
         /// </value>
         public int? ParentAccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PublicDescription.
+        /// Gets or sets the user defined public description of the FinancialAccount.
         /// </summary>
         /// <value>
-        /// The PublicDescription.
+        /// A System.String representing the user defined public description of the FinancialAccount.
         /// </value>
         public string PublicDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the PublicName.
+        /// Gets or sets the public name of the Financial Account.
         /// </summary>
         /// <value>
-        /// The PublicName.
+        /// A System.String that represents the public name of the FinancialAccount.
         /// </value>
         public string PublicName { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDate.
+        /// Gets or sets the opening date for this FinancialAccount. This is the first date that transactions can be posted to this account. 
+        /// If there isn't a start date for this account, transactions can be posted as soon as the account is created until the Rock.Model.FinancialAccount.EndDate (if applicable).
         /// </summary>
         /// <value>
-        /// The StartDate.
+        /// A System.DateTime representing the first day that transactions can posted to this account. If there is no start date, this property will be null.
         /// </value>
         public DateTime? StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Url.
+        /// Gets or sets the URL which could be used to generate a link to a 'More Info' page
         /// </summary>
         /// <value>
-        /// The Url.
+        /// The URL.
         /// </value>
         public string Url { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

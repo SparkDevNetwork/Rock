@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class InteractionDeviceTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Application.
+        /// Gets or sets the application.
         /// </summary>
         /// <value>
-        /// The Application.
+        /// The application.
         /// </value>
         public string Application { get; set; }
 
         /// <summary>
-        /// Gets or sets the ClientType.
+        /// Gets or sets the type of client.
         /// </summary>
         /// <value>
-        /// The ClientType.
+        /// A System.String client type.
         /// </value>
         public string ClientType { get; set; }
 
         /// <summary>
-        /// Gets or sets the DeviceTypeData.
+        /// Gets or sets the device type data.
         /// </summary>
         /// <value>
-        /// The DeviceTypeData.
+        /// The device type data.
         /// </value>
         public string DeviceTypeData { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the interaction device type name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The interaction device type name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the OperatingSystem.
+        /// Gets or sets the operating system.
         /// </summary>
         /// <value>
-        /// The OperatingSystem.
+        /// The operating system.
         /// </value>
         public string OperatingSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

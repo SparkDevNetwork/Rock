@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -54,14 +55,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -69,7 +66,7 @@ namespace Rock.Badge.Component
             // Grab the DISC Scores
             bool isValidDiscScore = true;
             int discStrength = 0;
-            int?[] discScores = new int?[] { Person.GetAttributeValue( "NaturalD" ).AsIntegerOrNull(), Person.GetAttributeValue( "NaturalI" ).AsIntegerOrNull(), Person.GetAttributeValue( "NaturalS" ).AsIntegerOrNull(), Person.GetAttributeValue( "NaturalC" ).AsIntegerOrNull() };
+            int?[] discScores = new int?[] { person.GetAttributeValue( "NaturalD" ).AsIntegerOrNull(), person.GetAttributeValue( "NaturalI" ).AsIntegerOrNull(), person.GetAttributeValue( "NaturalS" ).AsIntegerOrNull(), person.GetAttributeValue( "NaturalC" ).AsIntegerOrNull() };
 
             // Validate the DISC Scores, find the strength
             for ( int i = 0; i < discScores.Length; i++ )
@@ -101,7 +98,7 @@ namespace Rock.Badge.Component
             {
                 // Find the DISC Personality Type / Strength
                 String description = string.Empty;
-                string personalityType = Person.GetAttributeValue( "PersonalityType" );
+                string personalityType = person.GetAttributeValue( "PersonalityType" );
                 if ( !string.IsNullOrEmpty( personalityType ) )
                 {
                     var personalityValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() ).DefinedValues.Where( v => v.Value == personalityType ).FirstOrDefault();
@@ -116,7 +113,7 @@ namespace Rock.Badge.Component
                 if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "DISCResultDetail" ) ) )
                 {
                     int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "DISCResultDetail" ) ) ).Id;
-                    detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, Person.UrlEncodedKey ) );
+                    detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, person.UrlEncodedKey ) );
                     writer.Write( "<a href='{0}'>", detailPageUrl );
                 }
 
@@ -142,7 +139,7 @@ namespace Rock.Badge.Component
                    .Queryable()
                    .AsNoTracking()
                    .Where( a => a.PersonAlias != null
-                                && a.PersonAlias.PersonId == Person.Id
+                                && a.PersonAlias.PersonId == person.Id
                                 && a.Status == AssessmentRequestStatus.Pending
                                 && a.AssessmentTypeId == assessmentType.Id
                                 && a.RequestedDateTime.HasValue )

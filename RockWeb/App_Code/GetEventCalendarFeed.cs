@@ -26,12 +26,13 @@ using Rock.Model;
 using Rock.Web.Cache;
 
 using Ical.Net;
-using Ical.Net.Serialization.iCalendar.Serializers;
 using Ical.Net.DataTypes;
 using Calendar = Ical.Net.Calendar;
 
 using RestSharp.Extensions;
 using System.Globalization;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
 
 namespace RockWeb
 {
@@ -130,12 +131,12 @@ namespace RockWeb
                     }
 
                     var serializer = new CalendarSerializer();
-                    var ical = (CalendarCollection)serializer.Deserialize( occurrence.Schedule.iCalendarContent.ToStreamReader() );
+                    var ical = CalendarCollection.Load( occurrence.Schedule.iCalendarContent.ToStreamReader() );
 
                     foreach ( var icalEvent in ical[0].Events )
                     {
                         // We get all of the schedule info from Schedule.iCalendarContent
-                        var ievent = icalEvent.Copy<Ical.Net.Event>();
+                        var ievent = icalEvent.Copy<CalendarEvent>();
 
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
                         ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
@@ -147,14 +148,12 @@ namespace RockWeb
                         // The most recent version of iCal.Net (v2.3.5) that supports .NET framework v4.5.2 has some inconsistencies in the
                         // iCalendar serialization process, so we need to force the Start, End and Exception dates to render in exactly the same format.
                         ievent.Start = new CalDateTime( icalEvent.Start.Value, timeZoneId );
-                        ievent.Start.IsUniversalTime = false;
 
                         ievent.End = new CalDateTime( icalEvent.End.Value, timeZoneId );
-                        ievent.End.IsUniversalTime = false;
 
                         var eventStartTime = new TimeSpan( ievent.DtStart.Hour, ievent.DtStart.Minute, ievent.DtStart.Second );
 
-                        var newExceptionDatesList = new List<Ical.Net.Interfaces.DataTypes.IPeriodList>();
+                        var newExceptionDatesList = new List<PeriodList>();
 
                         foreach ( var exceptionDateList in ievent.ExceptionDates )
                         {
@@ -167,7 +166,6 @@ namespace RockWeb
                                 newDateTime = new DateTime( newDateTime.Year, newDateTime.Month, newDateTime.Day, newDateTime.Hour, newDateTime.Minute, newDateTime.Second, newDateTime.Millisecond, DateTimeKind.Local );
 
                                 var newDate = new CalDateTime( newDateTime );
-                                newDate.IsUniversalTime = false;
 
                                 newDateList.Add( newDate );
                             }

@@ -25,88 +25,97 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowType View Model */
 export type WorkflowTypeBag = {
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the CategoryId of the Rock.Model.Category that this WorkflowType belongs to.  */
     categoryId?: number | null;
 
-    /** Gets or sets the CompletedWorkflowRetentionPeriod. */
+    /** Gets or sets the completed workflow retention period in days. */
     completedWorkflowRetentionPeriod?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a user defined description or summary about the WorkflowType. */
     description?: string | null;
 
-    /** Gets or sets the FormBuilderSettingsJson. */
+    /** Gets or sets the form builder settings json. */
     formBuilderSettingsJson?: string | null;
 
-    /** Gets or sets the FormBuilderTemplateId. */
+    /** Gets or sets the form builder template identifier. */
     formBuilderTemplateId?: number | null;
 
-    /** Gets or sets the FormEndDateTime. */
+    /** Gets or sets the form end date and time. */
     formEndDateTime?: string | null;
 
-    /** Gets or sets the FormStartDateTime. */
+    /** Gets or sets the form start date and time. */
     formStartDateTime?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the name of the icon CSS class. This property is only used for CSS based icons. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this WorkflowType is active. */
     isActive?: boolean | null;
 
-    /** Gets or sets the IsFormBuilder. */
+    /** Gets or sets a value indicating whether [is form builder]. */
     isFormBuilder: boolean;
 
-    /** Gets or sets the IsLoginRequired. */
+    /** Gets or sets a value indicating whether [is login required]. */
     isLoginRequired: boolean;
 
-    /** Gets or sets the IsPersisted. */
+    /** Gets or sets a value indicating whether Rock.Model.Workflow instances of this WorkflowType are persisted. */
     isPersisted: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this WorkflowType is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the LoggingLevel. */
+    /**
+     * Gets or sets the logging level.
+     * Gets or sets the Rock.Model.WorkflowLoggingLevel indicating the level of detail that should be logged when instances of this WorkflowType are executed.
+     */
     loggingLevel: number;
 
-    /** Gets or sets the LogRetentionPeriod. */
+    /** Gets or sets the log retention period in days. */
     logRetentionPeriod?: number | null;
 
-    /** Gets or sets the MaxWorkflowAgeDays. */
+    /** Gets or sets the number of days since the creation date after which a workflow would be automatically marked completed. */
     maxWorkflowAgeDays?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the friendly Name of the WorkflowType. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the NoActionMessage. */
+    /** Gets or sets the text to be displayed when a workflow of this type workflow is active, but does not have an active form. This field supports Lava. */
     noActionMessage?: string | null;
 
-    /** Gets or sets the Order. */
+    /**
+     * Gets or sets the display order of the WorkFlowType, the lower the number the higher up that the WorkflowType will display in the workflow list. This
+     * property is required.
+     */
     order: number;
 
-    /** Gets or sets the ProcessingIntervalSeconds. */
+    /**
+     * Gets or sets the minimum length of time, in seconds, before a persisted Rock.Model.Workflow instance that implements this 
+     * WorkflowType can be re-executed.
+     */
     processingIntervalSeconds?: number | null;
 
-    /** Gets or sets the SummaryViewText. */
+    /** Gets or sets the summary view text to be displayed when a workflow of this type has no form or has been completed. This field supports Lava. */
     summaryViewText?: string | null;
 
-    /** Gets or sets the WorkflowExpireDateTime. */
+    /** Gets or sets the date time when the workflow of this type will no longer be processed. */
     workflowExpireDateTime?: string | null;
 
-    /** Gets or sets the WorkflowIdPrefix. */
+    /** Gets or sets the workflow identifier prefix. */
     workflowIdPrefix?: string | null;
 
-    /** Gets or sets the WorkTerm. */
+    /** Gets or sets the work term for the WorkflowType. This is the action that is being performed by this WorkflowType. This property is required. */
     workTerm?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

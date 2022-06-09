@@ -33,7 +33,7 @@ export type PreferencePageContentBag = {
     /** Gets or sets an integer representing the index of the selected schedule. */
     selectedSchedule?: Guid | null;
 
-    /** Gets or sets a  representing the selected start date. */
+    /** Gets or sets a System.DateTime representing the selected start date. */
     selectedStartDate?: string | null;
 
     /** Gets or sets a list of schedule keys and values.  */

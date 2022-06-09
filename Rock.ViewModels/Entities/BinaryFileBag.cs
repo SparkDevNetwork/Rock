@@ -34,130 +34,130 @@ namespace Rock.ViewModels.Entities
     public partial class BinaryFileBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BinaryFileTypeId.
+        /// Gets or sets the id of the Rock.Model.BinaryFileType that this file belongs to.
         /// </summary>
         /// <value>
-        /// The BinaryFileTypeId.
+        /// A System.Int32 representing the Rock.Model.BinaryFileType.
         /// </value>
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContentLastModified.
+        /// Gets or sets the content last modified.
         /// </summary>
         /// <value>
-        /// The ContentLastModified.
+        /// The content last modified.
         /// </value>
         public DateTime? ContentLastModified { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description of the file.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the user defined description of the file.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the FileName.
+        /// Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to Rock and this same name will be used when the file is downloaded. This property is required.
         /// </summary>
         /// <value>
-        /// The FileName.
+        /// A System.String representing the name of the file, including the extension.
         /// </value>
         public string FileName { get; set; }
 
         /// <summary>
-        /// Gets or sets the FileSize.
+        /// Gets or sets the size of the file (in bytes)
         /// </summary>
         /// <value>
-        /// The FileSize.
+        /// The size of the file in bytes.
         /// </value>
         public long? FileSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the Height.
+        /// Gets or sets a value indicating the height of a file type.
         /// </summary>
         /// <value>
-        /// The Height.
+        /// A System.Int32 representing the height in pixels of a file type.
         /// </value>
         public int? Height { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this file is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this file is part of the core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsTemporary.
+        /// Gets or sets a flag indicating if this is a temporary file. This property is required.
         /// </summary>
         /// <value>
-        /// The IsTemporary.
+        /// A System.Boolean value that is true if this is a temporary file, otherwise false.
         /// </value>
         public bool IsTemporary { get; set; }
 
         /// <summary>
-        /// Gets or sets the MimeType.
+        /// Gets or sets the Mime Type for the file. This property is required
         /// </summary>
         /// <value>
-        /// The MimeType.
+        /// A System.String representing the Mime Type for the file.
         /// </value>
         public string MimeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Path.
+        /// Gets or sets a path to the file that is understandable by the storage provider.
         /// </summary>
         /// <value>
-        /// The Path.
+        /// The URL.
         /// </value>
         public string Path { get; set; }
 
         /// <summary>
-        /// Gets or sets the StorageEntitySettings.
+        /// Gets or sets the storage entity settings.
         /// </summary>
         /// <value>
-        /// The StorageEntitySettings.
+        /// The storage entity settings.
         /// </value>
         public string StorageEntitySettings { get; set; }
 
         /// <summary>
-        /// Gets or sets the Width.
+        /// Gets or sets a value indicating the width of a file type.
         /// </summary>
         /// <value>
-        /// The Width.
+        /// A System.Int32 representing the width in pixels of a file type.
         /// </value>
         public int? Width { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

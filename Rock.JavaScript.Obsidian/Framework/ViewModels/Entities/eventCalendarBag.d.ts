@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EventCalendar View Model */
 export type EventCalendarBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the Description of the EventCalendar. */
     description?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class name for a font vector based icon. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets the is active. */
     isActive: boolean;
 
-    /** Gets or sets the IsIndexEnabled. */
+    /** Gets or sets a value indicating whether this instance is index enabled. */
     isIndexEnabled: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the EventCalendar. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

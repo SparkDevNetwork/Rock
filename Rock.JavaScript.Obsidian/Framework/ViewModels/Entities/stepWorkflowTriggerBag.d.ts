@@ -25,37 +25,37 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** StepWorkflowTrigger View Model */
 export type StepWorkflowTriggerBag = {
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
 
-    /** Gets or sets the StepProgramId. */
+    /** Gets or sets the Id of the Rock.Model.StepProgram by which this Workflow is triggered. */
     stepProgramId?: number | null;
 
-    /** Gets or sets the StepTypeId. */
+    /** Gets or sets the Id of the Rock.Model.StepType by which this Workflow is triggered. */
     stepTypeId?: number | null;
 
-    /** Gets or sets the TriggerType. */
+    /** Gets or sets the type of the trigger. */
     triggerType: number;
 
-    /** Gets or sets the TypeQualifier. */
+    /** Gets or sets the type qualifier. */
     typeQualifier?: string | null;
 
-    /** Gets or sets the WorkflowName. */
+    /** Gets or sets the name of the workflow trigger. */
     workflowName?: string | null;
 
-    /** Gets or sets the WorkflowTypeId. */
+    /** Gets or sets the Id of the Rock.Model.WorkflowType that is triggered. This property is required. */
     workflowTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -25,25 +25,28 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialTransactionRefund View Model */
 export type FinancialTransactionRefundBag = {
-    /** Gets or sets the OriginalTransactionId. */
+    /** Gets or sets the original transaction identifier. */
     originalTransactionId?: number | null;
 
-    /** Gets or sets the RefundReasonSummary. */
+    /** Gets or sets a detailed summary of the circumstances surrounding why a refund was issued. */
     refundReasonSummary?: string | null;
 
-    /** Gets or sets the RefundReasonValueId. */
+    /**
+     * Gets or sets the DefinedValueId of the return reason Rock.Model.DefinedValue indicating
+     * the reason why a refund was issued for the original transaction.
+     */
     refundReasonValueId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -25,37 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialPledge View Model */
 export type FinancialPledgeBag = {
-    /** Gets or sets the AccountId. */
+    /** Gets or sets the AccountId of the Rock.Model.FinancialAccount that the pledge is directed toward. */
     accountId?: number | null;
 
-    /** Gets or sets the EndDate. */
+    /** Gets or sets the end date of the pledge period. */
     endDate?: string | null;
 
-    /** Gets or sets the GroupId. */
+    /**
+     * If a person belongs to one or more groups a particular type (i.e. Family), this field 
+     * is used to distinguish which group the pledge should be associated with.
+     */
     groupId?: number | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId?: number | null;
 
-    /** Gets or sets the PledgeFrequencyValueId. */
+    /** Gets or sets the DefinedValueId of the pledge frequency Rock.Model.DefinedValue representing how often the pledgor is promising to give a portion of the pledge amount. */
     pledgeFrequencyValueId?: number | null;
 
-    /** Gets or sets the StartDate. */
+    /** Gets or sets the start date of the pledge period. */
     startDate?: string | null;
 
-    /** Gets or sets the TotalAmount. */
+    /** Gets or sets the pledge amount that is promised to be given. */
     totalAmount?: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

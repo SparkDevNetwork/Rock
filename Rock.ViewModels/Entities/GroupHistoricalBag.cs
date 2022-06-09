@@ -34,186 +34,193 @@ namespace Rock.ViewModels.Entities
     public partial class GroupHistoricalBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ArchivedByPersonAliasId.
+        /// Gets or sets the PersonAliasId that archived (soft deleted) this group at this point in history
         /// </summary>
         /// <value>
-        /// The ArchivedByPersonAliasId.
+        /// The archived by person alias identifier.
         /// </value>
         public int? ArchivedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ArchivedDateTime.
+        /// Gets or sets the archived date time value of this group at this point in history
         /// </summary>
         /// <value>
-        /// The ArchivedDateTime.
+        /// The archived date time.
         /// </value>
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the Rock.Model.Campus identifier for this group at this point in history
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// The campus identifier.
         /// </value>
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CurrentRowIndicator.
+        /// Gets or sets a value indicating whether [current row indicator].
+        /// This will be True if this represents the same values as the current tracked record for this
         /// </summary>
         /// <value>
-        /// The CurrentRowIndicator.
+        ///   true if [current row indicator]; otherwise, false.
         /// </value>
         public bool CurrentRowIndicator { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description for this group at this point in history
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EffectiveDateTime.
+        /// Gets or sets the effective date.
+        /// This is the starting date that the tracked record had the values reflected in this record
         /// </summary>
         /// <value>
-        /// The EffectiveDateTime.
+        /// The effective date.
         /// </value>
         public DateTime EffectiveDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpireDateTime.
+        /// Gets or sets the expire date time
+        /// This is the last date that the tracked record had the values reflected in this record
+        /// For example, if a tracked record's Name property changed on '2016-07-14', the ExpireDate of the previously current record will be '2016-07-13', and the EffectiveDate of the current record will be '2016-07-14'
+        /// If this is most current record, the ExpireDate will be '9999-01-01'
         /// </summary>
         /// <value>
-        /// The ExpireDateTime.
+        /// The expire date.
         /// </value>
         public DateTime ExpireDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// Gets or sets the group id of the group for this group historical record
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// The group identifier.
         /// </value>
         public int GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupName.
+        /// Gets or sets the name of the group at this point in history
         /// </summary>
         /// <value>
-        /// The GroupName.
+        /// The name of the group.
         /// </value>
         public string GroupName { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupTypeId.
+        /// Gets or sets the group type identifier. Normally, a GroupTypeId can't be changed, but just in case, this will be the group type at this point in history
         /// </summary>
         /// <value>
-        /// The GroupTypeId.
+        /// The group type identifier.
         /// </value>
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupTypeName.
+        /// Gets or sets the name of the Rock.Model.GroupType at this point in history
         /// </summary>
         /// <value>
-        /// The GroupTypeName.
+        /// The name of the group type.
         /// </value>
         public string GroupTypeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the InactiveDateTime.
+        /// Gets or sets the InactiveDateTime value of the group at this point in history
         /// </summary>
         /// <value>
-        /// The InactiveDateTime.
+        /// The in active date time.
         /// </value>
         public DateTime? InactiveDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this group had IsActive==True at this point in history
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is inactive; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsArchived.
+        /// Gets or sets a value indicating whether this group was archived at this point in history
         /// </summary>
         /// <value>
-        /// The IsArchived.
+        ///   true if this instance is archived; otherwise, false.
         /// </value>
         public bool IsArchived { get; set; }
 
         /// <summary>
-        /// Gets or sets the ParentGroupId.
+        /// Gets or sets the parent Rock.Model.Group identifier at this point in history
         /// </summary>
         /// <value>
-        /// The ParentGroupId.
+        /// The parent group identifier.
         /// </value>
         public int? ParentGroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleId.
+        /// If this group's group type supports a schedule for a group, this is the schedule id for that group at this point in history
+        /// NOTE: If this Group has Schedules at it's Locations, those will be in GroupLocationHistorical.GroupLocationHistoricalSchedules
         /// </summary>
         /// <value>
-        /// The ScheduleId.
+        /// The schedule identifier.
         /// </value>
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleModifiedDateTime.
+        /// Gets or sets the Schedule's ModifiedDateTime. This is used internally to detect if the group's schedule has changed
         /// </summary>
         /// <value>
-        /// The ScheduleModifiedDateTime.
+        /// The schedule's iCalendarContent
         /// </value>
         public DateTime? ScheduleModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleName.
+        /// If this group's group type supports a schedule for a group, this is the schedule text (Schedule.ToString()) for that group at this point in history
+        /// NOTE: If this Group has Schedules at it's Locations, those will be in GroupLocationHistorical.GroupLocationHistoricalSchedules
         /// </summary>
         /// <value>
-        /// The ScheduleName.
+        /// The schedule name.
         /// </value>
         public string ScheduleName { get; set; }
 
         /// <summary>
-        /// Gets or sets the StatusValueId.
+        /// Gets or sets the Group Status Id.  DefinedType depends on this group's Rock.Model.GroupType.GroupStatusDefinedType
         /// </summary>
         /// <value>
-        /// The StatusValueId.
+        /// The status value identifier.
         /// </value>
         public int? StatusValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

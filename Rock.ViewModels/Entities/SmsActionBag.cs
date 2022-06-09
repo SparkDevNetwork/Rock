@@ -34,90 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class SmsActionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ContinueAfterProcessing.
+        /// Gets or sets a value indicating whether further actions should be processed.
         /// </summary>
         /// <value>
-        /// The ContinueAfterProcessing.
+        ///   true if further actions should be processed; otherwise, false.
         /// </value>
         public bool ContinueAfterProcessing { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpireDate.
+        /// Gets or sets when to expire the Rock.Model.SmsAction
         /// </summary>
         /// <value>
-        /// The ExpireDate.
+        /// The expire date.
         /// </value>
         public DateTime? ExpireDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the action.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name of the action.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order of this action in the system.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order of this action in the system.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the SmsActionComponentEntityTypeId.
+        /// Gets or sets the identifier for the entity type that handles this action's logic.
         /// </summary>
         /// <value>
-        /// The SmsActionComponentEntityTypeId.
+        /// The identifier for the entity type that handles this action's logic.
         /// </value>
         public int SmsActionComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SmsPipelineId.
+        /// Gets or sets the SMS pipeline identifier.
         /// </summary>
         /// <value>
-        /// The SmsPipelineId.
+        /// The SMS pipeline identifier.
         /// </value>
         public int SmsPipelineId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

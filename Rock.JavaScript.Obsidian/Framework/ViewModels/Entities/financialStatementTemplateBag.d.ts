@@ -25,37 +25,37 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialStatementTemplate View Model */
 export type FinancialStatementTemplateBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets the FooterSettingsJson. */
+    /** Gets or sets the JSON for Rock.Model.FinancialStatementTemplate.FooterSettings */
     footerSettingsJson?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this is an active financial statement template. This value is required. */
     isActive: boolean;
 
-    /** Gets or sets the LogoBinaryFileId. */
+    /** Gets or sets the image file identifier for the Logo Image */
     logoBinaryFileId?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the Financial Statement Template */
     name?: string | null;
 
-    /** Gets or sets the ReportSettingsJson. */
+    /** Gets or sets the JSON for Rock.Model.FinancialStatementTemplate.ReportSettings */
     reportSettingsJson?: string | null;
 
-    /** Gets or sets the ReportTemplate. */
+    /** Gets or sets the report template. */
     reportTemplate?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

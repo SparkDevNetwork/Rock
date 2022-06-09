@@ -24,6 +24,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.UniversalSearch;
@@ -1772,7 +1773,7 @@ namespace Rock.Model
         /// </summary>
         public void BulkIndexDocuments()
         {
-            List<IndexModelBase> indexableItems = new List<IndexModelBase>();
+            List<PersonIndex> indexablePersonList = new List<PersonIndex>();
 
             var recordTypePersonId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             var recordTypeBusinessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
@@ -1790,15 +1791,17 @@ namespace Rock.Model
                 recordCounter++;
 
                 var indexablePerson = PersonIndex.LoadByModel( person );
-                indexableItems.Add( indexablePerson );
+                indexablePersonList.Add( indexablePerson );
 
                 if ( recordCounter > 100 )
                 {
-                    IndexContainer.IndexDocuments( indexableItems );
-                    indexableItems = new List<IndexModelBase>();
+                    IndexContainer.IndexDocuments( indexablePersonList );
+                    indexablePersonList = new List<PersonIndex>();
                     recordCounter = 0;
                 }
             }
+
+            IndexContainer.IndexDocuments( indexablePersonList );
 
             // return businesses
             var businesses = new PersonService( rockContext ).Queryable().AsNoTracking()
@@ -1806,20 +1809,22 @@ namespace Rock.Model
                                      p.IsSystem == false
                                      && p.RecordTypeValueId == recordTypeBusinessId );
 
+            List<BusinessIndex> indexableBusinessList = new List<BusinessIndex>();
+
             foreach ( var business in businesses )
             {
                 var indexableBusiness = BusinessIndex.LoadByModel( business );
-                indexableItems.Add( indexableBusiness );
+                indexableBusinessList.Add( indexableBusiness );
 
                 if ( recordCounter > 100 )
                 {
-                    IndexContainer.IndexDocuments( indexableItems );
-                    indexableItems = new List<IndexModelBase>();
+                    IndexContainer.IndexDocuments( indexableBusinessList );
+                    indexableBusinessList = new List<BusinessIndex>();
                     recordCounter = 0;
                 }
             }
 
-            IndexContainer.IndexDocuments( indexableItems );
+            IndexContainer.IndexDocuments( indexableBusinessList );
         }
 
         /// <summary>

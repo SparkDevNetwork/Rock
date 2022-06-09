@@ -25,40 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupSync View Model */
 export type GroupSyncBag = {
-    /** Gets or sets the AddUserAccountsDuringSync. */
+    /** Gets or sets a value indicating whether [add user accounts during synchronize]. */
     addUserAccountsDuringSync: boolean;
 
-    /** Gets or sets the ExitSystemCommunicationId. */
+    /** Gets or sets the exit Rock.Model.SystemCommunication identifier. */
     exitSystemCommunicationId?: number | null;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the Rock.Model.Group identifier. */
     groupId: number;
 
-    /** Gets or sets the GroupTypeRoleId. */
+    /** Gets or sets the Rock.Model.GroupTypeRole identifier. */
     groupTypeRoleId: number;
 
-    /** Gets or sets the LastRefreshDateTime. */
+    /** Gets or sets the last refresh date time. */
     lastRefreshDateTime?: string | null;
 
-    /** Gets or sets the ScheduleIntervalMinutes. */
+    /** Gets or sets the schedule interval minutes. */
     scheduleIntervalMinutes?: number | null;
 
-    /** Gets or sets the SyncDataViewId. */
+    /** Gets or sets the synchronize Rock.Model.DataView identifier. */
     syncDataViewId: number;
 
-    /** Gets or sets the WelcomeSystemCommunicationId. */
+    /** Gets or sets the welcome system email identifier. */
     welcomeSystemCommunicationId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

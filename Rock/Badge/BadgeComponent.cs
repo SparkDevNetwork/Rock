@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Web;
 using System.Web.UI;
 using Rock.Data;
@@ -85,9 +86,32 @@ namespace Rock.Badge
             }
         }
 
+        #region Obsolete Properties
+
+        /*
+         * Daniel Hazelbaker - 5/20/2022
+         * 
+         * Many of these properties are not async safe. Meaning if two Tasks
+         * try to render the same badge for two different entities at the same
+         * time then they will collide with each other.
+         * 
+         * Additionally, HtmlTextWriter is a System.Web specific. It provides
+         * helper methods to write entire HTML elements rather than needing
+         * to properly write them by hand. However, all but one of the core
+         * badges didn't even use those methods and just wrote the raw HTML
+         * themselves.
+         * 
+         * Therefore, it was decided to mark these properties (and the related
+         * methods below) as obsolete and create new methods that each take
+         * in the entity to be processed as well as use a standard TextWriter
+         * that will work better in .NET core in the future.
+         */
+
         /// <summary>
         /// Gets or sets the parent context block.
         /// </summary>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "ParentContextEntityBlock is deprecated and will be removed in a future version." )]
         public ContextEntityBlock ParentContextEntityBlock
         {
             get
@@ -119,6 +143,8 @@ namespace Rock.Badge
         /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
         /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
         /// </summary>
+        [RockObsolete( "1.14" )]
+        [Obsolete]
         [ThreadStatic]
         private static ContextEntityBlock _nonHttpContextParentContextEntityBlock;
 
@@ -138,6 +164,8 @@ namespace Rock.Badge
         /// <value>
         /// The entity.
         /// </value>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Entity is deprecated and will be removed in a future version." )]
         public IEntity Entity
         {
             get
@@ -170,6 +198,8 @@ namespace Rock.Badge
         /// So be careful and only use the [ThreadStatic] trick if absolutely necessary, and only if it can't be stored in HttpContext.Current
         /// </summary>
         [ThreadStatic]
+        [RockObsolete( "1.14" )]
+        [Obsolete]
         private static IEntity _nonHttpContextEntity;
 
         /// <summary>
@@ -178,11 +208,15 @@ namespace Rock.Badge
         /// <value>
         /// The person.
         /// </value>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Person is no longer used and will be removed in a future version." )]
         public Person Person
         {
             get => Entity as Person;
             set => Entity = value;
         }
+
+        #endregion
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgeComponent" /> class.
@@ -226,6 +260,73 @@ namespace Rock.Badge
         }
 
         /// <summary>
+        /// Renders the badge HTML content that should be inserted into the DOM.
+        /// </summary>
+        /// <param name="badge">The badge cache that describes this badge.</param>
+        /// <param name="entity">The entity to render the badge for.</param>
+        /// <param name="writer">The writer to render the HTML into.</param>
+        public virtual void Render( BadgeCache badge, IEntity entity, TextWriter writer )
+        {
+        }
+
+        /// <summary>
+        /// Gets the java script that will be used for any dynamic funcionality
+        /// required by the badge.
+        /// </summary>
+        /// <param name="badge">The badge cache that describes this badge.</param>
+        /// <param name="entity">The entity to render the badge for.</param>
+        /// <returns>A string that contains the plain JavaScript without a &lt;script&gt; tag.</returns>
+        protected virtual string GetJavaScript( BadgeCache badge, IEntity entity )
+        {
+            return null;
+
+            /*
+             * BJW 2020-09-18
+             * When working on the connections board, I discovered that the badges with <script> tags in the 
+             * Render method were not working correctly when added dynamically to the page. It turns out that
+             * some DOM manipulation methods such as .innerHtml do not allow <script> tags to be evaluated by 
+             * the browser. The postback must be using one of these methods. The solution was to register the 
+             * scripts using the ScriptManager.RegisterClientScriptBlock which ensures that the script is 
+             * evaluated even when added after the initial page load. This is happening in the BadgeControl.
+             */
+        }
+
+        /// <summary>
+        /// Adds the java script within a standardized function wrapper. This can be overridden when a
+        /// different wrapper function is needed.
+        /// </summary>
+        /// <param name="badge">The badge cache that describes this badge.</param>
+        /// <param name="entity">The entity to render the badge for.</param>
+        /// <returns>A string that represents the JavaScript to be inserted into a script tag.</returns>
+        public virtual string GetWrappedJavaScript( BadgeCache badge, IEntity entity )
+        {
+            var script = GetJavaScript( badge, entity );
+
+            if ( script.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return
+$@"(function () {{
+    {script}
+}})();";
+        }
+
+        /// <summary>
+        /// Generates a key unique to this instance of the badge/entity combination. This
+        /// is suitable for use as an HTML id.
+        /// </summary>
+        /// <returns>A string that can be used in the id attribute of an HTML element.</returns>
+        public virtual string GenerateBadgeKey( BadgeCache badge, IEntity entity )
+        {
+            var entityKey = entity != null ? entity.Guid.ToString() : "no-entity";
+            return $"{GetType().Name}-{badge.Guid}-{entityKey}";
+        }
+
+        #region Obsolete Methods
+
+        /// <summary>
         /// Gets the attribute value for the badge
         /// </summary>
         /// <param name="personBadgeCache">The badge.</param>
@@ -244,12 +345,16 @@ namespace Rock.Badge
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Use the Render method that takes an IEntity and TextWriter parameters instead." )]
         public virtual void Render( BadgeCache badge, HtmlTextWriter writer ) { }
 
         /// <summary>
         /// Gets the java script.
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Use the GetJavaScript method that takes an IEntity instead." )]
         protected virtual string GetJavaScript( BadgeCache badge )
         {
             return null;
@@ -270,6 +375,8 @@ namespace Rock.Badge
         /// different wrapper function is needed.
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Use the GetWrappedJavaScript method that takes an IEntity instead." )]
         public virtual string GetWrappedJavaScript( BadgeCache badge )
         {
             var script = GetJavaScript( badge );
@@ -290,6 +397,8 @@ $@"(function () {{
         /// is suitable for use as an HTML id.
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Use the GenerateBadgeKey that takes IEntity instead." )]
         public virtual string GenerateBadgeKey( BadgeCache badge )
         {
             var entityKey = Entity != null ? Entity.Guid.ToString() : "no-entity";
@@ -304,5 +413,7 @@ $@"(function () {{
         [RockObsolete( "1.10" )]
         [Obsolete( "Use the BadgeCache param instead.", false )]
         public virtual void Render( PersonBadgeCache personBadgeCache, HtmlTextWriter writer ) { }
+
+        #endregion
     }
 }

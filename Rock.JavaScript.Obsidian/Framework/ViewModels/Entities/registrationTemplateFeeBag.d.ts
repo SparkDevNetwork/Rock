@@ -25,43 +25,43 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationTemplateFee View Model */
 export type RegistrationTemplateFeeBag = {
-    /** Gets or sets the AllowMultiple. */
+    /** Gets or sets a value indicating if registrant can select multiple values for this fee. */
     allowMultiple: boolean;
 
-    /** Gets or sets the DiscountApplies. */
+    /** Discount codes apply to this fee */
     discountApplies: boolean;
 
-    /** Gets or sets the FeeType. */
+    /** Gets or sets the fee type ( single option vs multiple options ). */
     feeType: number;
 
-    /** Gets or sets the HideWhenNoneRemaining. */
+    /** Gets or sets a value indicating whether [hide when none remaining]. */
     hideWhenNoneRemaining: boolean;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the IsRequired. */
+    /** Gets or sets a value indicating whether this instance is required. */
     isRequired: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the RegistrationTemplateId. */
+    /** Gets or sets the Rock.Model.RegistrationTemplate identifier. */
     registrationTemplateId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

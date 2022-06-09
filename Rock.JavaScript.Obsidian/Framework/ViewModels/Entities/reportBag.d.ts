@@ -25,49 +25,49 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Report View Model */
 export type ReportBag = {
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the CategoryId of the Rock.Model.Category that the Report belongs to. */
     categoryId?: number | null;
 
-    /** Gets or sets the DataViewId. */
+    /** Gets or the DataViewId of the root Rock.Model.DataView that this Report is based on. */
     dataViewId?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the Report's Description. */
     description?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType that is being reported on. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the FetchTop. */
+    /** Gets or sets the number of records to fetch in the report.  Null means all records. */
     fetchTop?: number | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Report is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the LastRunDateTime. */
+    /** Gets or sets the last run date time. */
     lastRunDateTime?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the Report. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the QueryHint. */
+    /** Gets or sets the query hint that is included in the SQL that is executed on the database server */
     queryHint?: string | null;
 
-    /** Gets or sets the RunCount. */
+    /** Gets or sets the persisted last run duration in mulliseconds. */
     runCount?: number | null;
 
-    /** Gets or sets the TimeToRunDurationMilliseconds. */
+    /** The amount of time in milliseconds that it took to run the Rock.Model.Report.DataView */
     timeToRunDurationMilliseconds?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

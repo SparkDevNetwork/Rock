@@ -34,90 +34,69 @@ namespace Rock.ViewModels.Entities
     public partial class StepWorkflowTriggerBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
-        /// <value>
-        /// The IsActive.
-        /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the StepProgramId.
+        /// Gets or sets the Id of the Rock.Model.StepProgram by which this Workflow is triggered.
         /// </summary>
-        /// <value>
-        /// The StepProgramId.
-        /// </value>
         public int? StepProgramId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StepTypeId.
+        /// Gets or sets the Id of the Rock.Model.StepType by which this Workflow is triggered.
         /// </summary>
-        /// <value>
-        /// The StepTypeId.
-        /// </value>
         public int? StepTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the TriggerType.
+        /// Gets or sets the type of the trigger.
         /// </summary>
-        /// <value>
-        /// The TriggerType.
-        /// </value>
         public int TriggerType { get; set; }
 
         /// <summary>
-        /// Gets or sets the TypeQualifier.
+        /// Gets or sets the type qualifier.
         /// </summary>
-        /// <value>
-        /// The TypeQualifier.
-        /// </value>
         public string TypeQualifier { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowName.
+        /// Gets or sets the name of the workflow trigger.
         /// </summary>
-        /// <value>
-        /// The WorkflowName.
-        /// </value>
         public string WorkflowName { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowTypeId.
+        /// Gets or sets the Id of the Rock.Model.WorkflowType that is triggered. This property is required.
         /// </summary>
-        /// <value>
-        /// The WorkflowTypeId.
-        /// </value>
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

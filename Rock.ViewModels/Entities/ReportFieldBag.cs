@@ -34,122 +34,124 @@ namespace Rock.ViewModels.Entities
     public partial class ReportFieldBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ColumnHeaderText.
+        /// Gets or sets the column header text.
         /// </summary>
         /// <value>
-        /// The ColumnHeaderText.
+        /// The column header text.
         /// </value>
         public string ColumnHeaderText { get; set; }
 
         /// <summary>
-        /// Gets or sets the ColumnOrder.
+        /// Gets or sets the column order of this field
         /// </summary>
         /// <value>
-        /// The ColumnOrder.
+        /// The order.
         /// </value>
         public int ColumnOrder { get; set; }
 
         /// <summary>
-        /// Gets or sets the DataSelectComponentEntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Reporting.DataSelectComponent that this report field is using.
         /// </summary>
         /// <value>
-        /// The DataSelectComponentEntityTypeId.
+        /// The DataSelectComponent EntityTypeId
         /// </value>
         public int? DataSelectComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsCommunicationMergeField.
+        /// Gets or sets the is communication merge field.
         /// </summary>
         /// <value>
-        /// The IsCommunicationMergeField.
+        /// The is communication merge field.
         /// </value>
         public bool? IsCommunicationMergeField { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsCommunicationRecipientField.
+        /// Gets or sets the is recipient field.
         /// </summary>
         /// <value>
-        /// The IsCommunicationRecipientField.
+        /// The is recipient field.
         /// </value>
         public bool? IsCommunicationRecipientField { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReportFieldType.
+        /// Gets or sets the type of the report field.
         /// </summary>
         /// <value>
-        /// The ReportFieldType.
+        /// The type of the report field.
         /// </value>
         public int ReportFieldType { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReportId.
+        /// Gets or sets the report identifier.
         /// </summary>
         /// <value>
-        /// The ReportId.
+        /// The report identifier.
         /// </value>
         public int ReportId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Selection.
+        /// Selection is where the FieldType stores specific parameter values 
+        /// If ReportFieldType is Column or Attribute, it is the Column or Attribute name
+        /// If ReportFieldType is DataSelectComponent, it will be some values of whatever the DataSelectComponent implements for specific parameters
         /// </summary>
         /// <value>
-        /// The Selection.
+        /// The selection.
         /// </value>
         public string Selection { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowInGrid.
+        /// Gets or sets a value indicating whether [show in grid].
         /// </summary>
         /// <value>
-        /// The ShowInGrid.
+        ///   true if [show in grid]; otherwise, false.
         /// </value>
         public bool ShowInGrid { get; set; }
 
         /// <summary>
-        /// Gets or sets the SortDirection.
+        /// Gets or sets the sort direction.
         /// </summary>
         /// <value>
-        /// The SortDirection.
+        /// The sort direction.
         /// </value>
         public int SortDirection { get; set; }
 
         /// <summary>
-        /// Gets or sets the SortOrder.
+        /// Gets or sets the sort order (ORDER BY). NULL means don't sort by this field
         /// </summary>
         /// <value>
-        /// The SortOrder.
+        /// The sort order.
         /// </value>
         public int? SortOrder { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

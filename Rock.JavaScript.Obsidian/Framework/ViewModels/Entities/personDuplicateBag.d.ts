@@ -25,40 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PersonDuplicate View Model */
 export type PersonDuplicateBag = {
-    /** Gets or sets the Capacity. */
+    /**
+     * Gets or sets the capacity.
+     * The max possible score based on what items they have values for.
+     */
     capacity?: number | null;
 
-    /** Gets or sets the DuplicatePersonAliasId. */
+    /** Gets or sets the duplicate person alias identifier. */
     duplicatePersonAliasId: number;
 
-    /** Gets or sets the IgnoreUntilScoreChanges. */
+    /**
+     * Gets or sets a value indicating whether [ignore until score changes].
+     * Setting this to true will hide the personduplicate record until the score changes
+     */
     ignoreUntilScoreChanges: boolean;
 
-    /** Gets or sets the IsConfirmedAsNotDuplicate. */
+    /** Gets or sets a value indicating whether this instance is confirmed as not duplicate. */
     isConfirmedAsNotDuplicate: boolean;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId: number;
 
-    /** Gets or sets the Score. */
+    /**
+     * Gets or sets the score.
+     * Calculated in the [spCrm_PersonDuplicateFinder] stored procedure
+     */
     score?: number | null;
 
-    /** Gets or sets the ScoreDetail. */
+    /** Gets or sets the score detail. */
     scoreDetail?: string | null;
 
-    /** Gets or sets the TotalCapacity. */
+    /**
+     * Gets or sets the total capacity.
+     * The max possible score if they had values for all matchable items
+     */
     totalCapacity?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -25,43 +25,43 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationSession View Model */
 export type RegistrationSessionBag = {
-    /** Gets or sets the ClientIpAddress. */
+    /** Gets or sets the client ip address. */
     clientIpAddress?: string | null;
 
-    /** Gets or sets the ExpirationDateTime. */
+    /** Gets or sets the expiration date time. */
     expirationDateTime?: string | null;
 
-    /** Gets or sets the PaymentGatewayReference. */
+    /** Gets or sets the payment gateway reference. */
     paymentGatewayReference?: string | null;
 
-    /** Gets or sets the RegistrationCount. */
+    /** Gets or sets the registration count. These are registrants that are not slated to be on the waitlist. */
     registrationCount: number;
 
-    /** Gets or sets the RegistrationData. */
+    /** Gets or sets the registration data. */
     registrationData?: string | null;
 
-    /** Gets or sets the RegistrationId. */
+    /** Gets or sets the registration identifier. */
     registrationId?: number | null;
 
-    /** Gets or sets the RegistrationInstanceId. */
+    /** Gets or sets the registration instance identifier. */
     registrationInstanceId: number;
 
-    /** Gets or sets the SessionStartDateTime. */
+    /** Gets or sets the session start date time. */
     sessionStartDateTime?: string | null;
 
-    /** Gets or sets the SessionStatus. */
+    /** Gets or sets the session status. */
     sessionStatus: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

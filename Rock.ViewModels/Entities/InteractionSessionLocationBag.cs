@@ -34,34 +34,34 @@ namespace Rock.ViewModels.Entities
     public partial class InteractionSessionLocationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CountryCode.
+        /// Gets or sets the country code.
         /// </summary>
         /// <value>
-        /// The CountryCode.
+        /// The country code.
         /// </value>
         public string CountryCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the CountryValueId.
+        /// Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the country.
         /// </summary>
         /// <value>
-        /// The CountryValueId.
+        /// A System.Int32 representing DefinedValueId of the country.
         /// </value>
         public int? CountryValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GeoPoint.
+        /// Gets or sets the GeoPoint (GeoLocation) for the session
         /// </summary>
         /// <value>
-        /// The GeoPoint.
+        /// A System.Data.Entity.Spatial.DbGeography object that represents the GeoLocation of the session.
         /// </value>
         public object GeoPoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the IpAddress.
+        /// Gets or sets the IP address of the request.
         /// </summary>
         /// <value>
-        /// The IpAddress.
+        /// A System.String of the IP address of the request.
         /// </value>
         public string IpAddress { get; set; }
 
@@ -69,79 +69,79 @@ namespace Rock.ViewModels.Entities
         /// Gets or sets the ISP.
         /// </summary>
         /// <value>
-        /// The ISP.
+        /// A System.String of the ISP.
         /// </value>
         public string ISP { get; set; }
 
         /// <summary>
-        /// Gets or sets the Location.
+        /// Gets or sets the location.
         /// </summary>
         /// <value>
-        /// The Location.
+        /// A System.String of the location.
         /// </value>
         public string Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the LookupDateTime.
+        /// Gets or sets the lookup datetime.
         /// </summary>
         /// <value>
-        /// The LookupDateTime.
+        /// The lookup datetime.
         /// </value>
         public DateTime LookupDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostalCode.
+        /// Gets or sets the postal code.
         /// </summary>
         /// <value>
-        /// The PostalCode.
+        /// A System.String of the postal code.
         /// </value>
         public string PostalCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegionCode.
+        /// Gets or sets the region code.
         /// </summary>
         /// <value>
-        /// The RegionCode.
+        /// The region code.
         /// </value>
         public string RegionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegionValueId.
+        /// Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the region.
         /// </summary>
         /// <value>
-        /// The RegionValueId.
+        /// A System.Int32 representing DefinedValueId of the region.
         /// </value>
         public int? RegionValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

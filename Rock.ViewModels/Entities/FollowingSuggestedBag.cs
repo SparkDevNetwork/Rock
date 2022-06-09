@@ -34,90 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class FollowingSuggestedBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the entity identifier.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The entity identifier.
         /// </value>
         public int EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the entity type identifier.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The entity type identifier.
         /// </value>
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastPromotedDateTime.
+        /// Gets or sets the last promoted date time.
         /// </summary>
         /// <value>
-        /// The LastPromotedDateTime.
+        /// The last promoted date time.
         /// </value>
         public DateTime? LastPromotedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the PersonAliasId of the person that is following the Entity
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the status.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// The status.
         /// </value>
         public int Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the StatusChangedDateTime.
+        /// Gets or sets the status changed date time.
         /// </summary>
         /// <value>
-        /// The StatusChangedDateTime.
+        /// The status changed date time.
         /// </value>
         public DateTime StatusChangedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SuggestionTypeId.
+        /// Gets or sets the suggestion type identifier.
         /// </summary>
         /// <value>
-        /// The SuggestionTypeId.
+        /// The suggestion type identifier.
         /// </value>
         public int SuggestionTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

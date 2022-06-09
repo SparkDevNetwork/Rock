@@ -34,90 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowActionFormSectionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description to display under the Title.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String containing a description or summary about this WorkflowActionFormSection.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the SectionTypeValueId.
+        /// Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the SectionType for this Workflow Action Form Section.
         /// </summary>
         /// <value>
-        /// The SectionTypeValueId.
+        /// A System.Int32 representing DefinedValueId of the SectionType's Rock.Model.DefinedValue for this Workflow Action Form Section.
         /// </value>
         public int? SectionTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SectionVisibilityRulesJSON.
+        /// Gets or sets the section visibility rules json.
         /// </summary>
         /// <value>
-        /// The SectionVisibilityRulesJSON.
+        /// The section visibility rules json.
         /// </value>
         public string SectionVisibilityRulesJSON { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowHeadingSeparator.
+        /// Gets or sets a value indicating whether to show heading separator after the Title/Description
         /// </summary>
         /// <value>
-        /// The ShowHeadingSeparator.
+        ///   A System.Boolean value that is true if heading separator will be shown; otherwise false.
         /// </value>
         public bool ShowHeadingSeparator { get; set; }
 
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the title to display in the Section
         /// </summary>
         /// <value>
-        /// The Title.
+        /// The title.
         /// </value>
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowActionFormId.
+        /// Gets or sets the header.
         /// </summary>
         /// <value>
-        /// The WorkflowActionFormId.
+        /// The header.
         /// </value>
         public int WorkflowActionFormId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

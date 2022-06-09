@@ -25,34 +25,37 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ServiceJobHistory View Model */
 export type ServiceJobHistoryBag = {
-    /** Gets or sets the ServiceJobId. */
+    /** The Id of the ServiceJob */
     serviceJobId: number;
 
-    /** Gets or sets the ServiceWorker. */
+    /** Gets or sets the name of the service worker. */
     serviceWorker?: string | null;
 
-    /** Gets or sets the StartDateTime. */
+    /** Gets or sets the date and time that the Job started. */
     startDateTime?: string | null;
 
-    /** Gets or sets the Status. */
+    /** Gets or sets the completion status that was returned by the Job. */
     status?: string | null;
 
-    /** Gets or sets the StatusMessage. */
+    /**
+     * Gets or sets the status message that was returned by the job. In most cases this will be used
+     * in the event of an exception to return the exception message.
+     */
     statusMessage?: string | null;
 
-    /** Gets or sets the StopDateTime. */
+    /** Gets or sets the date and time that the job finished. */
     stopDateTime?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

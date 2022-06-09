@@ -25,40 +25,43 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationTemplatePlacement View Model */
 export type RegistrationTemplatePlacementBag = {
-    /** Gets or sets the AllowMultiplePlacements. */
+    /** Gets or sets a value indicating whether [allow multiple placements]. */
     allowMultiplePlacements: boolean;
 
-    /** Gets or sets the Cost. */
+    /** Gets or sets the cost. */
     cost?: number | null;
 
-    /** Gets or sets the GroupTypeId. */
+    /** Gets or sets the Id of the Rock.Model.GroupType that this registration template placement is associated with. This property is required. */
     groupTypeId: number;
 
-    /** Gets or sets the IconCssClass. */
+    /**
+     * Gets or sets the icon CSS class that is defined for the RegistrationTemplatePlacement.
+     * Use Rock.Model.RegistrationTemplatePlacement.GetIconCssClass to get the IconCssClass to use since that GroupType.IconCssClass should be used if this isn't defined
+     */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsInternal. */
+    /** Gets or sets a value indicating whether is limited to administration purposes. */
     isInternal: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the registration template placement. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the sort and display order of the registration template placement. This is an ascending order, so the lower the value the higher the sort priority. */
     order: number;
 
-    /** Gets or sets the RegistrationTemplateId. */
+    /** Gets or sets the Rock.Model.RegistrationTemplate identifier. */
     registrationTemplateId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

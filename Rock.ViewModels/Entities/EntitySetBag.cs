@@ -34,90 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class EntitySetBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the EntitySetPurposeValueId.
+        /// Gets or sets Id of the EntitySet purpose Rock.Model.DefinedValue representing the EntitySet's purpose.
         /// </summary>
         /// <value>
-        /// The EntitySetPurposeValueId.
+        /// A System.Int32 representing the Id of the EntitySet purpose Rock.Model.DefinedValue representing the EntitySet's purpose.  This value is nullable.
         /// </value>
         public int? EntitySetPurposeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the entity type identifier.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The entity type identifier.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpireDateTime.
+        /// Gets or sets the expire date time.
         /// </summary>
         /// <value>
-        /// The ExpireDateTime.
+        /// The expire date time.
         /// </value>
         public DateTime? ExpireDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note.
+        /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// The Note.
+        /// A System.String representing the note.
         /// </value>
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the ParentEntitySetId.
+        /// Gets or sets the parent entity set identifier.
         /// </summary>
         /// <value>
-        /// The ParentEntitySetId.
+        /// The parent entity set identifier.
         /// </value>
         public int? ParentEntitySetId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

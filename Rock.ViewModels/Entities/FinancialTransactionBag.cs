@@ -34,250 +34,259 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialTransactionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AuthorizedPersonAliasId.
+        /// Gets or sets the authorized person identifier.
         /// </summary>
         /// <value>
-        /// The AuthorizedPersonAliasId.
+        /// The authorized person identifier.
         /// </value>
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the BatchId.
+        /// Gets or sets BatchId of the Rock.Model.FinancialBatch that contains this transaction.
         /// </summary>
         /// <value>
-        /// The BatchId.
+        /// A System.Int32 representing the BatchId of the Rock.Model.FinancialBatch that contains the transaction.
         /// </value>
         public int? BatchId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CheckMicrEncrypted.
+        /// Gets or sets an encrypted version of a scanned check's raw track of the MICR data.
+        /// Note that different scanning hardware might use different special characters for fields such as Transit and On-US.
+        /// Also, encryption of the same values results in different encrypted data, so this field can't be used for check matching
         /// </summary>
         /// <value>
-        /// The CheckMicrEncrypted.
+        /// The check micr encrypted.
+        /// A System.String representing an encrypted version of a scanned check's MICR track data
         /// </value>
         public string CheckMicrEncrypted { get; set; }
 
         /// <summary>
-        /// Gets or sets the CheckMicrHash.
+        /// One Way Encryption (SHA1 Hash) of Raw Track of the MICR read. The same raw MICR will result in the same hash.
+        /// Enables detection of duplicate scanned checks
+        /// Note: duplicate detection requires that the duplicate check was scanned using the same scanner type (Ranger vs Magtek)
         /// </summary>
         /// <value>
-        /// The CheckMicrHash.
+        /// The check micr hash.
         /// </value>
         public string CheckMicrHash { get; set; }
 
         /// <summary>
-        /// Gets or sets the CheckMicrParts.
+        /// Gets or sets an encrypted version of a scanned check's parsed MICR in the format {routingnumber}_{accountnumber}_{checknumber}
         /// </summary>
         /// <value>
-        /// The CheckMicrParts.
+        /// The check micr encrypted.
+        /// A System.String representing an encrypted version of a scanned check's parsed MICR data in the format {routingnumber}_{accountnumber}_{checknumber}
         /// </value>
         public string CheckMicrParts { get; set; }
 
         /// <summary>
-        /// Gets or sets the FinancialGatewayId.
+        /// Gets or sets the gateway identifier.
         /// </summary>
         /// <value>
-        /// The FinancialGatewayId.
+        /// The gateway identifier.
         /// </value>
         public int? FinancialGatewayId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FinancialPaymentDetailId.
+        /// Gets or sets the financial payment detail identifier.
         /// </summary>
         /// <value>
-        /// The FinancialPaymentDetailId.
+        /// The financial payment detail identifier.
         /// </value>
         public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ForeignCurrencyCodeValueId.
+        /// Gets or sets the foreign currency code value identifier.
         /// </summary>
         /// <value>
-        /// The ForeignCurrencyCodeValueId.
+        /// The foreign currency code value identifier.
         /// </value>
         public int? ForeignCurrencyCodeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FutureProcessingDateTime.
+        /// Gets or sets date and time that the transaction should be processed after. This is the local server time.
         /// </summary>
-        /// <value>
-        /// The FutureProcessingDateTime.
-        /// </value>
         public DateTime? FutureProcessingDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsReconciled.
+        /// Gets or sets a flag indicating if the transaction has been reconciled or not.
         /// </summary>
         /// <value>
-        /// The IsReconciled.
+        /// The is settled.
         /// </value>
         public bool? IsReconciled { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSettled.
+        /// Gets or sets a flag indicating if the transaction has been settled by the processor/gateway.
         /// </summary>
         /// <value>
-        /// The IsSettled.
+        /// The is settled.
         /// </value>
         public bool? IsSettled { get; set; }
 
         /// <summary>
-        /// Gets or sets the MICRStatus.
+        /// Gets or sets the micr status (if this Transaction is from a scanned check)
+        /// Fail means that the check scanner detected a bad MICR read, but the user choose to Upload it anyway
         /// </summary>
         /// <value>
-        /// The MICRStatus.
+        /// The micr status.
         /// </value>
         public int? MICRStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the NonCashAssetTypeValueId.
+        /// Gets or sets the non cash asset type Rock.Model.DefinedValue identifier.
         /// </summary>
         /// <value>
-        /// The NonCashAssetTypeValueId.
+        /// The non cash asset type value identifier.
         /// </value>
         public int? NonCashAssetTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProcessedByPersonAliasId.
+        /// Gets or sets the PersonAliasId of the Rock.Model.PersonAlias who processed the transaction. For example, if the transaction is
+        /// from a scanned check, the ProcessedByPersonAlias is the person who matched (or started to match) the check to the person who wrote the check.
         /// </summary>
         /// <value>
-        /// The ProcessedByPersonAliasId.
+        /// The processed by person alias identifier.
         /// </value>
         public int? ProcessedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProcessedDateTime.
+        /// Gets or sets the processed date time. For example, if the transaction is from a scanned check, the ProcessedDateTime is when the transaction
+        /// was matched (or started to match) to the person who wrote the check.
         /// </summary>
         /// <value>
-        /// The ProcessedDateTime.
+        /// The processed date time.
         /// </value>
         public DateTime? ProcessedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduledTransactionId.
+        /// Gets or sets the ScheduledTransactionId of the Rock.Model.FinancialScheduledTransaction that triggered
+        /// this transaction. If this was an ad-hoc/on demand transaction, this property will be null.
         /// </summary>
         /// <value>
-        /// The ScheduledTransactionId.
+        /// A System.Int32 representing the ScheduledTransactionId of the Rock.Model.FinancialScheduledTransaction
         /// </value>
         public int? ScheduledTransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SettledDate.
+        /// Gets or sets the date that the transaction was settled by the processor/gateway.
         /// </summary>
         /// <value>
-        /// The SettledDate.
+        /// The settled date.
         /// </value>
         public DateTime? SettledDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the SettledGroupId.
+        /// The group/batch identifier used by the processor/gateway when the transaction has been settled.
         /// </summary>
         /// <value>
-        /// The SettledGroupId.
+        /// The settled group identifier.
         /// </value>
         public string SettledGroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowAsAnonymous.
+        /// Gets or sets a value indicating whether to show the transaction as anonymous when displayed publicly, for example on a list of fundraising contributors
         /// </summary>
         /// <value>
-        /// The ShowAsAnonymous.
+        ///   true if [show as anonymous]; otherwise, false.
         /// </value>
         public bool ShowAsAnonymous { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceTypeValueId.
+        /// Gets or sets the DefinedValueId of the source type Rock.Model.DefinedValue for this transaction. Representing the source (method) of this transaction.
         /// </summary>
         /// <value>
-        /// The SourceTypeValueId.
+        /// A System.Int32 representing the DefinedValueId of the source type Rock.Model.DefinedValue for this transaction.
         /// </value>
         public int? SourceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets the status of the transaction provided by the payment gateway (i.e. Pending, Complete, Failed)
         /// </summary>
         /// <value>
-        /// The Status.
+        /// The status.
         /// </value>
         public string Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the StatusMessage.
+        /// Gets or sets the status message.
         /// </summary>
         /// <value>
-        /// The StatusMessage.
+        /// The status message.
         /// </value>
         public string StatusMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the Summary.
+        /// Gets or sets a summary of the transaction. This would store any comments made.
         /// </summary>
         /// <value>
-        /// The Summary.
+        /// A System.String representing a summary of the transaction.
         /// </value>
         public string Summary { get; set; }
 
         /// <summary>
-        /// Gets or sets the SundayDate.
+        /// Gets Sunday date.
         /// </summary>
         /// <value>
-        /// The SundayDate.
+        /// The Sunday date.
         /// </value>
         public DateTime? SundayDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionCode.
+        /// For Credit Card transactions, this is the response code that the gateway returns.
+        /// For Scanned Checks, this is the check number.
         /// </summary>
         /// <value>
-        /// The TransactionCode.
+        /// A System.String representing the transaction code of the transaction.
         /// </value>
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionDateTime.
+        /// Gets or sets date and time that the transaction occurred. This is the local server time.
         /// </summary>
         /// <value>
-        /// The TransactionDateTime.
+        /// A System.DateTime representing the time that the transaction occurred. This is the local server time.
         /// </value>
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionTypeValueId.
+        /// Gets or sets the DefinedValueId of the TransactionType Rock.Model.DefinedValue indicating
+        /// the type of the transaction.
         /// </summary>
         /// <value>
-        /// The TransactionTypeValueId.
+        /// A System.Int32 representing the DefinedValueId of the TransactionType Rock.Model.DefinedValue for this transaction.
         /// </value>
         public int TransactionTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -77,7 +77,8 @@
                                 Help="Once you provide a Entity Qualifer Column, you’ll need to provide the value in that column to filter on. In the example of groups of a certain type, the value would be the Group Type Id to filter on (e.g. 12)." />
                         </div>
                         <div class="col-sm-12">
-                            <Rock:CodeEditor ID="ceTemplate" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Default Document Name Template" />
+                            <Rock:CodeEditor ID="ceTemplate" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Default Document Name Template"
+                                Help="This template is used to dynamically build the document's name. The available merge fields are NickName, LastName, DocumentPurposeKey, and DocumentTypeName. <span class='tip tip-lava'></span>"/>
                         </div>
                     </div>
 

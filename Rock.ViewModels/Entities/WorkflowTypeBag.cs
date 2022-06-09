@@ -34,226 +34,235 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the CategoryId of the Rock.Model.Category that this WorkflowType belongs to. 
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// A System.Int32 representing the CategoryId of the Rock.Model.Category that the WorkflowType belongs to. 
+        /// If the WorkflowType does not belong to a category, this value will be null.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CompletedWorkflowRetentionPeriod.
+        /// Gets or sets the completed workflow retention period in days.
         /// </summary>
         /// <value>
-        /// The CompletedWorkflowRetentionPeriod.
+        /// The completed workflow retention period in days.
         /// </value>
         public int? CompletedWorkflowRetentionPeriod { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description or summary about the WorkflowType.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing a description/summary of the WorkflowType.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the FormBuilderSettingsJson.
+        /// Gets or sets the form builder settings json.
         /// </summary>
         /// <value>
-        /// The FormBuilderSettingsJson.
+        /// The form builder settings json.
         /// </value>
         public string FormBuilderSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the FormBuilderTemplateId.
+        /// Gets or sets the form builder template identifier.
         /// </summary>
         /// <value>
-        /// The FormBuilderTemplateId.
+        /// The form builder template identifier.
         /// </value>
         public int? FormBuilderTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FormEndDateTime.
+        /// Gets or sets the form end date and time.
         /// </summary>
         /// <value>
-        /// The FormEndDateTime.
+        /// The form end date and time.
         /// </value>
         public DateTime? FormEndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the FormStartDateTime.
+        /// Gets or sets the form start date and time.
         /// </summary>
         /// <value>
-        /// The FormStartDateTime.
+        /// The form start date and time.
         /// </value>
         public DateTime? FormStartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// A System.String representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this WorkflowType is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean that is true if the WorkflowType is active; otherwise false.
         /// </value>
         public bool? IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsFormBuilder.
+        /// Gets or sets a value indicating whether [is form builder].
         /// </summary>
         /// <value>
-        /// The IsFormBuilder.
+        ///   true if [is form builder]; otherwise, false.
         /// </value>
         public bool IsFormBuilder { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsLoginRequired.
+        /// Gets or sets a value indicating whether [is login required].
         /// </summary>
         /// <value>
-        /// The IsLoginRequired.
+        ///   true if [is login required]; otherwise, false.
         /// </value>
         public bool IsLoginRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPersisted.
+        /// Gets or sets a value indicating whether Rock.Model.Workflow instances of this WorkflowType are persisted.
         /// </summary>
         /// <value>
-        /// The IsPersisted.
+        /// A System.Boolean value that is true if Rock.Model.Workflow instances of this WorkflowType are persisted; otherwise false.
         /// </value>
         public bool IsPersisted { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this WorkflowType is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if the WorkflowType is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LoggingLevel.
+        /// Gets or sets the logging level.
+        /// Gets or sets the Rock.Model.WorkflowLoggingLevel indicating the level of detail that should be logged when instances of this WorkflowType are executed.
         /// </summary>
         /// <value>
-        /// The LoggingLevel.
+        /// A Rock.Model.WorkflowLoggingLevel value indicating the level of detail that should be logged when instances of this WorkflowType are executed.
+        /// When WorkflowLoggingLevel.None no details of the Workflow instance's execution will be logged.
+        /// When WorkflowLoggingLevel.Workflow only workflow events will be logged (i.e. begin and end).
+        /// When WorkflowLoggingLevel.Activity workflow and activity events will be logged.
+        /// When WorkflowLoggingLevel.Action workflow, activity and action events will be logged.
         /// </value>
         public int LoggingLevel { get; set; }
 
         /// <summary>
-        /// Gets or sets the LogRetentionPeriod.
+        /// Gets or sets the log retention period in days.
         /// </summary>
         /// <value>
-        /// The LogRetentionPeriod.
+        /// The log retention period in days.
         /// </value>
         public int? LogRetentionPeriod { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxWorkflowAgeDays.
+        /// Gets or sets the number of days since the creation date after which a workflow would be automatically marked completed.
         /// </summary>
         /// <value>
-        /// The MaxWorkflowAgeDays.
+        /// The number of days since the creation date after which a workflow would be automatically marked completed.
         /// </value>
         public int? MaxWorkflowAgeDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the friendly Name of the WorkflowType. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the friendly Name of the WorkflowType.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the NoActionMessage.
+        /// Gets or sets the text to be displayed when a workflow of this type workflow is active, but does not have an active form. This field supports Lava.
         /// </summary>
         /// <value>
-        /// The NoActionMessage.
+        /// The summary view text.
         /// </value>
         public string NoActionMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order of the WorkFlowType, the lower the number the higher up that the WorkflowType will display in the workflow list. This
+        /// property is required.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 representing the display order of the WorkflowType.  
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProcessingIntervalSeconds.
+        /// Gets or sets the minimum length of time, in seconds, before a persisted Rock.Model.Workflow instance that implements this 
+        /// WorkflowType can be re-executed.
         /// </summary>
         /// <value>
-        /// The ProcessingIntervalSeconds.
+        /// A System.Int32 representing the minimum length of time, in seconds, that must pass before the same persisted Rock.Model.Workflow instance
+        /// that implements this WorkflowType can be re-executed.
         /// </value>
         public int? ProcessingIntervalSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the SummaryViewText.
+        /// Gets or sets the summary view text to be displayed when a workflow of this type has no form or has been completed. This field supports Lava.
         /// </summary>
         /// <value>
-        /// The SummaryViewText.
+        /// The summary view text.
         /// </value>
         public string SummaryViewText { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowExpireDateTime.
+        /// Gets or sets the date time when the workflow of this type will no longer be processed.
         /// </summary>
         /// <value>
-        /// The WorkflowExpireDateTime.
+        /// The workflow expire date time.
         /// </value>
         public DateTime? WorkflowExpireDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowIdPrefix.
+        /// Gets or sets the workflow identifier prefix.
         /// </summary>
         /// <value>
-        /// The WorkflowIdPrefix.
+        /// The workflow identifier prefix.
         /// </value>
         public string WorkflowIdPrefix { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkTerm.
+        /// Gets or sets the work term for the WorkflowType. This is the action that is being performed by this WorkflowType. This property is required.
         /// </summary>
         /// <value>
-        /// The WorkTerm.
+        /// A System.String representing the WorkItem that is being performed by this WorkflowType
         /// </value>
         public string WorkTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

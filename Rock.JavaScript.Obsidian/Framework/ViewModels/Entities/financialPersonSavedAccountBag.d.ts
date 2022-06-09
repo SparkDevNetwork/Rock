@@ -25,49 +25,59 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialPersonSavedAccount View Model */
 export type FinancialPersonSavedAccountBag = {
-    /** Gets or sets the FinancialGatewayId. */
+    /** Gets or sets the Rock.Model.FinancialGateway identifier. */
     financialGatewayId?: number | null;
 
-    /** Gets or sets the FinancialPaymentDetailId. */
+    /** Gets or sets the Rock.Model.FinancialPaymentDetail identifier. */
     financialPaymentDetailId?: number | null;
 
-    /** Gets or sets the GatewayPersonIdentifier. */
+    /**
+     * Gets or sets the Gateway Person Identifier.
+     * This would indicate id the customer vault information on the gateway (for gateways that have customer vaults (NMI and MyWell) )
+     */
     gatewayPersonIdentifier?: string | null;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the group identifier. */
     groupId?: number | null;
 
-    /** Gets or sets the IsDefault. */
+    /** Gets or sets a flag indicating if this saved account is the default payment option for the given person. */
     isDefault: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this saved account was created by and is a part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the saved account. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Rock.Model.PersonAlias identifier. */
     personAliasId?: number | null;
 
-    /** Gets or sets the PreferredForeignCurrencyCodeValueId. */
+    /** Gets or sets the foreign currency code value identifier. */
     preferredForeignCurrencyCodeValueId?: number | null;
 
-    /** Gets or sets the ReferenceNumber. */
+    /**
+     * Gets or sets a reference identifier needed by the payment provider to use as a payment token.
+     * For gateways that have a concept of a customer vault (NMI and MyWell), this would be the customer vault id Rock.Model.FinancialPersonSavedAccount.GatewayPersonIdentifier
+     * For gateways that use a source transaction for payment info (PayFlowPro), this would be the Rock.Model.FinancialPersonSavedAccount.TransactionCode
+     */
     referenceNumber?: string | null;
 
-    /** Gets or sets the TransactionCode. */
+    /**
+     * Gets or sets the transaction code that was used as the "source transaction", and is used by some gateways (PayFlowPro) to lookup the payment info.
+     * For gateways that have the concept of a Customer Vault (NMI and MyWell), Rock.Model.FinancialPersonSavedAccount.GatewayPersonIdentifier is what would be used.
+     */
     transactionCode?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -1277,6 +1277,16 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            NavigateToCurrentPageReference();
+        }
+
         #endregion
 
         #region Methods
@@ -1296,17 +1306,12 @@ namespace RockWeb.Blocks.Crm
 
                 if ( campuses.Count >= 1 )
                 {
-                    ShowHidePlannedDatePanels();
-
                     cpCampus.ForceVisible = true;
                     cpCampus.SelectedCampusId = campuses.First().Id;
+                    cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
                     pnlCampus.Visible = true;
 
                     SetCampusInfo();
-
-                    SetScheduleDateControl();
-
-                    cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
                 }
                 else
                 {
@@ -1317,6 +1322,9 @@ namespace RockWeb.Blocks.Crm
             {
                 pnlCampus.Visible = false;
             }
+
+            ShowHidePlannedDatePanels();
+            SetScheduleDateControl();
 
             // Visit Info
             pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible || pnlPlannedSchedule.Visible;
@@ -1408,7 +1416,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             // If there are multiple campuses and the campus picker is not visible then just display the date panel
-            if ( CampusCache.All( false ).Count >= 1 )
+            if ( CampusCache.All( false ).Count > 1 )
             {
                 if ( !GetAttributeValue( AttributeKey.ShowCampus ).AsBoolean() )
                 {
@@ -1522,25 +1530,71 @@ namespace RockWeb.Blocks.Crm
             ddlScheduleDate.Items.Clear();
             ddlScheduleTime.Items.Clear();
 
-            if ( !pnlPlannedSchedule.Visible || cpCampus.SelectedValue.IsNullOrWhiteSpace() )
+            if ( !pnlPlannedSchedule.Visible || (cpCampus.Visible && cpCampus.SelectedValue.IsNullOrWhiteSpace() ) )
             {
                 if ( cpCampus.SelectedValue.IsNullOrWhiteSpace() )
                 {
                     litCampusTypeIcon.Text = "";
                 }
+
                 return;
             }
 
             OccurrenceSchedules = new List<OccurrenceSchedule>();
+            int? selectedCampusId = null;
+            if ( cpCampus.Visible )
+            {
+                selectedCampusId = cpCampus.SelectedCampusId.Value;
+            }
+            else
+            {
+                if ( CampusCache.All( false ).Count == 1 )
+                {
+                    // If there is just one active campus then use that one.
+                    selectedCampusId = CampusCache.All( false )[0].Id;
+                }
+                else
+                {
+                    // Rock should show an error before getting here, but just in case... If there are multiple campuses then we will need the campus to get the schedule.
+                    // If the user has edit permission display an error message so the configuration can be fixed
+                    if ( IsUserAuthorized( Authorization.EDIT ) )
+                    {
+                        nbError.Title = "Must Show Campus";
+                        nbError.Text = "In order to show campus schedules the campus has to be shown so it can be selected. Change the this block's 'Show Campus' attribute to 'Yes'. A user without edit permission to this block will just see \"Planned Visit Date\".";
+                        nbError.Visible = true;
+                        litCampusTypeIcon.Text = "";
+
+                        return;
+                    }
+
+                    // Since we can't show the schedules and this is not a user authorized to edit the block just show the date.
+                    pnlPlannedDate.Visible = true;
+                    pnlPlannedSchedule.Visible = false;
+
+                    return;
+                }
+            }
+
             var campusScheduleAttributeKey = AttributeCache.Get( GetAttributeValue( AttributeKey.CampusScheduleAttribute ) ).Key;
-            var campusScheduleAttributeValue = CampusCache.Get( cpCampus.SelectedCampusId.Value )?.GetAttributeValue( campusScheduleAttributeKey );
+            var campusScheduleAttributeValue = CampusCache.Get( selectedCampusId.Value )?.GetAttributeValue( campusScheduleAttributeKey );
 
             if ( campusScheduleAttributeValue.IsNullOrWhiteSpace() )
             {
-                nbError.Title = "Missing Campus Schedule attribute.";
-                nbError.Text = "This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block.";
-                nbError.Visible = true;
-                litCampusTypeIcon.Text = "";
+                // If the user has edit permission then display an error message so the configuration can be fixed
+                if ( IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    nbError.Title = "Missing Campus Schedule attribute.";
+                    nbError.Text = "This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. A user without edit permission to this block will just see \"Planned Visit Date\".";
+                    nbError.Visible = true;
+                    litCampusTypeIcon.Text = "";
+
+                    return;
+                }
+
+                // Since we can't show the schedules and this is not a user authorized to edit the block just show the date.
+                pnlPlannedDate.Visible = true;
+                pnlPlannedSchedule.Visible = false;
+
                 return;
             }
 

@@ -34,202 +34,203 @@ namespace Rock.ViewModels.Entities
     public partial class PrayerRequestBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AllowComments.
+        /// Gets or sets a flag indicating  whether or not comments can be made against the request.
         /// </summary>
         /// <value>
-        /// The AllowComments.
+        /// A System.Boolean value that is true if comments are allowed; otherwise false.
         /// </value>
         public bool? AllowComments { get; set; }
 
         /// <summary>
-        /// Gets or sets the Answer.
+        /// Gets or sets a description of the way that God has answered the prayer.
         /// </summary>
         /// <value>
-        /// The Answer.
+        /// A System.String that contains a description of how God answered the prayer request.
         /// </value>
         public string Answer { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovedByPersonAliasId.
+        /// Gets or sets the PersonId of the Rock.Model.Person who approved this prayer request.
         /// </summary>
         /// <value>
-        /// The ApprovedByPersonAliasId.
+        /// A System.Int32 representing the PersonId of the Rock.Model.Person who approved this prayer request.
         /// </value>
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovedOnDateTime.
+        /// Gets or sets the date this prayer request was approved.
         /// </summary>
         /// <value>
-        /// The ApprovedOnDateTime.
+        /// A System.DateTime representing the date that this prayer request was approved.
         /// </value>
         public DateTime? ApprovedOnDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the campus identifier.
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// The campus identifier.
         /// </value>
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the CategoryId of the Rock.Model.Category that the PrayerRequest belongs to.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// A System.Int32 representing the CategoryId of the Rock.Model.Category that the PrayerRequest belongs to.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Email.
+        /// Gets or sets the email address of the person requesting prayer.
         /// </summary>
         /// <value>
-        /// The Email.
+        /// A System.String containing the email address of the person requesting prayer.
         /// </value>
         public string Email { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnteredDateTime.
+        /// Gets or sets the date that this prayer request was entered.
         /// </summary>
         /// <value>
-        /// The EnteredDateTime.
+        /// A System.DateTime representing the date that this prayer request was entered.
         /// </value>
         public DateTime EnteredDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpirationDate.
+        /// Gets or sets the date that the prayer request expires. 
         /// </summary>
         /// <value>
-        /// The ExpirationDate.
+        /// A System.DateTime representing the date that the prayer request expires.
         /// </value>
         public DateTime? ExpirationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the FirstName.
+        /// Gets or sets the First Name of the person that this prayer request is about. This property is required.
         /// </summary>
         /// <value>
-        /// The FirstName.
+        /// A System.String containing the first name of the person that this prayer request is about.
         /// </value>
         public string FirstName { get; set; }
 
         /// <summary>
-        /// Gets or sets the FlagCount.
+        /// Gets or sets the number of times this request has been flagged.
         /// </summary>
         /// <value>
-        /// The FlagCount.
+        /// A System.Int32 representing the number of times that this prayer request has been flagged.
         /// </value>
         public int? FlagCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// TODO: GET CLARIFICATION AND DOCUMENT
+        /// Gets or sets the group id.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// A System.Int32 representing a Group's GroupId.
         /// </value>
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this prayer request is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean value that is true if the prayer request is active; otherwise false.
         /// </value>
         public bool? IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsApproved.
+        /// Gets or sets a flag indicating if the prayer request has been approved. 
         /// </summary>
         /// <value>
-        /// The IsApproved.
+        /// A System.Boolean value that is true if this prayer request has been approved; otherwise false.
         /// </value>
         public bool? IsApproved { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPublic.
+        /// Gets or sets the flag indicating whether or not the request is public.
         /// </summary>
         /// <value>
-        /// The IsPublic.
+        /// A System.Boolean value that is true if the prayer request is public; otherwise false.
         /// </value>
         public bool? IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsUrgent.
+        /// Gets or sets a flag indicating if this is an urgent prayer request.
         /// </summary>
         /// <value>
-        /// The IsUrgent.
+        /// A System.Boolean value that is true if this prayer request is urgent; otherwise false.
         /// </value>
         public bool? IsUrgent { get; set; }
 
         /// <summary>
-        /// Gets or sets the LanguageValueId.
+        /// Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the Language for this prayer request.
         /// </summary>
         /// <value>
-        /// The LanguageValueId.
+        /// A System.Int32 representing DefinedValueId of the Language's Rock.Model.DefinedValue for this prayer request.
         /// </value>
         public int? LanguageValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastName.
+        /// Gets or sets the Last Name of the person that this prayer request is about. This property is required.
         /// </summary>
         /// <value>
-        /// The LastName.
+        /// A System.String containing the last name of the person that this prayer request is about.  
         /// </value>
         public string LastName { get; set; }
 
         /// <summary>
-        /// Gets or sets the PrayerCount.
+        /// Gets or sets the number of times that this prayer request has been prayed for.
         /// </summary>
         /// <value>
-        /// The PrayerCount.
+        /// A System.Int32 representing the number of times that this prayer request has been prayed for.
         /// </value>
         public int? PrayerCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestedByPersonAliasId.
+        /// Gets or sets the PersonId of the Rock.Model.Person who is submitting the PrayerRequest
         /// </summary>
         /// <value>
-        /// The RequestedByPersonAliasId.
+        /// A System.Int32 representing the PersonId of Rock.Model.Person submitting the PrayerRequest.
         /// </value>
         public int? RequestedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Text.
+        /// Gets or sets the text/content of the request.
         /// </summary>
         /// <value>
-        /// The Text.
+        /// A System.String representing the text/content of the request.
         /// </value>
         public string Text { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

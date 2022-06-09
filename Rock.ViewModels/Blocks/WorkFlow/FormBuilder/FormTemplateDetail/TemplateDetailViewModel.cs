@@ -54,11 +54,5 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormTemplateDetail
         /// selection item in lists; otherwise <c>false</c>.
         /// </value>
         public bool IsActive { get; set; }
-
-        /// <summary>
-        /// Gets or sets the details that describe the audit trail for this view model.
-        /// </summary>
-        /// <value>The details that describe the audit trail for this view model.</value>
-        public AuditDetailBag AuditDetails { get; set; }
     }
 }

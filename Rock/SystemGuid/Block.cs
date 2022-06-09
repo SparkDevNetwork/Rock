@@ -140,5 +140,10 @@ namespace Rock.SystemGuid
         /// The financial account search block
         /// </summary>
         public const string FINANCIAL_ACCOUNT_SEARCH = "21B7618B-47DD-4936-ABB5-81BDB4D56C6A";
+
+        /// <summary>
+        /// The financial account search block
+        /// </summary>
+        public const string CONNECTION_REQUESTS_BULK_UPDATE = "86249F40-DAA9-46AC-901B-7460E2659C10";
     }
 }

@@ -113,6 +113,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a queryable of Interaction Components that are tied to Rock Sites with Geo Tracking enabled.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<InteractionComponent> QueryByPagesOnSitesWithGeoTracking()
+        {
+            var rockContext = this.Context as Rock.Data.RockContext;
+            var interactionChannelService = new InteractionChannelService( rockContext );
+
+            // Get a queryable of interaction channels of sites with geo tracking enabled
+            var interactionChannelQry = interactionChannelService.QueryBySitesWithGeoTracking().Select( a => a.Id );
+            
+            return this.Queryable().Where( a => interactionChannelQry.Contains( a.InteractionChannelId ) );
+        }
+
+        /// <summary>
+        /// Deletes the specified GroupLocation and sets GroupLocationHistorical.GroupLocationId to NULL.
+        /// Will not delete the GroupLocation and return false if the GroupLocationHistorical.GroupLocationId fails to update.
+        /// Will try to determine current person alias from HttpContext.
+        /// Caller is responsible to save changes.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( InteractionComponent item )
+        {
+            var rockContext = this.Context as Rock.Data.RockContext;
+            var interactionQry = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponentId == item.Id );
+            rockContext.BulkDelete( interactionQry );
+
+            return base.Delete( item );
+        }
+
+        /// <summary>
         /// Returns a component query for those components that are tied to a particular <see cref="Page"/>.
         /// </summary>
         /// <param name="page">The page.</param>
@@ -157,7 +189,7 @@ namespace Rock.Model
         /// <param name="siteId">The site identifier.</param>
         /// <param name="pageId">The page identifier.</param>
         /// <returns></returns>
-        private IQueryable<InteractionComponent> QueryByPage( int siteId, int pageId )
+        public IQueryable<InteractionComponent> QueryByPage( int siteId, int pageId )
         {
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 

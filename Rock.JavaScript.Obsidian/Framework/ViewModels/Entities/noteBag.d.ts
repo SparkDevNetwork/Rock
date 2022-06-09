@@ -25,64 +25,64 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Note View Model */
 export type NoteBag = {
-    /** Gets or sets the ApprovalsSent. */
+    /** Gets or sets a value indicating whether [approvals sent]. */
     approvalsSent: boolean;
 
-    /** Gets or sets the ApprovalStatus. */
+    /** Gets or sets the approval status. */
     approvalStatus: number;
 
-    /** Gets or sets the ApprovedByPersonAliasId. */
+    /** Gets or sets the PersonAliasId of the Rock.Model.Person who either approved or declined the Note. If no approval action has been performed on this Note, this value will be null. */
     approvedByPersonAliasId?: number | null;
 
-    /** Gets or sets the ApprovedDateTime. */
+    /** Gets or sets the approved date. */
     approvedDateTime?: string | null;
 
-    /** Gets or sets the Caption. */
+    /** Gets or sets the caption */
     caption?: string | null;
 
-    /** Gets or sets the EditedByPersonAliasId. */
+    /** Gets or sets the person alias that last edited the note text. Use this instead of ModifiedByPersonAliasId to determine the last person to edit the note text */
     editedByPersonAliasId?: number | null;
 
-    /** Gets or sets the EditedDateTime. */
+    /** Gets or sets the last time the note text was edited. Use this instead of ModifiedDateTime to determine the last time a person edited a note  */
     editedDateTime?: string | null;
 
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the Id of the entity that this note is related to. */
     entityId?: number | null;
 
-    /** Gets or sets the IsAlert. */
+    /** Gets or sets a flag indicating if this note is an alert. */
     isAlert?: boolean | null;
 
-    /** Gets or sets the IsPrivateNote. */
+    /** Gets or sets a value indicating whether this note is viewable to only the person that created the note */
     isPrivateNote: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this note is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the NoteTypeId. */
+    /** Gets or sets the Id of the Rock.Model.NoteType. This property is required. */
     noteTypeId: number;
 
-    /** Gets or sets the NoteUrl. */
+    /** Gets or sets the URL where the Note was created. Use NoteUrl with a hash anchor of the Note.NoteAnchorId so that Notifications and Approvals can know where to view the note */
     noteUrl?: string | null;
 
-    /** Gets or sets the NotificationsSent. */
+    /** Gets or sets a value indicating whether [notifications sent]. */
     notificationsSent: boolean;
 
-    /** Gets or sets the ParentNoteId. */
+    /** Gets or sets the parent note identifier. */
     parentNoteId?: number | null;
 
-    /** Gets or sets the Text. */
+    /** Gets or sets the text/body of the note. */
     text?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

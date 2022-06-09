@@ -34,130 +34,130 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowActionFormAttributeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ActionFormSectionId.
+        /// Gets or sets the action form section identifier.
         /// </summary>
         /// <value>
-        /// The ActionFormSectionId.
+        /// The action form section identifier.
         /// </value>
         public int? ActionFormSectionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AttributeId.
+        /// Gets or sets the attribute identifier.
         /// </summary>
         /// <value>
-        /// The AttributeId.
+        /// The attribute identifier.
         /// </value>
         public int AttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ColumnSize.
+        /// Gets or sets the size of the column.
         /// </summary>
         /// <value>
-        /// The ColumnSize.
+        /// The size of the column.
         /// </value>
         public int? ColumnSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the FieldVisibilityRulesJSON.
+        /// Gets the field visibility rules json.
         /// </summary>
         /// <value>
-        /// The FieldVisibilityRulesJSON.
+        /// The field visibility rules json.
         /// </value>
         public string FieldVisibilityRulesJSON { get; set; }
 
         /// <summary>
-        /// Gets or sets the HideLabel.
+        /// Gets or sets a value indicating whether [hide label].
         /// </summary>
         /// <value>
-        /// The HideLabel.
+        ///   true if [hide label]; otherwise, false.
         /// </value>
         public bool HideLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsReadOnly.
+        /// Gets or sets a value indicating whether [is read only].
         /// </summary>
         /// <value>
-        /// The IsReadOnly.
+        ///   true if [is read only]; otherwise, false.
         /// </value>
         public bool IsReadOnly { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsRequired.
+        /// Gets or sets a value indicating whether [is required].
         /// </summary>
         /// <value>
-        /// The IsRequired.
+        ///   true if [is required]; otherwise, false.
         /// </value>
         public bool IsRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsVisible.
+        /// Gets or sets a value indicating whether [is visible].
         /// </summary>
         /// <value>
-        /// The IsVisible.
+        ///   true if [is visible]; otherwise, false.
         /// </value>
         public bool IsVisible { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostHtml.
+        /// Gets or sets the post HTML.
         /// </summary>
         /// <value>
-        /// The PostHtml.
+        /// The post HTML.
         /// </value>
         public string PostHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreHtml.
+        /// Gets or sets the PreHTML.
         /// </summary>
         /// <value>
-        /// The PreHtml.
+        /// The preHTML.
         /// </value>
         public string PreHtml { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowActionFormId.
+        /// Gets or sets the header.
         /// </summary>
         /// <value>
-        /// The WorkflowActionFormId.
+        /// The header.
         /// </value>
         public int WorkflowActionFormId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -34,90 +34,90 @@ namespace Rock.ViewModels.Entities
     public partial class DefinedValueBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the category identifier. This property is ignored if DefinedType.CategorizedValuesEnabled is disabled.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// A System.Int32 representing the identifier of the Rock.Model.Category that this Defined Value belongs to.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedTypeId.
+        /// Gets or sets the DefinedTypeId of the Rock.Model.DefinedType that this DefinedValue belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// The DefinedTypeId.
+        /// A System.Int32 representing the DefinedTypeId of the Rock.Model.DefinedType that this DefinedValue belongs to.
         /// </value>
         public int DefinedTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the Description of the DefinedValue.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the DefinedValue.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this DefinedValue is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this DefinedValue is part of the Rock core system/framework. this property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if it is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the sort and display order of the DefinedValue.  This is an ascending order, so the lower the value the higher the sort priority.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 representing the sort order of the DefinedValue.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the Value.
+        /// Gets or sets the Value of the DefinedValue. This property is required.
         /// </summary>
         /// <value>
-        /// The Value.
+        /// A System.String that represents the Value of the DefinedValue.
         /// </value>
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

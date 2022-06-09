@@ -21,6 +21,12 @@
 // </copyright>
 //
 
+/**
+ * The sources of current value that can be used when building custom
+ * filtering logic.This currently has only Attribute, but would later be
+ * expanded to include other sources (such as properties).
+ */
 export const enum FieldFilterSourceType {
+    /** The value will be read from an entity attribute value. */
     Attribute = 0
 }

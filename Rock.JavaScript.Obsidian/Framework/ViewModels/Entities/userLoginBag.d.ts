@@ -25,64 +25,64 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** UserLogin View Model */
 export type UserLoginBag = {
-    /** Gets or sets the ApiKey. */
+    /** Gets or sets the API key associated with the UserLogin */
     apiKey?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType for the authentication service that this UserLogin user will use. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the FailedPasswordAttemptCount. */
+    /** Gets or sets the number of failed password attempts within the failed password attempt window. */
     failedPasswordAttemptCount?: number | null;
 
-    /** Gets or sets the FailedPasswordAttemptWindowStartDateTime. */
+    /** Gets or sets the failed password attempt window start date time. */
     failedPasswordAttemptWindowStartDateTime?: string | null;
 
-    /** Gets or sets the IsConfirmed. */
+    /** Gets or sets a flag indicating if the UserLogin has been confirmed. */
     isConfirmed?: boolean | null;
 
-    /** Gets or sets the IsLockedOut. */
+    /** Gets or sets a flag indicating if the UserLogin is currently locked out. */
     isLockedOut?: boolean | null;
 
-    /** Gets or sets the IsOnLine. */
+    /** Gets or sets a flag indicating if the user is currently online and logged in to the system. */
     isOnLine?: boolean | null;
 
-    /** Gets or sets the IsPasswordChangeRequired. */
+    /** Gets or sets the is password change required. */
     isPasswordChangeRequired?: boolean | null;
 
-    /** Gets or sets the LastActivityDateTime. */
+    /** Gets or sets the date and time of the last activity (login, password change, etc.) performed with this UserLogin. */
     lastActivityDateTime?: string | null;
 
-    /** Gets or sets the LastLockedOutDateTime. */
+    /** Gets or sets date and time that the UserLogin was last locked out. */
     lastLockedOutDateTime?: string | null;
 
-    /** Gets or sets the LastLoginDateTime. */
+    /** Gets or sets the most recent date and time that a user successfully logged in using this UserLogin. */
     lastLoginDateTime?: string | null;
 
-    /** Gets or sets the LastPasswordChangedDateTime. */
+    /** Gets or sets the date and time that the password was successfully changed. */
     lastPasswordChangedDateTime?: string | null;
 
-    /** Gets or sets the LastPasswordExpirationWarningDateTime. */
+    /** Gets or sets the last time that user was notified about their password expiring. */
     lastPasswordExpirationWarningDateTime?: string | null;
 
-    /** Gets or sets the Password. */
+    /** Gets or sets the Password.  Stored as a BCrypt hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes */
     password?: string | null;
 
-    /** Gets or sets the PersonId. */
+    /** Gets or sets the Id of the Rock.Model.Person who this UserLogin belongs to. */
     personId?: number | null;
 
-    /** Gets or sets the UserName. */
+    /** Gets or sets the UserName that is associated with this UserLogin. This property is required. */
     userName?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

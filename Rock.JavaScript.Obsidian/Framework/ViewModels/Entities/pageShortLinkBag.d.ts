@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PageShortLink View Model */
 export type PageShortLinkBag = {
-    /** Gets or sets the SiteId. */
+    /** Gets or sets the Id of the Rock.Model.Site that this PageShortLink references. This property is required. */
     siteId: number;
 
-    /** Gets or sets the Token. */
+    /** Gets or sets the token. */
     token?: string | null;
 
-    /** Gets or sets the Url. */
+    /** Gets or sets the URL. */
     url?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

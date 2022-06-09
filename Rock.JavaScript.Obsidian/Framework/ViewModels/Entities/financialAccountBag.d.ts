@@ -25,64 +25,76 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialAccount View Model */
 export type FinancialAccountBag = {
-    /** Gets or sets the AccountTypeValueId. */
+    /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the FinancialAccountType for this FinancialAccount. */
     accountTypeValueId?: number | null;
 
-    /** Gets or sets the CampusId. */
+    /**
+     * Gets or sets the CampusId of the Rock.Model.Campus that this FinancialAccount is associated with. If this FinancialAccount is not
+     * associated with a Rock.Model.Campus this property will be null.
+     */
     campusId?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the user defined description of the FinancialAccount. */
     description?: string | null;
 
-    /** Gets or sets the EndDate. */
+    /**
+     * Gets or sets the closing/end date for this FinancialAccount. This is the last day that transactions can be posted to this account. If there is not a end date
+     * for this account, transactions can be posted for an indefinite period of time.  Ongoing FinancialAccounts will not have an end date.
+     */
     endDate?: string | null;
 
-    /** Gets or sets the GlCode. */
+    /** Gets or sets the General Ledger account code for this FinancialAccount. */
     glCode?: string | null;
 
-    /** Gets or sets the ImageBinaryFileId. */
+    /** Gets or sets the Image Id that can be used when displaying this Financial Account */
     imageBinaryFileId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating if this FinancialAccount is active. */
     isActive: boolean;
 
-    /** Gets or sets the IsPublic. */
+    /** Gets or sets a value indicating if this FinancialAccount is public. */
     isPublic?: boolean | null;
 
-    /** Gets or sets the IsTaxDeductible. */
+    /** Gets or sets a flag indicating if transactions posted to this FinancialAccount are tax-deductible. */
     isTaxDeductible: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the (internal) Name of the FinancialAccount. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the sort and display order of the FinancialAccount.  This is an ascending order, so the lower the value the higher the sort priority. */
     order: number;
 
-    /** Gets or sets the ParentAccountId. */
+    /**
+     * Gets or sets the FinancialAccountId of the parent FinancialAccount to this FinancialAccount. If this
+     * FinancialAccount does not have a parent, this property will be null.
+     */
     parentAccountId?: number | null;
 
-    /** Gets or sets the PublicDescription. */
+    /** Gets or sets the user defined public description of the FinancialAccount. */
     publicDescription?: string | null;
 
-    /** Gets or sets the PublicName. */
+    /** Gets or sets the public name of the Financial Account. */
     publicName?: string | null;
 
-    /** Gets or sets the StartDate. */
+    /**
+     * Gets or sets the opening date for this FinancialAccount. This is the first date that transactions can be posted to this account. 
+     * If there isn't a start date for this account, transactions can be posted as soon as the account is created until the Rock.Model.FinancialAccount.EndDate (if applicable).
+     */
     startDate?: string | null;
 
-    /** Gets or sets the Url. */
+    /** Gets or sets the URL which could be used to generate a link to a 'More Info' page */
     url?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

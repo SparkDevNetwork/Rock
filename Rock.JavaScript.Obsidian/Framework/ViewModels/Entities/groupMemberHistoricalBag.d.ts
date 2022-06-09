@@ -25,55 +25,66 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupMemberHistorical View Model */
 export type GroupMemberHistoricalBag = {
-    /** Gets or sets the ArchivedByPersonAliasId. */
+    /** Gets or sets the PersonAliasId that archived (soft deleted) this group member at this point in history */
     archivedByPersonAliasId?: number | null;
 
-    /** Gets or sets the ArchivedDateTime. */
+    /** Gets or sets the archived date time value of this group member at this point in history */
     archivedDateTime?: string | null;
 
-    /** Gets or sets the CurrentRowIndicator. */
+    /**
+     * Gets or sets a value indicating whether [current row indicator].
+     * This will be True if this represents the same values as the current tracked record for this
+     */
     currentRowIndicator: boolean;
 
-    /** Gets or sets the EffectiveDateTime. */
+    /**
+     * Gets or sets the effective date.
+     * This is the starting date that the tracked record had the values reflected in this record
+     */
     effectiveDateTime?: string | null;
 
-    /** Gets or sets the ExpireDateTime. */
+    /**
+     * Gets or sets the expire date time
+     * This is the last date that the tracked record had the values reflected in this record
+     * For example, if a tracked record's Name property changed on '2016-07-14', the ExpireDate of the previously current record will be '2016-07-13', and the EffectiveDate of the current record will be '2016-07-14'
+     * If this is most current record, the ExpireDate will be '9999-01-01'
+     */
     expireDateTime?: string | null;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets GroupId for this group member record at this point in history */
     groupId: number;
 
-    /** Gets or sets the GroupMemberId. */
+    /** Gets or sets the group member id of the group member for this group member historical record */
     groupMemberId: number;
 
-    /** Gets or sets the GroupMemberStatus. */
+    /** Gets or sets the group member status of this group member at this point in history */
     groupMemberStatus: number;
 
-    /** Gets or sets the GroupRoleId. */
+    /** Gets or sets the group role id for this group member at this point in history */
     groupRoleId: number;
 
-    /** Gets or sets the GroupRoleName. */
+    /** Gets or sets the group role name at this point in history */
     groupRoleName?: string | null;
 
-    /** Gets or sets the InactiveDateTime. */
+    /** Gets or sets the InActiveDateTime value of the group member at this point in history (the time when the group member status was changed to GroupMemberStatus.Inactive) */
     inactiveDateTime?: string | null;
 
-    /** Gets or sets the IsArchived. */
+    /** Gets or sets a value indicating whether this group member was archived at this point in history */
     isArchived: boolean;
 
-    /** Gets or sets the IsLeader. */
+    /** Gets or sets a value indicating whether the group member was IsLeader (which is determined by GroupRole.IsLeader) at this point in history */
     isLeader: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

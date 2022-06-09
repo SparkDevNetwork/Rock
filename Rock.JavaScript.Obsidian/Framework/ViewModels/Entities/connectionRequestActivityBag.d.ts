@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionRequestActivity View Model */
 export type ConnectionRequestActivityBag = {
-    /** Gets or sets the ConnectionActivityTypeId. */
+    /** Gets or sets the Rock.Model.ConnectionActivityType identifier. */
     connectionActivityTypeId: number;
 
-    /** Gets or sets the ConnectionOpportunityId. */
+    /** Gets or sets the Rock.Model.ConnectionOpportunity identifier. */
     connectionOpportunityId?: number | null;
 
-    /** Gets or sets the ConnectionRequestId. */
+    /** Gets or sets the Rock.Model.ConnectionRequest identifier. */
     connectionRequestId: number;
 
-    /** Gets or sets the ConnectorPersonAliasId. */
+    /** Gets or sets the connector Rock.Model.PersonAlias identifier. */
     connectorPersonAliasId?: number | null;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note. */
     note?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

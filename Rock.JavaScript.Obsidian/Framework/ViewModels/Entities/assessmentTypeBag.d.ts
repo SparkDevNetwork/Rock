@@ -25,52 +25,55 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AssessmentType View Model */
 export type AssessmentTypeBag = {
-    /** Gets or sets the AssessmentPath. */
+    /** Gets or sets the AssessmentPath of the Rock.Model.AssessmentType   */
     assessmentPath?: string | null;
 
-    /** Gets or sets the AssessmentResultsPath. */
+    /** Gets or sets the AssessmentResultsPath of the Rock.Model.Assessment or the Rock.Model.AssessmentType if no requestor required. */
     assessmentResultsPath?: string | null;
 
-    /** Gets or sets the BadgeColor. */
+    /** Gets or sets the color of the badge. */
     badgeColor?: string | null;
 
-    /** Gets or sets the BadgeSummaryLava. */
+    /** Gets or sets the badge summary lava. */
     badgeSummaryLava?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the Description of the Rock.Model.AssessmentType */
     description?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets the IsActive flag for the Rock.Model.AssessmentType. */
     isActive: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Rock.Model.AssessmentType is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the MinimumDaysToRetake. */
+    /** Gets or sets the number of days given for the Rock.Model.AssessmentType. to be retaken. */
     minimumDaysToRetake: number;
 
-    /** Gets or sets the RequiresRequest. */
+    /** Gets or sets the RequiresRequest flag for the Rock.Model.AssessmentType. */
     requiresRequest: boolean;
 
-    /** Gets or sets the Title. */
+    /** Gets or sets the Title of the Rock.Model.AssessmentType   */
     title?: string | null;
 
-    /** Gets or sets the ValidDuration. */
+    /**
+     * Gets or sets the number of days the assessment is valid for Rock.Model.AssessmentType.
+     * How long (in days) is this assessment valid before it must be taken again.
+     */
     validDuration: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

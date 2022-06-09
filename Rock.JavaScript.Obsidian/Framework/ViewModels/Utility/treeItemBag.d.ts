@@ -32,7 +32,7 @@ export type TreeItemBag = {
     /**
      * Gets or sets a value indicating whether this instance is a folder.
      * A folder is an item that is intended to hold child items. This is
-     * a distinction from the  property which
+     * a distinction from the Rock.ViewModels.Utility.TreeItemBag.HasChildren property which
      * specifies if this item _currently_ has children or not.
      */
     isFolder: boolean;

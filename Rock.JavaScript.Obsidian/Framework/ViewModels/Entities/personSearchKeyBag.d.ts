@@ -25,28 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PersonSearchKey View Model */
 export type PersonSearchKeyBag = {
-    /** Gets or sets the IsValuePrivate. */
+    /**
+     * Gets or sets a value indicating whether this value is private.
+     * If the search key is private, it should not be shown in the UI.
+     */
     isValuePrivate: boolean;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId?: number | null;
 
-    /** Gets or sets the SearchTypeValueId. */
+    /** Gets or sets the Id of the search Type Rock.Model.DefinedValue representing search type key. */
     searchTypeValueId: number;
 
-    /** Gets or sets the SearchValue. */
+    /** Gets or sets the search value. */
     searchValue?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

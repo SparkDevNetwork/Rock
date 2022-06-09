@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class EventItemOccurrenceBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the Rock.Model.Campus identifier.
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// The campus identifier.
         /// </value>
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContactEmail.
+        /// Gets or sets the Contact Person's email address.
         /// </summary>
         /// <value>
-        /// The ContactEmail.
+        /// A System.String containing the Contact Person's email address.
         /// </value>
         public string ContactEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContactPersonAliasId.
+        /// Gets or sets the Id of the Rock.Model.PersonAlias for the EventItemOccurrence's contact person. This property is required.
         /// </summary>
         /// <value>
-        /// The ContactPersonAliasId.
+        /// An System.Int32 representing the Id of the Rock.Model.PersonAlias who is the EventItemOccurrence's contact person.
         /// </value>
         public int? ContactPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContactPhone.
+        /// Gets or sets the Contact Person's phone number.
         /// </summary>
         /// <value>
-        /// The ContactPhone.
+        /// A System.String containing the Contact Person's phone number.
         /// </value>
         public string ContactPhone { get; set; }
 
         /// <summary>
-        /// Gets or sets the EventItemId.
+        /// Gets or sets the Rock.Model.EventItem identifier.
         /// </summary>
         /// <value>
-        /// The EventItemId.
+        /// The event item identifier.
         /// </value>
         public int EventItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Location.
+        /// Gets or sets the Description of the Location.
         /// </summary>
         /// <value>
-        /// The Location.
+        /// A System.String representing the description of the Location.
         /// </value>
         public string Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the NextStartDateTime.
+        /// Gets or sets the datetime for the next scheduled occurrence of this event. 
         /// </summary>
         /// <value>
-        /// The NextStartDateTime.
+        /// The datetime of the next occurrence.
         /// </value>
         public DateTime? NextStartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note.
+        /// Gets or sets the campus note.
         /// </summary>
         /// <value>
-        /// The Note.
+        /// A System.String representing the campus note.
         /// </value>
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleId.
+        /// Gets or sets the Rock.Model.Schedule identifier.
         /// </summary>
         /// <value>
-        /// The ScheduleId.
+        /// The schedule identifier.
         /// </value>
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

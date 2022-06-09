@@ -283,20 +283,6 @@ namespace Rock.Model
             }
             else
             {
-                if ( dataViewEntityTypeCache.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id )
-                {
-                    var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable( this.IncludeDeceased );
-                    Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, paramExpression, "p" );
-                    if ( filterExpression == null )
-                    {
-                        filterExpression = extractedFilterExpression;
-                    }
-                    else
-                    {
-                        filterExpression = Expression.AndAlso( filterExpression, extractedFilterExpression );
-                    }
-                }
-
                 if ( this.TransformEntityTypeId.HasValue )
                 {
 

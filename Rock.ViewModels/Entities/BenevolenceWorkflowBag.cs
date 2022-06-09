@@ -34,66 +34,66 @@ namespace Rock.ViewModels.Entities
     public partial class BenevolenceWorkflowBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BenevolenceTypeId.
+        /// Gets or sets the benevolence type identifier.
         /// </summary>
         /// <value>
-        /// The BenevolenceTypeId.
+        /// The benevolence type identifier.
         /// </value>
         public int? BenevolenceTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the QualifierValue.
+        /// Gets or sets the workflow qualifier.
         /// </summary>
         /// <value>
-        /// The QualifierValue.
+        /// The workflow qualifier.
         /// </value>
         public string QualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the TriggerType.
+        /// Gets or sets the type of the trigger.
         /// </summary>
         /// <value>
-        /// The TriggerType.
+        /// The type of the trigger.
         /// </value>
         public int TriggerType { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowTypeId.
+        /// Gets or sets the workflow type identifier.
         /// </summary>
         /// <value>
-        /// The WorkflowTypeId.
+        /// The workflow type identifier.
         /// </value>
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

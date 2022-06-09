@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ServiceLog View Model */
 export type ServiceLogBag = {
-    /** Gets or sets the Input. */
+    /** Gets or sets the data that was sent to the service. */
     input?: string | null;
 
-    /** Gets or sets the LogDateTime. */
+    /** Gets or sets the date and time that the log entry was created  */
     logDateTime?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the component name for the service. */
     name?: string | null;
 
-    /** Gets or sets the Result. */
+    /** Gets or sets the result that was returned from the service. */
     result?: string | null;
 
-    /** Gets or sets the Success. */
+    /** Gets or sets a flag indicating if the service returned a successful result. This property is required. */
     success: boolean;
 
-    /** Gets or sets the Type. */
+    /** Gets or sets the type of service that was run */
     type?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -25,61 +25,61 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AttendanceOccurrence View Model */
 export type AttendanceOccurrenceBag = {
-    /** Gets or sets the AcceptConfirmationMessage. */
+    /** Gets or sets the Accept Confirmation Message (for RSVP). */
     acceptConfirmationMessage?: string | null;
 
-    /** Gets or sets the AnonymousAttendanceCount. */
+    /** Gets or sets the number anonymous attendance. */
     anonymousAttendanceCount?: number | null;
 
-    /** Gets or sets the AttendanceTypeValueId. */
+    /** Gets or sets the attendance type value identifier. */
     attendanceTypeValueId?: number | null;
 
-    /** Gets or sets the DeclineConfirmationMessage. */
+    /** Gets or sets the Decline Confirmation Message (for RSVP). */
     declineConfirmationMessage?: string | null;
 
-    /** Gets or sets the DeclineReasonValueIds. */
+    /** A comma-separated list of integer ID values representing the Decline Reasons selected by the attendee. */
     declineReasonValueIds?: string | null;
 
-    /** Gets or sets the DidNotOccur. */
+    /** Gets or sets the did not occur. */
     didNotOccur?: boolean | null;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the Id of the Rock.Model.Group that the Rock.Model.Person checked in to. */
     groupId?: number | null;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the Id of the Rock.Model.Location that the individual attended/checked in to.  */
     locationId?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the Notes. */
+    /** Gets or sets the notes. */
     notes?: string | null;
 
-    /** Gets or sets the OccurrenceDate. */
+    /** Gets or sets the date of the Attendance. Only the date is used. */
     occurrenceDate?: string | null;
 
-    /** Gets or sets the ScheduleId. */
+    /** Gets or sets the Id of the Rock.Model.Schedule that the Rock.Model.Person checked in to. */
     scheduleId?: number | null;
 
-    /** Gets or sets the ShowDeclineReasons. */
+    /** Indicates whether or not to show the Decline Confirmation Message. */
     showDeclineReasons: boolean;
 
-    /** Gets or sets the StepTypeId. */
+    /** Gets or sets the Id of the Rock.Model.StepType to which this occurrence is associated. */
     stepTypeId?: number | null;
 
-    /** Gets or sets the SundayDate. */
+    /** Gets Sunday date. */
     sundayDate?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

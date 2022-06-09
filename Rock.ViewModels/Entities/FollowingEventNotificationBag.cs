@@ -34,58 +34,58 @@ namespace Rock.ViewModels.Entities
     public partial class FollowingEventNotificationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the entity identifier.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The entity identifier.
         /// </value>
         public int EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FollowingEventTypeId.
+        /// Gets or sets the following event type identifier.
         /// </summary>
         /// <value>
-        /// The FollowingEventTypeId.
+        /// The following event type identifier.
         /// </value>
         public int FollowingEventTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastNotified.
+        /// Gets or sets the last notified.
         /// </summary>
         /// <value>
-        /// The LastNotified.
+        /// The last notified.
         /// </value>
         public DateTime LastNotified { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

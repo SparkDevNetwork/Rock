@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class ConnectionOpportunityGroupConfigBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ConnectionOpportunityId.
+        /// Gets or sets the Rock.Model.ConnectionOpportunity identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionOpportunityId.
+        /// The connection opportunity identifier.
         /// </value>
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupMemberRoleId.
+        /// Gets or sets the group member role identifier.
         /// </summary>
         /// <value>
-        /// The GroupMemberRoleId.
+        /// The group member role identifier.
         /// </value>
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupMemberStatus.
+        /// Gets or sets the Rock.Model.GroupMemberStatus.
         /// </summary>
         /// <value>
-        /// The GroupMemberStatus.
+        /// The group member status.
         /// </value>
         public int GroupMemberStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupTypeId.
+        /// Gets or sets the Rock.Model.GroupType identifier.
         /// </summary>
         /// <value>
-        /// The GroupTypeId.
+        /// The group type identifier.
         /// </value>
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the UseAllGroupsOfType.
+        /// Gets or sets a value indicating whether [use all groups of type].
         /// </summary>
         /// <value>
-        /// The UseAllGroupsOfType.
+        /// true if [use all groups of type]; otherwise, false.
         /// </value>
         public bool UseAllGroupsOfType { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

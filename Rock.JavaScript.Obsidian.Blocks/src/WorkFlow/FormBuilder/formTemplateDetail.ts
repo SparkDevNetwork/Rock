@@ -21,6 +21,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import Alert from "@Obsidian/Controls/alert";
 import AuditDetail from "@Obsidian/Controls/auditDetail";
 import RockButton from "@Obsidian/Controls/rockButton";
+import { EntityType } from "@Obsidian/SystemGuids";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
 import EditPanel from "./FormTemplateDetail/editPanel";
@@ -51,9 +52,6 @@ export default defineComponent({
 
         // Start in edit mode if we have an empty guid.
         const isEditMode = ref(areEqual(config.templateGuid ?? "", emptyGuid));
-
-        /** The audit details that should be displayed. */
-        const templateAuditDetail = computed(() => templateDetail.value?.auditDetails);
 
         /** True if the template being viewed is inactive. */
         const isInactive = computed(() => !(templateDetail.value?.isActive ?? false));
@@ -133,6 +131,8 @@ export default defineComponent({
 
         return {
             blockTitle,
+            entityKey: config.templateGuid ?? "",
+            entityTypeGuid: EntityType.WorkflowFormBuilderTemplate,
             isEditable,
             isInactive,
             isStartupError,
@@ -140,9 +140,8 @@ export default defineComponent({
             onEditCancelClick,
             onEditClick,
             onSubmit,
-            templateAuditDetail,
             templateDetail,
-            templateEditDetail,
+            templateEditDetail
         };
     },
 
@@ -157,7 +156,7 @@ export default defineComponent({
     </template>
 
     <template v-if="!isEditMode" #drawer>
-        <AuditDetail v-model="templateAuditDetail" />
+        <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
     </template>
 
     <div v-if="!isEditMode">

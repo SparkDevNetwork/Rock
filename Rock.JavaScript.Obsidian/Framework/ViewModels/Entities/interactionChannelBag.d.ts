@@ -25,91 +25,140 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** InteractionChannel View Model */
 export type InteractionChannelBag = {
-    /** Gets or sets the ChannelData. */
+    /** Gets or sets the channel data. */
     channelData?: string | null;
 
-    /** Gets or sets the ChannelDetailTemplate. */
+    /** Gets or sets the channel detail template. */
     channelDetailTemplate?: string | null;
 
-    /** Gets or sets the ChannelEntityId. */
+    /**
+     * Gets or sets the channel entity identifier.
+     * Note, the ChannelEntityType is inferred based on what the ChannelTypeMediumValue is:
+     * 
+     * 
+     *     <term>Page Views (<see cref="F:Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE" />)</term>
+     *     <description><see cref="T:Rock.Model.Site" /> Id</description>
+     * 
+     *     <term>Communication Recipient Activity (<see cref="F:Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION" />)</term>
+     *     <description><see cref="T:Rock.Model.Communication" /> Id</description>
+     * 
+     *     <term>Content Channel Activity (<see cref="F:Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL" />)</term>
+     *     <description><see cref="T:Rock.Model.ContentChannel" /> Id</description>
+     * 
+     *     <term>System Events, like Workflow Form Entry (<see cref="F:Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS" />)</term>
+     *     <description>null, only one Channel</description>
+     */
     channelEntityId?: number | null;
 
-    /** Gets or sets the ChannelListTemplate. */
+    /** Gets or sets the channel list template. */
     channelListTemplate?: string | null;
 
-    /** Gets or sets the ChannelTypeMediumValueId. */
+    /**
+     * Gets or sets the Id of the Channel Type Rock.Model.DefinedValue representing what type of Interaction Channel this is.
+     * This helps determine the Rock.Model.InteractionChannel.ChannelEntityId
+     */
     channelTypeMediumValueId?: number | null;
 
-    /** Gets or sets the ComponentCacheDuration. */
+    /** Gets or sets the length of time (in minutes) that components of this channel should be cached */
     componentCacheDuration?: number | null;
 
-    /** Gets or sets the ComponentCustom1Label. */
+    /** Gets or sets the component custom 1 label. */
     componentCustom1Label?: string | null;
 
-    /** Gets or sets the ComponentCustom2Label. */
+    /** Gets or sets the component custom 2 label. */
     componentCustom2Label?: string | null;
 
-    /** Gets or sets the ComponentCustomIndexed1Label. */
+    /** Gets or sets the component custom indexed 1 label. */
     componentCustomIndexed1Label?: string | null;
 
-    /** Gets or sets the ComponentDetailTemplate. */
+    /** Gets or sets the component detail template. */
     componentDetailTemplate?: string | null;
 
-    /** Gets or sets the ComponentEntityTypeId. */
+    /**
+     * Gets or sets the Rock.Model.EntityType for each of this channel's components.
+     * The Id of the Rock.Model.InteractionChannel.ComponentEntityTypeId is stored in down in Rock.Model.InteractionComponent.EntityId.
+     * For example:
+     * 
+     * 
+     *     <term>PageView</term>
+     *     <description>EntityType is <see cref="T:Rock.Model.Page" />. Page.Id is stored down in <see cref="P:Rock.Model.InteractionComponent.EntityId" /></description>
+     * 
+     *     <term>Communication Recipient Activity</term>
+     *     <description>EntityType is <see cref="T:Rock.Model.Communication" />. Communication.Id is stored down in <see cref="P:Rock.Model.InteractionComponent.EntityId" /> </description>
+     * 
+     *     <term>Workflow Entry Form</term>
+     *     <description>EntityType is <see cref="T:Rock.Model.WorkflowType" />. WorkflowType.Id is stored down in <see cref="P:Rock.Model.InteractionComponent.EntityId" /></description>
+     */
     componentEntityTypeId?: number | null;
 
-    /** Gets or sets the ComponentListTemplate. */
+    /** Gets or sets the component list template. */
     componentListTemplate?: string | null;
 
-    /** Gets or sets the EngagementStrength. */
+    /** Gets or sets the engagement strength. */
     engagementStrength?: number | null;
 
-    /** Gets or sets the InteractionCustom1Label. */
+    /** Gets or sets the interaction custom 1 label. */
     interactionCustom1Label?: string | null;
 
-    /** Gets or sets the InteractionCustom2Label. */
+    /** Gets or sets the interaction custom 2 label. */
     interactionCustom2Label?: string | null;
 
-    /** Gets or sets the InteractionCustomIndexed1Label. */
+    /** Gets or sets the interaction custom indexed 1 label. */
     interactionCustomIndexed1Label?: string | null;
 
-    /** Gets or sets the InteractionDetailTemplate. */
+    /** Gets or sets the interaction detail template. */
     interactionDetailTemplate?: string | null;
 
-    /** Gets or sets the InteractionEntityTypeId. */
+    /**
+     * Gets or sets the EntityTypeId for the Rock.Model.EntityType of entity that was modified. For example:
+     * 
+     * 
+     *     <term>PageView</term>
+     *     <description>null</description>
+     * 
+     *     <term>Communication Recipient Activity</term>
+     *     <description><see cref="T:Rock.Model.CommunicationRecipient" /></description>
+     * 
+     *     <term>Workflow Entry Form</term>
+     *     <description><see cref="T:Rock.Model.Workflow" /></description>
+     */
     interactionEntityTypeId?: number | null;
 
-    /** Gets or sets the InteractionListTemplate. */
+    /** Gets or sets the interaction list template. */
     interactionListTemplate?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this is an active group. This value is required. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the interaction channel name. */
     name?: string | null;
 
-    /** Gets or sets the RetentionDuration. */
+    /** Gets or sets the retention days. */
     retentionDuration?: number | null;
 
-    /** Gets or sets the SessionDetailTemplate. */
+    /** Gets or sets the session detail template. */
     sessionDetailTemplate?: string | null;
 
-    /** Gets or sets the SessionListTemplate. */
+    /** Gets or sets the session list template. */
     sessionListTemplate?: string | null;
 
-    /** Gets or sets the UsesSession. */
+    /**
+     * Gets or sets a value indicating whether [uses session].
+     * Set to true if interactions in this channel from a web browser session (for example: PageViews).
+     * Set to false if interactions in this channel are not associated with a web browser session (for example: communication clicks and opens from an email client or sms device).
+     */
     usesSession: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

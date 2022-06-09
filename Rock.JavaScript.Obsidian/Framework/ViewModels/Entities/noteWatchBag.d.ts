@@ -25,43 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** NoteWatch View Model */
 export type NoteWatchBag = {
-    /** Gets or sets the AllowOverride. */
+    /**
+     * Set AllowOverride to False to prevent people from adding an IsWatching=False on NoteWatch with the same filter that is marked as IsWatching=True
+     * In other words, if a group is configured a NoteWatch, an individual shouldn't be able to add an un-watch if AllowOverride=False (and any un-watches that may have been already added would be ignored)
+     */
     allowOverride: boolean;
 
-    /** Gets or sets the EntityId. */
+    /**
+     * Set EntityTypeId and EntityId to watch all notes for a specific entity
+     * NOTE: If EntityType is Person, make sure to watch the Person's PersonAlias' Persons
+     */
     entityId?: number | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Set EntityTypeId and EntityId to watch all notes for a specific entity */
     entityTypeId?: number | null;
 
-    /** Gets or sets the IsWatching. */
+    /** Set IsWatching to False to disable this NoteWatch (or specifically don't watch based on the notewatch criteria) */
     isWatching: boolean;
 
-    /** Gets or sets the NoteId. */
+    /** Set NoteId to watch a specific note */
     noteId?: number | null;
 
-    /** Gets or sets the NoteTypeId. */
+    /**
+     * Set NoteTypeId to watch all notes of a specific note type
+     * Set NoteTypeId and EntityId to watch all notes of a specific type as it relates to a specific entity 
+     */
     noteTypeId?: number | null;
 
-    /** Gets or sets the WatcherGroupId. */
+    /** Gets or sets the group that is watching this note watch */
     watcherGroupId?: number | null;
 
-    /** Gets or sets the WatcherPersonAliasId. */
+    /** Gets or sets the person alias id of the person watching this note watch */
     watcherPersonAliasId?: number | null;
 
-    /** Gets or sets the WatchReplies. */
+    /** Gets or sets a value indicating whether [watch replies]. */
     watchReplies: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

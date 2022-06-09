@@ -34,218 +34,179 @@ namespace Rock.ViewModels.Entities
     public partial class AchievementTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AchievementFailureWorkflowTypeId.
+        /// Gets or sets the Id of the Rock.Model.WorkflowType to be triggered when an achievement is failed (closed and not successful)
         /// </summary>
-        /// <value>
-        /// The AchievementFailureWorkflowTypeId.
-        /// </value>
         public int? AchievementFailureWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchievementIconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
-        /// <value>
-        /// The AchievementIconCssClass.
-        /// </value>
         public string AchievementIconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchievementStartWorkflowTypeId.
+        /// Gets or sets the Id of the Rock.Model.WorkflowType to be triggered when an achievement is started
         /// </summary>
-        /// <value>
-        /// The AchievementStartWorkflowTypeId.
-        /// </value>
         public int? AchievementStartWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchievementStepStatusId.
+        /// Gets or sets the Id of the Rock.Model.StepStatus of which a Rock.Model.Step will be created when an achievement is completed
         /// </summary>
-        /// <value>
-        /// The AchievementStepStatusId.
-        /// </value>
         public int? AchievementStepStatusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchievementStepTypeId.
+        /// Gets or sets the Id of the Rock.Model.StepType of which a Rock.Model.Step will be created when an achievement is completed
         /// </summary>
-        /// <value>
-        /// The AchievementStepTypeId.
-        /// </value>
         public int? AchievementStepTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchievementSuccessWorkflowTypeId.
+        /// Gets or sets the Id of the Rock.Model.WorkflowType to be triggered when an achievement is successful
         /// </summary>
-        /// <value>
-        /// The AchievementSuccessWorkflowTypeId.
-        /// </value>
         public int? AchievementSuccessWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AchieverEntityTypeId.
+        /// Gets or sets the achiever entity type. The achiever is the object that earns the achievement.
+        /// The original achiever was a Rock.Model.PersonAlias via Rock.Model.Streak.PersonAliasId.
         /// </summary>
-        /// <value>
-        /// The AchieverEntityTypeId.
-        /// </value>
         public int AchieverEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AllowOverAchievement.
+        /// Gets or sets whether over achievement is allowed. This cannot be true if Rock.Model.AchievementType.MaxAccomplishmentsAllowed is greater than 1.
         /// </summary>
         /// <value>
-        /// The AllowOverAchievement.
+        /// The allow over achievement.
         /// </value>
         public bool AllowOverAchievement { get; set; }
 
         /// <summary>
-        /// Gets or sets the AlternateImageBinaryFileId.
+        /// An alternate image that can be used for custom purposes.
         /// </summary>
         /// <value>
-        /// The AlternateImageBinaryFileId.
+        /// The image binary file identifier.
         /// </value>
         public int? AlternateImageBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the BadgeLavaTemplate.
+        /// Gets or sets the lava template used to render a badge.
         /// </summary>
-        /// <value>
-        /// The BadgeLavaTemplate.
-        /// </value>
         public string BadgeLavaTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the Rock.Model.Category identifier.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// The category identifier.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ComponentConfigJson.
+        /// Gets or sets the configuration from the Rock.Model.AchievementType.ComponentEntityTypeId.
         /// </summary>
-        /// <value>
-        /// The ComponentConfigJson.
-        /// </value>
         public string ComponentConfigJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the ComponentEntityTypeId.
+        /// Gets or sets the Id of the achievement component Rock.Model.EntityType
         /// </summary>
-        /// <value>
-        /// The ComponentEntityTypeId.
-        /// </value>
         public int ComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CustomSummaryLavaTemplate.
+        /// Gets or sets the lava template used to render the status summary of the achievement.
         /// </summary>
         /// <value>
-        /// The CustomSummaryLavaTemplate.
+        /// The custom summary lava template.
         /// </value>
         public string CustomSummaryLavaTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the achievement type.
         /// </summary>
-        /// <value>
-        /// The Description.
-        /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the HighlightColor.
+        /// Gets or sets the color of the highlight.
         /// </summary>
         /// <value>
-        /// The HighlightColor.
+        /// The color of the highlight.
         /// </value>
         public string HighlightColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the ImageBinaryFileId.
+        /// Gets or sets the image binary file identifier. This would be the image
+        /// that would be shown in the achievement summary (for example, a trophy).
         /// </summary>
         /// <value>
-        /// The ImageBinaryFileId.
+        /// The image binary file identifier.
         /// </value>
         public int? ImageBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPublic.
+        /// Gets or sets a value indicating whether this instance is public.
         /// </summary>
         /// <value>
-        /// The IsPublic.
+        ///   true if this instance is public; otherwise, false.
         /// </value>
         public bool IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxAccomplishmentsAllowed.
+        /// Gets or sets the maximum accomplishments allowed.
         /// </summary>
         /// <value>
-        /// The MaxAccomplishmentsAllowed.
+        /// The maximum accomplishments allowed.
         /// </value>
         public int? MaxAccomplishmentsAllowed { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the achievement type. This property is required.
         /// </summary>
-        /// <value>
-        /// The Name.
-        /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResultsLavaTemplate.
+        /// Gets or sets the lava template used to render results.
         /// </summary>
-        /// <value>
-        /// The ResultsLavaTemplate.
-        /// </value>
         public string ResultsLavaTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceEntityTypeId.
+        /// Gets or sets the source entity type. The source supplies the data framework from which achievements are computed.
+        /// The original achievement sources were Streaks.
         /// </summary>
-        /// <value>
-        /// The SourceEntityTypeId.
-        /// </value>
         public int? SourceEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

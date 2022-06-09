@@ -34,66 +34,66 @@ namespace Rock.ViewModels.Entities
     public partial class PageContextBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Entity.
+        /// Gets or sets the object type name of the entity object that is being shared through this PageContext. This property is required.
         /// </summary>
         /// <value>
-        /// The Entity.
+        /// A System.String representing the object type name of the entity object that is being shared through the PageContext.
         /// </value>
         public string Entity { get; set; }
 
         /// <summary>
-        /// Gets or sets the IdParameter.
+        /// Gets or sets the name of the Page Attribute/Parameter that stores the Id of the shared entity object. This property is required.
         /// </summary>
         /// <value>
-        /// The IdParameter.
+        /// A System.String containing the name of the Page Attribute/Parameter storing the Id of the entity object. 
         /// </value>
         public string IdParameter { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this PageContext is a part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if the PageContext is part of the core system/framework, otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the PageId.
+        /// Gets or sets the Id of the Rock.Model.Page that this PageContext is used on. This property is required.
         /// </summary>
         /// <value>
-        /// The PageId.
+        /// A System.Int32 that represents the Id of the Rock.Model.Page that this PageContext is used on.
         /// </value>
         public int PageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

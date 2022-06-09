@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class RestActionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ApiId.
+        /// Gets or sets the api identifier.
         /// </summary>
         /// <value>
-        /// The ApiId.
+        /// The rest identifier.
         /// </value>
         public string ApiId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CacheControlHeaderSettings.
+        /// Gets or sets the cache control header settings.
         /// </summary>
         /// <value>
-        /// The CacheControlHeaderSettings.
+        /// The cache control header settings.
         /// </value>
         public string CacheControlHeaderSettings { get; set; }
 
         /// <summary>
-        /// Gets or sets the ControllerId.
+        /// Gets or sets the controller identifier.
         /// </summary>
         /// <value>
-        /// The ControllerId.
+        /// The controller identifier.
         /// </value>
         public int ControllerId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Method.
+        /// Gets or sets the method.
         /// </summary>
         /// <value>
-        /// The Method.
+        /// The method.
         /// </value>
         public string Method { get; set; }
 
         /// <summary>
-        /// Gets or sets the Path.
+        /// Gets or sets the path.
         /// </summary>
         /// <value>
-        /// The Path.
+        /// The path.
         /// </value>
         public string Path { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

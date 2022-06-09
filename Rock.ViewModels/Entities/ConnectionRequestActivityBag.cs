@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class ConnectionRequestActivityBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ConnectionActivityTypeId.
+        /// Gets or sets the Rock.Model.ConnectionActivityType identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionActivityTypeId.
+        /// The connection activity type identifier.
         /// </value>
         public int ConnectionActivityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConnectionOpportunityId.
+        /// Gets or sets the Rock.Model.ConnectionOpportunity identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionOpportunityId.
+        /// The connection opportunity identifier.
         /// </value>
         public int? ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConnectionRequestId.
+        /// Gets or sets the Rock.Model.ConnectionRequest identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionRequestId.
+        /// The connection request identifier.
         /// </value>
         public int ConnectionRequestId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConnectorPersonAliasId.
+        /// Gets or sets the connector Rock.Model.PersonAlias identifier.
         /// </summary>
         /// <value>
-        /// The ConnectorPersonAliasId.
+        /// The connector person alias identifier.
         /// </value>
         public int? ConnectorPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note.
+        /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// The Note.
+        /// The note.
         /// </value>
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

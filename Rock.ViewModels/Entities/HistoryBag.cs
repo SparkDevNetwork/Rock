@@ -34,170 +34,173 @@ namespace Rock.ViewModels.Entities
     public partial class HistoryBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Caption.
+        /// Gets or sets the caption
         /// </summary>
         /// <value>
-        /// The Caption.
+        /// A System.String representing the caption of the History.
         /// </value>
         public string Caption { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the Id of the Rock.Model.Category. This property is required.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// A System.Int32 representing the Id of the Rock.Model.Category
         /// </value>
         public int CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ChangeType.
+        /// Gets or sets the ChangeType which is a structured (for querying) field to describe what type of data was changed (Record, Property, Attribute, Location, Schedule, etc)
+        /// Rock.Model.History.HistoryChangeType constants for common change types
         /// </summary>
         /// <value>
-        /// The ChangeType.
+        /// The type of the change.
         /// </value>
         public string ChangeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the Id of the entity that this history is related to.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// A System.Int32 representing the Id of the entity (object) that this history is related to.
         /// </value>
         public int EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the Id of the Rock.Model.EntityType. This property is required.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the Id of the Rock.Model.EntityType
         /// </value>
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSensitive.
+        /// Gets or sets whether the NewValue and/or OldValue is null because the value is sensitive data that shouldn't be logged
+        /// If "IsSensitive" doesn't apply to this, it can be left null
         /// </summary>
         /// <value>
-        /// The IsSensitive.
+        /// IsSensitive.
         /// </value>
         public bool? IsSensitive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this history is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this history is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the NewRawValue.
+        /// Creates new rawvalue.
         /// </summary>
         /// <value>
-        /// The NewRawValue.
+        /// The new raw value.
         /// </value>
         public string NewRawValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the NewValue.
+        /// Gets or sets the new value.
         /// </summary>
         /// <value>
-        /// The NewValue.
+        /// The new value.
         /// </value>
         public string NewValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the OldRawValue.
+        /// Gets or sets the old raw value.
         /// </summary>
         /// <value>
-        /// The OldRawValue.
+        /// The old raw value.
         /// </value>
         public string OldRawValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the OldValue.
+        /// Gets or sets the old value.
         /// </summary>
         /// <value>
-        /// The OldValue.
+        /// The old value.
         /// </value>
         public string OldValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedData.
+        /// Gets or sets the related data.
         /// </summary>
         /// <value>
-        /// The RelatedData.
+        /// The related data.
         /// </value>
         public string RelatedData { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedEntityId.
+        /// Gets or sets the related entity identifier.
         /// </summary>
         /// <value>
-        /// The RelatedEntityId.
+        /// The related entity identifier.
         /// </value>
         public int? RelatedEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedEntityTypeId.
+        /// Gets or sets the related entity type identifier.
         /// </summary>
         /// <value>
-        /// The RelatedEntityTypeId.
+        /// The related entity type identifier.
         /// </value>
         public int? RelatedEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceOfChange.
+        /// Optional: Gets or sets name of the tool or process that changed the value
         /// </summary>
         /// <value>
-        /// The SourceOfChange.
+        /// The source of change.
         /// </value>
         public string SourceOfChange { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueName.
+        /// Gets or sets the name of the value depending on ChangeType: ChangeTypeName.Property =&gt; Property Friendly Name, ChangeType.Attribute =&gt; Attribute Name, ChangeType.Record =&gt; the ToString of the record
         /// </summary>
         /// <value>
-        /// The ValueName.
+        /// The name of the value.
         /// </value>
         public string ValueName { get; set; }
 
         /// <summary>
-        /// Gets or sets the Verb.
+        /// Gets or sets the verb which is a structured (for querying) field to describe what the action is (ADD, DELETE, UPDATE, VIEW, WATCHED,  etc).
+        /// Rock.Model.History.HistoryVerb constants for common verbs
         /// </summary>
         /// <value>
-        /// The Verb.
+        /// A System.String representing the verb of the History.
         /// </value>
         public string Verb { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

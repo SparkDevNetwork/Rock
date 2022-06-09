@@ -34,106 +34,107 @@ namespace Rock.ViewModels.Entities
     public partial class AssessmentBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AssessmentResultData.
+        /// Gets or sets the result data for the Assessment taken.
         /// </summary>
         /// <value>
-        /// The AssessmentResultData.
+        /// A System.String a JSON return data string of the Assessment result..
         /// </value>
         public string AssessmentResultData { get; set; }
 
         /// <summary>
-        /// Gets or sets the AssessmentTypeId.
+        /// Gets or sets the Id of the Rock.Model.AssessmentType
         /// </summary>
         /// <value>
-        /// The AssessmentTypeId.
+        /// A System.Int32 of the Rock.Model.AssessmentType associated with the Assessment.
         /// </value>
         public int AssessmentTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CompletedDateTime.
+        /// Gets or sets the date of when the Assessment was completed.
         /// </summary>
         /// <value>
-        /// The CompletedDateTime.
+        /// A System.DateTime for when the Assessment was complete.
         /// </value>
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastReminderDate.
+        /// Gets or sets the result last reminder date.
         /// </summary>
         /// <value>
-        /// The LastReminderDate.
+        /// A System.DateTime of the last reminder for the Assessment.
         /// </value>
         public DateTime? LastReminderDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the Id of the person Rock.Model.Person who is associated with the assessment.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// A System.Int32 representing the PersonAliasId of Rock.Model.PersonAlias associated with the Assessment.
         /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestedDateTime.
+        /// Gets or sets the date when the assessment was requested.
         /// </summary>
         /// <value>
-        /// The RequestedDateTime.
+        /// A System.DateTime of when the request for the assessment was made..
         /// </value>
         public DateTime? RequestedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestedDueDate.
+        /// Gets or sets the date of the requested due date.
         /// </summary>
         /// <value>
-        /// The RequestedDueDate.
+        /// A System.DateTime of when the Assessment is due.
         /// </value>
         public DateTime? RequestedDueDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequesterPersonAliasId.
+        /// Gets or sets the RequesterPersonAliasId of the Rock.Model.Person that requested the assessment.
         /// </summary>
         /// <value>
-        /// The RequesterPersonAliasId.
+        /// A System.Int32 of the Rock.Model.PersonAlias making the request for the Assessment.
         /// </value>
         public int? RequesterPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the enum of the assessment status.
+        /// Requirement from Jon, a pending assessment will stay in a pending status if it was never taken, even if a new one is requested.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// A System.Enum for the Assessment status (i.e Complete, Pending).
         /// </value>
         public int Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

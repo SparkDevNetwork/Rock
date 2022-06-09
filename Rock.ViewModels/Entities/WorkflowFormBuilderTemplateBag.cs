@@ -34,114 +34,114 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowFormBuilderTemplateBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AllowPersonEntry.
+        /// Gets or sets a value indicating whether a new person (and spouse) can be added
         /// </summary>
         /// <value>
-        /// The AllowPersonEntry.
+        ///   true if [allow person entry]; otherwise, false.
         /// </value>
         public bool AllowPersonEntry { get; set; }
 
         /// <summary>
-        /// Gets or sets the CompletionSettingsJson.
+        /// Gets or sets the completion settings json.
         /// </summary>
         /// <value>
-        /// The CompletionSettingsJson.
+        /// The completion settings json.
         /// </value>
         public string CompletionSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConfirmationEmailSettingsJson.
+        /// Gets or sets the confirmation email settings json.
         /// </summary>
         /// <value>
-        /// The ConfirmationEmailSettingsJson.
+        /// The confirmation email settings json.
         /// </value>
         public string ConfirmationEmailSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description or summary about this WorkflowFormBuilderTemplate.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String containing a description or summary about this WorkflowFormBuilderTemplate.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the FormFooter.
+        /// Gets or sets the footer.
         /// </summary>
         /// <value>
-        /// The FormFooter.
+        /// The footer.
         /// </value>
         public string FormFooter { get; set; }
 
         /// <summary>
-        /// Gets or sets the FormHeader.
+        /// Gets or sets the form header.
         /// </summary>
         /// <value>
-        /// The FormHeader.
+        /// The form header.
         /// </value>
         public string FormHeader { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsLoginRequired.
+        /// Gets or sets a value indicating whether [is login required].
         /// </summary>
         /// <value>
-        /// The IsLoginRequired.
+        ///   true if [is login required]; otherwise, false.
         /// </value>
         public bool IsLoginRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the friendly Name of this WorkflowFormBuilderTemplate. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the friendly name of this WorkflowFormBuilderTemplate
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonEntrySettingsJson.
+        /// Gets or sets the person entry settings json.
         /// </summary>
         /// <value>
-        /// The PersonEntrySettingsJson.
+        /// The person entry settings json.
         /// </value>
         public string PersonEntrySettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

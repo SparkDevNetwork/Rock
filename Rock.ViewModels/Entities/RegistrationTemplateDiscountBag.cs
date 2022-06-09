@@ -34,122 +34,122 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationTemplateDiscountBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AutoApplyDiscount.
+        /// Gets or sets a value indicating whether the discount applies automatically.
         /// </summary>
         /// <value>
-        /// The AutoApplyDiscount.
+        /// true if this discount applies automatically; otherwise, false.
         /// </value>
         public bool AutoApplyDiscount { get; set; }
 
         /// <summary>
-        /// Gets or sets the Code.
+        /// Gets or sets the code.
         /// </summary>
         /// <value>
-        /// The Code.
+        /// The code.
         /// </value>
         public string Code { get; set; }
 
         /// <summary>
-        /// Gets or sets the DiscountAmount.
+        /// Gets or sets the discount amount.
         /// </summary>
         /// <value>
-        /// The DiscountAmount.
+        /// The discount amount.
         /// </value>
         public decimal DiscountAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the DiscountPercentage.
+        /// Gets or sets the discount percentage.
         /// </summary>
         /// <value>
-        /// The DiscountPercentage.
+        /// The discount percentage.
         /// </value>
         public decimal DiscountPercentage { get; set; }
 
         /// <summary>
-        /// Gets or sets the EndDate.
+        /// Gets or sets the last day that the discount code can be used
         /// </summary>
         /// <value>
-        /// The EndDate.
+        /// The end date.
         /// </value>
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxRegistrants.
+        /// Gets or sets the maximum number of registrants per registration that the discount code can used for.
         /// </summary>
         /// <value>
-        /// The MaxRegistrants.
+        /// The maximum registrants.
         /// </value>
         public int? MaxRegistrants { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxUsage.
+        /// Gets or sets the maximum number of registrations that can use this discount code.
         /// </summary>
         /// <value>
-        /// The MaxUsage.
+        /// The maximum usage.
         /// </value>
         public int? MaxUsage { get; set; }
 
         /// <summary>
-        /// Gets or sets the MinRegistrants.
+        /// Gets or sets the minimum number of registrants a registration is required to have in order to be able to use this discount code.
         /// </summary>
         /// <value>
-        /// The MinRegistrants.
+        /// The minimum registrants.
         /// </value>
         public int? MinRegistrants { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationTemplateId.
+        /// Gets or sets the Rock.Model.RegistrationTemplate identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationTemplateId.
+        /// The registration template identifier.
         /// </value>
         public int RegistrationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDate.
+        /// Gets or sets the first day that the discount code can be used.
         /// </summary>
         /// <value>
-        /// The StartDate.
+        /// The start date.
         /// </value>
         public DateTime? StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

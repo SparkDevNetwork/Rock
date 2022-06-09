@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class PersonSignalBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ExpirationDate.
+        /// Gets or sets the date this signal expires.
         /// </summary>
         /// <value>
-        /// The ExpirationDate.
+        /// The date this signal expires.
         /// </value>
         public DateTime? ExpirationDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note.
+        /// Gets or sets the note applied to this signal.
         /// </summary>
         /// <value>
-        /// The Note.
+        /// The note.
         /// </value>
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the OwnerPersonAliasId.
+        /// Gets or sets the person alias identifier of the individual that reported this signal.
         /// </summary>
         /// <value>
-        /// The OwnerPersonAliasId.
+        /// The person alias identifier of the individual that reported this signal.
         /// </value>
         public int OwnerPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId.
+        /// Gets or sets the Id of the Rock.Model.Person that is represented by the PersonSignal. This property is required.
         /// </summary>
         /// <value>
-        /// The PersonId.
+        /// An System.Int32 representing the Id of the Rock.Model.Person who is represented by the PersonSignal.
         /// </value>
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignalTypeId.
+        /// Gets or sets the Id of the Rock.Model.SignalType that is represented by the PersonSignal. This property is required.
         /// </summary>
         /// <value>
-        /// The SignalTypeId.
+        /// An System.Int32 representing the Id of the Rock.Model.SignalType that is represented by the PersonSignal.
         /// </value>
         public int SignalTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

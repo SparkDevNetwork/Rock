@@ -34,138 +34,138 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ActivatedDateTime.
+        /// Gets or sets the date and time that this Workflow instance was activated.
         /// </summary>
         /// <value>
-        /// The ActivatedDateTime.
+        /// A System.DateTime that represents the date and time that this Workflow instance was activated.
         /// </value>
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the Campus Id of the workflow campus
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// The Campus Id
         /// </value>
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CompletedDateTime.
+        /// Gets or sets the date and time that the Workflow completed.
         /// </summary>
         /// <value>
-        /// The CompletedDateTime.
+        /// A System.DateTime representing the date and time that the Workflow completed.
         /// </value>
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description or summary about this Workflow instance.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description or summary about this Workflow instance.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the Entity Id.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The Entity Id.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the Entity Type Id.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The Entity Type Id.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the InitiatorPersonAliasId.
+        /// Gets or sets the initiator person alias identifier.
         /// </summary>
         /// <value>
-        /// The InitiatorPersonAliasId.
+        /// The initiator person alias identifier.
         /// </value>
         public int? InitiatorPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsProcessing.
+        /// Gets or sets a flag indicating whether this instance is processing.
         /// </summary>
         /// <value>
-        /// The IsProcessing.
+        /// A System.Boolean value that is true if this instance is processing; otherwise, false.
         /// </value>
         public bool IsProcessing { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastProcessedDateTime.
+        /// Gets or sets the date and time that the Workflow was last processed.
         /// </summary>
         /// <value>
-        /// The LastProcessedDateTime.
+        /// A System.DateTime that represents when the Workflow was last processed.
         /// </value>
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets a friendly name for this Workflow instance. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing a friendly name of this Workflow instance.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the status of this Workflow instance. This property is required.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// A System.String representing the status of this Workflow instance.
         /// </value>
         public string Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowIdNumber.
+        /// A type specific number to uniquely identify a workflow.
         /// </summary>
         /// <value>
-        /// The WorkflowIdNumber.
+        /// The type identifier number.
         /// </value>
         public int WorkflowIdNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowTypeId.
+        /// Gets or sets the WorkflowTypeId of the Rock.Model.WorkflowType that this Workflow instance is executing.
         /// </summary>
         /// <value>
-        /// The WorkflowTypeId.
+        /// A System.Int32 representing the WorkflowTypeId of the Rock.Model.WorkflowType that is being executed.
         /// </value>
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -31,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Rock.ViewModels.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -46,7 +47,9 @@
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
+    <Compile Include="Blocks\CRM\PersonDetail\Badges\BadgesConfigurationBox.cs" />
     <Compile Include="Blocks\DetailBlockBox.cs" />
+    <Compile Include="Blocks\Engagement\StepFlowBox.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
@@ -84,8 +87,10 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateDetail\ValueSourcesViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateListItemViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormValueSourcesViewModel.cs" />
+    <Compile Include="Blocks\Engagement\FlowNodeDiagramBag.cs" />
     <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
     <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
+    <Compile Include="CRM\RenderedBadgeBag.cs" />
     <Compile Include="Entities\AchievementAttemptBag.cs" />
     <Compile Include="Entities\AchievementTypeBag.cs" />
     <Compile Include="Entities\AchievementTypePrerequisiteBag.cs" />
@@ -314,7 +319,31 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
-    <Compile Include="Utility\AuditDetailBag.cs" />
+    <Compile Include="Rest\Controls\BinaryFilePickerGetBinaryFileOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BinaryFileTypePickerGetBinaryFileTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AssetStorageProviderPickerGetAssetStorageProviderOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AuditDetailGetAuditDetailsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AchievementTypePickerGetAchievementTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BadgeComponentPickerGetBadgeComponentsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BadgeListGetBadgesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CategoryPickerChildTreeItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValuePickerGetDefinedValuesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListAddEntityTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListCreatePersonalTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListGetAvailableTagsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListGetEntityTagsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListRemoveEntityTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListTagBag.cs" />
+    <Compile Include="Rest\Controls\AssessmentTypePickerGetAssessmentTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTypePickerGetEntityTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\FollowingGetFollowingOptionsBag.cs" />
+    <Compile Include="Rest\Controls\FollowingGetFollowingResponseBag.cs" />
+    <Compile Include="Rest\Controls\FollowingSetFollowingOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LocationPickerGetActiveChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PersonPickerSearchOptionsBag.cs" />
+    <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountOptionsBag.cs" />
+    <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountResultBag.cs" />
+    <Compile Include="Utility\EntityAuditBag.cs" />
     <Compile Include="Utility\PublicAttributeCategoryBag.cs" />
     <Compile Include="Utility\PublicComparisonValueBag.cs" />
     <Compile Include="Utility\PublicAttributeBag.cs" />
@@ -341,5 +370,6 @@
       <Name>Rock.Enums</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

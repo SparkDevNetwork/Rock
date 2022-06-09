@@ -34,82 +34,82 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowActivityTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description or summary about this WorkflowActivityType.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String containing a description or summary about this WorkflowActivityType.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActivatedWithWorkflow.
+        /// Gets or sets a value indicating if this WorkflowActivityType is activated with the workflow.
         /// </summary>
         /// <value>
-        /// The IsActivatedWithWorkflow.
+        /// A System.Boolean value that is true if this instance is activated with workflow; otherwise, false.
         /// </value>
         public bool IsActivatedWithWorkflow { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this WorkflowActivityType is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean value that is true if the WorkflowActivityType is active; otherwise false.
         /// </value>
         public bool? IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the friendly Name of this WorkflowActivityType. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the friendly name of this WorkflowActivityType
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order that this WorkflowActivityType will be executed in the WorkflowType's process. 
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 indicating the order that this Activity will be executed in the Workflow.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowTypeId.
+        /// Gets or sets the WorkflowTypeId of the Rock.Model.WorkflowType that this WorkflowActivityType belongs to.
         /// </summary>
         /// <value>
-        /// The WorkflowTypeId.
+        /// A System.Int32 representing the WorkflowTypeId of the Rock.Model.WorkflowType that this WorkflowActivityType belongs to.
         /// </value>
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

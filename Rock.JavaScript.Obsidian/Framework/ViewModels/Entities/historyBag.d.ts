@@ -25,67 +25,76 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** History View Model */
 export type HistoryBag = {
-    /** Gets or sets the Caption. */
+    /** Gets or sets the caption */
     caption?: string | null;
 
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the Id of the Rock.Model.Category. This property is required. */
     categoryId: number;
 
-    /** Gets or sets the ChangeType. */
+    /**
+     * Gets or sets the ChangeType which is a structured (for querying) field to describe what type of data was changed (Record, Property, Attribute, Location, Schedule, etc)
+     * Rock.Model.History.HistoryChangeType constants for common change types
+     */
     changeType?: string | null;
 
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the Id of the entity that this history is related to. */
     entityId: number;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the Id of the Rock.Model.EntityType. This property is required. */
     entityTypeId: number;
 
-    /** Gets or sets the IsSensitive. */
+    /**
+     * Gets or sets whether the NewValue and/or OldValue is null because the value is sensitive data that shouldn't be logged
+     * If "IsSensitive" doesn't apply to this, it can be left null
+     */
     isSensitive?: boolean | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this history is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the NewRawValue. */
+    /** Creates new rawvalue. */
     newRawValue?: string | null;
 
-    /** Gets or sets the NewValue. */
+    /** Gets or sets the new value. */
     newValue?: string | null;
 
-    /** Gets or sets the OldRawValue. */
+    /** Gets or sets the old raw value. */
     oldRawValue?: string | null;
 
-    /** Gets or sets the OldValue. */
+    /** Gets or sets the old value. */
     oldValue?: string | null;
 
-    /** Gets or sets the RelatedData. */
+    /** Gets or sets the related data. */
     relatedData?: string | null;
 
-    /** Gets or sets the RelatedEntityId. */
+    /** Gets or sets the related entity identifier. */
     relatedEntityId?: number | null;
 
-    /** Gets or sets the RelatedEntityTypeId. */
+    /** Gets or sets the related entity type identifier. */
     relatedEntityTypeId?: number | null;
 
-    /** Gets or sets the SourceOfChange. */
+    /** Optional: Gets or sets name of the tool or process that changed the value */
     sourceOfChange?: string | null;
 
-    /** Gets or sets the ValueName. */
+    /** Gets or sets the name of the value depending on ChangeType: ChangeTypeName.Property =&gt; Property Friendly Name, ChangeType.Attribute =&gt; Attribute Name, ChangeType.Record =&gt; the ToString of the record */
     valueName?: string | null;
 
-    /** Gets or sets the Verb. */
+    /**
+     * Gets or sets the verb which is a structured (for querying) field to describe what the action is (ADD, DELETE, UPDATE, VIEW, WATCHED,  etc).
+     * Rock.Model.History.HistoryVerb constants for common verbs
+     */
     verb?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

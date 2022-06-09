@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1310,7 +1310,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private bool HasCheckoutEnabled( GroupTypeCache[] checkinAreas )
         {
             var checkinConfigurationTypes = checkinAreas.Select( a => a.GetCheckInConfigurationType() );
-            return checkinConfigurationTypes.Any( a => a != null && a.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() );
+            return checkinConfigurationTypes.Any( a => a != null && a.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean() );
         }
 
         /// <summary>

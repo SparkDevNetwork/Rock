@@ -87,6 +87,7 @@ namespace Rock.Web.UI.Controls
                 values = new Dictionary<string, string>();
                 new DefinedValueService( new RockContext() )
                     .GetByDefinedTypeId( DefinedTypeId.Value )
+                    .Where( v => v.IsActive )
                     .ToList()
                     .ForEach( v => values.Add( v.Id.ToString(), v.Value ) );
             } 
@@ -165,7 +166,6 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderEndTag();
                 writer.WriteLine();
-
             }
 
             writer.RenderEndTag();
