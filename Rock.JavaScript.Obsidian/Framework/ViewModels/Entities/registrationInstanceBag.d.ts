@@ -25,94 +25,108 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationInstance View Model */
 export type RegistrationInstanceBag = {
-    /** Gets or sets the AccountId. */
+    /** Gets or sets the account identifier. */
     accountId?: number | null;
 
-    /** Gets or sets the AdditionalConfirmationDetails. */
+    /** Gets or sets the additional confirmation details. */
     additionalConfirmationDetails?: string | null;
 
-    /** Gets or sets the AdditionalReminderDetails. */
+    /** Gets or sets the additional reminder details. */
     additionalReminderDetails?: string | null;
 
-    /** Gets or sets the ContactEmail. */
+    /** Gets or sets the contact email. */
     contactEmail?: string | null;
 
-    /** Gets or sets the ContactPersonAliasId. */
+    /** Gets or sets the name of the contact. */
     contactPersonAliasId?: number | null;
 
-    /** Gets or sets the ContactPhone. */
+    /** Gets or sets the contact phone. */
     contactPhone?: string | null;
 
-    /** Gets or sets the Cost. */
+    /** Gets or sets the cost (if Rock.Model.RegistrationTemplate.SetCostOnInstance == true). */
     cost?: number | null;
 
-    /** Gets or sets the DefaultPayment. */
+    /**
+     * Gets or sets the default amount to pay per registrant (if Rock.Model.RegistrationTemplate.SetCostOnInstance == true).
+     * If this is null, the default payment will be the Rock.Model.RegistrationInstance.Cost
+     */
     defaultPayment?: number | null;
 
-    /** Gets or sets the Details. */
+    /** Gets or sets the details. */
     details?: string | null;
 
-    /** Gets or sets the EndDateTime. */
+    /** Gets or sets the end date time. */
     endDateTime?: string | null;
 
-    /** Gets or sets the ExternalGatewayFundId. */
+    /** Gets or sets the external gateway fund identifier. */
     externalGatewayFundId?: number | null;
 
-    /** Gets or sets the ExternalGatewayMerchantId. */
+    /** Gets or sets the external gateway merchant identifier. */
     externalGatewayMerchantId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the MaxAttendees. */
+    /** Gets or sets the maximum attendees. */
     maxAttendees?: number | null;
 
-    /** Gets or sets the MinimumInitialPayment. */
+    /** Gets or sets the minimum initial payment (if Rock.Model.RegistrationTemplate.SetCostOnInstance == true). */
     minimumInitialPayment?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the RegistrationInstructions. */
+    /** Gets or sets the registration instructions. */
     registrationInstructions?: string | null;
 
-    /** Gets or sets the RegistrationMeteringThreshold. */
+    /** Gets or sets the registration metering threshold. */
     registrationMeteringThreshold?: number | null;
 
-    /** Gets or sets the RegistrationTemplateId. */
+    /** Gets or sets the Rock.Model.RegistrationTemplate identifier. */
     registrationTemplateId: number;
 
-    /** Gets or sets the RegistrationWorkflowTypeId. */
+    /** Optional workflow type to launch at end of registration */
     registrationWorkflowTypeId?: number | null;
 
-    /** Gets or sets the ReminderSent. */
+    /** Gets or sets a value indicating whether [reminder sent]. */
     reminderSent: boolean;
 
-    /** Gets or sets the SendReminderDateTime. */
+    /** Gets or sets the send reminder date time. */
     sendReminderDateTime?: string | null;
 
-    /** Gets or sets the StartDateTime. */
+    /** Gets or sets the start date time. */
     startDateTime?: string | null;
 
-    /** Gets or sets the TimeoutIsEnabled. */
+    /**
+     * Gets or sets a value indicating whether [timeout is enabled].
+     * Is there a time limit for a user submitting a registration? Their spot will be reserved until they submit
+     * or the session times out.
+     */
     timeoutIsEnabled: boolean;
 
-    /** Gets or sets the TimeoutLengthMinutes. */
+    /**
+     * Gets or sets the timeout length minutes. The amount of minutes that a spot will be held for a registrant
+     * until they submit or timeout occurs.
+     */
     timeoutLengthMinutes?: number | null;
 
-    /** Gets or sets the TimeoutThreshold. */
+    /**
+     * Gets or sets the timeout threshold. The lower limit of available registrations before the checkout timer
+     * is enabled. The checkout timer functionality will only display when there are fewer available registrations
+     * than configured.
+     */
     timeoutThreshold?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

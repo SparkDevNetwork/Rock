@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** DataViewFilter View Model */
 export type DataViewFilterBag = {
-    /** Gets or sets the DataViewId. */
+    /** Gets or sets the id of the Data View that owns this record. */
     dataViewId?: number | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Reporting.DataFilterComponent that this filter is using. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the ExpressionType. */
+    /** Gets or sets the expression type of this DataViewFilter. */
     expressionType: number;
 
-    /** Gets or sets the ParentId. */
+    /** Gets or sets the DataViewFilterId of the parent DataViewFilter. */
     parentId?: number | null;
 
-    /** Gets or sets the RelatedDataViewId. */
+    /** Gets or sets the id of the data view that this record uses for filtering. */
     relatedDataViewId?: number | null;
 
-    /** Gets or sets the Selection. */
+    /** Gets or sets the value that the DataViewFilter is filtering by. */
     selection?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

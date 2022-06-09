@@ -34,98 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class StepProgramBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the Id of the Rock.Model.Category.
         /// </summary>
-        /// <value>
-        /// The CategoryId.
-        /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefaultListView.
+        /// Gets or sets the default view mode for the program. This value is required.
         /// </summary>
-        /// <value>
-        /// The DefaultListView.
-        /// </value>
         public int DefaultListView { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the program.
         /// </summary>
-        /// <value>
-        /// The Description.
-        /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
-        /// <value>
-        /// The IconCssClass.
-        /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
-        /// <value>
-        /// The IsActive.
-        /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the program. This property is required.
         /// </summary>
-        /// <value>
-        /// The Name.
-        /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
-        /// <value>
-        /// The Order.
-        /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the StepTerm.
+        /// Gets or sets the term used for steps within this program. This property is required.
         /// </summary>
-        /// <value>
-        /// The StepTerm.
-        /// </value>
         public string StepTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupMemberAssignment View Model */
 export type GroupMemberAssignmentBag = {
-    /** Gets or sets the ConfirmationSentDateTime. */
+    /** The date and time when the confirmation is sent. */
     confirmationSentDateTime?: string | null;
 
-    /** Gets or sets the GroupMemberId. */
+    /** Gets or sets the Rock.Model.GroupMember identifier. */
     groupMemberId: number;
 
-    /** Gets or sets the LastRSVPReminderSentDateTime. */
+    /** The date and time when the last RSVP reminder sent. */
     lastRSVPReminderSentDateTime?: string | null;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the Rock.Model.Location identifier. */
     locationId?: number | null;
 
-    /** Gets or sets the ScheduleId. */
+    /** Gets or sets the Rock.Model.Schedule identifier. */
     scheduleId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

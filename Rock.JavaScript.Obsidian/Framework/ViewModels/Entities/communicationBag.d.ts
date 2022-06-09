@@ -25,124 +25,130 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Communication View Model */
 export type CommunicationBag = {
-    /** Gets or sets the AdditionalMergeFieldsJson. */
+    /** Gets or sets a JSON string containing any additional merge fields for the Communication. */
     additionalMergeFieldsJson?: string | null;
 
-    /** Gets or sets the BCCEmails. */
+    /** Gets or sets a comma separated list of BCC'ed email addresses. */
     bCCEmails?: string | null;
 
-    /** Gets or sets the CCEmails. */
+    /** Gets or sets a comma separated list of CC'ed email addresses. */
     cCEmails?: string | null;
 
-    /** Gets or sets the CommunicationTemplateId. */
+    /** Gets or sets the Rock.Model.CommunicationTemplate that was used to compose this communication */
     communicationTemplateId?: number | null;
 
-    /** Gets or sets the CommunicationType. */
+    /** Gets or sets the communication type value identifier. */
     communicationType: number;
 
-    /** Gets or sets the EnabledLavaCommands. */
+    /** Gets or sets a comma-delimited list of enabled LavaCommands */
     enabledLavaCommands?: string | null;
 
-    /** Gets or sets the ExcludeDuplicateRecipientAddress. */
+    /**
+     * Option to prevent communications from being sent to people with the same email/SMS addresses.
+     * This will mean two people who share an address will not receive a personalized communication, only one of them will.
+     */
     excludeDuplicateRecipientAddress: boolean;
 
-    /** Gets or sets the FromEmail. */
+    /** Gets or sets from email address. */
     fromEmail?: string | null;
 
-    /** Gets or sets the FromName. */
+    /** Gets or sets from name. */
     fromName?: string | null;
 
-    /** Gets or sets the FutureSendDateTime. */
+    /**
+     * Gets or sets the future send date for the communication. This allows a user to schedule when a communication is sent 
+     * and the communication will not be sent until that date and time.
+     */
     futureSendDateTime?: string | null;
 
-    /** Gets or sets the IsBulkCommunication. */
+    /** Gets or sets the is bulk communication. */
     isBulkCommunication: boolean;
 
-    /** Gets or sets the ListGroupId. */
+    /** Gets or sets the list that email is being sent to. */
     listGroupId?: number | null;
 
-    /** Gets or sets the Message. */
+    /** Gets or sets the message. */
     message?: string | null;
 
-    /** Gets or sets the MessageMetaData. */
+    /** Gets or sets the message meta data. */
     messageMetaData?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the Communication */
     name?: string | null;
 
-    /** Gets or sets the PushData. */
+    /** Gets or sets the push data. */
     pushData?: string | null;
 
-    /** Gets or sets the PushImageBinaryFileId. */
+    /** Gets or sets the push image file identifier. */
     pushImageBinaryFileId?: number | null;
 
-    /** Gets or sets the PushMessage. */
+    /** Gets or sets the message. */
     pushMessage?: string | null;
 
-    /** Gets or sets the PushOpenAction. */
+    /** Gets or sets the push open action. */
     pushOpenAction?: number | null;
 
-    /** Gets or sets the PushOpenMessage. */
+    /** Gets or sets the push open message. */
     pushOpenMessage?: string | null;
 
-    /** Gets or sets the PushSound. */
+    /** Gets or sets push sound. */
     pushSound?: string | null;
 
-    /** Gets or sets the PushTitle. */
+    /** Gets or sets the push notification title. */
     pushTitle?: string | null;
 
-    /** Gets or sets the ReplyToEmail. */
+    /** Gets or sets the reply to email address. */
     replyToEmail?: string | null;
 
-    /** Gets or sets the ReviewedDateTime. */
+    /** Gets or sets the date and time stamp of when the Communication was reviewed. */
     reviewedDateTime?: string | null;
 
-    /** Gets or sets the ReviewerNote. */
+    /** Gets or sets the note that was entered by the reviewer. */
     reviewerNote?: string | null;
 
-    /** Gets or sets the ReviewerPersonAliasId. */
+    /** Gets or sets the reviewer person alias identifier. */
     reviewerPersonAliasId?: number | null;
 
-    /** Gets or sets the SegmentCriteria. */
+    /** Gets or sets if communication is targeted to people in all selected segments or any selected segments. */
     segmentCriteria: number;
 
-    /** Gets or sets the Segments. */
+    /** Gets or sets the segments that list is being filtered to (comma-delimited list of dataview guids). */
     segments?: string | null;
 
-    /** Gets or sets the SendDateTime. */
+    /** Gets or sets the datetime that communication was sent. This also indicates that communication shouldn't attempt to send again. */
     sendDateTime?: string | null;
 
-    /** Gets or sets the SenderPersonAliasId. */
+    /** Gets or sets the sender Rock.Model.PersonAlias identifier. */
     senderPersonAliasId?: number | null;
 
-    /** Gets or sets the SMSFromDefinedValueId. */
+    /** Gets or sets the SMS from number. */
     sMSFromDefinedValueId?: number | null;
 
-    /** Gets or sets the SMSMessage. */
+    /** Gets or sets the message. */
     sMSMessage?: string | null;
 
-    /** Gets or sets the Status. */
+    /** Gets or sets the status of the Communication. */
     status: number;
 
-    /** Gets or sets the Subject. */
+    /** Gets or sets the name of the Communication */
     subject?: string | null;
 
-    /** Gets or sets the SystemCommunicationId. */
+    /** Gets or sets the Rock.Model.Communication.SystemCommunication that this communication is associated with. */
     systemCommunicationId?: number | null;
 
-    /** Gets or sets the UrlReferrer. */
+    /** Gets or sets the URL from where this communication was created (grid) */
     urlReferrer?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

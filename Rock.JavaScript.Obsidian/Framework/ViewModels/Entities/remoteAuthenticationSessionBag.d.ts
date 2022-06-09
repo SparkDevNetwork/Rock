@@ -25,43 +25,43 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RemoteAuthenticationSession View Model */
 export type RemoteAuthenticationSessionBag = {
-    /** Gets or sets the AuthenticationIpAddress. */
+    /** Gets or sets the authentication ip address. */
     authenticationIpAddress?: string | null;
 
-    /** Gets or sets the AuthorizedPersonAliasId. */
+    /** Gets or sets the authorized person alias identifier. */
     authorizedPersonAliasId?: number | null;
 
-    /** Gets or sets the ClientIpAddress. */
+    /** Gets or sets the client ip address. */
     clientIpAddress?: string | null;
 
-    /** Gets or sets the Code. */
+    /** Gets or sets the code. */
     code?: string | null;
 
-    /** Gets or sets the DeviceUniqueIdentifier. */
+    /** Gets or sets the device unique identifier. */
     deviceUniqueIdentifier?: string | null;
 
-    /** Gets or sets the SessionAuthenticatedDateTime. */
+    /** Gets or sets the session authenticated date time. */
     sessionAuthenticatedDateTime?: string | null;
 
-    /** Gets or sets the SessionEndDateTime. */
+    /** Gets or sets the session end date time. */
     sessionEndDateTime?: string | null;
 
-    /** Gets or sets the SessionStartDateTime. */
+    /** Gets or sets the session start date time. */
     sessionStartDateTime?: string | null;
 
-    /** Gets or sets the SiteId. */
+    /** Gets or sets the site identifier. */
     siteId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

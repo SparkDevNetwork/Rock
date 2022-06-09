@@ -34,162 +34,162 @@ namespace Rock.ViewModels.Entities
     public partial class UserLoginBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ApiKey.
+        /// Gets or sets the API key associated with the UserLogin
         /// </summary>
         /// <value>
-        /// The ApiKey.
+        /// A System.String representing the API key that is associated with the UserLogin
         /// </value>
         public string ApiKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType for the authentication service that this UserLogin user will use.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that this DataView reports on.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FailedPasswordAttemptCount.
+        /// Gets or sets the number of failed password attempts within the failed password attempt window.
         /// </summary>
         /// <value>
-        /// The FailedPasswordAttemptCount.
+        /// An System.Int32 representing the failed password attempts during the attempt window.
         /// </value>
         public int? FailedPasswordAttemptCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the FailedPasswordAttemptWindowStartDateTime.
+        /// Gets or sets the failed password attempt window start date time.
         /// </summary>
         /// <value>
-        /// The FailedPasswordAttemptWindowStartDateTime.
+        /// The failed password attempt window start date time.
         /// </value>
         public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsConfirmed.
+        /// Gets or sets a flag indicating if the UserLogin has been confirmed.
         /// </summary>
         /// <value>
-        /// The IsConfirmed.
+        /// A System.Boolean value that is true if the UserLogin has been confirmed; otherwise false.
         /// </value>
         public bool? IsConfirmed { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsLockedOut.
+        /// Gets or sets a flag indicating if the UserLogin is currently locked out.
         /// </summary>
         /// <value>
-        /// The IsLockedOut.
+        /// A System.Boolean that is true if the UserLogin is currently locked out; otherwise false.
         /// </value>
         public bool? IsLockedOut { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsOnLine.
+        /// Gets or sets a flag indicating if the user is currently online and logged in to the system.
         /// </summary>
         /// <value>
-        /// The IsOnLine.
+        /// A System.Boolean value that is true if the user is currently online and logged in with this UserLogin; otherwise false.
         /// </value>
         public bool? IsOnLine { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPasswordChangeRequired.
+        /// Gets or sets the is password change required.
         /// </summary>
         /// <value>
-        /// The IsPasswordChangeRequired.
+        /// The is password change required.
         /// </value>
         public bool? IsPasswordChangeRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastActivityDateTime.
+        /// Gets or sets the date and time of the last activity (login, password change, etc.) performed with this UserLogin.
         /// </summary>
         /// <value>
-        /// The LastActivityDateTime.
+        /// A System.DateTime representing the date and time of the last activity associated with this UserLogin.
         /// </value>
         public DateTime? LastActivityDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastLockedOutDateTime.
+        /// Gets or sets date and time that the UserLogin was last locked out.
         /// </summary>
         /// <value>
-        /// The LastLockedOutDateTime.
+        /// A System.DateTime representing the date and time that the user login was last locked out.
         /// </value>
         public DateTime? LastLockedOutDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastLoginDateTime.
+        /// Gets or sets the most recent date and time that a user successfully logged in using this UserLogin.
         /// </summary>
         /// <value>
-        /// The LastLoginDateTime.
+        /// A System.DateTime representing the most recent date and time that a user successfully logged in with this UserLogin.
         /// </value>
         public DateTime? LastLoginDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastPasswordChangedDateTime.
+        /// Gets or sets the date and time that the password was successfully changed.
         /// </summary>
         /// <value>
-        /// The LastPasswordChangedDateTime.
+        /// A System.DateTime representing when the password was last changed.
         /// </value>
         public DateTime? LastPasswordChangedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastPasswordExpirationWarningDateTime.
+        /// Gets or sets the last time that user was notified about their password expiring.
         /// </summary>
         /// <value>
-        /// The LastPasswordExpirationWarningDateTime.
+        /// The last password expiration warning date time.
         /// </value>
         public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Password.
+        /// Gets or sets the Password.  Stored as a BCrypt hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes
         /// </summary>
         /// <value>
-        /// The Password.
+        /// A System.String representing the password. 
         /// </value>
         public string Password { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId.
+        /// Gets or sets the Id of the Rock.Model.Person who this UserLogin belongs to.
         /// </summary>
         /// <value>
-        /// The PersonId.
+        /// A System.Int32 representing the Id of the Rock.Model.Person that this UserLogin belongs to.
         /// </value>
         public int? PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the UserName.
+        /// Gets or sets the UserName that is associated with this UserLogin. This property is required.
         /// </summary>
         /// <value>
-        /// The UserName.
+        /// A System.String representing the UserName that is associated with this UserLogin.
         /// </value>
         public string UserName { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

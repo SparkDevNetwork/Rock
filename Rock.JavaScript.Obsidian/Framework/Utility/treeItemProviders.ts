@@ -17,8 +17,10 @@
 
 import { Guid } from "@Obsidian/Types";
 import { emptyGuid } from "./guid";
-import { get, post } from "./http";
+import { post } from "./http";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
+import { LocationPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationPickerGetActiveChildrenOptionsBag";
 
 /**
  * The methods that must be implemented by tree item providers. These methods
@@ -43,78 +45,6 @@ export interface ITreeItemProvider {
      */
     getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> | TreeItemBag[];
 }
-
-type ChildTreeItemOptions = {
-    /**
-     * The parent unique identifier whose children are to be retrieved. If
-     * undefined or null then the root items are being requested.
-     */
-    parentGuid?: Guid | null;
-
-    /**
-     * True if items should be loaded; False if just categories should be
-     * loaded.
-     */
-    getCategorizedItems?: boolean;
-
-    /**
-     * The entity type unique identifier to limit the results to.
-     */
-    entityTypeGuid?: Guid | null;
-
-    /**
-     * The entity qualifier that is used to filter category results. If set
-     * then the category EntityTypeQualifierColumn must match this value.
-     */
-    entityTypeQualifierColumn?: string | null;
-
-    /**
-     * The entity qualifier value that is used to filter category results. If
-     * both this and entityTypeQualifierColumn are not blank then the category
-     * EntityTypeQualifierValue property must match this value.
-     */
-    entityTypeQualifierValue?: string | null;
-
-    /**
-     * Indicates whether entity items without a name should be included in the
-     * results. Only applies if getCategorizedItems is true.
-     */
-    includeUnnamedentityItems?: boolean;
-
-    /**
-     * Indicates whether categories that have no child categories and no items
-     * should be included.
-     */
-    includeCategoriesWithoutChildren?: boolean;
-
-    /**
-     * The default icon CSS class to use for items that do not specify their
-     * own IconCssClass value.
-     */
-    defaultIconCssClass?: string | null;
-
-    /**
-     * Indicates whether inactive items should be included in the results. If
-     * the entity type does not support the IsActive property then this value
-     * wil be ignored.
-     */
-    includeInactiveItems?: boolean;
-
-    /**
-     * Indicates whether child categories and items are loaded automatically.
-     * If true then all descendant categories will be loaded along with the
-     * items if getCategorizedItems is also true. This results in the children
-     * property of the results being null to indicate they must be loaded
-     * on demand.
-     */
-    lazyLoad?: boolean;
-
-    /**
-     * A token provided by the server that will give us additional security
-     * authorization to specific categories.
-     */
-    securityGrantToken?: string | null;
-};
 
 /**
  * Tree Item Provider for retrieving categories from the server and displaying
@@ -159,7 +89,7 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
     private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
-        const options: ChildTreeItemOptions = {
+        const options: Partial<CategoryPickerChildTreeItemsOptionsBag> = {
             parentGuid: parentGuid,
             entityTypeGuid: this.entityTypeGuid,
             entityTypeQualifierColumn: this.entityTypeQualifierColumn,
@@ -213,7 +143,7 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
     private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
-        const options = {
+        const options: Partial<LocationPickerGetActiveChildrenOptionsBag> = {
             guid: parentGuid ?? emptyGuid,
             rootLocationGuid: emptyGuid,
             securityGrantToken: this.securityGrantToken

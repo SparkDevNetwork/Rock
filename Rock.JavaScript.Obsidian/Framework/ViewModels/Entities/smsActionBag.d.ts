@@ -25,37 +25,37 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** SmsAction View Model */
 export type SmsActionBag = {
-    /** Gets or sets the ContinueAfterProcessing. */
+    /** Gets or sets a value indicating whether further actions should be processed. */
     continueAfterProcessing: boolean;
 
-    /** Gets or sets the ExpireDate. */
+    /** Gets or sets when to expire the Rock.Model.SmsAction */
     expireDate?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the action. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order of this action in the system. */
     order: number;
 
-    /** Gets or sets the SmsActionComponentEntityTypeId. */
+    /** Gets or sets the identifier for the entity type that handles this action's logic. */
     smsActionComponentEntityTypeId: number;
 
-    /** Gets or sets the SmsPipelineId. */
+    /** Gets or sets the SMS pipeline identifier. */
     smsPipelineId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -34,98 +34,101 @@ namespace Rock.ViewModels.Entities
     public partial class ContentChannelTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the DateRangeType.
+        /// Gets or sets an Rock.Model.ContentChannelDateType enumeration that represents the type of date range that this DateRangeTypeEnum supports.
         /// </summary>
         /// <value>
-        /// The DateRangeType.
+        /// A Rock.Model.ContentChannelDateType that represents the type of DateRangeTypeEnum is supported. When DateRangeTypeEnum.SingleDate a single date 
+        /// will be supported; when DateRangeTypeEnum.DateRange a date range will be supported.
         /// </value>
         public int DateRangeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the DisableContentField.
+        /// Gets or sets a value indicating whether [disable content field].
         /// </summary>
         /// <value>
-        /// The DisableContentField.
+        ///   true if [disable content field]; otherwise, false.
         /// </value>
         public bool DisableContentField { get; set; }
 
         /// <summary>
-        /// Gets or sets the DisablePriority.
+        /// Gets or sets a value indicating whether [disable priority].
         /// </summary>
         /// <value>
-        /// The DisablePriority.
+        ///   true if [disable priority]; otherwise, false.
         /// </value>
         public bool DisablePriority { get; set; }
 
         /// <summary>
-        /// Gets or sets the DisableStatus.
+        /// Gets or sets a value indicating whether [disable status].
+        /// If this is set to True, all of the ContentChannelItems are "Approved"
         /// </summary>
         /// <value>
-        /// The DisableStatus.
+        ///   true if [disable status]; otherwise, false.
         /// </value>
         public bool DisableStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the IncludeTime.
+        /// Gets or sets a value indicating whether time should be included with the single or date range values
         /// </summary>
         /// <value>
-        /// The IncludeTime.
+        ///   true if [include time]; otherwise, false.
         /// </value>
         public bool IncludeTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this ContentType is part of the Rock core system/framework. 
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        ///   A System.Boolean flag that is true if this ContentChannelType is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the ContentType. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the name of the ContentType.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowInChannelList.
+        /// A flag indicating if a Rock.Model.ContentChannel of this ContentChannelType will be shown in the content channel list.
+        /// When false, it means any 'Channel Types Include' settings MUST specifically include in order to show it.
         /// </summary>
         /// <value>
-        /// The ShowInChannelList.
+        ///   A System.Boolean value that is true if a Rock.Model.Group of this Content Channel Type will be shown in the Channel list; otherwise false.
         /// </value>
         public bool ShowInChannelList { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

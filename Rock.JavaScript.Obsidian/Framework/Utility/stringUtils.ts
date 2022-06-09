@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { areEqual, toGuidOrNull } from "./guid";
+
 /**
  * Is the value an empty string?
  * @param val
@@ -264,6 +267,29 @@ export function escapeHtml(str: string): string {
         return escapeHtmlMap[ch];
     });
 }
+
+/**
+ * The default compare value function for UI controls. This checks if both values
+ * are GUIDs and if so does a case-insensitive compare, otherwise it does a
+ * case-sensitive compare of the two values.
+ * 
+ * @param value The value selected in the UI.
+ * @param itemValue The item value to be compared against.
+ *
+ * @returns true if the two values are considered equal; otherwise false.
+ */
+export function defaultControlCompareValue(value: string, itemValue: string): boolean {
+    const guidValue = toGuidOrNull(value);
+    const guidItemValue = toGuidOrNull(itemValue);
+
+    if (guidValue !== null && guidItemValue !== null) {
+        return areEqual(guidValue, guidItemValue);
+    }
+
+    return value === itemValue;
+}
+
+
 
 export default {
     asCommaAnd,

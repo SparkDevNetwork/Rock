@@ -19,21 +19,56 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks
 {
+    /// <summary>
+    /// Class DetailBlockBox.
+    /// Implements the <see cref="Rock.ViewModels.Blocks.IValidPropertiesBox" />
+    /// </summary>
+    /// <typeparam name="TEntityBag">The type of the t entity bag.</typeparam>
+    /// <typeparam name="TOptions">The type of the t options.</typeparam>
+    /// <seealso cref="Rock.ViewModels.Blocks.IValidPropertiesBox" />
     public class DetailBlockBox<TEntityBag, TOptions> : IValidPropertiesBox
         where TOptions : new()
     {
+        /// <summary>
+        /// Gets or sets the entity.
+        /// </summary>
+        /// <value>The entity.</value>
         public TEntityBag Entity { get; set; }
 
+        /// <summary>
+        /// Gets or sets the options.
+        /// </summary>
+        /// <value>The options.</value>
         public TOptions Options { get; set; } = new TOptions();
 
+        /// <summary>
+        /// Gets or sets the error message.
+        /// </summary>
+        /// <value>The error message.</value>
         public string ErrorMessage { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is editable.
+        /// </summary>
+        /// <value><c>true</c> if this instance is editable; otherwise, <c>false</c>.</value>
         public bool IsEditable { get; set; }
 
+        /// <summary>
+        /// Gets or sets the navigation urls.
+        /// </summary>
+        /// <value>The navigation urls.</value>
         public Dictionary<string, string> NavigationUrls { get; set; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Gets or sets the valid properties.
+        /// </summary>
+        /// <value>The valid properties.</value>
         public List<string> ValidProperties { get; set; }
 
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        /// <value>The security grant token.</value>
         public string SecurityGrantToken { get; set; }
     }
 }

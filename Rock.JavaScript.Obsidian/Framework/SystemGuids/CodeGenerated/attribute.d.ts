@@ -309,7 +309,7 @@ export const enum Attribute {
     PersonGivingPreferredCurrency = "77A5F7DE-9096-45C8-9051-9D8EE50E3C2F",
     /** Preferred Source - Defined Type */
     PersonGivingPreferredSource = "0567B279-1F4D-4573-9AA7-927A7278443E",
-    /** Frequency Label. See . */
+    /** Frequency Label. See Rock.Financial.FinancialGivingAnalyticsFrequencyLabel. */
     PersonGivingFrequencyLabel = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5",
     /** Percent of Gifts Scheduled - Integer */
     PersonGivingPercentScheduled = "98373264-0E65-4C79-B75B-4F8477AA647E",

@@ -34,98 +34,102 @@ namespace Rock.ViewModels.Entities
     public partial class PersonDuplicateBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Capacity.
+        /// Gets or sets the capacity.
+        /// The max possible score based on what items they have values for.
         /// </summary>
         /// <value>
-        /// The Capacity.
+        /// The capacity.
         /// </value>
         public int? Capacity { get; set; }
 
         /// <summary>
-        /// Gets or sets the DuplicatePersonAliasId.
+        /// Gets or sets the duplicate person alias identifier.
         /// </summary>
         /// <value>
-        /// The DuplicatePersonAliasId.
+        /// The duplicate person alias identifier.
         /// </value>
         public int DuplicatePersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IgnoreUntilScoreChanges.
+        /// Gets or sets a value indicating whether [ignore until score changes].
+        /// Setting this to true will hide the personduplicate record until the score changes
         /// </summary>
         /// <value>
-        /// The IgnoreUntilScoreChanges.
+        /// true if [ignore until score changes]; otherwise, false.
         /// </value>
         public bool IgnoreUntilScoreChanges { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsConfirmedAsNotDuplicate.
+        /// Gets or sets a value indicating whether this instance is confirmed as not duplicate.
         /// </summary>
         /// <value>
-        /// The IsConfirmedAsNotDuplicate.
+        /// true if this instance is confirmed as not duplicate; otherwise, false.
         /// </value>
         public bool IsConfirmedAsNotDuplicate { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Score.
+        /// Gets or sets the score.
+        /// Calculated in the [spCrm_PersonDuplicateFinder] stored procedure
         /// </summary>
         /// <value>
-        /// The Score.
+        /// The score.
         /// </value>
         public int? Score { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScoreDetail.
+        /// Gets or sets the score detail.
         /// </summary>
         /// <value>
-        /// The ScoreDetail.
+        /// The score detail.
         /// </value>
         public string ScoreDetail { get; set; }
 
         /// <summary>
-        /// Gets or sets the TotalCapacity.
+        /// Gets or sets the total capacity.
+        /// The max possible score if they had values for all matchable items
         /// </summary>
         /// <value>
-        /// The TotalCapacity.
+        /// The total capacity.
         /// </value>
         public int? TotalCapacity { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -34,170 +34,181 @@ namespace Rock.ViewModels.Entities
     public partial class ServiceJobBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Assembly.
+        /// Gets or sets the Assembly name of the .dll file that contains the job class.
+        /// Set this to null to have Rock figure out the Assembly automatically.
         /// </summary>
         /// <value>
-        /// The Assembly.
+        /// A System.String that contains the Assembly name of the .dll file that contains the job class.
         /// </value>
         public string Assembly { get; set; }
 
         /// <summary>
-        /// Gets or sets the Class.
+        /// Gets or sets the fully qualified class name with Namespace of the Job class. This property is required.
         /// </summary>
         /// <value>
-        /// The Class.
+        /// A System.String containing the fully qualified class name with Namespace of the Job class.
         /// </value>
         public string Class { get; set; }
 
         /// <summary>
-        /// Gets or sets the CronExpression.
+        /// Gets or sets the Cron Expression that is used to schedule the Job. This property is required.
         /// </summary>
         /// <value>
-        /// The CronExpression.
+        /// A System.String that contains the Cron expression that is used to determine the schedule for the job.
         /// </value>
         public string CronExpression { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description of the Job.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the Job.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableHistory.
+        /// Gets or sets a value indicating whether jobs should be logged in ServiceJobHistory
         /// </summary>
         /// <value>
-        /// The EnableHistory.
+        ///   true if [enable history]; otherwise, false.
         /// </value>
         public bool EnableHistory { get; set; }
 
         /// <summary>
-        /// Gets or sets the HistoryCount.
+        /// Gets or sets the history count per job.
         /// </summary>
         /// <value>
-        /// The HistoryCount.
+        /// The history count per job.
         /// </value>
         public int HistoryCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if the Job is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean value that is true if the Job is active; otherwise false.
         /// </value>
         public bool? IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Job is part of the Rock core system/framework
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if the Job is part of the Rock core system/framework;
+        /// otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRunDateTime.
+        /// Gets or sets the date and time that the job last ran.
         /// </summary>
         /// <value>
-        /// The LastRunDateTime.
+        /// A System.DateTime that represents the last time that the job ran.
         /// </value>
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRunDurationSeconds.
+        /// Gets or set the amount of time, in seconds, that it took the job to run the last time that it ran.
         /// </summary>
         /// <value>
-        /// The LastRunDurationSeconds.
+        /// A System.Int32 representing the amount of time, in seconds, that it took the job to run the last time that it ran.
         /// </value>
         public int? LastRunDurationSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRunSchedulerName.
+        /// Gets or sets the name of the scheduler that the job ran under the last time that it ran. In most cases this 
+        /// is used to determine if the was run by the IIS or Windows service.
         /// </summary>
         /// <value>
-        /// The LastRunSchedulerName.
+        /// A System.String representing the name of the Scheduler that the job ran under the last time that it was run.
         /// </value>
         public string LastRunSchedulerName { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastStatus.
+        /// Gets or sets the completion status that was returned by the Job the last time that it ran.
         /// </summary>
         /// <value>
-        /// The LastStatus.
+        /// A System.String containing the status that was returned by the Job the last time that it ran.
         /// </value>
         public string LastStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastStatusMessage.
+        /// Gets or sets the status message that was returned the last time that the job was run. In most cases this will be used
+        /// in the event of an exception to return the exception message.
         /// </summary>
         /// <value>
-        /// The LastStatusMessage.
+        /// A System.String representing the Status Message that returned the last time that the job ran.
         /// </value>
         public string LastStatusMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastSuccessfulRunDateTime.
+        /// Gets or sets the date and time that the Job last completed successfully.
         /// </summary>
         /// <value>
-        /// The LastSuccessfulRunDateTime.
+        /// A System.DateTime representing the date and time of the last time that the Job completed successfully
         /// </value>
         public DateTime? LastSuccessfulRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the friendly Name of the Job. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String containing the friendly Name of the Job.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the NotificationEmails.
+        /// Gets or sets a comma delimited list of email address that should receive notification emails for this job. Notification
+        /// emails are sent to these email addresses based on the completion status of the Job and the Rock.Model.ServiceJob.NotificationStatus
+        /// property of this job.
         /// </summary>
         /// <value>
-        /// The NotificationEmails.
+        /// A System.String representing a list of email addresses that should receive notifications for this job.
         /// </value>
         public string NotificationEmails { get; set; }
 
         /// <summary>
-        /// Gets or sets the NotificationStatus.
+        /// Gets or sets the NotificationStatus for this job, this property determines when notification emails should be sent to the Rock.Model.ServiceJob.NotificationEmails
+        /// that are associated with this Job
         /// </summary>
         /// <value>
-        /// The NotificationStatus.
+        /// An Rock.Model.JobNotificationStatus that indicates when notification emails should be sent for this job. 
+        /// When this value is JobNotificationStatus.All a notification email will be sent when the Job completes with any completion status.
+        /// When this value is JobNotificationStatus.Success a notification email will be sent when the Job has completed successfully.
+        /// When this value is JobNotificationStatus.Error a notification email will be sent when the Job completes with an error status.
+        /// When this value is JobNotificationStatus.None notifications will not be sent when the Job completes with any status.
         /// </value>
         public int NotificationStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

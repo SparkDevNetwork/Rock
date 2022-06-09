@@ -25,82 +25,92 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** SignatureDocument View Model */
 export type SignatureDocumentBag = {
-    /** Gets or sets the AppliesToPersonAliasId. */
+    /** Gets or sets the applies to person alias identifier. */
     appliesToPersonAliasId?: number | null;
 
-    /** Gets or sets the AssignedToPersonAliasId. */
+    /** Gets or sets the assigned to person alias identifier. */
     assignedToPersonAliasId?: number | null;
 
-    /** Gets or sets the BinaryFileId. */
+    /** Gets or sets the binary file identifier. */
     binaryFileId?: number | null;
 
-    /** Gets or sets the CompletionEmailSentDateTime. */
+    /** The date and time the document completion email was sent. */
     completionEmailSentDateTime?: string | null;
 
-    /** Gets or sets the DocumentKey. */
+    /** Gets or sets the document key. */
     documentKey?: string | null;
 
-    /** Gets or sets the EntityId. */
+    /** The ID of the entity to which the document is related. */
     entityId?: number | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** The EntityType that this document is related to (example Rock.Model.Registration) */
     entityTypeId?: number | null;
 
-    /** Gets or sets the InviteCount. */
+    /** Gets or sets the invite count. */
     inviteCount: number;
 
-    /** Gets or sets the LastInviteDate. */
+    /** Gets or sets the request date. */
     lastInviteDate?: string | null;
 
-    /** Gets or sets the LastStatusDate. */
+    /** Gets or sets the last status date. */
     lastStatusDate?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the SignatureDataEncrypted. */
+    /**
+     * The encrypted data that was collected during a drawn signature type.
+     * Use Rock.Model.SignatureDocument.SignatureData to set this from the unencrypted drawn signature.
+     */
     signatureDataEncrypted?: string | null;
 
-    /** Gets or sets the SignatureDocumentTemplateId. */
+    /** Gets or sets the SignatureDocumentTemplateId of the Rock.Model.SignatureDocumentTemplate that this SignatureDocument instance is executing. */
     signatureDocumentTemplateId: number;
 
-    /** Gets or sets the SignatureVerificationHash. */
+    /**
+     * The computed SHA1 hash for the SignedDocumentText, SignedClientIP address, SignedClientUserAgent, SignedDateTime, SignedByPersonAliasId, SignatureData, and SignedName.
+     * This hash can be used to prove the authenticity of the unaltered signature document.
+     * This is only calculated once during the pre-save event when the SignedDateTime was originally null/empty but now has a value.
+     */
     signatureVerificationHash?: string | null;
 
-    /** Gets or sets the SignedByEmail. */
+    /** The email address that was used to send the completion receipt. */
     signedByEmail?: string | null;
 
-    /** Gets or sets the SignedByPersonAliasId. */
+    /** Gets or sets the signed by person alias identifier. */
     signedByPersonAliasId?: number | null;
 
-    /** Gets or sets the SignedClientIp. */
+    /** The observed IP address of the client system of the individual who signed the document. */
     signedClientIp?: string | null;
 
-    /** Gets or sets the SignedClientUserAgent. */
+    /** The observed 'user agent' of the client system of the individual who signed the document. */
     signedClientUserAgent?: string | null;
 
-    /** Gets or sets the SignedDateTime. */
+    /** The date and time the document was signed. */
     signedDateTime?: string | null;
 
-    /** Gets or sets the SignedDocumentText. */
+    /**
+     * The resulting text/document using the Lava template from the Rock.Model.SignatureDocumentTemplate at the time the document was signed.
+     * Does not include the signature data. It would be what they saw just prior to signing.
+     */
     signedDocumentText?: string | null;
 
-    /** Gets or sets the SignedName. */
+    /** The name of the individual who signed the document. */
     signedName?: string | null;
 
-    /** Gets or sets the Status. */
+    /** Gets or sets the status. */
     status: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

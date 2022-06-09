@@ -21,6 +21,7 @@ import RockFormField from "./rockFormField";
 import { deepEqual } from "@Obsidian/Utility/util";
 import { standardRockFormFieldProps, updateRefValue, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
 
 /** The type definition for a select option, since the ones from the library are wrong. */
 type SelectOption = {
@@ -30,27 +31,6 @@ type SelectOption = {
 
     options?: SelectOption[];
 };
-
-/**
- * The default compare value function. This checks if both values are GUIDs
- * and if so does a case-insensitive compare, otherwise it does a case-sensitive
- * compare of the two values.
- * 
- * @param value The value selected in the UI.
- * @param itemValue The item value to be compared against.
- *
- * @returns true if the two values are considered equal; otherwise false.
- */
-function defaultCompareValue(value: string, itemValue: string): boolean {
-    const guidValue = toGuidOrNull(value);
-    const guidItemValue = toGuidOrNull(itemValue);
-
-    if (guidValue !== null && guidItemValue !== null) {
-        return areEqual(guidValue, guidItemValue);
-    }
-
-    return value === itemValue;
-}
 
 export default defineComponent({
     name: "DropDownList",
@@ -117,7 +97,7 @@ export default defineComponent({
 
         compareValue: {
             type: Function as PropType<((value: string, itemValue: string) => boolean)>,
-            default: defaultCompareValue
+            default: defaultControlCompareValue
         },
 
         ...standardRockFormFieldProps

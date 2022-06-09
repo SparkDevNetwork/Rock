@@ -244,13 +244,14 @@ namespace Rock.Model
                     var groupType = GroupTypeCache.Get( group.GroupTypeId );
                     if ( groupType != null && groupType.IsIndexEnabled )
                     {
+                        int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
                         var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
                         {
-                            EntityTypeId = groupType.Id,
+                            EntityTypeId = groupEntityTypeId,
                             EntityId = group.Id
                         };
 
-                        processEntityTypeIndexMsg.Send();
+                        processEntityTypeIndexMsg.SendWhen( this.RockContext.WrappedTransactionCompletedTask );
                     }
                 }
 

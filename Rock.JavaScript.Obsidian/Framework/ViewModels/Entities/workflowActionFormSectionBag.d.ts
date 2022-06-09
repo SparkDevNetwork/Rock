@@ -25,37 +25,37 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowActionFormSection View Model */
 export type WorkflowActionFormSectionBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the description to display under the Title. */
     description?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the SectionTypeValueId. */
+    /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the SectionType for this Workflow Action Form Section. */
     sectionTypeValueId?: number | null;
 
-    /** Gets or sets the SectionVisibilityRulesJSON. */
+    /** Gets or sets the section visibility rules json. */
     sectionVisibilityRulesJSON?: string | null;
 
-    /** Gets or sets the ShowHeadingSeparator. */
+    /** Gets or sets a value indicating whether to show heading separator after the Title/Description */
     showHeadingSeparator: boolean;
 
-    /** Gets or sets the Title. */
+    /** Gets or sets the title to display in the Section */
     title?: string | null;
 
-    /** Gets or sets the WorkflowActionFormId. */
+    /** Gets or sets the header. */
     workflowActionFormId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

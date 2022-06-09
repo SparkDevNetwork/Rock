@@ -18,9 +18,12 @@ import { standardAsyncPickerProps, updateRefValue, useStandardRockFormFieldProps
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
 import { useSuspense } from "@Obsidian/Utility/suspense";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ControlLazyMode, ControlLazyModeType } from "@Obsidian/Types/Controls/controlLazyMode";
+import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
+import CheckBoxList from "./checkBoxList";
 import DropDownList from "./dropDownList";
+import RadioButtonList from "./radioButtonList";
+import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
 
 /**
  * Convert a model value to the internal value. Basically, this extracts the
@@ -48,7 +51,9 @@ export default defineComponent({
     name: "BaseAsyncPicker",
 
     components: {
-        DropDownList
+        CheckBoxList,
+        DropDownList,
+        RadioButtonList
     },
 
     props: {
@@ -80,7 +85,7 @@ export default defineComponent({
         const internalValue = ref(modelValueToInternalValue(props.modelValue, props.multiple));
         const loadedItems = ref<ListItemBag[] | null>(null);
         const isLoading = ref(false);
-        const hasPickerBeenOpened = ref(false);
+        const hasLoadedItems = ref(false);
         const standardProps = useStandardRockFormFieldProps(props);
 
         // #endregion
@@ -129,6 +134,22 @@ export default defineComponent({
             return loadedItems.value ?? initialItems.value;
         });
 
+        const isDropDownListStyle = computed((): boolean => {
+            return props.displayStyle === PickerDisplayStyle.Condensed || props.displayStyle === PickerDisplayStyle.Auto;
+        });
+
+        const isCheckBoxListStyle = computed((): boolean => {
+            return props.displayStyle === PickerDisplayStyle.List && props.multiple;
+        });
+
+        const isRadioButtonListStyle = computed((): boolean => {
+            return props.displayStyle === PickerDisplayStyle.List && !props.multiple;
+        });
+
+        const isHorizontal = computed((): boolean => {
+            return props.columnCount != 1;
+        });
+
         // #endregion
 
         // #region Functions
@@ -161,6 +182,7 @@ export default defineComponent({
             }
 
             loadedItems.value = items;
+            hasLoadedItems.value = true;
         };
 
         // #endregion
@@ -172,7 +194,6 @@ export default defineComponent({
          * our items.
          */
         const onOpen = (): void => {
-            hasPickerBeenOpened.value = true;
             // If we haven't loaded our dynamic options yet then start loading.
             if (loadedItems.value === null && !isLoading.value) {
                 loadItems(true);
@@ -183,8 +204,18 @@ export default defineComponent({
 
         watch(() => props.items, () => {
             // Only perform eager loading if we are not on-demand loading or
-            // if we have already been opened once.
-            loadItems(props.lazyMode !== ControlLazyMode.OnDemand || hasPickerBeenOpened.value);
+            // if we have already been loaded items previously.
+            loadItems(props.lazyMode !== ControlLazyMode.OnDemand || hasLoadedItems.value);
+        });
+
+        watch(() => props.displayStyle, () => {
+            if (hasLoadedItems.value) {
+                return;
+            }
+
+            if (isCheckBoxListStyle.value || isRadioButtonListStyle.value) {
+                loadItems(true);
+            }
         });
 
         watch([() => props.modelValue, () => props.multiple], () => {
@@ -206,12 +237,13 @@ export default defineComponent({
             }
         });
 
-        if (props.lazyMode === ControlLazyMode.Lazy) {
-            // Eager loading in this case means go ahead and load everything,
-            // but we aren't going to wait around for it.
+        if (Array.isArray(props.items)) {
+            // If we have an array of items, then just load it because there
+            // won't be any delay.
             loadItems(true);
         }
-        else if (props.lazyMode === ControlLazyMode.Eager) {
+        else if (props.lazyMode === ControlLazyMode.Eager || !isDropDownListStyle.value) {
+            // A radio list or checkbox list both require eager loading.
             const suspense = useSuspense();
 
             if (suspense) {
@@ -221,26 +253,52 @@ export default defineComponent({
                 loadItems(true);
             }
         }
+        else if (props.lazyMode === ControlLazyMode.Lazy) {
+            // Eager loading in this case means go ahead and load everything,
+            // but we aren't going to wait around for it.
+            loadItems(true);
+        }
 
         return {
             actualItems,
             internalValue,
+            isCheckBoxListStyle,
+            isDropDownListStyle,
+            isHorizontal,
             isLoading,
+            isRadioButtonListStyle,
             onOpen,
             standardProps
         };
     },
 
     template: `
-<DropDownList v-model="internalValue"
+<DropDownList v-if="isDropDownListStyle"
+    v-model="internalValue"
     v-bind="standardProps"
-    :enhanceForLongLists="enhanceForLongLists"
     :grouped="grouped"
     :loading="isLoading"
     :items="actualItems"
     :multiple="multiple"
     :showBlankItem="showBlankItem"
+    :enhanceForLongLists="enhanceForLongLists"
+    :lazyMode="lazyMode"
+    displayStyle="auto"
     @open="onOpen" />
+
+<CheckBoxList v-if="isCheckBoxListStyle"
+    v-model="internalValue"
+    v-bind="standardProps"
+    :horizontal="isHorizontal"
+    :items="actualItems"
+    :repeatColumns="columnCount" />
+
+<RadioButtonList v-if="isRadioButtonListStyle"
+    v-model="internalValue"
+    v-bind="standardProps"
+    :horizontal="isHorizontal"
+    :items="actualItems"
+    :repeatColumns="columnCount"
+    :showBlankItem="showBlankItem" />
 `
 });
-

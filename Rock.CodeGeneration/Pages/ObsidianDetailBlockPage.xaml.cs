@@ -254,7 +254,7 @@ namespace Rock.CodeGeneration.Pages
         /// <param name="exportedFiles">The files that were exported.</param>
         /// <param name="skippedFiles">The files that were intentionally not exported.</param>
         /// <param name="failedFiles">The files that failed to be exported.</param>
-        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> exportedFiles, IReadOnlyList<GeneratedFile> skippedFiles, IReadOnlyList<GeneratedFile> failedFiles )
+        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> files )
         {
             var solutionPath = SupportTools.GetSolutionPath();
             var solutionFileName = Path.Combine( solutionPath, "Rock.sln" );
@@ -266,9 +266,11 @@ namespace Rock.CodeGeneration.Pages
 
             using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
             {
-                // For each file that was actually exported, make sure it
+                var createdFiles = files.Where( f => f.SaveState == GeneratedFileSaveState.Created ).ToList();
+
+                // For each file that was created, make sure it
                 // has been added to the project file automatically.
-                foreach ( var file in exportedFiles )
+                foreach ( var file in createdFiles )
                 {
                     var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
 

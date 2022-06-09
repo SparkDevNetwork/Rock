@@ -34,210 +34,217 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialScheduledTransactionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AuthorizedPersonAliasId.
+        /// Gets or sets the authorized person alias identifier.
         /// </summary>
         /// <value>
-        /// The AuthorizedPersonAliasId.
+        /// The authorized person alias identifier.
         /// </value>
         public int AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CardReminderDate.
+        /// Gets or sets the date to remind user to update scheduled transaction.
         /// </summary>
         /// <value>
-        /// The CardReminderDate.
+        /// A System.DateTime representing the date to remind the user to update the scheduled transaction.
         /// </value>
         public DateTime? CardReminderDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the EndDate.
+        /// Gets or sets the end date for this transaction schedule. Transactions will cease to occur on or before this date.  This property is nullable for ongoing 
+        /// schedules or for schedules that will end after a specified number of payments/transaction occur (in the Rock.Model.FinancialScheduledTransaction.NumberOfPayments property).
         /// </summary>
         /// <value>
-        /// The EndDate.
+        /// A System.DateTime representing the end date for this transaction schedule. If there isn't an end date for this transaction schedule
+        /// this value will be null.
         /// </value>
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the FinancialGatewayId.
+        /// Gets or sets the gateway identifier.
         /// </summary>
         /// <value>
-        /// The FinancialGatewayId.
+        /// The gateway identifier.
         /// </value>
         public int? FinancialGatewayId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FinancialPaymentDetailId.
+        /// Gets or sets the financial payment detail identifier.
         /// </summary>
         /// <value>
-        /// The FinancialPaymentDetailId.
+        /// The financial payment detail identifier.
         /// </value>
         public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ForeignCurrencyCodeValueId.
+        /// Gets or sets the foreign currency code value identifier.
         /// </summary>
         /// <value>
-        /// The ForeignCurrencyCodeValueId.
+        /// The foreign currency code value identifier.
         /// </value>
         public int? ForeignCurrencyCodeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GatewayScheduleId.
+        /// Gets or sets the payment gateway's payment schedule key/identifier.  This is the value that uniquely identifies the payment schedule on 
+        /// with the payment gateway.
         /// </summary>
         /// <value>
-        /// The GatewayScheduleId.
+        /// A System.String representing the financial gateway's unique identifier for the payment schedule.
         /// </value>
         public string GatewayScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the InactivateDateTime.
+        /// Gets or sets the inactivate date time.
         /// </summary>
         /// <value>
-        /// The InactivateDateTime.
+        /// The inactivate date time.
         /// </value>
         public DateTime? InactivateDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this scheduled transaction is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean that is true if this scheduled transaction is active; otherwise false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRemindedDate.
+        /// Gets or sets the date that user was last reminded to update scheduled transaction.
         /// </summary>
         /// <value>
-        /// The LastRemindedDate.
+        /// A System.DateTime representing the date that the user was last reminded to update the scheduled transaction.
         /// </value>
         public DateTime? LastRemindedDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastStatusUpdateDateTime.
+        /// Gets or sets the date and time of the last status update. In other words,
+        /// the date and time the gateway was last queried for the status of the scheduled profile/transaction.
         /// </summary>
         /// <value>
-        /// The LastStatusUpdateDateTime.
+        /// A System.DateTime representing the date and time of the last status update.
         /// </value>
         public DateTime? LastStatusUpdateDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the NextPaymentDate.
+        /// Gets or sets the date of the next payment in this schedule.
         /// </summary>
         /// <value>
-        /// The NextPaymentDate.
+        /// A System.DateTime representing the date of the next payment in this schedule.
         /// </value>
         public DateTime? NextPaymentDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the NumberOfPayments.
+        /// Gets or sets the maximum number of times that this payment should repeat in this schedule.  If there is not a set number of payments, this value will be null. 
+        /// This property is overridden by the schedule's Rock.Model.FinancialScheduledTransaction.EndDate.
         /// </summary>
         /// <value>
-        /// The NumberOfPayments.
+        /// A System.Int32 representing the maximum number of times that this payment should repeat.
         /// </value>
         public int? NumberOfPayments { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreviousGatewayScheduleIdsJson.
+        /// The JSON for Rock.Model.FinancialScheduledTransaction.PreviousGatewayScheduleIds. If this is null,
+        /// there are no PreviousGatewayScheduleIds.
         /// </summary>
-        /// <value>
-        /// The PreviousGatewayScheduleIdsJson.
-        /// </value>
         public string PreviousGatewayScheduleIdsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceTypeValueId.
+        /// Gets or sets the source type value identifier.
         /// </summary>
         /// <value>
-        /// The SourceTypeValueId.
+        /// The source type value identifier.
         /// </value>
         public int? SourceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDate.
+        /// Gets or sets the start date for this schedule. The first transaction will occur on or after this date.
         /// </summary>
         /// <value>
-        /// The StartDate.
+        /// A System.DateTime representing the start date for this schedule.
         /// </value>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// The status of the scheduled transactions provided by the payment gateway (i.e. Active, Cancelled, etc).
+        /// If the gateway doesn't have a status field, this will be null;
+        /// The payment gateway component maps this based on the Rock.Model.FinancialScheduledTransaction.StatusMessage.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// The status.
         /// </value>
         public int? Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the StatusMessage.
+        /// Gets or sets the raw scheduled transaction status message returned from the Gateway
+        /// If the gateway doesn't have a status field, this will be null;
         /// </summary>
         /// <value>
-        /// The StatusMessage.
+        /// The status message.
         /// </value>
         public string StatusMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the Summary.
+        /// Gets or sets a summary of the scheduled transaction. This would store any comments made.
         /// </summary>
         /// <value>
-        /// The Summary.
+        /// A System.String representing a summary of the scheduled transaction.
         /// </value>
         public string Summary { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionCode.
+        /// Gets or sets the transaction code used for this scheduled transaction.
         /// </summary>
         /// <value>
-        /// The TransactionCode.
+        /// A System.String representing the transaction code for this scheduled transaction.
         /// </value>
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionFrequencyValueId.
+        /// Gets or sets the DefinedValueId of the transaction frequency Rock.Model.DefinedValue that represents the frequency that this 
+        /// transaction will occur.
         /// </summary>
         /// <value>
-        /// The TransactionFrequencyValueId.
+        /// A System.Int32 representing the DefinedValueId of this transaction's frequency Rock.Model.DefinedValue.
         /// </value>
         public int TransactionFrequencyValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionTypeValueId.
+        /// Gets or sets the transaction type value identifier.
         /// </summary>
         /// <value>
-        /// The TransactionTypeValueId.
+        /// The transaction type value identifier.
         /// </value>
         public int? TransactionTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

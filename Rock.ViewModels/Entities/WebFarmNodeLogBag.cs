@@ -34,82 +34,82 @@ namespace Rock.ViewModels.Entities
     public partial class WebFarmNodeLogBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the EventDateTime.
+        /// Gets or sets the event date time.
         /// </summary>
         /// <value>
-        /// The EventDateTime.
+        /// The event date time.
         /// </value>
         public DateTime EventDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the EventType.
+        /// Gets or sets the type of the event.
         /// </summary>
         /// <value>
-        /// The EventType.
+        /// The type of the event.
         /// </value>
         public string EventType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Message.
+        /// Gets or sets the message.
         /// </summary>
         /// <value>
-        /// The Message.
+        /// The message.
         /// </value>
         public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the Severity.
+        /// Gets or sets the severity.
         /// </summary>
         /// <value>
-        /// The Severity.
+        /// The severity.
         /// </value>
         public int Severity { get; set; }
 
         /// <summary>
-        /// Gets or sets the WebFarmNodeId.
+        /// Gets or sets the web farm node identifier.
         /// </summary>
         /// <value>
-        /// The WebFarmNodeId.
+        /// The web farm node identifier.
         /// </value>
         public int WebFarmNodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the WriterWebFarmNodeId.
+        /// Gets or sets the writer web farm node identifier.
         /// </summary>
         /// <value>
-        /// The WriterWebFarmNodeId.
+        /// The web farm node identifier.
         /// </value>
         public int WriterWebFarmNodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

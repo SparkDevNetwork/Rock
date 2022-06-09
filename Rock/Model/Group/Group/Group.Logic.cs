@@ -138,6 +138,10 @@ namespace Rock.Model
         public void IndexDocument( int id )
         {
             var groupEntity = new GroupService( new RockContext() ).Get( id );
+            if ( groupEntity == null )
+            {
+                return;
+            }
 
             // check that this group type is set to be indexed.
             if ( groupEntity.GroupType.IsIndexEnabled && groupEntity.IsActive )

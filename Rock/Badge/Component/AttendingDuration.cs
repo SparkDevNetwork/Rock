@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,11 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Humanizer;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -49,19 +51,15 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
 
-            DateTime? firstVisit = Person.GetAttributeValue( "FirstVisit" ).AsDateTime();
+            DateTime? firstVisit = person.GetAttributeValue( "FirstVisit" ).AsDateTime();
             if (firstVisit.HasValue)
             {
                 TimeSpan attendanceDuration = RockDateTime.Now - firstVisit.Value;
@@ -99,11 +97,11 @@ namespace Rock.Badge.Component
 
                 if (spanValue == "New")
                 {
-                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} is new this week.'>", Person.NickName));
+                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} is new this week.'>", person.NickName));
                 }
                 else
                 {
-                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} first visited {1} ago.'>", Person.NickName, spanUnit.ToQuantity(spanValue.AsInteger())));
+                    writer.Write(String.Format( "<div class='badge badge-attendingduration' data-toggle='tooltip' data-original-title='{0} first visited {1} ago.'>", person.NickName, spanUnit.ToQuantity(spanValue.AsInteger())));
                 }
 
                 writer.Write(String.Format("<div class='duration-metric {0}'>", cssClass));
@@ -112,10 +110,6 @@ namespace Rock.Badge.Component
 
                 writer.Write("</div>");
             }
-            
-
         }
-
-
     }
 }

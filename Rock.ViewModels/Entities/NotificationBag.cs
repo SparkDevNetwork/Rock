@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class NotificationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Classification.
+        /// Gets or sets the classification.
         /// </summary>
         /// <value>
-        /// The Classification.
+        /// The classification.
         /// </value>
         public int Classification { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// The icon CSS class.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the Message.
+        /// Gets or sets the message.
         /// </summary>
         /// <value>
-        /// The Message.
+        /// The message.
         /// </value>
         public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the SentDateTime.
+        /// Gets or sets the sent date time.
         /// </summary>
         /// <value>
-        /// The SentDateTime.
+        /// The sent date time.
         /// </value>
         public DateTime SentDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the title of the notification. This property is required.
         /// </summary>
         /// <value>
-        /// The Title.
+        /// A System.String that represents the notification title.
         /// </value>
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

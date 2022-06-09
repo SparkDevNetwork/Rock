@@ -34,186 +34,191 @@ namespace Rock.ViewModels.Entities
     public partial class MetricBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AdminPersonAliasId.
+        /// Gets or sets the admin person alias identifier.
         /// </summary>
         /// <value>
-        /// The AdminPersonAliasId.
+        /// The admin person alias identifier.
         /// </value>
         public int? AdminPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AutoPartitionOnPrimaryCampus.
+        /// If set to true this feature will auto partition the individuals in the data view based on their primary campus.
         /// </summary>
         /// <value>
-        /// The AutoPartitionOnPrimaryCampus.
+        ///   true if [automatic partition on primary campus]; otherwise, false.
         /// </value>
         public bool AutoPartitionOnPrimaryCampus { get; set; }
 
         /// <summary>
-        /// Gets or sets the DataViewId.
+        /// Gets or sets the data view identifier.
         /// </summary>
         /// <value>
-        /// The DataViewId.
+        /// The data view identifier.
         /// </value>
         public int? DataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description of the Metric.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the Metric.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableAnalytics.
+        /// Gets or sets a value indicating whether [enable analytics].
+        /// If this is enabled, a SQL View named 'AnalyticsFactMetric{{Metric.Name}}' will be made available that can be used by Analytic tools, such as Power BI
         /// </summary>
         /// <value>
-        /// The EnableAnalytics.
+        ///   true if [enable analytics]; otherwise, false.
         /// </value>
         public bool EnableAnalytics { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// The icon CSS class.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsCumulative.
+        /// Gets or sets a value indicating whether [is cumulative].
         /// </summary>
         /// <value>
-        /// The IsCumulative.
+        ///   true if [is cumulative]; otherwise, false.
         /// </value>
         public bool IsCumulative { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Metric is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if the Metric is part of the core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRunDateTime.
+        /// For SQL or DataView based Metrics, this is the DateTime that the MetricValues where scheduled to be updated according to Schedule
         /// </summary>
         /// <value>
-        /// The LastRunDateTime.
+        /// The last run date time.
         /// </value>
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetricChampionPersonAliasId.
+        /// Gets or sets the metric champion person alias identifier.
         /// </summary>
         /// <value>
-        /// The MetricChampionPersonAliasId.
+        /// The metric champion person alias identifier.
         /// </value>
         public int? MetricChampionPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the NumericDataType.
+        /// Gets or sets the type of the numeric data that the values represent. Although all values
+        /// are stored as a decimal, specifying the type here allows entry screens to use appropriate
+        /// controls/validation when entering values.
         /// </summary>
         /// <value>
-        /// The NumericDataType.
+        /// The type of the numeric data.
         /// </value>
         public int NumericDataType { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleId.
+        /// Gets or sets the schedule identifier.
         /// </summary>
         /// <value>
-        /// The ScheduleId.
+        /// The schedule identifier.
         /// </value>
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceLava.
+        /// Gets or sets the Lava code that returns the data for the Metric.
         /// </summary>
         /// <value>
-        /// The SourceLava.
+        /// A System.String that represents the Lava code that returns the data for the Metric.
         /// </value>
         public string SourceLava { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceSql.
+        /// Gets or sets the SQL query that returns the data for the Metric.
         /// </summary>
         /// <value>
-        /// The SourceSql.
+        /// A System.String that represents the SQL Query that returns the data for the Metric.
         /// </value>
         public string SourceSql { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceValueTypeId.
+        /// Gets or sets the source value type identifier.
         /// </summary>
         /// <value>
-        /// The SourceValueTypeId.
+        /// The source value type identifier.
         /// </value>
         public int? SourceValueTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Subtitle.
+        /// Gets or sets the Subtitle of the Metric.
         /// </summary>
         /// <value>
-        /// The Subtitle.
+        /// A System.String representing the Subtitle of the Metric.
         /// </value>
         public string Subtitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the Title of this Metric.
         /// </summary>
         /// <value>
-        /// The Title.
+        /// A System.String representing the user defined title of this Metric. This property is required.
         /// </value>
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the XAxisLabel.
+        /// Gets or sets the x axis label.
+        /// Note that in Rock, graphs typically actually use the MetricValue.MetricValueDateTime as the graph's X Axis.
+        /// Therefore, in most cases, Metric.XAxisLabel and MetricValue.XAxis are NOT used
         /// </summary>
         /// <value>
-        /// The XAxisLabel.
+        /// The x axis label.
         /// </value>
         public string XAxisLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the YAxisLabel.
+        /// Gets or sets the y axis label.
         /// </summary>
         /// <value>
-        /// The YAxisLabel.
+        /// The y axis label.
         /// </value>
         public string YAxisLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

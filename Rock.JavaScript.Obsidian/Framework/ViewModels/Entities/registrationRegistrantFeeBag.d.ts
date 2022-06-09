@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationRegistrantFee View Model */
 export type RegistrationRegistrantFeeBag = {
-    /** Gets or sets the Cost. */
+    /** Gets or sets the cost. */
     cost?: number;
 
-    /** Gets or sets the Option. */
+    /** Gets or sets the name of the FeeItem that was selected at the time of the registration. See also Rock.Model.RegistrationRegistrantFee.RegistrationTemplateFeeItem. */
     option?: string | null;
 
-    /** Gets or sets the Quantity. */
+    /** Gets or sets the quantity. */
     quantity: number;
 
-    /** Gets or sets the RegistrationRegistrantId. */
+    /** Gets or sets the registration registrant identifier. */
     registrationRegistrantId: number;
 
-    /** Gets or sets the RegistrationTemplateFeeId. */
+    /** Gets or sets the registration template fee identifier. See also Rock.Model.RegistrationRegistrantFee.RegistrationTemplateFeeItemId. */
     registrationTemplateFeeId: number;
 
-    /** Gets or sets the RegistrationTemplateFeeItemId. */
+    /** Gets or sets the registration template fee item identifier. */
     registrationTemplateFeeItemId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -159,7 +159,6 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             return new TemplateDetailViewModel
             {
-                AuditDetails = template.GetAuditDetailViewModel(),
                 Description = template.Description,
                 IsActive = template.IsActive,
                 Name = template.Name,

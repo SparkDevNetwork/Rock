@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupRequirement View Model */
 export type GroupRequirementBag = {
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the Rock.Model.Group identifier. */
     groupId?: number | null;
 
-    /** Gets or sets the GroupRequirementTypeId. */
+    /** Gets or sets the group requirement type identifier. */
     groupRequirementTypeId: number;
 
-    /** Gets or sets the GroupRoleId. */
+    /** The specific GroupRoleId that this requirement is for. NULL means this requirement applies to all roles. */
     groupRoleId?: number | null;
 
-    /** Gets or sets the GroupTypeId. */
+    /** Gets or sets the Rock.Model.GroupType identifier. */
     groupTypeId?: number | null;
 
-    /** Gets or sets the MustMeetRequirementToAddMember. */
+    /** Gets or sets a value indicating whether a member must meet this requirement before adding (only applies to DataView and SQL RequirementCheckType) */
     mustMeetRequirementToAddMember: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

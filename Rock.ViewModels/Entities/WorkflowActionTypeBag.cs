@@ -34,114 +34,114 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowActionTypeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ActivityTypeId.
+        /// Gets or sets the ActivityTypeId of the Rock.Model.WorkflowActivityType that performs this Action Type.
         /// </summary>
         /// <value>
-        /// The ActivityTypeId.
+        /// The activity type id.
         /// </value>
         public int ActivityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CriteriaAttributeGuid.
+        /// Gets or sets the criteria attribute unique identifier.
         /// </summary>
         /// <value>
-        /// The CriteriaAttributeGuid.
+        /// The criteria attribute unique identifier.
         /// </value>
         public Guid? CriteriaAttributeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the CriteriaComparisonType.
+        /// Gets or sets the type of the criteria comparison.
         /// </summary>
         /// <value>
-        /// The CriteriaComparisonType.
+        /// The type of the criteria comparison.
         /// </value>
         public int CriteriaComparisonType { get; set; }
 
         /// <summary>
-        /// Gets or sets the CriteriaValue.
+        /// Gets or sets the criteria value.
         /// </summary>
         /// <value>
-        /// The CriteriaValue.
+        /// The criteria value.
         /// </value>
         public string CriteriaValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType that the action is operating against.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that the action is operating against.
         /// </value>
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActionCompletedOnSuccess.
+        /// Gets or sets a value indicating whether this instance is action completed on success.
         /// </summary>
         /// <value>
-        /// The IsActionCompletedOnSuccess.
+        /// A System.Boolean value that is true if this instance is action completed on success; otherwise, false.
         /// </value>
         public bool IsActionCompletedOnSuccess { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActivityCompletedOnSuccess.
+        /// Gets or sets a value indicating whether this instance is activity completed on success.
         /// </summary>
         /// <value>
-        /// The IsActivityCompletedOnSuccess.
+        /// A System.Boolean that is true if this instance is activity completed on success; otherwise, false.
         /// </value>
         public bool IsActivityCompletedOnSuccess { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the friendly name of the ActionType
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the name of the ActionType.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order of the ActionType in the Rock.Model.WorkflowActivityType
         /// </summary>
         /// <value>
-        /// The Order.
+        /// Order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowFormId.
+        /// Gets or sets the workflow form identifier.
         /// </summary>
         /// <value>
-        /// The WorkflowFormId.
+        /// The workflow form identifier.
         /// </value>
         public int? WorkflowFormId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

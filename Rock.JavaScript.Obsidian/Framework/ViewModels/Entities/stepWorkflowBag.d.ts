@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** StepWorkflow View Model */
 export type StepWorkflowBag = {
-    /** Gets or sets the StepId. */
+    /** Gets or sets the Id of the Rock.Model.Step that triggered the workflow. This property is required. */
     stepId: number;
 
-    /** Gets or sets the StepWorkflowTriggerId. */
+    /** Gets or sets the Id of the Rock.Model.StepWorkflowTrigger by which this Workflow was triggered. This property is required. */
     stepWorkflowTriggerId: number;
 
-    /** Gets or sets the WorkflowId. */
+    /** Gets or sets the Id of the Rock.Model.Workflow that was triggered. This property is required. */
     workflowId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

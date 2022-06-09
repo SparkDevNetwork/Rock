@@ -25,28 +25,28 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Following View Model */
 export type FollowingBag = {
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the entity identifier. */
     entityId: number;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the entity type identifier. */
     entityTypeId: number;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the PersonAliasId of the person that is following the Entity */
     personAliasId: number;
 
-    /** Gets or sets the PurposeKey. */
+    /** Gets or sets the purpose key. */
     purposeKey?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

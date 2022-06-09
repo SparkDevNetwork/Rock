@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Ical.Net;
 using Ical.Net.DataTypes;
-using Ical.Net.Interfaces.DataTypes;
-using Ical.Net.Serialization.iCalendar.Serializers;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -73,12 +73,12 @@ namespace Rock.Tests.UnitTests.Lava
             {
                 Events =
                 {
-                    new Event
+                    new CalendarEvent
                     {
                         DtStart = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 16, 30, 0, _tzId ),
-                        DtEnd = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 17, 30, 0, _tzId ),
+                        DtEnd = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 17, 30, 0 , _tzId ),
                         DtStamp = new CalDateTime( _today.Year, _today.Month, _today.Day, _tzId ),
-                        RecurrenceRules = new List<IRecurrencePattern> { _weeklyRecurrence },
+                        RecurrenceRules = new List<RecurrencePattern> { _weeklyRecurrence },
                         Sequence = 0,
                         Uid = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
                     }
@@ -89,12 +89,12 @@ namespace Rock.Tests.UnitTests.Lava
             {
                 Events =
                 {
-                    new Event
+                    new CalendarEvent
                     {
                         DtStart = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day, 8, 0, 0 ),
                         DtEnd = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day, 10, 0, 0 ),
                         DtStamp = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day ),
-                        RecurrenceRules = new List<IRecurrencePattern> { _monthlyRecurrence },
+                        RecurrenceRules = new List<RecurrencePattern> { _monthlyRecurrence },
                         Sequence = 0,
                         Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
                     }

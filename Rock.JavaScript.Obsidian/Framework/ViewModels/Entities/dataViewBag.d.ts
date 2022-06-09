@@ -25,61 +25,61 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** DataView View Model */
 export type DataViewBag = {
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the CategoryId of the Rock.Model.Category that this DataView belongs to. If there is no Category, this value will be null. */
     categoryId?: number | null;
 
-    /** Gets or sets the DataViewFilterId. */
+    /** Gets or sets the DataViewFilterId of the root/base Rock.Model.DataViewFilter that is used to generate this DataView.  */
     dataViewFilterId?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the user defined description of the DataView */
     description?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType (Rock.Data.IEntity) that this DataView reports on. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the IncludeDeceased. */
+    /** Gets or sets a value indicating whether deceased should be included. */
     includeDeceased: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this DataView is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the LastRunDateTime. */
+    /** Gets or sets the last run date time. */
     lastRunDateTime?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the DataView. */
     name?: string | null;
 
-    /** Gets or sets the PersistedLastRefreshDateTime. */
+    /** Gets or sets the persisted last refresh date time. */
     persistedLastRefreshDateTime?: string | null;
 
-    /** Gets or sets the PersistedLastRunDurationMilliseconds. */
+    /** Gets or sets the persisted last run duration in milliseconds. */
     persistedLastRunDurationMilliseconds?: number | null;
 
-    /** Gets or sets the PersistedScheduleIntervalMinutes. */
+    /** Gets or sets the persisted schedule interval minutes. */
     persistedScheduleIntervalMinutes?: number | null;
 
-    /** Gets or sets the RunCount. */
+    /** Gets or sets the run count. */
     runCount?: number | null;
 
-    /** Gets or sets the RunCountLastRefreshDateTime. */
+    /** Gets or sets the DateTime that the Run Count was last reset to 0. */
     runCountLastRefreshDateTime?: string | null;
 
-    /** Gets or sets the TimeToRunDurationMilliseconds. */
+    /** The amount of time in milliseconds that it took to run the Rock.Model.DataView */
     timeToRunDurationMilliseconds?: number | null;
 
-    /** Gets or sets the TransformEntityTypeId. */
+    /** Gets or sets the EntityTypeId of the Rock.Model.EntityType (MEF Component) that is used for an optional transformation on this DataView. */
     transformEntityTypeId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -34,106 +34,106 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationTemplateFeeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AllowMultiple.
+        /// Gets or sets a value indicating if registrant can select multiple values for this fee.
         /// </summary>
         /// <value>
-        /// The AllowMultiple.
+        ///   true if [allow multiple]; otherwise, false.
         /// </value>
         public bool AllowMultiple { get; set; }
 
         /// <summary>
-        /// Gets or sets the DiscountApplies.
+        /// Discount codes apply to this fee
         /// </summary>
         /// <value>
-        /// The DiscountApplies.
+        /// The discount percentage.
         /// </value>
         public bool DiscountApplies { get; set; }
 
         /// <summary>
-        /// Gets or sets the FeeType.
+        /// Gets or sets the fee type ( single option vs multiple options ).
         /// </summary>
         /// <value>
-        /// The FeeType.
+        /// The code.
         /// </value>
         public int FeeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the HideWhenNoneRemaining.
+        /// Gets or sets a value indicating whether [hide when none remaining].
         /// </summary>
         /// <value>
-        /// The HideWhenNoneRemaining.
+        ///   true if [hide when none remaining]; otherwise, false.
         /// </value>
         public bool HideWhenNoneRemaining { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsRequired.
+        /// Gets or sets a value indicating whether this instance is required.
         /// </summary>
         /// <value>
-        /// The IsRequired.
+        /// true if this instance is required; otherwise, false.
         /// </value>
         public bool IsRequired { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationTemplateId.
+        /// Gets or sets the Rock.Model.RegistrationTemplate identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationTemplateId.
+        /// The registration template identifier.
         /// </value>
         public int RegistrationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

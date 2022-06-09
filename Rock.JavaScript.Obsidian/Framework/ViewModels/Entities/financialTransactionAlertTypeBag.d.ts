@@ -25,85 +25,104 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialTransactionAlertType View Model */
 export type FinancialTransactionAlertTypeBag = {
-    /** Gets or sets the AccountParticipantSystemCommunicationId. */
+    /**
+     * Gets or sets the Rock.Model.SystemCommunication that will be sent to any Account Participants.
+     * Account Participants are stored as Rock.Model.RelatedEntity with Rock.Model.RelatedEntity.PurposeKey
+     * of Rock.Model.RelatedEntityPurposeKey.FinancialAccountGivingAlert.
+     */
     accountParticipantSystemCommunicationId?: number | null;
 
-    /** Gets or sets the AlertSummaryNotificationGroupId. */
+    /** Gets or sets the alert summary notification group identifier. */
     alertSummaryNotificationGroupId?: number | null;
 
-    /** Gets or sets the AlertType. */
+    /** Gets or sets the alert type. */
     alertType: number;
 
-    /** Gets or sets the AmountSensitivityScale. */
+    /**
+     * Gets or sets the amount sensitivity scale.
+     * This determines the point where a transaction amount is considered
+     * significantly larger or smaller than usual.
+     * See notes on Alert Type to
+     * see how this value is used for Gratitude vs Follow-Up alert types.
+     */
     amountSensitivityScale?: number | null;
 
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the campus identifier. */
     campusId?: number | null;
 
-    /** Gets or sets the ConnectionOpportunityId. */
+    /** Gets or sets the connection opportunity identifier. */
     connectionOpportunityId?: number | null;
 
-    /** Gets or sets the ContinueIfMatched. */
+    /** Gets or sets a value indicating whether [continue if matched]. */
     continueIfMatched: boolean;
 
-    /** Gets or sets the DataViewId. */
+    /** Gets or sets the data view identifier. */
     dataViewId?: number | null;
 
-    /** Gets or sets the FinancialAccountId. */
+    /** Gets or sets the financial account identifier. */
     financialAccountId?: number | null;
 
-    /** Gets or sets the FrequencySensitivityScale. */
+    /**
+     * Gets or sets the frequency sensitivity scale.
+     * This determines the point where a transaction is considered
+     * significantly later or earlier than usual.
+     * See notes on Alert Type to
+     * see how this value is used for Gratitude vs Follow-Up alert types.
+     */
     frequencySensitivityScale?: number | null;
 
-    /** Gets or sets the IncludeChildFinancialAccounts. */
+    /** Gets or sets a value indicating whether [include child financial accounts]. */
     includeChildFinancialAccounts: boolean;
 
-    /** Gets or sets the MaximumDaysSinceLastGift. */
+    /** Gets or sets the maximum days since last gift. */
     maximumDaysSinceLastGift?: number | null;
 
-    /** Gets or sets the MaximumGiftAmount. */
+    /** Gets or sets the maximum gift amount. */
     maximumGiftAmount?: number | null;
 
-    /** Gets or sets the MaximumMedianGiftAmount. */
+    /** Gets or sets the maximum median gift amount. */
     maximumMedianGiftAmount?: number | null;
 
-    /** Gets or sets the MinimumGiftAmount. */
+    /** Gets or sets the minimum gift amount. */
     minimumGiftAmount?: number | null;
 
-    /** Gets or sets the MinimumMedianGiftAmount. */
+    /** Gets or sets the minimum median gift amount. */
     minimumMedianGiftAmount?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the RepeatPreventionDuration. */
+    /** Gets or sets the repeat prevention duration (days). */
     repeatPreventionDuration?: number | null;
 
-    /** Gets or sets the RunDays. */
+    /**
+     * Gets or sets the run days for this alert type.
+     * Null means all days of the week are run days.
+     */
     runDays?: number | null;
 
-    /** Gets or sets the SendBusEvent. */
+    /** Gets or sets a value indicating whether [send bus event]. */
     sendBusEvent: boolean;
 
-    /** Gets or sets the SystemCommunicationId. */
+    /** Gets or sets the Rock.Model.SystemCommunication that will be sent to the Donor (Rock.Model.FinancialTransaction.AuthorizedPersonAlias). */
     systemCommunicationId?: number | null;
 
-    /** Gets or sets the WorkflowTypeId. */
+    /** Gets or sets the workflow type identifier. */
     workflowTypeId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

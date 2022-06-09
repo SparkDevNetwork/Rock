@@ -34,98 +34,99 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationTemplatePlacementBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AllowMultiplePlacements.
+        /// Gets or sets a value indicating whether [allow multiple placements].
         /// </summary>
         /// <value>
-        /// The AllowMultiplePlacements.
+        /// true if [allow multiple placements]; otherwise, false.
         /// </value>
         public bool AllowMultiplePlacements { get; set; }
 
         /// <summary>
-        /// Gets or sets the Cost.
+        /// Gets or sets the cost.
         /// </summary>
         /// <value>
-        /// The Cost.
+        /// The cost.
         /// </value>
         public decimal? Cost { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupTypeId.
+        /// Gets or sets the Id of the Rock.Model.GroupType that this registration template placement is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// The GroupTypeId.
+        /// An System.Int32 representing the Id of the Rock.Model.GroupType that this registration template placement is associated with.
         /// </value>
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class that is defined for the RegistrationTemplatePlacement.
+        /// Use Rock.Model.RegistrationTemplatePlacement.GetIconCssClass to get the IconCssClass to use since that GroupType.IconCssClass should be used if this isn't defined
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// The icon CSS class.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsInternal.
+        /// Gets or sets a value indicating whether is limited to administration purposes.
         /// </summary>
         /// <value>
-        /// The IsInternal.
+        /// true if this registration template placement is internal; otherwise, false.
         /// </value>
         public bool IsInternal { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the registration template placement.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the sort and display order of the registration template placement. This is an ascending order, so the lower the value the higher the sort priority.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 representing the sort order of the registration template placement.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationTemplateId.
+        /// Gets or sets the Rock.Model.RegistrationTemplate identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationTemplateId.
+        /// The registration template identifier.
         /// </value>
         public int RegistrationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

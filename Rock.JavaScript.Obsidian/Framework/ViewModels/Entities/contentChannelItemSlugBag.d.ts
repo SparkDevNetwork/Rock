@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ContentChannelItemSlug View Model */
 export type ContentChannelItemSlugBag = {
-    /** Gets or sets the ContentChannelItemId. */
+    /** Gets or sets the Rock.Model.ContentChannelItem identifier. */
     contentChannelItemId: number;
 
-    /** Gets or sets the IsPrimary. */
+    /** Gets or sets the flag indicating whether or not the slug is primary. */
     isPrimary: boolean;
 
-    /** Gets or sets the Slug. */
+    /** Gets or sets the slug. */
     slug?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

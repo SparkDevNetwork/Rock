@@ -25,40 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WorkflowActivity View Model */
 export type WorkflowActivityBag = {
-    /** Gets or sets the ActivatedByActivityId. */
+    /** Gets or sets the activated by activity identifier. */
     activatedByActivityId?: number | null;
 
-    /** Gets or sets the ActivatedDateTime. */
+    /** Gets or sets the date and time that this WorkflowActivity was activated. */
     activatedDateTime?: string | null;
 
-    /** Gets or sets the ActivityTypeId. */
+    /** Gets or sets the ActivityTypeId of the Rock.Model.WorkflowActivityType that is being executed. */
     activityTypeId: number;
 
-    /** Gets or sets the AssignedGroupId. */
+    /** Gets or sets the assigned group identifier. */
     assignedGroupId?: number | null;
 
-    /** Gets or sets the AssignedPersonAliasId. */
+    /** Gets or sets the assigned person alias identifier. */
     assignedPersonAliasId?: number | null;
 
-    /** Gets or sets the CompletedDateTime. */
+    /** Gets or sets the date and time that this WorkflowActivity completed. */
     completedDateTime?: string | null;
 
-    /** Gets or sets the LastProcessedDateTime. */
+    /** Gets or sets the date and time that this WorkflowActivity was last processed. */
     lastProcessedDateTime?: string | null;
 
-    /** Gets or sets the WorkflowId. */
+    /** Gets or sets the WorkflowId of the Rock.Model.Workflow instance that is performing this WorkflowActivity. */
     workflowId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

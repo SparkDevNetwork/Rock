@@ -37,79 +37,81 @@ namespace Rock.ViewModels.Entities
         /// Gets or sets the MetricId.
         /// </summary>
         /// <value>
-        /// The MetricId.
+        /// MetricId.
         /// </value>
         public int MetricId { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetricValueDateTime.
+        /// Gets or sets the metric value date time.
         /// </summary>
         /// <value>
-        /// The MetricValueDateTime.
+        /// The metric value date time.
         /// </value>
         public DateTime? MetricValueDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetricValueType.
+        /// Gets or sets the type of the metric value.
         /// </summary>
         /// <value>
-        /// The MetricValueType.
+        /// The type of the metric value.
         /// </value>
         public int MetricValueType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note.
+        /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// The Note.
+        /// The note.
         /// </value>
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the XValue.
+        /// Gets or sets the X axis value.
+        /// Note that in Rock, graphs typically actually use the MetricValue.MetricValueDateTime as the graph's X Axis.
+        /// Therefore, in most cases, Metric.XAxisLabel and MetricValue.XAxis are NOT used
         /// </summary>
         /// <value>
-        /// The XValue.
+        /// The x value.
         /// </value>
         public string XValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the YValue.
+        /// Gets or sets the Y axis value.
         /// </summary>
         /// <value>
-        /// The YValue.
+        /// The y value.
         /// </value>
         public decimal? YValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

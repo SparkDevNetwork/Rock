@@ -34,242 +34,248 @@ namespace Rock.ViewModels.Entities
     public partial class RegistrationInstanceBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AccountId.
+        /// Gets or sets the account identifier.
         /// </summary>
         /// <value>
-        /// The AccountId.
+        /// The account identifier.
         /// </value>
         public int? AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AdditionalConfirmationDetails.
+        /// Gets or sets the additional confirmation details.
         /// </summary>
         /// <value>
-        /// The AdditionalConfirmationDetails.
+        /// The additional confirmation details.
         /// </value>
         public string AdditionalConfirmationDetails { get; set; }
 
         /// <summary>
-        /// Gets or sets the AdditionalReminderDetails.
+        /// Gets or sets the additional reminder details.
         /// </summary>
         /// <value>
-        /// The AdditionalReminderDetails.
+        /// The additional reminder details.
         /// </value>
         public string AdditionalReminderDetails { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContactEmail.
+        /// Gets or sets the contact email.
         /// </summary>
         /// <value>
-        /// The ContactEmail.
+        /// The contact email.
         /// </value>
         public string ContactEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContactPersonAliasId.
+        /// Gets or sets the name of the contact.
         /// </summary>
         /// <value>
-        /// The ContactPersonAliasId.
+        /// The name of the contact.
         /// </value>
         public int? ContactPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContactPhone.
+        /// Gets or sets the contact phone.
         /// </summary>
         /// <value>
-        /// The ContactPhone.
+        /// The contact phone.
         /// </value>
         public string ContactPhone { get; set; }
 
         /// <summary>
-        /// Gets or sets the Cost.
+        /// Gets or sets the cost (if Rock.Model.RegistrationTemplate.SetCostOnInstance == true).
         /// </summary>
         /// <value>
-        /// The Cost.
+        /// The cost.
         /// </value>
         public decimal? Cost { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefaultPayment.
+        /// Gets or sets the default amount to pay per registrant (if Rock.Model.RegistrationTemplate.SetCostOnInstance == true).
+        /// If this is null, the default payment will be the Rock.Model.RegistrationInstance.Cost
         /// </summary>
         /// <value>
-        /// The DefaultPayment.
+        /// The default payment.
         /// </value>
         public decimal? DefaultPayment { get; set; }
 
         /// <summary>
-        /// Gets or sets the Details.
+        /// Gets or sets the details.
         /// </summary>
         /// <value>
-        /// The Details.
+        /// The details.
         /// </value>
         public string Details { get; set; }
 
         /// <summary>
-        /// Gets or sets the EndDateTime.
+        /// Gets or sets the end date time.
         /// </summary>
         /// <value>
-        /// The EndDateTime.
+        /// The end date time.
         /// </value>
         public DateTime? EndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExternalGatewayFundId.
+        /// Gets or sets the external gateway fund identifier.
         /// </summary>
         /// <value>
-        /// The ExternalGatewayFundId.
+        /// The external gateway fund identifier.
         /// </value>
         public int? ExternalGatewayFundId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExternalGatewayMerchantId.
+        /// Gets or sets the external gateway merchant identifier.
         /// </summary>
         /// <value>
-        /// The ExternalGatewayMerchantId.
+        /// The external gateway merchant identifier.
         /// </value>
         public int? ExternalGatewayMerchantId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxAttendees.
+        /// Gets or sets the maximum attendees.
         /// </summary>
         /// <value>
-        /// The MaxAttendees.
+        /// The maximum attendees.
         /// </value>
         public int? MaxAttendees { get; set; }
 
         /// <summary>
-        /// Gets or sets the MinimumInitialPayment.
+        /// Gets or sets the minimum initial payment (if Rock.Model.RegistrationTemplate.SetCostOnInstance == true).
         /// </summary>
         /// <value>
-        /// The MinimumInitialPayment.
+        /// The minimum initial payment.
         /// </value>
         public decimal? MinimumInitialPayment { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationInstructions.
+        /// Gets or sets the registration instructions.
         /// </summary>
         /// <value>
-        /// The RegistrationInstructions.
+        /// The registration instructions.
         /// </value>
         public string RegistrationInstructions { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationMeteringThreshold.
+        /// Gets or sets the registration metering threshold.
         /// </summary>
         /// <value>
-        /// The RegistrationMeteringThreshold.
+        /// The registration metering threshold.
         /// </value>
         public int? RegistrationMeteringThreshold { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationTemplateId.
+        /// Gets or sets the Rock.Model.RegistrationTemplate identifier.
         /// </summary>
         /// <value>
-        /// The RegistrationTemplateId.
+        /// The registration template identifier.
         /// </value>
         public int RegistrationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RegistrationWorkflowTypeId.
+        /// Optional workflow type to launch at end of registration
         /// </summary>
         /// <value>
-        /// The RegistrationWorkflowTypeId.
+        /// The workflow type id.
         /// </value>
         public int? RegistrationWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReminderSent.
+        /// Gets or sets a value indicating whether [reminder sent].
         /// </summary>
         /// <value>
-        /// The ReminderSent.
+        ///   true if [reminder sent]; otherwise, false.
         /// </value>
         public bool ReminderSent { get; set; }
 
         /// <summary>
-        /// Gets or sets the SendReminderDateTime.
+        /// Gets or sets the send reminder date time.
         /// </summary>
         /// <value>
-        /// The SendReminderDateTime.
+        /// The send reminder date time.
         /// </value>
         public DateTime? SendReminderDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDateTime.
+        /// Gets or sets the start date time.
         /// </summary>
         /// <value>
-        /// The StartDateTime.
+        /// The start date time.
         /// </value>
         public DateTime? StartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the TimeoutIsEnabled.
+        /// Gets or sets a value indicating whether [timeout is enabled].
+        /// Is there a time limit for a user submitting a registration? Their spot will be reserved until they submit
+        /// or the session times out.
         /// </summary>
         /// <value>
-        /// The TimeoutIsEnabled.
+        ///   true if [timeout is enabled]; otherwise, false.
         /// </value>
         public bool TimeoutIsEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the TimeoutLengthMinutes.
+        /// Gets or sets the timeout length minutes. The amount of minutes that a spot will be held for a registrant
+        /// until they submit or timeout occurs.
         /// </summary>
         /// <value>
-        /// The TimeoutLengthMinutes.
+        /// The timeout length minutes.
         /// </value>
         public int? TimeoutLengthMinutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the TimeoutThreshold.
+        /// Gets or sets the timeout threshold. The lower limit of available registrations before the checkout timer
+        /// is enabled. The checkout timer functionality will only display when there are fewer available registrations
+        /// than configured.
         /// </summary>
         /// <value>
-        /// The TimeoutThreshold.
+        /// The timeout threshold.
         /// </value>
         public int? TimeoutThreshold { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

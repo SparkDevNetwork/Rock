@@ -25,7 +25,10 @@ namespace Rock.ViewModels.Blocks.Groups.GroupScheduleUnavailability
     /// </summary>
     public class ContentBag
     {
-        // Gets or sets the XAML.
+        /// <summary>
+        /// Gets or sets the XAML content.
+        /// </summary>
+        /// <value>The content.</value>
         public string Content { get; set; }
 
         /// <summary>

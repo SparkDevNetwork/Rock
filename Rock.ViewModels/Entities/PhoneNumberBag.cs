@@ -34,114 +34,114 @@ namespace Rock.ViewModels.Entities
     public partial class PhoneNumberBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CountryCode.
+        /// Gets or sets the country code.
         /// </summary>
         /// <value>
-        /// The CountryCode.
+        /// The country code.
         /// </value>
         public string CountryCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets an optional description of the PhoneNumber.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing an optional description of the PhoneNumber.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Extension.
+        /// Gets or sets the extension (if any) that would need to be dialed to contact the owner. 
         /// </summary>
         /// <value>
-        /// The Extension.
+        /// A System.String representing the extensions that would need to be dialed to contact the owner. If no extension is required, this property will be null. 
         /// </value>
         public string Extension { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsMessagingEnabled.
+        /// Gets or sets a flag indicating whether the number has been opted in for SMS
         /// </summary>
         /// <value>
-        /// The IsMessagingEnabled.
+        ///   A System.Boolean value that is true if the phone number has opted in for SMS messaging; otherwise false.
         /// </value>
         public bool IsMessagingEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if the PhoneNumber is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if the PhoneNumber is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsUnlisted.
+        /// Gets or sets a flag indicating whether the PhoneNumber is unlisted or not.
         /// </summary>
         /// <value>
-        /// The IsUnlisted.
+        /// A System.Boolean value that is true if the PhoneNumber is unlisted; otherwise false.
         /// </value>
         public bool IsUnlisted { get; set; }
 
         /// <summary>
-        /// Gets or sets the Number.
+        /// Gets or sets the phone number without country code. The number is stored without any string formatting. (i.e. (502) 555-1212 will be stored as 5025551212). This property is required.
         /// </summary>
         /// <value>
-        /// The Number.
+        /// A System.String representing the phone number without string formatting.
         /// </value>
         public string Number { get; set; }
 
         /// <summary>
-        /// Gets or sets the NumberFormatted.
+        /// Gets or sets the formatted number. Note: value is recalculated on every add/modify of entity during context's default SaveChanges() method.
         /// </summary>
         /// <value>
-        /// The NumberFormatted.
+        /// The number formatted.
         /// </value>
         public string NumberFormatted { get; set; }
 
         /// <summary>
-        /// Gets or sets the NumberTypeValueId.
+        /// Gets the Phone Number's Number Type Rock.Model.DefinedValue Id.
         /// </summary>
         /// <value>
-        /// The NumberTypeValueId.
+        /// A System.Int32 representing the Number Type Rock.Model.DefinedValue Id. If unknown, this value will be null.
         /// </value>
         public int? NumberTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId.
+        /// Gets or sets the PersonId of the Rock.Model.Person that the PhoneNumber belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// The PersonId.
+        /// A System.Int32 representing the PersonId of the Rock.Model.Person that the PhoneNumber belongs to.
         /// </value>
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** MediaAccount View Model */
 export type MediaAccountBag = {
-    /** Gets or sets the ComponentEntityTypeId. */
+    /** Gets or sets the Id of the achievement component Rock.Model.EntityType */
     componentEntityTypeId: number;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the LastRefreshDateTime. */
+    /** Gets or sets the last refresh date time. */
     lastRefreshDateTime?: string | null;
 
-    /** Gets or sets the MetricData. */
+    /** Gets or sets the custom provider metric data for this instance. */
     metricData?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the MediaAccount. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the SourceData. */
+    /** Gets or sets the custom provider data for this instance. */
     sourceData?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

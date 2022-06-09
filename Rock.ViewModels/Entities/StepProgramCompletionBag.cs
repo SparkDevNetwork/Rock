@@ -34,74 +34,63 @@ namespace Rock.ViewModels.Entities
     public partial class StepProgramCompletionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the Rock.Model.Campus identifier. This will be the campus
+        /// from whichever step was completed last (most recently).
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// The campus identifier.
         /// </value>
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EndDateTime.
+        /// Gets or sets the System.DateTime associated with the end of the step program.
         /// </summary>
-        /// <value>
-        /// The EndDateTime.
-        /// </value>
         public DateTime? EndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the Id of the Rock.Model.PersonAlias that identifies the Person associated with the step. This property is required.
         /// </summary>
-        /// <value>
-        /// The PersonAliasId.
-        /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDateTime.
+        /// Gets or sets the System.DateTime associated with the start of the step program.
         /// </summary>
-        /// <value>
-        /// The StartDateTime.
-        /// </value>
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the StepProgramId.
+        /// Gets or sets the Id of the Rock.Model.StepProgram to which this step program completion belongs. This property is required.
         /// </summary>
-        /// <value>
-        /// The StepProgramId.
-        /// </value>
         public int StepProgramId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

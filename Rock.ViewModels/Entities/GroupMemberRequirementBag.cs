@@ -34,82 +34,82 @@ namespace Rock.ViewModels.Entities
     public partial class GroupMemberRequirementBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the GroupMemberId.
+        /// Gets or sets the group member identifier.
         /// </summary>
         /// <value>
-        /// The GroupMemberId.
+        /// The group member identifier.
         /// </value>
         public int GroupMemberId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupRequirementId.
+        /// Gets or sets the Rock.Model.GroupRequirement identifier.
         /// </summary>
         /// <value>
-        /// The GroupRequirementId.
+        /// The group requirement identifier.
         /// </value>
         public int GroupRequirementId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRequirementCheckDateTime.
+        /// Gets or sets the last requirement check date time.
         /// </summary>
         /// <value>
-        /// The LastRequirementCheckDateTime.
+        /// The last requirement check date time.
         /// </value>
         public DateTime? LastRequirementCheckDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequirementFailDateTime.
+        /// Gets or sets the requirement fail date time.
         /// </summary>
         /// <value>
-        /// The RequirementFailDateTime.
+        /// The requirement fail date time.
         /// </value>
         public DateTime? RequirementFailDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequirementMetDateTime.
+        /// Gets or sets the requirement met date time.
         /// </summary>
         /// <value>
-        /// The RequirementMetDateTime.
+        /// The requirement met date time.
         /// </value>
         public DateTime? RequirementMetDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequirementWarningDateTime.
+        /// Gets or sets the requirement warning date time.
         /// </summary>
         /// <value>
-        /// The RequirementWarningDateTime.
+        /// The requirement warning date time.
         /// </value>
         public DateTime? RequirementWarningDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

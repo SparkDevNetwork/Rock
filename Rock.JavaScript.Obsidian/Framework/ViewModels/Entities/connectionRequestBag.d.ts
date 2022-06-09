@@ -25,55 +25,55 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionRequest View Model */
 export type ConnectionRequestBag = {
-    /** Gets or sets the AssignedGroupId. */
+    /** Gets or sets the assigned Rock.Model.Group identifier. */
     assignedGroupId?: number | null;
 
-    /** Gets or sets the AssignedGroupMemberAttributeValues. */
+    /** Gets or sets the assigned group member attribute values. */
     assignedGroupMemberAttributeValues?: string | null;
 
-    /** Gets or sets the AssignedGroupMemberRoleId. */
+    /** Gets or sets the assigned group member role identifier. */
     assignedGroupMemberRoleId?: number | null;
 
-    /** Gets or sets the AssignedGroupMemberStatus. */
+    /** Gets or sets the assigned group member status. */
     assignedGroupMemberStatus?: number | null;
 
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the Rock.Model.Campus identifier. */
     campusId?: number | null;
 
-    /** Gets or sets the Comments. */
+    /** Gets or sets the comments. */
     comments?: string | null;
 
-    /** Gets or sets the ConnectionOpportunityId. */
+    /** Gets or sets the Rock.Model.ConnectionOpportunity identifier. */
     connectionOpportunityId: number;
 
-    /** Gets or sets the ConnectionState. */
+    /** Gets or sets the state of the connection. */
     connectionState: number;
 
-    /** Gets or sets the ConnectionStatusId. */
+    /** Gets or sets the Rock.Model.ConnectionStatus identifier. */
     connectionStatusId: number;
 
-    /** Gets or sets the ConnectorPersonAliasId. */
+    /** Gets or sets the connector Rock.Model.PersonAlias identifier. */
     connectorPersonAliasId?: number | null;
 
-    /** Gets or sets the FollowupDate. */
+    /** Gets or sets the followup date. */
     followupDate?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Rock.Model.PersonAlias identifier. */
     personAliasId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

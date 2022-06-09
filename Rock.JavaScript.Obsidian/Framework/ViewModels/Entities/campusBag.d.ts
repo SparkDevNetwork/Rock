@@ -25,61 +25,64 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Campus View Model */
 export type CampusBag = {
-    /** Gets or sets the CampusStatusValueId. */
+    /** Gets or sets the campus status value identifier. */
     campusStatusValueId?: number | null;
 
-    /** Gets or sets the CampusTypeValueId. */
+    /** Gets or sets the campus type value identifier. */
     campusTypeValueId?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets the is active. */
     isActive?: boolean | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if the Campus is a part of the Rock system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the LeaderPersonAliasId. */
+    /** Gets or sets the Id of the Rock.Model.Person that is the leader of the campus. */
     leaderPersonAliasId?: number | null;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the Id of the Rock.Model.Location that is associated with this campus.  */
     locationId?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the Campus. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the PhoneNumber. */
+    /** Gets or sets the phone number of the campus. */
     phoneNumber?: string | null;
 
-    /** Gets or sets the ServiceTimes. */
+    /** Gets or sets the service times (Stored as a delimited list) */
     serviceTimes?: string | null;
 
-    /** Gets or sets the ShortCode. */
+    /** Gets or sets an optional short code identifier for the campus. */
     shortCode?: string | null;
 
-    /** Gets or sets the TeamGroupId. */
+    /** Gets or sets the team group identifier. */
     teamGroupId?: number | null;
 
-    /** Gets or sets the TimeZoneId. */
+    /**
+     * Gets or sets the time zone identifier (System.TimeZoneInfo.Id)
+     * If this is not set, the Campus time zone will be the default Rock time zone (Rock.RockDateTime.OrgTimeZoneInfo )
+     */
     timeZoneId?: string | null;
 
-    /** Gets or sets the Url. */
+    /** Gets or sets the URL. */
     url?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

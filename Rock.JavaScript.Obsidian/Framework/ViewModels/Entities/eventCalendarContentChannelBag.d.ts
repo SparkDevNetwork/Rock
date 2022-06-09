@@ -25,22 +25,22 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EventCalendarContentChannel View Model */
 export type EventCalendarContentChannelBag = {
-    /** Gets or sets the ContentChannelId. */
+    /** Gets or sets the Id of the Rock.Model.ContentChannel. This property is required. */
     contentChannelId: number;
 
-    /** Gets or sets the EventCalendarId. */
+    /** Gets or sets the Id of the Rock.Model.EventCalendar that this EventCalendarContentChannel belongs to. This property is required. */
     eventCalendarId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

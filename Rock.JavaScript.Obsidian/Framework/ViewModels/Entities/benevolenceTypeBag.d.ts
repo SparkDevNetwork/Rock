@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BenevolenceType View Model */
 export type BenevolenceTypeBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the Rock.Model.BenevolenceType.Description value on the Rock.Model.BenevolenceType. This property is required. */
     description?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets the Rock.Model.BenevolenceType.IsActive value on the Rock.Model.BenevolenceType. This property is required. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Rock.Model.BenevolenceType.Name value on the Rock.Model.BenevolenceType. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the RequestLavaTemplate. */
+    /** Gets or sets the Rock.Model.BenevolenceType.RequestLavaTemplate value on the Rock.Model.BenevolenceType. This property is required. */
     requestLavaTemplate?: string | null;
 
-    /** Gets or sets the ShowFinancialResults. */
+    /** Gets or sets a value indicating whether [show financial results]. */
     showFinancialResults: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

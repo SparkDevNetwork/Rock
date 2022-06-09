@@ -34,58 +34,49 @@ namespace Rock.ViewModels.Entities
     public partial class StepTypePrerequisiteBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
-        /// <value>
-        /// The Order.
-        /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PrerequisiteStepTypeId.
+        /// Gets or sets the Id of the Rock.Model.StepType that is a prerequisite. This property is required.
         /// </summary>
-        /// <value>
-        /// The PrerequisiteStepTypeId.
-        /// </value>
         public int PrerequisiteStepTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StepTypeId.
+        /// Gets or sets the Id of the Rock.Model.StepType to which this prerequisite. This property is required.
         /// </summary>
-        /// <value>
-        /// The StepTypeId.
-        /// </value>
         public int StepTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -47,14 +49,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -68,9 +66,9 @@ namespace Rock.Badge.Component
 
             string tooltip;
             var monthsToDisplay = GetAttributeValue( badge, "MonthsToDisplay" ).AsIntegerOrNull() ?? 24;
-            if ( Person.AgeClassification == AgeClassification.Child )
+            if ( person.AgeClassification == AgeClassification.Child )
             {
-                tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last {monthsToDisplay} months. Each bar is a month.";
+                tooltip = $"{person.NickName.ToPossessive().EncodeHtml()} attendance for the last {monthsToDisplay} months. Each bar is a month.";
             }
             else
             {
@@ -82,22 +80,19 @@ namespace Rock.Badge.Component
             writer.Write("</div>");
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
             var minBarHeight = GetAttributeValue( badge, "MinimumBarHeight" ).AsIntegerOrNull() ?? 2;
             var monthsToDisplay = GetAttributeValue( badge, "MonthsToDisplay" ).AsIntegerOrNull() ?? 24;
+            var personId = ( entity as Person )?.Id ?? 0;
 
             return
 $@"var monthNames = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 
 $.ajax({{
     type: 'GET',
-    url: Rock.settings.get('baseUrl') + 'api/Badges/FamilyAttendance/{Person.Id}/{monthsToDisplay}' ,
+    url: Rock.settings.get('baseUrl') + 'api/Badges/FamilyAttendance/{personId}/{monthsToDisplay}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
             var chartHtml = '<ul class=\'attendance-chart trend-chart list-unstyled\'>';

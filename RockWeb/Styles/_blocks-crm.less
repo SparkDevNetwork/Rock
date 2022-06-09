@@ -1348,11 +1348,16 @@ tr.inactive {
     }
   }
 
+  .form-group.bulk-item-selected,
+  .bulk-item-selected .form-group,
+  .form-group.bulk-item-visible {
+    opacity: 1;
+  }
+
   .form-group.bulk-item-selected {
     padding: 12px;
     background-color: @gray-lighter;
     border-radius: @border-radius-base;
-    opacity: 1;
   }
 }
 

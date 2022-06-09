@@ -34,50 +34,44 @@ namespace Rock.ViewModels.Entities
     public partial class StreakTypeExclusionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the LocationId.
+        /// Gets or sets the Rock.Model.Location  identifier by which the streak type's exclusions will be associated.
         /// </summary>
-        /// <value>
-        /// The LocationId.
-        /// </value>
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the StreakTypeId.
+        /// Gets or sets the Id of the Rock.Model.StreakType to which this exclusion map belongs. This property is required.
         /// </summary>
-        /// <value>
-        /// The StreakTypeId.
-        /// </value>
         public int StreakTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

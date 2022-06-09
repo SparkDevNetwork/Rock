@@ -34,98 +34,98 @@ namespace Rock.ViewModels.Entities
     public partial class GroupSyncBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AddUserAccountsDuringSync.
+        /// Gets or sets a value indicating whether [add user accounts during synchronize].
         /// </summary>
         /// <value>
-        /// The AddUserAccountsDuringSync.
+        ///   true if [add user accounts during synchronize]; otherwise, false.
         /// </value>
         public bool AddUserAccountsDuringSync { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExitSystemCommunicationId.
+        /// Gets or sets the exit Rock.Model.SystemCommunication identifier.
         /// </summary>
         /// <value>
-        /// The ExitSystemCommunicationId.
+        /// The exit system communication identifier.
         /// </value>
         public int? ExitSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupId.
+        /// Gets or sets the Rock.Model.Group identifier.
         /// </summary>
         /// <value>
-        /// The GroupId.
+        /// The group identifier.
         /// </value>
         public int GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupTypeRoleId.
+        /// Gets or sets the Rock.Model.GroupTypeRole identifier.
         /// </summary>
         /// <value>
-        /// The GroupTypeRoleId.
+        /// The group type role identifier.
         /// </value>
         public int GroupTypeRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRefreshDateTime.
+        /// Gets or sets the last refresh date time.
         /// </summary>
         /// <value>
-        /// The LastRefreshDateTime.
+        /// The last refresh date time.
         /// </value>
         public DateTime? LastRefreshDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleIntervalMinutes.
+        /// Gets or sets the schedule interval minutes.
         /// </summary>
         /// <value>
-        /// The ScheduleIntervalMinutes.
+        /// The schedule interval minutes.
         /// </value>
         public int? ScheduleIntervalMinutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the SyncDataViewId.
+        /// Gets or sets the synchronize Rock.Model.DataView identifier.
         /// </summary>
         /// <value>
-        /// The SyncDataViewId.
+        /// The synchronize data view identifier.
         /// </value>
         public int SyncDataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the WelcomeSystemCommunicationId.
+        /// Gets or sets the welcome system email identifier.
         /// </summary>
         /// <value>
-        /// The WelcomeSystemCommunicationId.
+        /// The welcome system email identifier.
         /// </value>
         public int? WelcomeSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

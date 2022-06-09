@@ -81,7 +81,7 @@ export const enum Category {
     PersonAttributesCheckInRosterAlertIcon = "367571D1-62D3-4948-B588-C0FDCE00CF27",
     /** The category for person attributes for Personality Assessment Data */
     PersonAttributesPersonalityAssessmentData = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969",
-    /** Obsolete. Use  instead */
+    /** Obsolete. Use Rock.SystemGuid.Category.PERSON_ATTRIBUTES_GIVING_OVERVIEW instead */
     PersonAttributesGivingAnalytics = "61823196-8EA1-4C2B-A7DF-1654BD085667",
     /** Person Attribute Category for Giving Overview */
     PersonAttributesGivingOverview = "61823196-8EA1-4C2B-A7DF-1654BD085667",

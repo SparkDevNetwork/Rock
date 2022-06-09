@@ -34,66 +34,66 @@ namespace Rock.ViewModels.Entities
     public partial class CampusTopicBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the Rock.Model.Campus associated with this topic.
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// An System.Int32 that represents the Id of the campus. If none exists, this value is null.
         /// </value>
         public int CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Email.
+        /// Gets or sets the Email
         /// </summary>
         /// <value>
-        /// The Email.
+        /// A System.String containing the campus's email address.
         /// </value>
         public string Email { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPublic.
+        /// Gets or sets the us public
         /// </summary>
         /// <value>
-        /// The IsPublic.
+        /// A System.Boolean indicating if the topic is public or not
         /// </value>
         public bool IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the TopicTypeValueId.
+        /// Gets or sets the campus type value identifier.
         /// </summary>
         /// <value>
-        /// The TopicTypeValueId.
+        /// The topic type value identifier.
         /// </value>
         public int TopicTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

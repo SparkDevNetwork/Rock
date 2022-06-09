@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class ConnectionWorkflowBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ConnectionOpportunityId.
+        /// Gets or sets the Rock.Model.ConnectionOpportunity identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionOpportunityId.
+        /// The connection opportunity identifier.
         /// </value>
         public int? ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConnectionTypeId.
+        /// Gets or sets the Rock.Model.ConnectionType identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionTypeId.
+        /// The connection type identifier.
         /// </value>
         public int? ConnectionTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the QualifierValue.
+        /// Gets or sets the qualifier value.
         /// </summary>
         /// <value>
-        /// The QualifierValue.
+        /// The qualifier value.
         /// </value>
         public string QualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the TriggerType.
+        /// Gets or sets the type of the trigger.
         /// </summary>
         /// <value>
-        /// The TriggerType.
+        /// The type of the trigger.
         /// </value>
         public int TriggerType { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowTypeId.
+        /// Gets or sets the Rock.Model.WorkflowType identifier.
         /// </summary>
         /// <value>
-        /// The WorkflowTypeId.
+        /// The workflow type identifier.
         /// </value>
         public int? WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

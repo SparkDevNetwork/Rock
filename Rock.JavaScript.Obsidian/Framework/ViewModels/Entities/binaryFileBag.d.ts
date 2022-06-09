@@ -25,52 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BinaryFile View Model */
 export type BinaryFileBag = {
-    /** Gets or sets the BinaryFileTypeId. */
+    /** Gets or sets the id of the Rock.Model.BinaryFileType that this file belongs to. */
     binaryFileTypeId?: number | null;
 
-    /** Gets or sets the ContentLastModified. */
+    /** Gets or sets the content last modified. */
     contentLastModified?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a user defined description of the file. */
     description?: string | null;
 
-    /** Gets or sets the FileName. */
+    /** Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to Rock and this same name will be used when the file is downloaded. This property is required. */
     fileName?: string | null;
 
-    /** Gets or sets the FileSize. */
+    /** Gets or sets the size of the file (in bytes) */
     fileSize?: number | null;
 
-    /** Gets or sets the Height. */
+    /** Gets or sets a value indicating the height of a file type. */
     height?: number | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this file is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the IsTemporary. */
+    /** Gets or sets a flag indicating if this is a temporary file. This property is required. */
     isTemporary: boolean;
 
-    /** Gets or sets the MimeType. */
+    /** Gets or sets the Mime Type for the file. This property is required */
     mimeType?: string | null;
 
-    /** Gets or sets the Path. */
+    /** Gets or sets a path to the file that is understandable by the storage provider. */
     path?: string | null;
 
-    /** Gets or sets the StorageEntitySettings. */
+    /** Gets or sets the storage entity settings. */
     storageEntitySettings?: string | null;
 
-    /** Gets or sets the Width. */
+    /** Gets or sets a value indicating the width of a file type. */
     width?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

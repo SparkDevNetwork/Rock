@@ -25,79 +25,82 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PrayerRequest View Model */
 export type PrayerRequestBag = {
-    /** Gets or sets the AllowComments. */
+    /** Gets or sets a flag indicating  whether or not comments can be made against the request. */
     allowComments?: boolean | null;
 
-    /** Gets or sets the Answer. */
+    /** Gets or sets a description of the way that God has answered the prayer. */
     answer?: string | null;
 
-    /** Gets or sets the ApprovedByPersonAliasId. */
+    /** Gets or sets the PersonId of the Rock.Model.Person who approved this prayer request. */
     approvedByPersonAliasId?: number | null;
 
-    /** Gets or sets the ApprovedOnDateTime. */
+    /** Gets or sets the date this prayer request was approved. */
     approvedOnDateTime?: string | null;
 
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the campus identifier. */
     campusId?: number | null;
 
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the CategoryId of the Rock.Model.Category that the PrayerRequest belongs to. */
     categoryId?: number | null;
 
-    /** Gets or sets the Email. */
+    /** Gets or sets the email address of the person requesting prayer. */
     email?: string | null;
 
-    /** Gets or sets the EnteredDateTime. */
+    /** Gets or sets the date that this prayer request was entered. */
     enteredDateTime?: string | null;
 
-    /** Gets or sets the ExpirationDate. */
+    /** Gets or sets the date that the prayer request expires.  */
     expirationDate?: string | null;
 
-    /** Gets or sets the FirstName. */
+    /** Gets or sets the First Name of the person that this prayer request is about. This property is required. */
     firstName?: string | null;
 
-    /** Gets or sets the FlagCount. */
+    /** Gets or sets the number of times this request has been flagged. */
     flagCount?: number | null;
 
-    /** Gets or sets the GroupId. */
+    /**
+     * TODO: GET CLARIFICATION AND DOCUMENT
+     * Gets or sets the group id.
+     */
     groupId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this prayer request is active. */
     isActive?: boolean | null;
 
-    /** Gets or sets the IsApproved. */
+    /** Gets or sets a flag indicating if the prayer request has been approved.  */
     isApproved?: boolean | null;
 
-    /** Gets or sets the IsPublic. */
+    /** Gets or sets the flag indicating whether or not the request is public. */
     isPublic?: boolean | null;
 
-    /** Gets or sets the IsUrgent. */
+    /** Gets or sets a flag indicating if this is an urgent prayer request. */
     isUrgent?: boolean | null;
 
-    /** Gets or sets the LanguageValueId. */
+    /** Gets or sets the DefinedValueId of the Rock.Model.DefinedValue that represents the Language for this prayer request. */
     languageValueId?: number | null;
 
-    /** Gets or sets the LastName. */
+    /** Gets or sets the Last Name of the person that this prayer request is about. This property is required. */
     lastName?: string | null;
 
-    /** Gets or sets the PrayerCount. */
+    /** Gets or sets the number of times that this prayer request has been prayed for. */
     prayerCount?: number | null;
 
-    /** Gets or sets the RequestedByPersonAliasId. */
+    /** Gets or sets the PersonId of the Rock.Model.Person who is submitting the PrayerRequest */
     requestedByPersonAliasId?: number | null;
 
-    /** Gets or sets the Text. */
+    /** Gets or sets the text/content of the request. */
     text?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

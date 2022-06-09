@@ -2141,5 +2141,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_PREVIEW = "FD8E0C71-9543-4CAB-9918-76A67EFE5093";
 
+        /// <summary>
+        /// The connection requests bulk update page
+        /// </summary>
+        public const string CONNECTION_REQUESTS_BULK_UPDATE = "1F5D34CF-89C1-426C-A139-83D87905D669";
     }
 }

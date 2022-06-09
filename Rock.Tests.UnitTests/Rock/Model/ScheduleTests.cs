@@ -22,9 +22,9 @@ using Rock.Model;
 using Rock.Tests.Shared;
 
 using Ical.Net;
-using Ical.Net.Serialization.iCalendar.Serializers;
 using Ical.Net.DataTypes;
-using Ical.Net.Interfaces.DataTypes;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
 
 namespace Rock.Tests.Rock.Model
 {
@@ -67,12 +67,12 @@ namespace Rock.Tests.Rock.Model
             _calendarSpecificDates = new Calendar()
             {
                 // Create an event for the first scheduled date (1am-2am), and set the recurring dates.
-                Events = { new Event
+                Events = { new CalendarEvent
                     {
                         DtStart = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day, 1, 0, 0 ),
                         DtEnd = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day, 2, 0, 0 ),
                         DtStamp = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day ),
-                        RecurrenceDates = new List<IPeriodList> { recurrenceDates },
+                        RecurrenceDates = new List<PeriodList> { recurrenceDates },
                         Sequence = 0,
                     }
                 }

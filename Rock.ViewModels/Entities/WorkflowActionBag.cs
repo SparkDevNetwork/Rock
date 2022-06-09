@@ -34,74 +34,74 @@ namespace Rock.ViewModels.Entities
     public partial class WorkflowActionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ActionTypeId.
+        /// Gets or sets the ActionTypeId of the Rock.Model.WorkflowAction that is being executed by this instance.
         /// </summary>
         /// <value>
-        /// The ActionTypeId.
+        /// A System.Int32 representing the ActionTypeId of the Rock.Model.WorkflowActionType that is being executed on this instance.
         /// </value>
         public int ActionTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ActivityId.
+        /// Gets or sets the WorkflowActivityId of the Rock.Model.WorkflowActivity that this WorkflowAction is a part of.
         /// </summary>
         /// <value>
-        /// The ActivityId.
+        /// A System.Int32 represents the WorflowActivityId that this WorkflowAction is a part of.
         /// </value>
         public int ActivityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CompletedDateTime.
+        /// Gets or sets the date and time that the WorkflowAction completed.
         /// </summary>
         /// <value>
-        /// The CompletedDateTime.
+        /// A System.DateTime representing the date and time that the WorkflowAction completed.
         /// </value>
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the FormAction.
+        /// If ActionType is a UserEntryForm Gets or sets the form action.
         /// </summary>
         /// <value>
-        /// The FormAction.
+        /// The form action.
         /// </value>
         public string FormAction { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastProcessedDateTime.
+        /// Gets or sets the date and time that this WorkflowAction was last processed.
         /// </summary>
         /// <value>
-        /// The LastProcessedDateTime.
+        /// A System.DateTime representing the date and time that this WorkflowAction was last processed.
         /// </value>
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

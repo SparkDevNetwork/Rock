@@ -325,11 +325,11 @@ export default defineComponent({
         <Alert v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</Alert>
 
         <div class="actions text-right">
-            <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading">
+            <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
                 Previous
             </RockButton>
 
-            <RockButton v-if="gatewayControlModel" btnType="primary" type="submit" :isLoading="loading">
+            <RockButton v-if="gatewayControlModel" btnType="primary" type="submit" :isLoading="loading" autoDisable>
                 {{finishButtonText}}
             </RockButton>
         </div>

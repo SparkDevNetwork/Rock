@@ -22,7 +22,7 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Controls
 {
     /// <summary>
-    /// Address Control View Model
+    /// Birthday Picker View Model
     /// </summary>
     public sealed class BirthdayPickerBag : IViewModel
     {

@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PersonSignal View Model */
 export type PersonSignalBag = {
-    /** Gets or sets the ExpirationDate. */
+    /** Gets or sets the date this signal expires. */
     expirationDate?: string | null;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note applied to this signal. */
     note?: string | null;
 
-    /** Gets or sets the OwnerPersonAliasId. */
+    /** Gets or sets the person alias identifier of the individual that reported this signal. */
     ownerPersonAliasId: number;
 
-    /** Gets or sets the PersonId. */
+    /** Gets or sets the Id of the Rock.Model.Person that is represented by the PersonSignal. This property is required. */
     personId: number;
 
-    /** Gets or sets the SignalTypeId. */
+    /** Gets or sets the Id of the Rock.Model.SignalType that is represented by the PersonSignal. This property is required. */
     signalTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

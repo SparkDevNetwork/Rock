@@ -25,46 +25,55 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** SystemEmail View Model */
 export type SystemEmailBag = {
-    /** Gets or sets the Bcc. */
+    /**
+     * Gets or sets the email addresses that should be sent a BCC or blind carbon copy of an email using this template. If there is not a predetermined distribution list; this property 
+     * can remain empty.
+     */
     bcc?: string | null;
 
-    /** Gets or sets the Body. */
+    /** Gets or sets the Body template that is used for emails that use this template. */
     body?: string | null;
 
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the category identifier. */
     categoryId?: number | null;
 
-    /** Gets or sets the Cc. */
+    /**
+     * Gets or sets the email addresses that should be sent a CC or carbon copy of an email using this template. If there is not a predetermined distribution list, this property
+     * can remain empty.
+     */
     cc?: string | null;
 
-    /** Gets or sets the From. */
+    /** Gets or sets the From email address. */
     from?: string | null;
 
-    /** Gets or sets the FromName. */
+    /** Gets or sets from name. */
     fromName?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if the email template is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the Subject. */
+    /** Gets or sets the subject of an email that uses this template. */
     subject?: string | null;
 
-    /** Gets or sets the Title. */
+    /** Gets or sets the Title of the EmailTemplate  */
     title?: string | null;
 
-    /** Gets or sets the To. */
+    /**
+     * Gets or sets the To email addresses that emails using this template should be delivered to.  If there is not a predetermined distribution list, this property can 
+     * remain empty.
+     */
     to?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

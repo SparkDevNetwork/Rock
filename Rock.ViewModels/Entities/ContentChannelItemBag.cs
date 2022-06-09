@@ -34,146 +34,148 @@ namespace Rock.ViewModels.Entities
     public partial class ContentChannelItemBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ApprovedByPersonAliasId.
+        /// Gets or sets the PersonAliasId of the Rock.Model.Person who either approved or declined the ContentItem. If no approval action has been performed on this item, this value will be null.
         /// </summary>
         /// <value>
-        /// The ApprovedByPersonAliasId.
+        /// A System.Int32 representing the PersonAliasId of the Rock.Model.Person who either approved or declined the ContentItem. This value will be null if no approval action has been
+        /// performed on this add.
         /// </value>
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovedDateTime.
+        /// Gets or sets the approved date.
         /// </summary>
         /// <value>
-        /// The ApprovedDateTime.
+        /// The approved date.
         /// </value>
         public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Content.
+        /// Gets or sets the content.
         /// </summary>
         /// <value>
-        /// The Content.
+        /// The content.
         /// </value>
         public string Content { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContentChannelId.
+        /// Gets or sets the content channel identifier.
         /// </summary>
         /// <value>
-        /// The ContentChannelId.
+        /// The content channel identifier.
         /// </value>
         public int ContentChannelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContentChannelTypeId.
+        /// Gets or sets the content channel type identifier.
         /// </summary>
         /// <value>
-        /// The ContentChannelTypeId.
+        /// The content channel type identifier.
         /// </value>
         public int ContentChannelTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpireDateTime.
+        /// Gets or sets the expire date time.
         /// </summary>
         /// <value>
-        /// The ExpireDateTime.
+        /// The expire date time.
         /// </value>
         public DateTime? ExpireDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ItemGlobalKey.
+        /// Gets or sets the item global key.
         /// </summary>
         /// <value>
-        /// The ItemGlobalKey.
+        /// The item global key.
         /// </value>
         public string ItemGlobalKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the Permalink.
+        /// Gets or sets the permalink.
         /// </summary>
         /// <value>
-        /// The Permalink.
+        /// The permalink.
         /// </value>
         public string Permalink { get; set; }
 
         /// <summary>
-        /// Gets or sets the Priority.
+        /// Gets or sets the priority of this ContentItem. The lower the number, the higher the priority.
         /// </summary>
         /// <value>
-        /// The Priority.
+        /// A System.Int32 representing the priority of this ContentItem. The lower the number, the higher the priority of the Ad.
         /// </value>
         public int Priority { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDateTime.
+        /// Gets or sets the start date time.
         /// </summary>
         /// <value>
-        /// The StartDateTime.
+        /// The start date time.
         /// </value>
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the Rock.Model.ContentChannelItemStatus (status) of this ContentItem.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// A Rock.Model.ContentChannelItemStatus enumeration value that represents the status of this ContentItem. When ContentItemStatus.PendingApproval the item is 
+        /// awaiting approval; when ContentItemStatus.Approved the item has been approved by the approver, when ContentItemStatus.Denied the item has been denied by the approver.
         /// </value>
         public int Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the StructuredContent.
+        /// Gets or sets the structured content.
         /// </summary>
         /// <value>
-        /// The StructuredContent.
+        /// The structured content.
         /// </value>
         public string StructuredContent { get; set; }
 
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the title.
         /// </summary>
         /// <value>
-        /// The Title.
+        /// The title.
         /// </value>
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

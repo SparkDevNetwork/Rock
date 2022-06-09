@@ -34,154 +34,158 @@ namespace Rock.ViewModels.Entities
     public partial class PersonalDeviceBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the DeviceRegistrationId.
+        /// Gets or sets the registration id of the device.
         /// </summary>
         /// <value>
-        /// The DeviceRegistrationId.
+        /// The device registration id.
         /// </value>
         public string DeviceRegistrationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DeviceUniqueIdentifier.
+        /// Gets or sets the device unique identifier (MEID/IMEI)
         /// </summary>
         /// <value>
-        /// The DeviceUniqueIdentifier.
+        /// The device unique identifier.
         /// </value>
         public string DeviceUniqueIdentifier { get; set; }
 
         /// <summary>
-        /// Gets or sets the DeviceVersion.
+        /// Gets or sets the device version.
         /// </summary>
         /// <value>
-        /// The DeviceVersion.
+        /// The device version.
         /// </value>
         public string DeviceVersion { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this is an active personal device. This value is required.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean value that is true if this personal device is active, otherwise false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastSeenDateTime.
+        /// Gets or sets the date and time this device was last seen initiating
+        /// contact to the Rock server.
         /// </summary>
         /// <value>
-        /// The LastSeenDateTime.
+        /// The date and time this device was last seen initiating contact to the
+        /// Rock server.
         /// </value>
         public DateTime? LastSeenDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastVerifiedDateTime.
+        /// Gets or sets the date and time this device was last verified as active
+        /// and available for contact.
         /// </summary>
         /// <value>
-        /// The LastVerifiedDateTime.
+        /// The date and time this device was last verified as active and available
+        /// for contact.
         /// </value>
         public DateTime? LastVerifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the MACAddress.
+        /// Gets or sets the MAC address.
         /// </summary>
         /// <value>
-        /// The MACAddress.
+        /// The mac address.
         /// </value>
         public string MACAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the Manufacturer.
+        /// Gets or sets the manufacturer.
         /// </summary>
         /// <value>
-        /// The Manufacturer.
+        /// The manufacturer.
         /// </value>
         public string Manufacturer { get; set; }
 
         /// <summary>
-        /// Gets or sets the Model.
+        /// Gets or sets the model.
         /// </summary>
         /// <value>
-        /// The Model.
+        /// The model.
         /// </value>
         public string Model { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the NotificationsEnabled.
+        /// Gets or sets whether or not notifications are enabled for this device.
         /// </summary>
         /// <value>
-        /// The NotificationsEnabled.
+        /// True or false based on whether or not notifications are enabled.
         /// </value>
         public bool NotificationsEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonalDeviceTypeValueId.
+        /// Gets or sets the Id of the Device Type Rock.Model.DefinedValue representing what type of device this is.
         /// </summary>
         /// <value>
-        /// The PersonalDeviceTypeValueId.
+        /// A System.Int32 representing the Id of the Rock.Model.DefinedValue identifying the personal device type. This cannot be null.
         /// </value>
         public int? PersonalDeviceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PlatformValueId.
+        /// Gets or sets the platform value identifier (i.e. iOS, Android, etc)
         /// </summary>
         /// <value>
-        /// The PlatformValueId.
+        /// The platform value identifier.
         /// </value>
         public int? PlatformValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SiteId.
+        /// Gets or sets the site identifier.
         /// </summary>
         /// <value>
-        /// The SiteId.
+        /// The site identifier.
         /// </value>
         public int? SiteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
