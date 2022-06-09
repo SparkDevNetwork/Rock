@@ -1,0 +1,13 @@
+{%- capture itemImageUrl -%}
+{% contentchannelitem id:'{{ id }}' iterator:'items' %}
+    {% for item in items %}
+        {% if ratio contains 'square' %}
+            {{ item | Attribute:'ImageSquare','Url' }}
+        {% elseif ratio contains 'portrait' %}
+            {{ item | Attribute:'ImagePortrait','Url' }}
+        {% else %}
+            {{ item | Attribute:'ImageLandscape','Url' }}
+        {% endif %}
+    {% endfor %}
+{% endcontentchannelitem %}
+{%- endcapture -%}{{ itemImageUrl | Trim }}
