@@ -93,8 +93,7 @@ namespace Rock.Model
 
             var viewModel = new SignatureDocumentTemplateBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 BinaryFileTypeId = model.BinaryFileTypeId,
                 CompletionSystemCommunicationId = model.CompletionSystemCommunicationId,
                 Description = model.Description,

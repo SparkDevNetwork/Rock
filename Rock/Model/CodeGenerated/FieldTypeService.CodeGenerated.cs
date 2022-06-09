@@ -105,8 +105,7 @@ namespace Rock.Model
 
             var viewModel = new FieldTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Assembly = model.Assembly,
                 Class = model.Class,
                 Description = model.Description,

@@ -15,9 +15,9 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import DropDownList from "../Elements/dropDownList";
-import RockFormField from "../Elements/rockFormField";
-import TextBox from "../Elements/textBox";
+import DropDownList from "./dropDownList";
+import RockFormField from "./rockFormField";
+import TextBox from "./textBox";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type KeyValueItem = {

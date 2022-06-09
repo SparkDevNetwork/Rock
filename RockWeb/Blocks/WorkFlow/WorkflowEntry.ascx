@@ -87,10 +87,18 @@
 
 
                             <%-- Put the signature document html in an Iframe so it doesn't inherit styling from the page --%>
-                            <asp:Panel ID="pnlIframeSignatureDocumentHTML" runat="server">
-                                <iframe id="iframeSignatureDocumentHTML" name="signature-document-html-iframe" class="signaturedocument-container js-signaturedocument-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" style="width: 100%; height: 450px"></iframe>
-                            </asp:Panel>
+                            <div class="styled-scroll">
+                                <asp:Panel ID="pnlIframeSignatureDocumentHTML" class="signaturedocument-container" runat="server">
+                                    <iframe id="iframeSignatureDocumentHTML" name="signature-document-html-iframe" class="signaturedocument-iframe js-signaturedocument-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" style="width: 100%"></iframe>
+                                </asp:Panel>
+                            </div>
                             <Rock:ElectronicSignatureControl ID="escElectronicSignatureControl" runat="server" OnCompleteSignatureClicked="btnSignSignature_Click" CssClass="well" />
+
+                            <script type="text/javascript">
+                                function resizeIframe(el) {
+                                    el.style.height = el.contentWindow.document.documentElement.scrollHeight + 'px';
+                                }
+                            </script>
                         </asp:Panel>
 
                         <%-- This needs a 'js-workflow-entry-message-notification-box' javascript hook so that Rock.Workflow.Action.ShowHtml can find it.--%>

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new GroupRequirementTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CanExpire = model.CanExpire,
                 CheckboxLabel = model.CheckboxLabel,
                 DataViewId = model.DataViewId,

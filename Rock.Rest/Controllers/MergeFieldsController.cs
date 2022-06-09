@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,8 +29,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "d2f7eda7-cca3-4f69-b8c5-eb2702ebc317" )]
-    public partial class MergeFieldsController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "D2F7EDA7-CCA3-4F69-B8C5-EB2702EBC317")]
+    public partial class MergeFieldsController : ApiControllerBase 
     {
         /// <summary>
         /// Gets the specified identifier.
@@ -39,7 +39,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/MergeFields/{id}" )]
-        [RockGuid( "5827b6fd-4f4d-4642-8d04-7f7a65470888" )]
+        [Rock.SystemGuid.RestActionGuid( "5827B6FD-4F4D-4642-8D04-7F7A65470888" )]
         public virtual string Get( string id )
         {
             return Rock.Web.UI.Controls.MergeFieldPicker.FormatSelectedValue( id );
@@ -53,7 +53,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/MergeFields/GetChildren/{id}" )]
-        [RockGuid( "40a9ff74-3e5e-4c4a-8f11-2bbf8acb1e51" )]
+        [Rock.SystemGuid.RestActionGuid( "40A9FF74-3E5E-4C4A-8F11-2BBF8ACB1E51" )]
         public IQueryable<TreeViewItem> GetChildren( string id, string additionalFields )
         {
             var person = GetPerson();

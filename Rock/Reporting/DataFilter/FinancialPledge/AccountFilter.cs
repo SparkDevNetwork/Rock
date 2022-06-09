@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataFilter.FinancialPledge
     [Description( "Pledge by Account" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Account Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1559B401-BF31-4E58-BAC0-53C2DB7DE49F")]
     public class AccountFilter : BaseAccountFilter<Rock.Model.FinancialPledge>
     {
         /// <summary>

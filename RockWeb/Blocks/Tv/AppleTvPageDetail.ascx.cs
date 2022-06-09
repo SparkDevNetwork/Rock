@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Tv
     #region Block Attributes
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "23CA8858-6D02-48A8-92C4-CE415DAB41B6" )]
     public partial class AppleTvPageDetail : Rock.Web.UI.RockBlock
     {
 
@@ -202,7 +203,7 @@ namespace RockWeb.Blocks.Tv
             var site = SiteCache.Get( applicationId );
 
             // Site is new so create one
-            if ( page.IsNull() )
+            if ( page == null )
             {
                 page = new Rock.Model.Page();
                 pageService.Add( page );
@@ -249,7 +250,7 @@ namespace RockWeb.Blocks.Tv
             {
                 var page = new PageService( new RockContext() ).Get( pageId );
 
-                if ( page.IsNotNull() )
+                if ( page != null )
                 {
                     tbDescription.Text = page.Description;
 

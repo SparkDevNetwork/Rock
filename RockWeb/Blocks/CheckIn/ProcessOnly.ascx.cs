@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Provides a page for simply launching a check-in workflow action.")]
 
+    [Rock.SystemGuid.BlockTypeGuid( "F7B86942-9BF2-4132-B5EB-C7310952ECFF" )]
     public partial class ProcessOnly : CheckInBlock
     {
         /// <summary>

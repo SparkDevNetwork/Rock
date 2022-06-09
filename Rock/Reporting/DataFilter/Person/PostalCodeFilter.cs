@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on the zipcode of their family." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Postal Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "618E7407-63CE-46D4-B3A4-35BFBBFCD8AB")]
     public class PostalCodeFilter : DataFilterComponent
     {
         #region Properties

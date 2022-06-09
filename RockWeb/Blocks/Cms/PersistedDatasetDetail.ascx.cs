@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Edit details of a Persisted Dataset" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "ACAF8CEB-18CD-4BAE-BF6A-12C08CF6D61F" )]
     public partial class PersistedDatasetDetail : RockBlock
     {
         #region PageParameterKeys

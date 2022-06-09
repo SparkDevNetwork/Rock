@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new GroupLocationHistoricalBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CurrentRowIndicator = model.CurrentRowIndicator,
                 EffectiveDateTime = model.EffectiveDateTime,
                 ExpireDateTime = model.ExpireDateTime,

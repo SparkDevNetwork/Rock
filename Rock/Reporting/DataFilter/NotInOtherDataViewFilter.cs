@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Exclude entities that are in another dataview" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Not In Other Data View Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "CEEEE67D-DF8E-4D99-9E39-A410DF7A2680")]
     public class NotInOtherDataViewFilter : OtherDataViewFilter, IDataFilterWithOverrides
     {
         #region Public Methods

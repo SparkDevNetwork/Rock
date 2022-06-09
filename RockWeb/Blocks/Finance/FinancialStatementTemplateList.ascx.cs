@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "65057F07-85D5-4795-91A1-86D8F67A65DC" )]
     public partial class FinancialStatementTemplateList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

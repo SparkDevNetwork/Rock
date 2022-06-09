@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -83,6 +83,7 @@ namespace RockWeb.Blocks.Core
         Order = 5,
         Key = AttributeKey.DisplayQueryStrings )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "6553821F-9667-4576-924F-DAF1BB3F3223" )]
     public partial class ScheduleContextSetter : Rock.Web.UI.RockBlock
     {
         public static class AttributeKey

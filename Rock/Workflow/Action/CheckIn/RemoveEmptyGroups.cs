@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes any group that does not have any locations.  If group contains locations, but they are all excluded by filter, will also mark the group as excluded by filter." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Groups" )]
+    [Rock.SystemGuid.EntityTypeGuid( "698115D4-7B5E-48F3-BBB0-C53A20193169")]
     public class RemoveEmptyGroups : CheckInActionComponent
     {
         /// <summary>

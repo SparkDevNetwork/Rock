@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Attribute Matrix Template Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of an attribute matrix template." )]
+    [Rock.SystemGuid.BlockTypeGuid( "D4262E61-9CB2-4FF0-A7CA-90BAD1141BF5" )]
     public partial class AttributeMatrixTemplateDetail : RockBlock
     {
         #region States

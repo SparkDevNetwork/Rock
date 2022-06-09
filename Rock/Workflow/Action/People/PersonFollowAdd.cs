@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,6 +69,7 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.PurposeKey )]
 
     #endregion
+    [Rock.SystemGuid.EntityTypeGuid( "8147B709-CF90-40BD-9E47-5444EE1E0B52")]
     public class PersonFollowAdd : ActionComponent
     {
         #region Attribute Keys

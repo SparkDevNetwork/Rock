@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Activity", "The activity that should be activated", true, fieldTypeClassNames: new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
     [WorkflowTextOrAttribute( "Attribute Key to Match", "Attribute Key to Match", "The workflow attribute key to match against in the target workflow.", true, key: "WorkflowAttributeKey" )]
     [WorkflowTextOrAttribute( "Attribute Value to Match", "Attribute Value to Match", "The workflow attribute value to match against in the target workflow.", true, key: "WorkflowAttributeValue" )]
+    [Rock.SystemGuid.EntityTypeGuid( "2F192ADD-3222-4BD9-8E2F-CEF338B97EBD")]
     public class ActivateOtherActivityOnMatch : ActionComponent
     {
         /// <summary>

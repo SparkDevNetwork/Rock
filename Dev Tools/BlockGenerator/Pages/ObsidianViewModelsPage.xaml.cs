@@ -22,7 +22,7 @@ namespace BlockGenerator.Pages
         {
             InitializeComponent();
 
-            RockViewModelsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( Path.Combine( "Rock.ViewModels", "bin", "Debug", "Rock.ViewModels.dll" ), "Rock.ViewModels" )
+            RockViewModelsOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Rock.ViewModels.Utility.ListItemBag ).Assembly.Location, "Rock.ViewModels" )
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
@@ -135,6 +135,32 @@ namespace BlockGenerator.Pages
                 .ToList();
         }
 
+        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> exportedFiles, IReadOnlyList<GeneratedFile> failedFiles )
+        {
+            var solutionPath = SupportTools.GetSolutionPath();
+            var solutionFileName = Path.Combine( solutionPath, "Rock.sln" );
+
+            if ( solutionFileName != null )
+            {
+                using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+                {
+                    foreach ( var file in exportedFiles )
+                    {
+                        var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
+
+                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                        {
+                            var projectName = file.SolutionRelativePath.Split( '\\' )[0];
+
+                            solution.AddCompileFileToProject( projectName, filename );
+                        }
+                    }
+
+                    solution.Save();
+                }
+            }
+        }
+
         private void SelectAll_Click( object sender, RoutedEventArgs e )
         {
             ViewModelsListBox.ItemsSource
@@ -164,7 +190,12 @@ namespace BlockGenerator.Pages
                 files.Add( new GeneratedFile( GetFileNameForType( type ), GetPathForType( type ), source ) );
             }
 
-            await this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );
+            var previewPage = new GeneratedFilePreviewPage( files )
+            {
+                PostSaveAction = ProcessPostSaveFiles
+            };
+
+            await this.Navigation().PushPageAsync( previewPage );
         }
 
         private class TypeItem : IComparable, INotifyPropertyChanged

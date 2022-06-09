@@ -25,6 +25,8 @@ namespace BlockGenerator.Pages
         private readonly Brush _selectedButtonBackground = new SolidColorBrush( Color.FromRgb( 0xee, 0x77, 0x25 ) );
         private readonly Brush _selectedButtonForeground = new SolidColorBrush( Color.FromRgb( 0xf0, 0xf0, 0xf0 ) );
 
+        public Action<IReadOnlyList<GeneratedFile>, IReadOnlyList<GeneratedFile>> PostSaveAction { get; set; }
+
         public GeneratedFilePreviewPage( IList<GeneratedFile> files )
         {
             InitializeComponent();
@@ -140,6 +142,7 @@ namespace BlockGenerator.Pages
                 .ToList();
 
             var failedFiles = new List<GeneratedFile>();
+            var exportedFiles = new List<GeneratedFile>();
 
             foreach ( var file in files )
             {
@@ -150,12 +153,19 @@ namespace BlockGenerator.Pages
                     EnsureDirectoryExists( Path.GetDirectoryName( filePath ) );
 
                     File.WriteAllText( filePath, file.Content );
+
+                    exportedFiles.Add( file );
                 }
                 catch ( Exception ex )
                 {
                     System.Diagnostics.Debug.WriteLine( $"Error processing file '{file.SolutionRelativePath}': {ex.Message}" );
                     failedFiles.Add( file );
                 }
+            }
+
+            if ( PostSaveAction != null )
+            {
+                PostSaveAction( exportedFiles, failedFiles );
             }
 
             if ( failedFiles.Any() )
@@ -165,7 +175,7 @@ namespace BlockGenerator.Pages
             }
             else
             {
-                MessageBox.Show( "Selected files have been created or updated." );
+                MessageBox.Show( "Selected files have been created or updated.", "Files Saved" );
             }
         }
 

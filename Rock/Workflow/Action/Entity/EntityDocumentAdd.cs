@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -83,6 +83,7 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.DocumentDescription )]
 
     #endregion
+    [Rock.SystemGuid.EntityTypeGuid( "5BBEE952-3997-4085-880D-C6092D1DC400")]
     public class EntityDocumentAdd : ActionComponent
     {
         #region Attribute Keys

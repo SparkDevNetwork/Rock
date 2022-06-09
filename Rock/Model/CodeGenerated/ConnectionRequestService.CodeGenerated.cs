@@ -83,8 +83,7 @@ namespace Rock.Model
 
             var viewModel = new ConnectionRequestBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AssignedGroupId = model.AssignedGroupId,
                 AssignedGroupMemberAttributeValues = model.AssignedGroupMemberAttributeValues,
                 AssignedGroupMemberRoleId = model.AssignedGroupMemberRoleId,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Edit details of a Media Element" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "881DC0D1-FF98-4A5E-827F-49DD5CD0BD32" )]
     public partial class MediaElementDetail : RockBlock, IRockBlockType
     {
         #region Properties

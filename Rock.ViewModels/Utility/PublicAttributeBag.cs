@@ -88,7 +88,7 @@ namespace Rock.ViewModels.Utility
         /// <value>
         /// The categories.
         /// </value>
-        public List<ListItemBag> Categories { get; set; }
+        public List<PublicAttributeCategoryBag> Categories { get; set; }
 
         /// <summary>
         /// Gets or sets the configuration values.

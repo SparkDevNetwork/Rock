@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Rock Update" )]
     [Category( "Core" )]
     [Description( "Handles checking for and performing upgrades to the Rock system." )]
+    [Rock.SystemGuid.BlockTypeGuid( "B3F7A325-24DB-4A80-ADFD-1E8E1C85217D" )]
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -68,6 +69,12 @@ namespace RockWeb.Blocks.Core
                     var btn = $(this);
                     btn.button('loading');
                     location = location.href;
+                });
+
+                $('.js-releasenote').on('click', function (event) {
+                    var $top = $(event.target).closest('.releasenotes');
+                    $top.find('i').toggleClass('fa-caret-up').toggleClass('fa-caret-down');
+                    $top.find('.releasenotes-body').slideToggle(500);
                 });
             ";
 
@@ -483,6 +490,8 @@ namespace RockWeb.Blocks.Core
 
         protected void mdConfirmInstall_SaveClick( object sender, EventArgs e )
         {
+            nbCompileThreadsIssue.Visible = false;
+
             if ( Global.CompileThemesThread.IsAlive || Global.BlockTypeCompilationThread.IsAlive )
             {
                 // Show message here and return
@@ -490,7 +499,6 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            nbCompileThreadsIssue.Visible = false;
             mdConfirmInstall.Hide();
             Update( hdnInstallVersion.Value );
         }

@@ -21,14 +21,10 @@
 // </copyright>
 //
 
-/** The gender of a person */
 export const enum Gender {
-    /** Unknown */
     Unknown = 0,
 
-    /** Male */
     Male = 1,
 
-    /** Female */
     Female = 2
 }

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PersonAlias REST API
     /// </summary>
+    [RestControllerGuid( "A5C55BF3-311D-44D2-B976-C92315DBFFC4" )]
     public partial class PersonAliasController : Rock.Rest.ApiController<Rock.Model.PersonAlias>
     {
         /// <summary>

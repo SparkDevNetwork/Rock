@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new WebFarmNodeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AddedDateTime = model.AddedDateTime,
                 ConfiguredLeadershipPollingIntervalSeconds = model.ConfiguredLeadershipPollingIntervalSeconds,
                 CurrentLeadershipPollingIntervalSeconds = model.CurrentLeadershipPollingIntervalSeconds,

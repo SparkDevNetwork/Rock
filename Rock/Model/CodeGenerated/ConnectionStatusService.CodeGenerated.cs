@@ -93,8 +93,7 @@ namespace Rock.Model
 
             var viewModel = new ConnectionStatusBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AutoInactivateState = model.AutoInactivateState,
                 ConnectionTypeId = model.ConnectionTypeId,
                 Description = model.Description,

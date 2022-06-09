@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ConnectionOpportunityGroupConfigBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ConnectionOpportunityId = model.ConnectionOpportunityId,
                 GroupMemberRoleId = model.GroupMemberRoleId,
                 GroupMemberStatus = ( int ) model.GroupMemberStatus,

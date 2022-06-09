@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { computed, defineComponent, inject, InjectionKey, PropType, provide } from "vue";
-import JavaScriptAnchor from "../Elements/javaScriptAnchor";
+import JavaScriptAnchor from "./javaScriptAnchor";
 import ComponentFromUrl from "./componentFromUrl";
 
 /**

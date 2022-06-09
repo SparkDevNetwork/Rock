@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Web.HttpModules
     [Export( typeof( HttpModuleComponent ) )]
     [ExportMetadata( "ComponentName", "Response Headers" )]
     [KeyValueListField("Headers", "List of header key/values to inject into the top of every page loaded in Rock.", false, "", "Header Key", "Header Value")]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.HTTP_MODULE_COMPONENT )]
     public class ResponseHeaders : HttpModuleComponent
     {
         /// <summary>

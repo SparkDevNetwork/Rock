@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,6 +63,7 @@ namespace RockWeb.Blocks.CheckIn
         DefaultValue = "0",
         Order = 11 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "FFDBBAB5-78E1-4865-8A48-EF70DDC6B3F6" )]
     public partial class LocationSelect : CheckInBlockMultiPerson
     {
         /* 2021-05/07 ETD

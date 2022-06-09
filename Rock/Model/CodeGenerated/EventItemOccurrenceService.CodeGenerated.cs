@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new EventItemOccurrenceBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CampusId = model.CampusId,
                 ContactEmail = model.ContactEmail,
                 ContactPersonAliasId = model.ContactPersonAliasId,

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ConnectionStatusAutomationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AutomationName = model.AutomationName,
                 DataViewId = model.DataViewId,
                 DestinationStatusId = model.DestinationStatusId,

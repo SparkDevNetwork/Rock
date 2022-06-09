@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace Rock.Follow.Suggestion
     [GroupRoleField( null, "Follower Group Type (optional)", "If specified, only people with this role will be notified (Make sure to select same group type as above).", false, order:3, key:"FollowerGroupType" )]
     [GroupRoleField( null, "Followed Group Type (optional)", "If specified, only people with this role will be suggested to the follower (Make sure to select same group type as above).", false, order:4, key:"FollowedGroupType" )]
     [BooleanField("Auto-Follow", "Determines if new people added to the group should be auto-followed.", false, IsRequired = true, Key = "AutoFollow")]
+    [Rock.SystemGuid.EntityTypeGuid( "20AC7F2A-D42F-438D-93D7-46E3C6769B8F")]
     public class InGroupTogether : SuggestionComponent
     {
         #region Suggestion Component Implementation

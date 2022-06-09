@@ -64,12 +64,25 @@ namespace Rock.Model
                 using ( var rockContext = new RockContext() )
                 {
                     var entityTypeService = new EntityTypeService( rockContext );
-                    entityType = new EntityType();
-                    entityType.Name = type.FullName;
-                    entityType.FriendlyName = type.Name.SplitCase();
-                    entityType.AssemblyName = type.AssemblyQualifiedName;
+                    entityType = CreateFromType( type );
                     entityTypeService.Add( entityType );
-                    rockContext.SaveChanges();
+                    try
+                    {
+                        rockContext.SaveChanges();
+                    }
+                    catch ( Exception thrownException )
+                    {
+                        // if the exception was due to a duplicate Guid, throw a duplicateGuidException. That'll make it easier to troubleshoot.
+                        var duplicateGuidException = Rock.SystemGuid.DuplicateSystemGuidException.CatchDuplicateSystemGuidException( thrownException, type.FullName );
+                        if ( duplicateGuidException != null )
+                        {
+                            throw duplicateGuidException;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
 
                 // Read type using current context
@@ -79,6 +92,33 @@ namespace Rock.Model
             return null;
         }
 
+        private static EntityType CreateFromType( Type type )
+        {
+            EntityType entityType = new EntityType();
+            entityType.Name = type.FullName;
+            entityType.FriendlyName = type.Name.SplitCase();
+            entityType.AssemblyName = type.AssemblyQualifiedName;
+
+            if ( typeof( IEntity ).IsAssignableFrom( type ) )
+            {
+                entityType.IsEntity = type.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute>() == null;
+            }
+            else
+            {
+                entityType.IsEntity = false;
+            }
+
+            entityType.IsSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( type );
+
+            var entityTypeGuidAttributeValue = type.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
+            if ( entityTypeGuidAttributeValue.HasValue )
+            {
+                entityType.Guid = entityTypeGuidAttributeValue.Value;
+            }
+
+            return entityType;
+        }
+
         /// <summary>
         /// Gets an <see cref="Rock.Model.EntityType" /> by its name. If a match is not found, a new <see cref="Rock.Model.EntityType" /> can optionally be created.
         /// </summary>
@@ -86,7 +126,7 @@ namespace Rock.Model
         /// <param name="createIfNotFound">A <see cref="System.Boolean" /> value that indicates if a new <see cref="Rock.Model.EntityType" /> should be created if a match is not found. This value
         /// will be <c>true</c> if a new <see cref="Rock.Model.EntityType" /> should be created if there is not a match; otherwise <c>false</c>/</param>
         /// <returns></returns>
-        public EntityType Get( string name, bool createIfNotFound )
+        public EntityType GetByName( string name, bool createIfNotFound )
         {
             var entityType = Get( name );
             if ( entityType != null )
@@ -270,24 +310,12 @@ namespace Rock.Model
             // do a distinct since some of the types implement both IEntity and ISecured
             reflectedTypes = reflectedTypes.Distinct().OrderBy( a => a.FullName ).ToList();
 
+            var reflectedTypeLookupByName = reflectedTypes.ToDictionary( k => k.FullName );
+
             Dictionary<string, EntityType> entityTypesFromReflection = new Dictionary<string, EntityType>( StringComparer.OrdinalIgnoreCase );
             foreach ( var reflectedType in reflectedTypes )
             {
-                var entityType = new EntityType();
-                entityType.Name = reflectedType.FullName;
-                entityType.FriendlyName = reflectedType.Name.SplitCase();
-                entityType.AssemblyName = reflectedType.AssemblyQualifiedName;
-                if ( typeof( IEntity ).IsAssignableFrom( reflectedType ) )
-                {
-                    entityType.IsEntity = reflectedType.GetCustomAttribute<System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute>() == null;
-                }
-                else
-                {
-                    entityType.IsEntity = false;
-                }
-
-                entityType.IsSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( reflectedType );
-
+                var entityType = CreateFromType( reflectedType );
                 entityTypesFromReflection.AddOrIgnore( reflectedType.FullName, entityType );
             };
 
@@ -379,6 +407,13 @@ namespace Rock.Model
                         existingEntityType.AssemblyName = entityTypeFromReflection.AssemblyName;
                     }
 
+                    var reflectedType = reflectedTypeLookupByName.GetValueOrNull( existingEntityType.Name );
+                    var reflectedTypeGuid = reflectedType?.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
+                    if ( reflectedTypeGuid != null && reflectedTypeGuid.Value != existingEntityType.Guid )
+                    {
+                        existingEntityType.Guid = reflectedTypeGuid.Value;
+                    }
+
                     entityTypesFromReflection.Remove( existingEntityType.Name );
                 }
 
@@ -393,7 +428,23 @@ namespace Rock.Model
                     }
                 }
 
-                rockContext.SaveChanges();
+                try
+                {
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception thrownException )
+                {
+                    // if the exception was due to a duplicate Guid, throw as a duplicateGuidException. That'll make it easier to troubleshoot.
+                    var duplicateGuidException = Rock.SystemGuid.DuplicateSystemGuidException.CatchDuplicateSystemGuidException( thrownException, null );
+                    if ( duplicateGuidException != null )
+                    {
+                        throw duplicateGuidException;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
 
                 // make sure the EntityTypeCache is synced up with any changes that were made
                 foreach ( var entityTypeModel in entityTypeService.Queryable().AsNoTracking() )

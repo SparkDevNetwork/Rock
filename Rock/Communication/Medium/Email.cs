@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,6 +64,7 @@ You can view an online version of this email here:
         DefaultBooleanValue = true,
         Key = "CSSInliningEnabled",
         Order = 4)]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL )]
     public class Email : MediumComponent
     {
         /// <summary>

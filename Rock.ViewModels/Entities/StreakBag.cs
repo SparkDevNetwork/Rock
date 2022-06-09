@@ -58,28 +58,12 @@ namespace Rock.ViewModels.Entities
         public int EngagementCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the EngagementMap.
-        /// </summary>
-        /// <value>
-        /// The EngagementMap.
-        /// </value>
-        public Byte[] EngagementMap { get; set; }
-
-        /// <summary>
         /// Gets or sets the EnrollmentDate.
         /// </summary>
         /// <value>
         /// The EnrollmentDate.
         /// </value>
         public DateTime EnrollmentDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ExclusionMap.
-        /// </summary>
-        /// <value>
-        /// The ExclusionMap.
-        /// </value>
-        public Byte[] ExclusionMap { get; set; }
 
         /// <summary>
         /// Gets or sets the InactiveDateTime.

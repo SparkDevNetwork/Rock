@@ -187,8 +187,7 @@ namespace Rock.Model
 
             var viewModel = new GroupBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AllowGuests = model.AllowGuests,
                 ArchivedByPersonAliasId = model.ArchivedByPersonAliasId,
                 ArchivedDateTime = model.ArchivedDateTime,

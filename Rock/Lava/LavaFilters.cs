@@ -31,6 +31,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using Humanizer;
 using Humanizer.Localisation;
@@ -3586,6 +3587,34 @@ namespace Rock.Lava
             return stepQuery;
         }
 
+        /// <summary>
+        /// Determines whether [is in security role] [the specified context].
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="groupId">The role Id.</param>
+        /// <returns>
+        ///   <c>true</c> if [is in security role] [the specified context]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsInSecurityRole( ILavaRenderContext context, object input, int groupId )
+        {
+            var person = GetPerson( input, context );
+            var role = RoleCache.Get( groupId );
+
+            if ( person == null || role == null )
+            {
+                return false;
+            }
+
+            if ( !role.IsSecurityTypeGroup )
+            {
+                ExceptionLogService.LogException( $"LavaFilter.IsInSecurityRole group with Id: {groupId} is not a SecurityRole" );
+                return false;
+            }
+
+            return role.IsPersonInRole( person.Guid );
+        }
+
         #endregion Person Filters
 
         #region Group Filters
@@ -5135,14 +5164,28 @@ namespace Rock.Lava
                  */
 
                 input = input.EscapeQuotes();
-                var quickReturnScript = "" +
-                    $"$( document ).ready( function () {{" + Environment.NewLine +
+
+                input = input.EscapeQuotes();
+                if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
+                {
+                    var quickReturnScript = "" +
+                    $"Sys.Application.add_load( function () {{" + Environment.NewLine +
                     $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
                     $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
                     $"  }}" + Environment.NewLine +
                     $"}});";
-
-                RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
+                    ScriptManager.RegisterStartupScript( rockPage, rockPage.GetType(), "AddQuickReturn", quickReturnScript, true );
+                }
+                else
+                {
+                    var quickReturnScript = "" +
+                  $"$( document ).ready( function () {{" + Environment.NewLine +
+                  $"  if (typeof Rock !== 'undefined' && typeof Rock.personalLinks !== 'undefined') {{" + Environment.NewLine +
+                  $"    Rock.personalLinks.addQuickReturn( '{typeName}', {typeOrder}, '{input}' );" + Environment.NewLine +
+                  $"  }}" + Environment.NewLine +
+                  $"}});";
+                    RockPage.AddScriptToHead( rockPage, quickReturnScript, true );
+                }
             }
         }
 
@@ -5278,7 +5321,7 @@ namespace Rock.Lava
                     var propertyValue = value.GetPropertyValue( filterKey );
 
                     // Allow for null checking as an empty string. Could be differing opinions on this...?!
-                    if ( propertyValue.IsNull() )
+                    if ( propertyValue == null )
                     {
                         propertyValue = string.Empty;
                     }

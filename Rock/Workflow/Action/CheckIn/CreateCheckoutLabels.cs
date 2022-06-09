@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Creates Check-Out Labels" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Create Check-Out Labels" )]
+    [Rock.SystemGuid.EntityTypeGuid( "83B13E96-A024-4ED1-9B2D-A76911139553")]
     public class CreateCheckoutLabels : CheckInActionComponent
     {
         /// <summary>

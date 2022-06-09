@@ -93,8 +93,7 @@ namespace Rock.Model
 
             var viewModel = new ContentChannelTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 DateRangeType = ( int ) model.DateRangeType,
                 DisableContentField = model.DisableContentField,
                 DisablePriority = model.DisablePriority,

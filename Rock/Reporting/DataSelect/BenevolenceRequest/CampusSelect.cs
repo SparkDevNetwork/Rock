@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataSelect.BenevolenceRequest
     [Description("Select the Campus of the Benevolence Request")]
     [Export(typeof(DataSelectComponent))]
     [ExportMetadata("ComponentName", "Select Benevolence Request's Campus")]
+    [Rock.SystemGuid.EntityTypeGuid( "2B1FB8EF-3019-4938-9E42-B1FAE50453A1")]
     public class CampusSelect : DataSelectComponent
     {
         #region Properties

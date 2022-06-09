@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PageShortLinks REST API
     /// </summary>
+    [RestControllerGuid( "BBA6A664-3BBC-4190-92D9-2753A4F40844" )]
     public partial class PageShortLinksController : Rock.Rest.ApiController<Rock.Model.PageShortLink>
     {
         /// <summary>

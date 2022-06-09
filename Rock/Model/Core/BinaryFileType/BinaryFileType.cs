@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFileType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "62AF597F-F193-412B-94EA-291CF713327D")]
     public partial class BinaryFileType : Model<BinaryFileType>, ICacheable
     {
         #region Entity Properties

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PersonPreviousNameBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 LastName = model.LastName,
                 PersonAliasId = model.PersonAliasId,
                 CreatedDateTime = model.CreatedDateTime,

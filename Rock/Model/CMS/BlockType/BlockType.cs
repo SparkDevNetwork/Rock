@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "BlockType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "04768EDF-C0CD-4950-B629-4D2370B57C99")]
     public partial class BlockType : Model<BlockType>, ICacheable
     {
         #region Entity Properties

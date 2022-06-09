@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
+    [Rock.SystemGuid.EntityTypeGuid( "2F7330D9-04FF-4F8B-9B7D-1479F9027C5D")]
     public class LastContributionSelect : FirstLastContributionSelect
     {
         /// <summary>
@@ -56,6 +57,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects First Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person First Contribution" )]
+    [Rock.SystemGuid.EntityTypeGuid( "6C7C6C7A-3355-4FBF-9D39-AEB50E46A7C1")]
     public class FirstContributionSelect : FirstLastContributionSelect
     {
         /// <summary>

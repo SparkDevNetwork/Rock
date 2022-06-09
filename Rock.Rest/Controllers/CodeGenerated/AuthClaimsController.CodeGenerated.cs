@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AuthClaims REST API
     /// </summary>
+    [RestControllerGuid( "485B41FF-B7E7-4A94-8E71-73BB0827FC0D" )]
     public partial class AuthClaimsController : Rock.Rest.ApiController<Rock.Model.AuthClaim>
     {
         /// <summary>

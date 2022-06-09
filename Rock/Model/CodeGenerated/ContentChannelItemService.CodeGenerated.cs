@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new ContentChannelItemBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
                 ApprovedDateTime = model.ApprovedDateTime,
                 Content = model.Content,

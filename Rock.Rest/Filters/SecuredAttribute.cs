@@ -73,7 +73,7 @@ namespace Rock.Rest.Filters
                         if ( userLogin.EntityTypeId != null )
                         {
                             var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
-                            if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication.EntityType.Id )
+                            if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication?.EntityType?.Id )
                             {
                                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
                                 return;
@@ -89,8 +89,16 @@ namespace Rock.Rest.Filters
             var controllerClassName = controller.ControllerType.FullName;
             var actionMethod = actionContext.Request.Method.Method;
 
-            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out RockGuidAttribute rockGuid );
-            ISecured item = RestActionCache.Get( apiId, rockGuid?.Guid ?? Guid.Empty );
+            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out Guid? restActionGuid );
+            ISecured item;
+            if ( restActionGuid.HasValue )
+            {
+                item = RestActionCache.Get( restActionGuid.Value );
+            }
+            else
+            {
+                item = RestActionCache.Get( apiId );
+            }
 
             if ( item == null )
             {

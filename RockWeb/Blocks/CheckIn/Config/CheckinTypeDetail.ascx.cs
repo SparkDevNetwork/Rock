@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,9 +40,9 @@ namespace RockWeb.Blocks.CheckIn.Config
     [Description( "Displays the details of a particular Check-in Type." )]
 
     [LinkedPage( "Schedule Page", "Page used to manage schedules for the check-in type." )]
+    [Rock.SystemGuid.BlockTypeGuid( "6CB1416A-3B25-41FD-8E60-1B94F4A64AE6" )]
     public partial class CheckinTypeDetail : RockBlock
     {
-
         #region Control Methods
 
         /// <summary>
@@ -300,6 +300,14 @@ namespace RockWeb.Blocks.CheckIn.Config
                     Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES,
                     lbRegistrationOptionalAttributesForFamilies.SelectedValues.AsDelimited( "," ) );
 
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN,
+                    ddlRegistrationDisplayBirthdateOnChildren.SelectedValue );
+
+                groupType.SetAttributeValue(
+                    Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN,
+                    ddlRegistrationDisplayGradeOnChildren.SelectedValue );
+
                 Guid? defaultPersonConnectionStatusValueGuid = null;
                 var defaultPersonConnectionStatusValueId = dvpRegistrationDefaultPersonConnectionStatus.SelectedValue.AsIntegerOrNull();
                 if ( defaultPersonConnectionStatusValueId.HasValue )
@@ -551,6 +559,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                 lbRegistrationRequiredAttributesForFamilies.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORFAMILIES ).SplitDelimitedValues() );
                 lbRegistrationOptionalAttributesForFamilies.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES ).SplitDelimitedValues() );
 
+                ddlRegistrationDisplayBirthdateOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN ) );
+                ddlRegistrationDisplayGradeOnChildren.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN ) );
+
                 int? defaultPersonConnectionStatusValueId = null;
                 Guid? defaultPersonConnectionStatusValueGuid = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS ).AsGuidOrNull();
                 if ( defaultPersonConnectionStatusValueGuid.HasValue )
@@ -648,6 +659,8 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDFAMILYWORKFLOWTYPES );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN );
 
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
@@ -860,6 +873,16 @@ namespace RockWeb.Blocks.CheckIn.Config
 
             ddlSuccessTemplateOverrideDisplayMode.Items.Clear();
             ddlSuccessTemplateOverrideDisplayMode.BindToEnum<SuccessLavaTemplateDisplayMode>();
+
+            ddlRegistrationDisplayBirthdateOnChildren.Items.Clear();
+            ddlRegistrationDisplayBirthdateOnChildren.Items.Add( ControlOptions.HIDE );
+            ddlRegistrationDisplayBirthdateOnChildren.Items.Add( ControlOptions.OPTIONAL );
+            ddlRegistrationDisplayBirthdateOnChildren.Items.Add( ControlOptions.REQUIRED );
+
+            ddlRegistrationDisplayGradeOnChildren.Items.Clear();
+            ddlRegistrationDisplayGradeOnChildren.Items.Add( ControlOptions.HIDE );
+            ddlRegistrationDisplayGradeOnChildren.Items.Add( ControlOptions.OPTIONAL );
+            ddlRegistrationDisplayGradeOnChildren.Items.Add( ControlOptions.REQUIRED );
         }
 
         #endregion

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Activity Assign to Security Role" )]
 
     [SecurityRoleField( "Security Role", "The security role to assign this activity to.")]
+    [Rock.SystemGuid.EntityTypeGuid( "08189B3F-B506-45E8-AA68-99EC51085CF3")]
     public class AssignActivityToSecurityRole : ActionComponent
     {
         /// <summary>

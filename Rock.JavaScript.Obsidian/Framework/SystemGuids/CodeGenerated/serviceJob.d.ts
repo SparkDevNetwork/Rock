@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Service Job guids */
 export const enum ServiceJob {
     /** Gets the Job Pulse guid */
     JobPulse = "CB24FF2A-5AD3-4976-883F-DAF4EFC1D7C7",
@@ -80,8 +81,10 @@ export const enum ServiceJob {
     DataMigrations124DecryptFinancialPaymentDetails = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12",
     /** The Job to get NCOA */
     GetNcoa = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6",
-    /** The Job to Rebuild a Sequence. This job has been deleted and replaced with
- */
+    /**
+     * The Job to Rebuild a Sequence. This job has been deleted and replaced with
+     * 
+     */
     RebuildStreak = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A",
     /** The rock cleanup Job.  */
     RockCleanup = "1A8238B1-038A-4295-9FDE-C6D93002A5D7",
@@ -102,4 +105,3 @@ export const enum ServiceJob {
     /** The Process Elevated Security Job.  */
     ProcessElevatedSecurity = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
 }
-

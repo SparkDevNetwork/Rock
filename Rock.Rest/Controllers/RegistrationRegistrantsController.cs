@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "e9e16c98-d740-4dab-b244-42e666f708df" )]
     public partial class RegistrationRegistrantsController
     {
         #region Group Placement Related
@@ -39,7 +38,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/RegistrationRegistrants/GetGroupPlacementRegistrants" )]
         [HttpPost]
-        [RockGuid( "bb15362d-ff32-448f-804c-7b39543dd934" )]
+        [Rock.SystemGuid.RestActionGuid( "BB15362D-FF32-448F-804C-7B39543DD934" )]
         public IEnumerable<GroupPlacementRegistrant> GetGroupPlacementRegistrants( [FromBody] GetGroupPlacementRegistrantsParameters options )
         {
             var rockContext = new RockContext();

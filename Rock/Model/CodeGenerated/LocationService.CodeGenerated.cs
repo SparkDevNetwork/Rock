@@ -135,8 +135,7 @@ namespace Rock.Model
 
             var viewModel = new LocationBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AssessorParcelId = model.AssessorParcelId,
                 Barcode = model.Barcode,
                 City = model.City,

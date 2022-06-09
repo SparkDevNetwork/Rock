@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ScheduleCategoryExclusionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CategoryId = model.CategoryId,
                 EndDate = model.EndDate,
                 StartDate = model.StartDate,

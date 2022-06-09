@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new BinaryFileDataBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
-                Content = model.Content,
+                IdKey = model.IdKey,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,

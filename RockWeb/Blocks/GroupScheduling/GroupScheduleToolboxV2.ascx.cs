@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -113,19 +113,38 @@ namespace RockWeb.Blocks.GroupScheduling
         Order = 6,
         Key = AttributeKey.EnableAdditionalTimeSignUp )]
 
+    [TextField( "Additional Time Sign-Up Button Text",
+        Description = "The text to display for the Additional Time Sign-Up button.",
+        DefaultValue = "Sign-Up for Additional Times",
+        Order = 7,
+        Key = AttributeKey.AdditionalTimeSignUpButtonText )]
+
     [BooleanField( "Enable Update Schedule Preferences",
         Description = "When enabled, a button will allow the individual to set their group reminder preferences and preferred schedule.",
         DefaultBooleanValue = true,
-        Order = 7,
+        Order = 8,
         Key = AttributeKey.EnableUpdateSchedulePreferences )]
+
+    [TextField( "Update Schedule Preferences Button Text",
+        Description = "The text to display for the Update Schedule Preferences button.",
+        DefaultValue = "Update Schedule Preferences",
+        Order = 9,
+        Key = AttributeKey.UpdateSchedulePreferencesButtonText )]
 
     [BooleanField( "Enable Schedule Unavailability",
         Description = "When enabled, a button will allow the individual to specify dates or date ranges when they will be unavailable to serve.",
         DefaultBooleanValue = true,
-        Order = 8,
+        Order = 10,
         Key = AttributeKey.EnableScheduleUnavailability )]
 
+    [TextField( "Schedule Unavailability Button Text",
+        Description = "The text to display for the Schedule Unavailability button.",
+        DefaultValue = "Schedule Unavailability",
+        Order = 11,
+        Key = AttributeKey.ScheduleUnavailabilityButtonText )]
+
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( "18A6DCE3-376C-4A62-B1DD-5E5177C11595" )]
     public partial class GroupScheduleToolboxV2 : RockBlock
     {
         #region Keys
@@ -139,8 +158,11 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string SchedulingResponseEmail = "SchedulingResponseEmail";
             public const string ActionHeaderLavaTemplate = "ActionHeaderLavaTemplate";
             public const string EnableAdditionalTimeSignUp = "EnableAdditionalTimeSignUp";
+            public const string AdditionalTimeSignUpButtonText = "AdditionalTimeSignUpButtonText";
             public const string EnableUpdateSchedulePreferences = "EnableUpdateSchedulePreferences";
+            public const string UpdateSchedulePreferencesButtonText = "UpdateSchedulePreferencesButtonText";
             public const string EnableScheduleUnavailability = "EnableScheduleUnavailability";
+            public const string ScheduleUnavailabilityButtonText = "ScheduleUnavailabilityButtonText";
         }
 
         /// <summary>
@@ -239,6 +261,9 @@ $('#{0}').tooltip();
 
             if ( !Page.IsPostBack )
             {
+                btnSignUp.Text = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
+                btnUpdateSchedulePreferences.Text = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesButtonText );
+                btnScheduleUnavailability.Text = GetAttributeValue( AttributeKey.ScheduleUnavailabilityButtonText );
                 BindScheduleRepeater();
             }
             else

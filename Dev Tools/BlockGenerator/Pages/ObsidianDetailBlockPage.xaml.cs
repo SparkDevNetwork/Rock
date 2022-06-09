@@ -53,7 +53,7 @@ namespace BlockGenerator.Pages
         {
             InitializeComponent();
 
-            RockOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( Path.Combine( "Rock", "bin", "Debug", "Rock.dll" ), "Rock" )
+            RockOutOfDateAlert.Visibility = SupportTools.IsSourceNewer( typeof( Rock.Data.IEntity ).Assembly.Location, "Rock" )
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
@@ -114,9 +114,10 @@ namespace BlockGenerator.Pages
             var domain = parameters.EntityType.GetCustomAttribute<Rock.Data.RockDomainAttribute>()?.Name ?? "Unknown";
             var bagPath = $"Rock.ViewModels\\Blocks\\{domain}\\{parameters.EntityType.Name}Detail";
             var blockPath = $"Rock.Blocks\\{domain}";
-            var typeScriptBlockPath = $"Rock.JavasScript.Obsidian\\Framework\\Blocks\\{domain}";
+            var typeScriptBlockPath = $"Rock.JavaScript.Obsidian.Blocks\\src\\{domain}";
             var bagNamespace = $"Rock.ViewModels.Blocks.{domain}.{parameters.EntityType.Name}Detail";
             var generator = new CSharpViewModelGenerator();
+            var tsGenerator = new TypeScriptViewModelGenerator();
 
             var mergeFields = new Dictionary<string, object>
             {
@@ -126,6 +127,7 @@ namespace BlockGenerator.Pages
                 ["Properties"] = parameters.Properties,
                 ["UseAttributeValues"] = parameters.UseAttributeValues,
                 ["UseDescription"] = parameters.Properties.Any( p => p.Name == "Description" ),
+                ["UseEntitySecurity"] = parameters.UseEntitySecurity,
                 ["UseIsActive"] = parameters.Properties.Any( p => p.Name == "IsActive" ),
                 ["UseIsSystem"] = parameters.Properties.Any( p => p.Name == "IsSystem" ),
                 ["UseName"] = parameters.Properties.Any( p => p.Name == "Name" )
@@ -166,7 +168,7 @@ namespace BlockGenerator.Pages
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"viewPanel.ts", $"{typeScriptBlockPath}\\{parameters.EntityType.Name}", result ) );
+                files.Add( new GeneratedFile( $"viewPanel.ts", $"{typeScriptBlockPath}\\{parameters.EntityType.Name}Detail", result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\editPanel.ts file.
@@ -176,10 +178,43 @@ namespace BlockGenerator.Pages
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"editPanel.ts", $"{typeScriptBlockPath}\\{parameters.EntityType.Name}", result ) );
+                files.Add( new GeneratedFile( $"editPanel.ts", $"{typeScriptBlockPath}\\{parameters.EntityType.Name}Detail", result ) );
             }
 
+            // Generate the Obsidian <Entity>Detail\types.d.ts file.
+            content = tsGenerator.GenerateDetailBlockTypeDefinitionFile( new Dictionary<string, string>
+            {
+                ["ParentPage"] = "ParentPage"
+            } );
+            files.Add( new GeneratedFile( "types.d.ts", $"{typeScriptBlockPath}\\{parameters.EntityType.Name}Detail", content ) );
+
             return files;
+        }
+
+        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> exportedFiles, IReadOnlyList<GeneratedFile> failedFiles )
+        {
+            var solutionPath = SupportTools.GetSolutionPath();
+            var solutionFileName = Path.Combine( solutionPath, "Rock.sln" );
+
+            if ( solutionFileName != null )
+            {
+                using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+                {
+                    foreach ( var file in exportedFiles )
+                    {
+                        var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
+
+                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                        {
+                            var projectName = file.SolutionRelativePath.Split( '\\' )[0];
+
+                            solution.AddCompileFileToProject( projectName, filename );
+                        }
+                    }
+
+                    solution.Save();
+                }
+            }
         }
 
         private void SelectEntity_Click( object sender, RoutedEventArgs e )
@@ -221,12 +256,15 @@ namespace BlockGenerator.Pages
                 EntityType = _selectedEntityType,
                 ServiceType = serviceType,
                 Properties = selectedProperties.Select( p => new EntityProperty( p ) ).ToList(),
-                UseAttributeValues = UseAttributeValuesCheckBox.IsChecked == true
+                UseAttributeValues = UseAttributeValuesCheckBox.IsChecked == true,
+                UseEntitySecurity = SecurityFromEntityRadioButton.IsChecked == true
             };
 
             var files = GenerateFiles( parameters );
+            var previewPage = new GeneratedFilePreviewPage( files );
+            previewPage.PostSaveAction = ProcessPostSaveFiles;
 
-            this.Navigation().PushPageAsync( new GeneratedFilePreviewPage( files ) );
+            this.Navigation().PushPageAsync( previewPage );
         }
 
         private void SelectAll_Click( object sender, RoutedEventArgs e )
@@ -288,6 +326,8 @@ namespace BlockGenerator.Pages
             public List<EntityProperty> Properties { get; set; }
 
             public bool UseAttributeValues { get; set; }
+
+            public bool UseEntitySecurity { get; set; }
         }
     }
 }

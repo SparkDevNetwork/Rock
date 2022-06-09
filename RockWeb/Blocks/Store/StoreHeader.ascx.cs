@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Store
         Description = "Page to allow the user to link an organization to the store.",
         IsRequired = false,
         Key = AttributeKey.LinkOrganizationPage )]
+    [Rock.SystemGuid.BlockTypeGuid( "91355804-4B64-434F-949B-6180E5CC31D9" )]
     public partial class StoreHeader : Rock.Web.UI.RockBlock
     {
         private static class AttributeKey

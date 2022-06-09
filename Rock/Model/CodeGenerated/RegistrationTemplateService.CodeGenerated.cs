@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationTemplateBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AddPersonNote = model.AddPersonNote,
                 AllowExternalRegistrationUpdates = model.AllowExternalRegistrationUpdates,
                 AllowMultipleRegistrants = model.AllowMultipleRegistrants,

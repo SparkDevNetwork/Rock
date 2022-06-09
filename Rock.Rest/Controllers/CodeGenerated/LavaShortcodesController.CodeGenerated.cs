@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// LavaShortcodes REST API
     /// </summary>
+    [RestControllerGuid( "C66F77B8-FC7C-45A7-85C3-4343162051C4" )]
     public partial class LavaShortcodesController : Rock.Rest.ApiController<Rock.Model.LavaShortcode>
     {
         /// <summary>

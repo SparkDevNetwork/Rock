@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Line Chart" )]
     [Category( "Reporting > Dashboard" )]
     [Description( "Line Chart Dashboard Widget" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0ADBF632-D54D-42D5-A8A1-517E95DDFDB1" )]
     public partial class LineChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
     }

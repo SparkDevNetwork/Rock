@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionStatusAutomation" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "ACF794C7-F12D-42DF-85C5-089A28993EE6")]
     public partial class ConnectionStatusAutomation : Model<ConnectionStatusAutomation>
     {
         #region Entity Properties

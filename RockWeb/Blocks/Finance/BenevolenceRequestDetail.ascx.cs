@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -12,7 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// </copyright>
+// </copyright>hlEditStatus
 //
 using System;
 using System.Collections.Generic;
@@ -85,6 +85,7 @@ namespace RockWeb.Blocks.Finance
         DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "34275D0E-BC7E-4A9C-913E-623D086159A1" )]
     public partial class BenevolenceRequestDetailView : RockBlock
     {
         #region ViewState Keys
@@ -1427,20 +1428,20 @@ namespace RockWeb.Blocks.Finance
             _requester = benevolenceRequest?.RequestedByPersonAlias?.Person;
             _assignedTo = benevolenceRequest?.CaseWorkerPersonAlias?.Person;
 
-            lViewBenevolenceType.Text = $"<span class='label label-info'><small>{benevolenceRequest?.BenevolenceType?.Name}</small></span>";
+            lViewBenevolenceType.Text = $"<span class='label label-info'>{benevolenceRequest?.BenevolenceType?.Name}</span>";
 
             var campus = _requester?.GetCampus();
 
             if ( campus != null )
             {
-                lViewCampus.Text = $"<span class='label label-orange'><small>{campus?.Name}</small></span>";
+                lViewCampus.Text = $"<span class='label label-campus'>{campus?.Name}</span>";
             }
             else
             {
-                lViewCampus.Text = $"<span class='label label-orange'><small>{CampusCache.All()?.FirstOrDefault()?.Name}</small></span>";
+                lViewCampus.Text = $"<span class='label label-campus'>{CampusCache.All()?.FirstOrDefault()?.Name}</span>";
             }
 
-            lViewStatus.Text = $"<span class='label label-gray'><small>{benevolenceRequest?.RequestStatusValue?.Value}</small></span>";
+            lViewStatus.Text = $"<span class='label label-default'>{benevolenceRequest?.RequestStatusValue?.Value}</span>";
 
             DisplayPersonName();
 
@@ -1553,7 +1554,8 @@ namespace RockWeb.Blocks.Finance
 
             if ( ( benevolenceRequest?.GovernmentId?.IsNotNullOrWhiteSpace() ).GetValueOrDefault( false ) && GetAttributeValue( AttributeKey.DisplayGovernmentId ).AsBoolean() )
             {
-                lViewGovernmentId.Text = $"<small>Government Id: {benevolenceRequest?.GovernmentId}</small>";
+                lViewGovernmentId.Visible = true;
+                lViewGovernmentId.Text = $"{benevolenceRequest?.GovernmentId}";
             }
         }
 
@@ -1585,7 +1587,7 @@ namespace RockWeb.Blocks.Finance
 
             divViewAttributes.Visible = ( benevolenceRequest?.Attributes?.Any() ).GetValueOrDefault( false );
 
-            lViewBenevolenceTypeDescription.Text = $"<small>{benevolenceRequest?.RequestText}</small>";
+            lViewBenevolenceTypeDescription.Text = $"{benevolenceRequest?.RequestText}";
 
             avcViewBenevolenceTypeAttributes.AddDisplayControls( benevolenceRequest );
 

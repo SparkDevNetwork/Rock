@@ -16,86 +16,82 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { computed, defineComponent, PropType, ref } from "vue";
-import BasePicker from "./basePicker";
-import RockFormField from "../Elements/rockFormField";
-import { useVModelPassthrough } from "../Util/component";
+import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+import { post } from "@Obsidian/Utility/http";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { get } from "../Util/http";
+import { defineComponent, PropType, ref, watch } from "vue";
+import BaseAsyncPicker from "./baseAsyncPicker";
+import RockFormField from "./rockFormField";
 
 export default defineComponent({
-    name: "DefinedTypePicker",
+    name: "DefinedValuePicker",
 
     components: {
-        BasePicker,
+        BaseAsyncPicker,
         RockFormField
     },
 
     props: {
         modelValue: {
-            type: Object as PropType<ListItemBag>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
         },
+
+        ...standardAsyncPickerProps,
 
         definedTypeGuid: {
             type: String as PropType<Guid>,
             required: false
+        },
+
+        securityGrantToken: {
+            type: String as PropType<string>,
+            required: false
         }
     },
 
-    emits: [
-        "update:modelValue"
-    ],
+    emits: {
+        "update:modelValue": (_value: ListItemBag | ListItemBag[] | null) => true
+    },
 
     setup(props, { emit }) {
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
-        const items = ref<ListItemBag[]>([]);
-        const isPickerOpen = ref(false);
+        const itemsSource = ref<(() => Promise<ListItemBag[]>) | null>(null);
+        const standardProps = useStandardAsyncPickerProps(props);
 
-        const validationValue = computed((): string => internalValue.value?.value ?? "");
-        const selectedText = computed((): string => internalValue.value?.text ?? "");
-
-        const onSelectItem = (item: ListItemBag): void => {
-            internalValue.value = item;
-            isPickerOpen.value = false;
-        };
-
-        const onLoadData = async (): Promise<void> => {
-            const url = `/api/v2/Controls/DefinedValuePicker/definedValues/${props.definedTypeGuid}`;
-            const result = await get<ListItemBag[]>(url);
+        const loadItems = async (): Promise<ListItemBag[]> => {
+            const options = {
+                definedTypeGuid: props.definedTypeGuid,
+                securityGrantToken: props.securityGrantToken
+            };
+            const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
+            const result = await post<ListItemBag[]>(url, undefined, options);
 
             if (result.isSuccess && result.data) {
-                items.value = result.data;
+                return result.data;
+            }
+            else {
+                console.error(result.errorMessage ?? "Unknown error while loading data.");
+                return [];
             }
         };
 
+        watch(() => props.definedTypeGuid, () => {
+            // Pass as a wrapped function to ensure lazy loading works.
+            itemsSource.value = () => loadItems();
+        });
+
+        itemsSource.value = () => loadItems();
+
         return {
-            isPickerOpen,
-            items,
-            onSelectItem,
-            onLoadData,
-            selectedText,
-            validationValue
+            internalValue,
+            itemsSource,
+            standardProps
         };
     },
     template: `
-<RockFormField
-    :modelValue="internalValue"
-    formGroupClasses="rock-defined-type-picker"
-    name="defined-type-picker">
-    <template #default="{uniqueId, field}">
-        <div class="control-wrapper">
-            <BasePicker v-model="isPickerOpen"
-                :id="uniqueId"
-                v-bind="field"
-                :text="selectedText"
-                saveText=""
-                @load="onLoadData">
-                <div>
-                    <div v-for="item in items" @click="onSelectItem(item)" style="padding: 8px; border-bottom: 1px solid gray;">{{ item.text }}</div>
-                </div>
-            </BasePicker>
-        </div>
-    </template>
-</RockFormField>`
+<BaseAsyncPicker v-model="internalValue"
+    v-bind="standardProps"
+    :items="itemsSource" />
+`
 });

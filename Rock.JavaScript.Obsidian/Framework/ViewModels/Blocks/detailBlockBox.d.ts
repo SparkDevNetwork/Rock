@@ -33,4 +33,6 @@ export type DetailBlockBox<TEntityBag, TOptions> = {
     navigationUrls?: Record<string, string> | null;
 
     validProperties?: string[] | null;
+
+    securityGrantToken?: string | null;
 };

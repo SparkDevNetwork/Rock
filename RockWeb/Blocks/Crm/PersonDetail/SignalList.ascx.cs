@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.CRM.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Lists all the signals on a person." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "813CFCCF-30BF-4A2F-BB55-F240A3B7809F" )]
     public partial class SignalList : PersonBlock
     {
         #region Control Methods

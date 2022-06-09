@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Follow.Event
         Order = 0,
         EntityTypeName = "Rock.Model.Person",
         Key = AttributeKey.NoteTypes )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_NOTE_ADDED )]
     public class PersonNoteAdded : EventComponent, IEventComponentAdditionalMergeFields
     {
         /// <summary>

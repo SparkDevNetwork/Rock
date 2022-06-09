@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -52,6 +52,7 @@ namespace Rock.Storage.Provider
         Order = 3,
         Key = AttributeKey.RootFolder )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "153371D6-8841-4707-98C9-4E6ED2478855")]
     public class GoogleCloudStorageProvider : ProviderComponent
     {
         #region Keys

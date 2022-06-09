@@ -39,4 +39,3 @@ export const enum InteractionChannel {
     /** Interaction Channel GUID Views and Completions for Workflow Entry Forms. */
     WorkflowLaunches = "DAA17190-7119-4901-B105-26C6B5E4CDB4",
 }
-

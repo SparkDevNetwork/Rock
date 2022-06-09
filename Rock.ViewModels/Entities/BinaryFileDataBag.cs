@@ -34,14 +34,6 @@ namespace Rock.ViewModels.Entities
     public partial class BinaryFileDataBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Content.
-        /// </summary>
-        /// <value>
-        /// The Content.
-        /// </value>
-        public Byte[] Content { get; set; }
-
-        /// <summary>
         /// Gets or sets the CreatedDateTime.
         /// </summary>
         /// <value>

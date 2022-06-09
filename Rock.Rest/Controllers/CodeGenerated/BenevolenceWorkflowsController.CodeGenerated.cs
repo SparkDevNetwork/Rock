@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// BenevolenceWorkflows REST API
     /// </summary>
+    [RestControllerGuid( "" )]
     public partial class BenevolenceWorkflowsController : Rock.Rest.ApiController<Rock.Model.BenevolenceWorkflow>
     {
         /// <summary>

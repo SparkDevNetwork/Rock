@@ -947,11 +947,11 @@ mission. We are so grateful for your commitment.</p>
             {
                 var service = new FinancialAccountService( rockContext );
                 var allowedGuids = GetAttributeValue( AttributeKey.AccountsToDisplay ).SplitDelimitedValues().AsGuidList();
-                var accountGuidToIdMap = service.GetByGuids( allowedGuids ).ToDictionary( fa => fa.Guid, fa => fa.Id );
+                var accountKeyToIdMap = service.GetByGuids( allowedGuids ).ToDictionary( fa => fa.IdKey, fa => fa.Id );
 
                 foreach ( var arg in args.AccountAmounts.Where( kvp => kvp.Value > 0 ) )
                 {
-                    var accountId = accountGuidToIdMap.GetValueOrNull( arg.Key );
+                    var accountId = accountKeyToIdMap.GetValueOrNull( arg.Key );
 
                     if ( !accountId.HasValue )
                     {
@@ -1699,7 +1699,7 @@ mission. We are so grateful for your commitment.</p>
             /// <value>
             /// The account amount arguments.
             /// </value>
-            public Dictionary<Guid, decimal> AccountAmounts { get; set; }
+            public Dictionary<string, decimal> AccountAmounts { get; set; }
 
             /// <summary>
             /// Gets the street1.

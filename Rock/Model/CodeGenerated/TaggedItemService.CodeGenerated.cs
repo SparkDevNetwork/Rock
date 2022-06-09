@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new TaggedItemBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 EntityGuid = model.EntityGuid,
                 EntityTypeId = model.EntityTypeId,
                 IsSystem = model.IsSystem,

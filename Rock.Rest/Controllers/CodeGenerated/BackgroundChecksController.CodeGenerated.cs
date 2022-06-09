@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// BackgroundChecks REST API
     /// </summary>
+    [RestControllerGuid( "D92E5DE1-05F2-47E4-976F-C52326CD5CC8" )]
     public partial class BackgroundChecksController : Rock.Rest.ApiController<Rock.Model.BackgroundCheck>
     {
         /// <summary>

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new NotificationRecipientBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 NotificationId = model.NotificationId,
                 PersonAliasId = model.PersonAliasId,
                 Read = model.Read,

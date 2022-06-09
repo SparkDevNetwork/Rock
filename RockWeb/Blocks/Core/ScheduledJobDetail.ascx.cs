@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Scheduled Job Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given scheduled job." )]
+    [Rock.SystemGuid.BlockTypeGuid( "C5EC90C9-26C4-493A-84AC-4B5DEF9EA472" )]
     public partial class ScheduledJobDetail : RockBlock
     {
         #region Control Methods

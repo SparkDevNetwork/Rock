@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// CommunicationTemplates REST API
     /// </summary>
+    [RestControllerGuid( "5658C19F-0A55-434B-B49A-D36B6B1008C5" )]
     public partial class CommunicationTemplatesController : Rock.Rest.ApiController<Rock.Model.CommunicationTemplate>
     {
         /// <summary>

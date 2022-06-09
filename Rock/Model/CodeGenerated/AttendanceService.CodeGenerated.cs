@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AttendanceBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AttendanceCheckInSessionId = model.AttendanceCheckInSessionId,
                 AttendanceCodeId = model.AttendanceCodeId,
                 CampusId = model.CampusId,

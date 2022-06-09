@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new GroupDemographicTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ComponentEntityTypeId = model.ComponentEntityTypeId,
                 Description = model.Description,
                 GroupTypeId = model.GroupTypeId,

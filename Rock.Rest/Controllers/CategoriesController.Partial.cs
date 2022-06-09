@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,7 +31,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "14863e90-9ba6-4769-9c91-b7b42c9296fb" )]
     public partial class CategoriesController
     {
         /// <summary>
@@ -42,7 +41,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Categories/GetMetricChildren/{id}" )]
-        [RockGuid( "14701e8c-673c-433c-9a68-7cab1ded9c6b" )]
+        [Rock.SystemGuid.RestActionGuid( "14701E8C-673C-433C-9A68-7CAB1DED9C6B" )]
         public IQueryable<CategoryItem> GetMetricChildren( int id, string includedCategoryIds = "" )
         {
             // Get list of categorized MetricCategory objects from GetChildren().
@@ -138,7 +137,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Categories/GetChildren/{id}" )]
-        [RockGuid( "8a69ce30-f46e-4737-884b-07cff829c93f" )]
+        [Rock.SystemGuid.RestActionGuid( "8A69CE30-F46E-4737-884B-07CFF829C93F" )]
         public IQueryable<CategoryItem> GetChildren(
             int id,
             int rootCategoryId = 0,

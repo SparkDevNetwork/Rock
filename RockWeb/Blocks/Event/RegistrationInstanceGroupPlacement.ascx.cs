@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.Event
         )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.EVENT_REGISTRATION_GROUP_PLACEMENT )]
     public partial class RegistrationInstanceGroupPlacement : RegistrationInstanceBlock
     {
         #region Attribute Keys

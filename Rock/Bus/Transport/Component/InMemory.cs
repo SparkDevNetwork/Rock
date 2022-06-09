@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Bus.Transport
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "InMemory" )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "D6AE6233-BCD4-43BC-9D4B-5D70A0A1A9BB")]
     public class InMemory : TransportComponent
     {
         /// <summary>

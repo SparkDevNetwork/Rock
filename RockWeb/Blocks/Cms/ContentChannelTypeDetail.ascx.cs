@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Content Channel Type Detail")]
     [Category("CMS")]
     [Description("Displays the details for a content channel type.")]
+    [Rock.SystemGuid.BlockTypeGuid( "451E9690-D851-4641-8BA0-317B65819918" )]
     public partial class ContentChannelTypeDetail : RockBlock
     {
         #region Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [Description( "Show Group Attribute Values" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Group Attribute Select" )]
+    [Rock.SystemGuid.EntityTypeGuid( "EC98933B-341B-4705-A7F6-60972D151AA7")]
     public class GroupAttributeSelect : DataSelectComponent
     {
         #region Private Methods

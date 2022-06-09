@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new MediaAccountBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ComponentEntityTypeId = model.ComponentEntityTypeId,
                 IsActive = model.IsActive,
                 LastRefreshDateTime = model.LastRefreshDateTime,

@@ -143,8 +143,7 @@ namespace Rock.Model
 
             var viewModel = new DataViewBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CategoryId = model.CategoryId,
                 DataViewFilterId = model.DataViewFilterId,
                 Description = model.Description,

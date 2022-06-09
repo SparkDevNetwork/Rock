@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes any person that does not have any group types" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Remove Empty People" )]
+    [Rock.SystemGuid.EntityTypeGuid( "B8B72812-190E-4802-A63F-E693344754BD")]
     public class RemoveEmptyPeople : CheckInActionComponent
     {
         /// <summary>

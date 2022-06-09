@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of achievement types and allow a single selection.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "593132CF-BA5D-462F-97F6-94DCC0BFFE6F")]
     public class AchievementTypeFieldType : EntitySingleSelectionListFieldTypeBase<AchievementType>
     {
         /// <summary>

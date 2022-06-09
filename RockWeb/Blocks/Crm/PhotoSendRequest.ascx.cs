@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -57,6 +57,7 @@ namespace RockWeb.Blocks.Crm
         DefaultIntegerValue = 300,
         Order = 1 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "DE1AF7AE-92A8-484F-B5F2-03D2D4B320EC" )]
     public partial class PhotoSendRequest : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

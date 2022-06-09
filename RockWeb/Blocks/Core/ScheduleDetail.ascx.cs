@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Schedule Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given schedule." )]
+    [Rock.SystemGuid.BlockTypeGuid( "59C9C862-570C-4410-99B6-DD9064B5E594" )]
     public partial class ScheduleDetail : RockBlock
     {
         #region Control Methods

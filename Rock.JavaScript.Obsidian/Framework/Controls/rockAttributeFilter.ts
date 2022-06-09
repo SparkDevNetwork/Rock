@@ -15,10 +15,10 @@
 // </copyright>
 //
 import { computed, defineComponent, PropType } from "vue";
-import { getFieldType } from "../Fields/index";
-import { ComparisonValue } from "../Reporting/comparisonValue";
-import { FilterMode } from "../Reporting/filterMode";
-import { useVModelPassthrough } from "../Util/component";
+import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export default defineComponent({

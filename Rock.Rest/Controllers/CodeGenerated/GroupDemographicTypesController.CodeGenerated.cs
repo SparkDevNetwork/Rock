@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// GroupDemographicTypes REST API
     /// </summary>
+    [RestControllerGuid( "9ACB4C22-F39D-4378-829E-74D5E4BA151C" )]
     public partial class GroupDemographicTypesController : Rock.Rest.ApiController<Rock.Model.GroupDemographicType>
     {
         /// <summary>

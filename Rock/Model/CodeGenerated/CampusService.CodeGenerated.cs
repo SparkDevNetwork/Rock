@@ -153,8 +153,7 @@ namespace Rock.Model
 
             var viewModel = new CampusBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CampusStatusValueId = model.CampusStatusValueId,
                 CampusTypeValueId = model.CampusTypeValueId,
                 Description = model.Description,

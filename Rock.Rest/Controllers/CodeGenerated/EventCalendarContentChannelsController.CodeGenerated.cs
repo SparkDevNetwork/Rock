@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// EventCalendarContentChannels REST API
     /// </summary>
+    [RestControllerGuid( "C0861EDA-4A04-46C9-9AEE-43C0C6E23679" )]
     public partial class EventCalendarContentChannelsController : Rock.Rest.ApiController<Rock.Model.EventCalendarContentChannel>
     {
         /// <summary>

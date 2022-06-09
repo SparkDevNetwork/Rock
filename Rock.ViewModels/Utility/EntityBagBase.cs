@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Utility
@@ -23,20 +22,12 @@ namespace Rock.ViewModels.Utility
     public abstract class EntityBagBase : IViewModelWithAttributes
     {
         /// <summary>
-        /// Gets or sets the Id.
+        /// Gets or sets the identifier key of this entity.
         /// </summary>
         /// <value>
-        /// The Id.
+        /// The identifier key of this entity.
         /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Guid.
-        /// </summary>
-        /// <value>
-        /// The Guid.
-        /// </value>
-        public Guid Guid { get; set; }
+        public string IdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the attributes.

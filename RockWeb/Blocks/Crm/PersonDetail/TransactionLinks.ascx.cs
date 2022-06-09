@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "2BB707AC-F29A-44DF-A103-7454077509B4" )]
     public partial class TransactionLinks : PersonBlock, ISecondaryBlock
     {
         #region Attribute Keys
@@ -222,4 +223,3 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #endregion Secondary Block
     }
 }
-

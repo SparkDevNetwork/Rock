@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// HtmlContents REST API
     /// </summary>
-    [RockGuid( "fe7e5808-b5a0-46ba-9a42-9e2e020ac822" )]
     public partial class HtmlContentsController
     {
         /// <summary>
@@ -37,7 +36,7 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "api/HtmlContents/UpdateContents/{blockId}" )]
-        [RockGuid( "6236deeb-8536-4485-890b-0fa4b0c86f81" )]
+        [Rock.SystemGuid.RestActionGuid( "6236DEEB-8536-4485-890B-0FA4B0C86F81" )]
         public void UpdateContents( int blockId, [FromBody] HtmlContents htmlContents )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities

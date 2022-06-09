@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -99,6 +99,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "764D3E67-2D01-437A-9F45-9F8C97878434" )]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -486,6 +487,7 @@ namespace RockWeb.Blocks.Crm
                     NickName = p.NickName,
                     LastName = p.LastName,
                     BirthDate = p.BirthDate,
+                    DeceasedDate = p.DeceasedDate,
                     BirthYear = p.BirthYear,
                     BirthMonth = p.BirthMonth,
                     BirthDay = p.BirthDay,
@@ -693,6 +695,14 @@ namespace RockWeb.Blocks.Crm
         public DateTime? BirthDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the deceased date.
+        /// </summary>
+        /// <value>
+        /// The deceased date.
+        /// </value>
+        public DateTime? DeceasedDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the birth year.
         /// </summary>
         /// <value>
@@ -764,7 +774,7 @@ namespace RockWeb.Blocks.Crm
         {
             get
             {
-                return Person.GetAge( BirthDate );
+                return Person.GetAge( BirthDate, DeceasedDate );
             }
 
             private set { }

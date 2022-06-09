@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Connection
          )]
     #endregion
 
+    [Rock.SystemGuid.BlockTypeGuid( "887F66AF-944F-4959-87F0-087E3999BAC3" )]
     public partial class WebConnectionTypeListLava : RockBlock
     {
         #region Default Lava

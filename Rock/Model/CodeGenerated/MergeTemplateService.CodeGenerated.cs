@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new MergeTemplateBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CategoryId = model.CategoryId,
                 Description = model.Description,
                 MergeTemplateTypeEntityTypeId = model.MergeTemplateTypeEntityTypeId,

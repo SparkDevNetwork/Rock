@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.MergeTemplates
     [System.ComponentModel.Description( "A Word Document merge template" )]
     [Export( typeof( MergeTemplateType ) )]
     [ExportMetadata( "ComponentName", "Word" )]
+    [Rock.SystemGuid.EntityTypeGuid( "7B86E093-3EB8-46CA-8CA7-068D699E7811")]
     public class WordDocumentMergeTemplateType : MergeTemplateType
     {
         /// <summary>

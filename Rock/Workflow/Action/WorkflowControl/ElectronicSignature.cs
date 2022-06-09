@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,6 +79,7 @@ namespace Rock.Workflow.Action
         IsRequired = true,
         Order = 6 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "41491689-00BD-49A1-A3CD-A59FBBD2B2F8")]
     public class ElectronicSignature : ActionComponent
     {
         /// <summary>

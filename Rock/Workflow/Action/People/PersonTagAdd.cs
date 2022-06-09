@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to add to the tag.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [TextField( "Organization Tag", "The organization tag to add the person to. If the tag does not exists it will be created. <span class='tip tip-lava'></span>" )]
+    [Rock.SystemGuid.EntityTypeGuid( "AD415046-96F9-47C8-8E27-3CD97F572994")]
     public class PersonTagAdd : ActionComponent
     {
         /// <summary>

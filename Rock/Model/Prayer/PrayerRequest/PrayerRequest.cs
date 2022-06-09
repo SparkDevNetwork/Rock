@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Prayer" )]
     [Table( "PrayerRequest" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "F13C8FD2-7702-4C79-A6A9-86440DD5DE13")]
     public partial class PrayerRequest : Model<PrayerRequest>, ICategorized
     {
         #region Entity Properties

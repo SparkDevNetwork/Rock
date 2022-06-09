@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Pages" )]
     [Category( "Administration" )]
     [Description( "Lists pages in Rock." )]
+    [Rock.SystemGuid.BlockTypeGuid( "AEFC2DBE-37B6-4CAB-882C-B214F587BF2E" )]
     public partial class Pages : Rock.Web.UI.RockBlock
     {
         #region Fields

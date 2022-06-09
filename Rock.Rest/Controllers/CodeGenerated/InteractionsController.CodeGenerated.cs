@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// Interactions REST API
     /// </summary>
+    [RestControllerGuid( "46EA333C-4263-487A-89BC-062C7E0D173A" )]
     public partial class InteractionsController : Rock.Rest.ApiController<Rock.Model.Interaction>
     {
         /// <summary>

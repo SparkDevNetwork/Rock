@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [DataContract]
     [HideFromReporting]
     [CodeGenExclude( CodeGenFeature.ViewModelFile )]
+    [Rock.SystemGuid.EntityTypeGuid( "893F38F8-FBF8-4157-B718-6009298ABC91")]
     public class AnalyticsDimFinancialAccount : Entity<AnalyticsDimFinancialAccount>
     {
         #region Entity Properties

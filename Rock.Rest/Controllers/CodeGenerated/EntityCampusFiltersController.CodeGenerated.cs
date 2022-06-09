@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// EntityCampusFilters REST API
     /// </summary>
+    [RestControllerGuid( "DE62F24F-8668-4A78-A6F6-8C8BEFFDA80C" )]
     public partial class EntityCampusFiltersController : Rock.Rest.ApiController<Rock.Model.EntityCampusFilter>
     {
         /// <summary>

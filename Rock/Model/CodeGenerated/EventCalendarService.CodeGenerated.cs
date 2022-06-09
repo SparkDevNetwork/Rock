@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new EventCalendarBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 IconCssClass = model.IconCssClass,
                 IsActive = model.IsActive,

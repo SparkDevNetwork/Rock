@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new WorkflowActionFormBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ActionAttributeGuid = model.ActionAttributeGuid,
                 Actions = model.Actions,
                 AllowNotes = model.AllowNotes,

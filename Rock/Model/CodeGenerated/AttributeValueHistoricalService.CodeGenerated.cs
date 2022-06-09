@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AttributeValueHistoricalBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AttributeValueId = model.AttributeValueId,
                 CurrentRowIndicator = model.CurrentRowIndicator,
                 EffectiveDateTime = model.EffectiveDateTime,

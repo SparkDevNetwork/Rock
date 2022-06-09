@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Administration
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "C7988C3E-822D-4E73-882E-9B7684398BAA" )]
     public partial class PageProperties : RockBlock
     {
         #region Keys

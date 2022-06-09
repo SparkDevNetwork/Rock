@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new InteractionSessionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 DeviceTypeId = model.DeviceTypeId,
                 DurationLastCalculatedDateTime = model.DurationLastCalculatedDateTime,
                 DurationSeconds = model.DurationSeconds,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CMS_STRUCTUREDCONTENTVIEW_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "A8BBE3F8-F3CC-4C0A-AB2F-5085F5BF59E7")]
     public class StructuredContentView : RockMobileBlockType
     {
         /// <summary>

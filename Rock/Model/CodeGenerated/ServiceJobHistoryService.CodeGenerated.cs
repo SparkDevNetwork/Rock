@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ServiceJobHistoryBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ServiceJobId = model.ServiceJobId,
                 ServiceWorker = model.ServiceWorker,
                 StartDateTime = model.StartDateTime,

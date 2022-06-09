@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RestControllerBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ClassName = model.ClassName,
                 Name = model.Name,
                 CreatedDateTime = model.CreatedDateTime,

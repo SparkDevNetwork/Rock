@@ -422,6 +422,26 @@ namespace Rock.SystemGuid
         public const string MOBILE_GROUPS_GROUP_REGISTRATION_BLOCK_TYPE = "E0664BDC-9583-44F2-AC8D-23AE48603EAB";
 
         /// <summary>
+        /// The GUID for entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupSchedulePreference"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE = "36B341A9-07FC-43A1-970A-E5D4CDB83E6A";
+
+        /// <summary>
+        /// The GUID for entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleSignUp"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_SIGNUP = "DE3893A7-C353-4D19-A3FA-8B8EA99984F9";
+
+        /// <summary>
+        /// The GUID for entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleToolbox"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_TOOLBOX = "DCC6C7C8-1040-4F0E-94ED-90450E2E9610";
+
+        /// <summary>
+        /// The GUID for entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleUnavailability"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_UNAVAILABILITY = "300E3105-A9C9-4C86-8BD1-CC041B6953C6";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupView
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_VIEW_BLOCK_TYPE = "564C4D86-C9DF-48D0-84B6-DD3FCC1A5158";
@@ -585,6 +605,11 @@ namespace Rock.SystemGuid
         /// The asset storage file-system component (Rock.Storage.AssetStorage.FileSystemComponent)
         /// </summary>
         public const string STORAGE_ASSETSTORAGE_FILESYSTEM = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A";
+
+        /// <summary>
+        /// The EntityType Guid for Tag.
+        /// </summary>
+        public const string TAG = "d34258d0-d366-4efb-aa76-84b059fb5434";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.Workflow"/>

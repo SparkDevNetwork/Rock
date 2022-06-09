@@ -15,6 +15,7 @@
 // </copyright>
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -223,6 +224,32 @@ Line 3<br>
 ";
 
             TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void LavaHelperRemoveComments_SingleLineCommentAsFinalElement_RendersCorrectLineContent()
+        {
+            // Input template terminating with a comment, no new line character.
+            var input = @"
+Line 1<br>
+//- Lava single line comment";
+
+            var expectedOutput = @"Line 1<br>";
+
+            TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, input );
+        }
+
+        [TestMethod]
+        public void LavaHelperRemoveComments_BlockCommentAsFinalElement_RendersCorrectLineContent()
+        {
+            // Input template terminating with a comment, no new line character.
+            var input = @"
+Line 1<br>
+/- Lava block comment -/";
+
+            var expectedOutput = @"Line 1<br>";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, input );
         }
 
         private MockFileProvider GetFileProviderWithComments()

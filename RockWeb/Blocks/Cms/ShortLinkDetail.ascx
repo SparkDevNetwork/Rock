@@ -57,7 +57,7 @@
 
                     <div class="row">
                         <div class="col-sm-12">
-                            <Rock:RockLiteral ID="lUrl" runat="server" Label="Url" />
+                            <Rock:RockLiteral ID="lUrl" runat="server" Label="URL" />
                         </div>
                     </div>
 

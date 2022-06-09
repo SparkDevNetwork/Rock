@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Require Email", "Should email be required for registration?", true, key: REQUIRE_EMAIL_KEY )]
     [BooleanField( "Require Mobile Phone", "Should mobile phone numbers be required (when visible) for registration?  NOTE: Certain fields such as phone numbers and address are not shown when the block is configured for 'Simple' mode.", false, key: REQUIRE_MOBILE_KEY )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "9D0EF3AC-D0F7-4FA7-9C64-E7B0855648C7" )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields

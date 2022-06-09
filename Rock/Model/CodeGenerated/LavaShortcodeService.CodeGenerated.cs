@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new LavaShortcodeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 Documentation = model.Documentation,
                 EnabledLavaCommands = model.EnabledLavaCommands,

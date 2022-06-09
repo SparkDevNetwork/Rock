@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Group Role System Guids */
 export const enum GroupRole {
     /** Gets the adult family member role */
     GrouproleFamilyMemberAdult = "2639F9A5-2AAE-4E48-A8C3-4FFE86681E42",
@@ -77,4 +78,3 @@ export const enum GroupRole {
     /** The Pastor group member role for a Campus Team */
     GrouproleCampusTeamPastor = "F8C6289B-0E68-4121-A595-A51369404EBA",
 }
-

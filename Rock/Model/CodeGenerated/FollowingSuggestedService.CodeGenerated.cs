@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new FollowingSuggestedBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 EntityId = model.EntityId,
                 EntityTypeId = model.EntityTypeId,
                 LastPromotedDateTime = model.LastPromotedDateTime,

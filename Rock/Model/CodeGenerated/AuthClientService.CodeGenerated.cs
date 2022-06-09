@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new AuthClientBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AllowedClaims = model.AllowedClaims,
                 AllowedScopes = model.AllowedScopes,
                 AllowUserApiAccess = model.AllowUserApiAccess,

@@ -91,8 +91,7 @@ namespace Rock.Model
 
             var viewModel = new GroupMemberBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ArchivedByPersonAliasId = model.ArchivedByPersonAliasId,
                 ArchivedDateTime = model.ArchivedDateTime,
                 CommunicationPreference = ( int ) model.CommunicationPreference,

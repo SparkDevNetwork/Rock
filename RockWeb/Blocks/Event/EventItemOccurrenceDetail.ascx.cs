@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.Event
         Order = 2,
         Key = AttributeKey.GroupDetailPage )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "C18CB1DC-B2BC-4D3F-918A-A047183E4024" )]
     public partial class EventItemOccurrenceDetail : RockBlock
     {
         #region Properties

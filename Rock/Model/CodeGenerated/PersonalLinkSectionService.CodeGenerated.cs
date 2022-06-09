@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PersonalLinkSectionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 IconCssClass = model.IconCssClass,
                 IsShared = model.IsShared,
                 Name = model.Name,

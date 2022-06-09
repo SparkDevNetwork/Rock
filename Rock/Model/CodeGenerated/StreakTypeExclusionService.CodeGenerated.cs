@@ -81,9 +81,7 @@ namespace Rock.Model
 
             var viewModel = new StreakTypeExclusionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
-                ExclusionMap = model.ExclusionMap,
+                IdKey = model.IdKey,
                 LocationId = model.LocationId,
                 StreakTypeId = model.StreakTypeId,
                 CreatedDateTime = model.CreatedDateTime,

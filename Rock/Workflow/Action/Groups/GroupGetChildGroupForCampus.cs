@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace Rock.Workflow.Action
     [Rock.Attribute.GroupTypeGroupFieldAttribute( "Parent Group", "The parent group to search to find a matching child group that belongs to the selected Campus.", "Parent Group", true, "", "", 1, key:"ParentGroup" )]
     [WorkflowAttribute( "Campus", "The attribute to use to determine which campus to match.", true, "", "", 2, "Campus",
         new string[] { "Rock.Field.Types.CampusFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "17B99656-BB9E-4B08-A7B1-CC66258AC08B")]
     public class GroupGetChildGroupForCampus : ActionComponent
     {
         /// <summary>

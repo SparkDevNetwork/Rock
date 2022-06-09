@@ -18,7 +18,12 @@
 
 <div data-column="{{ blockwidth }}" {% if id and id != empty %}id="{{ id }}"{% endif %} class="card position-relative panel panel-default overflow-hidden {% if alignment != null and alignment != '' %}text-{{ alignment }}{% endif %} rounded-lg">
 
-    {% if imageurl != null and imageurl != '' %}
+    {% if video and video != empty %}
+        <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+        <div class="position-relative ratio ratio-{{ ratio }}">
+            <span class="position-absolute ratio-item wistia_embed wistia_async_{{ video }} popover=true popoverAnimateThumbnail=true" style="display:inline-block;position:relative;width:100%;height:100%;">&nbsp;</span>
+        </div>
+    {% elseif imageurl != null and imageurl != '' %}
         {% if cardlinkurl != empty %}<a href="{{ cardlinkurl }}" class="panel-image" {% if target and target != empty %}target="{{ target }}"{% endif %}>{% else %}<div class="panel-image">{% endif %}
             {% if count != null and count != '' %}
                 <span class="card-count sans-serif strong rounded bg-gray-lighter text-gray-darker text-center">{{ count }}</span>

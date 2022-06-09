@@ -1019,16 +1019,9 @@ This can be due to multiple threads updating the same attribute at the same time
             }
         }
 
-        /*
-            02/18/2022 - KA
-
-            SaveAttributeValue() checks if the Attribute Field Type is an EncryptedTextFieldType
-            or an SSNFieldType and encrypts the value before saving it to the database, there is
-            no need to encrypt the value before calling SaveAttributeValue().
-        */
 
         /// <summary>
-        /// Saves an attribute value. If the attribute field type is an <see cref="Field.Types.EncryptedTextFieldType"/> or an <see cref="Field.Types.SSNFieldType"/> the value will be encrypted.
+        /// Saves an attribute value.
         /// </summary>
         /// <param name="model">The model.</param>
         /// <param name="attribute">The attribute.</param>
@@ -1060,11 +1053,6 @@ This can be due to multiple threads updating the same attribute at the same time
 
                 if ( attributeValue.Value != newValue )
                 {
-                    if ( attribute.FieldType.Field is Field.Types.EncryptedTextFieldType || attribute.FieldType.Field is Field.Types.SSNFieldType )
-                    {
-                        newValue = Security.Encryption.EncryptString( newValue );
-                    }
-
                     attributeValue.Value = newValue;
                     rockContext.SaveChanges();
                 }

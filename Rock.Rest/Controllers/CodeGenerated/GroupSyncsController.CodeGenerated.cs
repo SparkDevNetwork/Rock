@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// GroupSyncs REST API
     /// </summary>
+    [RestControllerGuid( "4BD67025-892F-44DC-9609-74F210D5A796" )]
     public partial class GroupSyncsController : Rock.Rest.ApiController<Rock.Model.GroupSync>
     {
         /// <summary>

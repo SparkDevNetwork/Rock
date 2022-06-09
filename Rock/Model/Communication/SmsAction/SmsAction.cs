@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SmsAction" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "1F5E26BE-0ED4-4250-8FFC-1DED5E9EACF0")]
     public partial class SmsAction : Model<SmsAction>, IOrdered, ICacheable
     {
         #region Entity Properties

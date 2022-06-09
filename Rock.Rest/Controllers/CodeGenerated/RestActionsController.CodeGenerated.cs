@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// RestActions REST API
     /// </summary>
+    [RestControllerGuid( "02BC4463-E0E2-4054-9DBD-0543484159DB" )]
     public partial class RestActionsController : Rock.Rest.ApiController<Rock.Model.RestAction>
     {
         /// <summary>

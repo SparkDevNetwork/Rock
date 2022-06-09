@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Communication
         Order = 5 )]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "95366DA1-D878-4A9A-A26F-83160DBE784F" )]
     public partial class CommunicationJobPreview : RockBlock
     {
         #region Fields

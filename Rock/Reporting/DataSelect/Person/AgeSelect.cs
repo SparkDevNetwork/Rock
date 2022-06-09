@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Age of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Age" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E6048FE3-1EC4-4C7B-A606-70FEC56015F3")]
     public class AgeSelect : DataSelectComponent
     {
         #region Properties

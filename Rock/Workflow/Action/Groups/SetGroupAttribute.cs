@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace Rock.Workflow.Action
     [TextField( "Group Attribute Key", "The attribute key to use for the group attribute.", true, "", "", 2 )]
 
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", false, "", "", 4, "AttributeValue" )]
+    [Rock.SystemGuid.EntityTypeGuid( "F4F59DF6-2F6A-40A0-9BFD-8427F7DD3D87")]
     public class SetGroupAttribute : ActionComponent
     {
         /// <summary>
@@ -104,6 +105,7 @@ namespace Rock.Workflow.Action
                     if ( group.Attributes.ContainsKey( attributeKey ) )
                     {
                         var attribute = group.Attributes[attributeKey];
+                        SetWorkflowAttributeValue( action, attribute.Guid, attributeValue );
                         Rock.Attribute.Helper.SaveAttributeValue( group, attribute, attributeValue, rockContext );
                     }
                     else

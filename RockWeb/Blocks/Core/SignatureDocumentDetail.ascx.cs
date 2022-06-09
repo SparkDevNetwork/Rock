@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Signature Document Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a given signature document." )]
+    [Rock.SystemGuid.BlockTypeGuid( "01D23E86-51DC-496D-BB3E-0CEF5094F304" )]
     public partial class SignatureDocumentDetail : RockBlock
     {
         #region Base Control Methods

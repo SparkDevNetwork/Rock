@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new RegistrationTemplateFormBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Name = model.Name,
                 Order = model.Order,
                 RegistrationTemplateId = model.RegistrationTemplateId,

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new NcoaHistoryBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AddressInvalidReason = ( int ) model.AddressInvalidReason,
                 AddressStatus = ( int ) model.AddressStatus,
                 FamilyId = model.FamilyId,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Key = AttributeKey.AreaSelectPage )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "A14D43A7-46EE-493E-9993-F89B86DF1604" )]
     public partial class LiveMetrics : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

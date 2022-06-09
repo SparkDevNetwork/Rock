@@ -255,5 +255,15 @@ namespace Rock.SystemKey
         /// The statement generator configuration
         /// </summary>
         public const string STATEMENT_GENERATOR_CONFIG = "core_StatementGeneratorConfig";
+
+        /// <summary>
+        /// The default security grant token duration in minutes.
+        /// </summary>
+        public const string DEFAULT_SECURITY_GRANT_TOKEN_DURATION = "core_DefaultSecurityGrantTokenDuration";
+
+        /// <summary>
+        /// The security grant token earliest date. This provides support to revoke existing tokens.
+        /// </summary>
+        public const string SECURITY_GRANT_TOKEN_EARLIEST_DATE = "core_SecurityGrantTokenEarliestDate";
     }
 }

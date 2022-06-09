@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.WorkFlow
     [DisplayName( "Share Workflow" )]
     [Category( "WorkFlow" )]
     [Description( "Export and import workflows from Rock." )]
+    [Rock.SystemGuid.BlockTypeGuid( "DA262642-A07E-43B0-BE27-8CEF6070C9B8" )]
     public partial class ShareWorkflow : Rock.Web.UI.RockBlock
     {
         #region Base Method Overrides

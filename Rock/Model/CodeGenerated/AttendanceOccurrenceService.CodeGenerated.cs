@@ -83,8 +83,7 @@ namespace Rock.Model
 
             var viewModel = new AttendanceOccurrenceBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AcceptConfirmationMessage = model.AcceptConfirmationMessage,
                 AnonymousAttendanceCount = model.AnonymousAttendanceCount,
                 AttendanceTypeValueId = model.AttendanceTypeValueId,

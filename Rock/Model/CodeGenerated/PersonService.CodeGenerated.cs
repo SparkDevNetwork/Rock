@@ -87,8 +87,7 @@ namespace Rock.Model
 
             var viewModel = new PersonBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AccountProtectionProfile = ( int ) model.AccountProtectionProfile,
                 AgeClassification = ( int ) model.AgeClassification,
                 AnniversaryDate = model.AnniversaryDate,

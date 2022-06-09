@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" )]
     public partial class DefinedValueList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         public static class AttributeKey

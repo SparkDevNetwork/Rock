@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new UserLoginBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ApiKey = model.ApiKey,
                 EntityTypeId = model.EntityTypeId,
                 FailedPasswordAttemptCount = model.FailedPasswordAttemptCount,

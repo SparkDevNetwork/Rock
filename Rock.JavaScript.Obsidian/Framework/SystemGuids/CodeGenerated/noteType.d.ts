@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Static Guids used by the Rock application */
 export const enum NoteType {
     /** Generic prayer comment note type */
     BenevolenceRequestNote = "CC49BF39-8D3E-4512-B8F4-853FE49CDBC7",
@@ -45,4 +46,3 @@ export const enum NoteType {
     /** The pastoral note type. */
     PastoralNote = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42",
 }
-

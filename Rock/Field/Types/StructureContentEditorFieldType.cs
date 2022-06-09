@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// the individual a nice UI interface to editing content.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( "92C88D02-CE12-4217-80FB-19422B758437")]
     public class StructureContentEditorFieldType : FieldType
     {
         #region Edit Control
@@ -91,6 +92,12 @@ namespace Rock.Field.Types
             var helper = new StructuredContentHelper( value );
 
             return helper.Render();
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         Key = AttributeKeys.AnalyticsPage )]
 
     #endregion Rock Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "B7C76420-9B34-422A-B161-87BDB45DD50C" )]
     public partial class FormList : RockBlock
     {
         #region Keys

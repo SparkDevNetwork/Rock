@@ -81,15 +81,13 @@ namespace Rock.Model
 
             var viewModel = new StreakTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 EnableAttendance = model.EnableAttendance,
                 FirstDayOfWeek = ( int? ) model.FirstDayOfWeek,
                 IsActive = model.IsActive,
                 Name = model.Name,
                 OccurrenceFrequency = ( int ) model.OccurrenceFrequency,
-                OccurrenceMap = model.OccurrenceMap,
                 RequiresEnrollment = model.RequiresEnrollment,
                 StartDate = model.StartDate,
                 StructureEntityId = model.StructureEntityId,

@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new PersonSearchKeyBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 IsValuePrivate = model.IsValuePrivate,
                 PersonAliasId = model.PersonAliasId,
                 SearchTypeValueId = model.SearchTypeValueId,

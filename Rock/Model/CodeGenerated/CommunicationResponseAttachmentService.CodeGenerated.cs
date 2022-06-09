@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new CommunicationResponseAttachmentBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 BinaryFileId = model.BinaryFileId,
                 CommunicationResponseId = model.CommunicationResponseId,
                 CommunicationType = ( int ) model.CommunicationType,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action
     [Description( "Parses an uploaded Zebra Label for any available merge codes" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Zebra Label Parse" )]
+    [Rock.SystemGuid.EntityTypeGuid( "E5A7E121-B8E6-4F86-A624-015B39441910")]
     public class ParseZebraLabel : ActionComponent
     {
         /// <summary>

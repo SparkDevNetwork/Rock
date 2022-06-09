@@ -81,8 +81,7 @@ namespace Rock.Model
 
             var viewModel = new ServiceJobBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Assembly = model.Assembly,
                 Class = model.Class,
                 CronExpression = model.CronExpression,

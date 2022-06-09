@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialGateway" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "122EFE60-84A6-4C7A-A852-30E4BD89A662")]
     public partial class FinancialGateway : Model<FinancialGateway>, IHasActiveFlag
     {
         #region Entity Properties
