@@ -73,7 +73,7 @@
                             <Rock:DatePicker ID="dpAttendanceDate" runat="server" Required="true" Label="Attendance Date" ValidationGroup="AttendanceSetting" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" AutoPostBack="True" />
                         </div>
                     </div>
                     <div class="actions">

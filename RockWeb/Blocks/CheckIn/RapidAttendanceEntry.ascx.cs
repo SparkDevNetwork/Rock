@@ -552,6 +552,16 @@ namespace RockWeb.Blocks.CheckIn
             ShowDetails();
         }
 
+        /// <summary>
+        /// Handles the event when the individual changes the selected item in the campus picker.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateLocations();
+        }
+
         #region Setting Events
 
         /// <summary>
@@ -2679,6 +2689,8 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         # endregion Supporting Classes
+
+
 
     }
 }

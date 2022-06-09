@@ -1367,7 +1367,7 @@ This can be due to multiple threads updating the same attribute at the same time
                             6/8/2022 - PA
 
                             The attributeCol controls helps add the Attributes to the page.
-                            But, Not having the attributeCol.ID set causes the Page to throw View State Exception as DynamicControlsHtmlGenericControl instances are requied to have an Id.
+                            But, not having the attributeCol.ID set causes the Page to throw View State Exception as DynamicControlsHtmlGenericControl instances are required to have an Id.
                             
                             Reason: https://github.com/SparkDevNetwork/Rock/issues/3867
                          */
