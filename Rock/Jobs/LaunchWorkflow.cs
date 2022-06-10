@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -34,7 +33,7 @@ namespace Rock.Jobs
 
     [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
     [DisallowConcurrentExecution]
-    public class LaunchWorkflow : RockBlock, IJob
+    public class LaunchWorkflow : RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -54,9 +53,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             string workflowName = dataMap.GetString( "Workflow" );
             LaunchTheWorkflow( workflowName, context );
         }
@@ -64,7 +63,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Launch the workflow
         /// </summary>
-        protected void LaunchTheWorkflow( string workflowName, IJobExecutionContext context )
+        protected void LaunchTheWorkflow( string workflowName, RockJobContext context )
         {
             Guid workflowTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( workflowName, out workflowTypeGuid ) )

@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -43,7 +43,7 @@ namespace Rock.Jobs
     [SystemCommunicationField( "Note Watch Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION, required: false, order: 1 )]
     [SystemCommunicationField( "Note Approval Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_APPROVAL_NOTIFICATION, required: false, order: 2 )]
     [IntegerField( "Cutoff Days", "Just in case the Note Notification service hasn't run for a while, this is the max number of days between the note edited date and the notification.", required: true, defaultValue: 7, order: 3 )]
-    public class SendNoteNotifications : IJob
+    public class SendNoteNotifications:  RockJob
     {
         /// <summary>
         /// Empty constructor for job initialization
@@ -157,10 +157,10 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             // get the job dataMap
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             int oldestDaysOld = dataMap.GetString( "CutoffDays" ).AsIntegerOrNull() ?? 7;
             _cutoffNoteEditDateTime = RockDateTime.Now.AddDays( -oldestDaysOld );
             _defaultMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
@@ -192,7 +192,7 @@ namespace Rock.Jobs
         /// Sends the note approval notifications.
         /// </summary>
         /// <param name="context">The context.</param>
-        private List<string> SendNoteApprovalNotifications( IJobExecutionContext context )
+        private List<string> SendNoteApprovalNotifications( RockJobContext context )
         {
             var errors = new List<string>();
             List<int> noteIdsToProcessApprovalsList = new List<int>();
@@ -310,7 +310,7 @@ namespace Rock.Jobs
         /// Sends the note watch notifications.
         /// </summary>
         /// <param name="context">The context.</param>
-        private List<string> SendNoteWatchNotifications( IJobExecutionContext context )
+        private List<string> SendNoteWatchNotifications( RockJobContext context )
         {
             var errors = new List<string>();
             List<int> noteIdsToProcessNoteWatchesList = new List<int>();

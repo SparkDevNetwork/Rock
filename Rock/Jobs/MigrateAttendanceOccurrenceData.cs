@@ -17,7 +17,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -34,7 +34,7 @@ namespace Rock.Jobs
 
     [DisallowConcurrentExecution]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
-    public class MigrateAttendanceOccurrenceData : IJob
+    public class MigrateAttendanceOccurrenceData:  RockJob
     {
         private int _commandTimeout = 0;
 
@@ -48,9 +48,9 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
 
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
 
@@ -169,7 +169,7 @@ Attendance Records Updated: { _attendanceRecordsUpdated}
         /// Migrates the page views data.
         /// </summary>
         /// <param name="context">The context.</param>
-        private void MigrateAttendanceData( IJobExecutionContext context )
+        private void MigrateAttendanceData( RockJobContext context )
         {
             using ( var rockContext = new RockContext() )
             {

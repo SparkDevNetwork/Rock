@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -43,7 +43,7 @@ namespace Rock.Jobs
     [DataViewField( "DataView", "The dataview the email will be sent to.", true, "", "Rock.Model.Person" )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
     [DisallowConcurrentExecution]
-    public class SendDataViewEmail : IJob
+    public class SendDataViewEmail:  RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendGroupEmail"/> class.
@@ -56,9 +56,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             var emailTemplateGuid = dataMap.GetString( "SystemEmail" ).AsGuidOrNull();
             var dataViewGuid = dataMap.GetString( "DataView" ).AsGuidOrNull();
 

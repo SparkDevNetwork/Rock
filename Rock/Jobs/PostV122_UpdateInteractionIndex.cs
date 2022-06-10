@@ -16,7 +16,7 @@
 //
 using System.ComponentModel;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -39,7 +39,7 @@ namespace Rock.Jobs
         IsRequired = false,
         DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
 
-    public class PostV122_UpdateInteractionIndex : IJob
+    public class PostV122_UpdateInteractionIndex:  RockJob
     {
         private static class AttributeKey
         {
@@ -55,7 +55,7 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             /* MDP 07-22-2021
 
@@ -64,7 +64,7 @@ namespace Rock.Jobs
 
              */
 
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // get the configured timeout, or default if it is blank
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;

@@ -17,7 +17,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -34,7 +34,7 @@ namespace Rock.Jobs
 
     [DisallowConcurrentExecution]
     [GroupField( "Notification Group", "The group that should receive incoming notifications", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
-    public class SparkLink : IJob
+    public class SparkLink:  RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SparkLink"/> class.
@@ -47,9 +47,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             var groupGuid = dataMap.Get( "NotificationGroup" ).ToString().AsGuid();
 
             var rockContext = new RockContext();

@@ -16,7 +16,7 @@
 //
 using System;
 using System.ComponentModel;
-using Quartz;
+
 
 using Rock.Attribute;
 
@@ -30,7 +30,7 @@ namespace Rock.Jobs
 
     [ComponentField( "Rock.Pbx.PbxContainer, Rock", "PBX Component", "The PBX type to process.", true, key:"PbxComponent" )]
     [DisallowConcurrentExecution]
-    public class PbxCdrDownload : IJob
+    public class PbxCdrDownload:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -49,9 +49,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // get the selected provider
             var componentType = dataMap.GetString( "PbxComponent" );

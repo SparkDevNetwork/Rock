@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock;
 using Rock.Attribute;
@@ -49,7 +49,7 @@ namespace Rock.Jobs
         Description = "Determines if the email will be sent to descendant groups.",
         Key = AttributeKey.SendToDescendantGroups )]
     [DisallowConcurrentExecution]
-    public class SendGroupEmail : IJob
+    public class SendGroupEmail:  RockJob
     {
         private class AttributeKey
         {
@@ -69,9 +69,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             var emailTemplateGuid = dataMap.Get( AttributeKey.SystemCommunication ).ToString().AsGuid();
             var groupGuid = dataMap.Get( AttributeKey.Group ).ToString().AsGuid();
             var sendToDescendants = dataMap.Get( AttributeKey.SendToDescendantGroups ).ToString().AsBoolean();

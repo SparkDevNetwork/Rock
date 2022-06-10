@@ -18,11 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -46,7 +44,7 @@ namespace Rock.Jobs
         Order = 7 )]
 
     [DisallowConcurrentExecution]
-    public class CalculateMetrics : IJob
+    public class CalculateMetrics:  RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -71,9 +69,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            var dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 300;
             var metricSourceValueTypeDataviewGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
             var metricSourceValueTypeSqlGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();

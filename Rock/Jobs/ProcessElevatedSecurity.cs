@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [Description( "Updates the person account protection profiles." )]
 
     [DisallowConcurrentExecution]
-    public class ProcessElevatedSecurity : IJob
+    public class ProcessElevatedSecurity:  RockJob
     {
         #region Constructor
 
@@ -80,7 +80,7 @@ namespace Rock.Jobs
         /// Executes the job to update person records' protection levels per the PersonService.
         /// </summary>
         /// <param name="context">The execution context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             _jobStatusMessages = new List<string>();
             var rowsUpdated = UpdatePersonAccountProtectionProfile();

@@ -112,6 +112,7 @@ namespace Rock.Jobs
                 StatusMessage = job.LastStatusMessage,
                 ServiceWorker = Environment.MachineName.ToLower()
             };
+
             jobHistoryService.Add( jobHistory );
             rockContext.SaveChanges();
         }

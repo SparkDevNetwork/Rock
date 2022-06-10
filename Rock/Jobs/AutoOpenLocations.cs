@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Quartz;
+//
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -50,7 +50,7 @@ namespace Rock.Jobs
         Description = "Optional period of time (in minutes) to look for locations that have been closed/inactivated (modified). Only locations modified within the timeframe would be considered. If left empty, the time the location was modified will not be considered.",
         Order = 1 )]
     [DisallowConcurrentExecution]
-    public class AutoOpenLocations : IJob
+    public class AutoOpenLocations : RockJob
     {
         /// <summary>
         /// Keys for DataMap Field Attributes.
@@ -62,27 +62,15 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Empty constructor for job initialization
-        /// <para>
-        /// Jobs require a public empty constructor so that the
-        /// scheduler can instantiate the class whenever it needs.
-        /// </para>
-        /// </summary>
-        public AutoOpenLocations()
-        {
-        }
-
-        /// <summary>
         /// Job to get a National Change of Address (NCOA) report for all active people's addresses.
         ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             // Get the job setting(s)
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             var rockContext = new RockContext();
             var locationService = new LocationService( rockContext );
@@ -94,7 +82,7 @@ namespace Rock.Jobs
             // limit to only Named Locations (don't show home addresses, etc)
             inactiveLocationsQry = inactiveLocationsQry.Where( a => a.Name != null && a.Name != string.Empty );
 
-            var reopenPeriod = dataMap.GetString( AttributeKey.ReopenPeriod ).AsIntegerOrNull();
+            var reopenPeriod = GetAttributeValue( AttributeKey.ReopenPeriod ).AsIntegerOrNull();
 
             if ( reopenPeriod.HasValue )
             {
@@ -105,7 +93,7 @@ namespace Rock.Jobs
 
             var inactiveLocations = inactiveLocationsQry.AsEnumerable();
 
-            var parentLocationGuid = dataMap.GetString( AttributeKey.ParentLocation ).AsGuidOrNull();
+            var parentLocationGuid = GetAttributeValue( AttributeKey.ParentLocation ).AsGuidOrNull();
             if ( parentLocationGuid.HasValue )
             {
                 var parentLocation = locationService.Get( parentLocationGuid.Value );

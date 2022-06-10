@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -42,7 +42,7 @@ namespace Rock.Jobs
     [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
     [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", false, order: 3 )]
     [DisallowConcurrentExecution]
-    public class SendGroupRequirementsNotification : IJob
+    public class SendGroupRequirementsNotification:  RockJob
     {
         List<NotificationItem> _notificationList = new List<NotificationItem>();
         List<GroupsMissingRequirements> _groupsMissingRequirements = new List<GroupsMissingRequirements>();
@@ -62,12 +62,12 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var errors = new List<string>();
             var rockContext = new RockContext();
 
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             Guid? systemEmailGuid = dataMap.GetString( "NotificationEmailTemplate" ).AsGuidOrNull();
 
             if ( systemEmailGuid.HasValue )

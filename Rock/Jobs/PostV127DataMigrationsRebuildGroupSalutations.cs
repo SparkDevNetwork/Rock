@@ -18,7 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Data;
 using Rock.Model;
@@ -32,13 +32,13 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.7 - Rebuilds Group Salutation fields on Rock.Model.Group for all family groups." )]
     [Description( "Updates Group Salutation fields on Rock.Model.Group." )]
-    public class PostV127DataMigrationsRebuildGroupSalutations : IJob
+    public class PostV127DataMigrationsRebuildGroupSalutations:  RockJob
     {
         /// <summary>
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 

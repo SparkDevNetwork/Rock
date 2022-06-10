@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -63,7 +63,7 @@ namespace Rock.Jobs
     #endregion
 
     [DisallowConcurrentExecution]
-    public class GroupLeaderAbsenceNotifications : IJob
+    public class GroupLeaderAbsenceNotifications:  RockJob
     {
         /// <summary>
         /// Keys for DataMap Field Attributes.
@@ -91,7 +91,7 @@ namespace Rock.Jobs
         /// Job that will sync groups. Called by the <see cref="IScheduler" /> when an <see cref="ITrigger" />
         /// fires that is associated with the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             try
             {
@@ -107,9 +107,9 @@ namespace Rock.Jobs
         /// <summary>
         /// Private method called by Execute() to process the job.
         /// </summary>
-        private void ProcessJob( IJobExecutionContext context )
+        private void ProcessJob( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             int notificationsSent = 0;
             int errorsEncountered = 0;

@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -45,7 +45,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 1,
         Key = AttributeKey.CommandTimeout )]
-    public class PostV125DataMigrationsUpdateStepProgramCompletion : IJob
+    public class PostV125DataMigrationsUpdateStepProgramCompletion:  RockJob
     {
         #region Keys
 
@@ -81,9 +81,9 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
 
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // get the configured timeout, or default to 60 minutes if it is blank
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaults.CommandTimeout;

@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -116,7 +116,7 @@ namespace Rock.Jobs
         DefaultBooleanValue = false,
         Category = "Advanced",
         Order = 9 )]
-    public class ProcessBIAnalytics : IJob
+    public class ProcessBIAnalytics:  RockJob
     {
         #region Attribute Keys
 
@@ -187,9 +187,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // get the configured timeout, or default to 20 minutes if it is blank
             _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 1200;
@@ -583,7 +583,7 @@ UPDATE [{analyticsTableName}]
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="dataMap">The data map.</param>
-        private void ProcessPersonBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
+        private void ProcessPersonBIAnalytics( RockJobContext context, RockJobDataMap dataMap )
         {
             List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), false, false );
             EntityField typeIdField = analyticsSourcePersonHistoricalFields.Where( f => f.Name == "TypeId" ).FirstOrDefault();
@@ -1064,7 +1064,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="dataMap">The data map.</param>
-        private void ProcessFamilyBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
+        private void ProcessFamilyBIAnalytics( RockJobContext context, RockJobDataMap dataMap )
         {
             List<EntityField> analyticsSourceFamilyHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceFamilyHistorical ), false, false );
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
@@ -1184,7 +1184,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="dataMap">The data map.</param>
-        private void ProcessCampusBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
+        private void ProcessCampusBIAnalytics( RockJobContext context, RockJobDataMap dataMap )
         {
             List<EntityField> analyticsSourceCampusFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceCampus ), false, false );
 
@@ -1224,7 +1224,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
 
         #region GivingUnit Analytics
 
-        private void ProcessGivingUnitAnalytics( IJobExecutionContext context, JobDataMap dataMap )
+        private void ProcessGivingUnitAnalytics( RockJobContext context, RockJobDataMap dataMap )
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = _commandTimeout;

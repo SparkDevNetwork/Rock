@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
+
 
 using Rock.Data;
 using Rock.Model;
@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [Description( "Runs continuously to process in workflows activities/actions in progress." )]
 
     [DisallowConcurrentExecution]
-    public class ProcessWorkflows : IJob
+    public class ProcessWorkflows:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -60,7 +60,7 @@ namespace Rock.Jobs
         /// <see cref="ITriggerListener" />s that are watching the job's
         /// execution.
         /// </remarks>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             int workflowsProcessed = 0;
             int workflowErrors = 0;

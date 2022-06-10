@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -44,7 +44,7 @@ namespace Rock.Jobs
         IsRequired = false,
         DefaultIntegerValue = 180 )]
     [DisallowConcurrentExecution]
-    public class DataAutomation : IJob
+    public class DataAutomation:  RockJob
     {
         private const string SOURCE_OF_CHANGE = "Data Automation";
         private HttpContext _httpContext = null;
@@ -81,10 +81,10 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             _httpContext = HttpContext.Current;
-            var dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 180;
             string reactivateResult = ReactivatePeople( context );
             string inactivateResult = InactivatePeople( context );
@@ -111,7 +111,7 @@ Update Family Status: {updateFamilyStatus}
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string GenderAutoFill( IJobExecutionContext context )
+        private string GenderAutoFill( RockJobContext context )
         {
             context.UpdateLastStatusMessage( $"Processing Gender Autofill" );
 
@@ -208,7 +208,7 @@ Update Family Status: {updateFamilyStatus}
         /// or
         /// Could not determine the 'Inactive' record status value.
         /// </exception>
-        private string ReactivatePeople( IJobExecutionContext context )
+        private string ReactivatePeople( RockJobContext context )
         {
             try
             {
@@ -413,7 +413,7 @@ Update Family Status: {updateFamilyStatus}
         /// or
         /// Could not determine the 'No Activity' record status reason value.
         /// </exception>
-        private string InactivatePeople( IJobExecutionContext context )
+        private string InactivatePeople( RockJobContext context )
         {
             try
             {
@@ -578,7 +578,7 @@ Update Family Status: {updateFamilyStatus}
         /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="Exception">Could not determine the 'Family' group type.</exception>
-        private string UpdateFamilyCampus( IJobExecutionContext context )
+        private string UpdateFamilyCampus( RockJobContext context )
         {
             try
             {
@@ -902,7 +902,7 @@ Update Family Status: {updateFamilyStatus}
         /// or
         /// Could not determine the 'Adult' and 'Child' roles.
         /// </exception>
-        private string MoveAdultChildren( IJobExecutionContext context )
+        private string MoveAdultChildren( RockJobContext context )
         {
             try
             {
@@ -1246,7 +1246,7 @@ Update Family Status: {updateFamilyStatus}
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string UpdatePersonConnectionStatus( IJobExecutionContext context )
+        private string UpdatePersonConnectionStatus( RockJobContext context )
         {
             var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_PERSON_CONNECTION_STATUS ).FromJsonOrNull<Utility.Settings.DataAutomation.UpdatePersonConnectionStatus>();
             if ( settings == null || !settings.IsEnabled )
@@ -1337,7 +1337,7 @@ Update Family Status: {updateFamilyStatus}
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string UpdateFamilyStatus( IJobExecutionContext context )
+        private string UpdateFamilyStatus( RockJobContext context )
         {
             var settings = Rock.Web.SystemSettings.GetValue( SystemSetting.DATA_AUTOMATION_UPDATE_FAMILY_STATUS ).FromJsonOrNull<Utility.Settings.DataAutomation.UpdateFamilyStatus>();
             if ( settings == null || !settings.IsEnabled )

@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -30,7 +29,6 @@ namespace Rock.Jobs
 {
     /// <summary>
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Group Attendance Reporting" )]
     [Description( @"Helps with the reporting of attendance within a defined set of groups at the person level.
 The data view provides a list of groups to consider (the data view must return groups). A set of attribute values
@@ -72,7 +70,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
         Order = 7 )]
 
     [DisallowConcurrentExecution]
-    public class GroupAttendanceReporting : IJob
+    public class GroupAttendanceReporting : RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -109,9 +107,9 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             var groupDataViewGuid = dataMap.GetString( AttributeKey.GroupDataView ).AsGuidOrNull();
             var reportingLabel = dataMap.GetString( AttributeKey.ReportingLabel );
             var trackedValues = dataMap.GetString( AttributeKey.TrackedValues ).SplitDelimitedValues();

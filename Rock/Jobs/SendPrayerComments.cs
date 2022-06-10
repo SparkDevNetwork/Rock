@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock;
 using Rock.Attribute;
@@ -67,7 +67,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    public class SendPrayerComments : IJob
+    public class SendPrayerComments:  RockJob
     {
         #region Attribute Keys
 
@@ -196,11 +196,11 @@ namespace Rock.Jobs
         /// Retrieve the job settings from the context provided by the Quartz scheduler.
         /// </summary>
         /// <param name="context"></param>
-        private void GetSettingsFromJobContext( IJobExecutionContext context )
+        private void GetSettingsFromJobContext( RockJobContext context )
         {
             Log.LogVerbose( $"Reading configuration from job execution context..." );
 
-            var dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
 
             this.SystemEmailTemplateGuid = dataMap.Get( AttributeKey.SystemEmail ).ToString().AsGuid();
 
@@ -311,7 +311,7 @@ namespace Rock.Jobs
         /// This is the entry point used when the job is executed by the Quartz Job Scheduler.
         /// </summary>
         /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             Log.LogProgress( $"Job Started: SendPrayerComments" );
 

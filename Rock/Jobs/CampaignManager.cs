@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Quartz;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -29,7 +29,7 @@ namespace Rock.Jobs
     /// Job to create connection request based on campaign connection configuration and auto assign the request if configured. 
     /// </summary>
     [DisallowConcurrentExecution]
-    public class CampaignManager : IJob
+    public class CampaignManager:  RockJob
     {
         #region Constructor
 
@@ -50,7 +50,7 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var allCampaignItems = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.CampaignConnectionKey.CAMPAIGN_CONNECTION_CONFIGURATION ).FromJsonOrNull<List<CampaignItem>>() ?? new List<CampaignItem>();
             if ( !allCampaignItems.Any() )
@@ -115,7 +115,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="campaignItem">The campaign item.</param>
-        private void ProcessCampaignConfigurationEntitySet( IJobExecutionContext context, CampaignItem campaignItem )
+        private void ProcessCampaignConfigurationEntitySet( RockJobContext context, CampaignItem campaignItem )
         {
             context.UpdateLastStatusMessage( $"Processing entity set for {campaignItem.Name}." );
 
@@ -135,7 +135,7 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         /// <param name="campaignItem">The campaign item.</param>
         /// <returns></returns>
-        private int CreateConnectionRequests( IJobExecutionContext context, CampaignItem campaignItem )
+        private int CreateConnectionRequests( RockJobContext context, CampaignItem campaignItem )
         {
             context.UpdateLastStatusMessage( $"Processing create connection requests for {campaignItem.Name}" );
 

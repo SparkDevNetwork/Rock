@@ -23,7 +23,7 @@ using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Web;
 using Humanizer;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -68,7 +68,7 @@ namespace Rock.Jobs
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
-    public class SendAssessmentReminders : IJob
+    public class SendAssessmentReminders:  RockJob
     {
         /// <summary>
         /// 
@@ -107,9 +107,9 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="NotImplementedException"></exception>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             var sendreminderDateTime = RockDateTime.Now.Date.AddDays( -1 * dataMap.GetInt( AttributeKeys.ReminderEveryDays ) );
             int cutOffDays = dataMap.GetInt( AttributeKeys.CutoffDays );
             var assessmentSystemEmailGuid = dataMap.GetString( AttributeKeys.AssessmentSystemEmail ).AsGuid();

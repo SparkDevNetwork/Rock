@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -36,7 +36,7 @@ namespace Rock.Jobs
     Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
     IsRequired = false,
     DefaultIntegerValue = 60 * 60 )]
-    public class PostV14DataMigrationsAddMissingMediaElementInteractions : IJob
+    public class PostV14DataMigrationsAddMissingMediaElementInteractions:  RockJob
     {
         private static class AttributeKey
         {
@@ -47,9 +47,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // get the configured timeout, or default to 60 minutes if it is blank
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;

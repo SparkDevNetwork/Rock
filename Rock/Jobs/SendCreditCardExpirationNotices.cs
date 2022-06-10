@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Bus.Message;
@@ -72,7 +72,7 @@ namespace Rock.Jobs
         )]
 
     [DisallowConcurrentExecution]
-    public class SendCreditCardExpirationNotices : IJob
+    public class SendCreditCardExpirationNotices:  RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -100,7 +100,7 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             context.Result = string.Empty;
             StringBuilder jobSummaryBuilder = new StringBuilder();
@@ -163,9 +163,9 @@ namespace Rock.Jobs
         /// Removes any expired saved accounts (if <see cref="AttributeKey.RemovedExpiredSavedAccountDays"/> is set)
         /// </summary>
         /// <param name="context">The context.</param>
-        private FinancialPersonSavedAccountService.RemoveExpiredSavedAccountsResult RemoveExpiredSavedAccounts( IJobExecutionContext context )
+        private FinancialPersonSavedAccountService.RemoveExpiredSavedAccountsResult RemoveExpiredSavedAccounts( RockJobContext context )
         {
-            var dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             int? removedExpiredSavedAccountDays = dataMap.GetString( AttributeKey.RemovedExpiredSavedAccountDays ).AsIntegerOrNull();
 
             if ( !removedExpiredSavedAccountDays.HasValue )
@@ -183,9 +183,9 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="Exception">Expiring credit card email is missing.</exception>
-        private SendExpiredCreditCardNoticesResult SendExpiredCreditCardNotices( IJobExecutionContext context )
+        private SendExpiredCreditCardNoticesResult SendExpiredCreditCardNotices( RockJobContext context )
         {
-            var dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             var rockContext = new RockContext();
 
             // Get the details for the email that we'll be sending out.

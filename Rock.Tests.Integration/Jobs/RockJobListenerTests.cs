@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Quartz;
+
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using Rock.Communication.Transport;

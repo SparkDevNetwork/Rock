@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -42,7 +42,7 @@ namespace Rock.Jobs
     [SystemCommunicationField( "Alert Email", "The system email to use for sending an alert", true, "2fc7d3e3-d85b-4265-8983-970345215dea", "", 1 )]
     [TextField( "Alert Recipients", "A comma-delimited list of recipients that should receive the alert", true, "", "", 2 )]
     [DisallowConcurrentExecution]
-    public class CommunicationQueueAlert : IJob
+    public class CommunicationQueueAlert:  RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendCommunications"/> class.
@@ -55,9 +55,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             int alertPeriod = dataMap.GetInt( "AlertPeriod" );
             Guid? systemEmailGuid = dataMap.GetString( "AlertEmail" ).AsGuidOrNull();
             List<string> recipientEmails = dataMap.GetString( "AlertRecipients" ).SplitDelimitedValues().ToList();

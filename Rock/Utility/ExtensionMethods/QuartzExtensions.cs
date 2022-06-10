@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
 
 namespace Rock
@@ -24,14 +25,14 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
-        #region IJobExecutionContext extensions
+        #region RockJobContext extensions
 
         /// <summary>
-        /// Updates the LastStatusMessage of the Rock Job associated with the IJobExecutionContext
+        /// Updates the LastStatusMessage of the Rock Job associated with the RockJobContext
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="message">The message.</param>
-        public static void UpdateLastStatusMessage( this Quartz.IJobExecutionContext context, string message )
+        public static void UpdateLastStatusMessage( this RockJobContext context, string message )
         {
             // save the message to context.Result so that RockJobListener will set the save the same message when the Job completes
             context.Result = message;
@@ -50,22 +51,22 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the Job ID of the Rock Job associated with the IJobExecutionContext.
+        /// Gets the Job ID of the Rock Job associated with the RockJobContext.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public static int GetJobId( this Quartz.IJobExecutionContext context )
+        public static int GetJobId( this RockJobContext context )
         {
-            return context.JobDetail.Description.AsInteger();
+            return context.ServiceJob.Id;
         }
 
         /// <summary>
-        /// Gets the Job of the Rock Job associated with the IJobExecutionContext.
+        /// Gets the Job of the Rock Job associated with the RockJobContext.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>ServiceJob.</returns>
-        public static ServiceJob GetJob( this Quartz.IJobExecutionContext context, RockContext rockContext )
+        public static ServiceJob GetJob( this RockJobContext context, RockContext rockContext )
         {
             var jobId = context.GetJobId();
             return new ServiceJobService( rockContext ).Get( jobId );
@@ -76,19 +77,20 @@ namespace Rock
         /// </summary>
         /// <param name="jobDataMap">The job data map.</param>
         /// <param name="job">The job.</param>
-        internal static void LoadFromJobAttributeValues( this Quartz.JobDataMap jobDataMap, ServiceJob job )
+        internal static void LoadFromJobAttributeValues( this RockJobDataMap jobDataMap, ServiceJob job )
         {
             if ( job.Attributes == null )
             {
                 job.LoadAttributes();
             }
 
-            jobDataMap.Clear();
+            //jobDataMap.Clear();
 
+            /*
             foreach ( var attrib in job.AttributeValues )
             {
                 jobDataMap.Add( attrib.Key, attrib.Value.Value );
-            }
+            }*/
         }
 
         #endregion

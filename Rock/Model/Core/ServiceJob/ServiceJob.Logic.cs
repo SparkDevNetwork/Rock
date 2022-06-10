@@ -34,7 +34,7 @@ namespace Rock.Model
             if ( string.IsNullOrWhiteSpace( job.Assembly ) )
             {
                 // first, if no assembly is known, look in all the dlls for it
-                type = Rock.Reflection.FindType( typeof( Quartz.IJob ), job.Class );
+                type = Rock.Reflection.FindType( typeof( Rock.Jobs.RockJob ), job.Class );
 
                 if ( type == null )
                 {

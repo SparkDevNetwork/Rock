@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Data;
 using Rock.Model;
@@ -36,7 +36,7 @@ namespace Rock.Jobs
     [Description( "Job that gets National Change of Address (NCOA) data." )]
 
     [DisallowConcurrentExecution]
-    public class GetNcoa : IJob
+    public class GetNcoa:  RockJob
     {
         /// <summary>
         /// Empty constructor for job initialization
@@ -56,11 +56,11 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             Exception exception = null;
             // Get the job setting(s)
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             SparkDataConfig sparkDataConfig = Ncoa.GetSettings();
 
             if ( !sparkDataConfig.NcoaSettings.IsEnabled || !sparkDataConfig.NcoaSettings.IsValid() )

@@ -21,10 +21,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
-using Quartz;
-using Quartz.Impl;
-using Quartz.Impl.Matchers;
-
 using Rock.Data;
 using Rock.Jobs;
 using CronExpressionDescriptor;
@@ -66,7 +62,10 @@ namespace Rock.Model
         /// <returns></returns>
         public bool RunNow( ServiceJob job, out string errorMessage )
         {
-            // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
+            errorMessage = string.Empty;
+            return false;
+            /*
+             * // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
             var rockContext = new RockContext();
             errorMessage = string.Empty;
             try
@@ -119,14 +118,14 @@ namespace Rock.Model
 
                 // create the quartz job and trigger
                 var jobDetail = new ServiceJobService( rockContext ).BuildQuartzJob( job );
-                var jobDataMap = jobDetail.JobDataMap;
+                var jobDataMap = jobDetail.RockJobDataMap;
 
                 if ( jobDataMap != null )
                 {
                     // Force the <string, string> dictionary so that within Jobs, it is always okay to use
-                    // JobDataMap.GetString(). This mimics Rock attributes always being stored as strings.
-                    // If we allow non-strings, like integers, then JobDataMap.GetString() throws an exception.
-                    jobDetail.JobDataMap.PutAll( jobDataMap.ToDictionary( kvp => kvp.Key, kvp => ( object ) kvp.Value ) );
+                    // RockJobDataMap.GetString(). This mimics Rock attributes always being stored as strings.
+                    // If we allow non-strings, like integers, then RockJobDataMap.GetString() throws an exception.
+                    jobDetail.RockJobDataMap.PutAll( jobDataMap.ToDictionary( kvp => kvp.Key, kvp => ( object ) kvp.Value ) );
                 }
 
                 var jobTrigger = TriggerBuilder.Create()
@@ -176,7 +175,7 @@ namespace Rock.Model
 
                 return false;
             }
-
+            */
         }
 
         private static ConcurrentDictionary<string, bool> _verifiedJobTypeAttributes = new ConcurrentDictionary<string, bool>();
@@ -195,6 +194,7 @@ namespace Rock.Model
             }
         }
 
+        /*
         /// <summary>
         /// Builds a Quartz Job for a specified <see cref="Rock.Model.ServiceJob">Job</see>
         /// </summary>
@@ -206,7 +206,7 @@ namespace Rock.Model
 
             UpdateAttributesIfNeeded( type );
 
-            JobDataMap map = new JobDataMap();
+            RockJobDataMap map = new RockJobDataMap();
             map.LoadFromJobAttributeValues( job );
 
             // create the quartz job object
@@ -251,8 +251,9 @@ namespace Rock.Model
                 .Build();
 
             return trigger;
-        }
+        }*/
 
+        /*
         /// <summary>
         /// Determines whether the Cron Expression is valid for Quartz
         /// </summary>
@@ -285,7 +286,7 @@ namespace Rock.Model
             {
                 return "Invalid Cron Expression";
             }
-        }
+        }*/
 
         /// <summary>
         /// Deletes the job.

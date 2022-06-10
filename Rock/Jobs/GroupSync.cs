@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock;
 using Rock.Attribute;
@@ -61,7 +61,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [BooleanField( "Require Password Reset On New Logins", "Determines if new logins will require the individual to reset their password on the first log in.", Key = "RequirePasswordReset" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each operation to complete. Leave blank to use the default for this job (180).", false, 3 * 60, "General", 1, "CommandTimeout" )]
-    public class GroupSync : IJob
+    public class GroupSync:  RockJob
     {
         /// <summary>
         /// Empty constructor for job initialization
@@ -81,10 +81,10 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             // Get the job setting(s)
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             bool requirePasswordReset = dataMap.GetBoolean( "RequirePasswordReset" );
             var commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 180;
 

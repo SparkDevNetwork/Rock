@@ -22,7 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -51,7 +51,7 @@ namespace Rock.Jobs
     [IntegerField( "Rebuild Threshold Percentage", "The threshold percentage where a REBUILD will be completed instead of a REORGANIZE. Default value is 30%.", false, 30, category: "Advanced", order: 7 )]
     [BooleanField( "Use ONLINE Index Rebuild", "Use the ONLINE option when rebuilding indexes. NOTE: This is only supported on SQL Enterprise and Azure SQL Database.", false, category: "Advanced", order: 8 )]
     [DisallowConcurrentExecution]
-    public class DatabaseMaintenance : IJob
+    public class DatabaseMaintenance:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -73,9 +73,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext jobContext )
+        public override void Execute( RockJobContext jobContext )
         {
-            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
+            var dataMap = jobContext.JobDetail.DataMap;
 
             // get job parms
             bool runIntegrityCheck = dataMap.GetBoolean( "RunIntegrityCheck" );
@@ -272,9 +272,9 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="jobContext">The job context.</param>
         /// <param name="commandTimeoutSeconds">The command timeout seconds.</param>
-        private void RebuildFragmentedIndexes( IJobExecutionContext jobContext, int commandTimeoutSeconds )
+        private void RebuildFragmentedIndexes( RockJobContext jobContext, int commandTimeoutSeconds )
         {
-            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = jobContext.JobDetail.DataMap;
             int minimumIndexPageCount = dataMap.GetString( "MinimumIndexPageCount" ).AsInteger();
             int minimumFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
             int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();

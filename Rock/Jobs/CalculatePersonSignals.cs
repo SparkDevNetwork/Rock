@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Data;
 using Rock.Model;
@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [Description( "Re-calculates all person signals to ensure that the top-most signal is still the current one." )]
 
     [DisallowConcurrentExecution]
-    public class CalculatePersonSignals : IJob
+    public class CalculatePersonSignals:  RockJob
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CalculatePersonSignals"/> class.
@@ -47,7 +47,7 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             List<int> people;
             int count = 0;

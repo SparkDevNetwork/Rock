@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -38,7 +38,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [IntegerField( "How Many Records", "The number of attribute records to process on each run of this job.", false, 500000, "", 0, "HowMany" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
-    public class MigrateFamilyAlternateId : IJob
+    public class MigrateFamilyAlternateId:  RockJob
     {
         private const string _attributeGuid = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 
@@ -48,9 +48,9 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
 
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             int howMany = dataMap.GetString( "HowMany" ).AsIntegerOrNull() ?? 500000;
             var commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
@@ -98,7 +98,7 @@ namespace Rock.Jobs
             }
         }
 
-        private bool UpdateSearchValueRecords( IJobExecutionContext context, int howManyToConvert, int commandTimeout )
+        private bool UpdateSearchValueRecords( RockJobContext context, int howManyToConvert, int commandTimeout )
         {
             bool anyRemaining = true;
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using Quartz;
+
 
 namespace Rock.Tests.Integration.Jobs
 {

@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -90,7 +90,7 @@ namespace Rock.Jobs
         Order = 7 )]
 
     #endregion Job Attributes
-    public class GetScheduledPayments : IJob
+    public class GetScheduledPayments:  RockJob
     {
         #region Attribute Keys
 
@@ -155,12 +155,12 @@ namespace Rock.Jobs
         /// <exception cref="Exception">
         /// One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine )
         /// </exception>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var exceptionMsgs = new List<string>();
 
             // get the job map
-            var dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             var scheduledPaymentsProcessed = 0;
 
             Guid? receiptEmail = dataMap.GetString( AttributeKey.ReceiptEmail ).AsGuidOrNull();

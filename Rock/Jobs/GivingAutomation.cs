@@ -25,7 +25,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Bus.Message;
@@ -66,7 +66,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
-    public class GivingAutomation : IJob
+    public class GivingAutomation:  RockJob
     {
         #region Keys
 
@@ -122,7 +122,7 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext jobContext )
+        public override void Execute( RockJobContext jobContext )
         {
             var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
             if ( !settings.GivingAutomationJobSettings.IsEnabled )
@@ -2497,12 +2497,12 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// Initializes a new instance of the <see cref="GivingAutomationContext"/> class.
             /// </summary>
             /// <param name="jobExecutionContext">The job execution context.</param>
-            public GivingAutomationContext( IJobExecutionContext jobExecutionContext )
+            public GivingAutomationContext( RockJobContext jobExecutionContext )
             {
                 JobExecutionContext = jobExecutionContext;
-                JobDataMap = jobExecutionContext.JobDetail.JobDataMap;
+                RockJobDataMap = jobExecutionContext.JobDetail.DataMap;
                 DataViewPersonQueries = new Dictionary<int, IQueryable<Person>>();
-                SqlCommandTimeoutSeconds = JobDataMap.GetString( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+                SqlCommandTimeoutSeconds = RockJobDataMap.GetString( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
                 DataViewPersonQueriesRockContext = new RockContext();
                 DataViewPersonQueriesRockContext.Database.CommandTimeout = SqlCommandTimeoutSeconds;
                 LateAlertsByGivingId = new Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>>();
@@ -2567,7 +2567,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// <value>
             /// The job execution context.
             /// </value>
-            public IJobExecutionContext JobExecutionContext { get; }
+            public RockJobContext JobExecutionContext { get; }
 
             /// <summary>
             /// Gets the job data map.
@@ -2575,7 +2575,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// <value>
             /// The job data map.
             /// </value>
-            public JobDataMap JobDataMap { get; }
+            public RockJobDataMap RockJobDataMap { get; }
 
             /// <summary>
             /// Gets or sets the giving ids to classify.
@@ -2653,7 +2653,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// <returns></returns>
             public string GetAttributeValue( string key )
             {
-                return JobDataMap.GetString( key );
+                return RockJobDataMap.GetString( key );
             }
         }
 

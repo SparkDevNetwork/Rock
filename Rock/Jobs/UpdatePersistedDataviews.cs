@@ -20,8 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -31,13 +29,12 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to makes sure that persisted dataviews are updated based on their schedule interval.
     /// </summary>
-    /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Update Persisted DataViews" )]
     [Description( "Job to makes sure that persisted dataviews are updated based on their schedule interval." )]
 
     [DisallowConcurrentExecution]
     [IntegerField( "SQL Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (300 seconds). ", false, 5 * 60, "General", 1, TIMEOUT_KEY )]
-    public class UpdatePersistedDataviews : IJob
+    public class UpdatePersistedDataviews : RockJob
     {
         private const string TIMEOUT_KEY = "SqlCommandTimeout";
 
@@ -56,9 +53,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             int sqlCommandTimeout = dataMap.GetString( TIMEOUT_KEY ).AsIntegerOrNull() ?? 300;
             StringBuilder results = new StringBuilder();
             int updatedDataViewCount = 0;

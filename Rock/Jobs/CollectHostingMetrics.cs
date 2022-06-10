@@ -22,7 +22,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -53,7 +53,7 @@ namespace Rock.Jobs
         Description = "The maximum number of metric values to retain for these hosting metrics. When the maximum is reached, the oldest records are deleted to stay below this limit.",
         IsRequired = false,
         DefaultIntegerValue = 10000 )]
-    public class CollectHostingMetrics : IJob
+    public class CollectHostingMetrics:  RockJob
     {
         #region AttributeKeys
 
@@ -158,7 +158,7 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             try
             {
@@ -174,7 +174,7 @@ namespace Rock.Jobs
                     throw new Exception( @"You must first navigate to ""Admin Tools > System Settings > System Configuration > Web.Config Settings"" and enable the ""Enable Database Performance Counters"" setting." );
                 }
 
-                JobDataMap dataMap = context.JobDetail.JobDataMap;
+                RockJobDataMap dataMap = context.JobDetail.DataMap;
 
                 // Get the configured timeout, or default to 60 minutes if it is blank.
                 _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
@@ -271,11 +271,11 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Saves the <see cref="MetricValue"/>s and updates the <see cref="IJobExecutionContext"/>'s Result property.
+        /// Saves the <see cref="MetricValue"/>s and updates the <see cref="RockJobContext"/>'s Result property.
         /// </summary>
-        /// <param name="context">The <see cref="IJobExecutionContext"/>.</param>
+        /// <param name="context">The <see cref="RockJobContext"/>.</param>
         /// <exception cref="Exception">Unable to find the "Hosting Metrics" Category ID.</exception>
-        private void SaveMetricValues( IJobExecutionContext context )
+        private void SaveMetricValues( RockJobContext context )
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = _commandTimeout;

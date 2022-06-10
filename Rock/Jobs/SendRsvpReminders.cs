@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -48,7 +48,7 @@ namespace Rock.Jobs
     #endregion
 
     [DisallowConcurrentExecution]
-    public class SendRsvpReminders : IJob
+    public class SendRsvpReminders : RockJob
     {
         /// <summary>
         /// Keys for DataMap Field Attributes.
@@ -74,7 +74,7 @@ namespace Rock.Jobs
         /// fires that is associated with the <see cref="IJob" />.
         /// </summary>
         /// <param name="context">The job's execution context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             try
             {
@@ -92,9 +92,9 @@ namespace Rock.Jobs
         /// <see cref="ExceptionLogService"/>.
         /// </summary>
         /// <param name="context">The job's execution context.</param>
-        private void ProcessJob( IJobExecutionContext context )
+        private void ProcessJob( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             RockContext rockContext = new RockContext();
 
             // Make sure GroupType job attribute was assigned.
@@ -414,6 +414,5 @@ namespace Rock.Jobs
         }
 
         #endregion Job Methods
-
     }
 }

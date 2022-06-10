@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -48,7 +48,7 @@ namespace Rock.Jobs
         Order = 7 )]
 
     [DisallowConcurrentExecution]
-    public class ConnectionRequestsAutomation : IJob
+    public class ConnectionRequestsAutomation:  RockJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -79,9 +79,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
 
             // Use concurrent safe data structures to track the count and errors
@@ -305,7 +305,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="jobExecutionContext">The job execution context.</param>
         /// <param name="errors">The errors.</param>
-        private void ThrowErrors( IJobExecutionContext jobExecutionContext, IEnumerable<string> errors )
+        private void ThrowErrors( RockJobContext jobExecutionContext, IEnumerable<string> errors )
         {
             var sb = new StringBuilder();
 

@@ -16,7 +16,7 @@
 //
 using System.ComponentModel;
 
-using Quartz;
+
 
 using Rock.Data;
 using Rock.Model;
@@ -30,16 +30,16 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v7.4" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v74. After all the operations are done, this job will delete itself." )]
-    public class PostV74DataMigrations : IJob
+    public class PostV74DataMigrations : RockJob
     {
         /// <summary>
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             CommunicationPendingCommunicationMediumEntityTypeFix();
             bool canDeleteJob = true;

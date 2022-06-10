@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -36,13 +36,13 @@ namespace Rock.Jobs
     [DisplayName( "Rock Update Helper v12.4 - Update Group Salutation fields on Rock.Model.Group." )]
     [Description( "Updates Group Salutation fields on Rock.Model.Group." )]
 
-    public class PostV124DataMigrationsUpdateGroupSalutations : IJob
+    public class PostV124DataMigrationsUpdateGroupSalutations:  RockJob
     {
         /// <summary>
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 

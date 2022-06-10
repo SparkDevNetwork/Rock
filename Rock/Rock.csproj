@@ -319,9 +319,6 @@
     <Reference Include="QRCoder, Version=1.3.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\QRCoder.1.3.9\lib\net40\QRCoder.dll</HintPath>
     </Reference>
-    <Reference Include="Quartz">
-      <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
-    </Reference>
     <Reference Include="RabbitMQ.Client, Version=5.0.0.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
       <HintPath>..\packages\RabbitMQ.Client.5.1.2\lib\net451\RabbitMQ.Client.dll</HintPath>
     </Reference>
@@ -788,6 +785,7 @@
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
+    <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
@@ -1841,7 +1839,6 @@
     <Compile Include="Field\Types\AssetStorageProviderFieldType.cs" />
     <Compile Include="Field\Types\AssessmentTypesFieldType.cs" />
     <Compile Include="Field\Types\ConditionalScaleFieldType.cs" />
-    <Compile Include="Jobs\RockTriggerListener.cs" />
     <Compile Include="Jobs\GroupLeaderAbsenceNotifications.cs" />
     <Compile Include="Jobs\PostV90DataMigrationsScheduledTransactionNotesToHistory.cs" />
     <Compile Include="Jobs\SendAssessmentReminders.cs" />
@@ -2366,14 +2363,11 @@
     <Compile Include="Jobs\GroupSync.cs" />
     <Compile Include="Jobs\JobLoadFailedException.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
-    <Compile Include="Jobs\LaunchWorkflow.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
+    <Compile Include="Jobs\LaunchWorkflow.cs" />
     <Compile Include="Jobs\LocationServicesVerify.cs" />
     <Compile Include="Jobs\ProcessSignatureDocuments.cs" />
     <Compile Include="Jobs\ProcessWorkflows.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
-    <Compile Include="Jobs\RockJobListener.cs" />
     <Compile Include="Jobs\CompleteWorkflows.cs" />
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Jobs\SendAttendanceReminders.cs" />

@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
-using Quartz;
+
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [Description( "Charge future transactions where the FutureProcessingDateTime is now or has passed." )]
 
     [DisallowConcurrentExecution]
-    public class ChargeFutureTransactions : IJob
+    public class ChargeFutureTransactions:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -51,7 +51,7 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var rockContext = new RockContext();
             var transactionService = new FinancialTransactionService( rockContext );

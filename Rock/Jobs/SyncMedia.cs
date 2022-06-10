@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -46,7 +46,7 @@ namespace Rock.Jobs
         Order = 0 )]
 
     [DisallowConcurrentExecution]
-    public class SyncMedia : IJob
+    public class SyncMedia:  RockJob
     {
         /// <summary>
         /// Attribute Keys for the <see cref="SyncMedia"/> job.
@@ -68,9 +68,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             var limitFullSync = dataMap.GetString( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
 
             // Start a task that will let us run the Async methods in order.

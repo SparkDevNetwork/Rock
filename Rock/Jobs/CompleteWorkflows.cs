@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -37,7 +37,7 @@ namespace Rock.Jobs
     [TextField("Close Status", "The status to set the workflow to when closed.", true, "Completed", order: 1)]
     [IntegerField("Expiration Age", "The age in minutes that a workflow needs to be in order to close them.", false, order: 2)]
     [DisallowConcurrentExecution]
-    public class CompleteWorkflows : IJob
+    public class CompleteWorkflows:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -57,9 +57,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             var workflowTypeGuids = dataMap.GetString( "WorkflowTypes" ).Split(',').Select(Guid.Parse).ToList();
             int? expirationAge = dataMap.GetString( "ExpirationAge" ).AsIntegerOrNull();

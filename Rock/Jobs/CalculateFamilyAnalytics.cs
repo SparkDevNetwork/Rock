@@ -21,7 +21,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock;
 using Rock.Attribute;
@@ -44,7 +44,7 @@ namespace Rock.Jobs
 
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (3600). Note, some operations could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
     [DisallowConcurrentExecution]
-    public class CalculateFamilyAnalytics : IJob
+    public class CalculateFamilyAnalytics : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Calculate Family Analytics Job";
 
@@ -66,9 +66,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
 
             Guid? entryWorkflowType = dataMap.GetString( "EraEntryWorkflow" ).AsGuidOrNull();
             Guid? exitWorkflowType = dataMap.GetString( "EraExitWorkflow" ).AsGuidOrNull();

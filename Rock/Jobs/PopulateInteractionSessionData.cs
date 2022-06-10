@@ -21,7 +21,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.IpAddress;
@@ -65,7 +65,7 @@ namespace Rock.Jobs
         IsRequired = false,
         DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
     [DisallowConcurrentExecution]
-    public class PopulateInteractionSessionData : IJob
+    public class PopulateInteractionSessionData:  RockJob
     {
         #region Keys
 
@@ -134,9 +134,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             _errors = new List<string>();
             _exceptions = new List<Exception>();
             StringBuilder results = new StringBuilder();
@@ -162,9 +162,9 @@ namespace Rock.Jobs
             }
         }
 
-        private string ProcessInteractionCountAndDuration( IJobExecutionContext context )
+        private string ProcessInteractionCountAndDuration( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             var anyRemaining = true;
             var howManyRecords = dataMap.GetString( AttributeKey.HowManyRecords ).AsIntegerOrNull() ?? 50000;
             var maxSessionRecords = 2000;
@@ -207,9 +207,9 @@ namespace Rock.Jobs
             return $"<i class='fa fa-circle text-success'></i> Updated Interaction Count And Session Duration for {totalRecordsProcessed} {"interaction session".PluralizeIf( totalRecordsProcessed != 1 )}";
         }
 
-        private string ProcessInteractionSessionForIP( IJobExecutionContext jobContext )
+        private string ProcessInteractionSessionForIP( RockJobContext jobContext )
         {
-            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = jobContext.JobDetail.DataMap;
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
             var lookbackMaximumInDays = dataMap.GetString( AttributeKey.LookbackMaximumInDays ).AsInteger();
             var startDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );

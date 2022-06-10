@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
-using Quartz;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [Description( "This job triggers connection request workflows." )]
 
     [DisallowConcurrentExecution]
-    public class ConnectionRequestWorkflowTriggers : IJob
+    public class ConnectionRequestWorkflowTriggers:  RockJob
     {
         private const string SOURCE_OF_CHANGE = "Connection Request Workflow Triggers";
         private HttpContext _httpContext = null;
@@ -78,7 +78,7 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             _httpContext = HttpContext.Current;
 
@@ -104,11 +104,11 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         /// <param name="futureFollowupDateWorkflows">The future follow-up date workflows.</param>
         /// <returns></returns>
-        private string TriggerFutureFollowupWorkFlow( IJobExecutionContext context, List<ConnectionWorkflow> futureFollowupDateWorkflows )
+        private string TriggerFutureFollowupWorkFlow( RockJobContext context, List<ConnectionWorkflow> futureFollowupDateWorkflows )
         {
             try
             {
-                JobDataMap dataMap = context.JobDetail.JobDataMap;
+                RockJobDataMap dataMap = context.JobDetail.DataMap;
 
                 context.UpdateLastStatusMessage( $"Processing future follow-up workflows." );
 

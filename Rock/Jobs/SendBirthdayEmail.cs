@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -44,7 +44,7 @@ namespace Rock.Jobs
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Statuses", "To limit to people by connection status, specify the connection status to include", false, true )]
 
     [DisallowConcurrentExecution]
-    public class SendBirthdayEmail : IJob
+    public class SendBirthdayEmail:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -61,12 +61,12 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
 
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             Guid? systemEmailGuid = dataMap.GetString( "BirthdayEmail" ).AsGuidOrNull();
 
             var emailService = new SystemCommunicationService( rockContext );

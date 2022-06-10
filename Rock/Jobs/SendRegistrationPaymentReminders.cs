@@ -23,7 +23,7 @@ using System.Web;
 
 using Humanizer;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -41,7 +41,7 @@ namespace Rock.Jobs
 
     [IntegerField("Cut-off Date", "The number of days past the registration close to send reminders. After this cut-off, reminders will need to be sent manually to prevent eternal reminders.", true, 30, key:"CutoffDate")]
     [DisallowConcurrentExecution]
-    public class SendRegistrationPaymentReminders : IJob
+    public class SendRegistrationPaymentReminders:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -61,9 +61,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // get registrations where
             //    + template is active

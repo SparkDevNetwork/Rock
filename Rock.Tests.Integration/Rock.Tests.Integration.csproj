@@ -152,12 +152,6 @@
     <Compile Include="Core\FieldTypesListing.cs" />
     <Compile Include="Field.Types\AddressFieldTypeTests.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
-    <Compile Include="Jobs\GivingAutomationClassificationTests.cs" />
-    <Compile Include="Jobs\GivingJourneyHelperTests.cs" />
-    <Compile Include="Jobs\RockJobListenerTestJob.cs" />
-    <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
-    <Compile Include="Jobs\RockJobListenerTests.cs" />
-    <Compile Include="Jobs\RockCleanupJobTests.cs" />
     <Compile Include="Lava\Commands\RockEntityTests.cs" />
     <Compile Include="Lava\DotLiquid\RockLiquidTests.cs" />
     <Compile Include="Lava\Engine\EntityPropertyAccessTests.cs" />
@@ -186,9 +180,6 @@
     <Compile Include="Lava\Commands\CommandTests.cs" />
     <Compile Include="Lava\Commands\ShortcodeTemplateTests.cs" />
     <Compile Include="Lava\SqlTests.cs" />
-    <Compile Include="Jobs\StepsAutomationJobTests.cs" />
-    <Compile Include="Jobs\TestJobDetail.cs" />
-    <Compile Include="Jobs\TestJobContext.cs" />
     <Compile Include="Lava\Engine\MockTemplateCacheService.cs" />
     <Compile Include="Model\EventTests.cs" />
     <Compile Include="Model\BinaryFileTests.cs" />

@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -55,7 +55,7 @@ namespace Rock.Jobs
         Order = 7 )]
 
     [DisallowConcurrentExecution]
-    public class StepsAutomation : IJob
+    public class StepsAutomation : RockJob
     {
         #region Keys
 
@@ -106,9 +106,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            _sqlCommandTimeoutSeconds = context.JobDetail.JobDataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+            _sqlCommandTimeoutSeconds = context.JobDetail.DataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
 
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
@@ -154,7 +154,7 @@ namespace Rock.Jobs
         /// <param name="updatedResults">The updated results.</param>
         /// <param name="errorMessages">The error message.</param>
         private void ProcessStepType(
-            IJobExecutionContext jobContext,
+            RockJobContext jobContext,
             StepTypeView stepTypeView,
             int minDaysBetweenSteps,
             ConcurrentBag<int> addedResults,
@@ -455,9 +455,9 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="jobExecutionContext">The job execution context.</param>
         /// <returns></returns>
-        private int GetDuplicatePreventionDayRange( IJobExecutionContext jobExecutionContext )
+        private int GetDuplicatePreventionDayRange( RockJobContext jobExecutionContext )
         {
-            var days = jobExecutionContext.JobDetail.JobDataMap.GetString( AttributeKey.DuplicatePreventionDayRange ).AsInteger();
+            var days = jobExecutionContext.JobDetail.DataMap.GetString( AttributeKey.DuplicatePreventionDayRange ).AsInteger();
             return days;
         }
 
@@ -466,7 +466,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="jobExecutionContext">The job execution context.</param>
         /// <param name="errors">The errors.</param>
-        private void ThrowErrors( IJobExecutionContext jobExecutionContext, IEnumerable<string> errors )
+        private void ThrowErrors( RockJobContext jobExecutionContext, IEnumerable<string> errors )
         {
             var sb = new StringBuilder();
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Quartz;
+
 using Rock.Attribute;
 using Rock.Jobs;
 
@@ -29,7 +29,7 @@ namespace Rock.Tests.Integration.Jobs
         public const string ExecutionMessage = "ExecutionMessage";
     }
 
-    public class RockJobListenerTestJob : IJob
+    public class RockJobListenerTestJob:  RockJob
     {
         #region Attribute Keys
 
@@ -39,7 +39,7 @@ namespace Rock.Tests.Integration.Jobs
         
 
         #endregion Attribute Keys
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var dataMap = context.JobDetail.JobDataMap;
             TestResultType? executionResult = ( TestResultType? ) dataMap.GetString( TestJobAttributeKey.ExecutionResult ).AsIntegerOrNull();

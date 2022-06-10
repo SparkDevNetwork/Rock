@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -68,7 +68,7 @@ namespace Rock.Jobs
     #endregion
 
     [DisallowConcurrentExecution]
-    public class SendGroupAttendanceDigest : IJob
+    public class SendGroupAttendanceDigest:  RockJob
     {
         #region Attribute Keys
 
@@ -105,7 +105,7 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             try
             {
@@ -154,9 +154,9 @@ namespace Rock.Jobs
         /// Processes the job.
         /// </summary>
         /// <param name="context">The context.</param>
-        private void ProcessJob( IJobExecutionContext context )
+        private void ProcessJob( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // Make sure we have valid entity Guids.
             var parentGroupGuid = dataMap.Get( AttributeKey.ParentGroup ).ToString().AsGuidOrNull();

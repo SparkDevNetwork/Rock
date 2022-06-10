@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
-using Quartz.Impl.Matchers;
+
+//using Quartz.Impl.Matchers;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -42,7 +42,7 @@ namespace Rock.Jobs
         Order = 0 )]
 
     [DisallowConcurrentExecution]
-    public class JobPulse : IJob
+    public class JobPulse : RockJob
     {
 
         /// <summary>
@@ -67,10 +67,10 @@ namespace Rock.Jobs
         /// <summary> 
         /// System job that allows Rock to monitor the jobs engine
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
-            context.GetJobId();
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            
 
             var setJobPulseDateTimeGlobalAttribute = dataMap.GetString( AttributeKey.SetJobPulseDateTimeGlobalAttribute ).AsBoolean();
 
@@ -89,9 +89,9 @@ namespace Rock.Jobs
         /// Updates the scheduled jobs.
         /// </summary>
         /// <param name="context">The context.</param>
-        private void UpdateScheduledJobs( IJobExecutionContext context )
+        private void UpdateScheduledJobs( RockJobContext context )
         {
-            var scheduler = context.Scheduler;
+            /*var scheduler = context.Scheduler;
             int jobsDeleted = 0;
             int jobsScheduleUpdated = 0;
 
@@ -219,7 +219,7 @@ namespace Rock.Jobs
             if ( jobsScheduleUpdated > 0 )
             {
                 context.Result += ( string.IsNullOrEmpty( context.Result as string ) ? "" : " and " ) + string.Format( "Updated {0} schedule(s)", jobsScheduleUpdated );
-            }
+            }*/
         }
     }
 }

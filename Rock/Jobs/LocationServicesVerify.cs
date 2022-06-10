@@ -18,7 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Model;
@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [IntegerField( "Throttle Period", "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.", true, 500 )]
     [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful address lookup.", true, 200 )]
     [DisallowConcurrentExecution]
-    public class LocationServicesVerify : IJob
+    public class LocationServicesVerify:  RockJob
     {
         
         /// <summary> 
@@ -57,10 +57,10 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute(IJobExecutionContext context)
+        public override void Execute(RockJobContext context)
         {
             // get the job map
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             int maxRecords = dataMap.GetString( "MaxRecordsPerRun" ).AsIntegerOrNull() ?? 1000;
             int throttlePeriod = dataMap.GetString( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;

@@ -16,7 +16,7 @@
 //
 using System;
 using System.ComponentModel;
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -39,7 +39,7 @@ namespace Rock.Jobs
     [TextField( "Login Id", "The login to impersonate when navigating to secured pages. Leave blank if secured pages should not be indexed.", false, "", "", 1, "LoginId" )]
     [TextField( "Password", "The password associated with the Login Id.", false, "", "", 2, "Password", true )]
 
-    public class IndexRockSite : IJob
+    public class IndexRockSite:  RockJob
     {
         private int _indexedPageCount = 0;
         private Site _site;
@@ -62,9 +62,9 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             var siteId = dataMap.GetString( "Site" ).AsIntegerOrNull();
             string loginId = dataMap.GetString( "LoginId" );
             string password = dataMap.GetString( "Password" );

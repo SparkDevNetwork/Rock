@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -73,7 +73,7 @@ namespace Rock.Jobs
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
-    public class SendAttendanceReminder : IJob
+    public class SendAttendanceReminder:  RockJob
     {
         #region Attribute Keys
 
@@ -114,10 +114,10 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var rockContext = new RockContext();
-            var dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             var groupType = GroupTypeCache.Get( dataMap.GetString( AttributeKey.GroupType ).AsGuid() );
             var isGroupTypeValid = groupType.TakesAttendance && groupType.SendAttendanceReminder;
             var results = new StringBuilder();
@@ -173,7 +173,7 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private Dictionary<int, List<DateTime>> GetOccurenceDates( GroupTypeCache groupType, JobDataMap dataMap, RockContext rockContext )
+        private Dictionary<int, List<DateTime>> GetOccurenceDates( GroupTypeCache groupType, RockJobDataMap dataMap, RockContext rockContext )
         {
             var dates = GetSearchDates( dataMap );
             var startDate = dates.Min();
@@ -195,7 +195,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="dataMap">The data map.</param>
         /// <returns></returns>
-        private List<DateTime> GetSearchDates( JobDataMap dataMap )
+        private List<DateTime> GetSearchDates( RockJobDataMap dataMap )
         {
 
             // Get the occurrence dates that apply
@@ -424,7 +424,7 @@ namespace Rock.Jobs
             return FormatMessages( warnings, "Warning" );
         }
 
-        private void HandleErrorMessage( IJobExecutionContext context, string errorMessage )
+        private void HandleErrorMessage( RockJobContext context, string errorMessage )
         {
             if ( errorMessage.IsNullOrWhiteSpace() )
             {
@@ -440,7 +440,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void HandleErrorMessages( IJobExecutionContext context, List<string> errorMessages )
+        private void HandleErrorMessages( RockJobContext context, List<string> errorMessages )
         {
             if ( errorMessages.Any() )
             {

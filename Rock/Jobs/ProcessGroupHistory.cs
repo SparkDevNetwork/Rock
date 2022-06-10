@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Data;
 using Rock.Model;
@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [Description( "Creates Historical snapshots of Groups and Group Members for any group types that have history enabled." )]
 
     [DisallowConcurrentExecution]
-    public class ProcessGroupHistory : IJob
+    public class ProcessGroupHistory:  RockJob
     {
 
         #region Constructor
@@ -67,9 +67,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             _jobStatusMessages = new List<string>();
 
@@ -93,7 +93,7 @@ namespace Rock.Jobs
         /// Updates Group Historical for any groups that have data group history enabled
         /// </summary>
         /// <param name="context">The context.</param>
-        public void UpdateGroupHistorical( IJobExecutionContext context )
+        public void UpdateGroupHistorical( RockJobContext context )
         {
             var rockContext = new RockContext();
             var groupHistoricalService = new GroupHistoricalService( rockContext );
@@ -180,7 +180,7 @@ namespace Rock.Jobs
         /// Updates GroupMemberHistorical for any group members in groups that have data group history enabled
         /// </summary>
         /// <param name="context">The context.</param>
-        public void UpdateGroupMemberHistorical( IJobExecutionContext context )
+        public void UpdateGroupMemberHistorical( RockJobContext context )
         {
             var rockContext = new RockContext();
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
@@ -258,7 +258,7 @@ namespace Rock.Jobs
         /// Updates GroupLocationHistorical for any group locations in groups that have data group history enabled
         /// </summary>
         /// <param name="context">The context.</param>
-        public void UpdateGroupLocationHistorical( IJobExecutionContext context )
+        public void UpdateGroupLocationHistorical( RockJobContext context )
         {
             var rockContext = new RockContext();
             var groupLocationHistoricalService = new GroupLocationHistoricalService( rockContext );

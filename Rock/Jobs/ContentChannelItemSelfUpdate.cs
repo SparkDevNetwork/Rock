@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -55,7 +55,7 @@ namespace Rock.Jobs
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
-    public class ContentChannelItemSelfUpdate : IJob
+    public class ContentChannelItemSelfUpdate:  RockJob
     {
         private static class AttributeKey
         {
@@ -74,9 +74,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            var jobDataMap = context.JobDetail.JobDataMap;
+            var jobDataMap = context.JobDetail.DataMap;
             var contentChannelGuid = jobDataMap.GetString( AttributeKey.ContentChannel ).AsGuidOrNull();
 
             if ( !contentChannelGuid.HasValue )

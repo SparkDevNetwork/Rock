@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock;
 using Rock.Attribute;
@@ -39,7 +39,7 @@ namespace Rock.Jobs
     [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 3, "", 1 )]
     [IntegerField( "Check For Signature Days", "Number of days after document was last sent to check for signature", false, 30, "", 2 )]
     [DisallowConcurrentExecution]
-    public class ProcessSignatureDocuments : IJob
+    public class ProcessSignatureDocuments:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -65,9 +65,9 @@ namespace Rock.Jobs
         /// <see cref="ITriggerListener" />s that are watching the job's
         /// execution.
         /// </remarks>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
             int resendDays = dataMap.GetString( "ResendInviteAfterNumberDays" ).AsIntegerOrNull() ?? 5;
             int maxInvites = dataMap.GetString( "MaxInvites" ).AsIntegerOrNull() ?? 2;
             int checkDays = dataMap.GetString( "CheckForSignatureDays" ).AsIntegerOrNull() ?? 30;

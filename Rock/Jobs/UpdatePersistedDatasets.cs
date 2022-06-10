@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
-using Quartz;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [Description( "This job will update the persisted data in any Persisted Datasets that need to be refreshed." )]
 
     [DisallowConcurrentExecution]
-    public class UpdatePersistedDatasets : IJob
+    public class UpdatePersistedDatasets : RockJob
     {
 
         /// <summary>
@@ -52,9 +52,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
             StringBuilder results = new StringBuilder();
             int updatedDatasetCount = 0;
             int updatedDatasetTotalCount;

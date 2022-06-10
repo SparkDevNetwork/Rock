@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -37,7 +37,7 @@ namespace Rock.Jobs
     [DisplayName( "Rock Update Helper v9.0 - Runs data updates that need to occur after updating to v9.0" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v9.0. After all the operations are done, this job will delete itself." )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete.", false, 60 * 60, "General", 7, "CommandTimeout" )]
-    public class PostV90DataMigrations : IJob
+    public class PostV90DataMigrations:  RockJob
     {
         private int? _commandTimeout = null;
 
@@ -45,9 +45,9 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // get the configured timeout, or default to 60 minutes if it is blank
             _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;

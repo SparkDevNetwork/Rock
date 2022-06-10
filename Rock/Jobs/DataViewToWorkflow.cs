@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Attribute;
 using Rock.Data;
@@ -44,7 +44,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    public class DataViewToWorkflow : IJob
+    public class DataViewToWorkflow:  RockJob
     {
         #region Attribute Keys
 
@@ -70,10 +70,10 @@ namespace Rock.Jobs
         /// Perform the job using the parameters supplied in the execution context.
         /// </summary>
         /// <param name="context"></param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             // Get the configuration settings for this job instance.
-            var dataMap = context.JobDetail.JobDataMap;
+            var dataMap = context.JobDetail.DataMap;
 
             var workflowTypeGuid = dataMap.GetString( AttributeKey.Workflow ).AsGuidOrNull();
             var dataViewGuid = dataMap.GetString( AttributeKey.DataView ).AsGuidOrNull();

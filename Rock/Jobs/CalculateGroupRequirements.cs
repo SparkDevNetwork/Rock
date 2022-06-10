@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 
-using Quartz;
+
 
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [Description( "Calculate Group Requirements for group members that are in groups that have group requirements." )]
 
     [DisallowConcurrentExecution]
-    public class CalculateGroupRequirements : IJob
+    public class CalculateGroupRequirements:  RockJob
     {
         /// <summary> 
         /// Empty constructor for job initialization
@@ -52,7 +52,7 @@ namespace Rock.Jobs
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        public void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             var rockContext = new RockContext();
             var groupRequirementService = new GroupRequirementService( rockContext );
