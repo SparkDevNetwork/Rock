@@ -685,5 +685,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement"/> 
         /// </summary>
         public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
+
+        /// <summary>
+        /// The lava shortcode category
+        /// </summary>
+        public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
     }
 }
