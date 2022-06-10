@@ -76,6 +76,10 @@
     <Compile Include="Migrations\202206101941500_AddLavaShortcode_Categories.designer.cs">
       <DependentUpon>202206101941500_AddLavaShortcode_Categories.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202206102113081_BinaryFileType_MaxFileSizeBytes.cs" />
+    <Compile Include="Migrations\202206102113081_BinaryFileType_MaxFileSizeBytes.designer.cs">
+      <DependentUpon>202206102113081_BinaryFileType_MaxFileSizeBytes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1150,6 +1154,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202206101941500_AddLavaShortcode_Categories.resx">
       <DependentUpon>202206101941500_AddLavaShortcode_Categories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206102113081_BinaryFileType_MaxFileSizeBytes.resx">
+      <DependentUpon>202206102113081_BinaryFileType_MaxFileSizeBytes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
