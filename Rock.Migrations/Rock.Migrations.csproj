@@ -68,6 +68,10 @@
     <Compile Include="Migrations\202206092326573_Rollup_0609.designer.cs">
       <DependentUpon>202206092326573_Rollup_0609.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202206101556191_Rollup_0610.cs" />
+    <Compile Include="Migrations\202206101556191_Rollup_0610.designer.cs">
+      <DependentUpon>202206101556191_Rollup_0610.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1136,6 +1140,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202206092326573_Rollup_0609.resx">
       <DependentUpon>202206092326573_Rollup_0609.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206101556191_Rollup_0610.resx">
+      <DependentUpon>202206101556191_Rollup_0610.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
