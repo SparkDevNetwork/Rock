@@ -62,7 +62,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class GroupLeaderAbsenceNotifications:  RockJob
     {
         /// <summary>

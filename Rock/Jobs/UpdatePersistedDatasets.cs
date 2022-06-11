@@ -33,7 +33,7 @@ namespace Rock.Jobs
     [DisplayName( "Update Persisted Datasets" )]
     [Description( "This job will update the persisted data in any Persisted Datasets that need to be refreshed." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class UpdatePersistedDatasets : RockJob
     {
 

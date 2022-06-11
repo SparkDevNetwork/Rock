@@ -32,7 +32,7 @@ namespace Rock.Jobs
     [Description( "This job launches the specified workflow." )]
 
     [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class LaunchWorkflow : RockJob
     {
         /// <summary> 

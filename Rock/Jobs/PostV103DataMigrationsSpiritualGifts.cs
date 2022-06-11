@@ -32,7 +32,7 @@ namespace Rock.Jobs
     /// A run once job for V10.3
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v10.3 - Spiritual Gifts Update" )]
     [Description( "This job will take care of any data migrations to Spiritual Gifts Assessment results that need to occur after updating to v10.3. After all the operations are done, this job will delete itself." )]
 

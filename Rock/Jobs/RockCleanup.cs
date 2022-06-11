@@ -126,7 +126,7 @@ namespace Rock.Jobs
         Order = 9
         )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class RockCleanup:  RockJob
     {
         /// <summary>

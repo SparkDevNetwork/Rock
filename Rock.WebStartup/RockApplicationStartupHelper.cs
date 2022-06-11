@@ -29,7 +29,9 @@ using System.Web;
 
 using DotLiquid;
 
-
+using Quartz;
+using Quartz.Impl;
+using Quartz.Impl.Matchers;
 
 using Rock.Bus;
 using Rock.Configuration;
@@ -68,7 +70,7 @@ namespace Rock.WebStartup
         /// <summary>
         /// Global Quartz scheduler for jobs 
         /// </summary>
-        //public static IScheduler QuartzScheduler { get; private set; } = null;
+        public static IScheduler QuartzScheduler { get; private set; } = null;
 
         private static Stopwatch _debugTimingStopwatch = Stopwatch.StartNew();
 
@@ -222,7 +224,7 @@ namespace Rock.WebStartup
             if ( runJobsInContext )
             {
                 LogStartupMessage( "Starting Job Scheduler" );
-                //StartJobScheduler();
+                StartJobScheduler();
                 ShowDebugTimingMessage( "Start Job Scheduler" );
             }
 
@@ -1021,7 +1023,6 @@ namespace Rock.WebStartup
             engine.RegisterSafeType( typeof( Common.Mobile.DeviceData ) );
         }
 
-        /*
         /// <summary>
         /// Starts the job scheduler.
         /// </summary>
@@ -1031,7 +1032,7 @@ namespace Rock.WebStartup
             {
                 // create scheduler
                 ISchedulerFactory schedulerFactory = new StdSchedulerFactory();
-                QuartzScheduler = schedulerFactory.GetScheduler();
+                QuartzScheduler = schedulerFactory.GetScheduler().Result;
 
                 // get list of active jobs
                 ServiceJobService jobService = new ServiceJobService( rockContext );
@@ -1100,7 +1101,7 @@ namespace Rock.WebStartup
                 // start the scheduler
                 QuartzScheduler.Start();
             }
-        }*/
+        }
 
         /// <summary>
         /// Logs the error to database (or filesystem if database isn't available)

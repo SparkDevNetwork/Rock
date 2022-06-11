@@ -29,7 +29,7 @@ namespace Rock.Jobs
     /// A run once job for V11.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v11.0 - Populates the new DateKey fields with data." )]
     [Description( "This job will populate the new DateKey fields on the Interaction, FinancialTransaction, AttendanceOccurence, Communication, MetricValue tables which were added as part of v11.0. After all the operations are done, this job will delete itself." )]
 

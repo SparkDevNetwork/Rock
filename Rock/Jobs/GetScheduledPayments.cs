@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [DisplayName( "Download Payments" )]
     [Category( "Finance" )]
     [Description( "Job to download any scheduled payments that were processed by the payment gateway." )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
 
     #region Job Attributes
     [IntegerField(

@@ -49,7 +49,7 @@ namespace Rock.Jobs
         IsRequired = false,
         Description = "Optional period of time (in minutes) to look for locations that have been closed/inactivated (modified). Only locations modified within the timeframe would be considered. If left empty, the time the location was modified will not be considered.",
         Order = 1 )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class AutoOpenLocations : RockJob
     {
         /// <summary>

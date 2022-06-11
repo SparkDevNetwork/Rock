@@ -21,6 +21,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
+using Quartz;
+using Quartz.Impl;
+using Quartz.Impl.Matchers;
+
 using Rock.Data;
 using Rock.Jobs;
 using CronExpressionDescriptor;
@@ -62,10 +66,7 @@ namespace Rock.Model
         /// <returns></returns>
         public bool RunNow( ServiceJob job, out string errorMessage )
         {
-            errorMessage = string.Empty;
-            return false;
-            /*
-             * // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
+            // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
             var rockContext = new RockContext();
             errorMessage = string.Empty;
             try
@@ -78,7 +79,7 @@ namespace Rock.Model
                 var runNowSchedulerName = ( "RunNow:" + job.Guid.ToString( "N" ) ).Truncate( 40 );
                 scheduleConfig.Add( StdSchedulerFactory.PropertySchedulerInstanceName, runNowSchedulerName );
                 var schedulerFactory = new StdSchedulerFactory( scheduleConfig );
-                var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler();
+                var sched = new StdSchedulerFactory( scheduleConfig ).GetScheduler().Result;
 
                 if ( sched.IsStarted )
                 {
@@ -91,15 +92,15 @@ namespace Rock.Model
                 try
                 {
                     var otherSchedulers = new StdSchedulerFactory()
-                        .AllSchedulers
+                        .GetAllSchedulers().Result
                         .Where( s => s.SchedulerName != runNowSchedulerName );
 
                     foreach ( var scheduler in otherSchedulers )
                     {
-                        var isAlreadyRunning = scheduler.GetCurrentlyExecutingJobs()
+                        var isAlreadyRunning = scheduler.GetCurrentlyExecutingJobs().Result
                             .Where( j =>
                                 j.JobDetail.Description == jobId.ToString() &&
-                                j.JobDetail.ConcurrentExectionDisallowed )
+                                j.JobDetail.ConcurrentExecutionDisallowed )
                             .Any();
 
                         if ( isAlreadyRunning )
@@ -118,14 +119,14 @@ namespace Rock.Model
 
                 // create the quartz job and trigger
                 var jobDetail = new ServiceJobService( rockContext ).BuildQuartzJob( job );
-                var jobDataMap = jobDetail.RockJobDataMap;
+                var jobDataMap = jobDetail.JobDataMap;
 
                 if ( jobDataMap != null )
                 {
                     // Force the <string, string> dictionary so that within Jobs, it is always okay to use
-                    // RockJobDataMap.GetString(). This mimics Rock attributes always being stored as strings.
-                    // If we allow non-strings, like integers, then RockJobDataMap.GetString() throws an exception.
-                    jobDetail.RockJobDataMap.PutAll( jobDataMap.ToDictionary( kvp => kvp.Key, kvp => ( object ) kvp.Value ) );
+                    // JobDataMap.GetString(). This mimics Rock attributes always being stored as strings.
+                    // If we allow non-strings, like integers, then JobDataMap.GetString() throws an exception.
+                    jobDetail.JobDataMap.PutAll( jobDataMap.ToDictionary( kvp => kvp.Key, kvp => ( object ) kvp.Value ) );
                 }
 
                 var jobTrigger = TriggerBuilder.Create()
@@ -175,7 +176,7 @@ namespace Rock.Model
 
                 return false;
             }
-            */
+
         }
 
         private static ConcurrentDictionary<string, bool> _verifiedJobTypeAttributes = new ConcurrentDictionary<string, bool>();
@@ -194,7 +195,6 @@ namespace Rock.Model
             }
         }
 
-        /*
         /// <summary>
         /// Builds a Quartz Job for a specified <see cref="Rock.Model.ServiceJob">Job</see>
         /// </summary>
@@ -206,7 +206,7 @@ namespace Rock.Model
 
             UpdateAttributesIfNeeded( type );
 
-            RockJobDataMap map = new RockJobDataMap();
+            JobDataMap map = new JobDataMap();
             map.LoadFromJobAttributeValues( job );
 
             // create the quartz job object
@@ -251,9 +251,8 @@ namespace Rock.Model
                 .Build();
 
             return trigger;
-        }*/
+        }
 
-        /*
         /// <summary>
         /// Determines whether the Cron Expression is valid for Quartz
         /// </summary>
@@ -286,7 +285,7 @@ namespace Rock.Model
             {
                 return "Invalid Cron Expression";
             }
-        }*/
+        }
 
         /// <summary>
         /// Deletes the job.

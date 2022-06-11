@@ -72,7 +72,7 @@ namespace Rock.Jobs
 
     #endregion Job Attributes
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendAttendanceReminder:  RockJob
     {
         #region Attribute Keys

@@ -67,7 +67,7 @@ namespace Rock.Jobs
 
     #endregion Job Attributes
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendAssessmentReminders:  RockJob
     {
         /// <summary>

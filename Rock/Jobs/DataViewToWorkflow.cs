@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [DisplayName( "DataView to Workflow" )]
     [Category( "Workflows" )]
     [Description( "Starts a workflow for each entity in the specified Data View." )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
 
     #region Job Attributes
 

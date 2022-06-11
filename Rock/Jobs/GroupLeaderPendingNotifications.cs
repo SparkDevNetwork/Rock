@@ -42,7 +42,7 @@ namespace Rock.Jobs
     [SystemCommunicationField( "Notification Email", "", true, "", "", 2 )]
     [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the pending members by. To select the role you'll need to select a group type.", false, null, null, 3 )]
     [IntegerField( "Pending Age", "The number of days since the record was last updated. This keeps the job from notifying all the pending registrations on first run.", false, 1, order: 4 )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class GroupLeaderPendingNotifications:  RockJob
     {
         /// <summary> 

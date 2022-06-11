@@ -32,7 +32,7 @@ namespace Rock.Jobs
     /// <summary>
     /// A run once job after a new installation. The purpose of this job is to populate generated datasets after an initial installation using RockInstaller that are too large to include in the installer.
     /// </summary>
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Runs data updates that need to occur after a new installation." )]
     [Description( "This job will take care of any data migrations that need to occur after a new installation. After all the operations are done, this job will delete itself." )]
     [IntegerField( "Command Timeout",

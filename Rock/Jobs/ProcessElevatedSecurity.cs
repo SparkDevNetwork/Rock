@@ -34,7 +34,7 @@ namespace Rock.Jobs
     [DisplayName( "Process Elevated Security" )]
     [Description( "Updates the person account protection profiles." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class ProcessElevatedSecurity:  RockJob
     {
         #region Constructor

@@ -31,7 +31,7 @@ namespace Rock.Jobs
     /// A run once job for V12.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.0 - Interaction Index Update" )]
     [Description( "This job will update the indexes on the interactions table." )]
 

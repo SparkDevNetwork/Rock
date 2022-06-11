@@ -33,7 +33,7 @@ namespace Rock.Jobs
     [DisplayName( "Process Workflows" )]
     [Description( "Runs continuously to process in workflows activities/actions in progress." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class ProcessWorkflows:  RockJob
     {
         /// <summary> 

@@ -26,7 +26,7 @@ namespace Rock.Jobs
     /// A run once job for V13.3
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v13.0 - Add Interaction Session Location Index To Interaction Session." )]
     [Description( "This job will add an index for the InteractionSession InteractionSessionLocationId column." )]
 
@@ -49,10 +49,10 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            //RockJobDataMap dataMap = context.JobDetail.DataMap;
 
             // get the configured timeout, or default to 60 minutes if it is blank
-            var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
             var migrationHelper = new MigrationHelper( new JobMigration( commandTimeout ) );
 
             migrationHelper.CreateIndexIfNotExists( "InteractionSession", new[] { "InteractionSessionLocationId" }, new string[0] );

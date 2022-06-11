@@ -17,7 +17,11 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
 using DotLiquid;
+
 using Quartz;
 
 using Rock.Communication;
@@ -61,7 +65,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context"></param>
         /// <seealso cref="JobExecutionVetoed(IJobExecutionContext)"/>
-        public void JobToBeExecuted( IJobExecutionContext context )
+        public Task JobToBeExecuted( IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
             StringBuilder message = new StringBuilder();
 
@@ -81,18 +85,13 @@ namespace Rock.Jobs
             }
 
             context.JobDetail.JobDataMap.LoadFromJobAttributeValues( job );
+
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Called by the <see cref="IScheduler"/> when a <see cref="IJobDetail"/>
-        /// was about to be executed (an associated <see cref="ITrigger"/>
-        /// has occurred), but a <see cref="ITriggerListener"/> vetoed its
-        /// execution.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <seealso cref="JobToBeExecuted(IJobExecutionContext)"/>
-        public void JobExecutionVetoed( IJobExecutionContext context )
+        public Task JobExecutionVetoed( IJobExecutionContext context, CancellationToken cancellationToken = default( CancellationToken ) )
         {
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -112,10 +111,10 @@ namespace Rock.Jobs
                 StatusMessage = job.LastStatusMessage,
                 ServiceWorker = Environment.MachineName.ToLower()
             };
-
             jobHistoryService.Add( jobHistory );
             rockContext.SaveChanges();
         }
+
 
         /// <summary>
         /// Called by the <see cref="IScheduler"/> after a <see cref="IJobDetail"/>
@@ -124,7 +123,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context"></param>
         /// <param name="jobException"></param>
-        public void JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException )
+        public Task JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException, CancellationToken cancellationToken = default )
         {
             // get job id
             int jobId = context.GetJobId();
@@ -137,7 +136,7 @@ namespace Rock.Jobs
             if ( job == null )
             {
                 // if job was deleted or wasn't found, just exit
-                return;
+                return Task.CompletedTask;
             }
 
             // if notification status is all set flag to send message
@@ -216,6 +215,8 @@ namespace Rock.Jobs
             {
                 SendNotificationMessage( jobException, job );
             }
+
+            return Task.CompletedTask;
         }
 
         private static void SendNotificationMessage( JobExecutionException jobException, ServiceJob job )
@@ -276,5 +277,7 @@ namespace Rock.Jobs
 
             return exceptionToLog;
         }
+
+
     }
 }

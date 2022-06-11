@@ -43,7 +43,7 @@ namespace Rock.Jobs
         Description = "Maximum amount of time, in seconds, to wait for each step to complete.",
         IsRequired = false,
         DefaultIntegerValue = 180 )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class DataAutomation:  RockJob
     {
         private const string SOURCE_OF_CHANGE = "Data Automation";

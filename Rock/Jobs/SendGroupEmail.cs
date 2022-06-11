@@ -48,7 +48,7 @@ namespace Rock.Jobs
     [BooleanField( "Send To Descendant Groups",
         Description = "Determines if the email will be sent to descendant groups.",
         Key = AttributeKey.SendToDescendantGroups )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendGroupEmail:  RockJob
     {
         private class AttributeKey

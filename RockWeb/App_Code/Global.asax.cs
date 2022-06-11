@@ -557,7 +557,6 @@ namespace RockWeb
                 RockApplicationStartupHelper.LogShutdownMessage( shutdownMessage );
 
                 // Close out jobs infrastructure if running under IIS
-                /*
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
                 if ( runJobsInContext )
                 {
@@ -565,7 +564,7 @@ namespace RockWeb
                     {
                         RockApplicationStartupHelper.QuartzScheduler.Shutdown();
                     }
-                }*/
+                }
 
                 // Process the transaction queue
                 DrainTransactionQueue();

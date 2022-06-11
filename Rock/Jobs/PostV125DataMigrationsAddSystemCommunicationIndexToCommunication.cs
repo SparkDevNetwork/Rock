@@ -31,7 +31,7 @@ namespace Rock.Jobs
     /// A run once job for V12.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.5 - Add index for Communication SystemCommunicationId." )]
     [Description( "This job will add an index for Communication SystemCommunicationId column." )]
 

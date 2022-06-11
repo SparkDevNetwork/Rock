@@ -33,7 +33,7 @@ namespace Rock.Jobs
     [DisplayName( "Connection Request Workflow Triggers" )]
     [Description( "This job triggers connection request workflows." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class ConnectionRequestWorkflowTriggers:  RockJob
     {
         private const string SOURCE_OF_CHANGE = "Connection Request Workflow Triggers";

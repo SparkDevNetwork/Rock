@@ -29,7 +29,7 @@ namespace Rock.Jobs
     /// A run once job for V10.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v11.0 - Migration for Communication Recipient ResponseCode Index" )]
     [Description( "This job will update Communication Recipient ResponseCode to have an index on ReponseCode and CreatedDateTime." )]
 

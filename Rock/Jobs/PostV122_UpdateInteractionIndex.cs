@@ -28,7 +28,7 @@ namespace Rock.Jobs
     /// A run once job for V11.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.2 - Adds PersonalDeviceId to Interaction Index." )]
     [Description( "This job will update the index. After all the operations are done, this job will delete itself." )]
 

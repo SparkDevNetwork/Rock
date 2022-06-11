@@ -28,7 +28,7 @@ namespace Rock.Jobs
     /// A run once job for V10.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v10.0 - SundayDate Data Migrations." )]
     [Description( "This job will take care of any data migrations to SundayDate on AttendanceOccurrence and FinancialTransaction that need to occur. After all the operations are done, this job will delete itself." )]
 

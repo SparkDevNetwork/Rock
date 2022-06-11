@@ -54,7 +54,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class StepsAutomation : RockJob
     {
         #region Keys

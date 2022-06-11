@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
+using Quartz;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -13,17 +13,32 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
 
-    public abstract class RockJob
+    public abstract class RockJob : IJob
     {
         public Dictionary<string, AttributeValueCache> AttributeValues { get; internal set; }
 
+        public Rock.Model.ServiceJob ServiceJob { get; private set; }
+
+        /// <inheritdoc cref="IJob.Execute(IJobExecutionContext)"/>
         public abstract void Execute( RockJobContext context );
+
+        /// <inheritdoc/>
+        public Task Execute( IJobExecutionContext context )
+        {
+            var serviceJobId = context.GetJobId();
+            var rockContext = new Rock.Data.RockContext();
+            ServiceJob = new ServiceJobService( rockContext ).Get( serviceJobId );
+            ServiceJob.LoadAttributes();
+
+            Execute( new RockJobContext( ServiceJob, context ) );
+            return Task.CompletedTask;
+        }
 
         //public abstract void Execute( RockJobContext context );
 
         public string GetAttributeValue( string key )
         {
-            return AttributeValues.GetValueOrNull( key )?.Value;
+            return ServiceJob.GetAttributeValue(key);
         }
     }
 
@@ -31,9 +46,13 @@ namespace Rock.Jobs
     public class RockJobContext
     {
         public readonly Rock.Model.ServiceJob ServiceJob;
+        public readonly Quartz.IScheduler Scheduler;
+        private readonly IJobExecutionContext JobExecutionContext;
 
-        public RockJobContext(ServiceJob serviceJob)
+        public RockJobContext(ServiceJob serviceJob, IJobExecutionContext jobExecutionContext )
         {
+            JobExecutionContext = jobExecutionContext;
+            Scheduler = jobExecutionContext.Scheduler;
             ServiceJob = serviceJob;
         }
 
@@ -48,50 +67,14 @@ namespace Rock.Jobs
             ServiceJob.LastStatusMessage = statusMessage;
         }
 
-        public RockJobDetail JobDetail { get; set; }
+        public IJobDetail JobDetail => JobExecutionContext.JobDetail;
 
-        public class RockJobDetail
+        public int GetJobId()
         {
-            public RockJobDataMap DataMap { get; internal set; }
-            public string Description { get; internal set; }
+            return ServiceJob.Id;
         }
 
         
     }
 
-    public class RockJobDataMap
-    {
-        public readonly Rock.Model.ServiceJob ServiceJob;
-
-        public string GetString( string key )
-        {
-            return ServiceJob.GetAttributeValue( key );
-        }
-
-        public bool GetBoolean( string key )
-        {
-            return GetBooleanValue( key );
-        }
-
-        public bool GetBooleanValue( string key )
-        {
-            return GetString( key ).AsBoolean();
-        }
-
-        internal object Get( string key )
-        {
-            return GetString( key );
-        }
-
-        internal int GetInt( string key )
-        {
-            return GetString( key ).AsInteger();
-        }
-    }
-
-
-    public class DisallowConcurrentExecution: System.Attribute
-    {
-
-    }
 }

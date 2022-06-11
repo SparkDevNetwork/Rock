@@ -38,7 +38,7 @@ namespace Rock.Jobs
     [DisplayName( "Send Prayer Request Comments Notifications" )]
     [Category( "Prayer" )]
     [Description( "Sends an email notification to all prayer request authors with a list of comments from those who have prayed for their requests." )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
 
     #region Job Attributes
 
@@ -298,13 +298,14 @@ namespace Rock.Jobs
             }
         }
 
+        /*
         /// <summary>
         /// Execute the job using the current settings.
         /// </summary>
         public void Execute()
         {
             Execute( null );
-        }
+        }*/
 
         /// <summary>
         /// Execute the job using the context supplied by the job scheduling framework.

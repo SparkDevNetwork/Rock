@@ -32,7 +32,7 @@ namespace Rock.Jobs
     [DisplayName( "Spark Link" )]
     [Description( "This job fetches Rock notifications from the Spark Development Network." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [GroupField( "Notification Group", "The group that should receive incoming notifications", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
     public class SparkLink:  RockJob
     {

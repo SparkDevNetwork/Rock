@@ -67,7 +67,7 @@ namespace Rock.Jobs
 
     #endregion
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendGroupAttendanceDigest:  RockJob
     {
         #region Attribute Keys

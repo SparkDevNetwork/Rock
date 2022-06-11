@@ -29,7 +29,7 @@ namespace Rock.Jobs
     [Description( "This job downloads CBR information for the specified PBX component." )]
 
     [ComponentField( "Rock.Pbx.PbxContainer, Rock", "PBX Component", "The PBX type to process.", true, key:"PbxComponent" )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class PbxCdrDownload:  RockJob
     {
         /// <summary> 

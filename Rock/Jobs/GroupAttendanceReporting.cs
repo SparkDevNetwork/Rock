@@ -69,7 +69,7 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
         Category = "General",
         Order = 7 )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class GroupAttendanceReporting : RockJob
     {
         /// <summary>

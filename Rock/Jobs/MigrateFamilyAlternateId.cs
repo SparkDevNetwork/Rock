@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [DisplayName( "Migrate Family Alternate Id" )]
     [Description( "This job migrates family check-in identifiers to person search key values." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [IntegerField( "How Many Records", "The number of attribute records to process on each run of this job.", false, 500000, "", 0, "HowMany" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
     public class MigrateFamilyAlternateId:  RockJob

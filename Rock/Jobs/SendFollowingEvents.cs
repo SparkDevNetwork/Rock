@@ -42,7 +42,7 @@ namespace Rock.Jobs
 
     [SystemCommunicationField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendFollowingEvents:  RockJob
     {
         /// <summary> 

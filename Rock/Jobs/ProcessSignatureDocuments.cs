@@ -38,7 +38,7 @@ namespace Rock.Jobs
     [IntegerField( "Resend Invite After Number Days", "Number of days after sending last invite to sign, that a new invite should be resent.", false, 5, "", 0 )]
     [IntegerField( "Max Invites", "Maximum number of times an invite should be sent", false, 3, "", 1 )]
     [IntegerField( "Check For Signature Days", "Number of days after document was last sent to check for signature", false, 30, "", 2 )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class ProcessSignatureDocuments:  RockJob
     {
         /// <summary> 
@@ -52,19 +52,7 @@ namespace Rock.Jobs
         {
         }
 
-        /// <summary>
-        /// Called by the <see cref="IScheduler" /> when a <see cref="ITrigger" />
-        /// fires that is associated with the <see cref="IJob" />.
-        /// </summary>
-        /// <param name="context">The execution context.</param>
-        /// <remarks>
-        /// The implementation may wish to set a  result object on the
-        /// JobExecutionContext before this method exits.  The result itself
-        /// is meaningless to Quartz, but may be informative to
-        /// <see cref="IJobListener" />s or
-        /// <see cref="ITriggerListener" />s that are watching the job's
-        /// execution.
-        /// </remarks>
+        /// <inheritdoc />
         public override void Execute( RockJobContext context )
         {
             RockJobDataMap dataMap = context.JobDetail.DataMap;

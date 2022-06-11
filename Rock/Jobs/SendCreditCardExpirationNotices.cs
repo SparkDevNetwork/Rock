@@ -71,7 +71,7 @@ namespace Rock.Jobs
         Order = 4
         )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendCreditCardExpirationNotices:  RockJob
     {
         /// <summary>

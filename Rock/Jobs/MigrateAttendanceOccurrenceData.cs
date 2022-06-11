@@ -32,7 +32,7 @@ namespace Rock.Jobs
     [DisplayName( "Rock Update Helper v8.0 - Migrate Attendance Occurrence Data" )]
     [Description( "This job migrates data from attendance records into attendance occurance records." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
     public class MigrateAttendanceOccurrenceData:  RockJob
     {

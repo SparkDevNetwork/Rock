@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Quartz;
 
@@ -43,7 +45,7 @@ namespace Rock.Jobs
         /// <param name="trigger">The trigger.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public bool VetoJobExecution( ITrigger trigger, IJobExecutionContext context )
+        public Task<bool> VetoJobExecution( ITrigger trigger, IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
             // get job type id
             int jobId = context.JobDetail.Description.AsInteger();
@@ -51,20 +53,20 @@ namespace Rock.Jobs
             // Check if other schedulers are running this job...
             // TODO NOTE: Someday we would want to see if this also can work across
             // multiple 'hosts' in a Rock cluster else we should handle this explicitly.
-            var otherSchedulers = new Quartz.Impl.StdSchedulerFactory().AllSchedulers
+            var otherSchedulers = new Quartz.Impl.StdSchedulerFactory().GetAllSchedulers().Result
                 .Where( s => s.SchedulerName != context.Scheduler.SchedulerName );
 
             foreach ( var scheduler in otherSchedulers )
             {
-                if ( scheduler.GetCurrentlyExecutingJobs().Where( j => j.JobDetail.Description == context.JobDetail.Description &&
-                    j.JobDetail.ConcurrentExectionDisallowed ).Any() )
+                if ( scheduler.GetCurrentlyExecutingJobs().Result.Where( j => j.JobDetail.Description == context.JobDetail.Description &&
+                    j.JobDetail.ConcurrentExecutionDisallowed ).Any() )
                 {
                     System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" VETOED! Scheduler '{scheduler.SchedulerName}' is already executing job Id '{context.JobDetail.Description}' (key: {context.JobDetail.Key})" );
-                    return true;
+                    return Task.FromResult(true);
                 }
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
         /// <summary>
@@ -74,9 +76,10 @@ namespace Rock.Jobs
         /// <param name="trigger">The trigger.</param>
         /// <param name="context">The context.</param>
         /// <param name="triggerInstructionCode">The trigger instruction code.</param>
-        public void TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode )
+        public Task TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode, CancellationToken cancellationToken = default )
         {
             // do nothing
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -85,9 +88,10 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="trigger">The trigger.</param>
         /// <param name="context">The context.</param>
-        public void TriggerFired( ITrigger trigger, IJobExecutionContext context )
+        public Task TriggerFired( ITrigger trigger, IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
             // do nothing
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -95,9 +99,10 @@ namespace Rock.Jobs
         /// has misfired.
         /// </summary>
         /// <param name="trigger">The trigger.</param>
-        public void TriggerMisfired( ITrigger trigger )
+        public Task TriggerMisfired( ITrigger trigger, CancellationToken cancellationToken = default )
         {
             // do nothing
+            return Task.CompletedTask;
         }
     }
 }

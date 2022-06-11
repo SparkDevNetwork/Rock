@@ -26,7 +26,7 @@ namespace Rock.Jobs
     /// A run once job for V13.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v13.0 - Add index for Interaction InteractionComponentId." )]
     [Description( "This job will add an index for the Interaction InteractionComponentId column." )]
 

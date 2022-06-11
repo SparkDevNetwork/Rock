@@ -43,7 +43,7 @@ namespace Rock.Jobs
          Leave blank to include all ages. Note: If a person's birth year is blank, they will get an email regardless of the age range." )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Statuses", "To limit to people by connection status, specify the connection status to include", false, true )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendBirthdayEmail:  RockJob
     {
         /// <summary> 

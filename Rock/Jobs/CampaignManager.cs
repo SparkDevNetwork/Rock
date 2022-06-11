@@ -28,7 +28,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to create connection request based on campaign connection configuration and auto assign the request if configured. 
     /// </summary>
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class CampaignManager:  RockJob
     {
         #region Constructor

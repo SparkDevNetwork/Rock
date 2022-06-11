@@ -29,7 +29,7 @@ namespace Rock.Jobs
     /// <summary>
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.7 - Rebuilds Group Salutation fields on Rock.Model.Group for all family groups." )]
     [Description( "Updates Group Salutation fields on Rock.Model.Group." )]
     public class PostV127DataMigrationsRebuildGroupSalutations:  RockJob

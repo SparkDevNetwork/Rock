@@ -31,7 +31,7 @@ namespace Rock.Jobs
     /// A run once job for V12.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.0 - Add covering index for communications' get queued method." )]
     [Description( "This job will add a covering index for communications' get queued method." )]
 

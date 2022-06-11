@@ -32,7 +32,7 @@ namespace Rock.Jobs
     [DisplayName( "Update Persisted DataViews" )]
     [Description( "Job to makes sure that persisted dataviews are updated based on their schedule interval." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [IntegerField( "SQL Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (300 seconds). ", false, 5 * 60, "General", 1, TIMEOUT_KEY )]
     public class UpdatePersistedDataviews : RockJob
     {

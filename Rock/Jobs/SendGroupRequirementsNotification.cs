@@ -41,7 +41,7 @@ namespace Rock.Jobs
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
     [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
     [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", false, order: 3 )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendGroupRequirementsNotification:  RockJob
     {
         List<NotificationItem> _notificationList = new List<NotificationItem>();

@@ -37,7 +37,7 @@ namespace Rock.Jobs
     /// Job that collects hosting metrics.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Collect Hosting Metrics" )]
     [Description( @"This job will collect a few hosting metrics regarding the usage of resources such as the database connection pool. Note that this Job can be activated/deactivated by navigating to ""Admin Tools > System Settings > System Configuration > Web.Config Settings"" and toggling the ""Enable Database Performance Counters"" setting." )]
 

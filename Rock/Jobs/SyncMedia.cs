@@ -45,7 +45,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 0 )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SyncMedia:  RockJob
     {
         /// <summary>

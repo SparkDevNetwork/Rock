@@ -33,7 +33,7 @@ namespace Rock.Jobs
     [DisplayName( "Calculate Person Signals" )]
     [Description( "Re-calculates all person signals to ensure that the top-most signal is still the current one." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class CalculatePersonSignals:  RockJob
     {
         /// <summary>

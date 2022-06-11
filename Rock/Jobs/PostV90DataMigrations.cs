@@ -33,7 +33,7 @@ namespace Rock.Jobs
     /// A run once job for V9.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v9.0 - Runs data updates that need to occur after updating to v9.0" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v9.0. After all the operations are done, this job will delete itself." )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete.", false, 60 * 60, "General", 7, "CommandTimeout" )]

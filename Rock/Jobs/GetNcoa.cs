@@ -35,7 +35,7 @@ namespace Rock.Jobs
     [DisplayName( "Get National Change of Address (NCOA)" )]
     [Description( "Job that gets National Change of Address (NCOA) data." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class GetNcoa:  RockJob
     {
         /// <summary>

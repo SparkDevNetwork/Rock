@@ -49,7 +49,7 @@ namespace Rock.Jobs
     /// </summary>
     [DisplayName( "Giving Automation" )]
     [Description( "Job that updates giving classifications and journey stages, and send any giving alerts." )]
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
 
     [IntegerField( "Max Days Since Last Gift for Alerts",
         Description = "The maximum number of days since a giving group last gave where alerts can be made. If the last gift was earlier than this maximum, then alerts are not relevant.",
@@ -2500,9 +2500,9 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             public GivingAutomationContext( RockJobContext jobExecutionContext )
             {
                 JobExecutionContext = jobExecutionContext;
-                RockJobDataMap = jobExecutionContext.JobDetail.DataMap;
+                //RockJobDataMap = jobExecutionContext.JobDetail.DataMap;
                 DataViewPersonQueries = new Dictionary<int, IQueryable<Person>>();
-                SqlCommandTimeoutSeconds = RockJobDataMap.GetString( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+                SqlCommandTimeoutSeconds = jobExecutionContext.ServiceJob.GetAttributeValue( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
                 DataViewPersonQueriesRockContext = new RockContext();
                 DataViewPersonQueriesRockContext.Database.CommandTimeout = SqlCommandTimeoutSeconds;
                 LateAlertsByGivingId = new Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>>();
@@ -2575,7 +2575,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// <value>
             /// The job data map.
             /// </value>
-            public RockJobDataMap RockJobDataMap { get; }
+            //public RockJobDataMap RockJobDataMap { get; }
 
             /// <summary>
             /// Gets or sets the giving ids to classify.
@@ -2653,7 +2653,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             /// <returns></returns>
             public string GetAttributeValue( string key )
             {
-                return RockJobDataMap.GetString( key );
+                return JobExecutionContext.ServiceJob.GetAttributeValue( key );
             }
         }
 

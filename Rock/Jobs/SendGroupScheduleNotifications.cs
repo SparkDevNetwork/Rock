@@ -31,7 +31,7 @@ namespace Rock.Jobs
     /// Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Send Group Schedule Confirmations and Reminders" )]
     [Description( "Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet. Only Email and SMS are supported. PUSH is not supported." )]
 

@@ -33,7 +33,7 @@ namespace Rock.Jobs
     [DisplayName( "Charge Future Transactions" )]
     [Description( "Charge future transactions where the FutureProcessingDateTime is now or has passed." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class ChargeFutureTransactions:  RockJob
     {
         /// <summary> 

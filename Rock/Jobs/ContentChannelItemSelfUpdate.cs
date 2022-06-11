@@ -54,7 +54,7 @@ namespace Rock.Jobs
 
     #endregion Job Attributes
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class ContentChannelItemSelfUpdate:  RockJob
     {
         private static class AttributeKey

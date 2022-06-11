@@ -47,7 +47,7 @@ namespace Rock.Jobs
         Order = 0 )]
     #endregion
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class SendRsvpReminders : RockJob
     {
         /// <summary>

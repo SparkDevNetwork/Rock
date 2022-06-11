@@ -33,7 +33,7 @@ namespace Rock.Jobs
     [DisplayName( "Process Group History" )]
     [Description( "Creates Historical snapshots of Groups and Group Members for any group types that have history enabled." )]
 
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     public class ProcessGroupHistory:  RockJob
     {
 

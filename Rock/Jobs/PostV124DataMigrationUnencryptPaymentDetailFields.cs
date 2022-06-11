@@ -31,7 +31,7 @@ namespace Rock.Jobs
     /// A run once job for V12.4
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisallowConcurrentExecution]
+    [Quartz.DisallowConcurrentExecution]
     [DisplayName( "Rock Update Helper v12.4 - Decrypt expiration month / year and name on card fields." )]
     [Description( "This job will decrypt the expiration month / year and the name on card fields." )]
 
