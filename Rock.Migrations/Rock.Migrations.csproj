@@ -84,6 +84,10 @@
     <Compile Include="Migrations\202206132026534_AddBenevolenceTypeAdditionalSettings.designer.cs">
       <DependentUpon>202206132026534_AddBenevolenceTypeAdditionalSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.cs" />
+    <Compile Include="Migrations\202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.designer.cs">
+      <DependentUpon>202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1164,6 +1168,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202206132026534_AddBenevolenceTypeAdditionalSettings.resx">
       <DependentUpon>202206132026534_AddBenevolenceTypeAdditionalSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.resx">
+      <DependentUpon>202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
