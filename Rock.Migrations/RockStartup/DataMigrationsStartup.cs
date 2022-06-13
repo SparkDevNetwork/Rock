@@ -63,21 +63,6 @@ namespace Rock.Migrations.RockStartup
 
             List<Guid> runOnceJobGuids = new List<Guid>
             {
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_74.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_80.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_84.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_90_DISC.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_90.AsGuid(),
-                SystemGuid.ServiceJob.MIGRATE_HISTORY_SUMMARY_DATA.AsGuid(),
-                SystemGuid.ServiceJob.MIGRATE_ATTENDANCE_OCCURRENCE.AsGuid(),
-                SystemGuid.ServiceJob.MIGRATE_FAMILY_CHECKIN_IDS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_90_SCHEDULEDTRANSACTIONNOTESTOHISTORY.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_100_ATTRIBUTEVALUE_VALUEASNUMERIC.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_100_SUNDAYDATE.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_103_SPIRITUAL_GIFTS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_110_POPULATE_DATE_KEYS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_110_COMMUNICATIONRECIPIENT_RESPONSECODE_INDEX.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_110_POPULATE_RELATED_DATAVIEW_ID.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
@@ -95,7 +80,7 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_125_UPDATE_STEP_PROGRAM_COMPLETION.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS.AsGuid(),                
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS.AsGuid()
             };
