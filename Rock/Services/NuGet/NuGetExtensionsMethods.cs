@@ -25,6 +25,7 @@ namespace Rock.Services.NuGet
     /// <summary>
     /// NuGet specific extension methods
     /// </summary>
+    [RockObsolete( "1.13.3" )]
     public static class NuGetExtensionsMethods
     {
         /// <summary>
@@ -32,6 +33,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="dependencySets">The dependency sets.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public static string Flatten( this IEnumerable<PackageDependencySet> dependencySets )
         {
             var dependencies = new List<dynamic>();
@@ -72,6 +75,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="dependencies">The dependencies.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public static string Flatten( this ICollection<PackageDependency> dependencies )
         {
             return

@@ -148,7 +148,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( _objectCacheKeyReferences.IsNull() )
+                if ( _objectCacheKeyReferences == null )
                 {
                     _objectCacheKeyReferences = new List<CacheKeyReference>();
                 }
@@ -175,7 +175,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( _stringCacheKeyReferences.IsNull() )
+                if ( _stringCacheKeyReferences == null )
                 {
                     _stringCacheKeyReferences = new List<CacheKeyReference>();
                 }

@@ -22,15 +22,16 @@
 
                         <asp:Literal ID="lSummary" runat="server" Visible="false" />
 
-                        <asp:Panel ID="pnlForm" CssClass="workflow-entry-panel" runat="server">
+                        <asp:Panel ID="pnlWorkflowUserForm" CssClass="workflow-entry-panel" runat="server">
 
                             <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                             <asp:Literal ID="lFormHeaderText" runat="server" />
 
                             <%-- Person Entry --%>
-                            <asp:Panel ID="pnlPersonEntry" runat="server">
+                            <asp:Panel ID="pnlPersonEntrySection" runat="server">
                                 <asp:Literal ID="lPersonEntryPreHtml" runat="server" />
+                                <asp:Literal ID="lPersonEntrySectionHeaderHtml" runat="server" />
 
                                 <div class="row">
                                     <div class="col-md-6">
@@ -72,7 +73,7 @@
                             </asp:Panel>
 
                             <%-- Workflow Attribute Controls  --%>
-                            <asp:PlaceHolder ID="phAttributes" runat="server" />
+                            <asp:PlaceHolder ID="phWorkflowFormAttributes" runat="server" />
 
                             <asp:Literal ID="lFormFooterText" runat="server" />
 
@@ -90,7 +91,7 @@
 
             </div>
 
-            <div id="divNotes" runat="server" class="col-md-6">
+            <div id="divWorkflowActionUserFormNotes" runat="server" class="col-md-6">
                 <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" NoteLabel="Note"
                     ShowHeading="true" Title="Notes" TitleIconCssClass="fa fa-comment"
                     DisplayType="Full" UsePersonIcon="false" ShowAlertCheckBox="true"

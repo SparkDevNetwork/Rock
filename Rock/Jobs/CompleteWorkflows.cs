@@ -89,7 +89,7 @@ namespace Rock.Jobs
 
                 var workflow = workflowService.Get( workflowId );
 
-                if ( workflow.IsNull() )
+                if ( workflow == null )
                 {
                     continue;
                 }

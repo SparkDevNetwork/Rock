@@ -39,11 +39,11 @@
                         CssClass="input-width-md js-max-file-size"
                         ValidationGroup="LoggingSettings"></Rock:NumberBox>
 
-                    <Rock:NumberBox runat="server" ID="txtFilesToRetain" Label="Retained Backup Files"
+                    <Rock:NumberBox runat="server" ID="txtFilesToRetain" Label="Retained Backup Files" NumberType="Integer" MinimumValue="1"
                         Help="The maximum number of backup files that are kept before the oldest is erased."
                         CssClass="input-width-md js-files-to-retain"
                         ValidationGroup="LoggingSettings"></Rock:NumberBox>
-
+                    <div class="clearfix"></div>
                     <p>Logs could take up to <span id="maxLogSize">400</span> MB on the server's filesystem.</p>
 
                     <div class="actions">

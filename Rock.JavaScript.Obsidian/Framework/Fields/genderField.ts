@@ -16,7 +16,6 @@
 //
 import { Component, defineAsyncComponent } from "vue";
 import { toNumberOrNull } from "../Services/number";
-import { PublicAttributeValue } from "../ViewModels";
 import { FieldTypeBase } from "./fieldType";
 
 // The edit component can be quite large, so load it only as needed.
@@ -33,11 +32,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Gender field.
  */
 export class GenderFieldType extends FieldTypeBase {
-    public override getTextValue(value: PublicAttributeValue): string {
-        return value.textValue || "Unknown";
-    }
-
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         const numberValue = toNumberOrNull(value);
 
         if (numberValue === 0) {

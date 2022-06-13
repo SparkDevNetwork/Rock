@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.OpportunityTemplate,
         Description = @"This Lava template will be used to display the Connection Types.
                          <i>(Note: The Lava will include the following merge fields:
-                            <p><strong>ConnectionOpportunities, DetailPage, ConnectionRequestCounts, CurrentPerson, Context, PageParameter, Campuses</strong>)</p>
+                            <p><strong>ConnectionOpportunities, DetailPage, ConnectionRequestCounts, SumTotalConnectionRequests</strong>)</p>
                          </i>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
@@ -59,10 +59,19 @@ namespace RockWeb.Blocks.Connection
         IsRequired = false,
         DefaultValue = Lava.ConnectionOpportunities,
         Order = 1 )]
+
     [LinkedPage( "Detail Page", Description = "Page to link to when user taps on a connection opportunity. ConnectionOpportunityGuid is passed in the query string.",
         Order = 2,
         Key = AttributeKey.DetailPage
          )]
+
+    [BooleanField(
+        "Update Page Title",
+        Description = "Updates the page title with the connection type name.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Key = AttributeKey.UpdatePageTitle,
+        Order = 3 )]
     #endregion
 
     public partial class WebConnectionOpportunityListLava : RockBlock
@@ -71,18 +80,15 @@ namespace RockWeb.Blocks.Connection
         private static class Lava
         {
             public const string ConnectionOpportunities = @"
-{% comment %}
-   This is the default lava template for the ConnectionOpportunitySelect block
+/-
+   This is the default lava template for the block
 
    Available Lava Fields:
        ConnectionOpportunities
-       DetailPage (Detail Page GUID)
-       ConnectionRequestCounts
-       CurrentPerson
-       Context
-       PageParameter
-       Campuses
-{% endcomment %}
+       DetailPage (page GUID)
+       ConnectionRequestCounts (a dictionary with key of Opportunity Id and value is the count; where count is either the total count or count of requests assigned to the individual)
+       SumTotalConnectionRequests (a sum total of all the counts from that dictionary)
+-/
 <style>
     .card:hover {
       transform: scale(1.01);
@@ -90,31 +96,30 @@ namespace RockWeb.Blocks.Connection
     }
 </style>
 
-{% for connectionOpportunity in ConnectionOpportunities %}
-    {% assign opportunityId = connectionOpportunity.Id | ToString %}
-    {% assign count = ConnectionRequestCounts[opportunityId] | AsInteger %}
-    {% if count >0 %}
-      <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionOpportunityGuid={{ connectionOpportunity.Guid }}' stretched-link>
-        <div class='card mb-2'>
-            <div class='card-body'>
-              <div class='row pt-2' style='height:60px;'>
-                    <div class='col-xs-2 col-md-1 mx-auto'>
-                        <i class='{{ connectionOpportunity.IconCssClass }} text-gray-600' style=';font-size:30px;'></i>
+{% if SumTotalConnectionRequests > 0 %}
+    {% for connectionOpportunity in ConnectionOpportunities %}
+        {% assign opportunityId = connectionOpportunity.Id | ToString %}
+        {% assign count = ConnectionRequestCounts[opportunityId] | AsInteger %}
+        {% if count > 0 %}
+            <div class=""card card-sm mb-2"">
+                {% if DetailPage != '' and DetailPage != null %}
+                {% capture pageRouteParams %}ConnectionOpportunityGuid={{ connectionOpportunity.Guid }}{% endcapture %}
+                <a href=""{{ DetailPage | PageRoute:pageRouteParams }}"" class=""stretched-link""></a>
+                {% endif %}
+                <div class=""card-body d-flex flex-wrap align-items-center"" style=""min-height:60px;"">
+                    <i class=""{{ connectionOpportunity.IconCssClass }} fa-2x text-muted""></i>
+                    <div class=""px-3 flex-fill"">
+                        <span class=""d-block text-color""><strong>{{ connectionOpportunity.Name }}</strong></span>
+                        <span class=""text-muted text-sm"">{{ connectionOpportunity.Summary | Truncate:100,'...' }}</span>
                     </div>
-                    <div class='col-xs-8 col-md-10 pl-md-0 mx-auto'>
-                        <span class='text-black'><strong>{{ connectionOpportunity.Name }}</strong></span>
-                        </br>
-                        <span class='text-gray-600'><small>{{ connectionOpportunity.Description | Truncate:100,'...' }}</small></span>
-                    </div>
-                    <div class='col-xs-1 col-md-1 text-right mx-auto'>
-                        <span class='badge badge-pill badge-primary bg-blue-500'><small>{{ count }}</small></span>
-                    </div>
+                    <span class=""badge badge-pill badge-info small"">{{ count }}</span>
                 </div>
             </div>
-        </div>
-      </a>
-    {% endif %}
-{% endfor %}";
+        {% endif %}
+    {% endfor %}
+{% else %}
+    <div class=""alert alert-info"">No connection requests currently available or assigned to you.</div>
+{% endif %}";
         }
         #endregion Lava
 
@@ -123,6 +128,7 @@ namespace RockWeb.Blocks.Connection
         {
             public const string OpportunityTemplate = "OpportunityTemplate";
             public const string DetailPage = "DetailPage";
+            public const string UpdatePageTitle = "UpdatePageTitle";
         }
         #endregion
 
@@ -174,6 +180,7 @@ namespace RockWeb.Blocks.Connection
         {
             base.OnLoad( e );
             _connectionTypeGuid = PageParameter( PageParameterKey.ConnectionTypeGuid ).AsGuid();
+
             if ( !Page.IsPostBack )
             {
                 lTitle.Text = $"<h2>{GetConnectionTypeTitle()}</h2>";
@@ -190,6 +197,12 @@ namespace RockWeb.Blocks.Connection
         #region Page Control Events
         protected void lbOptions_Click( object sender, EventArgs e )
         {
+            if ( CurrentPerson == null )
+            {
+                nbWarning.Visible = true;
+                swOnlyShowOpportunitiesWithRequestsForUser.Visible = false;
+            }
+
             mdOptions.Show();
         }
 
@@ -222,13 +235,31 @@ namespace RockWeb.Blocks.Connection
                 var opportunityClientService = new ConnectionOpportunityClientService( rockContext, CurrentPerson );
                 var connectionType = new ConnectionTypeService( rockContext ).GetNoTracking( _connectionTypeGuid );
 
+                if ( connectionType == null )
+                {
+                    return;
+                }
+
+                // Determine if we should update the page title with the connection opportunity name
+                var updatePageTitle = GetAttributeValue( AttributeKey.UpdatePageTitle ).AsBoolean();
+                if ( updatePageTitle )
+                {
+                    RockPage.PageTitle = connectionType.Name;
+
+                    var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                    if ( pageBreadCrumb != null )
+                    {
+                        pageBreadCrumb.Name = RockPage.PageTitle;
+                    }
+                }
+
                 var filterOptions = new ConnectionOpportunityQueryOptions
                 {
                     ConnectionTypeGuids = new List<Guid> { _connectionTypeGuid },
                     IncludeInactive = true
                 };
 
-                if ( _onlyShowOpportunitiesWithRequestsForUser )
+                if ( _onlyShowOpportunitiesWithRequestsForUser && CurrentPerson != null )
                 {
                     filterOptions.ConnectorPersonIds = new List<int> { CurrentPerson.Id };
                 }
@@ -236,35 +267,47 @@ namespace RockWeb.Blocks.Connection
                 {
                     filterOptions.ConnectorPersonIds = null;
                 }
+
                 // Put all the opportunities in memory so we can check security.
                 var connectionOpportunityQuery = opportunityService.GetConnectionOpportunitiesQuery( filterOptions );
                 var opportunities = connectionOpportunityQuery.ToList()
                     .Where( o => o.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
 
-                    // Get the various counts to make available to the Lava template.
+                // Get the various counts to make available to the Lava template.
                 // The conversion of the value to a dictionary is a temporary work-around
                 // until we have a way to mark external types as lava safe.
                 var opportunityIds = opportunities.Select( o => o.Id ).ToList();
-                var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds );
                 var connectionRequestCounts = new Dictionary<string, string>();
-                foreach ( var opportunityId in opportunityIds )
+                var sumTotalConnectionRequests = 0;
+
+                // We only need to perform this query under this condition, otherwise we will use the
+                // requestCountsPerOpportunity fetched earlier.
+                if ( _onlyShowOpportunitiesWithRequestsForUser && CurrentPerson != null )
                 {
-                    if ( _onlyShowOpportunitiesWithRequestsForUser )
+                    var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds );
+                    foreach ( var opportunityId in opportunityIds )
                     {
+                        // Note use AssignedToYouCount here:
+                        sumTotalConnectionRequests += requestCounts[opportunityId].AssignedToYouCount;
                         connectionRequestCounts.Add( opportunityId.ToString(), requestCounts[opportunityId].AssignedToYouCount.ToString() );
                     }
-                    else
+                }
+                else
+                {
+                    var requestCounts = opportunityClientService.GetOpportunityRequestCounts( opportunityIds );
+                    foreach ( var opportunityId in opportunityIds )
                     {
-                        var connectionOpportunityRequestCount = opportunities.First( v => v.Id == opportunityId ).ConnectionRequests.Count.ToString();
-                        connectionRequestCounts.Add( opportunityId.ToString(), connectionOpportunityRequestCount );
+                        // Note use TotalCount here:
+                        sumTotalConnectionRequests += requestCounts[opportunityId].TotalCount;
+                        connectionRequestCounts.Add( opportunityId.ToString(), requestCounts[opportunityId].TotalCount.ToString() );
                     }
                 }
-
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
                 mergeFields.AddOrReplace( "ConnectionOpportunities", opportunities );
                 mergeFields.AddOrReplace( "DetailPage", DetailPageGuid );
                 mergeFields.AddOrReplace( "ConnectionRequestCounts", connectionRequestCounts );
+                mergeFields.AddOrReplace( "SumTotalConnectionRequests", sumTotalConnectionRequests );
 
                 var content = OpportunityTemplate
                     .ResolveMergeFields( mergeFields )

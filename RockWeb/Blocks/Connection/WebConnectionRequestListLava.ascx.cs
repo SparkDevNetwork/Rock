@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.RequestTemplate,
         Description = @"This Lava template will be used to display the Connection Types.
                          <i>(Note: The Lava will include the following merge fields:
-                            <p><strong>ConnectionRequests, ConnectionOpportunity, DetailPage, CurrentPerson, Context, PageParameter, Campuses</strong>)</p>
+                            <p><strong>ConnectionRequests, ConnectionOpportunity, DetailPage</strong>)</p>
                          </i>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Connection
         IsRequired = false,
         DefaultValue = Lava.ConnectionRequests,
         Order = 1 )]
+
     [LinkedPage(
         "Detail Page",
         Description = "Page to link to when user taps on a connection request. ConnectionRequestGuid is passed in the query string.",
@@ -73,6 +74,14 @@ namespace RockWeb.Blocks.Connection
         DefaultIntegerValue = 50,
         Key = AttributeKey.MaxRequestsToShow,
         Order = 3 )]
+
+    [BooleanField(
+        "Update Page Title",
+        Description = "Updates the page title with the opportunity name.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Key = AttributeKey.UpdatePageTitle,
+        Order = 4)]
     #endregion Block Attributes
 
     public partial class WebConnectionRequestListLava : RockBlock
@@ -81,66 +90,51 @@ namespace RockWeb.Blocks.Connection
         private static class Lava
         {
             public const string ConnectionRequests = @"
-{% comment %}
-   This is the default lava template for the ConnectionOpportunitySelect block
+/-
+   This is the default lava template for the block
 
    Available Lava Fields:
        ConnectionRequests
        ConnectionOpportunity
-       DetailPage (Detail Page GUID)
-       CurrentPerson
-       Context
-       PageParameter
-       Campuses
-{% endcomment %}
+       DetailPage (page GUID)
+-/
 <style>
     .card:hover {
       transform: scale(1.01);
       box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
     }
-
-    .person-image-small {
-        position: relative;
-        box-sizing: border-box;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        vertical-align: top;
-        background: center/cover #cbd4db;
-        border-radius: 50%;
-        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.07)
-    }
 </style>
-{% for connectionRequest in ConnectionRequests %}
-    <a href='{{ DetailPage | Default:'0' | PageRoute }}?ConnectionRequestId={{ connectionRequest.Id }}&ConnectionOpportunityId={{connectionRequest.ConnectionOpportunityId }}' stretched-link>
-        <div class='card mb-2'>
-            <div class='card-body'>
-                <div class='row pt-2' style='height:60px;'>
-                    <div class='col-xs-2 col-md-1 mx-auto'>
-                        <img class='person-image-small' src='{{ connectionRequest.ConnectorPersonAlias.Person.PhotoUrl | Default: '/Assets/Images/person-no-photo-unknown.svg'  }}' alt=''>
-                    </div>
-                    <div class='col-xs-6 col-md-9 pl-md-0 mx-auto'>
-                       <strong class='text-color'>{{ connectionRequest.ConnectorPersonAlias.Person.FullName | Default: 'Unassigned' }}</strong>
-                       <small class='pl-1 text-muted'>{{ connectionRequest.Campus.Name | Default: 'Main Campus' }}</small>
-                       </br>
-                       {% assign lastActivity = connectionRequest.ConnectionRequestActivities | Last %}
-                       <small class='text-muted'>Last Activity: {{ lastActivity.Note | Default: '' | Capitalize  }}
-                           {% if lastActivity.CreatedDateTime %}
-                               ({{ lastActivity.CreatedDateTime | DaysFromNow }})
-                           {% endif %}
-                       </small>
-                    </div>
-                    <div class='col-xs-4 col-md-2 mx-auto text-right'>
-                        <small class='text-muted'>{{ connectionRequest.CreatedDateTime | Date:'M/d/yyyy' }}</small>
-                    </div>
+{% assign count = ConnectionRequests | Size %}
+{% if count > 0 %}
+    {% for connectionRequest in ConnectionRequests %}
+        <div class=""card card-sm mb-2"">
+            {% if DetailPage != '' and DetailPage != null %}
+            {% capture pageRouteParams %}ConnectionRequestId={{ connectionRequest.Id }}^ConnectionOpportunityId={{connectionRequest.ConnectionOpportunityId }}{% endcapture %}
+            <a href=""{{ DetailPage | PageRoute:pageRouteParams }}"" class=""stretched-link""></a>
+            {% endif %}
+            <div class=""card-body d-flex flex-wrap align-items-center"" style=""min-height:60px;"">
+                <img class=""avatar avatar-lg"" src=""{{ connectionRequest.PersonAlias.Person.PhotoUrl }}"" alt="""">
+                <div class=""px-3 flex-fill"">
+                    <span class=""d-block"">
+                        <strong class=""text-color"">{{ connectionRequest.PersonAlias.Person.FullName }}</strong>
+                        {% if connectionRequest.Campus != null %}
+                        <span class=""pl-1 small text-muted"">{{ connectionRequest.Campus.Name }}</span>
+                        {% endif %}
+                    </span>
+                    {% assign lastActivity = connectionRequest.ConnectionRequestActivities | Last %}
+                    <span class=""text-muted small"">Last Activity: {{ lastActivity.ConnectionActivityType.Name | Default:'No Activity' }}
+                        {% if lastActivity.CreatedDateTime %}
+                            <span title=""{{ lastActivity.CreatedDateTime }}"">({{ lastActivity.CreatedDateTime | HumanizeDateTime }})</span>
+                        {% endif %}
+                    </span>
                 </div>
+                <span class=""small text-muted"" title=""Created {{ connectionRequest.CreatedDateTime }}"">{{ connectionRequest.CreatedDateTime | Date:'sd' }}</span>
             </div>
         </div>
-       </a>
-{% endfor %}
-";
+    {% endfor %}
+{% else %}
+    <div class=""alert alert-info"">No connection requests currently available or assigned to you.</div>
+{% endif %}";
 
         }
         #endregion Default Lava
@@ -151,6 +145,7 @@ namespace RockWeb.Blocks.Connection
             public const string RequestTemplate = "RequestTemplate";
             public const string DetailPage = "DetailPage";
             public const string MaxRequestsToShow = "MaxRequestsToShow";
+            public const string UpdatePageTitle = "UpdatePageTitle";
         }
         #endregion Attribute Keys
 
@@ -236,6 +231,11 @@ namespace RockWeb.Blocks.Connection
         #region Page Control Events
         protected void lbOptions_Click( object sender, EventArgs e )
         {
+            if ( CurrentPerson == null )
+            {
+                nbWarning.Visible = true;
+                swOnlyShowMyConnections.Visible = false;
+            }
             mdOptions.Show();
         }
 
@@ -244,6 +244,9 @@ namespace RockWeb.Blocks.Connection
             SetConnectionStatesPreference();
             SetBlockUserPreference( UserPreferenceKey.OnlyShowMyConnections, swOnlyShowMyConnections.Checked.ToString(), true );
             _onlyShowMyConnections = swOnlyShowMyConnections.Checked;
+            // Assume changes happened, therefore reset the SetConnectionStates() and clear the GetRequestsViewModel so we start over.
+            SetConnectionStates();
+            ViewState[ViewStateKeys.GetRequestsViewModel] = null;
 
             GetConnectionRequests();
 
@@ -318,13 +321,37 @@ namespace RockWeb.Blocks.Connection
             {
                 pageNumber = _currentRequestsViewModel != null ? _currentRequestsViewModel.PageNumber + 1 : 0;
             }
+            else
+            {
+                pageNumber = _currentRequestsViewModel != null ? _currentRequestsViewModel.PageNumber - 1 : 0;
+            }
 
             using ( var rockContext = new RockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
+
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).GetNoTracking( _connectionOpportunityGuid );
+
+                if ( connectionOpportunity == null )
+                {
+                    return;
+                }
+
                 bool hasMore;
                 List<ConnectionRequest> requests;
+
+                // Determine if we should update the page title with the connection opportunity name
+                var updatePageTitle = GetAttributeValue( AttributeKey.UpdatePageTitle ).AsBoolean();
+                if ( updatePageTitle )
+                {
+                    RockPage.PageTitle = connectionOpportunity.Name;
+
+                    var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                    if ( pageBreadCrumb != null )
+                    {
+                        pageBreadCrumb.Name = RockPage.PageTitle;
+                    }
+                }
 
                 if ( _onlyShowMyConnections && CurrentPerson == null )
                 {
@@ -352,22 +379,35 @@ namespace RockWeb.Blocks.Connection
                         filterOptions.ConnectorPersonIds = new List<int> { CurrentPerson.Id };
                     }
 
-                    var qry = connectionRequestService.GetConnectionRequestsQuery( filterOptions );
+                    var qry = connectionRequestService.GetConnectionRequestsQuery( filterOptions )
+                        .Include( r => r.PersonAlias.Person )
+                        .Include( r => r.ConnectionRequestActivities );
 
                     // We currently don't support showing connected connection requests
                     // since that could end up being a massive list for mobile.
                     qry = qry.Where( r => r.ConnectionState != ConnectionState.Connected );
 
-                    // Put all the requests in memory so we can check security and
-                    // then get the current set of requests, plus one. The extra is
-                    // so that we can tell if there are more to load.
-
-                    requests = qry
-                        .ToList()
-                        .Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                        .Skip( ( pageNumber * MaxRequestsToShow ) )
-                        .Take( MaxRequestsToShow + 1 )
-                        .ToList();
+                    if ( connectionOpportunity.ConnectionType.EnableRequestSecurity )
+                    {
+                        // Put all the requests in memory so we can check security and
+                        // then get the current set of requests, plus one. The extra is
+                        // so that we can tell if there are more to load.
+                        requests = qry
+                            .OrderByDescending( r => r.CreatedDateKey ).ThenByDescending( r => r.Id )
+                            .ToList()
+                            .Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                            .Skip( ( pageNumber * MaxRequestsToShow ) )
+                            .Take( MaxRequestsToShow + 1 )
+                            .ToList();
+                    }
+                    else
+                    {
+                        requests = qry
+                            .OrderByDescending( r => r.CreatedDateKey ).ThenByDescending( r => r.Id )
+                            .Skip( ( pageNumber * MaxRequestsToShow ) )
+                            .Take( MaxRequestsToShow + 1 )
+                            .ToList();
+                    }
 
                     // Determine if we have more requests to show and then properly
                     // limit the requests to the correct amount.
@@ -393,12 +433,12 @@ namespace RockWeb.Blocks.Connection
 
                 _currentRequestsViewModel = new GetRequestsViewModel
                 {
-                    HasMore = hasMore
+                    HasMore = hasMore,
+                    PageNumber = pageNumber,
                 };
 
-                divLoadPrevious.Visible = pageNumber != 0;
-                divLoadMore.Visible = _currentRequestsViewModel.HasMore;
-
+                lbLoadPrevious.Visible = pageNumber != 0;
+                lbLoadMore.Visible = _currentRequestsViewModel.HasMore;
 
                 //Store current page information in view state so we can load next data pages
                 ViewState[ViewStateKeys.GetRequestsViewModel] = _currentRequestsViewModel;
@@ -407,7 +447,6 @@ namespace RockWeb.Blocks.Connection
 
         private void ConfigureSettings()
         {
-
             var titles = GetConnectionOpportunityTitles();
             var connectionOpportunityTitle = titles.Item1;
             var connectionTypeTitle = titles.Item2;
@@ -416,7 +455,7 @@ namespace RockWeb.Blocks.Connection
 
             foreach ( var state in GetConnectionStates() )
             {
-                if(state== ConnectionState.Connected )
+                if( state == ConnectionState.Connected )
                 {
                     continue;
                 }
@@ -431,6 +470,11 @@ namespace RockWeb.Blocks.Connection
             _onlyShowMyConnections = onlyShowMyConnections;
 
             // Get the ConnectionStates user preference on load
+            SetConnectionStates();
+        }
+
+        private void SetConnectionStates()
+        {
             var connectionStateString = GetBlockUserPreference( UserPreferenceKey.ConnectionStates );
             if ( !string.IsNullOrEmpty( connectionStateString ) )
             {
@@ -440,6 +484,7 @@ namespace RockWeb.Blocks.Connection
                     .ToList();
             }
         }
+
         #endregion Methods
 
         #region Support Classes

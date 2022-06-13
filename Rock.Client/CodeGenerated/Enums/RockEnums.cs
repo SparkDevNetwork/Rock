@@ -28,6 +28,14 @@ namespace Rock.Client.Enums
     #pragma warning disable CS1591
     /// <summary>
     /// </summary>
+    public enum AccountHierarchyDirection
+    {
+        CurrentAccountToParent = 0x0,
+        ParentAccountToLastDescendantAccount = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AddressInvalidReason
     {
         None = 0x0,

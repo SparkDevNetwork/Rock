@@ -653,6 +653,7 @@ namespace RockWeb.Blocks.Crm
                     BirthMonth = p.BirthMonth,
                     BirthDay = p.BirthDay,
                     BirthDate = p.BirthDate,
+                    DeceasedDate = p.DeceasedDate,
                     Gender = p.Gender,
                     PhotoId = p.PhotoId,
                     GraduationYear = p.GraduationYear
@@ -762,6 +763,7 @@ namespace RockWeb.Blocks.Crm
                             BirthMonth = p.BirthMonth,
                             BirthDay = p.BirthDay,
                             BirthDate = p.BirthDate,
+                            DeceasedDate = p.DeceasedDate,
                             Gender = p.Gender,
                             PhotoId = p.PhotoId,
                             GraduationYear = p.GraduationYear
@@ -962,11 +964,12 @@ namespace RockWeb.Blocks.Crm
             public int? BirthMonth { get; set; }
             public int? BirthDay { get; set; }
             public DateTime? BirthDate { get; set; }
+            public DateTime? DeceasedDate { get; set; }
             public int? Age
             {
                 get
                 {
-                    return Person.GetAge( this.BirthDate );
+                    return Person.GetAge( this.BirthDate, this.DeceasedDate );
                 }
             }
             public Gender Gender { get; set; }

@@ -23,7 +23,15 @@ export const enum ConfigurationValueKey {
     KeyPrompt = "keyprompt",
     ValuePrompt = "valueprompt",
     DisplayValueFirst = "displayvaluefirst",
-    AllowHtml = "allowhtml"
+    AllowHtml = "allowhtml",
+
+    // Only used during editing of the field type configuration.
+    CustomValues = "customvalues",
+    DefinedType = "definedtype"
+}
+
+export const enum ConfigurationPropertyKey {
+    DefinedTypes = "definedTypes"
 }
 
 export type ValueItem = {
@@ -42,11 +50,16 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./keyValueListFieldComponents")).EditComponent;
 });
 
+// Load the configuration component as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./keyValueListFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Key Value List field.
  */
 export class KeyValueListFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
             const clientValues = JSON.parse(value ?? "[]") as ClientValue[];
             const configuredValues = new List(JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[]);
@@ -72,5 +85,13 @@ export class KeyValueListFieldType extends FieldTypeBase {
 
     public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
+    }
+
+    public override isFilterable(): boolean {
+        return false;
     }
 }

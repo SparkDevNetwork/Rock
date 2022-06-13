@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Crm
     [CustomDropdownListField(
         "Planned Visit Date",
         Key = AttributeKey.PlannedVisitDate,
-        Description = "How should the Planned Visit Date field be displayed. The date selected by the user is only used for the workflow. If the 'Campus Schedule Attribute' block setting has a selection this will control if schedule date/time are required or not but not if it shows or not.",
+        Description = "How should the Planned Visit Date field be displayed. The date selected by the user is only used for the workflow. If the 'Campus Schedule Attribute' block setting has a selection this will control if schedule date/time are required or not but not if it shows or not. The Lava merge field for this in workflows is 'PlannedVisitDate'.",
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Optional",
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Crm
     [AttributeField(
         "Campus Schedule Attribute",
         Key = AttributeKey.CampusScheduleAttribute,
-        Description = "Allows you select a campus attribute that contains schedules for determining which dates and times for which pre-registration is available. This requries the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block.",
+        Description = "Allows you select a campus attribute that contains schedules for determining which dates and times for which pre-registration is available. This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. The Lava merge field for this in workflows is 'ScheduleId'.",
         EntityTypeGuid = Rock.SystemGuid.EntityType.CAMPUS,
         IsRequired = false,
         Order = 3 )]
@@ -175,6 +175,20 @@ namespace RockWeb.Blocks.Crm
         IsRequired = false,
         DefaultValue = "4",
         Order = 15 )]
+
+    [BooleanField(
+        "Show Campus Type",
+        Key = AttributeKey.ShowCampusType,
+        Description = "Display the campus type.",
+        DefaultBooleanValue = true,
+        Order = 16 )]
+
+    [BooleanField(
+        "Show Campus Status",
+        Key = AttributeKey.ShowCampusStatus,
+        Description = "Display the campus status.",
+        DefaultBooleanValue = true,
+        Order = 17 )]
 
     #region Adult Category
 
@@ -393,6 +407,8 @@ namespace RockWeb.Blocks.Crm
         private static class AttributeKey
         {
             public const string ShowCampus = "ShowCampus";
+            public const string ShowCampusType = "ShowCampusType";
+            public const string ShowCampusStatus = "ShowCampusStatus";
             public const string DefaultCampus = "DefaultCampus";
             public const string PlannedVisitDate = "PlannedVisitDate";
             public const string CampusScheduleAttribute = "CampusScheduleAttribute";
@@ -602,9 +618,11 @@ namespace RockWeb.Blocks.Crm
             {
                 GetChildrenData();
             }
-
         }
 
+        /// <summary>
+        /// Sets the panel styles.
+        /// </summary>
         private void SetPanelStyles()
         {
             pnlSuffix1.CssClass = GetColumnStyle( 3 );
@@ -1269,14 +1287,20 @@ namespace RockWeb.Blocks.Crm
         {
             pnlVisit.Visible = true;
 
-            // Campus 
+            // Campus
             if ( GetAttributeValue( AttributeKey.ShowCampus ).AsBoolean() )
             {
-                cpCampus.Campuses = CampusCache.All( false );
-                if ( CampusCache.All( false ).Count > 1 )
+                var campuses = CampusCache.All( false );
+                cpCampus.Campuses = campuses;
+
+                if ( campuses.Count >= 1 )
                 {
-                    pnlCampus.Visible = true;
+                    cpCampus.ForceVisible = true;
+                    cpCampus.SelectedCampusId = campuses.First().Id;
                     cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
+                    pnlCampus.Visible = true;
+
+                    SetCampusInfo();
                 }
                 else
                 {
@@ -1289,6 +1313,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             ShowHidePlannedDatePanels();
+            SetScheduleDateControl();
 
             // Visit Info
             pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible || pnlPlannedSchedule.Visible;
@@ -1364,12 +1389,12 @@ namespace RockWeb.Blocks.Crm
 
             // Make sure the attribute uses the Schedules field type and display the date panel if not
             var campusScheduleAttribute = AttributeCache.Get( scheduleGuid );
-            if ( campusScheduleAttribute.FieldType.Guid != Rock.SystemGuid.FieldType.SCHEDULES.AsGuidOrNull() )
+            if ( campusScheduleAttribute?.FieldType == null || campusScheduleAttribute.FieldType.Guid != Rock.SystemGuid.FieldType.SCHEDULES.AsGuidOrNull() )
             {
                 // If the user has edit permission then display an error message so the configuration can be fixed
                 if ( IsUserAuthorized( Authorization.EDIT ) )
                 {
-                    nbError.Text = "The campus attribute for schedules is not using the field type of 'Schedules'. Please adjust this.";
+                    nbError.Text = "The campus attribute for schedules is not using the field type of 'Schedules' or a value was not specified. Please adjust this.";
                     nbError.Visible = true;
                 }
 
@@ -1394,6 +1419,7 @@ namespace RockWeb.Blocks.Crm
                     // Since the campus is not available for the campusScheduleAttribute just display the date panel
                     pnlPlannedDate.Visible = true;
                     pnlPlannedSchedule.Visible = false;
+                    litCampusTypeIcon.Text = "";
                     return;
                 }
             }
@@ -1404,6 +1430,88 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Sets the campus information.
+        /// </summary>
+        private void SetCampusInfo()
+        {
+            var showCampusStatus = GetAttributeValue( AttributeKey.ShowCampusStatus ).AsBoolean();
+            var showCampusType = GetAttributeValue( AttributeKey.ShowCampusType ).AsBoolean();
+
+            if ( !showCampusStatus && !showCampusType )
+            {
+                pnlCampusInfo.Visible = false;
+            }
+            else
+            {
+                pnlCampusInfo.Visible = true;
+
+                divCampusStatus.Visible = showCampusStatus;
+                divCampusType.Visible = showCampusType;
+            }
+
+            if ( cpCampus.SelectedCampusId.HasValue && cpCampus.SelectedCampusId.Value > 0 )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var campusService = new CampusService( rockContext );
+
+                    var thisCampus = campusService.Get( cpCampus.SelectedCampusId.Value );
+                    if ( thisCampus != null )
+                    {
+                        var campusStatusValue = thisCampus.CampusStatusValue?.Value;
+                        var campusTypeValue = thisCampus.CampusTypeValue?.Value;
+
+                        lblCampusStatus.Text = campusStatusValue;
+                        lblCampusType.Text = campusTypeValue;
+
+                        if ( campusStatusValue.IsNotNullOrWhiteSpace() )
+                        {
+                            switch ( campusStatusValue.ToUpper() )
+                            {
+                                case "CLOSED":
+                                    lblCampusStatus.CssClass = "label label-default";
+                                    break;
+                                case "OPEN":
+                                    lblCampusStatus.CssClass = "label label-success";
+                                    break;
+                                case "PENDING":
+                                    lblCampusStatus.CssClass = "label label-warning";
+                                    break;
+                                default:
+                                    lblCampusStatus.CssClass = "label label-info";
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            lblCampusStatus.CssClass = "label label-info";
+                        }
+
+                        if ( campusTypeValue.IsNotNullOrWhiteSpace() )
+                        {
+                            switch ( campusTypeValue.ToUpper() )
+                            {
+                                case "ONLINE":
+                                    litCampusTypeIcon.Text = "<i class='fa fa-globe fa-fw'></i>";
+                                    break;
+                                case "PHYSICAL":
+                                    litCampusTypeIcon.Text = "<i class='fa fa-home fa-fw'></i>";
+                                    break;
+                                default:
+                                    litCampusTypeIcon.Text = "<i class='fa fa-home fa-fw'></i>";
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            litCampusTypeIcon.Text = "";
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Populates ddlScheduleDate with a set of dates for the campus schedules and the configured number of days. The display is formatted but the value is unformated so it can easily be used to get schedules that match it.
         /// </summary>
         private void SetScheduleDateControl()
@@ -1411,14 +1519,74 @@ namespace RockWeb.Blocks.Crm
             ddlScheduleDate.Items.Clear();
             ddlScheduleTime.Items.Clear();
 
-            if ( !pnlPlannedSchedule.Visible || cpCampus.SelectedValue.IsNullOrWhiteSpace() )
+            if ( !pnlPlannedSchedule.Visible || (cpCampus.Visible && cpCampus.SelectedValue.IsNullOrWhiteSpace() ) )
             {
+                if ( cpCampus.SelectedValue.IsNullOrWhiteSpace() )
+                {
+                    litCampusTypeIcon.Text = "";
+                }
+
                 return;
             }
 
             OccurrenceSchedules = new List<OccurrenceSchedule>();
+            int? selectedCampusId = null;
+            if ( cpCampus.Visible )
+            {
+                selectedCampusId = cpCampus.SelectedCampusId.Value;
+            }
+            else
+            {
+                if ( CampusCache.All( false ).Count == 1 )
+                {
+                    // If there is just one active campus then use that one.
+                    selectedCampusId = CampusCache.All( false )[0].Id;
+                }
+                else
+                {
+                    // Rock should show an error before getting here, but just in case... If there are multiple campuses then we will need the campus to get the schedule.
+                    // If the user has edit permission display an error message so the configuration can be fixed
+                    if ( IsUserAuthorized( Authorization.EDIT ) )
+                    {
+                        nbError.Title = "Must Show Campus";
+                        nbError.Text = "In order to show campus schedules the campus has to be shown so it can be selected. Change the this block's 'Show Campus' attribute to 'Yes'. A user without edit permission to this block will just see \"Planned Visit Date\".";
+                        nbError.Visible = true;
+                        litCampusTypeIcon.Text = "";
+
+                        return;
+                    }
+
+                    // Since we can't show the schedules and this is not a user authorized to edit the block just show the date.
+                    pnlPlannedDate.Visible = true;
+                    pnlPlannedSchedule.Visible = false;
+
+                    return;
+                }
+            }
+
             var campusScheduleAttributeKey = AttributeCache.Get( GetAttributeValue( AttributeKey.CampusScheduleAttribute ) ).Key;
-            var campusScheduleAttributeValue = CampusCache.Get( cpCampus.SelectedCampusId.Value )?.GetAttributeValue( campusScheduleAttributeKey );
+            var campusScheduleAttributeValue = CampusCache.Get( selectedCampusId.Value )?.GetAttributeValue( campusScheduleAttributeKey );
+
+            if ( campusScheduleAttributeValue.IsNullOrWhiteSpace() )
+            {
+                // If the user has edit permission then display an error message so the configuration can be fixed
+                if ( IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    nbError.Title = "Missing Campus Schedule attribute.";
+                    nbError.Text = "This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. A user without edit permission to this block will just see \"Planned Visit Date\".";
+                    nbError.Visible = true;
+                    litCampusTypeIcon.Text = "";
+
+                    return;
+                }
+
+                // Since we can't show the schedules and this is not a user authorized to edit the block just show the date.
+                pnlPlannedDate.Visible = true;
+                pnlPlannedSchedule.Visible = false;
+
+                return;
+            }
+
             var schedules = campusScheduleAttributeValue.Split( ',' ).Select( g => new ScheduleService( _rockContext ).Get( g.AsGuid() ) );
             int daysAhead = GetAttributeValue( AttributeKey.ScheduledDaysAhead ).AsIntegerOrNull() ?? 28;
             HashSet<DateTime> scheduleDates = new HashSet<DateTime>();
@@ -2471,6 +2639,8 @@ namespace RockWeb.Blocks.Crm
 
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
+            SetCampusInfo();
+
             SetScheduleDateControl();
         }
         protected void ddlScheduleDate_SelectedIndexChanged( object sender, EventArgs e )

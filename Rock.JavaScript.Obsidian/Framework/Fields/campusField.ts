@@ -15,11 +15,26 @@
 // </copyright>
 //
 import { Component, defineAsyncComponent } from "vue";
+import { ComparisonType } from "../Reporting/comparisonType";
+import { ComparisonValue } from "../Reporting/comparisonValue";
+import { areEqual } from "../Util/guid";
 import { ListItem } from "../ViewModels";
+import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { FieldTypeBase } from "./fieldType";
+import { getStandardFilterComponent } from "./utils";
 
 export const enum ConfigurationValueKey {
-    Values = "values"
+    Values = "values",
+    IncludeInactive = "includeInactive",
+    FilterCampusTypes = "filterCampusTypes",
+    FilterCampusStatus = "filterCampusStatus",
+    SelectableCampuses = "selectableCampuses"
+}
+
+export const enum ConfigurationPropertyKey {
+    Campuses = "campuses",
+    CampusTypes = "campusTypes",
+    CampusStatuses = "campusStatuses"
 }
 
 
@@ -28,11 +43,21 @@ const editComponent = defineAsyncComponent(async () => {
     return (await import("./campusFieldComponents")).EditComponent;
 });
 
+// Load the filter component only as needed.
+const filterComponent = defineAsyncComponent(async () => {
+    return (await import("./campusFieldComponents")).FilterComponent;
+});
+
+// Load the configuration component only as needed.
+const configurationComponent = defineAsyncComponent(async () => {
+    return (await import("./campusFieldComponents")).ConfigurationComponent;
+});
+
 /**
  * The field type handler for the Campus field.
  */
 export class CampusFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         if (value === undefined || value === null || value === "") {
             return "";
         }
@@ -50,5 +75,34 @@ export class CampusFieldType extends FieldTypeBase {
 
     public override getEditComponent(): Component {
         return editComponent;
+    }
+
+    public override getConfigurationComponent(): Component {
+        return configurationComponent;
+    }
+
+    public override getSupportedComparisonTypes(): ComparisonType {
+        return ComparisonType.None;
+    }
+
+    public override getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {
+        if (!value.value) {
+            return "";
+        }
+
+        try {
+            const rawValues = value.value.split(",");
+            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItem[];
+            const selectedValues = values.filter(o => rawValues.filter(v => areEqual(v, o.value)).length > 0);
+
+            return `'${selectedValues.map(o => o.text).join("' OR '")}'`;
+        }
+        catch {
+            return `'${value.value}'`;
+        }
+    }
+
+    public override getFilterComponent(): Component {
+        return getStandardFilterComponent("Is", filterComponent);
     }
 }

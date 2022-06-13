@@ -2489,7 +2489,7 @@ namespace RockWeb.Blocks.Event
                 documentTemplate = Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate;
             }
 
-            if ( documentTemplate != null && !registrant.SignatureDocumentId.HasValue )
+            if ( documentTemplate != null && !registrant.SignatureDocumentId.HasValue && documentTemplate.IsLegacy )
             {
                 var template = Registration.RegistrationInstance.RegistrationTemplate;
                 var divSigAlert = new HtmlGenericControl( "div" );

@@ -15,6 +15,8 @@
 // </copyright>
 //
 import axios, { AxiosResponse } from "axios";
+import { ListItem } from "../ViewModels/listItem";
+import { Guid } from "./guid";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 export type HttpUrlParams = Record<string, unknown> | undefined | null;
@@ -103,6 +105,134 @@ export async function get<T>(url: string, params: HttpUrlParams = undefined): Pr
 export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
     return await doApiCall<T>("POST", url, params, data);
 }
+
+// #region File Upload
+
+type FileUploadResponse = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    Guid: Guid;
+    FileName: string;
+    /* eslint-enable */
+};
+
+/**
+ * Progress reporting callback used when uploading a file into Rock.
+ */
+export type UploadProgressCallback = (progress: number, total: number, percent: number) => void;
+
+/**
+ * Options used when uploading a file into Rock to change the default behavior.
+ */
+export type UploadOptions = {
+    /**
+     * The base URL to use when uploading the file, must accept the same parameters
+     * and as the standard FileUploader.ashx handler.
+     */
+    baseUrl?: string;
+
+    /** True if the file should be uploaded as temporary, only applies to binary files. */
+    isTemporary?: boolean;
+
+    /** A function to call to report the ongoing progress of the upload. */
+    progress: UploadProgressCallback;
+};
+
+/**
+ * Uploads a file in the form data into Rock. This is an internal function and
+ * should not be exported.
+ * 
+ * @param url The URL to use for the POST request.
+ * @param data The form data to send in the request body.
+ * @param progress The optional callback to use to report progress.
+ *
+ * @returns The response from the upload handler.
+ */
+async function uploadFile(url: string, data: FormData, progress: UploadProgressCallback | undefined): Promise<FileUploadResponse> {
+    const result = await axios.post<FileUploadResponse | string>(url, data, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        },
+        onUploadProgress: (event: ProgressEvent) => {
+            if (progress) {
+                progress(event.loaded, event.total, Math.floor(event.loaded * 100 / event.total));
+            }
+        }
+    });
+
+    // Check for a "everything went perfectly fine" response.
+    if (result.status === 200 && typeof result.data === "object") {
+        return result.data;
+    }
+
+    if (result.status === 406) {
+        throw "File type is not allowed.";
+    }
+
+    if (typeof result.data === "string") {
+        throw result.data;
+    }
+
+    throw "Upload failed.";
+}
+
+/**
+ * Uploads a file to the Rock file system, usually inside the ~/Content directory.
+ * 
+ * @param file The file to be uploaded to the server.
+ * @param encryptedRootFolder The encrypted root folder specified by the server,
+ * this specifies the jail the upload operation is limited to.
+ * @param folderPath The additional sub-folder path to use inside the root folder.
+ * @param options The options to use when uploading the file.
+ *
+ * @returns A ListItem that contains the scrubbed filename that was uploaded.
+ */
+export async function uploadContentFile(file: File, encryptedRootFolder: string, folderPath: string, options?: UploadOptions): Promise<ListItem> {
+    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encryptedRootFolder}`;
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    if (folderPath) {
+        formData.append("folderPath", folderPath);
+    }
+
+    const result = await uploadFile(url, formData, options?.progress);
+
+    return {
+        value: "",
+        text: result.FileName
+    };
+}
+
+/**
+ * Uploads a BinaryFile into Rock. The specific storage location is defined by
+ * the file type.
+ * 
+ * @param file The file to be uploaded into Rock.
+ * @param binaryFileTypeGuid The unique identifier of the BinaryFileType to handle the upload.
+ * @param options The options ot use when uploading the file.
+ *
+ * @returns A ListItem whose value contains the new file Guid and text specifies the filename.
+ */
+export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, options?: UploadOptions): Promise<ListItem> {
+    let url = `${options?.baseUrl ?? "/FileUploader.ashx"}?isBinaryFile=True&fileTypeGuid=${binaryFileTypeGuid}`;
+
+    if (options?.isTemporary) {
+        url += "&isTemporary=False";
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadFile(url, formData, options?.progress);
+
+    return {
+        value: result.Guid,
+        text: result.FileName
+    };
+}
+
+// #endregion
 
 export default {
     doApiCall,

@@ -33,7 +33,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Decimal Range field.
  */
 export class DecimalRangeFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         if (value === null || value === undefined || value === "" || value === ",") {
             return "";
         }

@@ -18,6 +18,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
 using Rock.Workflow;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -107,7 +108,7 @@ namespace Rock.Model
                             liquidFormAttribute.PostHtml = formAttribute.PostHtml;
                             if ( field is Rock.Field.ILinkableFieldType )
                             {
-                                liquidFormAttribute.Url = "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                                liquidFormAttribute.Url = "~/" + ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
                             }
 
                             attributeList.Add( liquidFormAttribute );
@@ -311,9 +312,9 @@ namespace Rock.Model
                     entityId = Activity.Id;
                 }
 
-                if (!string.IsNullOrWhiteSpace(value))
+                if ( !string.IsNullOrWhiteSpace( value ) )
                 {
-                    if (formatted)
+                    if ( formatted )
                     {
                         value = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, condensed );
                     }
@@ -382,13 +383,19 @@ namespace Rock.Model
             personEntryPerson = null;
             personEntrySpouse = null;
 
-            var form = ActionTypeCache.WorkflowForm;
-            if ( form == null )
+            var workflowType = ActionTypeCache?.ActivityType?.WorkflowType;
+            if ( workflowType == null )
             {
                 return;
             }
 
-            if ( form.PersonEntryAutofillCurrentPerson && currentPersonId.HasValue )
+            var personEntrySettings = ActionTypeCache.WorkflowForm?.GetFormPersonEntrySettings( workflowType.FormBuilderTemplate );
+            if ( personEntrySettings == null )
+            {
+                return;
+            }
+
+            if ( personEntrySettings.AutofillCurrentPerson && currentPersonId.HasValue )
             {
                 var personService = new PersonService( rockContext );
                 personEntryPerson = personService.Get( currentPersonId.Value );
@@ -396,10 +403,13 @@ namespace Rock.Model
             }
             else
             {
+                AttributeCache personEntryPersonAttribute = ActionTypeCache.WorkflowForm?.GetPersonEntryPersonAttribute( Activity.Workflow );
+                AttributeCache personEntrySpouseAttribute = ActionTypeCache.WorkflowForm?.GetPersonEntrySpouseAttribute( Activity.Workflow );
+
                 // Not using the current person, so initialize with the current value of PersonEntryPersonAttributeGuid (normally this would be null unless then also had a PersonEntry form on previous Activities)
-                if ( form.PersonEntryPersonAttributeGuid.HasValue )
+                if ( personEntryPersonAttribute != null )
                 {
-                    var personAliasGuid = GetWorkflowAttributeValue( form.PersonEntryPersonAttributeGuid.Value ).AsGuidOrNull();
+                    var personAliasGuid = GetWorkflowAttributeValue( personEntryPersonAttribute.Guid ).AsGuidOrNull();
 
                     if ( personAliasGuid.HasValue )
                     {
@@ -410,9 +420,9 @@ namespace Rock.Model
                 }
 
                 // Not using the current person, so initialize with the current value PersonEntrySpouseAttributeGuid (normally this would be null unless then also had a PersonEntry form on previous Activities)
-                if ( form.PersonEntrySpouseAttributeGuid.HasValue )
+                if ( personEntrySpouseAttribute != null )
                 {
-                    var spousePersonAliasGuid = GetWorkflowAttributeValue( form.PersonEntrySpouseAttributeGuid.Value ).AsGuidOrNull();
+                    var spousePersonAliasGuid = GetWorkflowAttributeValue( personEntrySpouseAttribute.Guid ).AsGuidOrNull();
 
                     if ( spousePersonAliasGuid.HasValue )
                     {

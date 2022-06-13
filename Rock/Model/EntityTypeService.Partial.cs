@@ -86,7 +86,7 @@ namespace Rock.Model
         /// <param name="createIfNotFound">A <see cref="System.Boolean" /> value that indicates if a new <see cref="Rock.Model.EntityType" /> should be created if a match is not found. This value
         /// will be <c>true</c> if a new <see cref="Rock.Model.EntityType" /> should be created if there is not a match; otherwise <c>false</c>/</param>
         /// <returns></returns>
-        public EntityType Get( string name, bool createIfNotFound )
+        public EntityType GetByName( string name, bool createIfNotFound )
         {
             var entityType = Get( name );
             if ( entityType != null )

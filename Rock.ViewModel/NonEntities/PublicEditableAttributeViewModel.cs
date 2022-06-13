@@ -159,11 +159,10 @@ namespace Rock.ViewModel.NonEntities
         public Guid? FieldTypeGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the configuration options for the attribute. These values
-        /// are translated into Configuration Values on the server.
+        /// Gets or sets the configuration values for the attribute.
         /// </summary>
-        /// <value>The configuration options for the attribute.</value>
-        public Dictionary<string, string> ConfigurationOptions { get; set; }
+        /// <value>The configuration values for the attribute.</value>
+        public Dictionary<string, string> ConfigurationValues { get; set; }
 
         /// <summary>
         /// Gets or sets the default value of the attribute.

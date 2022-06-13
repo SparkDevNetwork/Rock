@@ -31,6 +31,8 @@ namespace Rock.Services.NuGet
     /// <summary>
     /// Facade class to provide interaction with NuGet internals
     /// </summary>
+    [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+    [RockObsolete( "1.13.3" )]
     public class PackageService
     {
         /// <summary>
@@ -39,6 +41,8 @@ namespace Rock.Services.NuGet
         /// <value>
         /// The error messages.
         /// </value>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public List<string> ErrorMessages { get; private set; }
 
         /// <summary>
@@ -47,11 +51,15 @@ namespace Rock.Services.NuGet
         /// <value>
         /// The warning messages.
         /// </value>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public List<string> WarningMessages { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageService"/> class.
         /// </summary>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public PackageService()
         {
             ErrorMessages = new List<string>();
@@ -64,6 +72,8 @@ namespace Rock.Services.NuGet
         /// <param name="page">The page.</param>
         /// <param name="isRecursive">if set to <c>true</c> [should export children].</param>
         /// <returns>a <see cref="T:System.IO.MemoryStream"/> of the exported page package.</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public MemoryStream ExportPage( Page page, bool isRecursive )
         {
             // Create a temp directory to hold package contents in staging area
@@ -143,6 +153,8 @@ namespace Rock.Services.NuGet
         /// <param name="fileName">File name of uploaded package</param>
         /// <param name="pageId">The Id of the Page to save new data underneath</param>
         /// <param name="siteId">The Id of the Site tha the Page is being imported into</param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public bool ImportPage( byte[] uploadedPackage, string fileName, int pageId, int siteId )
         {
             // Write .nupkg file to the PackageStaging folder...

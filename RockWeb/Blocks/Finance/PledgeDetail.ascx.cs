@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Finance
         private static class PageParameterKey
         {
             public const string PledgeId = "PledgeId";
-            public const string PersonActionIdentifier = "PersonActionIdentifier";
+            public const string PersonActionIdentifier = "rckid";
         }
 
         #endregion Keys

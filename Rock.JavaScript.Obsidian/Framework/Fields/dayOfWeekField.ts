@@ -49,7 +49,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the DayOfWeek field.
  */
 export class DayOfWeekFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         const dayValue = toNumberOrNull(value);
 
         if (dayValue === null) {

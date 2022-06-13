@@ -75,6 +75,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = false,
         Order = 2 )]
 
+    [BooleanField(
+        "Require Complete Birth Date",
+        Key = AttributeKey.RequireCompleteBirthDate,
+        Description = "If set to true, the year portion for the birth date will be required if there are values set in the day and month parts.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
+
     #endregion Block Attributes
 
     public partial class EditPerson : Rock.Web.UI.PersonBlock
@@ -87,6 +94,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string HideGrade = "HideGrade";
             public const string HideAnniversaryDate = "HideAnniversaryDate";
             public const string SearchKeyTypes = "SearchKeyTypes";
+            public const string RequireCompleteBirthDate = "RequireCompleteBirthDate";
         }
 
         private static class ListSource
@@ -201,6 +209,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             pnlGradeGraduation.Visible = !GetAttributeValue( AttributeKey.HideGrade ).AsBoolean();
             dpAnniversaryDate.Visible = !GetAttributeValue( AttributeKey.HideAnniversaryDate ).AsBoolean();
+            if ( GetAttributeValue( AttributeKey.RequireCompleteBirthDate ).AsBoolean() )
+            {
+                bpBirthDay.SelectedDatePartsChanged += bpBirthDay_SelectedDatePartsChanged;
+            }
+
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upEditPerson );
         }
 
         /// <summary>
@@ -239,6 +254,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( !Page.IsPostBack && Person != null )
             {
                 ShowDetails();
+            }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            if ( GetAttributeValue( AttributeKey.RequireCompleteBirthDate ).AsBoolean() )
+            {
+                bpBirthDay.SelectedDatePartsChanged += bpBirthDay_SelectedDatePartsChanged;
+                bpBirthDay_SelectedDatePartsChanged( null, null );
+            }
+            else
+            {
+                bpBirthDay.RequireYear = false;
             }
         }
 
@@ -327,6 +360,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lReasonReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
             tbInactiveReasonNote.Visible = showInactiveReason && canEditRecordStatus;
             lReasonNoteReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
+        }
+
+        /// <summary>
+        /// Handles the SelectedDatePartsChanged event of the bpBirthDay control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bpBirthDay_SelectedDatePartsChanged( object sender, EventArgs e )
+        {
+            var birthDate = bpBirthDay.SelectedDate;
+            bpBirthDay.RequireYear = birthDate.HasValue;
         }
 
         /// <summary>
@@ -773,6 +817,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbLastName.Text = Person.LastName;
             dvpSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
             bpBirthDay.SelectedDate = Person.BirthDate;
+            if ( GetAttributeValue( AttributeKey.RequireCompleteBirthDate ).AsBoolean() )
+            {
+                bpBirthDay_SelectedDatePartsChanged( null, null );
+            }
 
             if ( Person.GraduationYear.HasValue )
             {

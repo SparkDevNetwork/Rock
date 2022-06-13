@@ -67,13 +67,15 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:PagePicker ID="ppRedirectPage" runat="server" Label="Redirect Page" Help="If set, the filter button will redirect to the selected page." />
+                                
+                                <Rock:RockCheckBox ID="cbShowFilterButton" runat="server" Label="Show Filter Button" Help="Shows/hides the filter button. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick." />
                                 <Rock:RockCheckBox ID="cbShowResetFiltersButton" runat="server" Label="Show Reset Filters Button" Help="Determines if the Reset Filters button should be displayed." />
+
                                 <Rock:RockDropDownList ID="ddlSelectionAction" Label="Selection Action" runat="server" Help="Specifies what should happen when a value is changed. Nothing, update page the change will be visible to all blocks on the page, or update block the change will only be visible to the page parameter filter block.">
                                     <asp:ListItem Text="" Value="0" />
                                     <asp:ListItem Text="Update Block" Value="1" />
                                     <asp:ListItem Text="Update Page" Value="2" />
                                 </Rock:RockDropDownList>
-                                <Rock:RockCheckBox ID="cbHideFilterActions" runat="server" Label="Hide Filter Actions" Help="Hides the filter buttons. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick." />
                             </div>
                         </div>
                     </fieldset>

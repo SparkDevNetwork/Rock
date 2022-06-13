@@ -103,7 +103,7 @@ export default defineComponent({
         const categories = ref([...(props.modelValue?.categories ?? [])]);
         const fieldTypeValue = ref<FieldTypeConfigurationViewModel>({
             fieldTypeGuid: props.modelValue?.fieldTypeGuid ?? "",
-            configurationOptions: { ...(props.modelValue?.configurationOptions ?? {}) },
+            configurationValues: { ...(props.modelValue?.configurationValues ?? {}) },
             defaultValue: props.modelValue?.defaultValue ?? ""
         });
 
@@ -158,7 +158,7 @@ export default defineComponent({
                     postHtml: postHtml.value,
                     categories: [...categories.value],
                     fieldTypeGuid: fieldTypeValue.value.fieldTypeGuid,
-                    configurationOptions: { ...fieldTypeValue.value.configurationOptions },
+                    configurationValues: { ...fieldTypeValue.value.configurationValues },
                     defaultValue: fieldTypeValue.value.defaultValue
                 };
 

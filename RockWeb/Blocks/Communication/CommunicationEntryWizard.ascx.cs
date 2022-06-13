@@ -3147,7 +3147,7 @@ function onTaskCompleted( resultData )
 
             if ( pushData.Url.IsNotNullOrWhiteSpace() )
             {
-                openActionDetails.Append( string.Format( "<b>Url:</b> {0}<br />", pushData.Url ) );
+                openActionDetails.Append( string.Format( "<b>URL:</b> {0}<br />", pushData.Url ) );
             }
 
             if ( communication.PushOpenMessage.IsNotNullOrWhiteSpace() )

@@ -15,14 +15,13 @@
 // </copyright>
 //
 
-import { compile, Component, defineComponent, PropType } from "vue";
+import { Component, computed, defineComponent, PropType } from "vue";
 import { ComparisonType, getComparisonName } from "../Reporting/comparisonType";
 import { ComparisonValue } from "../Reporting/comparisonValue";
 import { escapeHtml, truncate } from "../Services/string";
-import { PublicAttributeValue } from "../ViewModels";
 import { PublicFilterableAttribute } from "../ViewModels/publicFilterableAttribute";
 import { EditComponent as TextEditComponent } from "./textFieldComponents";
-import { getStandardFilterComponent } from "./utils";
+import { getFieldEditorProps, getStandardFilterComponent } from "./utils";
 
 /**
  * Handles the conversion of an attribute value into one that can be displayed
@@ -33,13 +32,16 @@ import { getStandardFilterComponent } from "./utils";
  */
 export interface IFieldType {
     /**
-     * Get the plain text representation of the attribute value.
-     * 
-     * @param value The attribute value.
-     * 
+     * Attempts to convert the value into a text value that can be used to
+     * represent the attribute value. If no conversion is possible then the
+     * original value should be returned.
+     *
+     * @param value The raw value that needs to be formatted.
+     * @param configurationValues The configuration values that will provide the necessary information to format the value.
+     *
      * @returns A string that contains a user-friendly text representation of the value.
      */
-    getTextValue(value: PublicAttributeValue): string;
+    getTextValue(value: string, configurationValues: Record<string, string>): string;
 
     /**
      * Get the HTML representation of the attribute value. This will be used
@@ -47,20 +49,11 @@ export interface IFieldType {
      * for HTML entities first.
      * 
      * @param value The attribute value.
-     * 
+     * @param configurationValues The configuration values that will provide the necessary information to format the value.
+     *
      * @returns A string that contains a user-friendly HTML representation of the value.
      */
-    getHtmlValue(value: PublicAttributeValue): string;
-
-    /**
-     * Attempts to convert the value into a text value that can be used to
-     * represent the attribute value. If no conversion is possible then null
-     * should be returned.
-     *
-     * @param value The raw value from an edit component that needs to be formatted.
-     * @param configurationValues The configuration values that will provide the necessary information to format the value.
-     */
-    getTextValueFromConfiguration(value: string, configurationValues: Record<string, string>): string | null;
+    getHtmlValue(value: string, configurationValues: Record<string, string>): string;
 
     /**
      * Get the condensed plain text representation of the attribute value.
@@ -68,10 +61,11 @@ export interface IFieldType {
      * can also alter the format entirely.
      * 
      * @param value The attribute value.
-     * 
+     * @param configurationValues The configuration values that will provide the necessary information to format the value.
+     *
      * @returns A string that contains a condensed version of {@link FieldType.getTextValue getTextValue()}.
      */
-    getCondensedTextValue(value: PublicAttributeValue): string;
+    getCondensedTextValue(value: string, configurationValues: Record<string, string>): string;
 
     /**
      * Get the condensed HTML representation of the attribute value. This will
@@ -80,28 +74,25 @@ export interface IFieldType {
      * representation of the {@link FieldType.getHtmlValue getHtmlValue()}.
      * 
      * @param value The attribute value.
-     * 
+     * @param configurationValues The configuration values that will provide the necessary information to format the value.
+     *
      * @returns A string that contains a condensed version of {@link FieldType.getHtmlValue getHtmlValue()}.
      */
-    getCondensedHtmlValue(value: PublicAttributeValue): string;
+    getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string;
 
     /**
      * Get the component that will be used to display the formatted value.
      * 
-     * @param value The attribute value.
-     * 
      * @returns A component that is already configured to show the value.
      */
-    getFormattedComponent(value: PublicAttributeValue): Component;
+    getFormattedComponent(): Component;
 
     /**
      * Get the component that will be used to display the condensed formatted value.
      * 
-     * @param value The attribute value.
-     * 
      * @returns A component that is already configured to show the condensed value.
      */
-    getCondensedFormattedComponent(value: PublicAttributeValue): Component;
+    getCondensedFormattedComponent(): Component;
 
     /**
      * Get the component that will be used to edit the value. It will receive
@@ -161,18 +152,18 @@ export interface IFieldType {
      * "equal to 3". It should not include the name of the attribute.
      * 
      * @param value The comparison value to be formatted.
-     * @param attribute The attribute containing the configuration to use during formatting.
+     * @param configurationValues The configuration of the field type to use when formatting the value.
      */
-    getFilterValueDescription(value: ComparisonValue, attribute: PublicFilterableAttribute): string;
+    getFilterValueDescription(value: ComparisonValue, configurationValues: Record<string, string>): string;
 
     /**
      * Gets a human friendly string of text that represents the comparison
      * value. This should not include the comparison type.
      * 
      * @param value The comparison value to be formatted.
-     * @param attribute The attribute containing the configuration to use during formatting.
+     * @param configurationValues The configuration of the field type to use when formatting the value.
      */
-    getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string;
+    getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string;
 }
 
 /**
@@ -208,37 +199,47 @@ const unsupportedFieldTypeConfigurationComponent = defineComponent({
  * extend.
  */
 export abstract class FieldTypeBase implements IFieldType {
-    public getTextValue(value: PublicAttributeValue): string {
-        return value.textValue ?? "";
+    public getTextValue(value: string, _configurationValues: Record<string, string>): string {
+        return value ?? "";
     }
 
-    public getHtmlValue(value: PublicAttributeValue): string {
-        // The HTML parser in use treats any string that begins with a # as a
-        // DOM reference, so we need to wrap our content inside a span tag.
-        return `<span>${escapeHtml(this.getTextValue(value))}</span>`;
+    public getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+        return `${escapeHtml(this.getTextValue(value, configurationValues))}`;
     }
 
-    public getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
-        return value;
+    public getCondensedTextValue(value: string, configurationValues: Record<string, string>): string {
+        return truncate(this.getTextValue(value, configurationValues), 100);
     }
 
-    public getCondensedTextValue(value: PublicAttributeValue): string {
-        return truncate(value.textValue ?? "", 100);
+    public getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string {
+        return `${escapeHtml(this.getCondensedTextValue(value, configurationValues))}`;
     }
 
-    public getCondensedHtmlValue(value: PublicAttributeValue): string {
-        return this.getHtmlValue(value);
-    }
+    public getFormattedComponent(): Component {
+        return defineComponent({
+            name: "FieldType.Formatted",
+            props: getFieldEditorProps(),
+            setup: (props) => {
+                return {
+                    content: computed(() => this.getHtmlValue(props.modelValue ?? "", props.configurationValues))
+                };
+            },
 
-    public getFormattedComponent(value: PublicAttributeValue): Component {
-        return defineComponent(() => {
-            return compile(this.getHtmlValue(value));
+            template: `<div v-html="content"></div>`
         });
     }
 
-    public getCondensedFormattedComponent(value: PublicAttributeValue): Component {
-        return defineComponent(() => {
-            return compile(this.getCondensedHtmlValue(value));
+    public getCondensedFormattedComponent(): Component {
+        return defineComponent({
+            name: "FieldType.CondensedFormatted",
+            props: getFieldEditorProps(),
+            setup: (props) => {
+                return {
+                    content: computed(() => this.getCondensedHtmlValue(props.modelValue ?? "", props.configurationValues))
+                };
+            },
+
+            template: `<span v-html="content"></span>`
         });
     }
 
@@ -266,10 +267,10 @@ export abstract class FieldTypeBase implements IFieldType {
         return getStandardFilterComponent(this.getSupportedComparisonTypes(), this.getEditComponent());
     }
 
-    public getFilterValueDescription(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
-        const valueText = this.getFilterValueText(value, attribute);
+    public getFilterValueDescription(value: ComparisonValue, configurationValues: Record<string, string>): string {
+        const valueText = this.getFilterValueText(value, configurationValues);
 
-        if (value.comparisonType === null || value.comparisonType === undefined) {
+        if (!value.comparisonType) {
             return valueText ? `Is ${valueText}` : "";
         }
 
@@ -292,7 +293,9 @@ export abstract class FieldTypeBase implements IFieldType {
         return `${getComparisonName(value.comparisonType)} ${valueText}`;
     }
 
-    public getFilterValueText(value: ComparisonValue, attribute: PublicFilterableAttribute): string {
-        return this.getTextValueFromConfiguration(value.value, attribute.configurationValues ?? {}) ?? "";
+    public getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {
+        const text = this.getTextValue(value.value, configurationValues ?? {}) ?? "";
+
+        return text ? `'${text}'` : text;
     }
 }

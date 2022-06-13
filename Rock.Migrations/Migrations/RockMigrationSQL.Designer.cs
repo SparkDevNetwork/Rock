@@ -898,5 +898,115 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202202111031395_FixPersonMergeWithGroupAssignments_spCrm_PersonMerge", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Description]=N&apos;Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The chart shortcode allows anyone to create charts with just a few lines of Lava.&apos;, [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode create [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202203152204281_Rollup_20220315_update_chartjs {
+            get {
+                return ResourceManager.GetString("_202203152204281_Rollup_20220315_update_chartjs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Script to correct duplicate ConnectionOpportunitySelect block type with the double-slash in the path
+        ///DECLARE @BlockEntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = &apos;D89555CA-9AE4-4D62-8AF1-E5E463C1EF65&apos;)
+        ///
+        ///DECLARE @ConnectionOpportunitySelectKeepId int = (SELECT [Id] FROM [BlockType] WHERE [Guid] = &apos;23438CBC-105B-4ADB-8B9A-D5DDDCDD7643&apos;)
+        ///DECLARE @ConnectionOpportunitySelectDeleteId int = (SELECT [Id] FROM [BlockType] WHERE [Guid] = &apos;CE9EBF79-FDFB-4769-9E71-80BA066B8BE6&apos;)
+        ///
+        ///DECLARE @Ke [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202204072027407_Rollup_20220407_FixDuplicateConnectionOpportunitySelectBlock {
+            get {
+                return ResourceManager.GetString("_202204072027407_Rollup_20220407_FixDuplicateConnectionOpportunitySelectBlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Script to correct duplicate ConnectionRequestBoard block type with the double-slash in the path
+        ///DECLARE @BlockEntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = &apos;D89555CA-9AE4-4D62-8AF1-E5E463C1EF65&apos;)
+        ///
+        ///DECLARE @ConnectionRequestBoardKeepId int = (SELECT [Id] FROM [BlockType] WHERE [Guid] = &apos;28DBE708-E99B-4879-A64D-656C030D25B5&apos;)
+        ///DECLARE @ConnectionRequestBoardDeleteId int = (SELECT [Id] FROM [BlockType] WHERE [Guid] = &apos;5F2FE25A-9D94-4B81-8783-EC32DD062913&apos;)
+        ///
+        ///DECLARE @KeepAttributeId i [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202204072027407_Rollup_20220407_FixDuplicateConnectionRequestBoardBlock {
+            get {
+                return ResourceManager.GetString("_202204072027407_Rollup_20220407_FixDuplicateConnectionRequestBoardBlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the people that attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* Id 
+        ///		* NickName
+        ///		* LastName
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this are will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos;datetime&apos;&gt;Ending date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;GroupIds&apos; datatype=&apos;varc [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_Attendees {
+            get {
+                return ResourceManager.GetString("_202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQu" +
+                        "ery_Attendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///         This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * PersonId 
+        ///        * SundayDate - Last time attended
+        ///    &lt;/returns&gt;
+        ///    &lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///    &lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///    &lt;p [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQu" +
+                        "ery_NonAttendees", resourceCulture);
+            }
+        }
     }
 }

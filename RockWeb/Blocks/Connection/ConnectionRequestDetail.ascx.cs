@@ -2005,10 +2005,11 @@ namespace RockWeb.Blocks.Connection
                     var qryConnectionOpportunityConnectorGroups = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable().AsNoTracking()
                         .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id );
 
+                    var campuses = CampusCache.All().Where( c => c.IsActive ?? true ).ToList();
                     // Grant edit access to any of those in a non campus-specific connector group
                     editAllowed = qryConnectionOpportunityConnectorGroups
                         .Any( g =>
-                            !g.CampusId.HasValue &&
+                            ( campuses.Count == 1 || !g.CampusId.HasValue ) &&
                             g.ConnectorGroup != null &&
                             g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 

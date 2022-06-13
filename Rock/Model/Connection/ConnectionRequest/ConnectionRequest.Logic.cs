@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -60,6 +61,42 @@ namespace Rock.Model
             {
                 return base.IsAuthorized( action, person );
             }
+        }
+
+        /// <summary>
+        /// If changing the <see cref="ConnectionStatus"/> while looping thru all of its <see cref="ConnectionStatus.ConnectionStatusAutomations"/>, use this
+        /// to set the status to indicate that the loop in PostSaveChanges doesn't also need to run.
+        /// </summary>
+        /// <param name="connectionStatusAutomation">The connection status automation.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        internal bool SetConnectionStatusFromAutomationLoop( ConnectionStatusAutomation connectionStatusAutomation )
+        {
+            if ( !_runAutomationsInPostSaveChanges )
+            {
+                return false;
+            }
+
+            _runAutomationsInPostSaveChanges = false;
+
+            bool alreadyProcessed = this.processedConnectionStatusAutomations.Contains( connectionStatusAutomation.Id );
+
+            if ( alreadyProcessed )
+            {
+                // to avoid recursion
+                return false;
+            }
+
+            this.processedConnectionStatusAutomations.Add( connectionStatusAutomation.Id );
+
+            if ( this.ConnectionStatusId == connectionStatusAutomation.DestinationStatusId )
+            {
+                // already set to this status
+                return false;
+            }
+
+            this.ConnectionStatusId = connectionStatusAutomation.DestinationStatusId;
+
+            return true;
         }
 
         /// <summary>

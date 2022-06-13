@@ -389,9 +389,9 @@ namespace Rock.Web.UI.Controls.Communication
             if ( !UseSimpleMode )
             {
                 htmlMessage.MergeFields.Add( "Communication.Subject|Subject" );
-                htmlMessage.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
-                htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
-                htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
+                htmlMessage.MergeFields.Add( "Communication.FromName|From Name" );
+                htmlMessage.MergeFields.Add( "Communication.FromEmail|From Address" );
+                htmlMessage.MergeFields.Add( "Communication.ReplyToEmail|Reply To" );
                 htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             }
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );

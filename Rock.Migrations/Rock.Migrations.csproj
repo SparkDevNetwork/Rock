@@ -61,6 +61,134 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
+      <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203112213470_RemoveGatewayMigrationUtility.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203112213470_RemoveGatewayMigrationUtility.Designer.cs">
+      <DependentUpon>202203112213470_RemoveGatewayMigrationUtility.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203152204281_Rollup_20220315.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203152204281_Rollup_20220315.Designer.cs">
+      <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203152234586_CodeGenerated_20220315.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203152234586_CodeGenerated_20220315.Designer.cs">
+      <DependentUpon>202203152234586_CodeGenerated_20220315.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203231615477_AddAdditionalPropertiesToGroupRelated.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203231615477_AddAdditionalPropertiesToGroupRelated.Designer.cs">
+      <DependentUpon>202203231615477_AddAdditionalPropertiesToGroupRelated.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203292002130_Rollup_20220329.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203292002130_Rollup_20220329.Designer.cs">
+      <DependentUpon>202203292002130_Rollup_20220329.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203292027077_CodeGenerated_20220329.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203292027077_CodeGenerated_20220329.Designer.cs">
+      <DependentUpon>202203292027077_CodeGenerated_20220329.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203301138169_UpdateEmailLogoAttributeDescription.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203301138169_UpdateEmailLogoAttributeDescription.Designer.cs">
+      <DependentUpon>202203301138169_UpdateEmailLogoAttributeDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203302054201_UpdateBackgroundCheckWorkflowActions.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203302054201_UpdateBackgroundCheckWorkflowActions.Designer.cs">
+      <DependentUpon>202203302054201_UpdateBackgroundCheckWorkflowActions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204030814025_AddInteractionSessionLocation.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204030814025_AddInteractionSessionLocation.Designer.cs">
+      <DependentUpon>202204030814025_AddInteractionSessionLocation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204042010082_RenameFollowupConnectionActivityType.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204042010082_RenameFollowupConnectionActivityType.Designer.cs">
+      <DependentUpon>202204042010082_RenameFollowupConnectionActivityType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204042108359_MemberAttendeeDataViewWhoseFix.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204042108359_MemberAttendeeDataViewWhoseFix.Designer.cs">
+      <DependentUpon>202204042108359_MemberAttendeeDataViewWhoseFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407.Designer.cs">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204121922392_UpdateInteractionSession.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204121922392_UpdateInteractionSession.Designer.cs">
+      <DependentUpon>202204121922392_UpdateInteractionSession.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204122327349_Rollup_20220412.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204122327349_Rollup_20220412.Designer.cs">
+      <DependentUpon>202204122327349_Rollup_20220412.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204122343393_CodeGenerated_20220412.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204122343393_CodeGenerated_20220412.Designer.cs">
+      <DependentUpon>202204122343393_CodeGenerated_20220412.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204142107548_FinancialAccountCoreUpdates.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204142107548_FinancialAccountCoreUpdates.Designer.cs">
+      <DependentUpon>202204142107548_FinancialAccountCoreUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204170930362_AddNewRoutesForContentPage.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204170930362_AddNewRoutesForContentPage.Designer.cs">
+      <DependentUpon>202204170930362_AddNewRoutesForContentPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.Designer.cs">
+      <DependentUpon>202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204201226264_AddedAdditionalRoutesForContentPage.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.3\202204201226264_AddedAdditionalRoutesForContentPage.Designer.cs">
+      <DependentUpon>202204201226264_AddedAdditionalRoutesForContentPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.Designer.cs">
+      <DependentUpon>202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204212116590_AddSiteDisablePredictableIds.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204212116590_AddSiteDisablePredictableIds.Designer.cs">
+      <DependentUpon>202204212116590_AddSiteDisablePredictableIds.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204252023447_NewPreviewButtonSystemCommunicationsList.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204252023447_NewPreviewButtonSystemCommunicationsList.Designer.cs">
+      <DependentUpon>202204252023447_NewPreviewButtonSystemCommunicationsList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204261805314_Rollup_20220426.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204261805314_Rollup_20220426.Designer.cs">
+      <DependentUpon>202204261805314_Rollup_20220426.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204261825224_CodeGenerated_20220426.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204261825224_CodeGenerated_20220426.Designer.cs">
+      <DependentUpon>202204261825224_CodeGenerated_20220426.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP.Designer.cs">
+      <DependentUpon>202204271322510_UpdateAttendanceAnalyticsQuerySP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204271704505_UpdateBackgroundCheckWorkflowMissingAttributeActions.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202204271704505_UpdateBackgroundCheckWorkflowMissingAttributeActions.Designer.cs">
+      <DependentUpon>202204271704505_UpdateBackgroundCheckWorkflowMissingAttributeActions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205041841344_AddStepFlowSP.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205041841344_AddStepFlowSP.Designer.cs">
+      <DependentUpon>202205041841344_AddStepFlowSP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.Designer.cs">
+      <DependentUpon>202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205061756248_AddCheckinRegistrationChildrenDisplayAttributes.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205061756248_AddCheckinRegistrationChildrenDisplayAttributes.Designer.cs">
+      <DependentUpon>202205061756248_AddCheckinRegistrationChildrenDisplayAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205091654423_RemoveContentChannelViewDetail.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205091654423_RemoveContentChannelViewDetail.Designer.cs">
+      <DependentUpon>202205091654423_RemoveContentChannelViewDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205111947199_MobileGroupSchedulingBlockTemplates.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205111947199_MobileGroupSchedulingBlockTemplates.Designer.cs">
+      <DependentUpon>202205111947199_MobileGroupSchedulingBlockTemplates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -999,6 +1127,102 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
+      <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203112213470_RemoveGatewayMigrationUtility.resx">
+      <DependentUpon>202203112213470_RemoveGatewayMigrationUtility.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203152204281_Rollup_20220315.resx">
+      <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203152234586_CodeGenerated_20220315.resx">
+      <DependentUpon>202203152234586_CodeGenerated_20220315.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203231615477_AddAdditionalPropertiesToGroupRelated.resx">
+      <DependentUpon>202203231615477_AddAdditionalPropertiesToGroupRelated.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203292002130_Rollup_20220329.resx">
+      <DependentUpon>202203292002130_Rollup_20220329.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203292027077_CodeGenerated_20220329.resx">
+      <DependentUpon>202203292027077_CodeGenerated_20220329.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203301138169_UpdateEmailLogoAttributeDescription.resx">
+      <DependentUpon>202203301138169_UpdateEmailLogoAttributeDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203302054201_UpdateBackgroundCheckWorkflowActions.resx">
+      <DependentUpon>202203302054201_UpdateBackgroundCheckWorkflowActions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204030814025_AddInteractionSessionLocation.resx">
+      <DependentUpon>202204030814025_AddInteractionSessionLocation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204042010082_RenameFollowupConnectionActivityType.resx">
+      <DependentUpon>202204042010082_RenameFollowupConnectionActivityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204042108359_MemberAttendeeDataViewWhoseFix.resx">
+      <DependentUpon>202204042108359_MemberAttendeeDataViewWhoseFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407.resx">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204121922392_UpdateInteractionSession.resx">
+      <DependentUpon>202204121922392_UpdateInteractionSession.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204122327349_Rollup_20220412.resx">
+      <DependentUpon>202204122327349_Rollup_20220412.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204122343393_CodeGenerated_20220412.resx">
+      <DependentUpon>202204122343393_CodeGenerated_20220412.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204142107548_FinancialAccountCoreUpdates.resx">
+      <DependentUpon>202204142107548_FinancialAccountCoreUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204170930362_AddNewRoutesForContentPage.resx">
+      <DependentUpon>202204170930362_AddNewRoutesForContentPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.resx">
+      <DependentUpon>202204170950454_AddHighlightColorAndAlternateImageBinaryFileIdToAchievementType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202204201226264_AddedAdditionalRoutesForContentPage.resx">
+      <DependentUpon>202204201226264_AddedAdditionalRoutesForContentPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.resx">
+      <DependentUpon>202204211956472_UpdateBackgroundCheckWorkflowActionsWithEntityIdLookup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202204212116590_AddSiteDisablePredictableIds.resx">
+      <DependentUpon>202204212116590_AddSiteDisablePredictableIds.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202204252023447_NewPreviewButtonSystemCommunicationsList.resx">
+      <DependentUpon>202204252023447_NewPreviewButtonSystemCommunicationsList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202204261805314_Rollup_20220426.resx">
+      <DependentUpon>202204261805314_Rollup_20220426.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202204261825224_CodeGenerated_20220426.resx">
+      <DependentUpon>202204261825224_CodeGenerated_20220426.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP.resx">
+      <DependentUpon>202204271322510_UpdateAttendanceAnalyticsQuerySP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202204271704505_UpdateBackgroundCheckWorkflowMissingAttributeActions.resx">
+      <DependentUpon>202204271704505_UpdateBackgroundCheckWorkflowMissingAttributeActions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202205041841344_AddStepFlowSP.resx">
+      <DependentUpon>202205041841344_AddStepFlowSP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.resx">
+      <DependentUpon>202205042248079_Update_spCrm_FamilyAnalyticsEraDataset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202205061756248_AddCheckinRegistrationChildrenDisplayAttributes.resx">
+      <DependentUpon>202205061756248_AddCheckinRegistrationChildrenDisplayAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202205091654423_RemoveContentChannelViewDetail.resx">
+      <DependentUpon>202205091654423_RemoveContentChannelViewDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202205111947199_MobileGroupSchedulingBlockTemplates.resx">
+      <DependentUpon>202205111947199_MobileGroupSchedulingBlockTemplates.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
     </EmbeddedResource>
@@ -1715,6 +1939,24 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\Version 13.0\Version 1.13.3\202203152204281_Rollup_20220315_update-chartjs.sql">
+      <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407_FixDuplicateConnectionOpportunitySelectBlock.sql">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407_FixDuplicateConnectionRequestBoardBlock.sql">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 13.0\Version 1.13.3\202204072027407_Rollup_20220407_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>202204072027407_Rollup_20220407.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 13.0\Version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>202204271322510_UpdateAttendanceAnalyticsQuerySP.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 13.0\Version 1.13.4\202204271322510_UpdateAttendanceAnalyticsQuerySP_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>202204271322510_UpdateAttendanceAnalyticsQuerySP.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 13.0\Version 1.13.0\202108251744427_Rollups_20210825_kpilinkshortcode.sql">
       <DependentUpon>202108251744427_Rollups_20210825.cs</DependentUpon>

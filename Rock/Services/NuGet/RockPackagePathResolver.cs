@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using NuGet;
 
 namespace Rock.Services.NuGet
@@ -21,13 +22,19 @@ namespace Rock.Services.NuGet
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+    [RockObsolete( "1.13.3" )]
     public class RockPackagePathResolver : DefaultPackagePathResolver
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RockPackagePathResolver" /> class.
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public RockPackagePathResolver( IFileSystem fileSystem ) : base( fileSystem, useSideBySidePaths: true ) { }
+
+        #pragma warning disable CS0809
 
         /// <summary>
         /// Gets the package directory.
@@ -35,9 +42,13 @@ namespace Rock.Services.NuGet
         /// <param name="packageId">The package id.</param>
         /// <param name="version">The version.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public override string GetPackageDirectory( string packageId, SemanticVersion version )
         {
             return string.Empty;
         }
+
+        #pragma warning restore CS0809
     }
 }

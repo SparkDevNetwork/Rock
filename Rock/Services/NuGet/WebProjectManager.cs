@@ -28,6 +28,7 @@ namespace Rock.Services.NuGet
     /// This is the service layer that handles installing, updating, removing Packages (aka Plugins)
     /// from the website / local filesystem and the Rock Quarry (our NuGet server).
     /// </summary>
+    [RockObsolete( "1.13.3" )]
     public class WebProjectManager
     {
         private readonly IProjectManager _projectManager;
@@ -37,6 +38,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="remoteSource">URL of the NuGet server API (ex, http://nuget.org/api/v2 ).</param>
         /// <param name="siteRoot">The physical path to the web root.</param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public WebProjectManager( string remoteSource, string siteRoot )
         {
             string webRepositoryDirectory = GetWebRepositoryDirectory( siteRoot );
@@ -65,6 +68,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="PackageOperationEventArgs"/> instance containing the event data.</param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         void ProjectManager_PackageReferenceAdded( object sender, PackageOperationEventArgs e )
         {
             foreach ( var assemblyReference in e.Package.AssemblyReferences )
@@ -79,6 +84,8 @@ namespace Rock.Services.NuGet
         /// <summary>
         /// Represents the local NuGet package repository.
         /// </summary>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IPackageRepository LocalRepository
         {
             get
@@ -90,6 +97,8 @@ namespace Rock.Services.NuGet
         /// <summary>
         /// Represents the remote/source NuGet package repository.
         /// </summary>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IPackageRepository SourceRepository
         {
             get
@@ -106,6 +115,8 @@ namespace Rock.Services.NuGet
         /// <returns>
         /// a list of packages
         /// </returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IQueryable<IPackage> GetLatestRemotePackages( string searchTerms, bool includeAllVersions )
         {
             var packages = GetPackages( SourceRepository, searchTerms );
@@ -117,6 +128,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="searchTerms">a string of space delimited search terms</param>
         /// <returns>a list of packages</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IQueryable<IPackage> GetRemotePackages( string searchTerms )
         {
             return GetPackages( SourceRepository, searchTerms );
@@ -127,6 +140,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="searchTerms">a string of space delimited search terms</param>
         /// <returns>a list of packages</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IQueryable<IPackage> GetInstalledPackages( string searchTerms )
         {
             return GetPackages( LocalRepository, searchTerms );
@@ -148,6 +163,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="packageId">the Id of a package</param>
         /// <returns>a package</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IPackage GetInstalledPackage( string packageId )
         {
             return LocalRepository.FindPackage( packageId );
@@ -158,6 +175,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="packageId">the Id of a package</param>
         /// <returns>a package</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IPackage GetRemotePackage( string packageId )
         {
             return SourceRepository.FindPackage( packageId );
@@ -167,6 +186,8 @@ namespace Rock.Services.NuGet
         /// Installs and adds a package reference to the project
         /// </summary>
         /// <returns>Warnings encountered when installing the package.</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IEnumerable<string> InstallPackage( IPackage package )
         {
             return PerformLoggedAction( () =>
@@ -179,6 +200,8 @@ namespace Rock.Services.NuGet
         /// Updates a package reference. Installs the package to the App_Data repository if it does not already exist.
         /// </summary>
         /// <returns>Warnings encountered when updating the package.</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IEnumerable<string> UpdatePackage( IPackage package )
         {
             return PerformLoggedAction( () =>
@@ -191,6 +214,8 @@ namespace Rock.Services.NuGet
         /// Updates a package reference. Installs the package to the App_Data repository if it does not already exist.
         /// </summary>
         /// <returns>Warnings encountered when updating the package.</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IEnumerable<string> UpdatePackageAndBackup( IPackage package, IPackage oldPackage )
         {
             return PerformLoggedAction( () =>
@@ -213,6 +238,8 @@ namespace Rock.Services.NuGet
         /// Make a backup of the given package.
         /// </summary>
         /// <param name="package"></param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         protected void Backup( IPackage package )
         {
             var fileName =  string.Format( "{0}.{1}.nupkg", package.Id, package.Version );
@@ -232,6 +259,8 @@ namespace Rock.Services.NuGet
         /// Restore the backup copy of the given package.
         /// </summary>
         /// <param name="package"></param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         protected void Restore( IPackage package )
         {
             var fileName = string.Format( "{0}.{1}.nupkg", package.Id, package.Version );
@@ -249,6 +278,8 @@ namespace Rock.Services.NuGet
         /// Removes a package reference and uninstalls the package
         /// </summary>
         /// <returns>Warnings encountered when uninstalling the package.</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IEnumerable<string> UninstallPackage( IPackage package, bool removeDependencies )
         {
             return PerformLoggedAction( () =>
@@ -262,6 +293,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="package"></param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public bool IsPackageInstalled( IPackage package )
         {
             return LocalRepository.Exists( package );
@@ -275,6 +308,8 @@ namespace Rock.Services.NuGet
         /// <param name="package"></param>
         /// <param name="anyVersion"></param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public bool IsPackageInstalled( IPackage package, bool anyVersion )
         {
             return (anyVersion) ? LocalRepository.Exists( package.Id ) : LocalRepository.Exists( package );
@@ -285,6 +320,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="package">a package</param>
         /// <returns>a package; otherwise null if no package was found</returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IPackage GetUpdate( IPackage package )
         {
             return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFrameworks: null ).FirstOrDefault( p => package.Id == p.Id && p.IsListed() );
@@ -297,6 +334,8 @@ namespace Rock.Services.NuGet
         /// <returns>
         /// a list of packages
         /// </returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public IEnumerable<IPackage> GetUpdates( string packageId )
         {
             return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFrameworks: null ).Where( p => p.Id == packageId && p.IsListed() );
@@ -327,6 +366,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="package">The package.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         internal IEnumerable<IPackage> GetPackagesRequiringLicenseAcceptance( IPackage package )
         {
             return GetPackagesRequiringLicenseAcceptance( package, localRepository: LocalRepository, sourceRepository: SourceRepository );
@@ -339,6 +380,8 @@ namespace Rock.Services.NuGet
         /// <param name="localRepository">The local repository.</param>
         /// <param name="sourceRepository">The source repository.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         internal static IEnumerable<IPackage> GetPackagesRequiringLicenseAcceptance( IPackage package, IPackageRepository localRepository, IPackageRepository sourceRepository )
         {
             var dependencies = GetPackageDependencies( package, localRepository, sourceRepository );
@@ -372,6 +415,8 @@ namespace Rock.Services.NuGet
         /// <param name="repository">The repository.</param>
         /// <param name="searchTerm">The search term.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         internal static IQueryable<IPackage> GetPackages( IPackageRepository repository, string searchTerm )
         {
             return GetPackages( repository.GetPackages(), searchTerm );
@@ -383,6 +428,8 @@ namespace Rock.Services.NuGet
         /// <param name="packages">The packages.</param>
         /// <param name="searchTerm">The search term.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         internal static IQueryable<IPackage> GetPackages( IQueryable<IPackage> packages, string searchTerm )
         {
             if ( !String.IsNullOrEmpty( searchTerm ) )
@@ -398,6 +445,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="siteRoot">The site root.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         internal static string GetWebRepositoryDirectory( string siteRoot )
         {
             return Path.Combine( siteRoot, "App_Data", "packages" );
@@ -408,6 +457,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="siteRoot"></param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         internal static string GetWebRepositoryRestoreDirectory( string siteRoot )
         {
             return Path.Combine( siteRoot, "App_Data", "PackageRestore" );

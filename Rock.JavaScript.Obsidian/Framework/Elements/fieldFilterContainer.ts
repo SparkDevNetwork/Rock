@@ -36,10 +36,10 @@ export default defineComponent({
         /** The CSS class to use for the compare column width. */
         const compareColumnClass = computed((): string => {
             if (ctx.slots.compare) {
-                return "col-md-4";
+                return "col-xs-12 col-md-4";
             }
             else if (props.compareLabel) {
-                return "col-md-2";
+                return "col-xs-12 col-md-2";
             }
             else {
                 return "";
@@ -49,13 +49,13 @@ export default defineComponent({
         /** The CSS class to use for the value column width. */
         const valueColumnClass = computed((): string => {
             if (ctx.slots.compare) {
-                return "col-md-8";
+                return "col-xs-12 col-md-8";
             }
             else if (props.compareLabel) {
-                return "col-md-10";
+                return "col-xs-12 col-md-10";
             }
             else {
-                return "col-md-12";
+                return "col-xs-12 col-md-12";
             }
         });
 

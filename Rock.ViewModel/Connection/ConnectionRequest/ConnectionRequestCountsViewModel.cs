@@ -34,5 +34,13 @@ namespace Rock.ViewModel.Connection.ConnectionRequest
         /// The number of requests assigned to you.
         /// </value>
         public int AssignedToYouCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of active requests in the opportunity.
+        /// </summary>
+        /// <value>
+        /// The total number of active requests.
+        /// </value>
+        public int TotalCount { get; set; }
     }
 }

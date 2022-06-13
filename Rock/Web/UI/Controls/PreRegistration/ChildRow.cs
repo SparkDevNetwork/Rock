@@ -828,11 +828,11 @@ namespace Rock.Web.UI.Controls
             _bpBirthdate.Label = "Birth Date";
 
             _ddlGradePicker.CssClass = "form-control";
-            _ddlGradePicker.RequiredErrorMessage = _ddlGradePicker.Label + " is required for all children";
+            _ddlGradePicker.RequiredErrorMessage = "Grade is required for all children";
             _ddlGradePicker.Label = "Grade";
 
             /*
-                    06/03/2020 - SK 
+                    06/03/2020 - SK
                     This is not needed because the PhoneNumberBox control already adds form-control in the correct spot
              */
             //_pnbMobile.CssClass = "form-control";

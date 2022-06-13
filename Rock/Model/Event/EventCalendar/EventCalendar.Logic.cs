@@ -55,7 +55,7 @@ namespace Rock.Model
             // Ensure provided calendar is indexable
             var calendar = EventCalendarCache.Get( calendarId );
 
-            if ( calendar.IsNull() || !calendar.IsIndexEnabled )
+            if ( calendar == null || !calendar.IsIndexEnabled )
             {
                 return;
             }
@@ -91,7 +91,7 @@ namespace Rock.Model
             // Ensure provided calendar is indexable
             var calendar = EventCalendarCache.Get( calendarId );
 
-            if ( calendar.IsNull() || !calendar.IsIndexEnabled )
+            if ( calendar == null || !calendar.IsIndexEnabled )
             {
                 return;
             }

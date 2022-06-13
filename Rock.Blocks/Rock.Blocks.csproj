@@ -59,10 +59,10 @@
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Workflow\FormBuilder\ExtensionMethods.cs" />
-    <Compile Include="Workflow\FormBuilder\FormBuilderDetail.cs" />
-    <Compile Include="Workflow\FormBuilder\FormTemplateDetail.cs" />
-    <Compile Include="Workflow\FormBuilder\Utility.cs" />
+    <Compile Include="WorkFlow\FormBuilder\ExtensionMethods.cs" />
+    <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
+    <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
+    <Compile Include="WorkFlow\FormBuilder\Utility.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

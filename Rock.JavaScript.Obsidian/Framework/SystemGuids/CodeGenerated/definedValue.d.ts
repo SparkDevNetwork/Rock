@@ -22,6 +22,16 @@
 //
 
 export const enum DefinedValue {
+    /** The block template for the mobile group schedule preference landing page. */
+    BlockTemplateMobileGroupScheduleSignupLandingPage = "7F89AE4D-BD8B-49ED-B8EC-F883D43505F2",
+    /** The block template for the mobile group schedule preference landing page. */
+    BlockTemplateMobileGroupSchedulePreferenceLandingPage = "D39CCB65-2444-48E4-9DE1-7A01AB20CB61",
+    /** The block template for mobile group schedule unavailability block.  */
+    BlockTemplateMobileGroupScheduleUnavailability = "48EE4803-66BE-43A0-A7CF-E2D669DB2D21",
+    /** The block template for mobile group schedule toolbox block. */
+    BlockTemplateMobileGroupScheduleToolbox = "7E11BEF1-F6F7-49E3-8804-90AC1CB9AD25",
+    /** The block template for mobile group schedule toolbox decline modal. */
+    BlockTemplateMobileGroupScheduleToolboxDeclineModal = "68ACFE34-C1D9-40C6-9AB1-9E6F4DA846EE",
     /** The block template for mobile answer to prayer block. */
     BlockTemplateMobileAnswerToPrayer = "D13256E3-D9ED-45C2-8EF7-C4AABCF4B2B7",
     /** The block template for the event template on the mobile calendar event list. */

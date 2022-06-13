@@ -15,9 +15,10 @@
 // </copyright>
 //
 import Alert from "../Elements/alert";
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, ref, watch } from "vue";
 import { RockDateTime } from "../Util/rockDateTime";
 import { FormError } from "../Util/form";
+import { computed } from "vue";
 
 export default defineComponent({
     name: "RockValidation",
@@ -34,53 +35,56 @@ export default defineComponent({
             default: -1
         }
     },
-    data() {
-        return {
-            errorsToShow: {} as Record<string, FormError>,
-            lastSubmitCount: 0,
-            lastErrorChangeMs: 0
-        };
-    },
-    computed: {
-        hasErrors(): boolean {
-            return Object.keys(this.errorsToShow).length > 0;
-        }
-    },
-    watch: {
-        submitCount() {
-            const wasSubmitted = this.lastSubmitCount < this.submitCount;
+
+    setup(props) {
+        const errorsToShow = ref<Record<string, FormError>>({});
+        const lastSubmitCount = ref(0);
+        const lastErrorChangeMs = ref(0);
+
+        const hasErrors = computed((): boolean => Object.keys(errorsToShow.value).length > 0);
+
+        watch(() => props.submitCount, () => {
+            const wasSubmitted = lastSubmitCount.value < props.submitCount;
 
             if (wasSubmitted) {
                 const now = RockDateTime.now().toMilliseconds();
-                this.errorsToShow = { ...this.errors };
-                this.lastErrorChangeMs = now;
-                this.lastSubmitCount = this.submitCount;
+                errorsToShow.value = { ...props.errors };
+                lastErrorChangeMs.value = now;
+                lastSubmitCount.value = props.submitCount;
             }
-        },
-        errors: {
-            immediate: true,
-            handler() {
-                if (this.submitCount === -1) {
-                    // Do not debounce, just sync. This instance is probably not within a traditional form.
-                    this.errorsToShow = { ...this.errors };
-                    return;
-                }
+        });
 
-                // There are errors that come in at different cycles. Validation of all the form's fields seems to be async.
-                // Therefore, we want to allow all of the errors from a single submit to be added to the screen.
-                // However, we don't want the screen jumping around as the
-                // user fixes errors. The intent here is to have a 500ms window after a submit occurs for errors to be collected.
-                // After that window elapses, then no more errors can be added to the screen until the user submits again.
-                const now = RockDateTime.now().toMilliseconds();
-                const msSinceLastChange = now - this.lastErrorChangeMs;
-
-                if (msSinceLastChange < 500) {
-                    this.errorsToShow = { ...this.errors };
-                    this.lastErrorChangeMs = now;
-                }
+        watch(() => props.errors, () => {
+            if (props.submitCount === -1) {
+                // Do not debounce, just sync. This instance is probably not within a traditional form.
+                errorsToShow.value = { ...props.errors };
+                return;
             }
-        }
+
+            // There are errors that come in at different cycles. Validation of all the form's fields seems to be async.
+            // Therefore, we want to allow all of the errors from a single submit to be added to the screen.
+            // However, we don't want the screen jumping around as the
+            // user fixes errors. The intent here is to have a 500ms window after a submit occurs for errors to be collected.
+            // After that window elapses, then no more errors can be added to the screen until the user submits again.
+            const now = RockDateTime.now().toMilliseconds();
+            const msSinceLastChange = now - lastErrorChangeMs.value;
+
+            if (msSinceLastChange < 500) {
+                errorsToShow.value = { ...props.errors };
+                lastErrorChangeMs.value = now;
+            }
+        }, {
+            immediate: true
+        });
+
+        return {
+            errorsToShow,
+            hasErrors,
+            lastSubmitCount,
+            lastErrorChangeMs
+        };
     },
+
     template: `
 <Alert v-show="hasErrors" alertType="validation">
     Please correct the following:
@@ -90,5 +94,6 @@ export default defineComponent({
             {{error.text}}
         </li>
     </ul>
-</Alert>`
+</Alert>
+`
 });

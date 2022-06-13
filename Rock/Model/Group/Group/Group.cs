@@ -367,6 +367,24 @@ namespace Rock.Model
         [MaxLength( 250 )]
         public string GroupSalutationFull { get; set; }
 
+        /// <summary>
+        /// Gets or sets the rsvp additional reminder details.
+        /// </summary>
+        /// <value>
+        /// The rsvp additional reminder details.
+        /// </value>
+        [DataMember]
+        public string RSVPReminderAdditionalDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmation additional details.
+        /// </summary>
+        /// <value>
+        /// The confirmation additional details.
+        /// </value>
+        [DataMember]
+        public string ConfirmationAdditionalDetails { get; set; }
+
         #endregion
 
         #region Navigation Properties

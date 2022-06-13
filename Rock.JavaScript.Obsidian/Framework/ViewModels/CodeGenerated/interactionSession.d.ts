@@ -25,9 +25,14 @@ import { IEntity } from "../entity";
 
 export type InteractionSession = IEntity & {
     deviceTypeId?: number | null;
+    durationLastCalculatedDateTime?: string | null;
+    durationSeconds?: number | null;
+    interactionCount?: number | null;
     interactionMode?: string | null;
+    interactionSessionLocationId?: number | null;
     ipAddress?: string | null;
     sessionData?: string | null;
+    sessionStartDateKey?: number | null;
     createdDateTime?: string | null;
     modifiedDateTime?: string | null;
     createdByPersonAliasId?: number | null;

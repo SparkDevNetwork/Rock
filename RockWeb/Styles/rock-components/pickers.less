@@ -39,7 +39,7 @@
     float: left;
     width: 225px;
     max-width: ~"calc(100% - 25px)";
-    padding: @padding-base-vertical @padding-base-horizontal;
+    padding: @input-padding-y @input-padding-x;
     font-size: @font-size-base;
     line-height: @line-height-computed;
     color: @input-color;
@@ -94,6 +94,12 @@
       height: (@input-height-xs + 4px);
       padding: (@padding-xs-vertical + 2px) @padding-xs-horizontal;
     }
+
+    > .input-group-btn > .btn {
+      height: (@input-height-xs + 4px);
+      padding-top: (@padding-xs-vertical + 2px);
+      padding-bottom: (@padding-xs-vertical + 2px);
+    }
   }
 
   .picker-select-none {
@@ -113,13 +119,21 @@
     .scrollbar {
       width: 5px;
     }
+  }
 
-    .viewport,
-    .scrollbar {
-      height: 380px;
-      @media (max-device-height: 480px) {
-        max-height: 200px;
-      }
+  .scroll-container-native {
+    width: ~"calc(100% + 16px)";
+    padding: 8px;
+    margin: -8px;
+    overflow-y: auto;
+  }
+
+  .scroll-container-native,
+  .scroll-container-picker .viewport,
+  .scroll-container-picker .scrollbar {
+    height: 380px;
+    @media (max-device-height: 480px) {
+      max-height: 200px;
     }
   }
 
@@ -154,11 +168,17 @@
     }
   }
 
+  .treeview .search-item {
+    margin-bottom: 16px;
+    margin-left: 4px;
+  }
+
   .picker-actions {
     display: flex;
     align-items: center;
     padding: @picker-menu-padding;
     margin: @picker-menu-padding -@picker-menu-padding -@picker-menu-padding -@picker-menu-padding;
+    font-size: @font-size-xs;
     background-color: @picker-action-bg;
     border-top: 1px solid @picker-action-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
@@ -166,6 +186,20 @@
 
     .pull-right {
       margin-left: auto;
+    }
+
+    .btn {
+      width: auto;
+    }
+
+    .rock-checkbox-icon i {
+      width: 1rem;
+      margin-right: 0;
+      font-size: inherit;
+    }
+
+    .btn-select-all {
+      order: 10;
     }
   }
 

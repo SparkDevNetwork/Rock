@@ -80,7 +80,7 @@ namespace Rock.Rest.v2.Controls
 
             // Convert the public configuration options into our private
             // configuration options (values).
-            var configurationValues = fieldType.GetPrivateConfigurationOptions( updateViewModel.ConfigurationOptions );
+            var configurationValues = fieldType.GetPrivateConfigurationValues( updateViewModel.ConfigurationValues );
 
             // Convert the default value from the public value into our
             // private internal value.
@@ -91,30 +91,13 @@ namespace Rock.Rest.v2.Controls
             var configurationProperties = fieldType.GetPublicEditConfigurationProperties( configurationValues );
 
             // Get the public configuration options from the internal options (values).
-            var publicConfigurationOptions = fieldType.GetPublicConfigurationOptions( configurationValues );
-
-            // Get the editable attribute value so they can render a default value
-            // control.
-            var clientEditableValue = new PublicEditableAttributeValueViewModel
-            {
-                FieldTypeGuid = updateViewModel.FieldTypeGuid,
-                AttributeGuid = Guid.Empty,
-                Name = "Default Value",
-                Categories = new List<PublicAttributeValueCategoryViewModel>(),
-                Order = 0,
-                TextValue = fieldType.GetTextValue( privateDefaultValue, configurationValues ),
-                Value = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues ),
-                Key = "DefaultValue",
-                IsRequired = false,
-                Description = string.Empty,
-                ConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues )
-            };
+            var publicConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
 
             return Ok( new FieldTypeConfigurationPropertiesViewModel
             {
                 ConfigurationProperties = configurationProperties,
-                ConfigurationOptions = publicConfigurationOptions,
-                DefaultValue = clientEditableValue
+                ConfigurationValues = publicConfigurationValues,
+                DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
         }
     }

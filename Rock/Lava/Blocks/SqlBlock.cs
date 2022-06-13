@@ -109,16 +109,22 @@ namespace Rock.Lava.Blocks
                             sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
                         }
 
-                        using ( var rockContext = LavaHelper.GetRockContextFromLavaContext( context ) )
-                        {
-                            if ( sqlTimeout != null )
-                            {
-                                rockContext.Database.CommandTimeout = sqlTimeout;
-                            }
-                            int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+                        var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
-                            context.SetMergeField( parms["return"], numOfRowsAffected );
+                        // Save the orginal command timeout as we're about to change it
+                        var originalCommandTimeout = rockContext.Database.CommandTimeout;
+
+                        if ( sqlTimeout != null )
+                        {
+                            rockContext.Database.CommandTimeout = sqlTimeout;
                         }
+                        int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+
+                        // Put the command timeout back to the setting before we changed it... there is nothing to see here... move along...
+                        rockContext.Database.CommandTimeout = originalCommandTimeout;
+
+                        context.SetMergeField( parms["return"], numOfRowsAffected );
+
                         break;
                     default:
                         break;
@@ -153,7 +159,7 @@ namespace Rock.Lava.Blocks
                 {
                     var value = itemParts[1];
 
-                    if ( value.HasMergeFields() )
+                    if ( value.IsLavaTemplate() )
                     {
                         value = value.ResolveMergeFields( internalMergeFields );
                     }

@@ -286,9 +286,9 @@
 }
 
 .card-schedule {
-  border-radius: @card-schedule-border-radius;
   min-height: @card-schedule-height;
   margin-bottom: @card-schedule-margin;
+  border-radius: @card-schedule-border-radius;
 
   .card-body {
     padding-right: 0;
@@ -309,12 +309,12 @@
 
   .schedule-confirm {
     display: flex;
-    flex-wrap: wrap;
-    margin-right: @card-sm-spacer-x;
-    align-self: center;
-    align-items: center;
-    justify-content: flex-end;
     flex-basis: @card-schedule-confirmation-width;
+    flex-wrap: wrap;
+    align-items: center;
+    align-self: center;
+    justify-content: flex-end;
+    margin-right: @card-sm-spacer-x;
 
     .btn-primary {
       margin: 4px 0 4px 8px;
@@ -322,6 +322,6 @@
   }
 
   &.schedule-unavailable {
-    background: @card-schedule-pending-bg
+    background: @card-schedule-pending-bg;
   }
 }

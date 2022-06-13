@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Fluid.Parser;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -55,16 +54,22 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         DefaultValue = Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES )]
 
     [LinkedPage(
-        "FormBuilder Detail Page",
-        Description = "Page to edit using the form builder.",
+        "Form Builder Page",
+        Description = "The page that has the form builder editor.",
         Order = 2,
-        Key = AttributeKeys.FormBuilderDetailPage )]
+        Key = AttributeKeys.FormBuilderPage )]
 
     [LinkedPage(
-        "Analytics Detail Page",
-        Description = "Page used to view the analytics for this form.",
+        "Analytics Page",
+        Description = " The page that shows the analytics for this form.",
         Order = 3,
-        Key = AttributeKeys.AnalyticsDetailPage )]
+        Key = AttributeKeys.AnalyticsPage )]
+
+    [LinkedPage( "Entry Page",
+        Description = "Page used to launch a new workflow of the selected type.",
+        Order = 4,
+        Key = AttributeKeys.EntryPage,
+        DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY )]
 
     #endregion Rock Attributes
 
@@ -79,10 +84,9 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             public const string DetailPage = "DetailPage";
             public const string PersonProfilePage = "PersonProfilePage";
-            public const string FormBuilderDetailPage = "FormBuilderDetailPage";
-            public const string AnalyticsDetailPage = "AnalyticsDetailPage";
-            public const string CommunicationsDetailPage = "CommunicationsDetailPage";
-            public const string SettingsDetailPage = "SettingsDetailPage";
+            public const string FormBuilderPage = "FormBuilderPage";
+            public const string AnalyticsPage = "AnalyticsPage";
+            public const string EntryPage = "EntryPage";
         }
 
         #endregion Attribute Keys
@@ -158,6 +162,16 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             gWorkflows.GridRebind += gWorkflows_GridRebind;
             gWorkflows.RowDataBound += gWorkflows_RowDataBound;
 
+            gWorkflows.Actions.ShowAdd = UserCanEdit;
+            gWorkflows.Actions.AddClick += gWorkflows_Add;
+
+            gWorkflows.Actions.ShowCommunicate = false;
+            gWorkflows.Actions.ShowMergePerson = false;
+            gWorkflows.Actions.ShowMergeTemplate = true;
+            gWorkflows.Actions.ShowBulkUpdate = false;
+            gWorkflows.ShowWorkflowOrCustomActionButtons = true;
+            gWorkflows.EnableDefaultLaunchWorkflow = true;
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -176,8 +190,17 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         {
             if ( !Page.IsPostBack )
             {
-                BindGrid();
-                BindFilters();
+                var workflowType = new WorkflowTypeService( new RockContext() ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+                if ( workflowType != null )
+                {
+                    lTitle.Text = $"{workflowType.Name} Form";
+                    BindGrid();
+                    BindFilters();
+                }
+                else
+                {
+                    pnlView.Visible = false;
+                }
             }
 
             base.OnLoad( e );
@@ -238,7 +261,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                 if ( rowViewModel.Person == null )
                 {
                     int? personLinkColumnIndex = gWorkflows.GetColumnIndex( gWorkflows.Columns.OfType<PersonProfileLinkField>().First() );
-                    if( personLinkColumnIndex.HasValue && personLinkColumnIndex > -1 )
+                    if ( personLinkColumnIndex.HasValue && personLinkColumnIndex > -1 )
                     {
                         var personLinkButton = e.Row.Cells[personLinkColumnIndex.Value].ControlsOfTypeRecursive<HyperLink>().FirstOrDefault();
                         personLinkButton.Visible = false;
@@ -270,22 +293,28 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
 
         protected void lnkFormBuilder_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.FormBuilderDetailPage, GetQueryString( PageParameterKeys.FormBuilderTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderPage, GetQueryString( PageParameterKeys.FormBuilderTab ) );
         }
 
         protected void lnkComminucations_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.CommunicationsDetailPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderPage, GetQueryString( PageParameterKeys.CommunicationsTab ) );
         }
 
         protected void lnkSettings_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.SettingsDetailPage, GetQueryString( PageParameterKeys.SettingsTab ) );
+            NavigateToLinkedPage( AttributeKeys.FormBuilderPage, GetQueryString( PageParameterKeys.SettingsTab ) );
         }
 
         protected void lnkAnalytics_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKeys.AnalyticsDetailPage, GetQueryString( PageParameterKeys.AnalyticsTab ) );
+            NavigateToLinkedPage( AttributeKeys.AnalyticsPage, GetQueryString( PageParameterKeys.AnalyticsTab ) );
+        }
+
+        private void gWorkflows_Add( object sender, EventArgs e )
+        {
+            var workflowType = new WorkflowTypeService( new RockContext() ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
+            NavigateToLinkedPage( AttributeKeys.EntryPage, "WorkflowTypeId", workflowType.Id );
         }
 
         #endregion Events
@@ -297,17 +326,24 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// </summary>
         private void BindAttributes()
         {
+            var rockContext = new RockContext();
             AvailableAttributes = new List<AttributeCache>();
+            var workflowType = new WorkflowTypeService( rockContext ).Get( PageParameter( PageParameterKeys.WorkflowTypeId ).AsInteger() );
 
-            int entityTypeId = new Workflow().TypeId;
-            foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
-                .Where( a =>
-                    a.EntityTypeId == entityTypeId &&
-                    a.IsGridColumn )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name ) )
+            if ( workflowType != null )
             {
-                AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
+                int entityTypeId = new Workflow().TypeId;
+                foreach ( var attributeModel in new AttributeService( rockContext ).Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.IsGridColumn &&
+                        a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
+                {
+                    AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
+                }
             }
         }
 
@@ -348,7 +384,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             // Add PersonLinkField column
             var personLinkField = new PersonProfileLinkField();
             personLinkField.LinkedPageAttributeKey = AttributeKeys.PersonProfilePage;
-            gWorkflows.Columns.Add(personLinkField);
+            gWorkflows.Columns.Add( personLinkField );
 
             // Add delete column
             var deleteField = new DeleteField();
@@ -369,16 +405,19 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             var workflows = workflowService.Queryable( "Campus,InitiatorPersonAlias.Person" ).AsNoTracking().Where( w => w.WorkflowTypeId == workflowTypeId );
             workflows = ApplyFiltersAndSorting( workflows );
 
-            var qryGrid = workflows.Select( w => new FormSubmissionListViewModel
+            gWorkflows.ObjectList = workflows.AsEnumerable().ToDictionary( k => k.Id.ToString(), v => v as object );
+            gWorkflows.EntityTypeId = EntityTypeCache.Get<Workflow>().Id;
+
+            var submissionsList = workflows.Select( w => new FormSubmissionListViewModel
             {
                 Id = w.Id,
                 ActivatedDateTime = w.ActivatedDateTime,
                 Campus = w.Campus,
                 Person = w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.Person : null,
-                Personid = w.InitiatorPersonAliasId
+                PersonId = w.InitiatorPersonAlias != null ? w.InitiatorPersonAlias.PersonId : 0
             } );
 
-            gWorkflows.SetLinqDataSource( qryGrid );
+            gWorkflows.SetLinqDataSource( submissionsList );
             gWorkflows.DataBind();
         }
 
@@ -424,13 +463,13 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             }
             else
             {
-                query = query.OrderBy( w => w.Id );
+                query = query.OrderBy( w => w.ActivatedDateTime );
             }
 
             return query;
         }
 
-        private Dictionary<string, string> GetQueryString(string tab)
+        private Dictionary<string, string> GetQueryString( string tab )
         {
             return new Dictionary<string, string>
             {
@@ -486,7 +525,7 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             public DateTime? ActivatedDateTime { get; set; }
             public Campus Campus { get; set; }
             public Person Person { get; set; }
-            public int? Personid { get; set; }
+            public int? PersonId { get; set; }
         }
 
         #endregion

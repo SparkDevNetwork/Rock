@@ -184,6 +184,14 @@ export const enum EntityType {
     MobileGroupsGroupMemberViewBlockType = "3213DCBC-C5EC-4DD2-BB78-19B3636AE842",
     /** The GUID for the entity  */
     MobileGroupsGroupRegistrationBlockType = "E0664BDC-9583-44F2-AC8D-23AE48603EAB",
+    /** The GUID for entity  */
+    MobileGroupsGroupSchedulePreference = "36B341A9-07FC-43A1-970A-E5D4CDB83E6A",
+    /** The GUID for entity  */
+    MobileGroupsGroupScheduleSignup = "DE3893A7-C353-4D19-A3FA-8B8EA99984F9",
+    /** The GUID for entity  */
+    MobileGroupsGroupScheduleToolbox = "DCC6C7C8-1040-4F0E-94ED-90450E2E9610",
+    /** The GUID for entity  */
+    MobileGroupsGroupScheduleUnavailability = "300E3105-A9C9-4C86-8BD1-CC041B6953C6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupView */
     MobileGroupsGroupViewBlockType = "564C4D86-C9DF-48D0-84B6-DD3FCC1A5158",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails */
@@ -198,6 +206,10 @@ export const enum EntityType {
     ObsidianExampleControlGallery = "7B916FEC-9395-4877-9856-427419C50AB5",
     /** The obsidian event field type gallery */
     ObsidianExampleFieldTypeGallery = "82F9C803-C998-46B2-B354-783D4D1E3B43",
+    /** The obsidian form builder detail */
+    ObsidianFormBuilderDetailBlockType = "BB44D8ED-DEDC-4C9B-A30D-C636019BC960",
+    /** The obsidian form template detail */
+    ObsidianFormTemplateDetailBlockType = "4A08BC88-AD45-4106-BDD7-184A14B39B9A",
     /** The guid for the Rock.Model.Note entity */
     Note = "53DC1E78-14A5-44DE-903F-6A2CB02164E7",
     /** The guid for the Rock.Model.Page entity */

@@ -326,7 +326,7 @@ namespace Rock.Utility
             }
 
             // Return an empty string if we could not find the book
-            if ( bookConfig.IsNull() )
+            if ( bookConfig == null )
             {
                 return string.Empty;
             }

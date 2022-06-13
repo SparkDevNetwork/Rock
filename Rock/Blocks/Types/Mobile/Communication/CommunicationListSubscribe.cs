@@ -145,7 +145,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
             if ( ShowDescription )
             {
-                descriptionLabel = $"<Label StyleClass=\"communicationlist-item-description\"><![CDATA[{subscription.CommunicationList.Description.EncodeXml()}]]></Label>";
+                descriptionLabel = $"<Label StyleClass=\"communicationlist-item-description\"><![CDATA[{subscription.CommunicationList.Description}]]></Label>";
             }
 
             return $@"

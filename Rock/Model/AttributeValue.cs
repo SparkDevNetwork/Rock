@@ -150,7 +150,7 @@ namespace Rock.Model
                 // since this will get called on every save, don't spend time attempting to convert a large string to a decimal
                 // SQL Server type is decimal(18,2) so 18 digits max with 2 being the fractional. Including the possibility of 4 commas
                 // and a decimal point to get a max string length of 24 that can be turned into the SQL number type.
-                if ( this.Value.IsNull() || this.Value.Length > 24 )
+                if ( this.Value == null || this.Value.Length > 24 )
                 {
                     _valueAsNumeric = null;
                     return _valueAsNumeric;

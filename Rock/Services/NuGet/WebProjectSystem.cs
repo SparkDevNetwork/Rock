@@ -26,6 +26,8 @@ namespace Rock.Services.NuGet
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+    [RockObsolete( "1.13.3" )]
     public class WebProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
     {
         /// <summary>
@@ -39,12 +41,16 @@ namespace Rock.Services.NuGet
         /// <value>
         /// <c>true</c> if this instance is binding redirect supported; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public bool IsBindingRedirectSupported { get { return _isBindingRedirectSupported; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebProjectSystem" /> class.
         /// </summary>
         /// <param name="siteRoot">The site root.</param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public WebProjectSystem( string siteRoot ) : base( siteRoot ) {    }
 
         /// <summary>
@@ -52,6 +58,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="name">The name.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public void AddFrameworkReference( string name )
         {
             throw new NotImplementedException();
@@ -62,6 +70,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="referencePath">The reference path.</param>
         /// <param name="stream">The stream.</param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public void AddReference( string referencePath, Stream stream )
         {
             // NOTE ********************************************************************
@@ -80,6 +90,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         protected virtual string GetReferencePath( string name )
         {
             return Path.Combine( "bin", name );
@@ -92,6 +104,8 @@ namespace Rock.Services.NuGet
         /// <returns>
         ///   <c>true</c> if [is supported file] [the specified path]; otherwise, <c>false</c>.
         /// </returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public bool IsSupportedFile( string path )
         {
             return ( !path.StartsWith( "tools", StringComparison.OrdinalIgnoreCase ) && !Path.GetFileName( path ).Equals( "app.config", StringComparison.OrdinalIgnoreCase ) );
@@ -103,6 +117,8 @@ namespace Rock.Services.NuGet
         /// <value>
         /// The name of the project.
         /// </value>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public string ProjectName
         {
             get { return Root; }
@@ -113,6 +129,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public bool ReferenceExists( string name )
         {
             string referencePath = GetReferencePath( name );
@@ -123,6 +141,8 @@ namespace Rock.Services.NuGet
         /// Removes the reference.
         /// </summary>
         /// <param name="name">The name.</param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public void RemoveReference( string name )
         {
             DeleteFile( GetReferencePath( name ) );
@@ -137,6 +157,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public string ResolvePath( string path )
         {
             return path;
@@ -148,6 +170,8 @@ namespace Rock.Services.NuGet
         /// <value>
         /// The target framework.
         /// </value>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public FrameworkName TargetFramework
         {
             get { return VersionUtility.DefaultTargetFramework; }
@@ -158,6 +182,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="propertyName">Name of the property.</param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public dynamic GetPropertyValue( string propertyName )
         {
             if ( ( propertyName != null ) && propertyName.Equals( "RootNamespace", StringComparison.OrdinalIgnoreCase ) )
@@ -167,6 +193,7 @@ namespace Rock.Services.NuGet
             return null;
         }
 
+#pragma warning disable CS0809
         /// <summary>
         /// Workaround to deal with the "because it is being used by 
         /// another process" dll problem.
@@ -174,6 +201,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="path"></param>
         /// <param name="stream"></param>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public override void AddFile( string path, Stream stream )
         {
             string fileToDelete = string.Empty;
@@ -236,10 +265,14 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public override bool FileExists( string path )
         {
             return false;
         }
+
+        #pragma warning restore CS0809
 
         /// <summary>
         /// Deletes each file listed in the App_Data/deletefile.lst and then deletes that file.
@@ -300,6 +333,8 @@ namespace Rock.Services.NuGet
         /// <param name="targetFullPath">The target full path.</param>
         /// <param name="location">The location.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public void AddImport( string targetFullPath, ProjectImportLocation location )
         {
             throw new NotImplementedException();
@@ -311,6 +346,8 @@ namespace Rock.Services.NuGet
         /// <param name="path">The path.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public bool FileExistsInProject( string path )
         {
             throw new NotImplementedException();
@@ -321,6 +358,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="targetFullPath">The target full path.</param>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "NuGet package processing is going to be removed in a future release." )]
+        [RockObsolete( "1.13.3" )]
         public void RemoveImport( string targetFullPath )
         {
             throw new NotImplementedException();

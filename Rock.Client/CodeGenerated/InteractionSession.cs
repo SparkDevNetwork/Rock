@@ -38,13 +38,25 @@ namespace Rock.Client
         public int? DeviceTypeId { get; set; }
 
         /// <summary />
+        public DateTime? DurationLastCalculatedDateTime { get; set; }
+
+        /// <summary />
+        public int? DurationSeconds { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int? InteractionCount { get; set; }
+
+        /// <summary />
         public string InteractionMode { get; set; }
+
+        /// <summary />
+        public int? InteractionSessionLocationId { get; set; }
 
         /// <summary />
         public string IpAddress { get; set; }
@@ -56,6 +68,9 @@ namespace Rock.Client
 
         /// <summary />
         public string SessionData { get; set; }
+
+        /// <summary />
+        public int? SessionStartDateKey { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -91,12 +106,17 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.DeviceTypeId = source.DeviceTypeId;
+            this.DurationLastCalculatedDateTime = source.DurationLastCalculatedDateTime;
+            this.DurationSeconds = source.DurationSeconds;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.InteractionCount = source.InteractionCount;
             this.InteractionMode = source.InteractionMode;
+            this.InteractionSessionLocationId = source.InteractionSessionLocationId;
             this.IpAddress = source.IpAddress;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.SessionData = source.SessionData;
+            this.SessionStartDateKey = source.SessionStartDateKey;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -112,9 +112,11 @@ namespace Rock.Model
                 DefaultPageId = model.DefaultPageId,
                 DefaultPageRouteId = model.DefaultPageRouteId,
                 Description = model.Description,
+                DisablePredictableIds = model.DisablePredictableIds,
                 EnabledForShortening = model.EnabledForShortening,
                 EnableExclusiveRoutes = model.EnableExclusiveRoutes,
                 EnableMobileRedirect = model.EnableMobileRedirect,
+                EnablePageViewGeoTracking = model.EnablePageViewGeoTracking,
                 EnablePageViews = model.EnablePageViews,
                 ErrorPage = model.ErrorPage,
                 ExternalUrl = model.ExternalUrl,
@@ -221,9 +223,11 @@ namespace Rock.Model
             target.DefaultPageId = source.DefaultPageId;
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
+            target.DisablePredictableIds = source.DisablePredictableIds;
             target.EnabledForShortening = source.EnabledForShortening;
             target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
+            target.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
             target.EnablePageViews = source.EnablePageViews;
             target.ErrorPage = source.ErrorPage;
             target.ExternalUrl = source.ExternalUrl;

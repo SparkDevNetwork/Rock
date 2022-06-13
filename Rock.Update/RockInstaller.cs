@@ -189,60 +189,71 @@ namespace Rock.Update
         /// <param name="packageZip">The package zip.</param>
         private void ProcessDeleteFiles( ZipArchive packageZip )
         {
+            DeleteLegacyUpdateNugetPackages();
+
             // process deletefile.lst
             var deleteListEntry = packageZip
                 .Entries
                 .Where( e => e.FullName == "install\\deletefile.lst" || e.FullName == "install/deletefile.lst" )
                 .FirstOrDefault();
 
-            if ( deleteListEntry != null )
+            if ( deleteListEntry == null )
             {
-                var deleteList = System.Text.Encoding.Default.GetString( deleteListEntry.Open().ReadBytesToEnd() );
-                var itemsToDelete = deleteList.Split( new string[] { Environment.NewLine }, StringSplitOptions.None );
+                return;
+            }
 
-                foreach ( var deleteItem in itemsToDelete )
+            var deleteList = System.Text.Encoding.Default.GetString( deleteListEntry.Open().ReadBytesToEnd() );
+            var itemsToDelete = deleteList.Split( new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries );
+
+            foreach ( var deleteItem in itemsToDelete )
+            {
+                var deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem );
+
+                var rockWeb = "RockWeb\\";
+                if ( deleteItem.StartsWith( rockWeb ) )
                 {
-                    if ( !string.IsNullOrWhiteSpace( deleteItem ) )
+                    deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem.Substring( rockWeb.Length ) );
+                }
+
+                rockWeb = "RockWeb/";
+                if ( deleteItem.StartsWith( rockWeb ) )
+                {
+                    deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem.Substring( rockWeb.Length ) );
+                }
+
+                var backupFilePath = GetBackupFileLocation( deleteItemFullPath );
+
+                if ( Directory.Exists( deleteItemFullPath ) )
+                {
+                    // if the backup folder already exists we need to process the individual files so we can keep the true originals.
+                    if ( Directory.Exists( backupFilePath ) )
                     {
-                        
-                        var deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem );
-
-                        var rockWeb = "RockWeb\\";
-                        if ( deleteItem.StartsWith( rockWeb ) )
+                        var directoryFiles = Directory.GetFiles( deleteItemFullPath, "*.*", SearchOption.AllDirectories );
+                        foreach ( var subFile in directoryFiles )
                         {
-                            deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem.Substring( rockWeb.Length ) );
+                            HandleFileDeletes( subFile, GetBackupFileLocation( subFile ) );
                         }
-
-                        rockWeb = "RockWeb/";
-                        if ( deleteItem.StartsWith( rockWeb ) )
-                        {
-                            deleteItemFullPath = Path.Combine( FileManagementHelper.ROOT_PATH, deleteItem.Substring( rockWeb.Length ) );
-                        }
-
-                        var backupFilePath = GetBackupFileLocation( deleteItemFullPath );
-
-                        if ( Directory.Exists( deleteItemFullPath ) )
-                        {
-                            // if the backup folder already exists we need to process the individual files so we can keep the true originals.
-                            if ( Directory.Exists( backupFilePath ) )
-                            {
-                                var directoryFiles = Directory.GetFiles( deleteItemFullPath, "*.*", SearchOption.AllDirectories );
-                                foreach ( var subFile in directoryFiles )
-                                {
-                                    HandleFileDeletes( subFile, GetBackupFileLocation( subFile ) );
-                                }
-                            }
-                            else
-                            {
-                                // Don't actually delete just move the directory to the backup folder.
-                                Directory.Move( deleteItemFullPath, backupFilePath );
-                            }
-                        }
-
-                        HandleFileDeletes( deleteItemFullPath, backupFilePath );
+                    }
+                    else
+                    {
+                        // Don't actually delete just move the directory to the backup folder.
+                        Directory.Move( deleteItemFullPath, backupFilePath );
                     }
                 }
+
+                HandleFileDeletes( deleteItemFullPath, backupFilePath );
             }
+        }
+
+        /// <summary>
+        /// Clean out the Packages folder for any left over Rock Update NuGet packages.
+        /// Marking this obsolete so it will be removed later.
+        /// </summary>
+        [RockObsolete( "1.13.3" )]
+        private void DeleteLegacyUpdateNugetPackages()
+        {
+            var packagesFolderPath = Path.Combine( FileManagementHelper.ROOT_PATH, LOCAL_ROCK_PACKAGE_FOLDER );
+            Directory.EnumerateFiles( packagesFolderPath, "*.nupkg" ).ToList().ForEach( f => File.Delete( f ) );
         }
 
         /// <summary>

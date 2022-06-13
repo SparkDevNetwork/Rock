@@ -18,7 +18,7 @@
                         <Columns>
                             <Rock:ReorderField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Link Name" />
-                            <Rock:RockBoundField DataField="Url" HeaderText="Link Url" TruncateLength="65" />
+                            <Rock:RockBoundField DataField="Url" HeaderText="Link URL" TruncateLength="65" />
                             <Rock:EditField OnClick="gLinkList_Edit" OnDataBound="EditButton_OnDataBound" />
                             <Rock:DeleteField OnClick="gLinkList_Delete" OnDataBound="DeleteButton_OnDataBound" />
                         </Columns>
@@ -30,7 +30,7 @@
                     <asp:HiddenField ID="hfPersonalLinkId" runat="server" />
                     <asp:ValidationSummary ID="vsEditPersonal" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="AddPersonalLink" />
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.PersonalLink, Rock" PropertyName="Name" Label="Link Name" />
-                    <Rock:UrlLinkBox ID="urlLink" runat="server" Label="Link Url" ValidationGroup="AddPersonalLink" Required="true" />
+                    <Rock:UrlLinkBox ID="urlLink" runat="server" Label="Link URL" ValidationGroup="AddPersonalLink" Required="true" />
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

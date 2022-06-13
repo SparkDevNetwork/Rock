@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Field;
@@ -46,28 +47,75 @@ namespace Rock.Attribute
         #region Methods
 
         /// <summary>
-        /// Converts an Attribute Value to a view model that can be sent to a public device.
+        /// Gets the public editable attribute view model. This contains all the
+        /// information required for the individual to make changes to the attribute.
         /// </summary>
-        /// <param name="attributeValue">The attribute value.</param>
-        /// <returns>A <see cref="PublicAttributeValueViewModel"/> instance.</returns>
-        internal static PublicAttributeValueViewModel ToPublicAttributeValue( AttributeValueCache attributeValue )
+        /// <remarks>This is for editing the attribute itself, not the attribute value.</remarks>
+        /// <param name="attribute">The attribute that will be represented.</param>
+        /// <returns>A <see cref="PublicEditableAttributeViewModel"/> that represents the attribute.</returns>
+        internal static PublicEditableAttributeViewModel GetPublicEditableAttributeViewModel( Rock.Model.Attribute attribute )
         {
-            var attribute = AttributeCache.Get( attributeValue.AttributeId );
+            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeId );
+            var configurationValues = attribute.AttributeQualifiers.ToDictionary( q => q.Key, q => q.Value );
 
-            return ToPublicAttributeValue( attribute, attributeValue.Value );
+            return new PublicEditableAttributeViewModel
+            {
+                Guid = attribute.Guid,
+                Name = attribute.Name,
+                Key = attribute.Key,
+                AbbreviatedName = attribute.AbbreviatedName,
+                Description = attribute.Description,
+                IsActive = attribute.IsActive,
+                IsAnalytic = attribute.IsAnalytic,
+                IsAnalyticHistory = attribute.IsAnalyticHistory,
+                PreHtml = attribute.PreHtml,
+                PostHtml = attribute.PostHtml,
+                IsAllowSearch = attribute.AllowSearch,
+                IsEnableHistory = attribute.EnableHistory,
+                IsIndexEnabled = attribute.IsIndexEnabled,
+                IsPublic = attribute.IsPublic,
+                IsRequired = attribute.IsRequired,
+                IsSystem = attribute.IsSystem,
+                IsShowInGrid = attribute.IsGridColumn,
+                IsShowOnBulk = attribute.ShowOnBulk,
+                FieldTypeGuid = fieldTypeCache.Guid,
+                Categories = attribute.Categories
+                    .Select( c => new ListItemViewModel
+                    {
+                        Value = c.Guid.ToString(),
+                        Text = c.Name
+                    } )
+                    .ToList(),
+                ConfigurationValues = fieldTypeCache.Field?.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null ) ?? new Dictionary<string, string>(),
+                DefaultValue = fieldTypeCache.Field?.GetPublicEditValue( attribute.DefaultValue, configurationValues ) ?? string.Empty
+            };
         }
 
         /// <summary>
-        /// Converts an Attribute Value to a view model that can be sent to a public device.
+        /// Converts an Attribute Value to a view model that can be sent to a
+        /// public device for the purpose of viewing the value.
+        /// </summary>
+        /// <param name="attributeValue">The attribute value.</param>
+        /// <returns>A <see cref="PublicAttributeViewModel"/> instance that contains details about the attribute but not the value.</returns>
+        internal static PublicAttributeViewModel GetPublicAttributeForView( AttributeValueCache attributeValue )
+        {
+            var attribute = AttributeCache.Get( attributeValue.AttributeId );
+
+            return GetPublicAttributeForView( attribute, attributeValue.Value );
+        }
+
+        /// <summary>
+        /// Converts an Attribute and value to a view model that can be sent to a
+        /// public device for the purpose of viewing the value.
         /// </summary>
         /// <param name="attribute">The attribute the value is associated with.</param>
         /// <param name="value">The value to be encoded for public use.</param>
-        /// <returns>A <see cref="PublicAttributeValueViewModel"/> instance.</returns>
-        internal static PublicAttributeValueViewModel ToPublicAttributeValue( AttributeCache attribute, string value )
+        /// <returns>A <see cref="PublicAttributeViewModel"/> instance that contains details about the attribute but not the value.</returns>
+        internal static PublicAttributeViewModel GetPublicAttributeForView( AttributeCache attribute, string value )
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            return new PublicAttributeValueViewModel
+            return new PublicAttributeViewModel
             {
                 FieldTypeGuid = attribute.FieldType.Guid,
                 AttributeGuid = attribute.Guid,
@@ -78,101 +126,53 @@ namespace Rock.Attribute
                     Name = c.Name,
                     Order = c.Order
                 } ).ToList(),
-                Order = attribute.Order,
-                TextValue = fieldType.GetTextValue( value, attribute.ConfigurationValues ),
-                Value = fieldType.GetPublicValue( value, attribute.ConfigurationValues )
-            };
-        }
-
-        /// <summary>
-        /// Converts an Attribute Value to a view model that can be sent to a public device.
-        /// </summary>
-        /// <param name="attributeValue">The attribute value.</param>
-        /// <returns>A <see cref="PublicEditableAttributeValueViewModel"/> instance.</returns>
-        internal static PublicEditableAttributeValueViewModel ToPublicEditableAttributeValue( AttributeValueCache attributeValue )
-        {
-            var attribute = AttributeCache.Get( attributeValue.AttributeId );
-
-            return ToPublicEditableAttributeValue( attribute, attributeValue.Value );
-        }
-
-        /// <summary>
-        /// Converts an Attribute and the specified value to a view model that can be
-        /// sent to a public device.
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="value">The value to be encoded.</param>
-        /// <returns>A <see cref="PublicEditableAttributeValueViewModel"/> instance.</returns>
-        internal static PublicEditableAttributeValueViewModel ToPublicEditableAttributeValue( AttributeCache attribute, string value )
-        {
-            var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
-
-            return new PublicEditableAttributeValueViewModel
-            {
-                FieldTypeGuid = attribute.FieldType.Guid,
-                AttributeGuid = attribute.Guid,
-                Name = attribute.Name,
-                Categories = attribute.Categories.Select( c => new PublicAttributeValueCategoryViewModel
-                {
-                    Guid = c.Guid,
-                    Name = c.Name,
-                    Order = c.Order
-                } ).ToList(),
-                Order = attribute.Order,
-                TextValue = fieldType.GetTextValue( value, attribute.ConfigurationValues ),
-                Value = fieldType.GetPublicEditValue( value, attribute.ConfigurationValues ),
                 Key = attribute.Key,
                 IsRequired = attribute.IsRequired,
                 Description = attribute.Description,
-                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues )
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.View, value ),
+                Order = attribute.Order
             };
         }
 
         /// <summary>
-        /// Converts an Attribute to a view model that can be sent to a public
-        /// device to use when editing the filter value.
+        /// Converts an Attribute Value to a view model that can be sent to a
+        /// public device for the purpose of editing the value.
         /// </summary>
-        /// <param name="attribute">The attribute to be converted.</param>
-        /// <returns>The view mode that is safe to transmit to a remote device.</returns>
-        internal static PublicFilterableAttributeViewModel ToPublicFilterAttribute( AttributeCache attribute )
+        /// <param name="attributeValue">The attribute value.</param>
+        /// <returns>A <see cref="PublicAttributeViewModel"/> instance that contains details about the attribute but not the value.</returns>
+        internal static PublicAttributeViewModel GetPublicAttributeForEdit( AttributeValueCache attributeValue )
         {
-            var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
+            var attribute = AttributeCache.Get( attributeValue.AttributeId );
 
-            return new PublicFilterableAttributeViewModel
-            {
-                AttributeGuid = attribute.Guid,
-                Name = attribute.Name,
-                Description = attribute.Description,
-                FieldTypeGuid = attribute.FieldType.Guid,
-                ConfigurationValues = fieldType.GetPublicFilterConfigurationValues( attribute.ConfigurationValues )
-            };
+            return GetPublicAttributeForEdit( attribute );
         }
 
         /// <summary>
-        /// Converts an Attribute and database value into a view model that can
-        /// be sent to a remote device for editing the value.
+        /// Converts an Attribute  to a view model that can be sent to a public
+        /// device for the purpose of editing a value.
         /// </summary>
-        /// <param name="attribute">The attribute to be converted.</param>
-        /// <param name="privateValue">The database value to be converted.</param>
-        /// <returns>The view model that is safe to transmit to a remote device.</returns>
-        internal static PublicFilterableAttributeValueViewModel ToPublicFilterAttributeValue( AttributeCache attribute, string privateValue )
+        /// <returns>A <see cref="PublicAttributeViewModel"/> instance that contains details about the attribute but not the value.</returns>
+        /// <returns>A <see cref="PublicAttributeViewModel"/> instance.</returns>
+        internal static PublicAttributeViewModel GetPublicAttributeForEdit( AttributeCache attribute )
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            var publicValue = fieldType.GetPublicFilterValue( privateValue, attribute.ConfigurationValues );
-
-            return new PublicFilterableAttributeValueViewModel
+            return new PublicAttributeViewModel
             {
+                FieldTypeGuid = attribute.FieldType.Guid,
                 AttributeGuid = attribute.Guid,
                 Name = attribute.Name,
-                Description = attribute.Description,
-                FieldTypeGuid = attribute.FieldType.Guid,
-                ConfigurationValues = fieldType.GetPublicFilterConfigurationValues( attribute.ConfigurationValues ),
-                Value = new PublicComparisonValueViewModel
+                Categories = attribute.Categories.Select( c => new PublicAttributeValueCategoryViewModel
                 {
-                    ComparisonType = ( int? ) publicValue.ComparisonType,
-                    Value = publicValue.Value
-                }
+                    Guid = c.Guid,
+                    Name = c.Name,
+                    Order = c.Order
+                } ).ToList(),
+                Order = attribute.Order,
+                Key = attribute.Key,
+                IsRequired = attribute.IsRequired,
+                Description = attribute.Description,
+                ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.Edit, null )
             };
         }
 
@@ -191,12 +191,13 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Converts a database value into one that can be sent to a public device.
+        /// Converts a database value into one that can be sent to a public device
+        /// for the purpose of viewing the value.
         /// </summary>
         /// <param name="attribute">The attribute being set.</param>
         /// <param name="privateValue">The value that came from the database.</param>
         /// <returns>A string value.</returns>
-        internal static string GetPublicValue( AttributeCache attribute, string privateValue )
+        internal static string GetPublicValueForView( AttributeCache attribute, string privateValue )
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
@@ -204,8 +205,8 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Converts a database value into an editable one that can be sent to a
-        /// public device.
+        /// Converts a database value into one that can be sent to a public device
+        /// for the purpose of editing the value.
         /// </summary>
         /// <param name="attribute">The attribute being set.</param>
         /// <param name="privateValue">The value that came from the database.</param>

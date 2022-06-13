@@ -7,18 +7,13 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading panel-follow">
-
-                <div class="pull-left">
-                    <h1 class="panel-title"><span class="fa fa-user"></span>&nbsp;
-                    <asp:Label ID="lTitle" runat="server">Form Builder</asp:Label></h1>
-                </div>
+                <h1 class="panel-title"><i class="fa fa-poll-h"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
-            <div class="panel-body">
-                <div>
-                    <ul class="nav nav-pills">
+                <div class="panel-toolbar panel-toolbar-shadow">
+                    <ul class="nav nav-pills nav-sm">
                         <li id="tabSubmissions" runat="server">
                             <asp:LinkButton ID="lnkSubmissions" runat="server" Text="Submissions" CssClass="show-pill" OnClick="lnkSubmissions_Click" pill="submissions-tab" />
                         </li>
@@ -37,28 +32,33 @@
                     </ul>
                 </div>
 
-                <hr />
+            <div class="panel-body">
 
-                <div>
-                    <h4 class="step-title text-break">Form Analytics</h4>
+                <div class="rock-header">
+                    <h3 class="title">Form Analytics</h3>
                     <div class="row">
-                        <div class="col-sm-8">
-                            Below are the views and complete rates for the form over time. These statatistics assume that the workflow entry block that hosted the form is configured to collect metrics.
+                        <div class="col-sm-7">
+                            <span class="description">Below are the views and complete rates for the form over time. These statistics assume that the workflow entry block that hosted the form is configured to collect metrics.</span>
                         </div>
-                        <div class="col-sm-4">
-                            <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" CssClass="pull-right" runat="server" Label="Date Range" OnSelectedDateRangeChanged="drpSlidingDateRange_SelectedDateRangeChanged"
-                                EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" EnabledSlidingDateRangeUnits="Week, Month, Year, Day, Hour" />
+                        <div class="col-sm-5">
+                            <div class="flex-grow-1 d-flex justify-content-end">
+                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="" EnabledSlidingDateRangeTypes="Current, Previous, Last, DateRange"
+                                    EnabledSlidingDateRangeUnits="Year, Month, Day, Hour" FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
+
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
+                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+                            </div>
                         </div>
                     </div>
-                    <hr />
+                    <hr class="section-header-hr" />
                 </div>
 
                 <div class="row">
                     <div class="col-md-12">
-                        <asp:Literal runat="server" ID="lKPIHtml" />
+                        <asp:Literal ID="lKPIHtml" runat="server" />
                     </div>
                 </div>
-            
+
                 <br />
 
                 <div class="panel-analytics">
@@ -80,63 +80,7 @@
         <script type="text/javascript">
             Sys.Application.add_load(function () {
                 Rock.controls.fullScreen.initialize('body');
-                loadChart();
             });
-
-            function loadChart() {
-
-                var lineChartDataLabels = <%=this.LabelsJSON%>;
-                var lineChartDataViews = <%=this.ViewsJSON%>;
-                var lineChartDataCompletions = <%=this.CompletionsJSON%>;
-
-                var linecharts = $('#<%=viewsAndCompletionsCanvas.ClientID%>');
-
-                if (linecharts.length == 0) {
-                    return null;
-                }
-
-                var linechartCtx = $('#<%=viewsAndCompletionsCanvas.ClientID%>')[0].getContext('2d');
-
-                var chart = new Chart(linechartCtx, {
-                    type: 'line',
-                    data: {
-                        labels: lineChartDataLabels,
-                        datasets: [{
-                            label: 'Views',
-                            backgroundColor: '#60BD68',
-                            borderColor: '#60BD68',
-                            data: lineChartDataViews,
-                            spanGaps: true,
-                            fill: true
-                        },
-                        {
-                            label: 'Completions',
-                            backgroundColor: '#5DA5DA',
-                            borderColor: '#5DA5DA',
-                            data: lineChartDataCompletions,
-                            spanGaps: true,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        maintainAspectRatio: false,
-                        responsive: true,
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                filter: function (item, data) {
-                                    // don't include the label if the dataset is hidden
-                                    if (data.datasets[item.datasetIndex].hidden) {
-                                        return false;
-                                    }
-
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                });
-            }
         </script>
 
     </ContentTemplate>

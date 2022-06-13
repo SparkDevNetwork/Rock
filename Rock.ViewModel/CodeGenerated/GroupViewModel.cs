@@ -72,6 +72,14 @@ namespace Rock.ViewModel
         public int? CampusId { get; set; }
 
         /// <summary>
+        /// Gets or sets the ConfirmationAdditionalDetails.
+        /// </summary>
+        /// <value>
+        /// The ConfirmationAdditionalDetails.
+        /// </value>
+        public string ConfirmationAdditionalDetails { get; set; }
+
+        /// <summary>
         /// Gets or sets the Description.
         /// </summary>
         /// <value>
@@ -230,6 +238,14 @@ namespace Rock.ViewModel
         /// The RequiredSignatureDocumentTemplateId.
         /// </value>
         public int? RequiredSignatureDocumentTemplateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RSVPReminderAdditionalDetails.
+        /// </summary>
+        /// <value>
+        /// The RSVPReminderAdditionalDetails.
+        /// </value>
+        public string RSVPReminderAdditionalDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the RSVPReminderOffsetDays.

@@ -22,9 +22,10 @@ import DropDownList from "../Elements/dropDownList";
 import StaticFormControl from "../Elements/staticFormControl";
 import { getFieldType } from "../Fields/index";
 import { get, post } from "../Util/http";
-import { areEqual } from "../Util/guid";
-import { PublicEditableAttributeValue, ListItem } from "../ViewModels";
+import { areEqual, newGuid } from "../Util/guid";
+import { PublicAttribute, ListItem } from "../ViewModels";
 import { FieldTypeConfigurationPropertiesViewModel, FieldTypeConfigurationViewModel } from "../ViewModels/Controls/fieldTypeEditor";
+import { deepEqual, updateRefValue } from "../Util/util";
 
 export default defineComponent({
     name: "FieldTypeEditor",
@@ -53,6 +54,8 @@ export default defineComponent({
     ],
 
     setup(props, { emit }) {
+        const internalValue = ref(props.modelValue);
+
         /** The selected field type in the drop down list. */
         const fieldTypeValue = ref(props.modelValue?.fieldTypeGuid ?? "");
 
@@ -60,13 +63,13 @@ export default defineComponent({
         let resetToDefaultsTimer: number | null = null;
 
         /** The details about the default value used for the field. */
-        const defaultValue = ref<PublicEditableAttributeValue | null>(null);
+        const defaultValue = ref("");
 
         /** The current configuration properties that describe the field type options. */
         const configurationProperties = ref<Record<string, string>>({});
 
-        /** The current options selected in the configuration properties. */
-        const configurationOptions = ref<Record<string, string>>(props.modelValue?.configurationOptions ?? {});
+        /** The current values selected in the configuration properties. */
+        const configurationValues = ref<Record<string, string>>(props.modelValue?.configurationValues ?? {});
 
         /** True if the default value component should be shown. */
         const hasDefaultValue = computed((): boolean => {
@@ -118,6 +121,20 @@ export default defineComponent({
             return matches.length >= 1 ? matches[0].text : "";
         });
 
+        const defaultValueAttribute = computed((): PublicAttribute => {
+            return {
+                fieldTypeGuid: fieldTypeValue.value,
+                attributeGuid: newGuid(),
+                configurationValues: configurationValues.value,
+                name: "Default Value",
+                key: "DefaultValue",
+                description: "",
+                isRequired: false,
+                order: 0,
+                categories: []
+            };
+        });
+
         /**
          * True if an update request has been caused by an internal value change.
          * In this case, the update is not emitted to the parent.
@@ -135,11 +152,13 @@ export default defineComponent({
 
             const newValue: FieldTypeConfigurationViewModel = {
                 fieldTypeGuid: fieldTypeValue.value,
-                configurationOptions: configurationOptions.value,
-                defaultValue: defaultValue.value?.value ?? ""
+                configurationValues: configurationValues.value,
+                defaultValue: defaultValue.value ?? ""
             };
 
-            emit("update:modelValue", newValue);
+            // This only updates if the value has actually changed, which removes
+            // some false dirty state.
+            updateRefValue(internalValue, newValue);
         };
 
         /**
@@ -155,8 +174,8 @@ export default defineComponent({
             isConfigurationReady.value = false;
             isInternalUpdate = true;
             configurationProperties.value = {};
-            configurationOptions.value = {};
-            defaultValue.value = null;
+            configurationValues.value = {};
+            defaultValue.value = "";
             isInternalUpdate = false;
 
             updateModelValue();
@@ -172,7 +191,7 @@ export default defineComponent({
 
             const update: FieldTypeConfigurationViewModel = {
                 fieldTypeGuid: fieldTypeValue.value,
-                configurationOptions: configurationOptions.value,
+                configurationValues: configurationValues.value,
                 defaultValue: currentDefaultValue
             };
 
@@ -181,13 +200,13 @@ export default defineComponent({
                     resetToDefaults();
                     console.debug("got configuration", result.data);
 
-                    if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationOptions && result.data.defaultValue) {
+                    if (result.isSuccess && result.data && result.data.configurationProperties && result.data.configurationValues) {
                         fieldErrorMessage.value = "";
                         isConfigurationReady.value = true;
 
                         isInternalUpdate = true;
                         configurationProperties.value = result.data.configurationProperties;
-                        configurationOptions.value = result.data.configurationOptions;
+                        configurationValues.value = result.data.configurationValues;
                         defaultValue.value = result.data.defaultValue;
                         isInternalUpdate = false;
 
@@ -199,18 +218,10 @@ export default defineComponent({
                 });
         };
 
-        // Called when the field type drop down value is changed.
-        watch(fieldTypeValue, () => {
-            if (resetToDefaultsTimer === null) {
-                resetToDefaultsTimer = window.setTimeout(resetToDefaults, 250);
-            }
-
-            updateFieldConfiguration("");
-        });
-
         /** Called when the default value has been changed by the screen control. */
-        const onDefaultValueUpdate = (): void => {
+        const onDefaultValueUpdate = (value: string): void => {
             console.debug("default value updated");
+            defaultValue.value = value;
             updateModelValue();
         };
 
@@ -220,7 +231,7 @@ export default defineComponent({
          */
         const onUpdateConfiguration = (): void => {
             console.debug("onUpdateConfiguration");
-            updateFieldConfiguration(defaultValue.value?.value ?? "");
+            updateFieldConfiguration(defaultValue.value ?? "");
         };
 
         /**
@@ -230,13 +241,31 @@ export default defineComponent({
          * @param key The key of the configuration value that was changed.
          * @param value The new value of the configuration value.
          */
-        const onUpdateConfigurationValue = (key: string, value: string): void => {
-            if (defaultValue.value?.configurationValues) {
-                console.debug("update configuration value", key, value);
-                defaultValue.value.configurationValues[key] = value;
-                updateModelValue();
-            }
+        const onUpdateConfigurationValue = (_key: string, _value: string): void => {
+            updateModelValue();
         };
+
+        // Called when the field type drop down value is changed.
+        watch(fieldTypeValue, () => {
+            if (resetToDefaultsTimer === null) {
+                resetToDefaultsTimer = window.setTimeout(resetToDefaults, 250);
+            }
+
+            updateFieldConfiguration("");
+        });
+
+        // Watch for changes to our internal value and update the model value.
+        watch(internalValue, () => {
+            // Normally, this deepEqual wouldn't be needed. But there are times
+            // where the internalValue is changed twice. For example, we will
+            // reset the value to blank and then set the proper value. In that
+            // case this watch will be triggered because it detects the value
+            // did indeed change, but we need to check if it was just a toggle
+            // to a blank value and then back to the model value.
+            if (!deepEqual(internalValue.value, props.modelValue, true)) {
+                emit("update:modelValue", internalValue.value);
+            }
+        });
 
         // Get all the available field types that the user is allowed to edit.
         get<ListItem[]>("/api/v2/Controls/FieldTypeEditor/availableFieldTypes")
@@ -255,9 +284,10 @@ export default defineComponent({
 
         return {
             configurationComponent,
-            configurationOptions,
+            configurationValues,
             configurationProperties,
             defaultValue,
+            defaultValueAttribute,
             hasDefaultValue,
             fieldErrorMessage,
             fieldTypeName,
@@ -280,8 +310,8 @@ export default defineComponent({
     <Alert v-if="fieldErrorMessage" alertType="warning">
         {{ fieldErrorMessage }}
     </Alert>
-    <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationOptions" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
-    <RockField v-if="hasDefaultValue" :attributeValue="defaultValue" @update:attributeValue="onDefaultValueUpdate" isEditMode />
+    <component v-if="showConfigurationComponent" :is="configurationComponent" v-model="configurationValues" :configurationProperties="configurationProperties" @updateConfiguration="onUpdateConfiguration" @updateConfigurationValue="onUpdateConfigurationValue" />
+    <RockField v-if="hasDefaultValue" :modelValue="defaultValue" :attribute="defaultValueAttribute" @update:modelValue="onDefaultValueUpdate" isEditMode />
 </div>
 `
 });
