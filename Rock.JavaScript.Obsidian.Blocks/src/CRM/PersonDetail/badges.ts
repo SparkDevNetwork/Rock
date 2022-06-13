@@ -110,15 +110,15 @@ export default defineComponent({
     </div>
 
     <div class="card-badge-bottom">
-        <div class="rockbadge-container" v-html="bottomLeftBadges"></div>
+        <div class="rockbadge-container rockbadge-container-xs" v-html="bottomLeftBadges"></div>
 
-        <div class="rockbadge-container">
+        <div class="rockbadge-container rockbadge-container-xs">
             <EntityTagList :entityTypeGuid="entityTypeGuid"
                 :entityKey="entityKey"
                 :lazyMode="lazyMode" />
          </div> 
 
-        <div class="rockbadge-container" v-html="bottomRightBadges"></div> 
+        <div class="rockbadge-container rockbadge-container-xs" v-html="bottomRightBadges"></div> 
    </div>
 </div>
 `
