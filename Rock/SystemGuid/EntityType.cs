@@ -127,38 +127,47 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.ConnectionOpportunity entity
         /// </summary>
         public const string CONNECTION_OPPORTUNITY = "79F64363-BC90-4109-9D31-A5EEB397CB2F";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionOpportunityCampus entity
         /// </summary>
         public const string CONNECTION_OPPORTUNITY_CAMPUS = "E656E8B3-12AB-476E-AA63-5F9B76F64A08";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionOpportunityGroup entity
         /// </summary>
         public const string CONNECTION_OPPORTUNITY_GROUP = "CD3F425C-9B36-4433-9C38-D58DE42C9F65";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionOpportunityConnectorGroup entity
         /// </summary>
         public const string CONNECTION_OPPORTUNITY_CONNECTOR_GROUP = "4CB430B1-0F32-482F-9C95-164A09332CC1";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionRequest entity
         /// </summary>
         public const string CONNECTION_REQUEST = "36B0D0C7-8125-48FA-9DA2-729AAA65F718";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionRequestActivity entity
         /// </summary>
         public const string CONNECTION_REQUEST_ACTIVITY = "3248F40D-7661-42CC-AD9B-EF63322937B7";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionRequestWorkflow entity
         /// </summary>
         public const string CONNECTION_REQUEST_WORKFLOW = "C69D1C9F-5521-4C83-8FE9-5044ECC2CE65";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionStatus entity
         /// </summary>
         public const string CONNECTION_STATUS = "F3840C8B-63BF-4F98-AC4A-9336896E589B";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionType entity
         /// </summary>
         public const string CONNECTION_TYPE = "B1E52EAD-65BD-4C4D-BCCD-73368067621D";
+
         /// <summary>
         /// The guid for the Rock.Model.ConnectionWorkflow entity
         /// </summary>
@@ -565,6 +574,11 @@ namespace Rock.SystemGuid
         /// The Signal Type entity type
         /// </summary>
         public const string SIGNAL_TYPE = "0BA03B9B-E974-4526-9B21-5037424B6D16";
+
+        /// <summary>
+        /// The Step Flow entity type
+        /// </summary>
+        public const string STEP_FLOW = "308D8252-7712-4A45-8DE4-737C3EEAEA8F";
 
         /// <summary>
         /// The guid for the database storage provider entity

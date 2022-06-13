@@ -374,6 +374,14 @@ namespace Rock.SystemGuid
 
         #endregion Reporting Block Types
 
+        #region Steps Block Types
+
+        /// <summary>
+        /// The Step Flow
+        /// </summary>
+        public const string STEP_FLOW = "2B4E0128-BCDF-48BF-AEC9-85001169DA3E";
+        #endregion Steps Block Types
+
         /// <summary>
         /// The contribution statement lava (Legacy)
         /// </summary>

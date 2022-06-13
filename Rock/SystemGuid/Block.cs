@@ -145,5 +145,10 @@ namespace Rock.SystemGuid
         /// The financial account search block
         /// </summary>
         public const string CONNECTION_REQUESTS_BULK_UPDATE = "86249F40-DAA9-46AC-901B-7460E2659C10";
+
+        /// <summary>
+        /// The Step Flow block
+        /// </summary>
+        public const string STEP_FLOW = "A40684E9-10DA-4CF8-815B-EBDE53624419";
     }
 }
