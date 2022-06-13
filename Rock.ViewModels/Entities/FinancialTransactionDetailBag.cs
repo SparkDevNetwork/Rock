@@ -34,106 +34,110 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialTransactionDetailBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AccountId.
+        /// Gets or sets the AccountId of the Rock.Model.FinancialAccount/account that the Rock.Model.FinancialTransactionDetail.Amount of this 
+        /// detail line item should be credited towards.
         /// </summary>
         /// <value>
-        /// The AccountId.
+        /// A System.Int32 representing the Rock.Model.FinancialAccount/account that is affected by this
+        /// transaction detail.
         /// </value>
         public int AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Amount.
+        /// Gets or sets the total amount of the transaction detail. This total amount includes any associated fees.
         /// </summary>
         /// <value>
-        /// The Amount.
+        /// A System.Decimal representing the total amount of the transaction detail.
         /// </value>
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the entity id.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The entity id.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the entity.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// The entity.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FeeAmount.
+        /// Gets or sets the fee amount of the transaction detail, which is a subset of the Amount.
         /// </summary>
         /// <value>
-        /// The FeeAmount.
+        /// A System.Decimal representing the fee amount of the transaction detail.
         /// </value>
         public decimal? FeeAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the FeeCoverageAmount.
+        /// Gets or sets the fee coverage amount.
         /// </summary>
         /// <value>
-        /// The FeeCoverageAmount.
+        /// The fee coverage amount.
         /// </value>
         public decimal? FeeCoverageAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the ForeignCurrencyAmount.
+        /// Gets or sets the foreign currency amount.
         /// </summary>
         /// <value>
-        /// The ForeignCurrencyAmount.
+        /// The foreign currency amount.
         /// </value>
         public decimal? ForeignCurrencyAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the Summary.
+        /// Gets or sets the summary of the transaction detail.
         /// </summary>
         /// <value>
-        /// The Summary.
+        /// A System.String representing the summary of the transaction detail.
         /// </value>
         public string Summary { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionId.
+        /// Gets or sets the TransactionId of the Rock.Model.FinancialTransaction that this 
+        /// detail item is a part of.
         /// </summary>
         /// <value>
-        /// The TransactionId.
+        /// A System.Int32 representing the TransactionDetailId of the Rock.Model.FinancialTransaction
+        /// that this detail item is a part of.
         /// </value>
         public int TransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

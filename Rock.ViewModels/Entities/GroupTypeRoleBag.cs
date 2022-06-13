@@ -34,130 +34,133 @@ namespace Rock.ViewModels.Entities
     public partial class GroupTypeRoleBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CanEdit.
+        /// Gets or sets a value indicating whether this instance can edit.
         /// </summary>
         /// <value>
-        /// The CanEdit.
+        ///   true if this instance can edit; otherwise, false.
         /// </value>
         public bool CanEdit { get; set; }
 
         /// <summary>
-        /// Gets or sets the CanManageMembers.
+        /// Gets or sets a value indicating whether this instance can manage members.
         /// </summary>
         /// <value>
-        /// The CanManageMembers.
+        ///   true if this instance can manage members; otherwise, false.
         /// </value>
         public bool CanManageMembers { get; set; }
 
         /// <summary>
-        /// Gets or sets the CanView.
+        /// Gets or sets a value indicating whether this instance can view.
         /// </summary>
         /// <value>
-        /// The CanView.
+        ///   true if this instance can view; otherwise, false.
         /// </value>
         public bool CanView { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the GroupRole. This property is required.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the user defined description of the GroupRole.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupTypeId.
+        /// Gets or sets the Id of the Rock.Model.GroupType that this GroupRole belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// The GroupTypeId.
+        /// An System.Int32 representing the Id of the Rock.Model.GroupType that this GroupRole belongs to.
         /// </value>
         public int? GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsLeader.
+        /// Gets or sets a flag indicating if this is a group leader role.  
         /// </summary>
         /// <value>
-        /// The IsLeader.
+        /// A System.Boolean value that is true if this is a GroupLeader role; otherwise false.
         /// </value>
         public bool IsLeader { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this GroupRole is part of the Rock core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this GroupRole is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxCount.
+        /// Gets or sets the maximum count of GroupMembers that a Rock.Model.Group can have who 
+        /// belong to this GroupRole.
         /// </summary>
         /// <value>
-        /// The MaxCount.
+        /// A System.Int32 representing the maximum count of GroupMembers that a Rock.Model.Group can have
+        /// who belong to this GroupRole. If there isn't a maximum, this value is null.
         /// </value>
         public int? MaxCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the MinCount.
+        /// Gets or sets the minimum count of GroupMembers that a Rock.Model.Group can have who belong to this GroupRole.
         /// </summary>
         /// <value>
-        /// The MinCount.
+        /// The min count of GroupMebers that a Rock.Model.Group can have who belong to this GroupRole. If there is no minimum
+        /// this value is null.
         /// </value>
         public int? MinCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the GroupRole. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the Name of the GroupRole.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the sort order position of the GroupRole.  The lower the SortOrder the higher the GroupRole shows in lists/controls.  
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 representing the sort order of the GroupRole.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReceiveRequirementsNotifications.
+        /// Gets or sets a value indicating whether this role should receive requirements notifications].
         /// </summary>
         /// <value>
-        /// The ReceiveRequirementsNotifications.
+        /// true if the role should receive requirements notifications; otherwise, false.
         /// </value>
         public bool ReceiveRequirementsNotifications { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

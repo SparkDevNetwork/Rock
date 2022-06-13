@@ -25,100 +25,104 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Attendance View Model */
 export type AttendanceBag = {
-    /** Gets or sets the AttendanceCheckInSessionId. */
+    /** Gets or sets the Rock.Model.AttendanceCheckInSession identifier. */
     attendanceCheckInSessionId?: number | null;
 
-    /** Gets or sets the AttendanceCodeId. */
+    /** Gets or sets the Id of the Rock.Model.AttendanceCode that is associated with this Rock.Model.Attendance entity. */
     attendanceCodeId?: number | null;
 
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the Id of the Rock.Model.Campus that the individual attended/checked in to. */
     campusId?: number | null;
 
-    /** Gets or sets the CheckedInByPersonAliasId. */
+    /** Gets or sets the person who was identified as the person doing the check-in. */
     checkedInByPersonAliasId?: number | null;
 
-    /** Gets or sets the CheckedOutByPersonAliasId. */
+    /** Gets or sets the person that checked-out the Rock.Model.PersonAlias person attended. */
     checkedOutByPersonAliasId?: number | null;
 
-    /** Gets or sets the DeclineReasonValueId. */
+    /** Gets or sets the Reason that the Rock.Model.Attendance.PersonAlias person declined to attend */
     declineReasonValueId?: number | null;
 
-    /** Gets or sets the DeviceId. */
+    /** Gets or sets the Id of the Rock.Model.Device that was used (the device where the person checked in from). */
     deviceId?: number | null;
 
-    /** Gets or sets the DidAttend. */
+    /** Gets or sets a flag indicating if the person attended. */
     didAttend?: boolean | null;
 
-    /** Gets or sets the EndDateTime. */
+    /** Gets or sets the date and time that person checked out. */
     endDateTime?: string | null;
 
-    /** Gets or sets the IsFirstTime. */
+    /** Gets or sets if this first time that this person has ever checked into anything */
     isFirstTime?: boolean | null;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note. */
     note?: string | null;
 
-    /** Gets or sets the OccurrenceId. */
+    /** Gets or sets the Id of the Rock.Model.AttendanceOccurrence that the attendance is for. */
     occurrenceId: number;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Id of the Rock.Model.Person that attended/checked in to the Rock.Model.Group */
     personAliasId?: number | null;
 
-    /** Gets or sets the PresentByPersonAliasId. */
+    /** Gets or sets the person that presented the Rock.Model.PersonAlias person attended. */
     presentByPersonAliasId?: number | null;
 
-    /** Gets or sets the PresentDateTime. */
+    /** Gets or sets the present date and time. */
     presentDateTime?: string | null;
 
-    /** Gets or sets the Processed. */
+    /** Gets or sets the processed. */
     processed?: boolean | null;
 
-    /** Gets or sets the QualifierValueId. */
+    /**
+     * Gets or sets the qualifier value id.  Qualifier can be used to
+     * "qualify" attendance records.  There are not any system values
+     * for this particular defined type
+     */
     qualifierValueId?: number | null;
 
-    /** Gets or sets the RequestedToAttend. */
+    /** Gets or sets if the Rock.Model.Attendance.PersonAlias person has been requested to attend. */
     requestedToAttend?: boolean | null;
 
     /** Gets or sets the RSVP. */
     rSVP: number;
 
-    /** Gets or sets the RSVPDateTime. */
+    /** Gets or sets the Rock.Model.Attendance.RSVP date time. */
     rSVPDateTime?: string | null;
 
-    /** Gets or sets the ScheduleConfirmationSent. */
+    /** Gets or sets if a schedule confirmation has been sent to the Rock.Model.Attendance.PersonAlias person */
     scheduleConfirmationSent?: boolean | null;
 
-    /** Gets or sets the ScheduledByPersonAliasId. */
+    /** Gets or sets the person that scheduled the Rock.Model.Attendance.PersonAlias person to attend */
     scheduledByPersonAliasId?: number | null;
 
-    /** Gets or sets the ScheduledToAttend. */
+    /** Gets or sets if the Rock.Model.Attendance.PersonAlias person is scheduled (confirmed) to attend. */
     scheduledToAttend?: boolean | null;
 
-    /** Gets or sets the ScheduleReminderSent. */
+    /** Gets or sets if a schedule reminder has been sent to the Rock.Model.Attendance.PersonAlias person */
     scheduleReminderSent?: boolean | null;
 
-    /** Gets or sets the SearchResultGroupId. */
+    /** Gets or sets the Id of the Rock.Model.Group (family) that was selected after searching. */
     searchResultGroupId?: number | null;
 
-    /** Gets or sets the SearchTypeValueId. */
+    /** Gets or sets the Id of the Check-in Search Type Rock.Model.DefinedValue that was used to search for the person/family. */
     searchTypeValueId?: number | null;
 
-    /** Gets or sets the SearchValue. */
+    /** Gets or sets the value that was entered when searching for family during check-in. */
     searchValue?: string | null;
 
-    /** Gets or sets the StartDateTime. */
+    /** Gets or sets the date and time that person checked in */
     startDateTime?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -25,52 +25,55 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupTypeRole View Model */
 export type GroupTypeRoleBag = {
-    /** Gets or sets the CanEdit. */
+    /** Gets or sets a value indicating whether this instance can edit. */
     canEdit: boolean;
 
-    /** Gets or sets the CanManageMembers. */
+    /** Gets or sets a value indicating whether this instance can manage members. */
     canManageMembers: boolean;
 
-    /** Gets or sets the CanView. */
+    /** Gets or sets a value indicating whether this instance can view. */
     canView: boolean;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the user defined description of the GroupRole. This property is required. */
     description?: string | null;
 
-    /** Gets or sets the GroupTypeId. */
+    /** Gets or sets the Id of the Rock.Model.GroupType that this GroupRole belongs to. This property is required. */
     groupTypeId?: number | null;
 
-    /** Gets or sets the IsLeader. */
+    /** Gets or sets a flag indicating if this is a group leader role.   */
     isLeader: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this GroupRole is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the MaxCount. */
+    /**
+     * Gets or sets the maximum count of GroupMembers that a Rock.Model.Group can have who 
+     * belong to this GroupRole.
+     */
     maxCount?: number | null;
 
-    /** Gets or sets the MinCount. */
+    /** Gets or sets the minimum count of GroupMembers that a Rock.Model.Group can have who belong to this GroupRole. */
     minCount?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the GroupRole. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the sort order position of the GroupRole.  The lower the SortOrder the higher the GroupRole shows in lists/controls.   */
     order: number;
 
-    /** Gets or sets the ReceiveRequirementsNotifications. */
+    /** Gets or sets a value indicating whether this role should receive requirements notifications]. */
     receiveRequirementsNotifications: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -25,37 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Layout View Model */
 export type LayoutBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the user defined description of the Layout. */
     description?: string | null;
 
-    /** Gets or sets the FileName. */
+    /**
+     * Gets or sets the file name portion of the associated .Net ASCX UserControl that provides the HTML Markup and code for this Layout.
+     * Value should not include the extension.  And the path is relative to the theme folder.
+     */
     fileName?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Layout was created by and is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the LayoutMobilePhone. */
+    /** Gets or sets the layout mobile phone. */
     layoutMobilePhone?: string | null;
 
-    /** Gets or sets the LayoutMobileTablet. */
+    /** Gets or sets the layout mobile tablet. */
     layoutMobileTablet?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the logical name of the Layout. */
     name?: string | null;
 
-    /** Gets or sets the SiteId. */
+    /** Gets or sets the Id of the Rock.Model.Site that this layout is associated with. */
     siteId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

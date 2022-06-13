@@ -632,6 +632,11 @@ namespace Rock.SystemGuid
         public const string WORKFLOW_ACTION_TYPE = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowFormBuilderTemplate"/>.
+        /// </summary>
+        public const string WORKFLOW_FORM_BUILDER_TEMPLATE = "65fa3078-9d42-4857-b78a-f32a05f7a4c1";
+
+        /// <summary>
         /// The guid for the Test Financial Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";

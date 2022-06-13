@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** MetricValuePartition View Model */
 export type MetricValuePartitionBag = {
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the entity identifier. */
     entityId?: number | null;
 
-    /** Gets or sets the MetricPartitionId. */
+    /** Gets or sets the metric partition identifier. */
     metricPartitionId?: number | null;
 
-    /** Gets or sets the MetricValueId. */
+    /** Gets or sets the metric value identifier. */
     metricValueId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

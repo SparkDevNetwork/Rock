@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationTemplateFeeItem View Model */
 export type RegistrationTemplateFeeItemBag = {
-    /** Gets or sets the Cost. */
+    /** Gets or sets the cost. */
     cost?: number;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the MaximumUsageCount. */
+    /** Gets or sets the maximum number of times this fee item can be used per registration instance. */
     maximumUsageCount?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the RegistrationTemplateFeeId. */
+    /** Gets or sets the Rock.Model.RegistrationTemplateFee identifier. */
     registrationTemplateFeeId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

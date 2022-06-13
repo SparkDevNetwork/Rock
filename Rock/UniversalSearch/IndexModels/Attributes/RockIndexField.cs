@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.UniversalSearch.IndexModels.Attributes
 {
     /// <summary>
@@ -37,7 +39,7 @@ namespace Rock.UniversalSearch.IndexModels.Attributes
                 _index = value;
             }
         }
-        private IndexType _index = IndexType.Analyzed;
+        private IndexType _index = IndexType.Indexed;
 
         /// <summary>
         /// Gets or sets the boost.
@@ -92,17 +94,24 @@ namespace Rock.UniversalSearch.IndexModels.Attributes
         /// <summary>
         /// Analyzed
         /// </summary>
+        [Obsolete( "Use IndexType.Indexed instead" )]
         Analyzed = 0, // default
 
         /// <summary>
         /// Not Analyzed
         /// </summary>
+        [Obsolete("Use IndexType.Indexed instead")]
         NotAnalyzed = 1, // means it's in the index (database) and available for queries but when added to the index it won't set a analyzer (should be queried as is)
 
         /// <summary>
         /// Not Indexed
         /// </summary>
         NotIndexed = 2, // means it's in the index (database) but it won't be considered for queries
+
+        /// <summary>
+        /// The indexed
+        /// </summary>
+        Indexed = 3, 
     }
 
     /// <summary>

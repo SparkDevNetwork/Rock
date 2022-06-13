@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WebFarmNodeMetric View Model */
 export type WebFarmNodeMetricBag = {
-    /** Gets or sets the MetricType. */
+    /** Gets or sets the type of the metric. */
     metricType: number;
 
-    /** Gets or sets the MetricValue. */
+    /** Gets or sets the metric value. */
     metricValue?: number;
 
-    /** Gets or sets the MetricValueDateTime. */
+    /** Gets or sets the metric value date time. */
     metricValueDateTime?: string | null;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note. */
     note?: string | null;
 
-    /** Gets or sets the WebFarmNodeId. */
+    /** Gets or sets the Rock.Model.WebFarmNode identifier. */
     webFarmNodeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

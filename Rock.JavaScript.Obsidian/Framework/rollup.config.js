@@ -3,7 +3,8 @@ import typescript from "rollup-plugin-typescript2";
 import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 //import babel from "@rollup/plugin-babel";
-import PostCSS from "rollup-plugin-postcss";
+import postcss from "rollup-plugin-postcss";
+import cssnano from "cssnano";
 import ttypescript from "ttypescript";
 import copy from "rollup-plugin-copy";
 import * as process from "process";
@@ -94,7 +95,7 @@ function generateConfig(files, srcPath, outPath, tsConfig) {
             }),
 
             // Process only `<style module>` blocks.
-            PostCSS({
+            postcss({
                 modules: {
                     generateScopedName: "[local]___[hash:base64:5]",
                 },
@@ -102,7 +103,7 @@ function generateConfig(files, srcPath, outPath, tsConfig) {
             }),
 
             // Process all `<style>` blocks except `<style module>`.
-            PostCSS({ include: /(?<!&module=.*)\.css$/ }),
+            postcss({ include: /(?<!&module=.*)\.css$/ }),
 
             commonjs(),
 
@@ -175,7 +176,7 @@ function generateBundle(srcPath, outPath) {
     };
 }
 
-function generateAutoBundles(srcPath, outPath) {
+function generateAutoBundles(srcPath, outPath, alwaysBundleExternals) {
     const files = glob.sync(srcPath + "/**/*.@(js)")
         .map(f => path.normalize(f).substring(cwd.length + 1))
         .filter(f => !f.endsWith(".d.ts") && !f.endsWith(".partial.js"));
@@ -192,7 +193,8 @@ function generateAutoBundles(srcPath, outPath) {
                 }
 
                 return "[name].js";
-            }
+            },
+            assetFileNames: "[name].css"
         },
 
         external: (target, source) => {
@@ -217,10 +219,27 @@ function generateAutoBundles(srcPath, outPath) {
                 }
             }
 
+            // TSLib is always an external which is handled by System.
+            if (target === "tslib") {
+                return false;
+            }
+
+            // If the bundle generator is requesting all externals be bundled
+            // then do so. This is primarily used by Libs.
+            if (alwaysBundleExternals === true) {
+                return false;
+            }
+
             return true;
         },
 
         plugins: [
+            postcss({
+                plugins: [
+                    cssnano()
+                ]
+            }),
+
             resolve({
                 extensions: [".js", ".ts"]
             }),
@@ -233,6 +252,7 @@ function generateAutoBundles(srcPath, outPath) {
 
 const cwd = process.cwd();
 
+const libsConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Libs"), path.join(cwd, "dist", "FrameworkBundled", "Libs"), true);
 const utilityConfig = generateBundle(path.join(cwd, "dist", "Framework", "Utility"), path.join(cwd, "dist", "FrameworkBundled", "Utility.js"));
 const validationRulesConfig = generateBundle(path.join(cwd, "dist", "Framework", "ValidationRules"), path.join(cwd, "dist", "FrameworkBundled", "ValidationRules.js"));
 const pageStateConfig = generateBundle(path.join(cwd, "dist", "Framework", "PageState"), path.join(cwd, "dist", "FrameworkBundled", "PageState.js"));
@@ -242,4 +262,4 @@ const controlsConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "
 const fieldTypesConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "FieldTypes"), path.join(cwd, "dist", "FrameworkBundled", "FieldTypes"));
 const templatesConfig = generateAutoBundles(path.join(cwd, "dist", "Framework", "Templates"), path.join(cwd, "dist", "FrameworkBundled", "Templates"));
 
-export default [utilityConfig, validationRulesConfig, pageStateConfig, coreConfig, directivesConfig, controlsConfig, fieldTypesConfig, templatesConfig];
+export default [libsConfig, utilityConfig, validationRulesConfig, pageStateConfig, coreConfig, directivesConfig, controlsConfig, fieldTypesConfig, templatesConfig];

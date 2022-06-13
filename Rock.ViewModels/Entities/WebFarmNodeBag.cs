@@ -34,122 +34,122 @@ namespace Rock.ViewModels.Entities
     public partial class WebFarmNodeBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AddedDateTime.
+        /// Gets or sets the added date time.
         /// </summary>
         /// <value>
-        /// The AddedDateTime.
+        /// The added date time.
         /// </value>
         public DateTime AddedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ConfiguredLeadershipPollingIntervalSeconds.
+        /// Gets or sets the configured leadership polling interval seconds.
         /// </summary>
         /// <value>
-        /// The ConfiguredLeadershipPollingIntervalSeconds.
+        /// The configured leadership polling interval seconds.
         /// </value>
         public int? ConfiguredLeadershipPollingIntervalSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the CurrentLeadershipPollingIntervalSeconds.
+        /// Gets or sets the current leadership polling interval seconds.
         /// </summary>
         /// <value>
-        /// The CurrentLeadershipPollingIntervalSeconds.
+        /// The current leadership polling interval seconds.
         /// </value>
         public decimal CurrentLeadershipPollingIntervalSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// Active.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsCurrentJobRunner.
+        /// Gets or sets a value indicating whether this instance is current job runner.
         /// </summary>
         /// <value>
-        /// The IsCurrentJobRunner.
+        ///   true if this instance is current job runner; otherwise, false.
         /// </value>
         public bool IsCurrentJobRunner { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsLeader.
+        /// Gets or sets a value indicating whether this instance is leader.
         /// </summary>
         /// <value>
-        /// The IsLeader.
+        ///   true if this instance is leader; otherwise, false.
         /// </value>
         public bool IsLeader { get; set; }
 
         /// <summary>
-        /// Gets or sets the JobsAllowed.
+        /// Gets or sets a value indicating whether [jobs allowed].
         /// </summary>
         /// <value>
-        /// The JobsAllowed.
+        ///   true if [jobs allowed]; otherwise, false.
         /// </value>
         public bool JobsAllowed { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRestartDateTime.
+        /// Gets or sets the last restart date time.
         /// </summary>
         /// <value>
-        /// The LastRestartDateTime.
+        /// The last restart date time.
         /// </value>
         public DateTime LastRestartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastSeenDateTime.
+        /// Gets or sets the last seen date time.
         /// </summary>
         /// <value>
-        /// The LastSeenDateTime.
+        /// The last seen date time.
         /// </value>
         public DateTime LastSeenDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the NodeName.
+        /// Gets or sets a Node Name.
         /// </summary>
         /// <value>
-        /// The NodeName.
+        ///   true if [node name]; otherwise, false.
         /// </value>
         public string NodeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the StoppedDateTime.
+        /// Gets or sets the stopped date time.
         /// </summary>
         /// <value>
-        /// The StoppedDateTime.
+        /// The stopped date time.
         /// </value>
         public DateTime? StoppedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -25,40 +25,55 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** InteractionComponent View Model */
 export type InteractionComponentBag = {
-    /** Gets or sets the ChannelCustom1. */
+    /** Gets or sets the channel custom 1. */
     channelCustom1?: string | null;
 
-    /** Gets or sets the ChannelCustom2. */
+    /** Gets or sets the channel custom 2. */
     channelCustom2?: string | null;
 
-    /** Gets or sets the ChannelCustomIndexed1. */
+    /** Gets or sets the channel custom indexed 1. */
     channelCustomIndexed1?: string | null;
 
-    /** Gets or sets the ComponentData. */
+    /** Gets or sets the interaction component data. */
     componentData?: string | null;
 
-    /** Gets or sets the ComponentSummary. */
+    /** Gets or sets the component summary. */
     componentSummary?: string | null;
 
-    /** Gets or sets the EntityId. */
+    /**
+     * Gets or sets the Id of the entity that this interaction component is related to (determined by Rock.Model.InteractionChannel.ComponentEntityTypeId )
+     * 
+     * 
+     *     <term>Page Views</term>
+     *     <description><see cref="T:Rock.Model.Site" /> Id</description>
+     * 
+     *     <term>Communication Recipient Activity</term>
+     *     <description><see cref="T:Rock.Model.Communication" /> Id</description>
+     * 
+     *     <term>Content Channel Activity</term>
+     *     <description><see cref="T:Rock.Model.ContentChannel" /> Id</description>
+     * 
+     *     <term>System Events, like Workflow Form Entry</term>
+     *     <description>Depends on <see cref="T:Rock.Model.ContentChannelType"></see></description>
+     */
     entityId?: number | null;
 
-    /** Gets or sets the InteractionChannelId. */
+    /** Gets or sets the Id of the Rock.Model.InteractionChannel channel that is associated with this Component. */
     interactionChannelId: number;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the interaction component name. */
     name?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

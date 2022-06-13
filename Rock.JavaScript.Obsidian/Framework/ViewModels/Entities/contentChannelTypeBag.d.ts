@@ -25,40 +25,46 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ContentChannelType View Model */
 export type ContentChannelTypeBag = {
-    /** Gets or sets the DateRangeType. */
+    /** Gets or sets an Rock.Model.ContentChannelDateType enumeration that represents the type of date range that this DateRangeTypeEnum supports. */
     dateRangeType: number;
 
-    /** Gets or sets the DisableContentField. */
+    /** Gets or sets a value indicating whether [disable content field]. */
     disableContentField: boolean;
 
-    /** Gets or sets the DisablePriority. */
+    /** Gets or sets a value indicating whether [disable priority]. */
     disablePriority: boolean;
 
-    /** Gets or sets the DisableStatus. */
+    /**
+     * Gets or sets a value indicating whether [disable status].
+     * If this is set to True, all of the ContentChannelItems are "Approved"
+     */
     disableStatus: boolean;
 
-    /** Gets or sets the IncludeTime. */
+    /** Gets or sets a value indicating whether time should be included with the single or date range values */
     includeTime: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this ContentType is part of the Rock core system/framework.  */
     isSystem: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name of the ContentType. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the ShowInChannelList. */
+    /**
+     * A flag indicating if a Rock.Model.ContentChannel of this ContentChannelType will be shown in the content channel list.
+     * When false, it means any 'Channel Types Include' settings MUST specifically include in order to show it.
+     */
     showInChannelList: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

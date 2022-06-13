@@ -34,114 +34,119 @@ namespace Rock.ViewModels.Entities
     public partial class AttributeValueHistoricalBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AttributeValueId.
+        /// Gets or sets the AttributeValueId of the Rock.Model.AttributeValue that this AttributeValueHistorical provides a historical value for.
         /// </summary>
         /// <value>
-        /// The AttributeValueId.
+        /// The attribute value identifier.
         /// </value>
         public int AttributeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CurrentRowIndicator.
+        /// Gets or sets a value indicating whether [current row indicator].
+        /// This will be True if this represents the same values as the current tracked record for this
         /// </summary>
         /// <value>
-        /// The CurrentRowIndicator.
+        ///   true if [current row indicator]; otherwise, false.
         /// </value>
         public bool CurrentRowIndicator { get; set; }
 
         /// <summary>
-        /// Gets or sets the EffectiveDateTime.
+        /// Gets or sets the effective date.
+        /// This is the starting date that the tracked record had the values reflected in this record
         /// </summary>
         /// <value>
-        /// The EffectiveDateTime.
+        /// The effective date.
         /// </value>
         public DateTime EffectiveDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpireDateTime.
+        /// Gets or sets the expire date time
+        /// This is the last date that the tracked record had the values reflected in this record
+        /// For example, if a tracked record's Name property changed on '2016-07-14', the ExpireDate of the previously current record will be '2016-07-13', and the EffectiveDate of the current record will be '2016-07-14'
+        /// If this is most current record, the ExpireDate will be '9999-01-01'
         /// </summary>
         /// <value>
-        /// The ExpireDateTime.
+        /// The expire date.
         /// </value>
         public DateTime ExpireDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Value.
+        /// Gets or sets the value of the AttributeValue at this point in history
         /// </summary>
         /// <value>
-        /// The Value.
+        /// The value.
         /// </value>
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsBoolean.
+        /// Gets or sets the value as boolean at this point in history
         /// </summary>
         /// <value>
-        /// The ValueAsBoolean.
+        /// The value as boolean.
         /// </value>
         public bool? ValueAsBoolean { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsDateTime.
+        /// Gets or sets the value as date time at this point in history
         /// </summary>
         /// <value>
-        /// The ValueAsDateTime.
+        /// The value as date time.
         /// </value>
         public DateTime? ValueAsDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsNumeric.
+        /// Gets or sets the value as numeric at this point in history
         /// </summary>
         /// <value>
-        /// The ValueAsNumeric.
+        /// The value as numeric.
         /// </value>
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueAsPersonId.
+        /// Gets or sets the value as person identifier.
         /// </summary>
         /// <value>
-        /// The ValueAsPersonId.
+        /// The value as person identifier.
         /// </value>
         public int? ValueAsPersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ValueFormatted.
+        /// Gets or sets the formatted value of the AttributeValue at this point in history
         /// </summary>
         /// <value>
-        /// The ValueFormatted.
+        /// The value formatted.
         /// </value>
         public string ValueFormatted { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

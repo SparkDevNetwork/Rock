@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CommunicationTemplateAttachment View Model */
 export type CommunicationTemplateAttachmentBag = {
-    /** Gets or sets the BinaryFileId. */
+    /** Gets or sets the PersonId of the Rock.Model.Person who is being sent the Rock.Model.Communication. */
     binaryFileId: number;
 
-    /** Gets or sets the CommunicationTemplateId. */
+    /** Gets or sets the CommunicationTemplateId of the Rock.Model.CommunicationTemplate. */
     communicationTemplateId: number;
 
-    /** Gets or sets the CommunicationType. */
+    /** Indicates if the attachment is for SMS recipients or Email recipients */
     communicationType: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CommunicationResponseAttachment View Model */
 export type CommunicationResponseAttachmentBag = {
-    /** Gets or sets the BinaryFileId. */
+    /** Gets or sets the binary file identifier. */
     binaryFileId: number;
 
-    /** Gets or sets the CommunicationResponseId. */
+    /** Gets or sets the communication response identifier. */
     communicationResponseId: number;
 
-    /** Gets or sets the CommunicationType. */
+    /** Gets or sets the type of the communication. */
     communicationType: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

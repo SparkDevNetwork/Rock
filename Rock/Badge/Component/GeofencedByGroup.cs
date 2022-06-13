@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -46,14 +47,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -68,16 +65,12 @@ namespace Rock.Badge.Component
             }
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
             var groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuidOrNull();
 
-            if ( Person == null || !groupTypeGuid.HasValue )
+            if ( !( entity is Person person ) || !groupTypeGuid.HasValue )
             {
                 return null;
             }
@@ -107,7 +100,7 @@ $.ajax({{
             $badge.find('span').tooltip();
         }}
     }},
-}});", Person.Id.ToString(), groupTypeGuid.ToString(), badge.Id );
+}});", person.Id.ToString(), groupTypeGuid.ToString(), badge.Id );
         }
     }
 }

@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ContentChannelItemAssociation View Model */
 export type ContentChannelItemAssociationBag = {
-    /** Gets or sets the ChildContentChannelItemId. */
+    /** Gets or sets the child Rock.Model.ContentChannelItem identifier. */
     childContentChannelItemId: number;
 
-    /** Gets or sets the ContentChannelItemId. */
+    /** Gets or sets the Rock.Model.ContentChannelItem identifier. */
     contentChannelItemId: number;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

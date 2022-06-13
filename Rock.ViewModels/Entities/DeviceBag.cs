@@ -34,130 +34,138 @@ namespace Rock.ViewModels.Entities
     public partial class DeviceBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CameraBarcodeConfigurationType.
+        /// Gets or sets the camera barcode configuration.
+        /// This is currently only used for reading barcodes on iPads.
         /// </summary>
         /// <value>
-        /// The CameraBarcodeConfigurationType.
+        /// The type of the camera barcode configuration.
         /// </value>
         public int? CameraBarcodeConfigurationType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the device.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the device.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DeviceTypeValueId.
+        /// Gets or sets the Id of the DeviceType Rock.Model.DefinedValue that identifies
+        /// what type of device this is.
         /// </summary>
         /// <value>
-        /// The DeviceTypeValueId.
+        /// A System.Int32 representing the Id of the Device Type Rock.Model.DefinedValue
         /// </value>
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the HasCamera.
+        /// Gets or sets a value indicating whether this instance has camera.
+        /// Only applies when Rock.Model.Device.DeviceTypeValueId is Checkin-Kiosk.
         /// </summary>
         /// <value>
-        /// The HasCamera.
+        ///   true if this instance has camera; otherwise, false.
         /// </value>
         public bool HasCamera { get; set; }
 
         /// <summary>
-        /// Gets or sets the IPAddress.
+        /// Gets or sets the IP address of the device.
         /// </summary>
         /// <value>
-        /// The IPAddress.
+        /// A System.String representing the IP address of the device.
         /// </value>
         public string IPAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the KioskType.
+        /// The type of checkin client this Check-in Kiosk could be using.
+        /// Only applies when Rock.Model.Device.DeviceTypeValueId is Checkin-Kiosk.
         /// </summary>
         /// <value>
-        /// The KioskType.
+        /// The type of the kiosk.
         /// </value>
         public int? KioskType { get; set; }
 
         /// <summary>
-        /// Gets or sets the LocationId.
+        /// Gets or sets the Id of the Rock.Model.Location where this device is located at.
         /// </summary>
         /// <value>
-        /// The LocationId.
+        /// A System.Int32 representing the Id of the Rock.Model.Location where this device is located at.
         /// </value>
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the device name. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the Name of the device.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PrinterDeviceId.
+        /// Gets or sets the DeviceId of the printer that is associated with this device. This is mostly used if this device is a kiosk.
         /// </summary>
         /// <value>
-        /// The PrinterDeviceId.
+        /// A System.Int32 representing the DeviceId of the printer that is associated with this device. If there is not a printer 
+        /// associated with this Device, this value will be null.
         /// </value>
         public int? PrinterDeviceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PrintFrom.
+        /// Gets or sets where print jobs for this device originates from.
         /// </summary>
         /// <value>
-        /// The PrintFrom.
+        /// A Rock.Model.PrintFrom to indicate how print jobs should be handled from this device. If PrintFrom.Client the print job will
+        /// be handled from the client, otherwise PrintFrom.Server and the print job will be handled from the server.
         /// </value>
         public int PrintFrom { get; set; }
 
         /// <summary>
-        /// Gets or sets the PrintToOverride.
+        /// Gets or sets a flag that overrides which printer the print job is set to.
         /// </summary>
         /// <value>
-        /// The PrintToOverride.
+        /// A Rock.Model.PrintTo that indicates overrides where the print job is set to.  If PrintTo.Default the print job will be sent to the default
+        /// printer, if PrintTo.Kiosk the print job will be sent to the printer associated with the kiosk, if PrintTo.Location the print job will be sent to the 
+        /// printer at the check in location.
         /// </value>
         public int PrintToOverride { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

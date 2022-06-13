@@ -34,58 +34,58 @@ namespace Rock.ViewModels.Entities
     public partial class ContentChannelItemSlugBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ContentChannelItemId.
+        /// Gets or sets the Rock.Model.ContentChannelItem identifier.
         /// </summary>
         /// <value>
-        /// The ContentChannelItemId.
+        /// The content channel item identifier.
         /// </value>
         public int ContentChannelItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPrimary.
+        /// Gets or sets the flag indicating whether or not the slug is primary.
         /// </summary>
         /// <value>
-        /// The IsPrimary.
+        /// A System.Boolean value that is true if the slug is primary; otherwise false.
         /// </value>
         public bool IsPrimary { get; set; }
 
         /// <summary>
-        /// Gets or sets the Slug.
+        /// Gets or sets the slug.
         /// </summary>
         /// <value>
-        /// The Slug.
+        /// The slug.
         /// </value>
         public string Slug { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

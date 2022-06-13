@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupMemberScheduleTemplate View Model */
 export type GroupMemberScheduleTemplateBag = {
-    /** Gets or sets the GroupTypeId. */
+    /** Gets or sets the Rock.Model.GroupType that is allowed to use this template (or null if any GroupType can use it) */
     groupTypeId?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the ScheduleId. */
+    /** Gets or sets the Rock.Model.Schedule, which indicates the Schedule that a GroupMember is associated with (Every Week, Every Other Week, etc) */
     scheduleId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

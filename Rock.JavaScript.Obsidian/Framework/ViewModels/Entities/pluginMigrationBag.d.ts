@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** PluginMigration View Model */
 export type PluginMigrationBag = {
-    /** Gets or sets the MigrationName. */
+    /** Gets or sets the migration number. */
     migrationName?: string | null;
 
-    /** Gets or sets the MigrationNumber. */
+    /** Gets or sets the migration number. */
     migrationNumber: number;
 
-    /** Gets or sets the PluginAssemblyName. */
+    /** Gets or sets the name of the plugin assembly. */
     pluginAssemblyName?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

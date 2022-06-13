@@ -25,52 +25,64 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Device View Model */
 export type DeviceBag = {
-    /** Gets or sets the CameraBarcodeConfigurationType. */
+    /**
+     * Gets or sets the camera barcode configuration.
+     * This is currently only used for reading barcodes on iPads.
+     */
     cameraBarcodeConfigurationType?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a description of the device. */
     description?: string | null;
 
-    /** Gets or sets the DeviceTypeValueId. */
+    /**
+     * Gets or sets the Id of the DeviceType Rock.Model.DefinedValue that identifies
+     * what type of device this is.
+     */
     deviceTypeValueId: number;
 
-    /** Gets or sets the HasCamera. */
+    /**
+     * Gets or sets a value indicating whether this instance has camera.
+     * Only applies when Rock.Model.Device.DeviceTypeValueId is Checkin-Kiosk.
+     */
     hasCamera: boolean;
 
-    /** Gets or sets the IPAddress. */
+    /** Gets or sets the IP address of the device. */
     iPAddress?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the KioskType. */
+    /**
+     * The type of checkin client this Check-in Kiosk could be using.
+     * Only applies when Rock.Model.Device.DeviceTypeValueId is Checkin-Kiosk.
+     */
     kioskType?: number | null;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the Id of the Rock.Model.Location where this device is located at. */
     locationId?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the device name. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the PrinterDeviceId. */
+    /** Gets or sets the DeviceId of the printer that is associated with this device. This is mostly used if this device is a kiosk. */
     printerDeviceId?: number | null;
 
-    /** Gets or sets the PrintFrom. */
+    /** Gets or sets where print jobs for this device originates from. */
     printFrom: number;
 
-    /** Gets or sets the PrintToOverride. */
+    /** Gets or sets a flag that overrides which printer the print job is set to. */
     printToOverride: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

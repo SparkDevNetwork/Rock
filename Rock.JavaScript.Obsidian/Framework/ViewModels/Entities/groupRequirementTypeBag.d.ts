@@ -25,55 +25,55 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupRequirementType View Model */
 export type GroupRequirementTypeBag = {
-    /** Gets or sets the CanExpire. */
+    /** Gets or sets a value indicating whether this requirement can expire. */
     canExpire: boolean;
 
-    /** Gets or sets the CheckboxLabel. */
+    /** Gets or sets the checkbox label. This is the text that is used for the checkbox if this is a manually set requirement */
     checkboxLabel?: string | null;
 
-    /** Gets or sets the DataViewId. */
+    /** Gets or sets the Rock.Model.DataView identifier. */
     dataViewId?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets the ExpireInDays. */
+    /** Gets or sets the number of days after the requirement is met before it expires (If CanExpire is true). NULL means never expires */
     expireInDays?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the NegativeLabel. */
+    /** Gets or sets the negative label. This is the text that is displayed when the requirement is not met. */
     negativeLabel?: string | null;
 
-    /** Gets or sets the PositiveLabel. */
+    /** Gets or sets the positive label. This is the text that is displayed when the requirement is met. */
     positiveLabel?: string | null;
 
-    /** Gets or sets the RequirementCheckType. */
+    /** Gets or sets the type of the requirement check. */
     requirementCheckType: number;
 
-    /** Gets or sets the SqlExpression. */
+    /** Gets or sets the SQL expression. */
     sqlExpression?: string | null;
 
-    /** Gets or sets the WarningDataViewId. */
+    /** Gets or sets the warning Rock.Model.DataView identifier. */
     warningDataViewId?: number | null;
 
-    /** Gets or sets the WarningLabel. */
+    /** Gets or sets the warning label. */
     warningLabel?: string | null;
 
-    /** Gets or sets the WarningSqlExpression. */
+    /** Gets or sets the warning SQL expression. */
     warningSqlExpression?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

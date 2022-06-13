@@ -25,58 +25,58 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RegistrationTemplateFormField View Model */
 export type RegistrationTemplateFormFieldBag = {
-    /** Gets or sets the AttributeId. */
+    /** Gets or sets the Rock.Model.Attribute identifier. */
     attributeId?: number | null;
 
-    /** Gets or sets the FieldSource. */
+    /** Gets or sets the source of the field value. */
     fieldSource: number;
 
-    /** Gets or sets the FieldVisibilityRulesJSON. */
+    /** JSON Serialized Rock.Model.RegistrationTemplateFormField.FieldVisibilityRules */
     fieldVisibilityRulesJSON?: string | null;
 
-    /** Gets or sets the IsGridField. */
+    /** Gets or sets a value indicating whether this instance is grid field. */
     isGridField: boolean;
 
-    /** Gets or sets the IsInternal. */
+    /** Gets or sets a value indicating whether this field is only for administrative, and not shown in the public form */
     isInternal: boolean;
 
-    /** Gets or sets the IsRequired. */
+    /** Gets or sets a value indicating whether this instance is required. */
     isRequired: boolean;
 
-    /** Gets or sets the IsSharedValue. */
+    /** Gets or sets a value indicating whether this is a 'shared value'. If so, the value entered will default to the value entered for first person registered. */
     isSharedValue: boolean;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the PersonFieldType. */
+    /** Gets or sets the type of the person field. */
     personFieldType: number;
 
-    /** Gets or sets the PostText. */
+    /** Gets or sets the Post-HTML. */
     postText?: string | null;
 
-    /** Gets or sets the PreText. */
+    /** Gets or sets the Pre-HTML. */
     preText?: string | null;
 
-    /** Gets or sets the RegistrationTemplateFormId. */
+    /** Gets or sets the Rock.Model.RegistrationTemplateForm identifier. */
     registrationTemplateFormId: number;
 
-    /** Gets or sets the ShowCurrentValue. */
+    /** Gets or sets a value indicating whether [show current value]. */
     showCurrentValue: boolean;
 
-    /** Gets or sets the ShowOnWaitlist. */
+    /** Gets or sets a value indicating whether the field should be shown on a waitlist. */
     showOnWaitlist: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

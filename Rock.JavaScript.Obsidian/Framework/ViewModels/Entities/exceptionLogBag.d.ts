@@ -25,58 +25,58 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ExceptionLog View Model */
 export type ExceptionLogBag = {
-    /** Gets or sets the Cookies. */
+    /** Gets or sets a table containing the session cookies from the client when the exception occurred. */
     cookies?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a message that describes the exception. */
     description?: string | null;
 
-    /** Gets or sets the ExceptionType. */
+    /** Gets or sets the type (exception class) of the exception that occurred. i.e. System.Data.SqlClient.SqlException */
     exceptionType?: string | null;
 
-    /** Gets or sets the Form. */
+    /** Gets or sets a table containing all the form items from the page request where the exception occurred. */
     form?: string | null;
 
-    /** Gets or sets the HasInnerException. */
+    /** Gets or sets a flag indicating if this exception has a child/inner exception.  */
     hasInnerException?: boolean | null;
 
-    /** Gets or sets the PageId. */
+    /** Gets or sets the Id of the Rock.Model.Page that the exception occurred on. */
     pageId?: number | null;
 
-    /** Gets or sets the PageUrl. */
+    /** Gets or sets the relative URL of the page that the exception occurred on. */
     pageUrl?: string | null;
 
-    /** Gets or sets the ParentId. */
+    /** Gets or sets the Id of the parent/outer ExceptionLog entity (if it exists). ExceptionLog entities are hierarchical. */
     parentId?: number | null;
 
-    /** Gets or sets the QueryString. */
+    /** Gets or sets the full query string from the page that the exception occurred on. */
     queryString?: string | null;
 
-    /** Gets or sets the ServerVariables. */
+    /** Gets or sets a table of the ServerVariables at the time that the exception occurred. */
     serverVariables?: string | null;
 
-    /** Gets or sets the SiteId. */
+    /** Gets or sets the Id of the Rock.Model.Site that the exception occurred on. If this did not occur on a site (i.e. a job) this value will be null. */
     siteId?: number | null;
 
-    /** Gets or sets the Source. */
+    /** Gets or sets the name of the application or the object that causes the error. */
     source?: string | null;
 
-    /** Gets or sets the StackTrace. */
+    /** Gets a string representation of the immediate frames on the call stack. */
     stackTrace?: string | null;
 
-    /** Gets or sets the StatusCode. */
+    /** Gets or sets the StatusCode that was returned and describes the type of error.   */
     statusCode?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

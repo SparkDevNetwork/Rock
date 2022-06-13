@@ -25,43 +25,49 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** HtmlContent View Model */
 export type HtmlContentBag = {
-    /** Gets or sets the ApprovedByPersonAliasId. */
+    /** Gets or sets the Id of the Rock.Model.Person who approved the HTMLContent. */
     approvedByPersonAliasId?: number | null;
 
-    /** Gets or sets the ApprovedDateTime. */
+    /** Gets or sets the date and time that the HTMLContent was approved. */
     approvedDateTime?: string | null;
 
-    /** Gets or sets the BlockId. */
+    /** Gets or sets the Id of the Rock.Model.Block that the HTML content should appear on. This property is required. */
     blockId: number;
 
-    /** Gets or sets the Content. */
+    /** Gets or sets the HTML content that will display on the block when conditions (if any) are met. */
     content?: string | null;
 
-    /** Gets or sets the EntityValue. */
+    /**
+     * Gets or sets the Entity Value that must be present on the page for this HTML Content to be displayed. If this value will null
+     * there will not be an entity restriction on the HTMLContent object.
+     */
     entityValue?: string | null;
 
-    /** Gets or sets the ExpireDateTime. */
+    /** Gets or sets the date and time that the HTMLContent expires and is no longer available. If this value is null the HTMLContent remains available until it is overwritten or replaced with a new version. */
     expireDateTime?: string | null;
 
-    /** Gets or sets the IsApproved. */
+    /** Gets or sets a flag indicating if the content has been approved. If approval is required, the content will not be displayed until it has been approved. */
     isApproved: boolean;
 
-    /** Gets or sets the StartDateTime. */
+    /**
+     * Gets or sets the date and time that the HTMLContent becomes active and available to be displayed on the web.  If a date and time is provided, the HTMLContent will not be available until then; if null
+     * the HTMLContent will be available immediately.  Please note that the start date is overridden by the approval status, if the HTMLContent is subject to approval, it will not be displayed until it is approved.
+     */
     startDateTime?: string | null;
 
-    /** Gets or sets the Version. */
+    /** Gets or sets the version number for the HTMLContent */
     version: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

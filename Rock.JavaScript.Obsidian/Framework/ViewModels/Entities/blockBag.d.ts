@@ -25,55 +25,71 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Block View Model */
 export type BlockBag = {
-    /** Gets or sets the AdditionalSettings. */
+    /** Gets or sets the additional settings. */
     additionalSettings?: string | null;
 
-    /** Gets or sets the BlockTypeId. */
+    /** Gets or sets the Id of the Rock.Model.BlockType that this Block is implementing. This property is required. */
     blockTypeId: number;
 
-    /** Gets or sets the CssClass. */
+    /** Gets or sets an optional CSS class to include when the block's parent container is rendered */
     cssClass?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Block was created by and is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the LayoutId. */
+    /**
+     * Gets or sets the Id of the Rock.Model.Layout that this Block is implemented on. This property will only be populated
+     * if the Block is implemented on a Rock.Model.Layout.
+     * Blocks that have a specific LayoutId will be shown on all pages on a site that have the specified LayoutId
+     */
     layoutId?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets a user defined name of the block implementation. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /**
+     * Gets or sets the order that this Block appears in the Rock.Model.Block.Page/Layout zone that the Block is implemented in.  Blocks are 
+     * displayed/rendered in Ascending (1,2,3,...) order. The lower the number the higher in the Zone the Block will appear.  Rock.Model.Page Blocks have
+     * priority over layout Blocks, so they will appear higher in the Zone than Rock.Model.Site/Layout Blocks. This property is required
+     */
     order: number;
 
-    /** Gets or sets the OutputCacheDuration. */
+    /** Gets or sets the length of time (in minutes) that the Block's data is cached. This property is required. */
     outputCacheDuration: number;
 
-    /** Gets or sets the PageId. */
+    /**
+     * Gets or sets the Id of the Rock.Model.Page that this Block is implemented on. This property will only be populated
+     * if the Block is implemented on a Rock.Model.Page.
+     * Blocks that have a specific PageId will only be shown in the specified Page
+     */
     pageId?: number | null;
 
-    /** Gets or sets the PostHtml. */
+    /** Gets or sets any HTML to be rendered after the block */
     postHtml?: string | null;
 
-    /** Gets or sets the PreHtml. */
+    /** Gets or sets any HTML to be rendered before the block */
     preHtml?: string | null;
 
-    /** Gets or sets the SiteId. */
+    /**
+     * Gets or sets the Id of the Rock.Model.Site that this Block is implemented on. This property will only be populated
+     * if the Block is implemented on a Rock.Model.Site.
+     * Blocks that have a specific SiteId will be shown on all pages on a site
+     */
     siteId?: number | null;
 
-    /** Gets or sets the Zone. */
+    /** Gets or sets the name of the layout zone/section that this Block is being implemented on. This property is required. */
     zone?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

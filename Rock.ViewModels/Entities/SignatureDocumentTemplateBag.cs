@@ -34,122 +34,120 @@ namespace Rock.ViewModels.Entities
     public partial class SignatureDocumentTemplateBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BinaryFileTypeId.
+        /// Gets or sets the binary file type identifier.
         /// </summary>
         /// <value>
-        /// The BinaryFileTypeId.
+        /// The binary file type identifier.
         /// </value>
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CompletionSystemCommunicationId.
+        /// The System Communication that will be used when sending the signature document completion email.
         /// </summary>
         /// <value>
-        /// The CompletionSystemCommunicationId.
+        /// The completion system communication identifier.
         /// </value>
         public int? CompletionSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description or summary about the SignatureDocumentTemplate.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing a description/summary of the SignatureDocumentTemplate.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTerm.
+        /// The term used to simply describe the document (wavier, release form, etc.).
         /// </summary>
         /// <value>
-        /// The DocumentTerm.
+        /// The document term.
         /// </value>
         public string DocumentTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the InviteSystemCommunicationId.
+        /// Gets or sets the invite system email identifier.
         /// </summary>
         /// <value>
-        /// The InviteSystemCommunicationId.
+        /// The invite system email identifier.
         /// </value>
         public int? InviteSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a flag indicating if this item is active or not.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// A System.Boolean that is  true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the LavaTemplate.
+        /// The Lava template that will be used to build the signature document.
         /// </summary>
-        /// <value>
-        /// The LavaTemplate.
-        /// </value>
         public string LavaTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the friendly Name of the SignatureDocumentTemplate. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the friendly Name of the SignatureDocumentTemplate.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProviderEntityTypeId.
+        /// Gets or sets the provider entity type identifier.
         /// </summary>
         /// <value>
-        /// The ProviderEntityTypeId.
+        /// The provider entity type identifier.
         /// </value>
         public int? ProviderEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProviderTemplateKey.
+        /// Gets or sets the provider template key.
         /// </summary>
         /// <value>
-        /// The ProviderTemplateKey.
+        /// The provider template key.
         /// </value>
         public string ProviderTemplateKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the SignatureType.
+        /// This is used to define which kind of signature is being collected from the individual.
+        /// Ex: Rock.Model.SignatureType.Drawn or Rock.Model.SignatureType.Typed, etc.
         /// </summary>
         /// <value>
-        /// The SignatureType.
+        /// The type of the signature.
         /// </value>
         public int SignatureType { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

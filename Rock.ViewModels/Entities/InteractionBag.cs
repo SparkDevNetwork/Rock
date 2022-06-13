@@ -34,210 +34,227 @@ namespace Rock.ViewModels.Entities
     public partial class InteractionBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Campaign.
+        /// Gets or sets the campaign name
         /// </summary>
         /// <value>
-        /// The Campaign.
+        /// The campaign.
         /// </value>
         public string Campaign { get; set; }
 
         /// <summary>
-        /// Gets or sets the ChannelCustom1.
+        /// Gets or sets the channel custom 1.
         /// </summary>
         /// <value>
-        /// The ChannelCustom1.
+        /// The channel custom 1.
         /// </value>
         public string ChannelCustom1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the ChannelCustom2.
+        /// Gets or sets the channel custom 2.
         /// </summary>
         /// <value>
-        /// The ChannelCustom2.
+        /// The channel custom 2.
         /// </value>
         public string ChannelCustom2 { get; set; }
 
         /// <summary>
-        /// Gets or sets the ChannelCustomIndexed1.
+        /// Gets or sets the channel custom indexed 1.
         /// </summary>
         /// <value>
-        /// The ChannelCustomIndexed1.
+        /// The channel custom indexed 1.
         /// </value>
         public string ChannelCustomIndexed1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the Content.
+        /// Gets or sets the campaign content.
         /// </summary>
         /// <value>
-        /// The Content.
+        /// The content.
         /// </value>
         public string Content { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the Id of the entity that this interaction component is tracking activity for.
+        /// 
+        /// <item>
+        ///     <term>Page Views</term>
+        ///     <description>null, Page is the Component, Site is the Channel</description></item>
+        /// <item>
+        ///     <term>Communication Recipient Activity</term>
+        ///     <description><see cref="T:Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
+        /// <item>
+        ///     <term>Content Channel Activity</term>
+        ///     <description>null, ContentChannel is the Component, single Channel</description></item>
+        /// <item>
+        ///     <term>Workflow Form Entry</term>
+        ///     <description><see cref="T:Rock.Model.Workflow" /> Id, WorkflowType is the Component, single Channel </description></item>
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// A System.Int32 representing the Id of the entity (object) that this interaction component is related to.
         /// </value>
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionComponentId.
+        /// Gets or sets the Id of the Rock.Model.InteractionComponent Component that is associated with this Interaction.
         /// </summary>
         /// <value>
-        /// The InteractionComponentId.
+        /// An System.Int32 representing the Id of the Rock.Model.InteractionComponent component that this Interaction is associated with.
         /// </value>
         public int InteractionComponentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionData.
+        /// Gets or sets the interaction data.
         /// </summary>
         /// <value>
-        /// The InteractionData.
+        /// The interaction data.
         /// </value>
         public string InteractionData { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionDateTime.
+        /// Gets or sets the interaction datetime.
         /// </summary>
         /// <value>
-        /// The InteractionDateTime.
+        /// The interaction datetime.
         /// </value>
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionEndDateTime.
+        /// Gets or sets the interaction end date time.
         /// </summary>
         /// <value>
-        /// The InteractionEndDateTime.
+        /// The interaction end date time.
         /// </value>
         public DateTime? InteractionEndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionLength.
+        /// Gets or sets the length of time (or percent of time) of the interaction.
+        /// The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc
+        /// For example, if this interaction type is watching a video, this might be what percent of the video they watched
         /// </summary>
         /// <value>
-        /// The InteractionLength.
+        /// The length of the interaction.
         /// </value>
         public double? InteractionLength { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionSessionId.
+        /// Gets or sets the Id of the Rock.Model.InteractionSession Session that that is associated with this Interaction.
         /// </summary>
         /// <value>
-        /// The InteractionSessionId.
+        /// An System.Int32 representing the Id of the Rock.Model.InteractionSession session that this Interaction is associated with.
         /// </value>
         public int? InteractionSessionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionSummary.
+        /// Gets or sets the interaction summary.
         /// </summary>
         /// <value>
-        /// The InteractionSummary.
+        /// The interaction summary.
         /// </value>
         public string InteractionSummary { get; set; }
 
         /// <summary>
-        /// Gets or sets the InteractionTimeToServe.
+        /// Gets or sets the interaction time to serve.
+        /// The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc.
+        /// For example, if this is a page view, this would be how long (in seconds) it took for Rock to generate a response.
         /// </summary>
         /// <value>
-        /// The InteractionTimeToServe.
+        /// The interaction time to serve.
         /// </value>
         public double? InteractionTimeToServe { get; set; }
 
         /// <summary>
-        /// Gets or sets the Medium.
+        /// Gets or sets the campaign medium.
         /// </summary>
         /// <value>
-        /// The Medium.
+        /// The medium.
         /// </value>
         public string Medium { get; set; }
 
         /// <summary>
-        /// Gets or sets the Operation.
+        /// Gets or sets the operation. For example: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'
         /// </summary>
         /// <value>
-        /// The Operation.
+        /// The operation.
         /// </value>
         public string Operation { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonalDeviceId.
+        /// Gets or sets the personal device identifier.
         /// </summary>
         /// <value>
-        /// The PersonalDeviceId.
+        /// The personal device identifier.
         /// </value>
         public int? PersonalDeviceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedEntityId.
+        /// Gets or sets the related entity identifier.
         /// </summary>
         /// <value>
-        /// The RelatedEntityId.
+        /// The related entity identifier.
         /// </value>
         public int? RelatedEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedEntityTypeId.
+        /// Gets or sets the related entity type identifier.
         /// </summary>
         /// <value>
-        /// The RelatedEntityTypeId.
+        /// The related entity type identifier.
         /// </value>
         public int? RelatedEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Source.
+        /// Gets or sets the campaign source.
         /// </summary>
         /// <value>
-        /// The Source.
+        /// The source.
         /// </value>
         public string Source { get; set; }
 
         /// <summary>
-        /// Gets or sets the Term.
+        /// Gets or sets the term(s).
         /// </summary>
         /// <value>
-        /// The Term.
+        /// The term.
         /// </value>
         public string Term { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

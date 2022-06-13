@@ -25,97 +25,123 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FinancialTransaction View Model */
 export type FinancialTransactionBag = {
-    /** Gets or sets the AuthorizedPersonAliasId. */
+    /** Gets or sets the authorized person identifier. */
     authorizedPersonAliasId?: number | null;
 
-    /** Gets or sets the BatchId. */
+    /** Gets or sets BatchId of the Rock.Model.FinancialBatch that contains this transaction. */
     batchId?: number | null;
 
-    /** Gets or sets the CheckMicrEncrypted. */
+    /**
+     * Gets or sets an encrypted version of a scanned check's raw track of the MICR data.
+     * Note that different scanning hardware might use different special characters for fields such as Transit and On-US.
+     * Also, encryption of the same values results in different encrypted data, so this field can't be used for check matching
+     */
     checkMicrEncrypted?: string | null;
 
-    /** Gets or sets the CheckMicrHash. */
+    /**
+     * One Way Encryption (SHA1 Hash) of Raw Track of the MICR read. The same raw MICR will result in the same hash.
+     * Enables detection of duplicate scanned checks
+     * Note: duplicate detection requires that the duplicate check was scanned using the same scanner type (Ranger vs Magtek)
+     */
     checkMicrHash?: string | null;
 
-    /** Gets or sets the CheckMicrParts. */
+    /** Gets or sets an encrypted version of a scanned check's parsed MICR in the format {routingnumber}_{accountnumber}_{checknumber} */
     checkMicrParts?: string | null;
 
-    /** Gets or sets the FinancialGatewayId. */
+    /** Gets or sets the gateway identifier. */
     financialGatewayId?: number | null;
 
-    /** Gets or sets the FinancialPaymentDetailId. */
+    /** Gets or sets the financial payment detail identifier. */
     financialPaymentDetailId?: number | null;
 
-    /** Gets or sets the ForeignCurrencyCodeValueId. */
+    /** Gets or sets the foreign currency code value identifier. */
     foreignCurrencyCodeValueId?: number | null;
 
-    /** Gets or sets the FutureProcessingDateTime. */
+    /** Gets or sets date and time that the transaction should be processed after. This is the local server time. */
     futureProcessingDateTime?: string | null;
 
-    /** Gets or sets the IsReconciled. */
+    /** Gets or sets a flag indicating if the transaction has been reconciled or not. */
     isReconciled?: boolean | null;
 
-    /** Gets or sets the IsSettled. */
+    /** Gets or sets a flag indicating if the transaction has been settled by the processor/gateway. */
     isSettled?: boolean | null;
 
-    /** Gets or sets the MICRStatus. */
+    /**
+     * Gets or sets the micr status (if this Transaction is from a scanned check)
+     * Fail means that the check scanner detected a bad MICR read, but the user choose to Upload it anyway
+     */
     mICRStatus?: number | null;
 
-    /** Gets or sets the NonCashAssetTypeValueId. */
+    /** Gets or sets the non cash asset type Rock.Model.DefinedValue identifier. */
     nonCashAssetTypeValueId?: number | null;
 
-    /** Gets or sets the ProcessedByPersonAliasId. */
+    /**
+     * Gets or sets the PersonAliasId of the Rock.Model.PersonAlias who processed the transaction. For example, if the transaction is
+     * from a scanned check, the ProcessedByPersonAlias is the person who matched (or started to match) the check to the person who wrote the check.
+     */
     processedByPersonAliasId?: number | null;
 
-    /** Gets or sets the ProcessedDateTime. */
+    /**
+     * Gets or sets the processed date time. For example, if the transaction is from a scanned check, the ProcessedDateTime is when the transaction
+     * was matched (or started to match) to the person who wrote the check.
+     */
     processedDateTime?: string | null;
 
-    /** Gets or sets the ScheduledTransactionId. */
+    /**
+     * Gets or sets the ScheduledTransactionId of the Rock.Model.FinancialScheduledTransaction that triggered
+     * this transaction. If this was an ad-hoc/on demand transaction, this property will be null.
+     */
     scheduledTransactionId?: number | null;
 
-    /** Gets or sets the SettledDate. */
+    /** Gets or sets the date that the transaction was settled by the processor/gateway. */
     settledDate?: string | null;
 
-    /** Gets or sets the SettledGroupId. */
+    /** The group/batch identifier used by the processor/gateway when the transaction has been settled. */
     settledGroupId?: string | null;
 
-    /** Gets or sets the ShowAsAnonymous. */
+    /** Gets or sets a value indicating whether to show the transaction as anonymous when displayed publicly, for example on a list of fundraising contributors */
     showAsAnonymous: boolean;
 
-    /** Gets or sets the SourceTypeValueId. */
+    /** Gets or sets the DefinedValueId of the source type Rock.Model.DefinedValue for this transaction. Representing the source (method) of this transaction. */
     sourceTypeValueId?: number | null;
 
-    /** Gets or sets the Status. */
+    /** Gets the status of the transaction provided by the payment gateway (i.e. Pending, Complete, Failed) */
     status?: string | null;
 
-    /** Gets or sets the StatusMessage. */
+    /** Gets or sets the status message. */
     statusMessage?: string | null;
 
-    /** Gets or sets the Summary. */
+    /** Gets or sets a summary of the transaction. This would store any comments made. */
     summary?: string | null;
 
-    /** Gets or sets the SundayDate. */
+    /** Gets Sunday date. */
     sundayDate?: string | null;
 
-    /** Gets or sets the TransactionCode. */
+    /**
+     * For Credit Card transactions, this is the response code that the gateway returns.
+     * For Scanned Checks, this is the check number.
+     */
     transactionCode?: string | null;
 
-    /** Gets or sets the TransactionDateTime. */
+    /** Gets or sets date and time that the transaction occurred. This is the local server time. */
     transactionDateTime?: string | null;
 
-    /** Gets or sets the TransactionTypeValueId. */
+    /**
+     * Gets or sets the DefinedValueId of the TransactionType Rock.Model.DefinedValue indicating
+     * the type of the transaction.
+     */
     transactionTypeValueId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

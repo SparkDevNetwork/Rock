@@ -39,7 +39,7 @@
                        Grid.Column="1"
                        Padding="5,5,0,0"
                        TextTrimming="CharacterEllipsis"
-                       Text="{Binding AssemblyPath}" />
+                       Text="{Binding DisplayedAssemblyPath}" />
             <TextBlock Grid.Row="0"
                        Grid.Column="2"
                        Padding="5,5,0,0"

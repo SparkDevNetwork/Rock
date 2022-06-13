@@ -34,66 +34,69 @@ namespace Rock.ViewModels.Entities
     public partial class CampusScheduleBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the CampusId.
+        /// Gets or sets the Id of the Rock.Model.Campus that is associated with this CampusSchedule. This property is required.
         /// </summary>
         /// <value>
-        /// The CampusId.
+        /// An System.Int32 representing the Id of the Rock.Model.Campus that this CampusSchedule is associated with.
         /// </value>
         public int CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order of the CampusSchedule in the campus schedule list. The lower the number the higher the 
+        /// display priority this CampusSchedule has. This property is required.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 representing the display order of the CampusSchedule.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleId.
+        /// Gets or sets the Id of the Rock.Model.Schedule that is associated with this CampusSchedule. This property is required.
         /// </summary>
         /// <value>
-        /// The ScheduleId.
+        /// An System.Int32 referencing the Id of the Rock.Model.Schedule that is associated with this CampusSchedule. 
         /// </value>
         public int ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ScheduleTypeValueId.
+        /// The Id of the ScheduleType Rock.Model.DefinedValue that is used to identify the type of Rock.Model.CampusSchedule
+        /// that this is. This property is required.
         /// </summary>
         /// <value>
-        /// The ScheduleTypeValueId.
+        /// An System.Int32 referencing the Id of the ScheduleType Rock.Model.DefinedValue that identifies the type of schedule that this is.
+        /// If a ScheduleType Rock.Model.DefinedValue is not associated with this CampusSchedule this value will be null.
         /// </value>
         public int? ScheduleTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

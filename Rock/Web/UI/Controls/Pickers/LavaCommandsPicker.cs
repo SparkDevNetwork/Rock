@@ -53,7 +53,7 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var command in Rock.Lava.LavaHelper.GetLavaCommands() )
             {
-                this.Items.Add( new ListItem( command, command ) );
+                this.Items.Add( new ListItem( command.SplitCase(), command ) );
             }
         }
 

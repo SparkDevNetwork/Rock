@@ -71,4 +71,6 @@ export const enum Block {
     WorkflowConfigurationChangeLogNotes = "2194F555-1261-4D23-B5E0-F19380DFB10A",
     /** The financial account search block */
     FinancialAccountSearch = "21B7618B-47DD-4936-ABB5-81BDB4D56C6A",
+    /** The financial account search block */
+    ConnectionRequestsBulkUpdate = "86249F40-DAA9-46AC-901B-7460E2659C10",
 }

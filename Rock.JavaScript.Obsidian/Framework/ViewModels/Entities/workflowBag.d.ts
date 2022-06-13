@@ -25,55 +25,55 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Workflow View Model */
 export type WorkflowBag = {
-    /** Gets or sets the ActivatedDateTime. */
+    /** Gets or sets the date and time that this Workflow instance was activated. */
     activatedDateTime?: string | null;
 
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the Campus Id of the workflow campus */
     campusId?: number | null;
 
-    /** Gets or sets the CompletedDateTime. */
+    /** Gets or sets the date and time that the Workflow completed. */
     completedDateTime?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a description or summary about this Workflow instance. */
     description?: string | null;
 
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the Entity Id. */
     entityId?: number | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the Entity Type Id. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the InitiatorPersonAliasId. */
+    /** Gets or sets the initiator person alias identifier. */
     initiatorPersonAliasId?: number | null;
 
-    /** Gets or sets the IsProcessing. */
+    /** Gets or sets a flag indicating whether this instance is processing. */
     isProcessing: boolean;
 
-    /** Gets or sets the LastProcessedDateTime. */
+    /** Gets or sets the date and time that the Workflow was last processed. */
     lastProcessedDateTime?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets a friendly name for this Workflow instance. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Status. */
+    /** Gets or sets the status of this Workflow instance. This property is required. */
     status?: string | null;
 
-    /** Gets or sets the WorkflowIdNumber. */
+    /** A type specific number to uniquely identify a workflow. */
     workflowIdNumber: number;
 
-    /** Gets or sets the WorkflowTypeId. */
+    /** Gets or sets the WorkflowTypeId of the Rock.Model.WorkflowType that this Workflow instance is executing. */
     workflowTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

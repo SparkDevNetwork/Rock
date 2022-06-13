@@ -162,7 +162,9 @@ namespace Rock
             // Characters used by DOM Objects; javascript, document, window and URLs
             char[] badCharacters = new char[] { '<', '>', ':', '*' };
 
-            if ( encodedString.IndexOfAny( badCharacters ) >= 0 )
+            var decodedString = encodedString.GetFullyUrlDecodedValue();
+
+            if ( decodedString.IndexOfAny( badCharacters ) >= 0 )
             {
                 return "%2f";
             }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -132,14 +134,10 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        public override void Render( BadgeCache badge, System.Web.UI.HtmlTextWriter writer )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return;
             }
@@ -181,7 +179,7 @@ namespace Rock.Badge.Component
 
             var animateClass = doAnimateBars ? " animate" : string.Empty;
 
-            var tooltip = $"{Person.NickName.ToPossessive()} engagement in the streak '{streakTypeCache.Name}' for the last {unitsToDisplay} {timeUnits}. Each bar is a {timeUnit}.";
+            var tooltip = $"{person.NickName.ToPossessive()} engagement in the streak '{streakTypeCache.Name}' for the last {unitsToDisplay} {timeUnits}. Each bar is a {timeUnit}.";
 
             var chartHtml = $"<div class='badge badge-attendance{animateClass} badge-id-{badge.Id}' data-toggle='tooltip' data-original-title='{tooltip.EncodeHtml()}'></div>";
             var linkedPageGuid = GetAttributeValue( badge, AttributeKey.StreakDetailPage ).AsGuidOrNull();
@@ -193,19 +191,15 @@ namespace Rock.Badge.Component
             }
             else
             {
-                var link = $"/page/{linkedPageId.Value}?StreakTypeId={streakTypeCache.Id}&PersonId={Person.Id}";
+                var link = $"/page/{linkedPageId.Value}?StreakTypeId={streakTypeCache.Id}&PersonId={person.Id}";
                 writer.Write( $@"<a href=""{link}"">{chartHtml}</a>" );
             }
         }
 
-        /// <summary>
-        /// Gets the java script.
-        /// </summary>
-        /// <param name="badge"></param>
-        /// <returns></returns>
-        protected override string GetJavaScript( BadgeCache badge )
+        /// <inheritdoc/>
+        protected override string GetJavaScript( BadgeCache badge, IEntity entity )
         {
-            if ( Person == null )
+            if ( !( entity is Person person ) )
             {
                 return null;
             }
@@ -223,7 +217,7 @@ namespace Rock.Badge.Component
             return $@"
 $.ajax({{
     type: 'GET',
-    url: Rock.settings.get('baseUrl') + 'api/StreakTypes/RecentEngagement/{streakTypeCache.Id}/{Person.Id}?unitCount={unitsToDisplay}' ,
+    url: Rock.settings.get('baseUrl') + 'api/StreakTypes/RecentEngagement/{streakTypeCache.Id}/{person.Id}?unitCount={unitsToDisplay}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
             var chartHtml = ['<ul class=\'trend-chart list-unstyled\'>'];

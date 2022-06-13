@@ -25,49 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** SignatureDocumentTemplate View Model */
 export type SignatureDocumentTemplateBag = {
-    /** Gets or sets the BinaryFileTypeId. */
+    /** Gets or sets the binary file type identifier. */
     binaryFileTypeId?: number | null;
 
-    /** Gets or sets the CompletionSystemCommunicationId. */
+    /** The System Communication that will be used when sending the signature document completion email. */
     completionSystemCommunicationId?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets a user defined description or summary about the SignatureDocumentTemplate. */
     description?: string | null;
 
-    /** Gets or sets the DocumentTerm. */
+    /** The term used to simply describe the document (wavier, release form, etc.). */
     documentTerm?: string | null;
 
-    /** Gets or sets the InviteSystemCommunicationId. */
+    /** Gets or sets the invite system email identifier. */
     inviteSystemCommunicationId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
 
-    /** Gets or sets the LavaTemplate. */
+    /** The Lava template that will be used to build the signature document. */
     lavaTemplate?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the friendly Name of the SignatureDocumentTemplate. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the ProviderEntityTypeId. */
+    /** Gets or sets the provider entity type identifier. */
     providerEntityTypeId?: number | null;
 
-    /** Gets or sets the ProviderTemplateKey. */
+    /** Gets or sets the provider template key. */
     providerTemplateKey?: string | null;
 
-    /** Gets or sets the SignatureType. */
+    /**
+     * This is used to define which kind of signature is being collected from the individual.
+     * Ex: Rock.Model.SignatureType.Drawn or Rock.Model.SignatureType.Typed, etc.
+     */
     signatureType: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

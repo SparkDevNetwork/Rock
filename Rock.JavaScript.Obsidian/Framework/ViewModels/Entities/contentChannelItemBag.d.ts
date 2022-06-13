@@ -25,58 +25,58 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ContentChannelItem View Model */
 export type ContentChannelItemBag = {
-    /** Gets or sets the ApprovedByPersonAliasId. */
+    /** Gets or sets the PersonAliasId of the Rock.Model.Person who either approved or declined the ContentItem. If no approval action has been performed on this item, this value will be null. */
     approvedByPersonAliasId?: number | null;
 
-    /** Gets or sets the ApprovedDateTime. */
+    /** Gets or sets the approved date. */
     approvedDateTime?: string | null;
 
-    /** Gets or sets the Content. */
+    /** Gets or sets the content. */
     content?: string | null;
 
-    /** Gets or sets the ContentChannelId. */
+    /** Gets or sets the content channel identifier. */
     contentChannelId: number;
 
-    /** Gets or sets the ContentChannelTypeId. */
+    /** Gets or sets the content channel type identifier. */
     contentChannelTypeId: number;
 
-    /** Gets or sets the ExpireDateTime. */
+    /** Gets or sets the expire date time. */
     expireDateTime?: string | null;
 
-    /** Gets or sets the ItemGlobalKey. */
+    /** Gets or sets the item global key. */
     itemGlobalKey?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the Permalink. */
+    /** Gets or sets the permalink. */
     permalink?: string | null;
 
-    /** Gets or sets the Priority. */
+    /** Gets or sets the priority of this ContentItem. The lower the number, the higher the priority. */
     priority: number;
 
-    /** Gets or sets the StartDateTime. */
+    /** Gets or sets the start date time. */
     startDateTime?: string | null;
 
-    /** Gets or sets the Status. */
+    /** Gets or sets the Rock.Model.ContentChannelItemStatus (status) of this ContentItem. */
     status: number;
 
-    /** Gets or sets the StructuredContent. */
+    /** Gets or sets the structured content. */
     structuredContent?: string | null;
 
-    /** Gets or sets the Title. */
+    /** Gets or sets the title. */
     title?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

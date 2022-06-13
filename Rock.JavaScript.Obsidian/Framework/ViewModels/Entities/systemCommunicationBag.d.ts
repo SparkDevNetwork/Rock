@@ -25,82 +25,91 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** SystemCommunication View Model */
 export type SystemCommunicationBag = {
-    /** Gets or sets the Bcc. */
+    /**
+     * Gets or sets the email addresses that should be sent a BCC or blind carbon copy of an email using this template. If there is not a predetermined distribution list; this property 
+     * can remain empty.
+     */
     bcc?: string | null;
 
-    /** Gets or sets the Body. */
+    /** Gets or sets the Body template that is used for emails that use this template. */
     body?: string | null;
 
-    /** Gets or sets the CategoryId. */
+    /** Gets or sets the category identifier. */
     categoryId?: number | null;
 
-    /** Gets or sets the Cc. */
+    /**
+     * Gets or sets the email addresses that should be sent a CC or carbon copy of an email using this template. If there is not a predetermined distribution list, this property
+     * can remain empty.
+     */
     cc?: string | null;
 
-    /** Gets or sets the CssInliningEnabled. */
+    /** Gets or sets a value indicating whether CSS styles should be inlined in the message body to ensure compatibility with oldere HTML rendering engines. */
     cssInliningEnabled: boolean;
 
-    /** Gets or sets the From. */
+    /** Gets or sets the From email address. */
     from?: string | null;
 
-    /** Gets or sets the FromName. */
+    /** Gets or sets from name. */
     fromName?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this item is available for use. */
     isActive?: boolean | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if the email template is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the LavaFieldsJson. */
+    /** The internal storage for Rock.Model.CommunicationTemplate.LavaFields */
     lavaFieldsJson?: string | null;
 
-    /** Gets or sets the PushData. */
+    /** Gets or sets the push data. */
     pushData?: string | null;
 
-    /** Gets or sets the PushImageBinaryFileId. */
+    /** Gets or sets the push image file identifier. */
     pushImageBinaryFileId?: number | null;
 
-    /** Gets or sets the PushMessage. */
+    /** Gets or sets the message text. */
     pushMessage?: string | null;
 
-    /** Gets or sets the PushOpenAction. */
+    /** Gets or sets the push open action. */
     pushOpenAction?: number | null;
 
-    /** Gets or sets the PushOpenMessage. */
+    /** Gets or sets the push open message. */
     pushOpenMessage?: string | null;
 
-    /** Gets or sets the PushSound. */
+    /** Gets or sets the name of the sound alert to use for the notification. */
     pushSound?: string | null;
 
-    /** Gets or sets the PushTitle. */
+    /** Gets or sets the title of the notification. */
     pushTitle?: string | null;
 
-    /** Gets or sets the SMSFromDefinedValueId. */
+    /** Gets or sets the SMS from number. */
     sMSFromDefinedValueId?: number | null;
 
-    /** Gets or sets the SMSMessage. */
+    /** Gets or sets the SMS message content. */
     sMSMessage?: string | null;
 
-    /** Gets or sets the Subject. */
+    /** Gets or sets the subject of an email that uses this template. */
     subject?: string | null;
 
-    /** Gets or sets the Title. */
+    /** Gets or sets the Title of the EmailTemplate  */
     title?: string | null;
 
-    /** Gets or sets the To. */
+    /**
+     * Gets or sets the To email addresses that emails using this template should be delivered to.  If there is not a predetermined distribution list, this property can 
+     * remain empty.
+     */
     to?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

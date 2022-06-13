@@ -34,7 +34,7 @@ export type FieldFilterRuleBag = {
 
     /**
      * The type of comparison to use when comparing the source value (left-hand
-     * side) and  (right-hand side).
+     * side) and Rock.ViewModels.Reporting.FieldFilterRuleBag.Value (right-hand side).
      */
     comparisonType: number;
 
@@ -46,7 +46,7 @@ export type FieldFilterRuleBag = {
 
     /**
      * The attribute unique identifier to use as the left-hand side value
-     * if  specifies an Attribute.
+     * if Rock.ViewModels.Reporting.FieldFilterRuleBag.SourceType specifies an Attribute.
      */
     attributeGuid?: Guid | null;
 };

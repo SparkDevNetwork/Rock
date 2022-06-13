@@ -34,106 +34,108 @@ namespace Rock.ViewModels.Entities
     public partial class CommunicationResponseBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the FromPersonAliasId.
+        /// Gets or sets from person alias identifier.
         /// </summary>
         /// <value>
-        /// The FromPersonAliasId.
+        /// From person alias identifier.
         /// </value>
         public int? FromPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsRead.
+        /// Gets or sets a value indicating whether this instance is read.
         /// </summary>
         /// <value>
-        /// The IsRead.
+        ///   true if this instance is read; otherwise, false.
         /// </value>
         public bool IsRead { get; set; }
 
         /// <summary>
-        /// Gets or sets the MessageKey.
+        /// This is the address of the sender communication medium. e.g. A phone number or email address.
+        /// It is used when an incoming message cannot be identified with a person, this can be used to
+        /// link it up later.
         /// </summary>
         /// <value>
-        /// The MessageKey.
+        /// The message key.
         /// </value>
         public string MessageKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedCommunicationId.
+        /// Gets or sets the related communication identifier.
         /// </summary>
         /// <value>
-        /// The RelatedCommunicationId.
+        /// The related communication identifier.
         /// </value>
         public int? RelatedCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedMediumEntityTypeId.
+        /// Gets or sets the related medium entity type identifier.
         /// </summary>
         /// <value>
-        /// The RelatedMediumEntityTypeId.
+        /// The related medium entity type identifier.
         /// </value>
         public int RelatedMediumEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedSmsFromDefinedValueId.
+        /// Gets or sets the related SMS from defined value identifier.
         /// </summary>
         /// <value>
-        /// The RelatedSmsFromDefinedValueId.
+        /// The related SMS from defined value identifier.
         /// </value>
         public int? RelatedSmsFromDefinedValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RelatedTransportEntityTypeId.
+        /// Gets or sets the related transport entity type identifier.
         /// </summary>
         /// <value>
-        /// The RelatedTransportEntityTypeId.
+        /// The related transport entity type identifier.
         /// </value>
         public int RelatedTransportEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Response.
+        /// Gets or sets the response.
         /// </summary>
         /// <value>
-        /// The Response.
+        /// The response.
         /// </value>
         public string Response { get; set; }
 
         /// <summary>
-        /// Gets or sets the ToPersonAliasId.
+        /// Gets or sets to person alias identifier.
         /// </summary>
         /// <value>
-        /// The ToPersonAliasId.
+        /// To person alias identifier.
         /// </value>
         public int? ToPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -25,12 +25,13 @@ using Rock.Data;
 using Rock.Model;
 
 using Ical.Net;
-using Ical.Net.Serialization.iCalendar.Serializers;
 using Ical.Net.DataTypes;
 using Calendar = Ical.Net.Calendar;
 
 using System.Globalization;
 using System.Data.Entity;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
 
 namespace RockWeb
 {
@@ -138,7 +139,7 @@ namespace RockWeb
                         currentScheduleId = schedule.Id;
                     }
 
-                    var iCalEvent = new Event();
+                    var iCalEvent = new CalendarEvent();
                     iCalEvent.Summary = scheduleName;
                     iCalEvent.Location = locationName;
                     iCalEvent.DtStart = new CalDateTime( attendance.StartDateTime, icalendar.TimeZones[0].TzId );

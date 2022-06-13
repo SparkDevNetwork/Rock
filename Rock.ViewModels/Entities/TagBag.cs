@@ -34,130 +34,134 @@ namespace Rock.ViewModels.Entities
     public partial class TagBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BackgroundColor.
+        /// Gets or sets the background color of each tag
         /// </summary>
         /// <value>
-        /// The BackgroundColor.
+        /// The color of the tag.
         /// </value>
         public string BackgroundColor { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the category identifier.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// The category identifier.
         /// </value>
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId.
+        /// Gets or sets the EntityTypeId of the Rock.Model.EntityType containing the entities that can use this Tag. This property is required.
         /// </summary>
         /// <value>
-        /// The EntityTypeId.
+        /// A System.Int32 representing the EntityTypeId of the Rock.Model.EntityType that contains the entities that can use this Tag.
         /// </value>
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierColumn.
+        /// Gets or sets the name of the column/property that contains the value that can narrow the scope of entities that can receive this Tag. Entities where this
+        /// column contains the Rock.Model.Tag.EntityTypeQualifierValue will be eligible to have this Tag. This property must be used in conjunction with the Rock.Model.Tag.EntityTypeQualifierValue
+        /// property. If all entities of the specified Rock.Model.EntityType are eligible to use this Tag, this property will be null.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierColumn.
+        /// A System.String representing the EntityTypeQualifierColumn.
         /// </value>
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeQualifierValue.
+        /// Gets or sets the value in the Rock.Model.Tag.EntityTypeQualifierColumn that narrows the scope of entities that can receive this Tag. Entities that contain this value
+        /// in the Rock.Model.Tag.EntityTypeQualifierColumn are eligible to use this Tag. This property must be used in conjunction with the Rock.Model.Tag.EntityTypeQualifierColumn property.
         /// </summary>
         /// <value>
-        /// The EntityTypeQualifierValue.
+        /// A System.String representing the EntityTypeQualiferValue that limits which entities of the specified EntityType that can use this Tag.
         /// </value>
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// The icon CSS class.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this Tag is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean that is true if this Tag is part of the Rock core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the Tag. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the Name of the Tag
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the display order of the tag. the lower the number, the higher display priority that the Tag has.  For example the Tags with the lower Order could be displayed higher on the Tag list.
+        /// This property is required.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// A System.Int32 that represents the display Order of the Tag.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the OwnerPersonAliasId.
+        /// Gets or sets the owner person alias identifier.
         /// </summary>
         /// <value>
-        /// The OwnerPersonAliasId.
+        /// The owner person alias identifier.
         /// </value>
         public int? OwnerPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

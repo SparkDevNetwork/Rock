@@ -25,49 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Streak View Model */
 export type StreakBag = {
-    /** Gets or sets the CurrentStreakCount. */
+    /** The current number of non excluded occurrences attended in a row */
     currentStreakCount: number;
 
-    /** Gets or sets the CurrentStreakStartDate. */
+    /** The date that the current streak began */
     currentStreakStartDate?: string | null;
 
-    /** Gets or sets the EngagementCount. */
+    /** The number of engagements on occurrences */
     engagementCount: number;
 
-    /** Gets or sets the EnrollmentDate. */
+    /**
+     * Gets or sets the System.DateTime when the person was enrolled in the streak type.
+     * This is not the Streak Type start date.
+     */
     enrollmentDate?: string | null;
 
-    /** Gets or sets the InactiveDateTime. */
+    /** Gets or sets the System.DateTime when the person deactivated their Streak. If null, the Streak is active. */
     inactiveDateTime?: string | null;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the Rock.Model.Location identifier by which the person's exclusions will be sourced. */
     locationId?: number | null;
 
-    /** Gets or sets the LongestStreakCount. */
+    /** The longest number of non excluded occurrences attended in a row */
     longestStreakCount: number;
 
-    /** Gets or sets the LongestStreakEndDate. */
+    /** The date the longest streak ended */
     longestStreakEndDate?: string | null;
 
-    /** Gets or sets the LongestStreakStartDate. */
+    /** The date the longest streak began */
     longestStreakStartDate?: string | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the Rock.Model.PersonAlias identifier. */
     personAliasId: number;
 
-    /** Gets or sets the StreakTypeId. */
+    /** Gets or sets the Id of the Rock.Model.StreakType to which this Streak belongs. This property is required. */
     streakTypeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

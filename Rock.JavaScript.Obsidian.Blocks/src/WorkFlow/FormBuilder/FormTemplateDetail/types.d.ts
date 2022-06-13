@@ -17,7 +17,6 @@
 
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { AuditDetailBag } from "@Obsidian/ViewModels/Utility/auditDetailBag";
 import { FormCompletionAction, FormConfirmationEmail, FormPersonEntry } from "../Shared/types";
 
 /**
@@ -63,9 +62,6 @@ export type TemplateDetail = {
      * item in lists; otherwise false.
      */
     isActive?: boolean;
-
-    /** The details that describe the audit trail for this view model. */
-    auditDetails?: AuditDetailBag | null;
 };
 
 /**

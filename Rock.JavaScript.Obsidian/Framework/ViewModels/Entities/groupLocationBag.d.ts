@@ -25,37 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupLocation View Model */
 export type GroupLocationBag = {
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the Id of the Rock.Model.Group that is associated with this GroupLocation. This property is required. */
     groupId: number;
 
-    /** Gets or sets the GroupLocationTypeValueId. */
+    /**
+     * The Id of the GroupLocationType Rock.Model.DefinedValue that is used to identify the type of Rock.Model.GroupLocation
+     * that this is. Examples: Home Address, Work Address, Primary Address.
+     */
     groupLocationTypeValueId?: number | null;
 
-    /** Gets or sets the GroupMemberPersonAliasId. */
+    /**
+     * Gets or sets the group member Rock.Model.PersonAlias identifier.  A GroupLocation can optionally be created by selecting one of the group 
+     * member's locations.  If the GroupLocation is created this way, the member's person alias id is saved with the group location
+     */
     groupMemberPersonAliasId?: number | null;
 
-    /** Gets or sets the IsMailingLocation. */
+    /**
+     * Gets or sets a flag indicating if the Rock.Model.Location referenced by this GroupLocation is the mailing address/location for the Rock.Model.Group.  
+     * This field is only supported in the UI for family groups
+     */
     isMailingLocation: boolean;
 
-    /** Gets or sets the IsMappedLocation. */
+    /**
+     * Gets or sets a flag indicating if this is the mappable location for this 
+     * This field is only supported in the UI for family groups
+     */
     isMappedLocation: boolean;
 
-    /** Gets or sets the LocationId. */
+    /** Gets or sets the Id of the Rock.Model.Location that is associated with this GroupLocation. This property is required. */
     locationId: number;
 
-    /** Gets or sets the Order. */
+    /**
+     * Gets or sets the display order of the GroupLocation in the group location list. The lower the number the higher the 
+     * display priority this GroupLocation has. This property is required.
+     */
     order: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

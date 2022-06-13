@@ -34,130 +34,131 @@ namespace Rock.ViewModels.Entities
     public partial class MediaFolderBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ContentChannelAttributeId.
+        /// Gets or sets the synced content channel item attribute identifier
+        /// to store the Guid value into.
         /// </summary>
         /// <value>
-        /// The ContentChannelAttributeId.
+        /// The synced content channel item attribute identifier.
         /// </value>
         public int? ContentChannelAttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContentChannelId.
+        /// Gets or sets the content channel identifier.
         /// </summary>
         /// <value>
-        /// The ContentChannelId.
+        /// The content channel identifier.
         /// </value>
         public int? ContentChannelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ContentChannelItemStatus.
+        /// Gets or sets the Rock.Model.ContentChannelItemStatus Content channel Item status.
         /// </summary>
         /// <value>
-        /// The ContentChannelItemStatus.
+        /// A Rock.Model.ContentChannelItemStatus enumeration value that represents the status of the ContentItem.
         /// </value>
         public int? ContentChannelItemStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the MediaFolder.
         /// </summary>
-        /// <value>
-        /// The Description.
-        /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsContentChannelSyncEnabled.
+        /// Gets or sets a value indicating whether the content channel sync is enabled.
         /// </summary>
         /// <value>
-        /// The IsContentChannelSyncEnabled.
+        /// true if the content channel sync is enabled; otherwise, false.
         /// </value>
         public bool IsContentChannelSyncEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsPublic.
+        /// Gets or sets a value indicating if this Media Folder is public.
         /// </summary>
         /// <value>
-        /// The IsPublic.
+        /// A System.Boolean that is true if this Media Folder is public, otherwise false.
         /// </value>
         public bool? IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the MediaAccountId.
+        /// Gets or sets the MediaAccountId of the Rock.Model.MediaAccount that this MediaFolder belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// The MediaAccountId.
+        /// A System.Int32 representing the MediaAccountId of the Rock.Model.MediaAccount that this MediaFolder belongs to.
         /// </value>
         public int MediaAccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the MetricData.
+        /// Gets or sets the custom provider metric data for this instance.
         /// </summary>
         /// <value>
-        /// The MetricData.
+        /// The custom provider metric data for this instance.
         /// </value>
         public string MetricData { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the MediaFolder. This property is required.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the name of the MediaFolder.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceData.
+        /// Gets or sets the custom provider data for this instance.
         /// </summary>
         /// <value>
-        /// The SourceData.
+        /// The custom provider data for this instance.
         /// </value>
         public string SourceData { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceKey.
+        /// Gets or sets the provider's unique identifier for this instance.
         /// </summary>
         /// <value>
-        /// The SourceKey.
+        /// The provider's unique identifier for this instance.
         /// </value>
         public string SourceKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowTypeId.
+        /// Gets or sets the workflow type identifier. This workflow is
+        /// launched whenever a new Rock.Model.MediaElement is added to
+        /// the system. The Rock.Model.MediaElement is passed as the Entity
+        /// object to the workflow.
         /// </summary>
         /// <value>
-        /// The WorkflowTypeId.
+        /// The workflow type identifier.
         /// </value>
         public int? WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

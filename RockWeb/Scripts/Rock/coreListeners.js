@@ -16,7 +16,7 @@ $(document).on('enabledStickiness.stickyTableHeaders', function(event) {
     var twidth = $(event.target).parent('.table-responsive').width();
     $(event.target)
         .find('.tableFloatingHeaderOriginal')
-        .css({ left: offsetLeft, right: $(window).width() - offsetLeft - twidth, clip: 'rect(0px, ' + (twidth + 2) + 'px, 140px, 0px)' });
+        .css({ left: offsetLeft, right: $(window).width() - offsetLeft - twidth, clip: 'rect(0px, ' + (twidth + 2) + 'px, 300px, 0px)' });
 
     $(event.target)
         .parent('.table-responsive')
@@ -50,6 +50,6 @@ function stickyRepaint() {
     var offsetLeft = $(this).offset().left;
     $('.tableFloatingHeaderOriginal').css({
         left: offsetLeft - scroll,
-        clip: 'rect(0px, ' + (scroll + twidth) + 'px, 140px, ' + scroll + 'px)'
+        clip: 'rect(0px, ' + (scroll + twidth) + 'px, 300px, ' + scroll + 'px)'
     });
 }

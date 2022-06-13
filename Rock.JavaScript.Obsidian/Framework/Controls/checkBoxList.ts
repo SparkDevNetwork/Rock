@@ -20,6 +20,7 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import RockFormField from "./rockFormField";
+import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
 
 export default defineComponent({
     name: "CheckBoxList",
@@ -30,7 +31,7 @@ export default defineComponent({
 
     props: {
         modelValue: {
-            type: Array as PropType<Array<string>>,
+            type: Array as PropType<string[]>,
             default: []
         },
 
@@ -47,14 +48,20 @@ export default defineComponent({
         horizontal: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        compareValue: {
+            type: Function as PropType<((value: string, itemValue: string) => boolean)>,
+            default: defaultControlCompareValue
         }
+    },
+
+    emits: {
+        "update:modelValue": (_value: string[]) => true
     },
 
     setup(props, { emit }) {
         const internalValue = ref([...props.modelValue]);
-
-        watch(() => props.modelValue, () => updateRefValue(internalValue, props.modelValue));
-        watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
         const valueForItem = (item: ListItemBag): string => item.value ?? "";
         const textForItem = (item: ListItemBag): string => item.text ?? "";
@@ -77,6 +84,29 @@ export default defineComponent({
 
             return classes.join(" ");
         });
+
+        const syncInternalValue = (): void => {
+            let value = [...props.modelValue];
+
+            // Ensure they are all valid values and make sure they are the
+            // correct matching value from the item rather than what was
+            // originally provided.
+            value = props.items
+                .filter(o => value.some(v => props.compareValue(v, o.value ?? "")))
+                .map(o => o.value ?? "");
+
+            updateRefValue(internalValue, value);
+        };
+
+        watch([() => props.modelValue, () => props.items], () => {
+            syncInternalValue();
+        });
+
+        watch(internalValue, () => {
+            emit("update:modelValue", internalValue.value);
+        });
+
+        syncInternalValue();
 
         return {
             containerClasses,

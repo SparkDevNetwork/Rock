@@ -25,64 +25,64 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionType View Model */
 export type ConnectionTypeBag = {
-    /** Gets or sets the ConnectionRequestDetailPageId. */
+    /** Gets or sets the connection request detail Rock.Model.Page identifier. */
     connectionRequestDetailPageId?: number | null;
 
-    /** Gets or sets the ConnectionRequestDetailPageRouteId. */
+    /** Gets or sets the connection request detail Rock.Model.PageRoute identifier. */
     connectionRequestDetailPageRouteId?: number | null;
 
-    /** Gets or sets the DaysUntilRequestIdle. */
+    /** Gets or sets the number of days until the request is considered idle. */
     daysUntilRequestIdle: number;
 
-    /** Gets or sets the DefaultView. */
+    /** Gets or sets the default view mode (list or board). */
     defaultView: number;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets the EnableFullActivityList. */
+    /** Gets or sets a value indicating whether full activity lists are enabled. */
     enableFullActivityList: boolean;
 
-    /** Gets or sets the EnableFutureFollowup. */
+    /** Gets or sets a value indicating whether future follow-ups are enabled. */
     enableFutureFollowup: boolean;
 
-    /** Gets or sets the EnableRequestSecurity. */
+    /** Gets or sets a value indicating whether [enable request security]. */
     enableRequestSecurity: boolean;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the OwnerPersonAliasId. */
+    /** Gets or sets the owner Rock.Model.PersonAlias identifier. */
     ownerPersonAliasId?: number | null;
 
-    /** Gets or sets the RequestBadgeLava. */
+    /** Gets or sets the request badge lava. */
     requestBadgeLava?: string | null;
 
-    /** Gets or sets the RequestHeaderLava. */
+    /** Gets or sets the request header lava. */
     requestHeaderLava?: string | null;
 
-    /** Gets or sets the RequiresPlacementGroupToConnect. */
+    /** Gets or sets a value indicating whether this connection type requires a placement group to connect. */
     requiresPlacementGroupToConnect: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -25,178 +25,186 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupType View Model */
 export type GroupTypeBag = {
-    /** Gets or sets the AdministratorTerm. */
+    /** Gets or sets the administrator term for the group of this GroupType. */
     administratorTerm?: string | null;
 
-    /** Gets or sets the AllowAnyChildGroupType. */
+    /** Gets or sets a value indicating if group type allows any child group type. */
     allowAnyChildGroupType: boolean;
 
-    /** Gets or sets the AllowedScheduleTypes. */
+    /** Gets or sets the allowed schedule types. */
     allowedScheduleTypes: number;
 
-    /** Gets or sets the AllowGroupSync. */
+    /** Gets or sets a flag indicating if groups of this type are allowed to be sync'ed. */
     allowGroupSync: boolean;
 
-    /** Gets or sets the AllowMultipleLocations. */
+    /** Gets or sets a flag indicating if Groups of this type are allowed to have multiple locations. */
     allowMultipleLocations: boolean;
 
-    /** Gets or sets the AllowSpecificGroupMemberAttributes. */
+    /** Gets or sets a flag indicating if specific groups are allowed to have their own member attributes. */
     allowSpecificGroupMemberAttributes: boolean;
 
-    /** Gets or sets the AllowSpecificGroupMemberWorkflows. */
+    /** Gets or sets a flag indicating if groups of this type should be allowed to have Group Member Workflows. */
     allowSpecificGroupMemberWorkflows: boolean;
 
-    /** Gets or sets the AttendanceCountsAsWeekendService. */
+    /** Gets or sets a value indicating whether [attendance counts as weekend service]. */
     attendanceCountsAsWeekendService: boolean;
 
-    /** Gets or sets the AttendancePrintTo. */
+    /** Gets or sets the Rock.Model.PrintTo indicating the type of  location of where attendee labels for Groups of this GroupType should print. */
     attendancePrintTo: number;
 
-    /** Gets or sets the AttendanceRule. */
+    /** Gets or sets the Rock.Model.AttendanceRule that indicates how attendance is managed a Rock.Model.Group of this GroupType */
     attendanceRule: number;
 
-    /** Gets or sets the DefaultGroupRoleId. */
+    /** Gets or sets the Id of the Rock.Model.GroupTypeRole that a Rock.Model.GroupMember of a Rock.Model.Group belonging to this GroupType is given by default. */
     defaultGroupRoleId?: number | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the Description of the GroupType. */
     description?: string | null;
 
-    /** Gets or sets the EnableGroupHistory. */
+    /** Gets or sets a value indicating whether group history should be enabled for groups of this type */
     enableGroupHistory: boolean;
 
-    /** Gets or sets the EnableGroupTag. */
+    /** Gets or sets a value indicating whether group tag should be enabled for groups of this type */
     enableGroupTag: boolean;
 
-    /** Gets or sets the EnableInactiveReason. */
+    /** Gets or sets a value indicating whether [enable inactive reason]. */
     enableInactiveReason: boolean;
 
-    /** Gets or sets the EnableLocationSchedules. */
+    /** Gets or sets the enable location schedules. */
     enableLocationSchedules?: boolean | null;
 
-    /** Gets or sets the EnableRSVP. */
+    /** Indicates whether RSVP functionality should be enabled for this group. */
     enableRSVP: boolean;
 
-    /** Gets or sets the EnableSpecificGroupRequirements. */
+    /** Gets or sets a flag indicating if group requirements section is enabled for group of this type. */
     enableSpecificGroupRequirements: boolean;
 
-    /** Gets or sets the GroupAttendanceRequiresLocation. */
+    /** Gets or sets a value indicating whether [group attendance requires location]. */
     groupAttendanceRequiresLocation: boolean;
 
-    /** Gets or sets the GroupAttendanceRequiresSchedule. */
+    /** Gets or sets a value indicating whether [group attendance requires schedule]. */
     groupAttendanceRequiresSchedule: boolean;
 
-    /** Gets or sets the GroupCapacityRule. */
+    /** Gets or sets the group capacity rule. */
     groupCapacityRule: number;
 
-    /** Gets or sets the GroupMemberTerm. */
+    /** Gets or sets the term that a Rock.Model.GroupMember of a Rock.Model.Group that belongs to this GroupType is called. */
     groupMemberTerm?: string | null;
 
-    /** Gets or sets the GroupsRequireCampus. */
+    /** Gets or sets a value indicating whether [groups require campus]. */
     groupsRequireCampus: boolean;
 
-    /** Gets or sets the GroupStatusDefinedTypeId. */
+    /** Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue */
     groupStatusDefinedTypeId?: number | null;
 
-    /** Gets or sets the GroupTerm. */
+    /** Gets or sets the term that a Rock.Model.Group belonging to this Rock.Model.GroupType is called. */
     groupTerm?: string | null;
 
-    /** Gets or sets the GroupTypeColor. */
+    /** The color used to visually distinguish groups on lists. */
     groupTypeColor?: string | null;
 
-    /** Gets or sets the GroupTypePurposeValueId. */
+    /** Gets or sets Id of the Rock.Model.DefinedValue that represents the purpose of the GroupType. */
     groupTypePurposeValueId?: number | null;
 
-    /** Gets or sets the GroupViewLavaTemplate. */
+    /** Gets or sets a lava template that can be used for generating  view details for Group. */
     groupViewLavaTemplate?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the icon CSS class name for a font vector based icon. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IgnorePersonInactivated. */
+    /**
+     * Gets or sets a value indicating whether to ignore person inactivated.
+     * By default group members are inactivated in their group whenever the person
+     * is inactivated. If this value is set to true, members in groups of this type
+     * will not be marked inactive when the person is inactivated
+     */
     ignorePersonInactivated: boolean;
 
-    /** Gets or sets the InheritedGroupTypeId. */
+    /** Gets or sets the Id of the GroupType to inherit settings and properties from. This is essentially copying the values, but they can be overridden. */
     inheritedGroupTypeId?: number | null;
 
-    /** Gets or sets the IsCapacityRequired. */
+    /** Gets or sets a value indicating whether this instance is capacity required. */
     isCapacityRequired: boolean;
 
-    /** Gets or sets the IsIndexEnabled. */
+    /** Gets or sets a value indicating whether this instance is index enabled. */
     isIndexEnabled: boolean;
 
-    /** Gets or sets the IsSchedulingEnabled. */
+    /** Gets or sets a value indicating whether scheduling is enabled for groups of this type */
     isSchedulingEnabled: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this GroupType is part of the Rock core system/framework.  This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the LocationSelectionMode. */
+    /** Gets or sets selection mode that the Location Picker should use when adding locations to groups of this type */
     locationSelectionMode: number;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the GroupType. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order for this GroupType. This is used for display and priority purposes, the lower the number the higher the priority, or the higher the GroupType is displayed. This property is required. */
     order: number;
 
-    /** Gets or sets the RequiresInactiveReason. */
+    /** Gets or sets a value indicating whether [requires inactive reason]. */
     requiresInactiveReason: boolean;
 
-    /** Gets or sets the RequiresReasonIfDeclineSchedule. */
+    /** Gets or sets a value indicating whether a person must specify a reason when declining/cancelling. */
     requiresReasonIfDeclineSchedule: boolean;
 
-    /** Gets or sets the RSVPReminderOffsetDays. */
+    /** Gets or sets the number of days prior to the RSVP date that a reminder should be sent. */
     rSVPReminderOffsetDays?: number | null;
 
-    /** Gets or sets the RSVPReminderSystemCommunicationId. */
+    /** Gets or sets the system communication to use for sending an RSVP reminder. */
     rSVPReminderSystemCommunicationId?: number | null;
 
-    /** Gets or sets the ScheduleCancellationWorkflowTypeId. */
+    /** Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time */
     scheduleCancellationWorkflowTypeId?: number | null;
 
-    /** Gets or sets the ScheduleConfirmationEmailOffsetDays. */
+    /** Gets or sets the number of days prior to the schedule to send a confirmation email. */
     scheduleConfirmationEmailOffsetDays?: number | null;
 
-    /** Gets or sets the ScheduleConfirmationSystemCommunicationId. */
+    /** Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated. */
     scheduleConfirmationSystemCommunicationId?: number | null;
 
-    /** Gets or sets the ScheduleReminderEmailOffsetDays. */
+    /** Gets or sets the number of days prior to the schedule to send a reminder email. See also Rock.Model.GroupMember.ScheduleReminderEmailOffsetDays. */
     scheduleReminderEmailOffsetDays?: number | null;
 
-    /** Gets or sets the ScheduleReminderSystemCommunicationId. */
+    /** Gets or sets the system communication to use when sending a schedule reminder. */
     scheduleReminderSystemCommunicationId?: number | null;
 
-    /** Gets or sets the SendAttendanceReminder. */
+    /** Gets or sets a value indicating if an attendance reminder should be sent to group leaders. */
     sendAttendanceReminder: boolean;
 
-    /** Gets or sets the ShowAdministrator. */
+    /** Gets or sets a value indicating whether administrator for the group of this GroupType will be shown. */
     showAdministrator: boolean;
 
-    /** Gets or sets the ShowConnectionStatus. */
+    /** Gets or sets a value indicating whether to show the Person's connection status as a column in the Group Member Grid */
     showConnectionStatus: boolean;
 
-    /** Gets or sets the ShowInGroupList. */
+    /** Gets or sets a flag indicating if a Rock.Model.Group of this GroupType will be shown in the group list. */
     showInGroupList: boolean;
 
-    /** Gets or sets the ShowInNavigation. */
+    /**
+     * Gets or sets a flag indicating if this GroupType and its Groups are shown in Navigation.
+     * If false, this GroupType will be hidden navigation controls, such as TreeViews and Menus
+     */
     showInNavigation: boolean;
 
-    /** Gets or sets the ShowMaritalStatus. */
+    /** Gets or sets a value indicating whether to show the Person's marital status as a column in the Group Member Grid */
     showMaritalStatus: boolean;
 
-    /** Gets or sets the TakesAttendance. */
+    /** Gets or sets a flag indicating if a Rock.Model.Group of this GroupType supports taking attendance. */
     takesAttendance: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

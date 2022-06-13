@@ -34,66 +34,66 @@ namespace Rock.ViewModels.Entities
     public partial class BenevolenceResultBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Amount.
+        /// Gets or sets the amount of benevolence
         /// </summary>
         /// <value>
-        /// The Amount.
+        /// A System.String containing the amount of benevolence.
         /// </value>
         public decimal? Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the BenevolenceRequestId.
+        /// Gets or sets the Id of the Benevolence Request the result is a result of.
         /// </summary>
         /// <value>
-        /// The BenevolenceRequestId.
+        /// A System.String containing the Id of the Benevolence Request the result is a result of.
         /// </value>
         public int BenevolenceRequestId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResultSummary.
+        /// Gets or sets the text of the result details.
         /// </summary>
         /// <value>
-        /// The ResultSummary.
+        /// A System.String representing the details of the result.
         /// </value>
         public string ResultSummary { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResultTypeValueId.
+        /// Gets or sets the Id of the Defined Value Rock.Model.DefinedValue representing the type of Benevolence Result.
         /// </summary>
         /// <value>
-        /// The ResultTypeValueId.
+        /// A System.Int32 representing the type of Benevolence Result.
         /// </value>
         public int ResultTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

@@ -26,31 +26,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** TaggedItem View Model */
 export type TaggedItemBag = {
-    /** Gets or sets the EntityGuid. */
+    /** Gets or sets the GUID identifier of the tagged entity. */
     entityGuid?: Guid | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the entity type identifier. */
     entityTypeId: number;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this TaggedItem is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the Quantity. */
+    /** Gets or sets the quantity.  Used if tagging the same entity multiple times is supported. */
     quantity: number;
 
-    /** Gets or sets the TagId. */
+    /** Gets or sets the TagId of the Rock.Model.Tag that this TaggedItem is tagged with. */
     tagId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

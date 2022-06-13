@@ -29,3 +29,39 @@ export function isUrl(val: unknown): boolean {
 
     return false;
 }
+
+/**
+ * Make the URL safe to use for redirects. Basically, this strips off any
+ * protocol and hostname from the URL and ensures it's not a javascript:
+ * url or anything like that.
+ * 
+ * @param url The URL to be made safe to use with a redirect.
+ *
+ * @returns A string that is safe to assign to window.location.href.
+ */
+export function makeUrlRedirectSafe(url: string): string {
+    try {
+        // If this can't be parsed as a url, such as "/page/123" it will throw
+        // an error which will be handled by the next section.
+        const u = new URL(url);
+
+        // If the protocol isn't an HTTP or HTTPS, then it is most likely
+        // a dangerous URL.
+        if (u.protocol !== "http:" && u.protocol !== "https:") {
+            return "/";
+        }
+
+        // Try again incase they did something like "http:javascript:alert('hi')".
+        return makeUrlRedirectSafe(`${u.pathname}${u.search}`);
+    }
+    catch {
+        // If the URL contains a : but could not be parsed as a URL then it
+        // is not valid, so return "/" so they get redirected to home page.
+        if (url.indexOf(":") !== -1) {
+            return "/";
+        }
+
+        // Otherwise consider it safe to use.
+        return url;
+    }
+}

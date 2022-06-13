@@ -2,6 +2,7 @@
   "files": [],
   "include": [],
   "references": [
+    { "path": "./Libs" },
     { "path": "./Core" },
     { "path": "./ValidationRules" },
     { "path": "./PageState" },

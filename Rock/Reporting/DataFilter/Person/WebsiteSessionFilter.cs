@@ -1,4 +1,4 @@
-using Rock.Data;
+﻿using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -20,7 +21,7 @@ namespace Rock.Reporting.DataFilter.Interaction
     [Description( "Filter people based on their website session interaction" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Website Session Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "50FDC068-D943-4673-B656-DFC2792BEEF7")]
+    [Rock.SystemGuid.EntityTypeGuid( "50FDC068-D943-4673-B656-DFC2792BEEF7" )]
     public class WebsiteSessionFilter : DataFilterComponent
     {
         #region Properties
@@ -201,7 +202,7 @@ function() {
             rlbWebsites.ID = filterControl.GetChildControlInstanceName( "rlbWebsites" );
             rlbWebsites.CssClass = "js-websites";
             rlbWebsites.Items.Clear();
-            rlbWebsites.Items.AddRange( GetInteractionChannels().Select( x => new ListItem( x.Name, x.Id.ToString() ) ).ToArray() );
+            rlbWebsites.Items.AddRange( GetInteractionChannelListItems().ToArray() );
             filterControl.Controls.Add( rlbWebsites );
             controls.Add( rlbWebsites );
 
@@ -234,24 +235,28 @@ function() {
             rlbPages.ID = filterControl.GetChildControlInstanceName( "rlbPages" );
             rlbPages.CssClass = "js-pages";
             rlbPages.Items.Clear();
-            rlbPages.Items.AddRange( GetInteractionComponents().Select( x => new ListItem( x.Name, x.Id.ToString() ) ).ToArray() );
+            rlbPages.Items.AddRange( GetInteractionComponentListItems().ToArray() );
             filterControl.Controls.Add( rlbPages );
             controls.Add( rlbPages );
 
             return controls.ToArray();
         }
 
-        private List<InteractionChannel> GetInteractionChannels()
+        private List<ListItem> GetInteractionChannelListItems()
         {
-            var interactionChannelService = new InteractionChannelService( new RockContext() );
-            var channels = interactionChannelService.Queryable().Where( x => x.ChannelTypeMediumValue.Value == "Website" ).ToList();
+            var channels = InteractionChannelCache.All()
+                .Where( x => x.ChannelTypeMediumValue.Value == "Website" )
+                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
+                .ToList();
             return channels;
         }
 
-        private List<InteractionComponent> GetInteractionComponents()
+        private List<ListItem> GetInteractionComponentListItems()
         {
-            var interactionComponentService = new InteractionComponentService( new RockContext() );
-            var components = interactionComponentService.Queryable().ToList();
+            var components = InteractionComponentCache.All()
+                .Where( x => x.InteractionChannel.ChannelTypeMediumValue.Value == "Website" )
+                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
+                .ToList();
             return components;
         }
 
@@ -314,10 +319,10 @@ function() {
             writer.AddAttribute( "class", "row mt-3" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div ); // second row
 
-            writer.AddAttribute( "class", "col-md-3 mt-1" );
+            writer.AddAttribute( "class", "col-md-4 mt-1" );
             optionallyLabel.RenderControl( writer ); // optionallyLabel
 
-            writer.AddAttribute( "class", "col-md-5" );
+            writer.AddAttribute( "class", "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div ); // websites
             rlbPages.RenderControl( writer );
             writer.RenderEndTag();

@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** RestAction View Model */
 export type RestActionBag = {
-    /** Gets or sets the ApiId. */
+    /** Gets or sets the api identifier. */
     apiId?: string | null;
 
-    /** Gets or sets the CacheControlHeaderSettings. */
+    /** Gets or sets the cache control header settings. */
     cacheControlHeaderSettings?: string | null;
 
-    /** Gets or sets the ControllerId. */
+    /** Gets or sets the controller identifier. */
     controllerId: number;
 
-    /** Gets or sets the Method. */
+    /** Gets or sets the method. */
     method?: string | null;
 
-    /** Gets or sets the Path. */
+    /** Gets or sets the path. */
     path?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

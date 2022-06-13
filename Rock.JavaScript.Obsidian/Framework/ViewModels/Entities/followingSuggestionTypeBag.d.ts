@@ -25,40 +25,40 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** FollowingSuggestionType View Model */
 export type FollowingSuggestionTypeBag = {
-    /** Gets or sets the Description. */
+    /** Gets or sets the user defined description of the FollowingSuggestion. */
     description?: string | null;
 
-    /** Gets or sets the EntityNotificationFormatLava. */
+    /** Gets or sets how an entity should be formatted when included in the suggestion notification to follower. */
     entityNotificationFormatLava?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the suggestion entity type identifier. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the (internal) Name of the FollowingSuggestion. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the ReasonNote. */
+    /** Gets or sets the reason note to use when suggesting an entity be followed */
     reasonNote?: string | null;
 
-    /** Gets or sets the ReminderDays. */
+    /** Gets or sets the reminder days. */
     reminderDays?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

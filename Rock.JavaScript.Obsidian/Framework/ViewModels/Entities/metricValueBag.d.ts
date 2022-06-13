@@ -28,31 +28,35 @@ export type MetricValueBag = {
     /** Gets or sets the MetricId. */
     metricId: number;
 
-    /** Gets or sets the MetricValueDateTime. */
+    /** Gets or sets the metric value date time. */
     metricValueDateTime?: string | null;
 
-    /** Gets or sets the MetricValueType. */
+    /** Gets or sets the type of the metric value. */
     metricValueType: number;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note. */
     note?: string | null;
 
-    /** Gets or sets the XValue. */
+    /**
+     * Gets or sets the X axis value.
+     * Note that in Rock, graphs typically actually use the MetricValue.MetricValueDateTime as the graph's X Axis.
+     * Therefore, in most cases, Metric.XAxisLabel and MetricValue.XAxis are NOT used
+     */
     xValue?: string | null;
 
-    /** Gets or sets the YValue. */
+    /** Gets or sets the Y axis value. */
     yValue?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

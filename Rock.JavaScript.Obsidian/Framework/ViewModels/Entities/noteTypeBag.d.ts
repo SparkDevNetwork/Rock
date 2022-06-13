@@ -25,76 +25,88 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** NoteType View Model */
 export type NoteTypeBag = {
-    /** Gets or sets the AllowsAttachments. */
+    /** Gets or sets a value indicating whether attachments are allowed for this note type. */
     allowsAttachments: boolean;
 
-    /** Gets or sets the AllowsReplies. */
+    /** Gets or sets a value indicating whether [allows replies]. */
     allowsReplies: boolean;
 
-    /** Gets or sets the AllowsWatching. */
+    /** Gets or sets a value indicating whether [allows watching]. */
     allowsWatching: boolean;
 
-    /** Gets or sets the ApprovalUrlTemplate. */
+    /**
+     * A optional Lava Template that can be used to general a URL where Notes of this type can be approved
+     * If this is left blank, the Approval URL will be a URL to the page (including a hash anchor to the note) where the note was originally created
+     */
     approvalUrlTemplate?: string | null;
 
-    /** Gets or sets the AutoWatchAuthors. */
+    /** Gets or sets a value indicating whether [automatic watch authors]. */
     autoWatchAuthors: boolean;
 
-    /** Gets or sets the BackgroundColor. */
+    /** Gets or sets the background color of each note */
     backgroundColor?: string | null;
 
-    /** Gets or sets the BinaryFileTypeId. */
+    /** Gets or sets the binary file type identifier used when saving attachments. */
     binaryFileTypeId?: number | null;
 
-    /** Gets or sets the BorderColor. */
+    /** Gets or sets the border color of each note */
     borderColor?: string | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /**
+     * Gets or sets the Id of the Rock.Model.EntityType that this NoteType is used for.  A NoteType can only be associated with a single Rock.Model.EntityType and will 
+     * only contain notes for entities of this type. This property is required.
+     */
     entityTypeId: number;
 
-    /** Gets or sets the EntityTypeQualifierColumn. */
+    /**
+     * Gets or sets the name of the qualifier column/property on the Rock.Model.EntityType that this NoteType applies to. If this is not 
+     * provided, the note type can be used on all entities of the provided Rock.Model.EntityType.
+     */
     entityTypeQualifierColumn?: string | null;
 
-    /** Gets or sets the EntityTypeQualifierValue. */
+    /**
+     * Gets or sets the qualifier value in the qualifier column that this note type applies to.  For instance this note type and related notes will only be applicable to entity 
+     * if the value in the EntityTypeQualiferColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
+     */
     entityTypeQualifierValue?: string | null;
 
-    /** Gets or sets the FontColor. */
+    /** Gets or sets the font color of the note text */
     fontColor?: string | null;
 
-    /** Gets or sets the IconCssClass. */
+    /** Gets or sets the name of an icon CSS class.  */
     iconCssClass?: string | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating that this NoteType is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the MaxReplyDepth. */
+    /** Gets or sets the maximum reply depth. */
     maxReplyDepth?: number | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the NoteType. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the RequiresApprovals. */
+    /** Gets or sets a value indicating whether [requires approvals]. */
     requiresApprovals: boolean;
 
-    /** Gets or sets the SendApprovalNotifications. */
+    /** Gets or sets a value indicating whether [send approval notifications]. */
     sendApprovalNotifications: boolean;
 
-    /** Gets or sets the UserSelectable. */
+    /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

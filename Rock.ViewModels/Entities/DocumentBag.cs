@@ -34,82 +34,82 @@ namespace Rock.ViewModels.Entities
     public partial class DocumentBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the document.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// A System.String representing the description of the document.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTypeId.
+        /// Gets or sets the id of the Rock.Model.DocumentType that this document belongs to.
         /// </summary>
         /// <value>
-        /// The DocumentTypeId.
+        /// A System.Int32 representing the Rock.Model.DocumentType.
         /// </value>
         public int DocumentTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the Id of the entity that this document is related to.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// A System.Int32 representing the Id of the entity (object) that this document is related to.
         /// </value>
         public int EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if this document is part of the Rock core system/framework.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// A System.Boolean value that is true if this document is part of the core system/framework; otherwise false.
         /// </value>
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the given Name of the document.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String representing the given Name of the document. 
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PurposeKey.
+        /// Gets or sets the purpose key.
         /// </summary>
         /// <value>
-        /// The PurposeKey.
+        /// The purpose key.
         /// </value>
         public string PurposeKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

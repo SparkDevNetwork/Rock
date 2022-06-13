@@ -25,37 +25,37 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EntitySet View Model */
 export type EntitySetBag = {
-    /** Gets or sets the EntitySetPurposeValueId. */
+    /** Gets or sets Id of the EntitySet purpose Rock.Model.DefinedValue representing the EntitySet's purpose. */
     entitySetPurposeValueId?: number | null;
 
-    /** Gets or sets the EntityTypeId. */
+    /** Gets or sets the entity type identifier. */
     entityTypeId?: number | null;
 
-    /** Gets or sets the ExpireDateTime. */
+    /** Gets or sets the expire date time. */
     expireDateTime?: string | null;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the name. */
     name?: string | null;
 
-    /** Gets or sets the Note. */
+    /** Gets or sets the note. */
     note?: string | null;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the ParentEntitySetId. */
+    /** Gets or sets the parent entity set identifier. */
     parentEntitySetId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

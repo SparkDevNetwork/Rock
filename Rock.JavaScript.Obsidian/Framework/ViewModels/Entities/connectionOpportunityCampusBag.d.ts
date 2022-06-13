@@ -25,25 +25,25 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionOpportunityCampus View Model */
 export type ConnectionOpportunityCampusBag = {
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the Rock.Model.Campus identifier. */
     campusId: number;
 
-    /** Gets or sets the ConnectionOpportunityId. */
+    /** Gets or sets the Rock.Model.ConnectionOpportunity identifier. */
     connectionOpportunityId: number;
 
-    /** Gets or sets the DefaultConnectorPersonAliasId. */
+    /** Gets or sets the default connector Rock.Model.PersonAlias identifier. */
     defaultConnectorPersonAliasId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

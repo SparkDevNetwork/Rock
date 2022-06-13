@@ -34,130 +34,130 @@ namespace Rock.ViewModels.Entities
     public partial class ConnectionOpportunityBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ConnectionTypeId.
+        /// Gets or sets the Rock.Model.ConnectionType identifier.
         /// </summary>
         /// <value>
-        /// The ConnectionTypeId.
+        /// The connection type identifier.
         /// </value>
         public int ConnectionTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The description.
         /// </value>
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the IconCssClass.
+        /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
-        /// The IconCssClass.
+        /// The icon CSS class.
         /// </value>
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        ///   true if this instance is active; otherwise, false.
         /// </value>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The name.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PhotoId.
+        /// Gets or sets the photo identifier.
         /// </summary>
         /// <value>
-        /// The PhotoId.
+        /// The photo identifier.
         /// </value>
         public int? PhotoId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PublicName.
+        /// Gets or sets the name of the public.
         /// </summary>
         /// <value>
-        /// The PublicName.
+        /// The name of the public.
         /// </value>
         public string PublicName { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowCampusOnTransfer.
+        /// Gets or sets a value indicating whether [show campus on transfer].
         /// </summary>
         /// <value>
-        /// The ShowCampusOnTransfer.
+        ///   true if [show campus on transfer]; otherwise, false.
         /// </value>
         public bool ShowCampusOnTransfer { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowConnectButton.
+        /// Gets or sets a value indicating whether [show connect button].
         /// </summary>
         /// <value>
-        /// The ShowConnectButton.
+        ///   true if [show connect button]; otherwise, false.
         /// </value>
         public bool ShowConnectButton { get; set; }
 
         /// <summary>
-        /// Gets or sets the ShowStatusOnTransfer.
+        /// Gets or sets a value indicating whether [show status on transfer].
         /// </summary>
         /// <value>
-        /// The ShowStatusOnTransfer.
+        ///   true if [show status on transfer]; otherwise, false.
         /// </value>
         public bool ShowStatusOnTransfer { get; set; }
 
         /// <summary>
-        /// Gets or sets the Summary.
+        /// Gets or sets the summary.
         /// </summary>
         /// <value>
-        /// The Summary.
+        /// The summary.
         /// </value>
         public string Summary { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

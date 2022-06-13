@@ -25,52 +25,52 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BackgroundCheck View Model */
 export type BackgroundCheckBag = {
-    /** Gets or sets the PackageName. */
+    /** Gets or sets the name of the package. */
     packageName?: string | null;
 
-    /** Gets or sets the PersonAliasId. */
+    /** Gets or sets the person alias identifier. */
     personAliasId: number;
 
-    /** Gets or sets the ProcessorEntityTypeId. */
+    /** Gets or sets the processor entity type identifier. */
     processorEntityTypeId?: number | null;
 
-    /** Gets or sets the RecordFound. */
+    /** Gets or sets the record found. */
     recordFound?: boolean | null;
 
-    /** Gets or sets the RequestDate. */
+    /** Gets or sets the request date. */
     requestDate?: string | null;
 
-    /** Gets or sets the RequestId. */
+    /** Gets or sets the request identifier. */
     requestId?: string | null;
 
-    /** Gets or sets the ResponseData. */
+    /** Gets or sets the response data (usually JSON, but could be XML or whatever the provider wants to do) */
     responseData?: string | null;
 
-    /** Gets or sets the ResponseDate. */
+    /** Gets or sets the response date. */
     responseDate?: string | null;
 
-    /** Gets or sets the ResponseDocumentId. */
+    /** Gets or sets the response document identifier. */
     responseDocumentId?: number | null;
 
-    /** Gets or sets the ResponseId. */
+    /** Gets or sets the response identifier. */
     responseId?: string | null;
 
-    /** Gets or sets the Status. */
+    /** Gets or sets the status. */
     status?: string | null;
 
-    /** Gets or sets the WorkflowId. */
+    /** Gets or sets the workflow identifier. */
     workflowId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

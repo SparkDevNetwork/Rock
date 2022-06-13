@@ -25,28 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CampusSchedule View Model */
 export type CampusScheduleBag = {
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the Id of the Rock.Model.Campus that is associated with this CampusSchedule. This property is required. */
     campusId: number;
 
-    /** Gets or sets the Order. */
+    /**
+     * Gets or sets the display order of the CampusSchedule in the campus schedule list. The lower the number the higher the 
+     * display priority this CampusSchedule has. This property is required.
+     */
     order: number;
 
-    /** Gets or sets the ScheduleId. */
+    /** Gets or sets the Id of the Rock.Model.Schedule that is associated with this CampusSchedule. This property is required. */
     scheduleId: number;
 
-    /** Gets or sets the ScheduleTypeValueId. */
+    /**
+     * The Id of the ScheduleType Rock.Model.DefinedValue that is used to identify the type of Rock.Model.CampusSchedule
+     * that this is. This property is required.
+     */
     scheduleTypeValueId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

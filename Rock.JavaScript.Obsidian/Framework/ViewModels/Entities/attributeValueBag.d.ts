@@ -26,31 +26,36 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** AttributeValue View Model */
 export type AttributeValueBag = {
-    /** Gets or sets the AttributeId. */
+    /** Gets or sets the AttributeId of the Rock.Model.Attribute that this AttributeValue provides a value for. */
     attributeId: number;
 
-    /** Gets or sets the EntityId. */
+    /**
+     * Gets or sets the Id of the entity instance that uses this AttributeValue. An Rock.Model.Attribute is a configuration setting, so each 
+     * instance of the Entity that uses the same Attribute can have a different value.  For instance a Rock.Model.BlockType has a declared attribute, and that attribute can be configured 
+     * with a different value on each Rock.Model.Block that implements the Rock.Model.BlockType. This value will either be 0 or null for global attributes or attributes that have a 
+     * constant across all instances of an EntityType.
+     */
     entityId?: number | null;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the Value. */
+    /** Gets or sets the value */
     value?: string | null;
 
-    /** Gets or sets the ValueAsNumeric. */
+    /** Gets the Value as a decimal (Computed on Save). */
     valueAsNumeric?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the attribute. */

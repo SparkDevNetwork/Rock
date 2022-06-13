@@ -380,7 +380,7 @@ namespace Rock.CheckIn
             var groupTypeIds = attendanceList.Select( a => a.GroupTypeId ).Distinct().ToList();
             var groupTypes = groupTypeIds.Select( a => GroupTypeCache.Get( a ) );
             var groupTypeIdsWithAllowCheckout = new HashSet<int>( groupTypes
-                .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() )
+                .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean() )
                 .Where( a => a != null )
                 .Select( a => a.Id )
                 .Distinct().ToList() );

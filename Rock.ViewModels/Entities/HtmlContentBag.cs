@@ -34,106 +34,108 @@ namespace Rock.ViewModels.Entities
     public partial class HtmlContentBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the ApprovedByPersonAliasId.
+        /// Gets or sets the Id of the Rock.Model.Person who approved the HTMLContent.
         /// </summary>
         /// <value>
-        /// The ApprovedByPersonAliasId.
+        /// A System.Int32 representing the Id of the Rock.Model.Person who approved the HTMLContent. If the HTMLContent had not been approved, this value will be null.
         /// </value>
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ApprovedDateTime.
+        /// Gets or sets the date and time that the HTMLContent was approved.
         /// </summary>
         /// <value>
-        /// The ApprovedDateTime.
+        /// A System.DateTime value that represents when the HTMLContent was approved. If the HTMLContent had not been approved, this value will be null.
         /// </value>
         public DateTime? ApprovedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the BlockId.
+        /// Gets or sets the Id of the Rock.Model.Block that the HTML content should appear on. This property is required.
         /// </summary>
         /// <value>
-        /// The BlockId.
+        /// A System.Int32 representing the Id of the Rock.Model.Block that the HTML content should be a part of.
         /// </value>
         public int BlockId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Content.
+        /// Gets or sets the HTML content that will display on the block when conditions (if any) are met.
         /// </summary>
         /// <value>
-        /// The Content.
+        /// A System.String representing the HTML content that will appear as part of the block.
         /// </value>
         public string Content { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityValue.
+        /// Gets or sets the Entity Value that must be present on the page for this HTML Content to be displayed. If this value will null
+        /// there will not be an entity restriction on the HTMLContent object.
         /// </summary>
         /// <value>
-        /// The EntityValue.
+        /// A System.String representing the EntityValue restriction for the HTMLContent object.
         /// </value>
         public string EntityValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpireDateTime.
+        /// Gets or sets the date and time that the HTMLContent expires and is no longer available. If this value is null the HTMLContent remains available until it is overwritten or replaced with a new version.
         /// </summary>
         /// <value>
-        /// The ExpireDateTime.
+        /// A System.DateTime representing the date and time that the HTMLContent expires. If the content does not expire this value will be null.
         /// </value>
         public DateTime? ExpireDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsApproved.
+        /// Gets or sets a flag indicating if the content has been approved. If approval is required, the content will not be displayed until it has been approved.
         /// </summary>
         /// <value>
-        /// The IsApproved.
+        /// A System.Boolean value that is true if the HTML content has been approved; otherwise false.
         /// </value>
         public bool IsApproved { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDateTime.
+        /// Gets or sets the date and time that the HTMLContent becomes active and available to be displayed on the web.  If a date and time is provided, the HTMLContent will not be available until then; if null
+        /// the HTMLContent will be available immediately.  Please note that the start date is overridden by the approval status, if the HTMLContent is subject to approval, it will not be displayed until it is approved.
         /// </summary>
         /// <value>
-        /// The StartDateTime.
+        /// A System.DateTime representing the date and time that the content becomes available. If the HTMLContent does not have start date (immediately available) this value will be null.
         /// </value>
         public DateTime? StartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Version.
+        /// Gets or sets the version number for the HTMLContent
         /// </summary>
         /// <value>
-        /// The Version.
+        /// A System.Int32 representing the version number for the HTML content.
         /// </value>
         public int Version { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

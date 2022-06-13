@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** ConnectionRequestWorkflow View Model */
 export type ConnectionRequestWorkflowBag = {
-    /** Gets or sets the ConnectionRequestId. */
+    /** Gets or sets the Rock.Model.ConnectionRequest identifier. */
     connectionRequestId: number;
 
-    /** Gets or sets the ConnectionWorkflowId. */
+    /** Gets or sets the Rock.Model.ConnectionWorkflow identifier. */
     connectionWorkflowId: number;
 
-    /** Gets or sets the TriggerQualifier. */
+    /** Gets or sets the trigger qualifier. */
     triggerQualifier?: string | null;
 
-    /** Gets or sets the TriggerType. */
+    /** Gets or sets the type of the trigger. */
     triggerType: number;
 
-    /** Gets or sets the WorkflowId. */
+    /** Gets or sets the Rock.Model.Workflow identifier. */
     workflowId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

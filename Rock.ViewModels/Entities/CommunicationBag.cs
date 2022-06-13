@@ -34,322 +34,324 @@ namespace Rock.ViewModels.Entities
     public partial class CommunicationBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AdditionalMergeFieldsJson.
+        /// Gets or sets a JSON string containing any additional merge fields for the Communication.
         /// </summary>
         /// <value>
-        /// The AdditionalMergeFieldsJson.
+        /// A Json formatted System.String that contains any additional merge fields for the Communication.
         /// </value>
         public string AdditionalMergeFieldsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the BCCEmails.
+        /// Gets or sets a comma separated list of BCC'ed email addresses.
         /// </summary>
         /// <value>
-        /// The BCCEmails.
+        /// A comma separated list of BCC'ed email addresses.
         /// </value>
         public string BCCEmails { get; set; }
 
         /// <summary>
-        /// Gets or sets the CCEmails.
+        /// Gets or sets a comma separated list of CC'ed email addresses.
         /// </summary>
         /// <value>
-        /// The CCEmails.
+        /// A comma separated list of CC'ed email addresses.
         /// </value>
         public string CCEmails { get; set; }
 
         /// <summary>
-        /// Gets or sets the CommunicationTemplateId.
+        /// Gets or sets the Rock.Model.CommunicationTemplate that was used to compose this communication
         /// </summary>
         /// <value>
-        /// The CommunicationTemplateId.
+        /// The communication template identifier.
         /// </value>
         public int? CommunicationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CommunicationType.
+        /// Gets or sets the communication type value identifier.
         /// </summary>
         /// <value>
-        /// The CommunicationType.
+        /// The communication type value identifier.
         /// </value>
         public int CommunicationType { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnabledLavaCommands.
+        /// Gets or sets a comma-delimited list of enabled LavaCommands
         /// </summary>
         /// <value>
-        /// The EnabledLavaCommands.
+        /// The enabled lava commands.
         /// </value>
         public string EnabledLavaCommands { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExcludeDuplicateRecipientAddress.
+        /// Option to prevent communications from being sent to people with the same email/SMS addresses.
+        /// This will mean two people who share an address will not receive a personalized communication, only one of them will.
         /// </summary>
         /// <value>
-        /// The ExcludeDuplicateRecipientAddress.
+        ///   true if [exclude duplicate recipient address]; otherwise, false.
         /// </value>
         public bool ExcludeDuplicateRecipientAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the FromEmail.
+        /// Gets or sets from email address.
         /// </summary>
         /// <value>
-        /// The FromEmail.
+        /// From email address.
         /// </value>
         public string FromEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the FromName.
+        /// Gets or sets from name.
         /// </summary>
         /// <value>
-        /// The FromName.
+        /// From name.
         /// </value>
         public string FromName { get; set; }
 
         /// <summary>
-        /// Gets or sets the FutureSendDateTime.
+        /// Gets or sets the future send date for the communication. This allows a user to schedule when a communication is sent 
+        /// and the communication will not be sent until that date and time.
         /// </summary>
         /// <value>
-        /// The FutureSendDateTime.
+        /// A System.DateTime value that represents the FutureSendDate for the communication.  If no future send date is provided, this value will be null.
         /// </value>
         public DateTime? FutureSendDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsBulkCommunication.
+        /// Gets or sets the is bulk communication.
         /// </summary>
         /// <value>
-        /// The IsBulkCommunication.
+        /// The is bulk communication.
         /// </value>
         public bool IsBulkCommunication { get; set; }
 
         /// <summary>
-        /// Gets or sets the ListGroupId.
+        /// Gets or sets the list that email is being sent to.
         /// </summary>
         /// <value>
-        /// The ListGroupId.
+        /// The list group identifier.
         /// </value>
         public int? ListGroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Message.
+        /// Gets or sets the message.
         /// </summary>
         /// <value>
-        /// The Message.
+        /// The message.
         /// </value>
         public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets the MessageMetaData.
+        /// Gets or sets the message meta data.
         /// </summary>
         /// <value>
-        /// The MessageMetaData.
+        /// The message meta data.
         /// </value>
         public string MessageMetaData { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the Communication
         /// </summary>
         /// <value>
-        /// The Name.
+        /// A System.String that represents the name of the communication.
         /// </value>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushData.
+        /// Gets or sets the push data.
         /// </summary>
         /// <value>
-        /// The PushData.
+        /// The push data.
         /// </value>
         public string PushData { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushImageBinaryFileId.
+        /// Gets or sets the push image file identifier.
         /// </summary>
         /// <value>
-        /// The PushImageBinaryFileId.
+        /// The push image file identifier.
         /// </value>
         public int? PushImageBinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushMessage.
+        /// Gets or sets the message.
         /// </summary>
         /// <value>
-        /// The PushMessage.
+        /// The message.
         /// </value>
         public string PushMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushOpenAction.
+        /// Gets or sets the push open action.
         /// </summary>
         /// <value>
-        /// The PushOpenAction.
+        /// The push open action.
         /// </value>
         public int? PushOpenAction { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushOpenMessage.
+        /// Gets or sets the push open message.
         /// </summary>
         /// <value>
-        /// The PushOpenMessage.
+        /// The push open message.
         /// </value>
         public string PushOpenMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushSound.
+        /// Gets or sets push sound.
         /// </summary>
         /// <value>
-        /// The PushSound.
+        /// Push sound.
         /// </value>
         public string PushSound { get; set; }
 
         /// <summary>
-        /// Gets or sets the PushTitle.
+        /// Gets or sets the push notification title.
         /// </summary>
         /// <value>
-        /// The PushTitle.
+        /// Push notification title.
         /// </value>
         public string PushTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReplyToEmail.
+        /// Gets or sets the reply to email address.
         /// </summary>
         /// <value>
-        /// The ReplyToEmail.
+        /// The reply to email address.
         /// </value>
         public string ReplyToEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReviewedDateTime.
+        /// Gets or sets the date and time stamp of when the Communication was reviewed.
         /// </summary>
         /// <value>
-        /// The ReviewedDateTime.
+        /// A System.DateTime representing the date and time that the Communication was reviewed.
         /// </value>
         public DateTime? ReviewedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReviewerNote.
+        /// Gets or sets the note that was entered by the reviewer.
         /// </summary>
         /// <value>
-        /// The ReviewerNote.
+        /// A System.String representing a note that was entered by the reviewer.
         /// </value>
         public string ReviewerNote { get; set; }
 
         /// <summary>
-        /// Gets or sets the ReviewerPersonAliasId.
+        /// Gets or sets the reviewer person alias identifier.
         /// </summary>
         /// <value>
-        /// The ReviewerPersonAliasId.
+        /// The reviewer person alias identifier.
         /// </value>
         public int? ReviewerPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SegmentCriteria.
+        /// Gets or sets if communication is targeted to people in all selected segments or any selected segments.
         /// </summary>
         /// <value>
-        /// The SegmentCriteria.
+        /// The segment criteria.
         /// </value>
         public int SegmentCriteria { get; set; }
 
         /// <summary>
-        /// Gets or sets the Segments.
+        /// Gets or sets the segments that list is being filtered to (comma-delimited list of dataview guids).
         /// </summary>
         /// <value>
-        /// The Segments.
+        /// The segments.
         /// </value>
         public string Segments { get; set; }
 
         /// <summary>
-        /// Gets or sets the SendDateTime.
+        /// Gets or sets the datetime that communication was sent. This also indicates that communication shouldn't attempt to send again.
         /// </summary>
         /// <value>
-        /// The SendDateTime.
+        /// The send date time.
         /// </value>
         public DateTime? SendDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the SenderPersonAliasId.
+        /// Gets or sets the sender Rock.Model.PersonAlias identifier.
         /// </summary>
         /// <value>
-        /// The SenderPersonAliasId.
+        /// The sender person alias identifier.
         /// </value>
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMSFromDefinedValueId.
+        /// Gets or sets the SMS from number.
         /// </summary>
         /// <value>
-        /// The SMSFromDefinedValueId.
+        /// From number.
         /// </value>
         public int? SMSFromDefinedValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMSMessage.
+        /// Gets or sets the message.
         /// </summary>
         /// <value>
-        /// The SMSMessage.
+        /// The message.
         /// </value>
         public string SMSMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the status of the Communication.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// A Rock.Model.CommunicationStatus enum value that represents the status of the Communication.
         /// </value>
         public int Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the Subject.
+        /// Gets or sets the name of the Communication
         /// </summary>
         /// <value>
-        /// The Subject.
+        /// A System.String that represents the name of the communication.
         /// </value>
         public string Subject { get; set; }
 
         /// <summary>
-        /// Gets or sets the SystemCommunicationId.
+        /// Gets or sets the Rock.Model.Communication.SystemCommunication that this communication is associated with.
         /// </summary>
         /// <value>
-        /// The SystemCommunicationId.
+        /// The system communication.
         /// </value>
         public int? SystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the UrlReferrer.
+        /// Gets or sets the URL from where this communication was created (grid)
         /// </summary>
         /// <value>
-        /// The UrlReferrer.
+        /// The URL referrer.
         /// </value>
         public string UrlReferrer { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

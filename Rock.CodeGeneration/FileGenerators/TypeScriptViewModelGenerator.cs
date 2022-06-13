@@ -7,6 +7,7 @@ using System.Text;
 using Rock.CodeGeneration.Utility;
 
 using Rock;
+using Rock.CodeGeneration.XmlDoc;
 
 namespace Rock.CodeGeneration.FileGenerators
 {
@@ -20,7 +21,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <summary>
         /// The XML document reader for documentation.
         /// </summary>
-        private readonly MultiDocReader _xmlDoc = new MultiDocReader();
+        private readonly XmlDocReader _xmlDoc = SupportTools.GetXmlDocReader();
 
         #endregion
 
@@ -33,7 +34,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>A string that contains the contents of the file.</returns>
         public string GenerateViewModelForType( Type type )
         {
-            var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.StripHtml();
+            var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.PlainText;
 
             return GenerateTypeViewModel( GetClassNameForType( type ), typeComment, type.GetProperties().ToList() );
         }
@@ -99,7 +100,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>A string that contains the contents of the file.</returns>
         public string GenerateViewModelForEnum( Type type )
         {
-            var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.StripHtml();
+            var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.PlainText;
 
             return GenerateEnumViewModel( GetClassNameForType( type ), typeComment, type.GetFields( BindingFlags.Static | BindingFlags.Public ).ToList() );
         }
@@ -170,7 +171,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 } );
 
             var camelName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
-            var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.StripHtml();
+            var typeComment = _xmlDoc.GetTypeComments( type )?.Summary?.PlainText;
 
             var sb = new StringBuilder();
 
@@ -292,7 +293,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="indentationSize">Size of the indentation for the comment block.</param>
         private void AppendCommentBlock( StringBuilder sb, MemberInfo memberInfo, int indentationSize )
         {
-            var xdoc = _xmlDoc.GetMemberComment( memberInfo )?.StripHtml();
+            var xdoc = _xmlDoc.GetMemberComments( memberInfo )?.Summary?.PlainText;
 
             AppendCommentBlock( sb, xdoc, indentationSize );
         }

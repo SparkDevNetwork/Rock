@@ -25,28 +25,28 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EntitySetItem View Model */
 export type EntitySetItemBag = {
-    /** Gets or sets the AdditionalMergeValuesJson. */
+    /** Gets or sets the AdditionalMergeValues as a Json string. */
     additionalMergeValuesJson?: string | null;
 
-    /** Gets or sets the EntityId. */
+    /** Gets or sets the entity identifier. */
     entityId: number;
 
-    /** Gets or sets the EntitySetId. */
+    /** Gets or sets the entity set identifier. */
     entitySetId: number;
 
-    /** Gets or sets the Order. */
+    /** Gets or sets the order. */
     order: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

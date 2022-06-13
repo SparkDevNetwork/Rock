@@ -34,58 +34,58 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialTransactionImageBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the BinaryFileId.
+        /// Gets or sets the BinaryFileId of the image's Rock.Model.BinaryFile 
         /// </summary>
         /// <value>
-        /// The BinaryFileId.
+        /// A System.Int32 representing BinaryFileId of the image's Rock.Model.BinaryFile
         /// </value>
         public int BinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The order.
         /// </value>
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the TransactionId.
+        /// Gets or sets the TransactionId of the Rock.Model.FinancialTransaction that this image belongs to
         /// </summary>
         /// <value>
-        /// The TransactionId.
+        /// A System.Int32 representing the Rock.Model.FinancialTransactionthat this image belongs to.
         /// </value>
         public int TransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

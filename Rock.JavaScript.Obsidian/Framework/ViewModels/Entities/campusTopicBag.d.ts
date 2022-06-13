@@ -25,28 +25,28 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** CampusTopic View Model */
 export type CampusTopicBag = {
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the Rock.Model.Campus associated with this topic. */
     campusId: number;
 
-    /** Gets or sets the Email. */
+    /** Gets or sets the Email */
     email?: string | null;
 
-    /** Gets or sets the IsPublic. */
+    /** Gets or sets the us public */
     isPublic: boolean;
 
-    /** Gets or sets the TopicTypeValueId. */
+    /** Gets or sets the campus type value identifier. */
     topicTypeValueId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

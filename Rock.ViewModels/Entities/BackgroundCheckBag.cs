@@ -34,130 +34,130 @@ namespace Rock.ViewModels.Entities
     public partial class BackgroundCheckBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the PackageName.
+        /// Gets or sets the name of the package.
         /// </summary>
         /// <value>
-        /// The PackageName.
+        /// The name of the package.
         /// </value>
         public string PackageName { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId.
+        /// Gets or sets the person alias identifier.
         /// </summary>
         /// <value>
-        /// The PersonAliasId.
+        /// The person alias identifier.
         /// </value>
         public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProcessorEntityTypeId.
+        /// Gets or sets the processor entity type identifier.
         /// </summary>
         /// <value>
-        /// The ProcessorEntityTypeId.
+        /// The processor entity type identifier.
         /// </value>
         public int? ProcessorEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the RecordFound.
+        /// Gets or sets the record found.
         /// </summary>
         /// <value>
-        /// The RecordFound.
+        /// The record found.
         /// </value>
         public bool? RecordFound { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestDate.
+        /// Gets or sets the request date.
         /// </summary>
         /// <value>
-        /// The RequestDate.
+        /// The request date.
         /// </value>
         public DateTime RequestDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestId.
+        /// Gets or sets the request identifier.
         /// </summary>
         /// <value>
-        /// The RequestId.
+        /// The request identifier.
         /// </value>
         public string RequestId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResponseData.
+        /// Gets or sets the response data (usually JSON, but could be XML or whatever the provider wants to do)
         /// </summary>
         /// <value>
-        /// The ResponseData.
+        /// The response data.
         /// </value>
         public string ResponseData { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResponseDate.
+        /// Gets or sets the response date.
         /// </summary>
         /// <value>
-        /// The ResponseDate.
+        /// The response date.
         /// </value>
         public DateTime? ResponseDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResponseDocumentId.
+        /// Gets or sets the response document identifier.
         /// </summary>
         /// <value>
-        /// The ResponseDocumentId.
+        /// The response document identifier.
         /// </value>
         public int? ResponseDocumentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResponseId.
+        /// Gets or sets the response identifier.
         /// </summary>
         /// <value>
-        /// The ResponseId.
+        /// The response identifier.
         /// </value>
         public string ResponseId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the status.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// The status.
         /// </value>
         public string Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the WorkflowId.
+        /// Gets or sets the workflow identifier.
         /// </summary>
         /// <value>
-        /// The WorkflowId.
+        /// The workflow identifier.
         /// </value>
         public int? WorkflowId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 

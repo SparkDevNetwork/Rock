@@ -25,115 +25,131 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Group View Model */
 export type GroupBag = {
-    /** Gets or sets the AllowGuests. */
+    /** Gets or sets whether group allows members to specify additional "guests" that will be part of the group (i.e. attend event) */
     allowGuests?: boolean | null;
 
-    /** Gets or sets the ArchivedByPersonAliasId. */
+    /** Gets or sets the PersonAliasId that archived (soft deleted) this group */
     archivedByPersonAliasId?: number | null;
 
-    /** Gets or sets the ArchivedDateTime. */
+    /** Gets or sets the date time that this group was archived (soft deleted) */
     archivedDateTime?: string | null;
 
-    /** Gets or sets the AttendanceRecordRequiredForCheckIn. */
+    /** Gets or sets the attendance record required for check in. */
     attendanceRecordRequiredForCheckIn: number;
 
-    /** Gets or sets the CampusId. */
+    /** Gets or sets the Id of the Rock.Model.Campus that this Group is associated with. */
     campusId?: number | null;
 
-    /** Gets or sets the ConfirmationAdditionalDetails. */
+    /** Gets or sets the confirmation additional details. */
     confirmationAdditionalDetails?: string | null;
 
-    /** Gets or sets the Description. */
+    /** Gets or sets the optional description of the group. */
     description?: string | null;
 
-    /** Gets or sets the DisableScheduleToolboxAccess. */
+    /** Gets or sets a flag indicating if the schedule toolbox access is disabled. */
     disableScheduleToolboxAccess: boolean;
 
-    /** Gets or sets the DisableScheduling. */
+    /** Gets or sets a flag indicating if scheduling is disabled. */
     disableScheduling: boolean;
 
-    /** Gets or sets the ElevatedSecurityLevel. */
+    /** Gets or sets the elevated security level. This setting is used to determine the group member's Account Protection Profile. */
     elevatedSecurityLevel: number;
 
-    /** Gets or sets the GroupCapacity. */
+    /** Gets or sets the group capacity. */
     groupCapacity?: number | null;
 
-    /** Gets or sets the GroupSalutation. */
+    /**
+     * List leaders names, in order by males → females.
+     * Examples: Ted &amp; Cindy Decker -or- Ted Decker &amp; Cindy Wright.
+     * This is populated from the logic in Rock.Model.Person.GetFamilySalutation(Rock.Model.Person,System.Boolean,System.Boolean,System.Boolean,System.String,System.String)
+     * with includeChildren=false, and useFormalNames=false.
+     */
     groupSalutation?: string | null;
 
-    /** Gets or sets the GroupSalutationFull. */
+    /**
+     * List all active group members, or order by leaders males → females - non leaders by age.
+     * Examples: Ted, Cindy, Noah and Alex Decker.
+     * This is populated from the logic in Rock.Model.Person.GetFamilySalutation(Rock.Model.Person,System.Boolean,System.Boolean,System.Boolean,System.String,System.String)
+     * with includeChildren=true, and useFormalNames=false.
+     */
     groupSalutationFull?: string | null;
 
-    /** Gets or sets the GroupTypeId. */
+    /** Gets or sets the Id of the Rock.Model.GroupType that this Group is a member belongs to. This property is required. */
     groupTypeId: number;
 
-    /** Gets or sets the InactiveDateTime. */
+    /** Gets or sets the date that this group became inactive */
     inactiveDateTime?: string | null;
 
-    /** Gets or sets the InactiveReasonNote. */
+    /** Gets or sets the inactive reason note. */
     inactiveReasonNote?: string | null;
 
-    /** Gets or sets the InactiveReasonValueId. */
+    /** Gets or sets the inactive reason value identifier. */
     inactiveReasonValueId?: number | null;
 
-    /** Gets or sets the IsActive. */
+    /** Gets or sets a flag indicating if this is an active group. This value is required. */
     isActive: boolean;
 
-    /** Gets or sets the IsArchived. */
+    /** Gets or sets a value indicating whether this group is archived (soft deleted) */
     isArchived: boolean;
 
-    /** Gets or sets the IsPublic. */
+    /** Gets or sets a value indicating whether the group should be shown in group finders */
     isPublic: boolean;
 
-    /** Gets or sets the IsSecurityRole. */
+    /**
+     * Indicates this Group is a Security Role even though it isn't a SecurityRole Group Type.
+     * Note: Don't use this alone to determine if a Group is a security role group. Use Rock.Model.Group.IsSecurityRoleOrSecurityGroupType to see if a Group is for a Security Role.
+     */
     isSecurityRole: boolean;
 
-    /** Gets or sets the IsSystem. */
+    /** Gets or sets a flag indicating if this Group is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
-    /** Gets or sets the Name. */
+    /** Gets or sets the Name of the Group. This property is required. */
     name?: string | null;
 
-    /** Gets or sets the Order. */
+    /**
+     * Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
+     * display priority this group has. This property is required.
+     */
     order: number;
 
-    /** Gets or sets the ParentGroupId. */
+    /** Gets or sets the Id of the Group's Parent Group. */
     parentGroupId?: number | null;
 
-    /** Gets or sets the RequiredSignatureDocumentTemplateId. */
+    /** Gets or sets the required signature document type identifier. */
     requiredSignatureDocumentTemplateId?: number | null;
 
-    /** Gets or sets the RSVPReminderAdditionalDetails. */
+    /** Gets or sets the rsvp additional reminder details. */
     rSVPReminderAdditionalDetails?: string | null;
 
-    /** Gets or sets the RSVPReminderOffsetDays. */
+    /** Gets or sets the number of days prior to the RSVP date that a reminder should be sent. */
     rSVPReminderOffsetDays?: number | null;
 
-    /** Gets or sets the RSVPReminderSystemCommunicationId. */
+    /** Gets or sets the system communication to use for sending an RSVP reminder. */
     rSVPReminderSystemCommunicationId?: number | null;
 
-    /** Gets or sets the ScheduleCancellationPersonAliasId. */
+    /** Gets or sets the PersonAliasId of the person to notify when a person cancels */
     scheduleCancellationPersonAliasId?: number | null;
 
-    /** Gets or sets the ScheduleId. */
+    /** Gets or sets the Rock.Model.Schedule identifier. */
     scheduleId?: number | null;
 
-    /** Gets or sets the SchedulingMustMeetRequirements. */
+    /** Gets or sets a value indicating whether GroupMembers must meet GroupMemberRequirements before they can be scheduled. */
     schedulingMustMeetRequirements: boolean;
 
-    /** Gets or sets the StatusValueId. */
+    /** Gets or sets the Group Status Id.  DefinedType depends on this group's Rock.Model.GroupType.GroupStatusDefinedType */
     statusValueId?: number | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

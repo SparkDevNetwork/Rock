@@ -25,34 +25,34 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** WebFarmNodeLog View Model */
 export type WebFarmNodeLogBag = {
-    /** Gets or sets the EventDateTime. */
+    /** Gets or sets the event date time. */
     eventDateTime?: string | null;
 
-    /** Gets or sets the EventType. */
+    /** Gets or sets the type of the event. */
     eventType?: string | null;
 
-    /** Gets or sets the Message. */
+    /** Gets or sets the message. */
     message?: string | null;
 
-    /** Gets or sets the Severity. */
+    /** Gets or sets the severity. */
     severity: number;
 
-    /** Gets or sets the WebFarmNodeId. */
+    /** Gets or sets the web farm node identifier. */
     webFarmNodeId: number;
 
-    /** Gets or sets the WriterWebFarmNodeId. */
+    /** Gets or sets the writer web farm node identifier. */
     writerWebFarmNodeId: number;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

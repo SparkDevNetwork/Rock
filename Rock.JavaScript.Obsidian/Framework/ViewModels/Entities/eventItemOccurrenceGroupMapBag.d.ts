@@ -25,31 +25,31 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EventItemOccurrenceGroupMap View Model */
 export type EventItemOccurrenceGroupMapBag = {
-    /** Gets or sets the EventItemOccurrenceId. */
+    /** Gets or sets the Rock.Model.EventItemOccurrence identifier. */
     eventItemOccurrenceId?: number | null;
 
-    /** Gets or sets the GroupId. */
+    /** Gets or sets the Rock.Model.Group identifier. */
     groupId?: number | null;
 
-    /** Gets or sets the PublicName. */
+    /** Gets or sets the name of the public. */
     publicName?: string | null;
 
-    /** Gets or sets the RegistrationInstanceId. */
+    /** Gets or sets the Rock.Model.RegistrationInstance identifier. */
     registrationInstanceId?: number | null;
 
-    /** Gets or sets the UrlSlug. */
+    /** Gets or sets the URL slug. */
     urlSlug?: string | null;
 
-    /** Gets or sets the CreatedDateTime. */
+    /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 
-    /** Gets or sets the ModifiedDateTime. */
+    /** Gets or sets the modified date time. */
     modifiedDateTime?: string | null;
 
-    /** Gets or sets the CreatedByPersonAliasId. */
+    /** Gets or sets the created by person alias identifier. */
     createdByPersonAliasId?: number | null;
 
-    /** Gets or sets the ModifiedByPersonAliasId. */
+    /** Gets or sets the modified by person alias identifier. */
     modifiedByPersonAliasId?: number | null;
 
     /** Gets or sets the identifier key of this entity. */

@@ -34,106 +34,110 @@ namespace Rock.ViewModels.Entities
     public partial class FinancialPaymentDetailBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the AccountNumberMasked.
+        /// Gets or sets the Masked Account Number (Last 4 of Account Number prefixed with 12 *'s)
         /// </summary>
         /// <value>
-        /// The AccountNumberMasked.
+        /// The account number masked.
         /// </value>
         public string AccountNumberMasked { get; set; }
 
         /// <summary>
-        /// Gets or sets the BillingLocationId.
+        /// Gets or sets the billing location identifier.
         /// </summary>
         /// <value>
-        /// The BillingLocationId.
+        /// The billing location identifier.
         /// </value>
         public int? BillingLocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreditCardTypeValueId.
+        /// Gets or sets the DefinedValueId of the credit card type Rock.Model.DefinedValue indicating the credit card brand/type that was used
+        /// to make this transaction. This value will be null for transactions that were not made by credit card.
         /// </summary>
         /// <value>
-        /// The CreditCardTypeValueId.
+        /// A System.Int32 representing the DefinedValueId of the credit card type Rock.Model.DefinedValue that was used to make this transaction.
+        /// This value will be null for transactions that were not made by credit card.
         /// </value>
         public int? CreditCardTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the CurrencyTypeValueId.
+        /// Gets or sets the DefinedValueId of the currency type Rock.Model.DefinedValue indicating the currency that the
+        /// transaction was made in.
         /// </summary>
         /// <value>
-        /// The CurrencyTypeValueId.
+        /// A System.Int32 representing the DefinedValueId of the CurrencyType Rock.Model.DefinedValue for this transaction.
         /// </value>
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpirationMonth.
+        /// Gets the expiration month
         /// </summary>
         /// <value>
-        /// The ExpirationMonth.
+        /// The expiration month.
         /// </value>
         public int? ExpirationMonth { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpirationYear.
+        /// Gets the 4 digit year
         /// </summary>
         /// <value>
-        /// The ExpirationYear.
+        /// The expiration year.
         /// </value>
         public int? ExpirationYear { get; set; }
 
         /// <summary>
-        /// Gets or sets the FinancialPersonSavedAccountId.
+        /// Gets or sets the Rock.Model.FinancialPersonSavedAccount id that was used for this transaction (if there was one)
         /// </summary>
         /// <value>
-        /// The FinancialPersonSavedAccountId.
+        /// The financial person saved account.
         /// </value>
         public int? FinancialPersonSavedAccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GatewayPersonIdentifier.
+        /// Gets or sets the Gateway Person Identifier.
+        /// This would indicate id the customer vault information on the gateway.
         /// </summary>
         /// <value>
-        /// The GatewayPersonIdentifier.
+        /// A System.String representing the Gateway Person Identifier of the account.
         /// </value>
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
-        /// Gets or sets the NameOnCard.
+        /// Gets the name on card.
         /// </summary>
         /// <value>
-        /// The NameOnCard.
+        /// The name on card.
         /// </value>
         public string NameOnCard { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedDateTime.
+        /// Gets or sets the created date time.
         /// </summary>
         /// <value>
-        /// The CreatedDateTime.
+        /// The created date time.
         /// </value>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedDateTime.
+        /// Gets or sets the modified date time.
         /// </summary>
         /// <value>
-        /// The ModifiedDateTime.
+        /// The modified date time.
         /// </value>
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the CreatedByPersonAliasId.
+        /// Gets or sets the created by person alias identifier.
         /// </summary>
         /// <value>
-        /// The CreatedByPersonAliasId.
+        /// The created by person alias identifier.
         /// </value>
         public int? CreatedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModifiedByPersonAliasId.
+        /// Gets or sets the modified by person alias identifier.
         /// </summary>
         /// <value>
-        /// The ModifiedByPersonAliasId.
+        /// The modified by person alias identifier.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
