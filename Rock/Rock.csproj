@@ -3749,6 +3749,8 @@
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonFollowAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonGetCampusTeamMember.cs" />
+    <Compile Include="Workflow\Action\People\PersonGetGroupTypeAttendance.cs" />
+    <Compile Include="Workflow\Action\People\PersonGetGroupAttendance.cs" />
     <Compile Include="Workflow\Action\People\PersonGetHeadOfHousehold.cs" />
     <Compile Include="Workflow\Action\People\PersonGetSpouse.cs" />
     <Compile Include="Workflow\Action\People\PersonInDataView.cs" />
