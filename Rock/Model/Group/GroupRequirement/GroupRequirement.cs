@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -30,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupRequirement" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "CFC7DE86-222E-4669-83C2-A3F5B04CB5D6")]
+    [Rock.SystemGuid.EntityTypeGuid( "CFC7DE86-222E-4669-83C2-A3F5B04CB5D6" )]
     public partial class GroupRequirement : Model<GroupRequirement>
     {
         #region Entity Properties
@@ -87,6 +89,50 @@ namespace Rock.Model
         [DataMember]
         public bool MustMeetRequirementToAddMember { get; set; }
 
+        /// <summary>
+        /// Gets or sets the "Applies To" Age Classification.
+        /// </summary>
+        /// <value>
+        /// The Age Classification.
+        /// </value>
+        [DataMember]
+        [DefaultValue( AppliesToAgeClassification.All )]
+        public AppliesToAgeClassification AppliesToAgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Applies To" <see cref="Rock.Model.DataView"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The data view identifier.
+        /// </value>
+        [DataMember]
+        public int? AppliesToDataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether leaders are allowed to mark requirements as met manually.
+        /// </summary>
+        [DataMember]
+        [DefaultValue( false )]
+        public bool AllowLeadersToOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Due Date" attribute identifier for when the <see cref="Rock.Model.GroupRequirementType.DueDateType"/> is <b><see cref="DueDateType.GroupAttribute"/></b>.
+        /// </summary>
+        /// <value>
+        /// The attribute identifier.
+        /// </value>
+        [DataMember]
+        public int? DueDateAttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configured date for when the <see cref="Rock.Model.GroupRequirementType.DueDateType"/> is <b><see cref="DueDateType.ConfiguredDate"/></b>.
+        /// </summary>
+        /// <value>
+        /// The due date time.
+        /// </value>
+        [DataMember]
+        public DateTime? DueDateStaticDate { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -127,6 +173,24 @@ namespace Rock.Model
         [LavaVisible]
         public virtual GroupTypeRole GroupRole { get; set; }
 
+        /// <summary>
+        /// Gets or sets the "Applies To" <see cref="Rock.Model.DataView"/>.
+        /// </summary>
+        /// <value>
+        /// The data view.
+        /// </value>
+        [LavaVisible]
+        public virtual DataView AppliesToDataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Attribute"/> for <see cref="DueDateType.GroupAttribute"/>.
+        /// </summary>
+        /// <value>
+        /// The attribute.
+        /// </value>
+        [DataMember]
+        public virtual Attribute DueDateAttribute { get; set; }
+
         #endregion
     }
 
@@ -148,6 +212,8 @@ namespace Rock.Model
 
             this.HasRequired( a => a.GroupRequirementType ).WithMany().HasForeignKey( a => a.GroupRequirementTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.GroupRole ).WithMany().HasForeignKey( a => a.GroupRoleId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.AppliesToDataView ).WithMany().HasForeignKey( a => a.AppliesToDataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.DueDateAttribute ).WithMany().HasForeignKey( a => a.DueDateAttributeId ).WillCascadeOnDelete( false );
         }
     }
 
