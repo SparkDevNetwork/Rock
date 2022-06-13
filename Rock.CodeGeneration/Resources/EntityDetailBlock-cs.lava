@@ -71,7 +71,8 @@ namespace Rock.Blocks.{{ Domain }}
                 SetBoxInitialEntityState( box, {% if UseAttributeValues == true %}true{% else %}false{% endif %}, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable );
+                box.Options = GetBoxOptions( box.IsEditable );{% if UseAttributeValues == true %}
+                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<{{ EntityName }}>();{% endif %}
 
                 return box;
             }
@@ -304,6 +305,54 @@ namespace Rock.Blocks.{{ Domain }}
                 .ToToken();
         }
 
+        /// <summary>
+        /// Attempts to load an entity to be used for an edit action.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the entity to load.</param>
+        /// <param name="rockContext">The database context to load the entity from.</param>
+        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
+        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
+        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out {{ EntityName }} entity, out BlockActionResult error )
+        {
+            var entityService = new {{ EntityName }}Service( rockContext );
+            error = null;
+
+            // Determine if we are editing an existing entity or creating a new one.
+            if ( idKey.IsNotNullOrWhiteSpace() )
+            {
+                // If editing an existing entity then load it and make sure it
+                // was found and can still be edited.
+                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            }
+            else
+            {
+                // Create a new entity.
+                entity = new {{ EntityName }}();
+                entityService.Add( entity );{% if UseOrder == true %}
+
+                var maxOrder = entityService.Queryable()
+                    .Select( t => ( int? ) t.Order )
+                    .Max();
+
+                entity.Order = maxOrder.HasValue ? maxOrder.Value + 1 : 0;{% endif %}
+            }
+
+            if ( entity == null )
+            {
+                error = ActionBadRequest( $"{{ '{' }}{{ EntityName }}.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            if ( !{% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit ${{'{'}}{{ EntityName }}.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region Block Actions
@@ -319,11 +368,9 @@ namespace Rock.Blocks.{{ Domain }}
         {
             using ( var rockContext = new RockContext() )
             {
-                var entity = new {{ ServiceName }}( rockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null || !{% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
-                    return ActionBadRequest();
+                    return actionError;
                 }{% if UseAttributeValues == true %}
 
                 entity.LoadAttributes( rockContext );{% endif %}
@@ -348,36 +395,10 @@ namespace Rock.Blocks.{{ Domain }}
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new {{ ServiceName }}( rockContext );
-                {{ EntityName }} entity;
 
-                // Determine if we are editing an existing entity or creating a new one.
-                if ( box.Entity.IdKey.IsNotNullOrWhiteSpace() )
+                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
-                    // If editing an existing entity then load it and make sure it
-                    // was found and can still be edited.
-                    entity = entityService.Get( box.Entity.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
-
-                    if ( entity == null )
-                    {
-                        return ActionBadRequest( $"{{'{'}}{{ EntityName }}.FriendlyTypeName} not found." );
-                    }
-
-                    if ( !{% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        return ActionBadRequest( $"Not authorized to edit ${{'{'}}{{ EntityName }}.FriendlyTypeName}." );
-                    }
-                }
-                else
-                {
-                    // Create a new entity.
-                    entity = new {{ EntityName }}();
-                    entityService.Add( entity );
-
-                    var maxOrder = entityService.Queryable()
-                        .Select( t => ( int? ) t.Order )
-                        .Max();
-
-                    entity.Order = maxOrder.HasValue ? maxOrder.Value + 1 : 0;
+                    return actionError;
                 }
 
                 // Update the entity instance from the information in the bag.
@@ -427,16 +448,10 @@ namespace Rock.Blocks.{{ Domain }}
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new {{ ServiceName }}( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( entity == null )
+                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
-                    return ActionBadRequest( $"{{'{'}}{{ EntityName }}.FriendlyTypeName} was not found." );
-                }
-
-                if ( !{% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete this ${{'{'}}{{ EntityName }}.FriendlyTypeName}." );
+                    return actionError;
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -448,6 +463,60 @@ namespace Rock.Blocks.{{ Domain }}
                 rockContext.SaveChanges();
 
                 return ActionOk( this.GetParentPageUrl() );
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the list of attributes that can be displayed for editing
+        /// purposes based on any modified values on the entity.
+        /// </summary>
+        /// <param name="box">The box that contains all the information about the entity being edited.</param>
+        /// <returns>A box that contains the entity and attribute information.</returns>
+        [BlockAction]
+        public BlockActionResult RefreshAttributes( DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                {
+                    return actionError;
+                }
+
+                // Update the entity instance from the information in the bag.
+                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid data." );
+                }
+
+                // Reload attributes based on the new property values.
+                entity.LoadAttributes( rockContext );
+
+                var refreshedBox = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>
+                {
+                    Entity = GetEntityBagForEdit( entity, true )
+                };
+
+                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
+                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
+
+                // If the attributes haven't changed then return a 204 status code.
+                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
+                }
+
+                // Replace any values for attributes that haven't changed with
+                // the value sent by the client. This ensures any unsaved attribute
+                // value changes are not lost.
+                foreach ( var kvp in refreshedBox.Entity.Attributes )
+                {
+                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
+                    {
+                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
+                    }
+                }
+
+                return ActionOk( refreshedBox );
             }
         }
 
