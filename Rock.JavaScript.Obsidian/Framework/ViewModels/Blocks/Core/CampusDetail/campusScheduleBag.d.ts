@@ -24,10 +24,14 @@
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** Class CampusScheduleBag. */
 export type CampusScheduleBag = {
+    /** Gets or sets the unique identifier. */
     guid?: Guid | null;
 
+    /** Gets or sets the schedule. */
     schedule?: ListItemBag | null;
 
+    /** Gets or sets the schedule type value. */
     scheduleTypeValue?: ListItemBag | null;
 };
