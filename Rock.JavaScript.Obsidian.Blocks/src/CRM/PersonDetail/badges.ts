@@ -100,7 +100,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="card card-badges">           
+<div class="card card-badges">
     <div class="card-badge-top">
         <div class="rockbadge-container" v-html="topLeftBadges"></div>
 
@@ -116,9 +116,9 @@ export default defineComponent({
             <EntityTagList :entityTypeGuid="entityTypeGuid"
                 :entityKey="entityKey"
                 :lazyMode="lazyMode" />
-         </div> 
+         </div>
 
-        <div class="rockbadge-container rockbadge-container-xs" v-html="bottomRightBadges"></div> 
+        <div class="rockbadge-container rockbadge-container-xs" v-html="bottomRightBadges"></div>
    </div>
 </div>
 `
