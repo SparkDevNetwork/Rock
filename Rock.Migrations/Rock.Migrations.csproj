@@ -96,6 +96,10 @@
     <Compile Include="Migrations\202206141718224_AddPropertyForInheritedAttribute.designer.cs">
       <DependentUpon>202206141718224_AddPropertyForInheritedAttribute.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202206142045160_CodeGenerated_20220614.cs" />
+    <Compile Include="Migrations\202206142045160_CodeGenerated_20220614.designer.cs">
+      <DependentUpon>202206142045160_CodeGenerated_20220614.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1185,6 +1189,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202206141718224_AddPropertyForInheritedAttribute.resx">
       <DependentUpon>202206141718224_AddPropertyForInheritedAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206142045160_CodeGenerated_20220614.resx">
+      <DependentUpon>202206142045160_CodeGenerated_20220614.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
