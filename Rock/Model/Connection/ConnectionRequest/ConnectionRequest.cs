@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -150,6 +150,16 @@ namespace Rock.Model
         public int? ConnectorPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int ConnectionTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -177,6 +187,15 @@ namespace Rock.Model
         #endregion
 
         #region Navigation Properties
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType">type</see> of the connection request.
+        /// </summary>
+        /// <value>
+        /// The type of the connection request.
+        /// </value>
+        [LavaVisible]
+        public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ConnectionStatus"/>.
@@ -301,6 +320,7 @@ namespace Rock.Model
         public ConnectionRequestConfiguration()
         {
             this.HasRequired( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionRequests ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.ConnectionType ).WithMany().HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectorPersonAlias ).WithMany().HasForeignKey( p => p.ConnectorPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );

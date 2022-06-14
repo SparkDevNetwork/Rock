@@ -18,7 +18,6 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
 using Rock.Data;
 using Rock.Tasks;
 
@@ -74,6 +73,12 @@ namespace Rock.Model
                 if ( connectionOpportunity == null )
                 {
                     connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionRequest.ConnectionOpportunityId );
+                }
+
+                //Just because connection opportunity is always loaded, we are populating ConnectionTypeId all the times except delete.
+                if ( this.State != EntityContextState.Deleted && connectionOpportunity != null )
+                {
+                    this.Entity.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                 }
 
                 switch ( State )
