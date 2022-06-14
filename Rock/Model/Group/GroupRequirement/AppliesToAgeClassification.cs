@@ -19,6 +19,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// The Age Classification to which a group requirement applies. All, Adults, or Children.
+    /// </summary>
     public enum AppliesToAgeClassification
     {
         /// <summary>

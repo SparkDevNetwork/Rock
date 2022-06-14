@@ -70,6 +70,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AppliesToAgeClassification
+    {
+        All = 0x0,
+        Adults = 0x1,
+        Children = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AssessmentRequestStatus
     {
         Pending = 0x0,
@@ -316,6 +325,16 @@ namespace Rock.Client.Enums
         WhenAllowed = 0x0,
         Always = 0x1,
         Never = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DueDateType
+    {
+        Immediate = 0x0,
+        ConfiguredDate = 0x1,
+        GroupAttribute = 0x2,
+        DaysAfterJoining = 0x3,
     }
 
     /// <summary>

@@ -203,7 +203,7 @@ namespace Rock.Model
         /// The workflow type identifier.
         /// </value>
         [DataMember]
-        public int DoesNotMeetWorkflowTypeId { get; set; }
+        public int? DoesNotMeetWorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this requirement type's "Does Not Meet" workflow should auto-initiate.
@@ -226,7 +226,7 @@ namespace Rock.Model
         /// The workflow type identifier.
         /// </value>
         [DataMember]
-        public int WarningWorkflowTypeId { get; set; }
+        public int? WarningWorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this requirement type's "Warning" workflow should auto-initiate.
