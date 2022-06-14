@@ -382,6 +382,15 @@ namespace Rock.SystemGuid
         public const string STEP_FLOW = "2B4E0128-BCDF-48BF-AEC9-85001169DA3E";
         #endregion Steps Block Types
 
+        #region Reporting Block Types
+
+        /// <summary>
+        /// The reporting dashboard liquid/lava dashboard widget.
+        /// </summary>
+        public const string REPORTING_LAVA_DASHBOARD_WIDGET = "AC19A4F3-2E88-487E-8E88-377C1C20DBD5";
+
+        #endregion Reporting Block Types
+
         /// <summary>
         /// The contribution statement lava (Legacy)
         /// </summary>
