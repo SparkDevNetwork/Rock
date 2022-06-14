@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,23 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
+using System;
+using System.ComponentModel;
+using System.Web.UI;
 using Rock;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
-using Rock.Constants;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -82,7 +75,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
         }
 
         #endregion
@@ -111,6 +103,7 @@ namespace RockWeb.Blocks.Groups
                 groupRequirementType = new GroupRequirementType { Id = 0 };
                 groupRequirementType.RequirementCheckType = RequirementCheckType.Manual;
                 lActionTitle.Text = ActionTitle.Add( GroupRequirementType.FriendlyTypeName ).FormatAsHtmlTitle();
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -187,7 +180,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
 
             int groupRequirementTypeId = hfGroupRequirementTypeId.Value.AsInteger();
 
-            if (groupRequirementTypeId == 0)
+            if ( groupRequirementTypeId == 0 )
             {
                 groupRequirementType = new GroupRequirementType();
             }
@@ -202,7 +195,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
             groupRequirementType.ExpireInDays = groupRequirementType.CanExpire ? nbExpireInDays.Text.AsIntegerOrNull() : null;
             groupRequirementType.RequirementCheckType = hfRequirementCheckType.Value.ConvertToEnum<RequirementCheckType>( RequirementCheckType.Manual );
 
-            if ( groupRequirementType.RequirementCheckType == RequirementCheckType.Sql)
+            if ( groupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
             {
                 groupRequirementType.SqlExpression = ceSqlExpression.Text;
                 groupRequirementType.WarningSqlExpression = ceWarningSqlExpression.Text;
@@ -213,7 +206,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
                 groupRequirementType.WarningSqlExpression = null;
             }
 
-            if (groupRequirementType.RequirementCheckType == RequirementCheckType.Dataview)
+            if ( groupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
             {
                 groupRequirementType.DataViewId = dpDataView.SelectedValue.AsIntegerOrNull() == 0 ? null : dpDataView.SelectedValue.AsIntegerOrNull();
                 groupRequirementType.WarningDataViewId = dpWarningDataView.SelectedValue.AsIntegerOrNull() == 0 ? null : dpWarningDataView.SelectedValue.AsIntegerOrNull();
