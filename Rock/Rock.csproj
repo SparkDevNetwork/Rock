@@ -794,6 +794,7 @@
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Model\Core\InteractionChannel\InteractionChannelService.cs" />
+    <Compile Include="Model\Reporting\Metric\UnitType.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
