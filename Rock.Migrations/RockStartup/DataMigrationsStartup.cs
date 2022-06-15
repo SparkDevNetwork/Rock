@@ -82,7 +82,8 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_127_REBUILD_GROUP_SALUTATIONS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS.AsGuid()
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)

@@ -84,6 +84,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_140_ADD_MISSING_MEDIA_ELEMENT_INTERACTIONS = "3E6817DA-CEE0-42F8-A30E-FF787719493C";
 
         /// <summary>
+        /// The Job to run Post v14.0 Data Migrations to update current sessions
+        /// </summary>
+        public const string DATA_MIGRATIONS_140_UPDATE_CURRENT_SESSIONS = "53A6804F-5895-4E19-907D-916B5CF175AB";
+
+        /// <summary>
         /// The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields.
         /// </summary>
         public const string DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12";
