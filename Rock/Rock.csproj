@@ -1179,6 +1179,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.WebForms.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
+    <Compile Include="Plugin\HotFixes\151_LavaDashboardWidget.cs" />
     <Compile Include="Plugin\HotFixes\150_MigrationRollupsFor13_5_2.cs" />
     <Compile Include="Plugin\HotFixes\149_MigrationRollupsFor13_5_1.cs" />
     <Compile Include="Plugin\HotFixes\148_MigrationRollupsFor13_5_0.cs" />
