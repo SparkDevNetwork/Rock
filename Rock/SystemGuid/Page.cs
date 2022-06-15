@@ -2157,5 +2157,15 @@ namespace Rock.SystemGuid
         /// The connection requests bulk update page
         /// </summary>
         public const string CONNECTION_REQUESTS_BULK_UPDATE = "1F5D34CF-89C1-426C-A139-83D87905D669";
+
+        /// <summary>
+        /// The dataview search results page
+        /// </summary>
+        public const string DATAVIEW_SEARCH_RESULTS = "6C7AB3CA-E894-4E19-96AE-C67C4C69FEDE";
+
+        /// <summary>
+        /// The report search results page
+        /// </summary>
+        public const string REPORT_SEARCH_RESULTS = "7DA4B63B-4407-47B2-8984-A54A543D8A69";
     }
 }

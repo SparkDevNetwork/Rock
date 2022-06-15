@@ -372,6 +372,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSISTED_DATA_VIEW_LIST = "3C4FAFAE-41D1-4FF2-B6DC-FF99CD4DABBE";
 
+        /// <summary>
+        /// The dataview search results block type
+        /// </summary>
+        public const string DATAVIEW_SEARCH_RESULTS = "BFB625F7-75CA-48FE-9C82-90E47374242B";
+
+        /// <summary>
+        /// The report search results block type
+        /// </summary>
+        public const string REPORT_SEARCH_RESULTS = "13955B32-11F4-4606-8C31-4C6E5324C81A";
+
         #endregion Reporting Block Types
 
         #region Steps Block Types
