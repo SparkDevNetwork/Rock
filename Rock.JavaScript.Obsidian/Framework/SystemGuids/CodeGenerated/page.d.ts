@@ -1472,6 +1472,16 @@ export const enum Page {
      */
     StepPrograms = "F5E8A369-4856-42E5-B187-276DFCEB1F3F",
     /**
+     * Gets the Step Program Detail page guid
+     * ParentPage: Step Programs
+     */
+    StepProgramDetail = "6E46BC35-1FCB-4619-84F0-BB6926D2DDD5",
+    /**
+     * Gets the Step Flow page guid
+     * ParentPage: Engagement
+     */
+    StepFlow = "A5FE5D33-C9E2-496D-AD8F-5B7AA496B2AC",
+    /**
      * Gets the Streak page guid
      * ParentPage: Streak Type Detail
      */
@@ -1680,4 +1690,8 @@ export const enum Page {
     SystemCommunicationPreview = "FD8E0C71-9543-4CAB-9918-76A67EFE5093",
     /** The connection requests bulk update page */
     ConnectionRequestsBulkUpdate = "1F5D34CF-89C1-426C-A139-83D87905D669",
+    /** The dataview search results page */
+    DataviewSearchResults = "6C7AB3CA-E894-4E19-96AE-C67C4C69FEDE",
+    /** The report search results page */
+    ReportSearchResults = "7DA4B63B-4407-47B2-8984-A54A543D8A69",
 }

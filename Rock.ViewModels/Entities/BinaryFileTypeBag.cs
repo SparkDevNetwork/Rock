@@ -74,6 +74,14 @@ namespace Rock.ViewModels.Entities
         public bool IsSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum file size bytes.
+        /// </summary>
+        /// <value>
+        /// The maximum file size bytes.
+        /// </value>
+        public int? MaxFileSizeBytes { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating the maximum height of a file type.
         /// </summary>
         /// <value>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Person Edit" )]
     [Category( "CRM > Person Edit" )]
     [Description( "Allows you to navigate to the person edit page." )]
+    [Rock.SystemGuid.BlockTypeGuid( "8C94620B-0FC1-4C39-9474-1714546E7D9E" )]
     public partial class PersonEditControl : Rock.Web.UI.PersonBlock
     {
 

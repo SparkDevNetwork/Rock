@@ -967,6 +967,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum UnitType
+    {
+        Numeric = 0x0,
+        Currency = 0x1,
+        Percentage = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum UpdatedAddressType
     {
         None = 0x0,

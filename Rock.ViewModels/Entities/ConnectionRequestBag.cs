@@ -106,6 +106,14 @@ namespace Rock.ViewModels.Entities
         public int ConnectionStatusId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Rock.Model.ConnectionType identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
+        public int ConnectionTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the connector Rock.Model.PersonAlias identifier.
         /// </summary>
         /// <value>

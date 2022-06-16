@@ -88,6 +88,7 @@ namespace Rock.Model
                 OnWaitList = model.OnWaitList,
                 PersonAliasId = model.PersonAliasId,
                 RegistrationId = model.RegistrationId,
+                RegistrationTemplateId = model.RegistrationTemplateId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -165,6 +166,7 @@ namespace Rock.Model
             target.OnWaitList = source.OnWaitList;
             target.PersonAliasId = source.PersonAliasId;
             target.RegistrationId = source.RegistrationId;
+            target.RegistrationTemplateId = source.RegistrationTemplateId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

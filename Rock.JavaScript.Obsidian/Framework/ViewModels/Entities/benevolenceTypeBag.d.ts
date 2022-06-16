@@ -25,6 +25,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** BenevolenceType View Model */
 export type BenevolenceTypeBag = {
+    /** Gets or sets the additional settings json. */
+    additionalSettingsJson?: string | null;
+
     /** Gets or sets the Rock.Model.BenevolenceType.Description value on the Rock.Model.BenevolenceType. This property is required. */
     description?: string | null;
 

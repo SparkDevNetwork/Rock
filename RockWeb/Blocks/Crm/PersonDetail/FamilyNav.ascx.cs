@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to switch between the members of the family the person belongs to." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "35D091FA-8311-42D1-83F7-3E67B9EE9675" )]
     public partial class FamilyNav : Rock.Web.UI.PersonBlock
     {
         protected override void OnLoad( EventArgs e )
