@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -422,10 +422,9 @@ namespace RockWeb.Blocks.Groups
             avcAttributes.Visible = false;
             avcAttributesReadOnly.Visible = false;
 
-
             List<string> editableAttributes;
             List<string> viewableAttributes;
-            
+
             if ( group.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
             {
                 // If the Current User has Administrate permissions for the Group, show all Attributes.
@@ -456,7 +455,7 @@ namespace RockWeb.Blocks.Groups
 
             var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
             pnlRequirements.Visible = groupHasRequirements;
-            btnReCheckRequirements.Visible = groupHasRequirements;
+            btnRefreshRequirements.Visible = groupHasRequirements;
 
             ShowGroupRequirementsStatuses( false );
         }
@@ -658,7 +657,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        /// <param name="syncdRoles">The syncd roles.</param>
+        /// <param name="syncdRoles">The sync'd roles.</param>
         private void LoadDropDowns( List<int> syncdRoles, int groupMemberRole )
         {
             int groupId = hfGroupId.ValueAsInt();
@@ -838,7 +837,7 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Moves fundraising transactions from from one group/groupmember to another.  This method should be wrapped in a transaction
+        /// Moves fundraising transactions from one group/groupmember to another.  This method should be wrapped in a transaction
         /// along with the creation/deletion of the new/old <see cref="GroupMember"/> records.
         /// </summary>
         /// <param name="oldGroupMember">The original/existing <see cref="GroupMember"/>.</param>
@@ -859,8 +858,8 @@ namespace RockWeb.Blocks.Groups
                 .Where( t => t.TransactionDetails
                     .Where( d => d.EntityId == oldGroupMember.Id )
                     .Where( d => d.EntityTypeId == groupMemberTypeId )
-                    .Any()
-                ).ToList();
+                    .Any() )
+                .ToList();
 
             foreach ( var oldTransaction in oldTransactions )
             {
@@ -936,7 +935,7 @@ namespace RockWeb.Blocks.Groups
 
                         rockContext.SaveChanges();
 
-                        // Only do this once per transactin.  If there is more than one record in the TransactionDetails
+                        // Only do this once per transaction.  If there is more than one record in the TransactionDetails
                         // collection, we'll use the same FinancialTransaction objects.
                         transactionObjectMoved = true;
                     }
@@ -1032,6 +1031,7 @@ namespace RockWeb.Blocks.Groups
                     nbRestoreError.Visible = true;
                     return;
                 }
+
                 rockContext.SaveChanges();
                 NavigateToCurrentPageReference( new Dictionary<string, string> { { PageParameterKey.GroupMemberId, restoreGroupMemberId.ToString() } } );
             }
@@ -1146,7 +1146,6 @@ namespace RockWeb.Blocks.Groups
 
                 int groupMemberId = int.Parse( hfGroupMemberId.Value );
 
-
                 // if adding a new group member 
                 if ( groupMemberId.Equals( 0 ) )
                 {
@@ -1221,8 +1220,7 @@ namespace RockWeb.Blocks.Groups
                         nbRestoreArchivedGroupMember.Text = string.Format(
                             "There is an archived record for {0} as a {1} in this group. Do you want to restore the previous settings? Notes will be retained.",
                             person,
-                            role
-                            );
+                            role );
 
                         hfRestoreGroupMemberId.Value = archivedGroupMember.Id.ToString();
                         return false;
@@ -1431,14 +1429,14 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Handles the Click event of the btnReCheckRequirements control.
+        /// Handles the Click event of the btnRefreshRequirements control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnReCheckRequirements_Click( object sender, EventArgs e )
+        protected void btnRefreshRequirements_Click( object sender, EventArgs e )
         {
             CalculateRequirements( true );
-            nbRecheckedNotification.Text = "Successfully re-checked requirements.";
+            nbRecheckedNotification.Text = "Successfully refreshed requirements.";
             nbRecheckedNotification.Visible = true;
         }
 
@@ -1460,7 +1458,6 @@ namespace RockWeb.Blocks.Groups
                 mdMoveGroupMember.Visible = true;
                 mdMoveGroupMember.Show();
                 SetFundraisingTransferOptionVisibility( groupMember.Group.GroupTypeId, rockContext );
-
             }
         }
 
@@ -1496,7 +1493,7 @@ namespace RockWeb.Blocks.Groups
                 nbMoveGroupMemberWarning.Text = string.Format( "Please select a Group Role" );
                 return;
             }
-            
+
             var isArchive = false;
 
             // If we can't delete, then we'll have to archive the group member.
