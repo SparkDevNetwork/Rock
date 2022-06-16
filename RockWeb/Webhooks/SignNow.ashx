@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
+[Obsolete]
 public class SignNow : IHttpHandler
 {
     private HttpRequest request;

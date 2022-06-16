@@ -1362,6 +1362,18 @@ This can be due to multiple threads updating the same attribute at the same time
                     {
                         int colSize = ( int ) Math.Ceiling( 12.0 / ( double ) numberOfColumns.Value );
                         HtmlGenericControl attributeCol = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
+
+                        /*
+                            6/8/2022 - PA
+
+                            The attributeCol controls helps add the Attributes to the page.
+                            But, not having the attributeCol.ID set causes the Page to throw View State Exception as DynamicControlsHtmlGenericControl instances are required to have an Id.
+                            
+                            Reason: https://github.com/SparkDevNetwork/Rock/issues/3867
+                         */
+
+                        attributeCol.ID = "attributeCol_" + attribute.Key;
+
                         attributeRow.Controls.Add( attributeCol );
                         attributeCol.AddCssClass( $"col-md-{colSize}" );
                         attribute.AddControl( attributeCol.Controls, attributeControlOptions );

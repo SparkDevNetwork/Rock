@@ -40,6 +40,9 @@ export type BinaryFileTypeBag = {
     /** Gets or sets a flag indicating if this BinaryFileType is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
+    /** Gets or sets the maximum file size bytes. */
+    maxFileSizeBytes?: number | null;
+
     /** Gets or sets a value indicating the maximum height of a file type. */
     maxHeight?: number | null;
 

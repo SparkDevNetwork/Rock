@@ -94,7 +94,7 @@ namespace Rock.Tests.Integration.Lava
 
                 TestHelper.DebugWriteRenderResult( engine, input, outputText );
 
-                Assert.IsTrue( outputText.StartsWith( "Lava Template Parse failed:" ) && outputText.Contains("Unknown tag" ) && outputText.Contains("{% invalidTagName %}") );
+                Assert.IsTrue( outputText.Contains("Unknown tag" ) && outputText.Contains("invalidTagName") );
             } );
         }
     }

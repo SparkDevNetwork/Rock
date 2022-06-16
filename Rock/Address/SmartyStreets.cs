@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -67,7 +67,7 @@ namespace Rock.Address
             var request = new RestRequest( Method.POST );
             request.RequestFormat = DataFormat.Json;
             request.AddHeader( "Accept", "application/json" );
-            request.AddBody( payload );
+            request.AddJsonBody( payload );
             var response = client.Execute( request );
 
             if ( response.StatusCode == HttpStatusCode.OK )
@@ -138,7 +138,7 @@ namespace Rock.Address
                 var request = new RestRequest( Method.POST );
                 request.RequestFormat = DataFormat.Json;
                 request.AddHeader( "Accept", "application/json" );
-                request.AddBody( payload );
+                request.AddJsonBody( payload );
                 var response = client.Execute( request );
 
                 if ( response.StatusCode == HttpStatusCode.OK )

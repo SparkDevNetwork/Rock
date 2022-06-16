@@ -2488,8 +2488,8 @@ namespace Rock.Model
         /// <returns>Person.</returns>
         public Person GetCurrentPerson()
         {
-            var currentUser = new UserLoginService( ( RockContext ) this.Context ).GetByUserName( UserLogin.GetCurrentUserName() );
-            return currentUser?.Person;
+                var currentUser = new UserLoginService( (RockContext) this.Context ).GetByUserName( UserLogin.GetCurrentUserName() );
+                return currentUser != null ? currentUser.Person : null;
         }
 
         /// <summary>

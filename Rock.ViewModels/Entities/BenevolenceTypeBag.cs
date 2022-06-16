@@ -34,6 +34,14 @@ namespace Rock.ViewModels.Entities
     public partial class BenevolenceTypeBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets the additional settings json.
+        /// </summary>
+        /// <value>
+        /// The additional settings json.
+        /// </value>
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the Rock.Model.BenevolenceType.Description value on the Rock.Model.BenevolenceType. This property is required.
         /// </summary>
         /// <value>

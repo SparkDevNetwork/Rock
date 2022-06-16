@@ -19,7 +19,8 @@ import { defineComponent, PropType, ref, watch } from "vue";{% if UseAttributeVa
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";{% endif %}{% if UseIsActive == true %}
 import CheckBox from "@Obsidian/Controls/checkBox";{% endif %}{% if UseDescription == true or UseName == true %}
 import TextBox from "@Obsidian/Controls/textBox";{% endif %}
-import { updateRefValue } from "@Obsidian/Utility/component";
+import { watchPropertyChanges } from "@Obsidian/Utility/block";
+import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
 import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
@@ -45,7 +46,8 @@ export default defineComponent({
     },
 
     emits: {
-        "update:modelValue": (_value: {{ EntityName }}Bag) => true
+        "update:modelValue": (_value: {{ EntityName }}Bag) => true{% if UseAttributeValues == true %},
+        "propertyChanged": (_value: string) => true{% endif %}
     },
 
     setup(props, { emit }) {
@@ -53,9 +55,17 @@ export default defineComponent({
 {% if UseAttributeValues == true %}
         const attributes = ref(props.modelValue.attributes ?? {});
         const attributeValues = ref(props.modelValue.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
-        const description = ref(props.modelValue.description ?? "");{% endif %}{% if UseIsActive == true %}
-        const isActive = ref(props.modelValue.isActive ?? false);{% endif %}{% if UseName == true %}
-        const name = ref(props.modelValue.name ?? "");{% endif %}
+        const description = propertyRef(props.modelValue.description ?? "", "Description");{% endif %}{% if UseIsActive == true %}
+        const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");{% endif %}{% if UseName == true %}
+        const name = propertyRef(props.modelValue.name ?? "", "Name");{% endif %}
+
+        // The properties that are being edited. This should only contain
+        // objects returned by propertyRef().
+        {% assign propNames = '' -%}
+        {% if UseDescription == true %}{% assign propNames = propNames | AddToArray:'description' %}{% endif -%}
+        {% if UseIsActive == true %}{% assign propNames = propNames | AddToArray:'isActive' %}{% endif -%}
+        {% if UseName == true %}{% assign propNames = propNames | AddToArray:'name' %}{% endif -%}
+        const propRefs = [{{ propNames | Join:', ' }}];
 
         // #endregion
 
@@ -84,9 +94,7 @@ export default defineComponent({
         // array) and then emit a new object defined as newValue.
         {% assign propNames = '' -%}
         {% if UseAttributeValues == true %}{% assign propNames = propNames | AddToArray:'attributeValues' %}{% endif -%}
-        {% if UseDescription == true %}{% assign propNames = propNames | AddToArray:'description' %}{% endif -%}
-        {% if UseIsActive == true %}{% assign propNames = propNames | AddToArray:'isActive' %}{% endif -%}
-        {% if UseName == true %}{% assign propNames = propNames | AddToArray:'name' %}{% endif -%}
+        {% assign propNames = propNames | AddToArray:'...propRefs' -%}
         watch([{{ propNames | Join:', ' }}], () => {
             const newValue: {{ EntityName }}Bag = {
                 ...props.modelValue,{% if UseAttributeValues == true %}
@@ -98,6 +106,10 @@ export default defineComponent({
 
             emit("update:modelValue", newValue);
         });
+
+        // Watch for any changes to props that represent properties and then
+        // automatically emit which property changed.
+        watchPropertyChanges(propRefs, emit);
 
         return {{ '{' }}{% if UseAttributeValues == true %}
             attributes,

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -30,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "LavaShortcode" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "7574A473-3326-4973-8DF6-C7BF5F64EB36")]
+    [Rock.SystemGuid.EntityTypeGuid( "7574A473-3326-4973-8DF6-C7BF5F64EB36" )]
     public partial class LavaShortcode : Model<LavaShortcode>, ICacheable
     {
         #region Entity Properties
@@ -133,6 +135,26 @@ namespace Rock.Model
         [MaxLength( 2500 )]
         public string Parameters { get; set; }
         #endregion Entity Properties
+
+        #region Navigation Properties
+
+        /// <summary>
+        /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this <see cref="LavaShortcode"/> is associated with.
+        /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Category> Categories
+        {
+            get { return _categories ?? ( _categories = new Collection<Category>() ); }
+            set { _categories = value; }
+        }
+
+        private ICollection<Category> _categories;
+
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -147,6 +169,14 @@ namespace Rock.Model
         /// </summary>
         public LavaShortcodeConfiguration()
         {
+            this.HasMany( a => a.Categories )
+                .WithMany()
+                .Map( a =>
+                {
+                    a.MapLeftKey( "LavaShortcodeId" );
+                    a.MapRightKey( "CategoryId" );
+                    a.ToTable( "LavaShortcodeCategory" );
+                } );
         }
     }
 

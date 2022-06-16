@@ -34,7 +34,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.RepeatDirection = System.Web.UI.WebControls.RepeatDirection.Horizontal;
-            this.AddCssClass( "checkboxlist-group" );
         }
 
         /// <summary>

@@ -39,6 +39,8 @@
                             </div>
                         </div>
 
+                        <Rock:CategoryPicker ID="cpShortCodeCat" runat="server" AllowMultiSelect="true" Label="Categories" EntityTypeName="Rock.Model.LavaShortcodeCategory" />
+
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.LavaShortcode, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
                         <Rock:HtmlEditor ID="htmlDocumentation" runat="server" Label="Documentation" Help="Technical description of the internals of the shortcode" Height="250" />
@@ -50,7 +52,7 @@
                                 <Rock:KeyValueList ID="kvlParameters" runat="server" Label="Parameters" Help="List the parameters for your shortcode. If you provide a value here it will become the default value if none is provided." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:LavaCommandsPicker id="lcpLavaCommands" runat="server" Label="Enabled Lava Commands" />
+                                <Rock:LavaCommandsPicker ID="lcpLavaCommands" runat="server" Label="Enabled Lava Commands" />
                             </div>
                         </div>
 
@@ -70,7 +72,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            
+
                             <asp:Literal ID="lblHeaderFields" runat="server" />
 
                             <Rock:CodeEditor ID="ceView" runat="server" ReadOnly="true" Label="Shortcode Markup" EditorHeight="600" />
@@ -85,8 +87,6 @@
 
                 </fieldset>
             </div>
-
-
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

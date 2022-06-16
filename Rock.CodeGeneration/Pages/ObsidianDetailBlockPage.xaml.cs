@@ -187,6 +187,7 @@ namespace Rock.CodeGeneration.Pages
                 ["UseEntitySecurity"] = options.UseEntitySecurity,
                 ["UseIsActive"] = options.Properties.Any( p => p.Name == "IsActive" ),
                 ["UseIsSystem"] = options.Properties.Any( p => p.Name == "IsSystem" ),
+                ["UseOrder"] = options.Properties.Any( p => p.Name == "Order" ),
                 ["UseName"] = options.Properties.Any( p => p.Name == "Name" )
             };
 

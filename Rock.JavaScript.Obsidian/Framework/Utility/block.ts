@@ -17,8 +17,10 @@
 
 import { Guid } from "@Obsidian/Types";
 import { SecurityGrant } from "@Obsidian/Types/Utility/block";
+import { ExtendedRef } from "@Obsidian/Types/Utility/component";
+import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { HttpBodyData, HttpResult, HttpUrlParams } from "./http";
-import { inject, provide, Ref, ref } from "vue";
+import { inject, provide, Ref, ref, watch } from "vue";
 import { RockDateTime } from "./rockDateTime";
 
 export type ConfigurationValues = Record<string, unknown>;
@@ -168,3 +170,62 @@ export function useSecurityGrantToken(): Ref<string | null> {
 }
 
 // #endregion
+
+// #region Extended References
+
+/** An emit object that conforms to having a propertyChanged event. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PropertyChangedEmitFn<E extends "propertyChanged"> = E extends Array<infer EE> ? (event: EE, ...args: any[]) => void : (event: E, ...args: any[]) => void;
+
+/**
+ * Watches for changes to the given Ref objects and emits a special event to
+ * indicate that a given property has changed.
+ * 
+ * @param propertyRefs The ExtendedRef objects to watch for changes.
+ * @param emit The emit function for the component.
+ */
+export function watchPropertyChanges<E extends "propertyChanged">(propertyRefs: ExtendedRef<unknown>[], emit: PropertyChangedEmitFn<E>): void {
+    for (const propRef of propertyRefs) {
+        watch(propRef, () => {
+            if (propRef.context.propertyName) {
+                emit("propertyChanged", propRef.context.propertyName);
+            }
+        });
+    }
+}
+
+/**
+ * Requests an updated attribute list from the server based on the
+ * current UI selections made.
+ *
+ * @param bag The entity bag that will be used to determine current property values
+ * and then updated with the new attributes and values.
+ * @param validProperties The properties that are considered valid on the bag when
+ * the server will read the bag.
+ * @param invokeBlockAction The function to use when calling the block action.
+ */
+export async function refreshDetailAttributes<TEntityBag>(bag: Ref<TEntityBag>, validProperties: string[], invokeBlockAction: InvokeBlockActionFunc): Promise<void> {
+    const data: DetailBlockBox<unknown, unknown> = {
+        entity: bag.value,
+        isEditable: true,
+        validProperties: validProperties
+    };
+
+    const result = await invokeBlockAction<DetailBlockBox<Record<string, unknown>, unknown>>("RefreshAttributes", {
+        box: data
+    });
+
+    if (result.isSuccess) {
+        if (result.statusCode === 200 && result.data && bag.value) {
+            const newBag: TEntityBag = {
+                ...bag.value,
+                attributes: result.data.entity?.attributes,
+                attributeValues: result.data.entity?.attributeValues
+            };
+
+            bag.value = newBag;
+        }
+    }
+}
+
+// #endregion Extended Refs

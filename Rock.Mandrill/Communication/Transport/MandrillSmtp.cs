@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Communication.Transport
     [BooleanField( "Use SSL", "", false, "", 4 )]
     [BooleanField( "Inline CSS", "Enable Mandrill's CSS Inliner feature.", true, "", 5 )]
     [IntegerField( "Concurrent Send Workers", "", false, 10, "", 5, key: "MaxParallelization" )]
+    [Rock.SystemGuid.EntityTypeGuid( "73158C6E-CE56-4CA8-9A52-7CBA58CA52F9")]
     public class MandrillSmtp : SMTPComponent
     {
         /// <summary>

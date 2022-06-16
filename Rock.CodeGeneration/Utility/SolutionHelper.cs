@@ -105,6 +105,7 @@ namespace Rock.CodeGeneration.Utility
         /// </summary>
         public void Dispose()
         {
+            return;
             _offlineProjects.Dispose();
         }
 

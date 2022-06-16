@@ -44,7 +44,7 @@ namespace Rock.IpAddress
         IsRequired = true,
         Order = 0,
         Key = AttributeKey.APIKey )]
-    [Rock.SystemGuid.EntityTypeGuid( "7AFE6DFA-5FC4-4554-98D2-5BD4C909558B")]
+    [Rock.SystemGuid.EntityTypeGuid( "7AFE6DFA-5FC4-4554-98D2-5BD4C909558B" )]
     public class IpRegistry : IpAddressLookupComponent
     {
         #region Keys
@@ -70,20 +70,58 @@ namespace Rock.IpAddress
         #endregion
 
         /// <summary>
-        /// Lookups the specified IP Address and returns it's location.
+        /// It takes the single IpAddress and returns the location.
         /// </summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="resultMsg">The result MSG.</param>
         /// <returns></returns>
         public override IpLocation Lookup( string ipAddress, out string resultMsg )
         {
-            // TODO: This should be replaced to call their single IP lookup as it takes 2 credits since the batch call costs an extra credit
-            return BulkLookup( new List<string> { ipAddress }, out resultMsg ).FirstOrDefault();
+            resultMsg = string.Empty;
+
+            var result = new IpLocation();
+
+            // Create REST client
+            var client = GetIpRegistryRestClient();
+
+            // Create and configure REST request
+            var request = new RestRequest("{ipAddress}", Method.GET );
+            request.AddUrlSegment( "ipAddress", ipAddress  );
+            request.AddHeader( "Accept", "application/json" );
+
+            var response = client.Execute( request );
+
+            // Process successful response
+            if ( response.StatusCode == HttpStatusCode.OK )
+            {
+                var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Result ) ) as Result;
+                result = ConvertResultToIpLocation( responseContent );
+            }
+            else if ( response.StatusCode == HttpStatusCode.BadRequest || ( int ) response.StatusCode == 429 )
+            {
+                var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Result ) ) as Result;
+                result = ConvertResultToIpLocation( responseContent );
+                resultMsg = $"{response.StatusDescription}.";
+                if ( responseContent.Resolution.IsNotNullOrWhiteSpace() )
+                {
+                    resultMsg += responseContent.Resolution;
+                }
+            }
+            else // Some other HTTP result
+            {
+                resultMsg = response.StatusDescription;
+            }
+
+            return result;
         }
 
+
         /// <summary>
-        /// Gets all the IP Address result through IPRegistry
+        /// Takes a list of IP Addresses and returns the location information associated with them.
         /// </summary>
+        /// <param name="ipAddresses"></param>
+        /// <param name="resultMsg"></param>
+        /// <returns></returns>
         public override List<IpLocation> BulkLookup( List<string> ipAddresses, out string resultMsg )
         {
             resultMsg = string.Empty;
@@ -128,7 +166,7 @@ namespace Rock.IpAddress
                     // Increment the loop pointer as these IP address have been processed
                     sessionLoopIndex += _maxBulkRequestSize;
                 }
-                else if( (int)response.StatusCode ==  429 ) // HTTP: Too many requests
+                else if ( ( int ) response.StatusCode == 429 ) // HTTP: Too many requests
                 {
                     // If they didn't give us rate limit instructions then bail
                     if ( !rateLimitResetInSeconds.HasValue )
@@ -222,7 +260,7 @@ namespace Rock.IpAddress
             // Update the ISP
             if ( result.Company != null )
             {
-                locationInformation.ISP = result.Company.Name.SubstringSafe(0, 100);
+                locationInformation.ISP = result.Company.Name.SubstringSafe( 0, 100 );
             }
 
             // Upate the Lat/Long
@@ -230,7 +268,7 @@ namespace Rock.IpAddress
             locationInformation.Longitude = result.Location.Longitude;
 
             locationInformation.PostalCode = result.Location.PostalCode;
-            locationInformation.Location = FormatLocation( result ).SubstringSafe(0, 250);
+            locationInformation.Location = FormatLocation( result ).SubstringSafe( 0, 250 );
 
             return locationInformation;
         }
@@ -240,7 +278,7 @@ namespace Rock.IpAddress
         /// </summary>
         /// <param name="result">The result.</param>
         /// <returns></returns>
-        private string FormatLocation ( Result result )
+        private string FormatLocation( Result result )
         {
             if ( result.Location == null || ( result.Location.City.IsNullOrWhiteSpace() && result.Location.Region.Name.IsNullOrWhiteSpace() ) )
             {
@@ -267,7 +305,9 @@ namespace Rock.IpAddress
         private RestClient GetIpRegistryRestClient()
         {
             var apiKey = GetAttributeValue( AttributeKey.APIKey );
-            return new RestClient( string.Format( "https://api.ipregistry.co?key={0}", apiKey ) );
+            var restClient = new RestClient( "https://api.ipregistry.co" );
+            restClient.AddDefaultParameter( "key", apiKey, ParameterType.QueryString );
+            return restClient;
         }
     }
 
@@ -295,6 +335,15 @@ namespace Rock.IpAddress
         /// </value>
         [JsonProperty( "message" )]
         public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the resolution.
+        /// </summary>
+        /// <value>
+        /// The resolution.
+        /// </value>
+        [JsonProperty( "resolution" )]
+        public string Resolution { get; set; }
 
         /// <summary>
         /// Gets or sets the IP

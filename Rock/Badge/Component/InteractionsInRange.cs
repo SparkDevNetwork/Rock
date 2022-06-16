@@ -59,7 +59,7 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            writer.Write( $"<div class='badge badge-interactioninrange badge-id-{badge.Id} fa-3x' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( $"<div class='rockbadge rockbadge-interactioninrange rockbadge-id-{badge.Id} fa-3x' data-toggle='tooltip' data-original-title=''>" );
             writer.Write( "</div>" );
         }
 
@@ -108,7 +108,7 @@ namespace Rock.Badge.Component
                                 badgeContent = '<div class=\'badge-content fa-layers \' style=\'opacity:'+ opacity +'\'><i class=\'fa {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></div>';
                             }}
 
-                            $('.badge-interactioninrange.badge-id-{badge.Id}').html(badgeContent);
+                            $('.rockbadge-interactioninrange.rockbadge-id-{badge.Id}').html(badgeContent);
                         }}
                     }},
                 }});";

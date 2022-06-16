@@ -130,9 +130,7 @@ namespace RockWeb
                         continue;
                     }
 
-                    var serializer = new CalendarSerializer();
                     var ical = CalendarCollection.Load( occurrence.Schedule.iCalendarContent.ToStreamReader() );
-
                     foreach ( var icalEvent in ical[0].Events )
                     {
                         // We get all of the schedule info from Schedule.iCalendarContent

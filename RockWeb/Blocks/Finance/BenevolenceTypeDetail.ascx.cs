@@ -55,18 +55,33 @@ namespace RockWeb.Blocks.Finance
         AllowMultiple = true,
         Order = 1 )]
 
+    [IntegerField(
+        "Maximum Number of Documents",
+        Key = AttributeKey.MaximumNumberOfDocuments,
+        Description = "The maximum number of documents that can be added to a request.",
+        IsRequired = true,
+        DefaultIntegerValue = 6,
+        Order = 2 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "C96479B6-E309-4B1A-B024-1F1276122A13" )]
     public partial class BenevolenceTypeDetail : Rock.Web.UI.RockBlock
     {
         #region Variables
+
         private int benevolenceTypeIdPageParameter = 0;
         private const string WORKFLOW_SESSIONSTATE_KEY = "BENEVOLENCEWORKFLOWSTATE";
-        #endregion
+
+        #endregion Variables
+
+        #region Attribute Key
 
         private static class AttributeKey
         {
             public const string BenevolenceTypeAttributes = "BenevolenceTypeAttributes";
+            public const string MaximumNumberOfDocuments = "MaximumNumberOfDocuments";
         }
+
+        #endregion Attribute Key
 
         #region Properties        
         /// <summary>
@@ -95,6 +110,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            base.BlockUpdated -= BenevolenceTypeDetail_BlockUpdated;
+            base.BlockUpdated += BenevolenceTypeDetail_BlockUpdated;
+
             base.OnLoad( e );
 
             if ( !IsPostBack )
@@ -102,6 +120,31 @@ namespace RockWeb.Blocks.Finance
                 BindWorkflowGrid();
                 ShowDetail( benevolenceTypeIdPageParameter );
             }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the BenevolenceTypeDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void BenevolenceTypeDetail_BlockUpdated( object sender, EventArgs e )
+        {
+            if ( benevolenceTypeIdPageParameter != 0 )
+            {
+                var maxDocuments = GetAttributeValue( AttributeKey.MaximumNumberOfDocuments ).AsIntegerOrNull() ?? 6;
+
+                var benevolenceTypeService = new BenevolenceTypeService( new RockContext() );
+
+                var benevolenceType = benevolenceTypeService.Get( benevolenceTypeIdPageParameter );
+
+                var additionalSettings = benevolenceType.AdditionalSettingsJson?.FromJsonOrNull<AdditionalSettings>();
+
+                benevolenceType.AdditionalSettingsJson = new { MaximumNumberOfDocuments = maxDocuments }.ToJson();
+                benevolenceTypeService.Context.SaveChanges();
+            }
+
+            var pageParams = PageParameters().ToDictionary( k => k.Key, v => v.Value.ToString() );
+            NavigateToCurrentPage( pageParams );
         }
 
         /// <summary>
@@ -206,7 +249,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     Id = 0,
                     IsActive = true,
-                    ShowFinancialResults=true
+                    ShowFinancialResults = true
                 };
 
                 lActionTitle.Text = ActionTitle.Add( BenevolenceType.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -713,5 +756,21 @@ namespace RockWeb.Blocks.Finance
             hfActiveDialog.Value = string.Empty;
         }
         #endregion Internal Methods
+
+        #region Helper Classes
+
+        /// <summary>
+        /// Class AdditionalSettings.
+        /// </summary>
+        public class AdditionalSettings
+        {
+            /// <summary>
+            /// Gets or sets the maximum number of documents.
+            /// </summary>
+            /// <value>The maximum number of documents.</value>
+            public int MaximumNumberOfDocuments { get; set; }
+        }
+
+        #endregion
     }
 }

@@ -7,6 +7,7 @@ using System.Xml;
 
 namespace SignNowSDK
 {
+    [Obsolete]
     public class Webhook
     {
         /// <summary>

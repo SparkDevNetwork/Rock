@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,16 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/> that this Group member belongs to. This property is required.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this group member part of.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int GroupTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.
@@ -245,6 +255,15 @@ namespace Rock.Model
         public virtual Model.Person Person { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this Group member part of.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.GroupType"/> that this Group member part of.
+        /// </value>
+        [DataMember]
+        public virtual GroupType GroupType { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Group"/> that the GroupMember belongs to.
         /// </summary>
         /// <value>
@@ -330,6 +349,7 @@ namespace Rock.Model
         {
             this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleTemplate ).WithMany().HasForeignKey( p => p.ScheduleTemplateId ).WillCascadeOnDelete( false );

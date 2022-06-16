@@ -33,7 +33,17 @@
                 // toggle to WYSIWYG mode (unless there are lava commands)
 
                 context.invoke('toolbar.updateCodeview', true);
-                var content = ace.edit($codeEditor.attr('id')).getValue();
+
+                /*
+                    KA 06-JUN-2022:
+                    context.code() is checked first because of a well known issue with summernote where the code property is not updated with the current text content when in code editor mode https://github.com/summernote/summernote/issues/94,
+                    thus when used in conjuction with Rock.controls.emailEditor.textComponentHelper, we can't always rely on ace.edit($codeEditor.attr('id')).getValue() to return the current value. But since Rock.controls.emailEditor.textComponentHelper updates
+                    the code property everytime the user switches betwen text components we first call context.code(), if it has any value other than the default value we use that instead, if not then we fall back to ace.edit($codeEditor.attr('id')).getValue()                    
+                */
+                let content = context.code();
+                if (content == '<p><br></p>') {
+                    content = ace.edit($codeEditor.attr('id')).getValue();
+                }
 
                 // check if there are lava commands
                 var hasLavaCommandsRegEx = /{%.*%\}/;
@@ -73,7 +83,7 @@
                 // HtmlEditor.cs will initialize this with keepEditorContent = true and set the codeEditor content instead of the summernoteNote editor content
                 // this will prevent bad html or scripts from trying to render when startInCodeEditor mode is enabled
                 if (!keepEditorContent) {
-                    var content = context.code();
+                    let content = context.code();
                     var editor = ace.edit($codeEditor.attr('id'));
                     editor.setValue(content);
                     editor.resize();

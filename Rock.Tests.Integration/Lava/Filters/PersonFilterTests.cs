@@ -87,6 +87,52 @@ namespace Rock.Tests.Integration.Lava
 
         #endregion
 
+        #region Campus
+
+        [TestMethod]
+        public void PersonCampus_WithDefaultOptions_ReturnsPrimaryCampus()
+        {
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            var person = values["CurrentPerson"] as Person;
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            var template = @"{% assign campus = CurrentPerson | Campus %}{{ campus.Name }}";
+            var outputExpected = person.GetCampus()?.Name.SplitCase();
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        [TestMethod]
+        public void PersonCampus_WithIntegerInput_ResolvesPersonFromId()
+        {
+            var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
+            var person = values["CurrentPerson"] as Person;
+
+            var template = @"{% assign campus = " + person.Id.ToString() + " | Campus %}{{ campus.Name }}";
+            var outputExpected = person.GetCampus()?.Name.SplitCase();
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template );
+        }
+
+        /// <summary>
+        /// Verify Fix for Issue #4988.
+        /// </summary>
+        /// <remarks>(refer https://github.com/SparkDevNetwork/Rock/issues/4988)</remarks>
+        [TestMethod]
+        public void PersonCampus_WithNullInput_ReturnsEmptyString()
+        {
+            var template = @"{% assign campus = UndefinedPerson | Campus %}{{ campus.Name }}";
+            var outputExpected = "";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template );
+        }
+
+        #endregion
+
         #region Notes
 
         [TestMethod]

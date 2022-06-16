@@ -22,12 +22,13 @@ import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
 import EditPanel from "./CampusDetail/editPanel";
 import ViewPanel from "./CampusDetail/viewPanel";
-import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { NavigationUrlKey } from "./CampusDetail/types";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
 import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+import { debounce } from "@Obsidian/Utility/util";
 
 export default defineComponent({
     name: "Core.CampusDetail",
@@ -53,6 +54,28 @@ export default defineComponent({
         const campusEditBag = ref<CampusBag | null>(null);
 
         const panelMode = ref(DetailPanelMode.View);
+
+        // The properties that are being edited in the UI. This is used to
+        // inform the server which incoming values have valid data in them.
+        const validProperties = [
+            "attributeValues",
+            "campusSchedules",
+            "campusStatusValue",
+            //"campusTopics",
+            "campusTypeValue",
+            "description",
+            "isActive",
+            "leaderPersonAlias",
+            "location",
+            "name",
+            "phoneNumber",
+            "serviceTimes",
+            "shortCode",
+            "timeZoneId",
+            "url"
+        ];
+
+        const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(campusEditBag, validProperties, invokeBlockAction), undefined, true);
 
         // #endregion
 
@@ -177,6 +200,23 @@ export default defineComponent({
         };
 
         /**
+         * Event handler for when a value has changed that has an associated
+         * C# property name. This is used to detect changes to values that
+         * might cause qualified attributes to either show up or not show up.
+         * 
+         * @param propertyName The name of the C# property that was changed.
+         */
+        const onPropertyChanged = (propertyName: string): void => {
+            // If we don't have any qualified attribute properties or this property
+            // is not one of them then do nothing.
+            if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+                return;
+            }
+
+            refreshAttributesDebounce();
+        };
+
+        /**
          * Event handler for the panel's Save event. Send the data to the server
          * to be saved and then leave edit mode or redirect to target page.
          *
@@ -188,23 +228,7 @@ export default defineComponent({
             const data: DetailBlockBox<CampusBag, CampusDetailOptionsBag> = {
                 entity: campusEditBag.value,
                 isEditable: true,
-                validProperties: [
-                    "attributeValues",
-                    "campusSchedules",
-                    "campusStatusValue",
-                    //"campusTopics",
-                    "campusTypeValue",
-                    "description",
-                    "isActive",
-                    "leaderPersonAlias",
-                    "location",
-                    "name",
-                    "phoneNumber",
-                    "serviceTimes",
-                    "shortCode",
-                    "timeZoneId",
-                    "url"
-                ]
+                validProperties: validProperties
             };
 
             const result = await invokeBlockAction<CampusBag | string>("Save", {
@@ -257,6 +281,7 @@ export default defineComponent({
             onCancelEdit,
             onDelete,
             onEdit,
+            onPropertyChanged,
             onSave,
             options,
             panelMode,
@@ -291,7 +316,7 @@ export default defineComponent({
     </template>
 
     <template #edit>
-        <EditPanel v-model="campusEditBag" :options="options" />
+        <EditPanel v-model="campusEditBag" :options="options" @propertyChanged="onPropertyChanged" />
     </template>
 </DetailBlock>
 `

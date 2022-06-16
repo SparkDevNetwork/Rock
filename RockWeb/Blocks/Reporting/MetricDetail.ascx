@@ -55,6 +55,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbYAxisLabel" runat="server" Label="Units Label" Help="The label that will be used for the Y Axis when displayed as a chart" />
+                            <Rock:RockRadioButtonList ID="rblUnitType" runat="server" Label="Unit Type" RepeatDirection="Horizontal" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsCumulative" runat="server" Label="Cumulative" Help="Helps to calculate year to date metrics." />

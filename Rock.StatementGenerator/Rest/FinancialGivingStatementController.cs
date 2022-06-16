@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.StatementGenerator.Rest
     /// NOTE: WebApi doesn't support Controllers with the Same Name, even if they have different NameSpaces, so can't call this FinancialTransactionsController
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [Rock.SystemGuid.RestControllerGuid( "0E5FF2B5-1501-4645-BAFD-0B0CC03C3B42")]
     public class FinancialGivingStatementController : Rock.Rest.ApiControllerBase
     {
         #region REST Endpoints

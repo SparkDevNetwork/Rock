@@ -128,9 +128,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Deletes the specified GroupLocation and sets GroupLocationHistorical.GroupLocationId to NULL.
-        /// Will not delete the GroupLocation and return false if the GroupLocationHistorical.GroupLocationId fails to update.
-        /// Will try to determine current person alias from HttpContext.
+        /// Deletes the specified Interaction Component after deleting all the related Interactions.
         /// Caller is responsible to save changes.
         /// </summary>
         /// <param name="item">The item.</param>

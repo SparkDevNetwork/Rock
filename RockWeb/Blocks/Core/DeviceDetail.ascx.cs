@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -147,8 +147,13 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Page.Validate();
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             Device device = null;
-            nbGeoFence.Visible = false;
 
             var rockContext = new RockContext();
             var deviceService = new DeviceService( rockContext );
@@ -198,16 +203,6 @@ namespace RockWeb.Blocks.Core
                 if ( device.Location == null )
                 {
                     device.Location = new Location();
-                }
-
-                // Custom validation checking
-                string errorMessage = string.Empty;
-                if ( !geopFence.IsGeoFenceValid( out errorMessage ) )
-                {
-                    geopFence.RequiredErrorMessage = "error";
-                    nbGeoFence.Visible = true;
-                    nbGeoFence.Text = errorMessage;
-                    return;
                 }
 
                 device.Location.GeoPoint = geopPoint.SelectedValue;
@@ -378,16 +373,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void geopFence_SelectGeography( object sender, EventArgs e )
         {
-            string message = string.Empty;
-            if ( !geopFence.IsGeoFenceValid( out message ) )
-            {
-                nbGeoFence.Visible = true;
-                nbGeoFence.Text = message;
-            }
-            else
-            {
-                nbGeoFence.Visible = false;
-            }
+            Page.Validate();
         }
 
         /// <summary>
