@@ -1,5 +1,6 @@
-{% assign campusName = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
-{% assign Items = 'newspring_campus_news' | PersistedDataset %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' %}
+{% assign campusName = campusSlug | Replace:'-',' ' | Capitalize %}
+{% assign Items = 'newspring_news' | PersistedDataset %}
 
 {% for item in Items %}
     {% if item.Campuses == '' or item.Campuses contains campusName %}
@@ -18,6 +19,11 @@
             </div>
         </div>
     </div>
+    {% for item in Items %}
+        {% if forloop.index > 3 %}
+            {% assign Items = Items |  RemoveFromArray:item %}
+        {% endif %}
+    {% endfor %}
 
-    {[ cardList itemcount:'{{ Items | Size }}' type:'' pagesize:'12' target:'' ]}
+    {[ cardList itemcount:'{{ Items | Size }}' type:'' pagesize:'12' target:'' disablecampuses:'true' ]}
 </div>

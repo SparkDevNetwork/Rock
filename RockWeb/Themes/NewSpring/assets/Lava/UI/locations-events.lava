@@ -1,7 +1,7 @@
 {% assign campusName = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' |  Capitalize %}
 {% assign campusEntity = 'All' | FromCache:'Campus' | Where:'Name',campusName | First %}
 
-<div data-column="none" class="soft-double-top soft-bottom">
+<div data-column="none" class="hidden soft-double-top soft-bottom">
     <div class="soft-sides xs-soft-half-sides">
         <div class="row">
             <div class="col-md-6 col-xs-12 xs-text-center">

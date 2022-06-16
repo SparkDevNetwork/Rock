@@ -5,6 +5,7 @@
 {% assign mailingAddress = campus.MailingAddress %}
 {% assign officeAddress = campus.OfficeAddress %}
 {% assign getDirections = campus.GetDirectionsURL %}
+{% assign fuseGetDirections = campus.FuseGetDirectionsURL %}
 
 {% capture serviceTimes %}{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'NewSpring' ]}{% endcapture %}
 {% capture fuseServiceTimes %}{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'Fuse' ]}{% endcapture %}
@@ -15,7 +16,8 @@
 
 <div class="panel" data-column="none">
     <div class="panel-body">
-        <h3>Campus Information</h3>
+
+        <h2 class="h4">Sunday Gatherings</h2>
         <ul class="list-icons">
             <li>
                 <i class="fal fa-fw fa-clock"></i>
@@ -42,19 +44,30 @@
             </li>
         </ul>
 
-        <h4 class="push-half-bottom">Students</h4>
+        {% assign fuseDetails = campusEntity | Attribute:'FuseDetails' | Trim %}
+        {% if fuseDetails and fuseDetails != '' %}
+        <h2 class="h4 push-half-bottom">Students</h2>
         <ul class="list-icons">
             <li>
                 <i class="fal fa-fw fa-clock"></i>
-                {{ campusEntity | Attribute:'FuseDetails' }}
+                {{ fuseDetails }}
             </li>
+            {% if fuseGetDirections %}
+                <li>
+                    <i class="fal fa-fw fa-map-marker-alt"></i>
+                    <a href="{{ fuseGetDirections }}" target="_blank">Get Directions</a>
+                </li>
+            {% endif %}
             <li>
                 <i class="fal fa-fw fa-link"></i>
                 <a href="/fuse">newspring.cc/fuse</a>
             </li>
         </ul>
+        {% endif %}
 
-        <h4 class="push-half-bottom">Young Adults</h4>
+        {% assign rallyDetails = campusEntity | Attribute:'RallyDetails' %}
+        {% if rallyDetails and rallyDetails != '' %}
+        <h2 class="h4 push-half-bottom">Young Adults</h2>
         <ul class="list-icons">
             <li>
                 <i class="fal fa-fw fa-clock"></i>
@@ -65,8 +78,9 @@
                 <a href="/fuse">newspring.cc/rally</a>
             </li>
         </ul>
+        {% endif %}
 
-        {% comment %} <div class="dropdown">
+        <div class="dropdown">
             <button class="btn btn-primary btn-block dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             Get Involved
                 <i class="fas fa-caret-down push-quarter-left"></i>
@@ -77,7 +91,7 @@
                     <li><a href="{{ link }}"><i class="{{ option | Attribute:'IconCSSClass' }} fa-fw push-quarter-right"></i> {{ option.Description }}</a></li>
                 {% endfor %}
             </ul>
-        </div> {% endcomment %}
+        </div>
 
     </div>
 </div>

@@ -87,14 +87,15 @@
 
 					{% capture content -%}
 
-						{% if item.Campuses != '' %}
+						{% if item.Campuses != '' and disablecampuses != 'true' %}
 							{% assign campuses = item.Campuses | Split:',' %}
 							{% assign campusesCount = campuses | Size %}
 
 							<p class="push-half-bottom">
 								{% for campus in campuses %}
 									{% assign campusEntity = 'All' |  FromCache:'Campus' | Where:'Name',campus | First %}
-									<a href="{{ 'Global' | Page:'Path' | Append:'?Campus=' | Append:campusEntity.Id }}" class="text-decoration-none sans-serif stronger small">{{ campusEntity.ShortCode }}</a>
+									{% assign campusSlug = campusEntity.Name | Downcase | Replace:' ','-' %}
+									<a href="{{ 'Global' | Page:'Path' | Append:'/campus/' | Append:campusSlug }}" class="text-decoration-none sans-serif stronger small">{{ campusEntity.ShortCode }}</a>
 								{% endfor %}
 							</p>
 						{% endif %}

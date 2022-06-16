@@ -12,5 +12,5 @@
         </div>
     </div>
 
-    {[ cardList itemcount:'{{ Items | Size }}' type:'Organization' pagesize:'12' target:'_blank' ]}
+    {[ cardList itemcount:'{{ Items | Size }}' type:'Organization' pagesize:'12' target:'_blank' disablecampuses:'true' ]}
 </div>

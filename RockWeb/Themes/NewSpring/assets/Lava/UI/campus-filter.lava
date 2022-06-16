@@ -1,19 +1,8 @@
-<div data-column="none" class="soft-sides push-top">
+{% assign campusId = PageParameter:'CampusId' %}
+{% assign campuses = 'All' | FromCache:'Campus' | Where:'IsActive',true | Where:'Id',5,'notequal' | Where:'CampusStatusValueId',1362 | Where:'CampusTypeValueId',1365 %}
 
-    {% assign campusId = PageParameter:'CampusId' %}
-    {% assign campuses = 'All' | FromCache:'Campus' | Where:'IsActive',true | Where:'Id',5,'notequal' | Where:'CampusStatusValueId',1362 | Where:'CampusTypeValueId',1365 %}
-
-    <h2 class="h1">
-        <select name="campuses" id="campus-select" class="text-select js-campus-filter">
-            <option value="">All</option>
-            {% for campus in campuses %}
-                <option value="{{ campus.Id }}" {% if campus.Id == campusId %}selected{% endif %}>{{ campus.Name }}</option>
-            {% endfor %}
-        </select>
-        <select style="display:none;visibility:hidden;" id="width_tmp_select"><option id="width_tmp_option"></option></select><!-- For select size -->
-         News</h2>
-
-    {% comment %} <div class="form-group flush">
+<div data-column="none" class="soft-sides push-top clearfix">
+    <div class="form-group flush pull-right xs-pull-none text-center">
         <div class="select-wrapper">
             <select name="campuses" id="campus-select" class="js-campus-filter">
                 <option value="">Choose Your Campus</option>
@@ -22,41 +11,9 @@
                 {% endfor %}
             </select>
         </div>
-    </div> {% endcomment %}
-
+    </div>
 </div>
 
-<style>
-    .display-inline {
-        display: inline;
-    }
-
-    .text-select {
-        -webkit-appearance: none;
-        background-color: transparent;
-        border: 0px;
-        outline: none;
-    }
-
-    .text-select option {
-        font-size: 19px;
-    }
-</style>
-
-<script>
-    /* Resize select width according to selected text */
-    $(document).ready(function() {
-      $("#width_tmp_option").html($('.text-select option:selected').text());
-      $('.text-select').width($("#width_tmp_select").width());
-
-      $('.text-select').change(function(){
-        $("#width_tmp_option").html($('.text-select option:selected').text());
-        $(this).width($("#width_tmp_select").width());
-      });
-    });
-  </script>
-
-{% comment %}
 <script>
     $(document).ready(function(){
         let baseUrl = window.location.href.split('?')[0],
@@ -93,4 +50,4 @@
             redirectToNewUrl(baseUrl,urlParams)
         });
     });
-</script> {% endcomment %}
+</script>
