@@ -2027,6 +2027,11 @@ namespace RockWeb.Blocks.Event
                     if ( linkage != null )
                     {
                         GroupId = linkage.GroupId;
+
+                        if ( linkage.CampusId.HasValue )
+                        {
+                            CampusId = linkage.CampusId;
+                        }
                     }
                 }
             }
@@ -2052,6 +2057,11 @@ namespace RockWeb.Blocks.Event
                     RegistrationInstanceState = linkage.RegistrationInstance;
                     GroupId = linkage.GroupId;
                     RegistrationState = new RegistrationInfo( CurrentPerson );
+
+                    if ( linkage.CampusId.HasValue )
+                    {
+                        CampusId = linkage.CampusId;
+                    }
                 }
             }
 
@@ -2079,6 +2089,10 @@ namespace RockWeb.Blocks.Event
                     RegistrationInstanceState = linkage.RegistrationInstance;
                     GroupId = linkage.GroupId;
                     RegistrationState = new RegistrationInfo( CurrentPerson );
+                    if ( linkage.CampusId.HasValue )
+                    {
+                        CampusId = linkage.CampusId;
+                    }
                 }
             }
 
@@ -2121,6 +2135,11 @@ namespace RockWeb.Blocks.Event
                     if ( linkage != null )
                     {
                         GroupId = linkage.GroupId;
+
+                        if ( linkage.CampusId.HasValue )
+                        {
+                            CampusId = linkage.CampusId;
+                        }
                     }
                 }
             }
@@ -2682,6 +2701,18 @@ namespace RockWeb.Blocks.Event
                 {
                     registration.GroupId = group.Id;
                     History.EvaluateChange( registrationChanges, "Group", string.Empty, group.Name );
+                }
+            }
+
+            // If the Registration Instance linkage specified a Campus, load it now
+            CampusCache campus = null;
+            if ( CampusId.HasValue )
+            {
+                campus = CampusCache.Get( CampusId.Value );
+                if ( campus != null && ( !registration.CampusId.HasValue || registration.CampusId.Value != campus.Id ) )
+                {
+                    registration.CampusId = campus.Id;
+                    History.EvaluateChange( registrationChanges, "Campus", registration.CampusId?.ToString() ?? string.Empty, campus.Name );
                 }
             }
 

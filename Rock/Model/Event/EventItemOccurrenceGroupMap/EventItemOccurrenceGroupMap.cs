@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -84,6 +84,16 @@ namespace Rock.Model
         [DataMember]
         public string UrlSlug { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> the event will be tied to.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> the event occured
+        /// </value>
+        [DataMember]
+        [FieldType(Rock.SystemGuid.FieldType.CAMPUS)]
+        public int? CampusId { get; set; }
+
         #endregion
         #region Navigation Properties
 
@@ -114,6 +124,15 @@ namespace Rock.Model
         [DataMember]
         public virtual RegistrationInstance RegistrationInstance { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> the event will be tied to.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Campus"/> where the <see cref="Rock.Model.Person"/> attended.
+        /// </value>
+        [DataMember]
+        public virtual Campus Campus { get; set; }
+
         #endregion
     }
 
@@ -132,6 +151,7 @@ namespace Rock.Model
             this.HasOptional( p => p.EventItemOccurrence ).WithMany( e => e.Linkages ).HasForeignKey( p => p.EventItemOccurrenceId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.RegistrationInstance ).WithMany( r => r.Linkages ).HasForeignKey( p => p.RegistrationInstanceId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Group ).WithMany( g => g.Linkages ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( c => c.CampusId ).WillCascadeOnDelete( true );
         }
     }
 

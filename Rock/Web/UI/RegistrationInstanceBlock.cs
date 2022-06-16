@@ -274,6 +274,11 @@ namespace Rock.Web.UI
             /// The grid filter registrant last name
             /// </summary>
             public const string GridFilter_RegistrantLastName = "Registrant Last Name";
+
+            /// <summary>
+            /// The grid filter registration campus
+            /// </summary>
+            public const string GridFilter_RegistrationCampus = "Registration Campus";
         }
 
         #endregion User Preference Keys

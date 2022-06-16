@@ -23,24 +23,8 @@
                 <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" />
 
                 <div class="row">
-                    <div class="col-md-6">
-                        <asp:HiddenField ID="hfLinkageEventItemOccurrenceId" runat="server" />
-                        <Rock:RockLiteral ID="lLinkageEventItemOccurrence" runat="server" Label="Calendar Item" CssClass="margin-b-none" />
-                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceAdd" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" OnClick="lbLinkageEventItemOccurrenceAdd_Click"><i class="fa fa-plus"></i> Add Event Item</asp:LinkButton>
-                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceRemove" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" Visible="false" OnClick="lbLinkageEventItemOccurrenceRemove_Click"><i class="fa fa-times"></i> Remove</asp:LinkButton>
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Warning: The group type of the selected group is different than the group type of the registration template. This could prevent registrants from getting added to the group." />
-                        <Rock:GroupPicker ID="gpLinkageGroup" runat="server" Label="Group" OnSelectItem="gpLinkageGroup_SelectItem" />
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbLinkagePublicName" runat="server" Label="Public Name" Required="true" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbLinkageUrlSlug" runat="server" Label="URL Slug" />
+                    <div class="col-md-5">
+                        <Rock:RockTextBox ID="tbLinkageUrlSlug" runat="server" Label="URL Slug" Help="This key, when present in the URL, tells the event registration to use the configured group and campus information." />
                         <asp:CustomValidator runat="server"
                                         ID="cvUrlSlug"
                                         ErrorMessage="URL Slug must be unique across all events."
@@ -51,7 +35,36 @@
                                         ID="rvUrlSlug"
                                         ErrorMessage="URL Slug must be lowercase and cannot contain any special characters other than -"
                                         ControlToValidate="tbLinkageUrlSlug"
-                                        ValidationExpression="^[a-z0-9]+(?:-[a-z0-9]+)*$" />
+                                        ValidationExpression="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                                        Display="None"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Warning: The group type of the selected group is different than the group type of the registration template. This could prevent registrants from getting added to the group." />
+                        <Rock:GroupPicker ID="gpLinkageGroup" runat="server" Label="Group" OnSelectItem="gpLinkageGroup_SelectItem" Help="The optional group the the registrants will be added to when the registration is complete." />
+                    </div>
+                    <div class="col-md-5 col-md-offset-1">
+                        <Rock:CampusPicker ID="cpLinkageCampus" runat="server" Label="Campus" Help="The campus that the registration linkage will be tied to." />
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <asp:HiddenField ID="hfLinkageEventItemOccurrenceId" runat="server" />
+                        <Rock:RockLiteral ID="lLinkageEventItemOccurrence" runat="server" Label="Calendar Item" CssClass="margin-b-none" />
+                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceAdd" runat="server" CssClass="btn btn-primary btn-xs margin-b-md" OnClick="lbLinkageEventItemOccurrenceAdd_Click"><i class="fa fa-plus"></i> Add Event Item</asp:LinkButton>
+                        <asp:LinkButton ID="lbLinkageEventItemOccurrenceRemove" runat="server" CssClass="btn btn-danger btn-xs margin-b-md" Visible="false" OnClick="lbLinkageEventItemOccurrenceRemove_Click"><i class="fa fa-times"></i> Remove</asp:LinkButton>
+                    </div>
+                    <div class="col-md-6">
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbLinkagePublicName" runat="server" Label="Public Name" Required="true" Help="The text to show when creating links to this specific configuration on the event pages." />
                     </div>
                 </div>
 
