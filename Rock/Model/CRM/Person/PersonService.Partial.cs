@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -28,6 +27,7 @@ using Rock.BulkExport;
 using Rock.Data;
 using Rock.Security;
 using Rock.Utility.Enums;
+using Rock.ViewModel;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -2488,8 +2488,8 @@ namespace Rock.Model
         /// <returns>Person.</returns>
         public Person GetCurrentPerson()
         {
-                var currentUser = new UserLoginService( (RockContext) this.Context ).GetByUserName( UserLogin.GetCurrentUserName() );
-                return currentUser != null ? currentUser.Person : null;
+            var currentUser = new UserLoginService( ( RockContext ) this.Context ).GetByUserName( UserLogin.GetCurrentUserName() );
+            return currentUser?.Person;
         }
 
         /// <summary>
@@ -4809,5 +4809,27 @@ FROM (
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Person View Model Helper
+    /// </summary>
+    public partial class PersonViewModelHelper
+    {
+        /// <summary>
+        /// Applies the additional properties and security to view model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="viewModel">The view model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( Person model, PersonViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        {
+            model.PrimaryFamily = model.GetFamily();
+
+            viewModel.FullName = model.FullName;
+            viewModel.PhotoUrl = model.PhotoUrl;
+            viewModel.PrimaryFamilyGuid = model.PrimaryFamily?.Guid;
+        }
     }
 }
