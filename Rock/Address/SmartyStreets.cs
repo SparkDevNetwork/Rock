@@ -176,10 +176,10 @@ namespace Rock.Address
             {
                 var lastKeyUpdate = Rock.Web.SystemSettings.GetValue( "core_SmartyStreetsApiKeyLastUpdate" ).AsDateTime() ?? DateTime.MinValue;
                 var hoursSinceLastUpdate = ( RockDateTime.Now - lastKeyUpdate ).TotalHours;
-                if ( hoursSinceLastUpdate > 24 || true )
+                if ( hoursSinceLastUpdate > 24 )
                 {
                     var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
-                    var getAPIKeyClient = new RestClient( "https://www.rockrms.com/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
+                    var getAPIKeyClient = new RestClient( $"https://www.rockrms.com/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
 
                     // If debugging locally
                     // var getAPIKeyClient = new RestClient( $"http://localhost:57822/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
