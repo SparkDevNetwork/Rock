@@ -97,10 +97,17 @@
                     </div>
 
                     <asp:Panel ID="pnlRequirements" runat="server">
+                        <asp:Repeater ID="rptRequirementCategories" runat="server">
+                            <ItemTemplate>
+                                <h5>
+                                    <%# Eval("Name") %>
+                                </h5>
+                                <p>a category is here</p>
+                            </ItemTemplate>
+
+                        </asp:Repeater>
                         <div class="row">
-                            <div class="col-md-6">
-                            </div>
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <Rock:RockControlWrapper ID="rcwRequirements" runat="server" Label="Requirements">
                                     <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
                                     <Rock:RockCheckBoxList ID="cblManualRequirements" RepeatDirection="Vertical" runat="server" Label="" />

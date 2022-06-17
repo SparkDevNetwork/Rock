@@ -567,6 +567,25 @@ namespace RockWeb.Blocks.Groups
                 requirementsResults = groupMember.GetGroupRequirementsStatuses( rockContext ).ToList();
             }
 
+            // Determine if requirementResults contain any categories.
+            var requirementsWithCategories = requirementsResults.Where( rr => rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue )
+                .Select(rr => rr.GroupRequirement.GroupRequirementType.Category).Distinct().OrderBy( c => c.Order ).ThenBy( c => c.Name );
+            var hasRequirementsWithoutCategories = requirementsResults.Where( rr => !rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue )
+                .Select(rr => rr.GroupRequirement.GroupRequirementType.CategoryId).Distinct().Count() > 0;
+
+            var requirementCategories = requirementsResults
+                .Select( rr => new { categoryId = rr.GroupRequirement.GroupRequirementType.CategoryId,
+                    Name = rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? rr.GroupRequirement.GroupRequirementType.Category.Name : "No name"}  ).Distinct();
+                  //.Where( rr => rr.GroupRequirement.GroupRequirementType.Category != null )
+            
+            //var requirementCategories = requirementsResults.Select( rr => rr.GroupRequirement.GroupRequirementType.Category ).Any() ?
+            //    requirementsResults.Select( rr => rr.GroupRequirement.GroupRequirementType.Category ).Distinct().OrderBy( c => c.Order ).ThenBy( c => c.Name ).ToList() : new List<Category>();
+            rptRequirementCategories.DataSource = requirementCategories;
+
+            ////////// TO-DO!!!  Add the req types listings here into the repeater within rptRequirementCategories
+
+            rptRequirementCategories.DataBind();
+
             // only show the requirements that apply to the GroupRole (or all Roles)
             foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
             {
