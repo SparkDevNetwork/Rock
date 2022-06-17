@@ -13,13 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
 using Rock.Logging;
-using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Web.Cache
 {
@@ -41,23 +38,16 @@ namespace Rock.Web.Cache
         /// <param name="message">The message.</param>
         public override void Consume( AuthorizationCacheWasUpdatedMessage message )
         {
-            if ( !RockMessageBus.IsRockStarted )
-            {
-                var logMessage = $"Authorization Update message was not consumed because Rock is not fully started yet.";
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+            /*  06-07-2022 MP
 
-                if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
-                {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
-                    ExceptionLogService.LogException( new BusException( logMessage ) );
-                }
-                else
-                {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
-                }
+            In the case of consuming a AuthorizationCacheWasUpdatedMessage, we don't need to check RockMessageBus.IsRockStarted. The AuthorizationCache Update
+            logic doesn't have a dependency on having Rock fully started.
 
-                return;
-            }
+            Also, we really need to consume these messages regardless of IsRockStarted to prevent the AuthorizationCache from getting stale.
+
+            If we later discover that this isn't OK, we'll revisit this decision and make any updates to make it OK again.
+            
+            */
 
             RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Authorization Cache Update message." );
 
