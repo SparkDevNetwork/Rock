@@ -345,7 +345,7 @@ export default defineComponent({
 <Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconClass="fa fa-poll-h">
     <template #default>
 
-        <div ref="bodyElement" class="form-builder-detail panel-flex-fill-body styled-scroll">
+        <div ref="bodyElement" class="panel-flex-fill-body styled-scroll">
             <div class="panel-toolbar panel-toolbar-shadow">
                 <ul class="nav nav-pills nav-sm">
                     <li role="presentation"><a :href="submissionsPageUrl">Submissions</a></li>
