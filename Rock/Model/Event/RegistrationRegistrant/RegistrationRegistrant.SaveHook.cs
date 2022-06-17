@@ -33,25 +33,28 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
-                var registrationRegistrant = this.Entity as RegistrationRegistrant;
-                int? registrationTemplateId = null;
-                if ( registrationRegistrant.Registration != null && registrationRegistrant.Registration.RegistrationInstance != null )
+                if ( this.State == EntityContextState.Added )
                 {
-                    registrationTemplateId = registrationRegistrant.Registration.RegistrationInstance.RegistrationTemplateId;
-                }
-                else
-                {
-                    var rockContext = ( RockContext ) this.RockContext;
-                    registrationTemplateId = new RegistrationService( rockContext )
-                        .Queryable()
-                        .Where( a => a.Id == registrationRegistrant.RegistrationId && a.RegistrationInstance != null )
-                        .Select( a => a.RegistrationInstance.RegistrationTemplateId )
-                        .FirstOrDefault();
-                }
+                    var registrationRegistrant = this.Entity as RegistrationRegistrant;
+                    int? registrationTemplateId = null;
+                    if ( registrationRegistrant.Registration != null && registrationRegistrant.Registration.RegistrationInstance != null )
+                    {
+                        registrationTemplateId = registrationRegistrant.Registration.RegistrationInstance.RegistrationTemplateId;
+                    }
+                    else
+                    {
+                        var rockContext = ( RockContext ) this.RockContext;
+                        registrationTemplateId = new RegistrationService( rockContext )
+                            .Queryable()
+                            .Where( a => a.Id == registrationRegistrant.RegistrationId && a.RegistrationInstance != null )
+                            .Select( a => a.RegistrationInstance.RegistrationTemplateId )
+                            .FirstOrDefault();
+                    }
 
-                if ( this.State == EntityContextState.Added && registrationTemplateId.HasValue )
-                {
-                    this.Entity.RegistrationTemplateId = registrationTemplateId.Value;
+                    if ( registrationTemplateId.HasValue )
+                    {
+                        this.Entity.RegistrationTemplateId = registrationTemplateId.Value;
+                    }
                 }
 
                 base.PreSave();

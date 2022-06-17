@@ -57,16 +57,6 @@ namespace Rock.Model
                     }
                 }
 
-                Group group = null;
-                if ( this.State == EntityContextState.Added || this.State == EntityContextState.Added )
-                {
-                    group = Entity.Group;
-                    if ( group == null )
-                    {
-                        group = new GroupService( rockContext ).Get( Entity.GroupId );
-                    }
-                }
-
                 int? oldPersonId = null;
                 int? newPersonId = null;
 
@@ -86,11 +76,6 @@ namespace Rock.Model
                             if ( !Entity.DateTimeAdded.HasValue )
                             {
                                 Entity.DateTimeAdded = RockDateTime.Now;
-                            }
-
-                            if ( group != null )
-                            {
-                                this.Entity.GroupTypeId = group.GroupTypeId;
                             }
 
                             // if this is a new record, but is saved with IsActive=False, set the InactiveDateTime if it isn't set already
@@ -141,8 +126,15 @@ namespace Rock.Model
                         }
                 }
 
+                Group group = Entity.Group;
+                if ( group == null )
+                {
+                    group = new GroupService( rockContext ).Get( Entity.GroupId );
+                }
+
                 if ( group != null )
                 {
+                    this.Entity.GroupTypeId = group.GroupTypeId;
                     string oldGroupName = group.Name;
                     if ( oldGroupId.HasValue && oldGroupId.Value != group.Id )
                     {
