@@ -214,6 +214,7 @@
     <Compile Include="Model\StepProgramServiceTests.cs" />
     <Compile Include="Model\GroupMemberTests.cs" />
     <Compile Include="Model\UserLoginTests.cs" />
+    <Compile Include="Rest\ControllersTests\FollowingControllerTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rest\ControllersTests\AuthControllerTests.cs" />
     <Compile Include="Rest\SecuredAttributeTests.cs" />

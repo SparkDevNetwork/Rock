@@ -23,7 +23,6 @@ using Rock.Bus.Message;
 using Rock.Bus.Queue;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Web.Cache
 {
@@ -50,23 +49,15 @@ namespace Rock.Web.Cache
         /// <param name="message">The message.</param>
         public override void Consume( CacheWasUpdatedMessage message )
         {
-            if ( !RockMessageBus.IsRockStarted )
-            {
-                var logMessage = $"Cache Update message was not consumed because Rock is not fully started yet. {message.ToDebugString()}.";
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+            /* 06-07-2022 MP
 
-                if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
-                {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
-                    ExceptionLogService.LogException( new BusException( logMessage ) );
-                }
-                else
-                {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
-                }
+            In the case of consuming a CacheWasUpdatedMessage, we don't need to check RockMessageBus.IsRockStarted. The Cache Update
+            logic doesn't have a dependency on having Rock fully started.
 
-                return;
-            }
+            Also, we really need to consume these messages regardless of IsRockStarted to prevent the cache from getting stale.
+
+            If we later discover that this isn't OK, we'll revisit this decision and make any updates to make it OK again.
+            */
 
             RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Cache Update message from {message.SenderNodeName} node. {message.ToDebugString()}." );
             var applyCacheMessageMethodInfo = FindApplyCacheMessageMethodInfo( message.CacheTypeName );
