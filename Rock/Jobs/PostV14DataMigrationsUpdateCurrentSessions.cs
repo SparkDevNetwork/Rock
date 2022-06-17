@@ -105,7 +105,7 @@ INNER JOIN (
                     , 'Populate Interaction Session Data'
                     ,'This job will perform operations on the InteractionSession data and, if enabled, Geocode new InteractionSessionLocation records or link existing records to InteractionSession records.'
                     , 'Rock.Jobs.PopulateInteractionSessionData'
-                    , '0 15 2 * * ?'
+                    , '30 0/10 * 1/1 * ? *'
                     , 1
                     , 'C0A57A17-1FE9-4C52-96B9-2F6EA1433D00'
                 );
