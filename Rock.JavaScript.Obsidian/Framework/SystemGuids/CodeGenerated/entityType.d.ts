@@ -243,6 +243,8 @@ export const enum EntityType {
     ServiceJob = "52766196-A72F-4F60-997A-78E19508843D",
     /** The Signal Type entity type */
     SignalType = "0BA03B9B-E974-4526-9B21-5037424B6D16",
+    /** The Step Flow entity type */
+    StepFlow = "308D8252-7712-4A45-8DE4-737C3EEAEA8F",
     /** The guid for the database storage provider entity */
     StorageProviderDatabase = "0AA42802-04FD-4AEC-B011-FEB127FC85CD",
     /** The guid for Rock.Model.Streak */
@@ -291,4 +293,6 @@ export const enum EntityType {
     StepProgramAchievementComponent = "7140BAE3-89E9-423E-A691-6E13544203CA",
     /** The EntityType Guid for Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement  */
     InteractionSourcedAchievementComponent = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67",
+    /** The lava shortcode category */
+    LavaShortcodeCategory = "6CFE20AD-F883-4F53-A678-0D048406299D",
 }

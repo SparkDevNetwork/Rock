@@ -593,6 +593,20 @@ namespace Rock.CheckIn
             }
 
             /// <summary>
+            /// Gets the display birthdate on adults.
+            /// </summary>
+            /// <value>
+            /// The display birthdate on adults.
+            /// </value>
+            public string DisplayBirthdateOnAdults
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS );
+                }
+            }
+
+            /// <summary>
             /// Gets the display birthdate on children attribute.
             /// </summary>
             /// <value>

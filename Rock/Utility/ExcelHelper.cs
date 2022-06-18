@@ -369,10 +369,14 @@ namespace Rock.Utility
                 exportValue is short || exportValue is short? ||
                 exportValue is long || exportValue is long? ||
                 exportValue is double || exportValue is double? ||
-                exportValue is float || exportValue is float? ||
-                exportValue is DateTime || exportValue is DateTime? ) )
+                exportValue is float || exportValue is float? ) )
             {
                 range.Value = exportValue;
+            }
+            else if ( exportValue is DateTime || exportValue is DateTime? )
+            {
+                var date = ( DateTime ) exportValue;
+                range.Value = date.TimeOfDay.TotalSeconds == 0 ? date.ToShortDateString() : date.ToString();
             }
             else
             {

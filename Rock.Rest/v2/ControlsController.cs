@@ -21,11 +21,12 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Http;
-
+using Rock.Badge;
 using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Extension;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -42,8 +43,103 @@ namespace Rock.Rest.v2
     /// </summary>
     [RoutePrefix( "api/v2/Controls" )]
     [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67")]
-    public class ControlsController : ApiControllerBase 
+    public class ControlsController : ApiControllerBase
     {
+
+        #region Achievement Type Picker
+
+        /// <summary>
+        /// Gets the achievement types that can be displayed in the achievement type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AchievementTypePickerGetAchievementTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "F98E3033-C652-4031-94B3-E7C44ECA51AA" )]
+        public IHttpActionResult AchievementTypePickerGetEntityTypes( [FromBody] AchievementTypePickerGetAchievementTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = AchievementTypeCache.All( rockContext )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.Name,
+                        Category = t.Category?.Name
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Assessment Type Picker
+
+        /// <summary>
+        /// Gets the achievement types that can be displayed in the achievement type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssessmentTypePickerGetAssessmentTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "B47DCE1B-89D7-4DD5-88A7-B3C393D49A7C  " )]
+        public IHttpActionResult AssessmentTypePickerGetEntityTypes( [FromBody] AssessmentTypePickerGetAssessmentTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = AssessmentTypeCache.All( rockContext )
+                    .Where( at => options.isInactiveIncluded == true || at.IsActive )
+                    .OrderBy( at => at.Title )
+                    .ThenBy( at => at.Id )
+                    .Select( at => new ListItemBag
+                    {
+                        Value = at.Guid.ToString(),
+                        Text = at.Title
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Asset Storage Provider Picker
+
+        /// <summary>
+        /// Gets the asset storage providers that can be displayed in the asset storage provider picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetStorageProviderPickerGetAssetStorageProviders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "665EDE0C-1FEA-4421-B355-4D4F72B7E26E" )]
+        public IHttpActionResult AssetStorageProviderPickerGetAssetStorageProviders( [FromBody] AssetStorageProviderPickerGetAssetStorageProvidersOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = new AssetStorageProviderService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( g => g.EntityTypeId.HasValue && g.IsActive )
+                    .OrderBy( g => g.Name )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.Name
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Audit Detail
 
         /// <summary>
@@ -90,6 +186,32 @@ namespace Rock.Rest.v2
 
                 return Ok( entity.GetEntityAuditBag() );
             }
+        }
+
+        #endregion
+
+        #region Badge Component Picker
+
+        /// <summary>
+        /// Gets the badge components that can be displayed in the badge component picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of list items that represent the badge components.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BadgeComponentPickerGetBadgeComponents" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "ABDFC10F-BCCC-4AF1-8DB3-88A26862485D" )]
+        public IHttpActionResult BadgeComponentPickerGetEntityTypes( [FromBody] BadgeComponentPickerGetBadgeComponentsOptionsBag options )
+        {
+            var componentsList = GetComponentListItems( "Rock.Badge.BadgeContainer, Rock", ( Component component ) =>
+            {
+                var badgeComponent = component as BadgeComponent;
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid.GetValueOrDefault() )?.Name;
+
+                return badgeComponent != null && badgeComponent.DoesApplyToEntityType( entityType );
+            } );
+
+            return Ok( componentsList );
         }
 
         #endregion
@@ -168,6 +290,69 @@ namespace Rock.Rest.v2
                     .ToList();
 
                 return Ok( badgeResults );
+            }
+        }
+
+        #endregion
+
+        #region Binary File Picker
+
+        /// <summary>
+        /// Gets the asset storage providers that can be displayed in the asset storage provider picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BinaryFilePickerGetBinaryFiles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9E5F190E-91FD-4E50-9F00-8B4F9DBD874C" )]
+        public IHttpActionResult BinaryFilePickerGetBinaryFiles( [FromBody] BinaryFilePickerGetBinaryFilesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = new BinaryFileService( new RockContext() )
+                    .Queryable()
+                    .Where( f => f.BinaryFileType.Guid == options.BinaryFileTypeGuid && !f.IsTemporary )
+                    .OrderBy( f => f.FileName )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.FileName
+                    } )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Binary File Type Picker
+
+        /// <summary>
+        /// Gets the binary file types that can be displayed in the binary file type picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BinaryFileTypePickerGetBinaryFileTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "C93E5A06-82DE-4475-88B8-B173C03BFB50" )]
+        public IHttpActionResult BinaryFileTypePickerGetBinaryFileTypes( [FromBody] BinaryFileTypePickerGetBinaryFileTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var items = new BinaryFileTypeService( rockContext )
+                    .Queryable()
+                    .OrderBy( f => f.Name )
+                    .Select( t => new ListItemBag
+                    {
+                        Value = t.Guid.ToString(),
+                        Text = t.Name
+                    } )
+                    .ToList();
+
+                return Ok( items );
             }
         }
 
@@ -1112,32 +1297,79 @@ namespace Rock.Rest.v2
 
         #endregion
 
-        #region Achievement Type Picker
+        #region Helper Methods
 
         /// <summary>
-        /// Gets the achievement types that can be displayed in the achievement type picker.
+        /// Retrieve a list of ListItems representing components for the given container type
         /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of view models that represent the tree items.</returns>
-        [HttpPost]
-        [System.Web.Http.Route( "AchievementTypePickerGetAchievementTypes" )]
-        [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "F98E3033-C652-4031-94B3-E7C44ECA51AA" )]
-        public IHttpActionResult AchievementTypePickerGetEntityTypes( [FromBody] AchievementTypePickerGetAchievementTypesOptionsBag options )
+        /// <param name="containerType"></param>
+        /// <returns>A list of ListItems representing components</returns>
+        private List<ListItemBag> GetComponentListItems( string containerType )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var items = AchievementTypeCache.All( rockContext )
-                    .Select( t => new ListItemBag
-                    {
-                        Value = t.Guid.ToString(),
-                        Text = t.Name,
-                        Category = t.Category?.Name
-                    } )
-                    .ToList();
+            return GetComponentListItems( containerType, (x) => true );
+        }
 
-                return Ok( items );
+        /// <summary>
+        /// Retrieve a list of ListItems representing components for the given container type. Filters any components
+        /// out that don't pass the given validator
+        /// </summary>
+        /// <param name="containerType"></param>
+        /// <param name="isValidComponentChecker"></param>
+        /// <returns>A list of ListItems representing components</returns>
+        private List<ListItemBag> GetComponentListItems( string containerType, Func<Component, bool> isValidComponentChecker )
+        {
+            if ( containerType.IsNullOrWhiteSpace() )
+            {
+                return null;
             }
+
+            var resolvedContainerType = Type.GetType( containerType );
+
+            if ( resolvedContainerType == null )
+            {
+                return null;
+            }
+
+            var instanceProperty = resolvedContainerType.GetProperty( "Instance" );
+
+            if ( instanceProperty == null )
+            {
+                return null;
+            }
+
+            var container = instanceProperty.GetValue( null, null ) as IContainer;
+            var componentDictionary = container?.Dictionary;
+
+            var items = new List<ListItemBag>();
+
+            foreach ( var component in componentDictionary )
+            {
+                var componentValue = component.Value.Value;
+                var entityType = EntityTypeCache.Get( componentValue.GetType() );
+
+                if ( !componentValue.IsActive || entityType == null || !isValidComponentChecker(componentValue) )
+                {
+                    continue;
+                }
+
+                var componentName = component.Value.Key;
+
+                // If the component name already has a space then trust
+                // that they are using the exact name formatting they want.
+                if ( !componentName.Contains( ' ' ) )
+                {
+                    componentName = componentName.SplitCase();
+                }
+
+                items.Add( new ListItemBag
+                {
+                    Text = componentName,
+                    Value = entityType.Guid.ToString().ToUpper()
+                } );
+            }
+
+
+            return items;
         }
 
         #endregion

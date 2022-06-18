@@ -82,6 +82,14 @@ namespace Rock.ViewModels.Entities
         public int RegistrationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Rock.Model.RegistrationTemplate identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template identifier.
+        /// </value>
+        public int RegistrationTemplateId { get; set; }
+
+        /// <summary>
         /// Gets or sets the created date time.
         /// </summary>
         /// <value>

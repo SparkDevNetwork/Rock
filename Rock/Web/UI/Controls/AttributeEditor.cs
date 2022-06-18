@@ -1919,10 +1919,37 @@ namespace Rock.Web.UI.Controls
                 ObjectPropertyNames = new List<string>();
                 foreach ( var propInfo in objectType.GetProperties() )
                 {
-                    ObjectPropertyNames.Add( propInfo.Name );
+                    // Check to make sure that the property is allowed (some exceptions are allowed)
+                    if ( !IsObjectPropertyAllowedAsAttributeKey( propInfo.Name, this.AttributeId ) )
+                    {
+                        ObjectPropertyNames.Add( propInfo.Name );
+                    }
                 }
             }
 
+        }
+
+        /// <summary>
+        /// As a default object properties are not allowed as attribute keys. There are some exceptions:
+        /// 
+        /// 1. Campus on Workflows - The need for this came when we added the 'CampusId' property to the Workflow model.
+        ///    This caused existing workflows with an attribute key of 'Campus' to not be able to save. They ran fine but could not be edited.
+        ///    The virtual navigation property blocks the use as an attribute key. This limitation was added back in the 'Legacy Lava' days but
+        ///    is technically not needed any longer. As a solution we will allow the Campus attribute key on existing workflow attributes but 
+        ///    will not allow them for new attributes.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="attributeId">The entity identifier.</param>
+        /// <returns></returns>
+        private bool IsObjectPropertyAllowedAsAttributeKey( string propertyName, int? attributeId )
+        {
+            var workflowEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.WORKFLOW ).Id;
+            if ( propertyName == "Campus" && this.AttributeEntityTypeId == workflowEntityTypeId  && attributeId.HasValue && attributeId != 0 )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -43,6 +43,8 @@
 @import "_dashboard.less";
 @import "_grid.less";
 
+@import "_rock-obsidian.less";
+
 @import "_blocks-cms.less";
 @import "_blocks-connections.less";
 @import "_blocks-security.less";
@@ -67,6 +69,9 @@
 
 @import "./Bootstrap/mixins.less";
 
+.imports(true) { @import "_legacy-badges.less"; }
+.imports(false) {  }
+.imports(@enable-legacy-badges);
 
 // 2. HTML Overrides
 //--------------------------------

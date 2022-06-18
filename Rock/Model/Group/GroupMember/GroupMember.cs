@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,16 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/> that this Group member belongs to. This property is required.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this group member part of.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int GroupTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.

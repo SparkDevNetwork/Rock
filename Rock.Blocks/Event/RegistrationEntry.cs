@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -127,6 +127,7 @@ namespace Rock.Blocks.Event
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     public class RegistrationEntry : RockObsidianBlockType
     {
         #region Keys

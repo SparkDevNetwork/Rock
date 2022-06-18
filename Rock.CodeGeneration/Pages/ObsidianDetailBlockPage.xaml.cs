@@ -187,6 +187,7 @@ namespace Rock.CodeGeneration.Pages
                 ["UseEntitySecurity"] = options.UseEntitySecurity,
                 ["UseIsActive"] = options.Properties.Any( p => p.Name == "IsActive" ),
                 ["UseIsSystem"] = options.Properties.Any( p => p.Name == "IsSystem" ),
+                ["UseOrder"] = options.Properties.Any( p => p.Name == "Order" ),
                 ["UseName"] = options.Properties.Any( p => p.Name == "Name" )
             };
 
@@ -251,38 +252,53 @@ namespace Rock.CodeGeneration.Pages
         /// <summary>
         /// Performs any post-processing actions for files that were generated.
         /// </summary>
-        /// <param name="exportedFiles">The files that were exported.</param>
-        /// <param name="skippedFiles">The files that were intentionally not exported.</param>
-        /// <param name="failedFiles">The files that failed to be exported.</param>
-        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> files )
+        /// <param name="files">The files that were listed to be possibly exported.</param>
+        /// <param name="context">The context to provide status information back.</param>
+        private void ProcessPostSaveFiles( IReadOnlyList<GeneratedFile> files, GeneratedFilePreviewPage.PostSaveContext context )
         {
+            var createdFiles = files.Where( f => f.SaveState == GeneratedFileSaveState.Created ).ToList();
+
+            if ( !createdFiles.Any() )
+            {
+                return;
+            }
+
             var solutionPath = SupportTools.GetSolutionPath();
             var solutionFileName = Path.Combine( solutionPath, "Rock.sln" );
 
             if ( solutionFileName == null )
             {
+                context.ShowMessage( "Cannot update projects", "Could not determine the solution path to update the project files." );
                 return;
             }
 
-            using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
+            try
             {
-                var createdFiles = files.Where( f => f.SaveState == GeneratedFileSaveState.Created ).ToList();
-
-                // For each file that was created, make sure it
-                // has been added to the project file automatically.
-                foreach ( var file in createdFiles )
+                using ( var solution = SolutionHelper.LoadSolution( solutionFileName ) )
                 {
-                    var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
-
-                    if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                    // For each file that was created, make sure it
+                    // has been added to the project file automatically.
+                    for ( int i = 0; i < createdFiles.Count; i++ )
                     {
-                        var projectName = file.SolutionRelativePath.Split( '\\' )[0];
+                        var file = createdFiles[i];
+                        var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
 
-                        solution.AddCompileFileToProject( projectName, filename );
+                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                        {
+                            var projectName = file.SolutionRelativePath.Split( '\\' )[0];
+
+                            solution.AddCompileFileToProject( projectName, filename );
+                        }
+
+                        context.SetProgress( i + 1, createdFiles.Count );
                     }
-                }
 
-                solution.Save();
+                    solution.Save();
+                }
+            }
+            catch ( Exception ex )
+            {
+                context.ShowMessage( "Failed to update projects", $"Unable to add one or more files to projects. Please check to make sure everything has been added.\n{ex.Message}" );
             }
         }
 

@@ -58,6 +58,9 @@ export type GroupMemberBag = {
     /** Gets or sets the Id of the GroupMember's Rock.Model.GroupMember.GroupRole in the Rock.Model.Group. This property is required. */
     groupRoleId: number;
 
+    /** Gets or sets the Id of the Rock.Model.GroupType that this Group member belongs to. This property is required. */
+    groupTypeId: number;
+
     /** Gets or sets the number of additional guests that member will be bring to group.  Only applies when group has the 'AllowGuests' flag set to true. */
     guestCount?: number | null;
 

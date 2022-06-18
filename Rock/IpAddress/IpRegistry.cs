@@ -18,12 +18,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
 using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.IpAddress.Classes;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -42,7 +44,7 @@ namespace Rock.IpAddress
         IsRequired = true,
         Order = 0,
         Key = AttributeKey.APIKey )]
-    [Rock.SystemGuid.EntityTypeGuid( "7AFE6DFA-5FC4-4554-98D2-5BD4C909558B")]
+    [Rock.SystemGuid.EntityTypeGuid( "7AFE6DFA-5FC4-4554-98D2-5BD4C909558B" )]
     public class IpRegistry : IpAddressLookupComponent
     {
         #region Keys
@@ -60,135 +62,289 @@ namespace Rock.IpAddress
 
         #endregion Keys
 
+        #region Constants
+
+        // The maximum number of requests we can send in one call
+        // https://ipregistry.co/docs/endpoints#batch-ip
+        private const int _maxBulkRequestSize = 1024;
+        #endregion
+
         /// <summary>
-        /// Gets all the IP Address result through IPRegistry
+        /// It takes the single IpAddress and returns the location.
         /// </summary>
-        public override LookupResult Lookup( Dictionary<string, List<int>> ipAddressesWithSessionIds, out string resultMsg )
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="resultMsg">The result MSG.</param>
+        /// <returns></returns>
+        public override IpLocation Lookup( string ipAddress, out string resultMsg )
         {
-            var lookupResult = new LookupResult();
             resultMsg = string.Empty;
-            var ipAddressCount = ipAddressesWithSessionIds.Count;
-            var requestCount = 0;
-            //maximum of 1024 ipaddresses can be handled in batch request
-            var maxBatchRecords = 1024;
-            while ( ipAddressCount > 0 )
+
+            var result = new IpLocation();
+
+            // Create REST client
+            var client = GetIpRegistryRestClient();
+
+            // Create and configure REST request
+            var request = new RestRequest("{ipAddress}", Method.GET );
+            request.AddUrlSegment( "ipAddress", ipAddress  );
+            request.AddHeader( "Accept", "application/json" );
+
+            var response = client.Execute( request );
+
+            // Process successful response
+            if ( response.StatusCode == HttpStatusCode.OK )
             {
-                var apiKey = GetAttributeValue( AttributeKey.APIKey );
-                var client = new RestClient( string.Format( "https://api.ipregistry.co?key={0}", apiKey ) );
+                var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Result ) ) as Result;
+                result = ConvertResultToIpLocation( responseContent );
+            }
+            else if ( response.StatusCode == HttpStatusCode.BadRequest || ( int ) response.StatusCode == 429 )
+            {
+                var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Result ) ) as Result;
+                result = ConvertResultToIpLocation( responseContent );
+                resultMsg = $"{response.StatusDescription}.";
+                if ( responseContent.Resolution.IsNotNullOrWhiteSpace() )
+                {
+                    resultMsg += responseContent.Resolution;
+                }
+            }
+            else // Some other HTTP result
+            {
+                resultMsg = response.StatusDescription;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Takes a list of IP Addresses and returns the location information associated with them.
+        /// </summary>
+        /// <param name="ipAddresses"></param>
+        /// <param name="resultMsg"></param>
+        /// <returns></returns>
+        public override List<IpLocation> BulkLookup( List<string> ipAddresses, out string resultMsg )
+        {
+            resultMsg = string.Empty;
+
+            var results = new List<IpLocation>();
+
+            // Create REST client
+            var client = GetIpRegistryRestClient();
+
+            // Create a pointer index to know where we are in the batch process
+            var sessionLoopIndex = 0;
+
+            // Well run through the IP address to lookup in batches based on the services max bulk lookup size
+            while ( ipAddresses.Count() > sessionLoopIndex )
+            {
+                // Get IP address to use for call
+                var ipAddressesBatch = ipAddresses
+                    .Skip( sessionLoopIndex )
+                    .Take( _maxBulkRequestSize )
+                    .ToList();
+
+                // Create and configure REST request
                 var request = new RestRequest( Method.POST );
                 request.RequestFormat = DataFormat.Json;
                 request.AddHeader( "Accept", "application/json" );
-                var takeCount = ipAddressCount > maxBatchRecords ? maxBatchRecords : ipAddressCount;
-                var ipAddresses = ipAddressesWithSessionIds.Skip( requestCount * maxBatchRecords ).Take( takeCount );
-                var ipAddressBody = ipAddresses.Select( a => a.Key ).ToList();
-                request.AddParameter( "application/json", ipAddressBody.ToJson(), ParameterType.RequestBody );
+                request.AddParameter( "application/json", ipAddressesBatch.ToJson(), ParameterType.RequestBody );
+
                 var response = client.Execute( request );
-                var rateLimit = response.Headers.Where( a => a.Name == "X-Rate-Limit-Reset" ).FirstOrDefault();
-                var batchRemaining = response.Headers.Where( a => a.Name == "X-Rate-Limit-Remaining" ).FirstOrDefault();
+                var rateLimitResetInSeconds = response.Headers.Where( a => a.Name == "X-Rate-Limit-Reset" ).FirstOrDefault()?.Value.ToString().AsIntegerOrNull();
+                var rateLimitCreditsRemaining = response.Headers.Where( a => a.Name == "X-Rate-Limit-Remaining" ).FirstOrDefault();
+
+                // Process successful response
                 if ( response.StatusCode == HttpStatusCode.OK )
                 {
                     var responseContent = JsonConvert.DeserializeObject( response.Content, typeof( Root ) ) as Root;
-                    var countryDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES );
-                    var regionDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE );
-                    foreach ( var result in responseContent.Results.Where( a => ipAddressesWithSessionIds.ContainsKey( a.IP ) ) )
+
+                    foreach ( var result in responseContent.Results )
                     {
-                        var rockContext = new RockContext();
-                        var interactionSessionLocationService = new InteractionSessionLocationService( rockContext );
-                        var interactionSessionService = new InteractionSessionService( rockContext );
-                        var interactionSessions = interactionSessionService.GetByIds( ipAddressesWithSessionIds[result.IP] );
-                        if ( result.Location != null )
-                        {
-                            var interactionSessionLocation = new InteractionSessionLocation
-                            {
-                                IpAddress = result.IP,
-                                PostalCode = result.Location.PostalCode,
-                                Location = $"{result.Location.City}, {result.Location.Region.Name}",
-                                LookupDateTime = RockDateTime.Now
-                            };
-
-                            if ( result.Location.Region != null && result.Location.Region.Code.IsNotNullOrWhiteSpace() )
-                            {
-                                var regionCode = result.Location.Region.Code.Split( '-' ).LastOrDefault();
-                                if ( regionCode.IsNotNullOrWhiteSpace() )
-                                {
-                                    interactionSessionLocation.RegionCode = regionCode.Left( 2 );
-                                    var regionDefinedValue = regionDefinedType.GetDefinedValueFromValue( regionCode );
-                                    if ( regionDefinedValue != null )
-                                    {
-                                        interactionSessionLocation.RegionValueId = regionDefinedValue.Id;
-                                    }
-                                }
-                            }
-
-                            if ( result.Location.Country != null && result.Location.Country.Code.IsNotNullOrWhiteSpace() )
-                            {
-                                interactionSessionLocation.CountryCode = result.Location.Country.Code;
-                                var countryDefinedValue = countryDefinedType.GetDefinedValueFromValue( result.Location.Country.Code );
-                                if ( countryDefinedValue != null )
-                                {
-                                    interactionSessionLocation.CountryValueId = countryDefinedValue.Id;
-                                }
-                            }
-
-                            if ( result.Company != null )
-                            {
-                                interactionSessionLocation.ISP = result.Company.Name;
-                            }
-
-                            interactionSessionLocation.GeoPoint = Rock.Model.Location.GetGeoPoint( result.Location.Latitude, result.Location.Longitude );
-                            interactionSessionLocationService.Add( interactionSessionLocation );
-                            rockContext.SaveChanges();
-                            var updateCount = rockContext.BulkUpdate( interactionSessions, a => new InteractionSession { InteractionSessionLocationId = interactionSessionLocation.Id } );
-                            lookupResult.SuccessCount += updateCount;
-                        }
+                        results.Add( ConvertResultToIpLocation( result ) );
                     }
 
-                    ipAddressCount = ipAddressCount - takeCount;
-                    requestCount += takeCount;
+                    // Increment the loop pointer as these IP address have been processed
+                    sessionLoopIndex += _maxBulkRequestSize;
                 }
-                else if((int)response.StatusCode ==  429 )
+                else if ( ( int ) response.StatusCode == 429 ) // HTTP: Too many requests
                 {
-                    if ( rateLimit != null && rateLimit.Value.ToString().AsInteger() > 300 )
+                    // If they didn't give us rate limit instructions then bail
+                    if ( !rateLimitResetInSeconds.HasValue )
                     {
                         resultMsg = response.StatusDescription;
                         break;
                     }
+
+                    // If the reset period is a long time (5 mins) then bail
+                    if ( rateLimitResetInSeconds.Value > 300 )
+                    {
+                        resultMsg = response.StatusDescription;
+                        break;
+                    }
+
+                    // Otherwise take a break and wait
+                    System.Threading.Thread.Sleep( rateLimitResetInSeconds.Value );
                 }
-                else
+                else // Some other HTTP result
                 {
                     resultMsg = response.StatusDescription;
                     break;
                 }
+            }
 
-                if ( batchRemaining!=null &&   maxBatchRecords > batchRemaining.Value.ToString().AsInteger() )
+            return results;
+        }
+
+        /// <summary>
+        /// Converts IPRegistry's format into what Rock uses for Interaction Session Locations. This normalizes the data
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        private IpLocation ConvertResultToIpLocation( Result result )
+        {
+            var locationInformation = new IpLocation();
+
+            locationInformation.IpAddress = result.IP;
+
+            // Check for invalid IPs
+            if ( result.Code.IsNotNullOrWhiteSpace() )
+            {
+                locationInformation.IsValid = false;
+                switch ( result.Code )
                 {
-                    maxBatchRecords = batchRemaining.Value.ToString().AsInteger();
+                    case "INVALID_IP_ADDRESS":
+                        {
+                            locationInformation.IpLocationErrorCode = IpLocationErrorCode.InvalidAddress;
+                            break;
+                        }
+                    case "RESERVED_IP_ADDRESS":
+                        {
+                            locationInformation.IpLocationErrorCode = IpLocationErrorCode.ReservedAddress;
+                            break;
+                        }
                 }
 
-                if ( rateLimit != null && rateLimit.Value.ToString().AsInteger() < 300 )
+                return locationInformation;
+            }
+
+            // Get Defined Types for lookups
+            var countryDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES );
+            var regionDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE );
+
+            // Update the region information
+            if ( result.Location.Region != null && result.Location.Region.Code.IsNotNullOrWhiteSpace() )
+            {
+                var regionCode = result.Location.Region.Code.Split( '-' ).LastOrDefault();
+                if ( regionCode.IsNotNullOrWhiteSpace() )
                 {
-                    System.Threading.Thread.Sleep( rateLimit.Value.ToString().AsInteger() );
-                }
-                else
-                {
-                    break;
+                    locationInformation.RegionCode = regionCode.Left( 2 );
+                    var regionDefinedValue = regionDefinedType.GetDefinedValueFromValue( regionCode );
+                    if ( regionDefinedValue != null )
+                    {
+                        locationInformation.RegionValueId = regionDefinedValue.Id;
+                    }
                 }
             }
 
-            lookupResult.FailedCount = ipAddressesWithSessionIds.SelectMany( a => a.Value ).Count() - lookupResult.SuccessCount;
-            return lookupResult;
+            // Update the country
+            if ( result.Location.Country != null && result.Location.Country.Code.IsNotNullOrWhiteSpace() )
+            {
+                locationInformation.CountryCode = result.Location.Country.Code;
+                var countryDefinedValue = countryDefinedType.GetDefinedValueFromValue( result.Location.Country.Code );
+                if ( countryDefinedValue != null )
+                {
+                    locationInformation.CountryValueId = countryDefinedValue.Id;
+                }
+            }
+
+            // Update the ISP
+            if ( result.Company != null )
+            {
+                locationInformation.ISP = result.Company.Name.SubstringSafe( 0, 100 );
+            }
+
+            // Upate the Lat/Long
+            locationInformation.Latitude = result.Location.Latitude;
+            locationInformation.Longitude = result.Location.Longitude;
+
+            locationInformation.PostalCode = result.Location.PostalCode;
+            locationInformation.Location = FormatLocation( result ).SubstringSafe( 0, 250 );
+
+            return locationInformation;
+        }
+
+        /// <summary>
+        /// Formats the location.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        private string FormatLocation( Result result )
+        {
+            if ( result.Location == null || ( result.Location.City.IsNullOrWhiteSpace() && result.Location.Region.Name.IsNullOrWhiteSpace() ) )
+            {
+                return string.Empty;
+            }
+
+            if ( result.Location.City.IsNullOrWhiteSpace() )
+            {
+                return result.Location.Region.Name;
+            }
+
+            if ( result.Location.Region.Name.IsNullOrWhiteSpace() )
+            {
+                return result.Location.City;
+            }
+
+            return $"{result.Location.City}, {result.Location.Region.Name}";
+        }
+
+        /// <summary>
+        /// Gets a IPRegistry REST client with the API key attached.
+        /// </summary>
+        /// <returns></returns>
+        private RestClient GetIpRegistryRestClient()
+        {
+            var apiKey = GetAttributeValue( AttributeKey.APIKey );
+            var restClient = new RestClient( "https://api.ipregistry.co" );
+            restClient.AddDefaultParameter( "key", apiKey, ParameterType.QueryString );
+            return restClient;
         }
     }
 
-
-
-    #region Nested Classes
+    #region POCO Classes
 
     /// <summary>
-    /// 
+    /// POCO for the Result body
     /// </summary>
     public class Result
     {
+        /// <summary>
+        /// Gets or sets the code.
+        /// </summary>
+        /// <value>
+        /// The code.
+        /// </value>
+        [JsonProperty( "code" )]
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [JsonProperty( "message" )]
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the resolution.
+        /// </summary>
+        /// <value>
+        /// The resolution.
+        /// </value>
+        [JsonProperty( "resolution" )]
+        public string Resolution { get; set; }
+
         /// <summary>
         /// Gets or sets the IP
         /// </summary>
@@ -218,7 +374,7 @@ namespace Rock.IpAddress
     }
 
     /// <summary>
-    /// 
+    /// POCO for Location information
     /// </summary>
     public class Location
     {
@@ -278,7 +434,7 @@ namespace Rock.IpAddress
     }
 
     /// <summary>
-    /// 
+    /// POCO for Region
     /// </summary>
     public class Region
     {
@@ -302,7 +458,7 @@ namespace Rock.IpAddress
     }
 
     /// <summary>
-    /// 
+    /// POCO for Country Info
     /// </summary>
     public class Country
     {
@@ -326,7 +482,7 @@ namespace Rock.IpAddress
     }
 
     /// <summary>
-    /// 
+    /// POCO for Company Information
     /// </summary>
     public class Company
     {
@@ -341,7 +497,7 @@ namespace Rock.IpAddress
     }
 
     /// <summary>
-    /// 
+    /// POCO for Root Response
     /// </summary>
     public class Root
     {

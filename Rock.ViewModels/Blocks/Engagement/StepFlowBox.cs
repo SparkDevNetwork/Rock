@@ -32,8 +32,27 @@ namespace Rock.ViewModels.Blocks.Engagement.Steps
         /// List of campuses to show in the campus selection dropdown
         /// </value>
         public List<ListItemBag> Campuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the step program
+        /// </summary>
+        /// <value>
+        /// Name of the step program
+        /// </value>
+        public string ProgramName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step type count
+        /// </summary>
+        /// <value>
+        /// The number of step types in this step program
+        /// </value>
+        public int? StepTypeCount { get; set; }
     }
 
+    /// <summary>
+    /// Class StepFlowGetDataBag.
+    /// </summary>
     public class StepFlowGetDataBag
     {
         /// <summary>

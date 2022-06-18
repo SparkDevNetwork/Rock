@@ -133,9 +133,13 @@ namespace RockWeb
                     {
                         // We have to get the duration from Schedule.iCal for this attendance.
                         // Attendances are ordered by scheduleId so this only happens once for each unique schedule.
-                        var serializer = new CalendarSerializer();
-                        var ical = ( CalendarCollection ) serializer.Deserialize( schedule.iCalendarContent.ToStreamReader() );
-                        duration = ical[0].Events[0].Duration;
+                        var calendar = Calendar.Load( schedule.iCalendarContent );
+                        var scheduleEvent = calendar?.Events[0];
+                        if ( scheduleEvent != null )
+                        {
+                            duration = scheduleEvent.Duration;
+                        }
+
                         currentScheduleId = schedule.Id;
                     }
 

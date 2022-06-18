@@ -1007,5 +1007,10 @@ namespace Rock.SystemGuid
         /// The statement generator configuration
         /// </summary>
         public const string STATEMENT_GENERATOR_CONFIG = "3C6B81A5-63AB-4EA7-A671-836505B9E444";
+
+        /// <summary>
+        /// The category treeview search results
+        /// </summary>
+        public const string CATEGORY_TREEVIEW_SEARCH_RESULTS = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E";
     }
 }

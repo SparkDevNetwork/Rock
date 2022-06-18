@@ -15,44 +15,53 @@
         </script>
 
         <asp:Panel ID="pnlLavaShortcodeList" CssClass="panel panel-block" runat="server">
-
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cube"></i> Lava Shortcodes</h1>
+                <h1 class="panel-title"><i class="fa fa-cube"></i>Lava Shortcodes</h1>
                 <div class="pull-right flex-btn-gap">
-                    <Rock:Toggle ID="tglShowActive" runat="server" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-warning" OnText="Active" OffText="Inactive" CssClass="" Checked="true" OnCheckedChanged="tglShowActive_CheckedChanged" />
-                    <asp:LinkButton ID="btnAddShortcut" runat="server" CssClass="btn btn-xs btn-default btn-square" OnClick="btnAddShortcut_Click" Text="Add Shortcut"><i class="fa fa-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="btnAddShortcut" runat="server" CssClass="btn btn-xs btn-default btn-square" OnClick="btnAddShortcut_Click" Text="Add Shortcut">
+                            <i class="fa fa-plus"></i>
+                    </asp:LinkButton>
+                </div>
+            </div>
+            <div class="container-flex">
+                <div class="pull-left pt-4 pl-3">
+                    <Rock:Switch ID="swShowInactive" runat="server" OnCheckedChanged="swShowInactive_CheckedChanged" Text="Show Inactive" AutoPostBack="true" />
+                </div>
+                <div class="pull-right pt-4 pr-3">
+                    <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Width="300px" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" AutoPostBack="true"/>
                 </div>
             </div>
             <div class="panel-body">
                 <asp:Repeater ID="rptShortcodes" runat="server" OnItemDataBound="rptShortcodes_ItemDataBound">
                     <ItemTemplate>
                         <div class="panel panel-widget panel-shortcodeitem collapsed">
-                          <div class="panel-heading cursor-pointer js-shortcode-toggle clearfix flex-column flex-sm-row align-items-start align-items-sm-center">
-		                        <a name="<%# Eval("TagName").ToString().ToLower() %>"></a>
-                            <div>
-                              <h1 class="panel-title mb-1"><%# Eval("Name") %></h1>
-                              <p class="text-sm text-muted">
-                                <%# Eval("Description") %>
-                              </p>
-                            </div>
-                            <div class="pull-right">
-                            <div class="example-toggle text-nowrap d-none d-sm-block">
-                                    <i class="fa fa-circle-o"></i> Show Details
-                                  </div>
-		                          <div class="pull-right margin-t-sm">
-                                      <%# !Boolean.Parse(Eval("IsActive").ToString()) ?
+                            <div class="panel-heading cursor-pointer js-shortcode-toggle clearfix flex-column flex-sm-row align-items-start align-items-sm-center">
+                                <a name="<%# Eval("TagName").ToString().ToLower() %>"></a>
+                                <div>
+                                    <h1 class="panel-title mb-1"><%# Eval("Name") %></h1>
+                                    <p class="text-sm text-muted w-auto">
+                                        <%# Eval("Description") %>
+                                    </p>
+                                </div>
+                                <div class="pull-right">
+                                    <div class="example-toggle text-nowrap d-none d-sm-block">
+                                        <i class="fa fa-circle-o"></i>Show Details
+                                    </div>
+                                    <div class="pull-right margin-t-sm">
+                                        <%# !Boolean.Parse(Eval("IsActive").ToString()) ?
                                         "<span class='label label-warning pull-right'>Inactive</span>" : "" %>
-                                      <%# Boolean.Parse(Eval("IsSystem").ToString()) ?
+                                        <%# Boolean.Parse(Eval("IsSystem").ToString()) ?
                                         "<span class='label label-default pull-right'>System</span>" : "" %>
-		                          </div>
-                            </div>
+                                        <%# GetShortcodeCategories(Eval("Id").ToString()) %>
+                                    </div>
+                                </div>
 
-                          </div>
-                          <div class="panel-body" style="display: none;">
+                            </div>
+                            <div class="panel-body" style="display: none;">
                                 <%# Eval("Documentation") %>
                                 <asp:Literal ID="lMessages" runat="server" />
-                              <asp:HiddenField ID="hfShortcodeId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "Id").ToString() %>' />
-                              <div id="divViewPanel" runat="server" class="pull-right">
+                                <asp:HiddenField ID="hfShortcodeId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "Id").ToString() %>' />
+                                <div id="divViewPanel" runat="server" class="pull-right">
                                     <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEdit_Click"><i class="fa fa-search"></i></asp:LinkButton>
                                 </div>
                                 <div id="divEditPanel" runat="server" class="pull-right">
@@ -60,7 +69,7 @@
                                     <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs btn-square" OnClick="btnDelete_Click" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Lava Shortcode');"><i class="fa fa-times"></i></asp:LinkButton>
                                 </div>
-                          </div>
+                            </div>
                         </div>
 
                     </ItemTemplate>

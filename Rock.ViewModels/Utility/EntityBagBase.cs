@@ -19,6 +19,11 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Utility
 {
+    /// <summary>
+    /// Class EntityBagBase.
+    /// Implements the <see cref="Rock.ViewModels.Utility.IViewModelWithAttributes" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.IViewModelWithAttributes" />
     public abstract class EntityBagBase : IViewModelWithAttributes
     {
         /// <summary>

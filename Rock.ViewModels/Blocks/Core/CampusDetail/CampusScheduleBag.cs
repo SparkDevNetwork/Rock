@@ -21,12 +21,27 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.CampusDetail
 {
+    /// <summary>
+    /// Class CampusScheduleBag.
+    /// </summary>
     public class CampusScheduleBag
     {
+        /// <summary>
+        /// Gets or sets the unique identifier.
+        /// </summary>
+        /// <value>The unique identifier.</value>
         public Guid Guid { get; set; }
 
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>The schedule.</value>
         public ListItemBag Schedule { get; set; }
 
+        /// <summary>
+        /// Gets or sets the schedule type value.
+        /// </summary>
+        /// <value>The schedule type value.</value>
         public ListItemBag ScheduleTypeValue { get; set; }
     }
 }

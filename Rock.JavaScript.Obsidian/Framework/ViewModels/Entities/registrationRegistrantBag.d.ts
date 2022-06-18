@@ -43,6 +43,9 @@ export type RegistrationRegistrantBag = {
     /** Gets or sets the Rock.Model.Registration identifier. */
     registrationId: number;
 
+    /** Gets or sets the Rock.Model.RegistrationTemplate identifier. */
+    registrationTemplateId: number;
+
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 

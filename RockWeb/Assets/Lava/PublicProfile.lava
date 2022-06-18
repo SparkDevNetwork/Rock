@@ -69,9 +69,11 @@
                             {{ CurrentPerson.Age }} {{ 'year' | PluralizeForQuantity:CurrentPerson.Age }} old <small>({{ CurrentPerson.BirthDate | Date:'sd' }})</small><br>
                         {% endif %}
                     </li>
+                    {% if ShowGender %}
                     <li>
                         {% if CurrentPerson.Gender != "Unknown" %}{{ CurrentPerson.Gender }}{% endif %}
                     </li>
+                    {% endif %}
                     <li>
                         {% if CurrentPerson.MaritalStatusValueId %}
                             {% assign maritalStatusValue = CurrentPerson.MaritalStatusValueId | FromCache:'DefinedValue' %}

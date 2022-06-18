@@ -25,33 +25,51 @@ import { CampusScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class CampusBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type CampusBag = {
+    /** Gets or sets the campus schedules. */
     campusSchedules?: CampusScheduleBag[] | null;
 
+    /** Gets or sets the campus status value. */
     campusStatusValue?: ListItemBag | null;
 
+    /** Gets or sets the campus type value. */
     campusTypeValue?: ListItemBag | null;
 
+    /** Gets or sets the description. */
     description?: string | null;
 
+    /** Gets or sets a value indicating whether this instance is active. */
     isActive?: boolean | null;
 
+    /** Gets or sets a value indicating whether this instance is system. */
     isSystem: boolean;
 
+    /** Gets or sets the leader person alias. */
     leaderPersonAlias?: ListItemBag | null;
 
+    /** Gets or sets the location. */
     location?: ListItemBag | null;
 
+    /** Gets or sets the name. */
     name?: string | null;
 
+    /** Gets or sets the phone number. */
     phoneNumber?: string | null;
 
+    /** Gets or sets the service times. */
     serviceTimes?: ListItemBag[] | null;
 
+    /** Gets or sets the short code. */
     shortCode?: string | null;
 
+    /** Gets or sets the time zone identifier. */
     timeZoneId?: string | null;
 
+    /** Gets or sets the URL. */
     url?: string | null;
 
     /** Gets or sets the identifier key of this entity. */

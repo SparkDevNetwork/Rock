@@ -357,6 +357,7 @@ namespace Rock.Client.Enums
         AllActiveAdultsInGivingGroup = 0x0,
         PrimaryGiver = 0x1,
         AllActiveFamilyMembersInGivingGroup = 0x2,
+        DoNotSave = 0x3,
     }
 
     /// <summary>
@@ -962,6 +963,15 @@ namespace Rock.Client.Enums
     {
         CpuUsagePercent = 0x0,
         MemoryUsageMegabytes = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UnitType
+    {
+        Numeric = 0x0,
+        Currency = 0x1,
+        Percentage = 0x2,
     }
 
     /// <summary>

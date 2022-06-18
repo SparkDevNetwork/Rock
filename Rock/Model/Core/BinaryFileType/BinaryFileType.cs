@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -177,6 +177,13 @@ namespace Rock.Model
                 _cacheControlHeaderSettings = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the maximum file size bytes.
+        /// </summary>
+        /// <value>The maximum file size bytes.</value>
+        [DataMember]
+        public int? MaxFileSizeBytes { get; set; }
 
         private RockCacheability _cacheControlHeader;
        

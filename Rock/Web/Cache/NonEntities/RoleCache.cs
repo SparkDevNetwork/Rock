@@ -88,7 +88,10 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public bool IsPersonInRole( Guid? personGuid )
         {
-            if ( !personGuid.HasValue ) return false;
+            if ( !personGuid.HasValue )
+            {
+                return false;
+            }
 
             bool inRole;
             return People.TryGetValue( personGuid.Value, out inRole ) && inRole;
@@ -109,6 +112,40 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Returns Role object from cache.  If role does not already exist in cache, it
+        /// will be read and added to cache
+        /// </summary>
+        /// <param name="guid">The guid.</param>
+        /// <returns></returns>
+        public static RoleCache Get( Guid guid )
+        {
+            // See if the Id is stored in CacheIdFromGuid.
+            int? idFromGuid = IdFromGuidCache.GetId( guid );
+            RoleCache roleCache;
+            if ( idFromGuid.HasValue )
+            {
+                roleCache = Get( idFromGuid.Value );
+                return roleCache;
+            }
+
+            // If not, query the database for it, and then add to cache (if found).
+            var id = new Rock.Model.GroupService( new RockContext() ).GetId( guid );
+            if ( id == null )
+            {
+                return null;
+            }
+            
+            roleCache = Get( id.Value );
+            if ( roleCache != null )
+            {
+                IdFromGuidCache.UpdateCacheItem( guid.ToString(), new IdFromGuidCache( roleCache.Id ) );
+                UpdateCacheItem( roleCache.Id.ToString(), roleCache );
+            }
+
+            return roleCache;
+        }
+
+        /// <summary>
         /// Loads the by identifier.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -125,7 +162,10 @@ namespace Rock.Web.Cache
                 var groupModel = groupService.Get( id );
 
                 if ( groupModel == null || !groupModel.IsActive ||
-                    ( !groupModel.IsSecurityRole && groupModel.GroupTypeId != securityGroupTypeId ) ) return null;
+                    ( !groupModel.IsSecurityRole && groupModel.GroupTypeId != securityGroupTypeId ) )
+                {
+                    return null;
+                }
 
                 var role = new RoleCache
                 {
