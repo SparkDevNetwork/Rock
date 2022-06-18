@@ -55,10 +55,10 @@ namespace Rock.Jobs
         /// <inheritdoc />
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            int resendDays = dataMap.GetString( "ResendInviteAfterNumberDays" ).AsIntegerOrNull() ?? 5;
-            int maxInvites = dataMap.GetString( "MaxInvites" ).AsIntegerOrNull() ?? 2;
-            int checkDays = dataMap.GetString( "CheckForSignatureDays" ).AsIntegerOrNull() ?? 30;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            int resendDays = GetAttributeValue( "ResendInviteAfterNumberDays" ).AsIntegerOrNull() ?? 5;
+            int maxInvites = GetAttributeValue( "MaxInvites" ).AsIntegerOrNull() ?? 2;
+            int checkDays = GetAttributeValue( "CheckForSignatureDays" ).AsIntegerOrNull() ?? 30;
             string folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Cache/SignNow" );
 
             var errorMessages = new List<string>();

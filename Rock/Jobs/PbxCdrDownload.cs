@@ -51,10 +51,8 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-
             // get the selected provider
-            var componentType = dataMap.GetString( "PbxComponent" );
+            var componentType = this.GetAttributeValue( "PbxComponent" );
             var provider = Pbx.PbxContainer.GetComponent( componentType );
 
             if (provider == null )

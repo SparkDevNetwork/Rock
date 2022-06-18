@@ -59,11 +59,11 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            var workflowTypeGuids = dataMap.GetString( "WorkflowTypes" ).Split(',').Select(Guid.Parse).ToList();
-            int? expirationAge = dataMap.GetString( "ExpirationAge" ).AsIntegerOrNull();
-            string closeStatus = dataMap.GetString( "CloseStatus" );
+            var workflowTypeGuids = GetAttributeValue( "WorkflowTypes" ).Split(',').Select(Guid.Parse).ToList();
+            int? expirationAge = GetAttributeValue( "ExpirationAge" ).AsIntegerOrNull();
+            string closeStatus = GetAttributeValue( "CloseStatus" );
 
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );

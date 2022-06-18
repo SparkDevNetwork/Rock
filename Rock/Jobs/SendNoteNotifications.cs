@@ -160,12 +160,12 @@ namespace Rock.Jobs
         public override void Execute( RockJobContext context )
         {
             // get the job dataMap
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            int oldestDaysOld = dataMap.GetString( "CutoffDays" ).AsIntegerOrNull() ?? 7;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            int oldestDaysOld = GetAttributeValue( "CutoffDays" ).AsIntegerOrNull() ?? 7;
             _cutoffNoteEditDateTime = RockDateTime.Now.AddDays( -oldestDaysOld );
             _defaultMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-            _noteWatchNotificationEmailGuid = dataMap.GetString( "NoteWatchNotificationEmail" ).AsGuidOrNull();
-            _noteApprovalNotificationEmailGuid = dataMap.GetString( "NoteApprovalNotificationEmail" ).AsGuidOrNull();
+            _noteWatchNotificationEmailGuid = GetAttributeValue( "NoteWatchNotificationEmail" ).AsGuidOrNull();
+            _noteApprovalNotificationEmailGuid = GetAttributeValue( "NoteApprovalNotificationEmail" ).AsGuidOrNull();
             var errors = new List<string>();
 
             errors.AddRange( SendNoteWatchNotifications( context ) );

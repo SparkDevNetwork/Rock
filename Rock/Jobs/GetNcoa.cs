@@ -60,7 +60,7 @@ namespace Rock.Jobs
         {
             Exception exception = null;
             // Get the job setting(s)
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
             SparkDataConfig sparkDataConfig = Ncoa.GetSettings();
 
             if ( !sparkDataConfig.NcoaSettings.IsEnabled || !sparkDataConfig.NcoaSettings.IsValid() )

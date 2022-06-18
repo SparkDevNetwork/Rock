@@ -73,10 +73,10 @@ namespace Rock.Jobs
         public override void Execute( RockJobContext context )
         {
             // Get the configuration settings for this job instance.
-            var dataMap = context.JobDetail.DataMap;
+            var dataMap = context.JobDetail.JobDataMap;
 
-            var workflowTypeGuid = dataMap.GetString( AttributeKey.Workflow ).AsGuidOrNull();
-            var dataViewGuid = dataMap.GetString( AttributeKey.DataView ).AsGuidOrNull();
+            var workflowTypeGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
+            var dataViewGuid = GetAttributeValue( AttributeKey.DataView ).AsGuidOrNull();
 
             if ( dataViewGuid == null )
             {

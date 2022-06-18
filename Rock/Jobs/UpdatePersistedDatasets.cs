@@ -54,7 +54,6 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            var dataMap = context.JobDetail.DataMap;
             StringBuilder results = new StringBuilder();
             int updatedDatasetCount = 0;
             int updatedDatasetTotalCount;

@@ -200,15 +200,13 @@ namespace Rock.Jobs
         {
             Log.LogVerbose( $"Reading configuration from job execution context..." );
 
-            var dataMap = context.JobDetail.DataMap;
+            this.SystemEmailTemplateGuid = GetAttributeValue( AttributeKey.SystemEmail ).ToString().AsGuid();
 
-            this.SystemEmailTemplateGuid = dataMap.Get( AttributeKey.SystemEmail ).ToString().AsGuid();
+            this.CategoryGuidList = GetAttributeValue( AttributeKey.PrayerCategories ).ToString().SplitDelimitedValues().AsGuidList();
 
-            this.CategoryGuidList = dataMap.Get( AttributeKey.PrayerCategories ).ToString().SplitDelimitedValues().AsGuidList();
+            this.IncludeChildCategories = GetAttributeValue( AttributeKey.IncludeChildCategories ).ToString().AsBoolean();
 
-            this.IncludeChildCategories = dataMap.Get( AttributeKey.IncludeChildCategories ).ToString().AsBoolean();
-
-            this.CreateCommunicationRecord = dataMap.Get( AttributeKey.SaveCommunications ).ToString().AsBoolean();
+            this.CreateCommunicationRecord = GetAttributeValue( AttributeKey.SaveCommunications ).ToString().AsBoolean();
 
             // Job settings are stored uniquely for each instance of this Job, identified by the ServiceJob.Id.
             this.SystemSettingsId = context.JobDetail.Description;

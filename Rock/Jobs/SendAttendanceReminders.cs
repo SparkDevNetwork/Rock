@@ -117,8 +117,7 @@ namespace Rock.Jobs
         public override void Execute( RockJobContext context )
         {
             var rockContext = new RockContext();
-            var dataMap = context.JobDetail.DataMap;
-            var groupType = GroupTypeCache.Get( dataMap.GetString( AttributeKey.GroupType ).AsGuid() );
+            var groupType = GroupTypeCache.Get( GetAttributeValue( AttributeKey.GroupType ).AsGuid() );
             var isGroupTypeValid = groupType.TakesAttendance && groupType.SendAttendanceReminder;
             var results = new StringBuilder();
             
@@ -133,10 +132,10 @@ namespace Rock.Jobs
                 throw new RockJobWarningException( warning );
             }
 
-            var systemEmailGuid = dataMap.GetString( AttributeKey.SystemEmail ).AsGuid();
+            var systemEmailGuid = GetAttributeValue( AttributeKey.SystemEmail ).AsGuid();
             var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemEmailGuid );
 
-            var jobPreferredCommunicationType = ( CommunicationType ) dataMap.GetString( AttributeKey.SendUsingConfiguration ).AsInteger();
+            var jobPreferredCommunicationType = ( CommunicationType ) GetAttributeValue( AttributeKey.SendUsingConfiguration ).AsInteger();
             var isSmsEnabled = MediumContainer.HasActiveSmsTransport() && !string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
 
             if ( jobPreferredCommunicationType == CommunicationType.SMS && !isSmsEnabled )
@@ -154,7 +153,7 @@ namespace Rock.Jobs
                 jobPreferredCommunicationType = CommunicationType.Email;
             }
 
-            var occurrences = GetOccurenceDates( groupType, dataMap, rockContext );
+            var occurrences = GetOccurenceDates( groupType, rockContext );
             var groupIds = occurrences.Where( o => o.Value.Any() ).Select( o => o.Key ).ToList();
             var leaders = GetGroupLeaders( groupIds, rockContext );
             var attendanceRemindersResults = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType, isSmsEnabled );
@@ -173,9 +172,9 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private Dictionary<int, List<DateTime>> GetOccurenceDates( GroupTypeCache groupType, RockJobDataMap dataMap, RockContext rockContext )
+        private Dictionary<int, List<DateTime>> GetOccurenceDates( GroupTypeCache groupType, RockContext rockContext )
         {
-            var dates = GetSearchDates( dataMap );
+            var dates = GetSearchDates();
             var startDate = dates.Min();
             var endDate = dates.Max().AddDays( 1 );
 
@@ -195,7 +194,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="dataMap">The data map.</param>
         /// <returns></returns>
-        private List<DateTime> GetSearchDates( RockJobDataMap dataMap )
+        private List<DateTime> GetSearchDates()
         {
 
             // Get the occurrence dates that apply
@@ -206,7 +205,7 @@ namespace Rock.Jobs
 
             try
             {
-                var reminderDays = dataMap.GetString( AttributeKey.SendReminders ).Split( ',' );
+                var reminderDays = GetAttributeValue( AttributeKey.SendReminders ).Split( ',' );
                 foreach ( string reminderDay in reminderDays )
                 {
                     if ( reminderDay.Trim().IsNotNullOrWhiteSpace() )

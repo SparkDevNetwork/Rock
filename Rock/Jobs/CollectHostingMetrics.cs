@@ -174,11 +174,9 @@ namespace Rock.Jobs
                     throw new Exception( @"You must first navigate to ""Admin Tools > System Settings > System Configuration > Web.Config Settings"" and enable the ""Enable Database Performance Counters"" setting." );
                 }
 
-                RockJobDataMap dataMap = context.JobDetail.DataMap;
-
                 // Get the configured timeout, or default to 60 minutes if it is blank.
-                _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
-                _maximumMetricsToRetain = dataMap.GetString( AttributeKey.MaximumMetricstoRetain ).AsIntegerOrNull();
+                _commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+                _maximumMetricsToRetain = GetAttributeValue( AttributeKey.MaximumMetricstoRetain ).AsIntegerOrNull();
 
                 SetUpPerformanceCounters();
                 ReadPerformanceCounters();

@@ -49,8 +49,8 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            var groupGuid = dataMap.Get( "NotificationGroup" ).ToString().AsGuid();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            var groupGuid = GetAttributeValue( "NotificationGroup" ).ToString().AsGuid();
 
             var rockContext = new RockContext();
             var group = new GroupService( rockContext ).Get( groupGuid );

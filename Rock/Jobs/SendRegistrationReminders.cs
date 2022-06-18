@@ -55,9 +55,9 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            var expireDays = dataMap.GetString( "ExpireDate" ).AsIntegerOrNull() ?? 1;
+            var expireDays = GetAttributeValue( "ExpireDate" ).AsIntegerOrNull() ?? 1;
             var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
 
             int remindersSent = 0;

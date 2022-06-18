@@ -108,7 +108,7 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            _sqlCommandTimeoutSeconds = context.JobDetail.DataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+            _sqlCommandTimeoutSeconds = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
 
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
@@ -457,8 +457,7 @@ namespace Rock.Jobs
         /// <returns></returns>
         private int GetDuplicatePreventionDayRange( RockJobContext jobExecutionContext )
         {
-            var days = jobExecutionContext.JobDetail.DataMap.GetString( AttributeKey.DuplicatePreventionDayRange ).AsInteger();
-            return days;
+            return GetAttributeValue( AttributeKey.DuplicatePreventionDayRange ).AsInteger();
         }
 
         /// <summary>

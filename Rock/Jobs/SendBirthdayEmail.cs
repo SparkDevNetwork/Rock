@@ -66,8 +66,8 @@ namespace Rock.Jobs
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
 
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            Guid? systemEmailGuid = dataMap.GetString( "BirthdayEmail" ).AsGuidOrNull();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            Guid? systemEmailGuid = GetAttributeValue( "BirthdayEmail" ).AsGuidOrNull();
 
             var emailService = new SystemCommunicationService( rockContext );
 
@@ -87,7 +87,7 @@ namespace Rock.Jobs
 
             // only include alive people that have record status of Active
             var personQry = personService.Queryable( false, false ).Where( a => a.RecordStatusValue.Guid == activeStatusGuid && a.IsDeceased == false );
-            var ageRange = ( dataMap.GetString( "AgeRange" ) ?? string.Empty ).Split( ',' );
+            var ageRange = ( GetAttributeValue( "AgeRange" ) ?? string.Empty ).Split( ',' );
             if ( ageRange.Length == 2 )
             {
                 int? minimumAge = ageRange[0].AsIntegerOrNull();
@@ -98,7 +98,7 @@ namespace Rock.Jobs
             // only include people whose birthday is today (which can be determined from the computed DaysUntilBirthday column)
             personQry = personQry.Where( a => a.DaysUntilBirthday.HasValue && a.DaysUntilBirthday == 0 );
 
-            var connectionStatusGuids = ( dataMap.GetString( "ConnectionStatuses" ) ?? string.Empty ).Split( ',' ).AsGuidList();
+            var connectionStatusGuids = ( GetAttributeValue( "ConnectionStatuses" ) ?? string.Empty ).Split( ',' ).AsGuidList();
 
             if ( connectionStatusGuids.Any() )
             {

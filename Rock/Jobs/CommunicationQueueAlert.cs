@@ -57,10 +57,10 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            int alertPeriod = dataMap.GetInt( "AlertPeriod" );
-            Guid? systemEmailGuid = dataMap.GetString( "AlertEmail" ).AsGuidOrNull();
-            List<string> recipientEmails = dataMap.GetString( "AlertRecipients" ).SplitDelimitedValues().ToList();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            int alertPeriod = GetAttributeValue( "AlertPeriod" ).AsInteger();
+            Guid? systemEmailGuid = GetAttributeValue( "AlertEmail" ).AsGuidOrNull();
+            List<string> recipientEmails = GetAttributeValue( "AlertRecipients" ).SplitDelimitedValues().ToList();
 
             if ( systemEmailGuid.HasValue && recipientEmails.Any() )
             {

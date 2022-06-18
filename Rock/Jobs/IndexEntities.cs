@@ -60,9 +60,9 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            string selectedEntitiesSetting = dataMap.GetString( "EntityFilter" );
-            bool allEntities = dataMap.GetBoolean( "IndexAllEntities" );
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            string selectedEntitiesSetting = GetAttributeValue( "EntityFilter" );
+            bool allEntities = GetAttributeValue( "IndexAllEntities" ).AsBoolean();
 
             RockContext rockContext = new RockContext();
 

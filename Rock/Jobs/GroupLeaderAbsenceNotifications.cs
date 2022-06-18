@@ -109,7 +109,7 @@ namespace Rock.Jobs
         /// </summary>
         private void ProcessJob( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
             int notificationsSent = 0;
             int errorsEncountered = 0;
@@ -119,10 +119,10 @@ namespace Rock.Jobs
             // get groups set to sync
             RockContext rockContext = new RockContext();
 
-            Guid? groupTypeGuid = dataMap.GetString( AttributeKey.GroupType ).AsGuidOrNull();
-            Guid? systemEmailGuid = dataMap.GetString( AttributeKey.NotificationEmail ).AsGuidOrNull();
-            Guid? groupRoleFilterGuid = dataMap.GetString( AttributeKey.GroupRoleFilter ).AsGuidOrNull();
-            int minimumAbsences = dataMap.GetString( AttributeKey.MinimumAbsences ).AsInteger();
+            Guid? groupTypeGuid = GetAttributeValue( AttributeKey.GroupType ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( AttributeKey.NotificationEmail ).AsGuidOrNull();
+            Guid? groupRoleFilterGuid = GetAttributeValue( AttributeKey.GroupRoleFilter ).AsGuidOrNull();
+            int minimumAbsences = GetAttributeValue( AttributeKey.MinimumAbsences ).AsInteger();
 
             // get system email
             var emailService = new SystemCommunicationService( rockContext );

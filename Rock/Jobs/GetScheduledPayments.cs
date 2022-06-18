@@ -160,19 +160,19 @@ namespace Rock.Jobs
             var exceptionMsgs = new List<string>();
 
             // get the job map
-            var dataMap = context.JobDetail.DataMap;
+            var dataMap = context.JobDetail.JobDataMap;
             var scheduledPaymentsProcessed = 0;
 
-            Guid? receiptEmail = dataMap.GetString( AttributeKey.ReceiptEmail ).AsGuidOrNull();
-            Guid? failedPaymentEmail = dataMap.GetString( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
-            Guid? failedPaymentWorkflowType = dataMap.GetString( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
-            int daysBack = dataMap.GetString( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
-            bool verboseLogging = dataMap.GetString( AttributeKey.VerboseLogging ).AsBoolean( true );
+            Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
+            Guid? failedPaymentEmail = GetAttributeValue( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
+            Guid? failedPaymentWorkflowType = GetAttributeValue( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
+            int daysBack = GetAttributeValue( AttributeKey.DaysBack ).AsIntegerOrNull() ?? 1;
+            bool verboseLogging = GetAttributeValue( AttributeKey.VerboseLogging ).AsBoolean( true );
 
             DateTime today = RockDateTime.Today;
             TimeSpan daysBackTimeSpan = new TimeSpan( daysBack, 0, 0, 0 );
 
-            string batchNamePrefix = dataMap.GetString( AttributeKey.BatchNamePrefix );
+            string batchNamePrefix = GetAttributeValue( AttributeKey.BatchNamePrefix );
             Dictionary<FinancialGateway, string> processedPaymentsSummary = new Dictionary<FinancialGateway, string>();
 
 
@@ -180,7 +180,7 @@ namespace Rock.Jobs
             {
                 var targetGatewayQuery = new FinancialGatewayService( rockContext ).Queryable().Where( g => g.IsActive ).AsNoTracking();
 
-                var targetGatewayGuid = dataMap.GetString( AttributeKey.TargetGateway ).AsGuidOrNull();
+                var targetGatewayGuid = GetAttributeValue( AttributeKey.TargetGateway ).AsGuidOrNull();
                 if ( targetGatewayGuid.HasValue )
                 {
                     targetGatewayQuery = targetGatewayQuery.Where( g => g.Guid == targetGatewayGuid.Value );

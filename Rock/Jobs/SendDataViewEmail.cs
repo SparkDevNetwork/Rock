@@ -58,9 +58,9 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            var emailTemplateGuid = dataMap.GetString( "SystemEmail" ).AsGuidOrNull();
-            var dataViewGuid = dataMap.GetString( "DataView" ).AsGuidOrNull();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            var emailTemplateGuid = GetAttributeValue( "SystemEmail" ).AsGuidOrNull();
+            var dataViewGuid = GetAttributeValue( "DataView" ).AsGuidOrNull();
 
             if ( dataViewGuid == null || emailTemplateGuid == null )
             {
@@ -76,7 +76,7 @@ namespace Rock.Jobs
             {
                 var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
-                    DatabaseTimeoutSeconds = dataMap.GetString( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180
+                    DatabaseTimeoutSeconds = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180
                 };
 
                 var qry = dataView.GetQuery( dataViewGetQueryArgs );

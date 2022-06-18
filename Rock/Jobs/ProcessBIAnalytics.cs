@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 
-
+using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -189,17 +189,15 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-
             // get the configured timeout, or default to 20 minutes if it is blank
-            _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 1200;
+            _commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 1200;
 
             StringBuilder results = new StringBuilder();
 
             // Do the stuff for Person related BI Tables
-            if ( dataMap.GetString( AttributeKey.ProcessPersonBIAnalytics ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.ProcessPersonBIAnalytics ).AsBoolean() )
             {
-                ProcessPersonBIAnalytics( context, dataMap );
+                ProcessPersonBIAnalytics();
 
                 results.AppendLine( "Person BI Results:" );
                 results.AppendLine( _personJobStats.SummaryMessage );
@@ -208,9 +206,9 @@ namespace Rock.Jobs
             }
 
             // Do the stuff for Family related BI Tables
-            if ( dataMap.GetString( AttributeKey.ProcessFamilyBIAnalytics ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.ProcessFamilyBIAnalytics ).AsBoolean() )
             {
-                ProcessFamilyBIAnalytics( context, dataMap );
+                ProcessFamilyBIAnalytics();
 
                 results.AppendLine( "Family BI Results:" );
                 results.AppendLine( _familyJobStats.SummaryMessage );
@@ -219,9 +217,9 @@ namespace Rock.Jobs
             }
 
             // Do the stuff for Campus related BI Tables
-            if ( dataMap.GetString( AttributeKey.ProcessCampusBIAnalytics ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.ProcessCampusBIAnalytics ).AsBoolean() )
             {
-                ProcessCampusBIAnalytics( context, dataMap );
+                ProcessCampusBIAnalytics();
 
                 results.AppendLine( "Campus BI Results:" );
                 results.AppendLine( _campusJobStats.SummaryMessage );
@@ -229,7 +227,7 @@ namespace Rock.Jobs
             }
 
             // Run Stored Proc ETL for Financial Transaction BI Tables
-            if ( dataMap.GetString( AttributeKey.ProcessFinancialTransactionBIAnalytics ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.ProcessFinancialTransactionBIAnalytics ).AsBoolean() )
             {
                 try
                 {
@@ -247,7 +245,7 @@ namespace Rock.Jobs
             }
 
             // Run Stored Proc ETL for Attendance BI Tables
-            if ( dataMap.GetString( AttributeKey.ProcessAttendanceBIAnalytics ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.ProcessAttendanceBIAnalytics ).AsBoolean() )
             {
                 try
                 {
@@ -265,7 +263,7 @@ namespace Rock.Jobs
             }
 
             // "Refresh Power BI Account Tokens"
-            if ( dataMap.GetString( AttributeKey.RefreshPowerBIAccountTokens ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.RefreshPowerBIAccountTokens ).AsBoolean() )
             {
                 var powerBiAccountsDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
                 if ( powerBiAccountsDefinedType?.DefinedValues?.Any() == true )
@@ -286,9 +284,9 @@ namespace Rock.Jobs
                 }
             }
 
-            if ( dataMap.GetString( AttributeKey.ProcessGivingUnitBIAnalytics ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.ProcessGivingUnitBIAnalytics ).AsBoolean() )
             {
-                ProcessGivingUnitAnalytics( context, dataMap );
+                ProcessGivingUnitAnalytics();
                 results.AppendLine( "Giving Unit BI Analytic  Results:" );
                 results.AppendLine( _givingUnitJobStats.SummaryMessage );
                 context.UpdateLastStatusMessage( results.ToString() );
@@ -581,9 +579,7 @@ UPDATE [{analyticsTableName}]
         /// <summary>
         /// Processes the person bi analytics.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="dataMap">The data map.</param>
-        private void ProcessPersonBIAnalytics( RockJobContext context, RockJobDataMap dataMap )
+        private void ProcessPersonBIAnalytics()
         {
             List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), false, false );
             EntityField typeIdField = analyticsSourcePersonHistoricalFields.Where( f => f.Name == "TypeId" ).FirstOrDefault();
@@ -639,7 +635,7 @@ UPDATE [{analyticsTableName}]
             }
             finally
             {
-                if ( dataMap.GetString( AttributeKey.SaveSQLForDebug ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.SaveSQLForDebug ).AsBoolean() )
                 {
                     LogSQL( "ProcessAnalyticsDimPerson.sql", _personJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
@@ -1064,7 +1060,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="dataMap">The data map.</param>
-        private void ProcessFamilyBIAnalytics( RockJobContext context, RockJobDataMap dataMap )
+        private void ProcessFamilyBIAnalytics()
         {
             List<EntityField> analyticsSourceFamilyHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceFamilyHistorical ), false, false );
             int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
@@ -1108,7 +1104,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
             }
             finally
             {
-                if ( dataMap.GetString( AttributeKey.SaveSQLForDebug ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.SaveSQLForDebug ).AsBoolean() )
                 {
                     LogSQL( "ProcessAnalyticsDimFamily.sql", _familyJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
@@ -1184,7 +1180,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="dataMap">The data map.</param>
-        private void ProcessCampusBIAnalytics( RockJobContext context, RockJobDataMap dataMap )
+        private void ProcessCampusBIAnalytics()
         {
             List<EntityField> analyticsSourceCampusFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourceCampus ), false, false );
 
@@ -1213,7 +1209,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             }
             finally
             {
-                if ( dataMap.GetString( AttributeKey.SaveSQLForDebug ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.SaveSQLForDebug ).AsBoolean() )
                 {
                     LogSQL( "ProcessAnalyticsDimCampus.sql", _campusJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
@@ -1224,7 +1220,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
 
         #region GivingUnit Analytics
 
-        private void ProcessGivingUnitAnalytics( RockJobContext context, RockJobDataMap dataMap )
+        private void ProcessGivingUnitAnalytics()
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = _commandTimeout;

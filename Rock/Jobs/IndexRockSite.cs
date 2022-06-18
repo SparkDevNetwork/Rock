@@ -64,10 +64,10 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            var siteId = dataMap.GetString( "Site" ).AsIntegerOrNull();
-            string loginId = dataMap.GetString( "LoginId" );
-            string password = dataMap.GetString( "Password" );
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            var siteId = GetAttributeValue( "Site" ).AsIntegerOrNull();
+            string loginId = GetAttributeValue( "LoginId" );
+            string password = GetAttributeValue( "Password" );
 
             Uri startingUri;
 

@@ -63,7 +63,7 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // get registrations where
             //    + template is active
@@ -83,7 +83,7 @@ namespace Rock.Jobs
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
                 var currentDate = RockDateTime.Today;
-                var cutoffDays = dataMap.GetString( "CutoffDate" ).AsIntegerOrNull() ?? 30;
+                var cutoffDays = GetAttributeValue( "CutoffDate" ).AsIntegerOrNull() ?? 30;
 
                 // Do not filter registrations by template or instance cost, it will miss $0 registrations that have optional fees.
                 var registrations = registrationService.Queryable( "RegistrationInstance" )

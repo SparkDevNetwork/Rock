@@ -70,8 +70,8 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            var limitFullSync = dataMap.GetString( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            var limitFullSync = GetAttributeValue( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
 
             // Start a task that will let us run the Async methods in order.
             var task = Task.Run( () => ProcessAllAccounts( limitFullSync ) );

@@ -63,9 +63,9 @@ namespace Rock.Jobs
         {
             var exceptionMsgs = new List<string>();
 
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            Guid? groupGuid = dataMap.GetString( "EligibleFollowers" ).AsGuidOrNull();
-            Guid? systemEmailGuid = dataMap.GetString( "EmailTemplate" ).AsGuidOrNull();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            Guid? groupGuid = GetAttributeValue( "EligibleFollowers" ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( "EmailTemplate" ).AsGuidOrNull();
             int followingSuggestionsEmailsSent = 0;
             int followingSuggestionsSuggestionsTotal = 0;
 

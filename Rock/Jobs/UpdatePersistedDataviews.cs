@@ -55,8 +55,8 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            var dataMap = context.JobDetail.DataMap;
-            int sqlCommandTimeout = dataMap.GetString( TIMEOUT_KEY ).AsIntegerOrNull() ?? 300;
+            var dataMap = context.JobDetail.JobDataMap;
+            int sqlCommandTimeout = GetAttributeValue( TIMEOUT_KEY ).AsIntegerOrNull() ?? 300;
             StringBuilder results = new StringBuilder();
             int updatedDataViewCount = 0;
             var errors = new List<string>();

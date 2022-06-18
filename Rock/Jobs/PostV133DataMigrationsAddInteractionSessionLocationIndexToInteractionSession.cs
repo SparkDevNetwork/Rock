@@ -49,7 +49,7 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            //RockJobDataMap dataMap = context.JobDetail.DataMap;
+            //// RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // get the configured timeout, or default to 60 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;

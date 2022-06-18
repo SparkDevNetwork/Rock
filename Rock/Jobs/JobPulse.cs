@@ -72,7 +72,7 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
             
 
             var setJobPulseDateTimeGlobalAttribute = GetAttributeValue( AttributeKey.SetJobPulseDateTimeGlobalAttribute ).AsBoolean();

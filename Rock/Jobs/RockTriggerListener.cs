@@ -37,14 +37,15 @@ namespace Rock.Jobs
         public string Name => "RockTriggerListener";
 
         /// <summary>
-        /// Called by the <see cref="IScheduler"/> when a  <see cref="ITrigger"/> has fired, and it's
-        /// associated <see cref="IJobDetail"/> is about to be executed. It is called after the
+        /// Called by the <see cref="IScheduler" /> when a  <see cref="ITrigger" /> has fired, and it's
+        /// associated <see cref="IJobDetail" /> is about to be executed. It is called after the
         /// TriggerFired(ITrigger, IJobExecutionContext) method of this interface.
         /// If the execution is vetoed (via returning true), the job's execute method will not be called.
         /// </summary>
         /// <param name="trigger">The trigger.</param>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
+        /// <param name="cancellationToken">The cancellation instruction.</param>
+        /// <returns>Returns true if job execution should be vetoed, false otherwise.</returns>
         public Task<bool> VetoJobExecution( ITrigger trigger, IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
             // get job type id

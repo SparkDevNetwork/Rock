@@ -71,10 +71,10 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            var emailTemplateGuid = dataMap.Get( AttributeKey.SystemCommunication ).ToString().AsGuid();
-            var groupGuid = dataMap.Get( AttributeKey.Group ).ToString().AsGuid();
-            var sendToDescendants = dataMap.Get( AttributeKey.SendToDescendantGroups ).ToString().AsBoolean();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            var emailTemplateGuid = GetAttributeValue( AttributeKey.SystemCommunication ).ToString().AsGuid();
+            var groupGuid = GetAttributeValue( AttributeKey.Group ).ToString().AsGuid();
+            var sendToDescendants = GetAttributeValue( AttributeKey.SendToDescendantGroups ).ToString().AsBoolean();
 
             var rockContext = new RockContext();
             var systemCommunication = new SystemCommunicationService( rockContext ).Get( emailTemplateGuid );

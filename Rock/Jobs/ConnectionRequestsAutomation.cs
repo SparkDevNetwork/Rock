@@ -81,8 +81,8 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
 
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();

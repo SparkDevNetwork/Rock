@@ -84,9 +84,9 @@ namespace Rock.Jobs
         public override void Execute( RockJobContext context )
         {
             // Get the job setting(s)
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            bool requirePasswordReset = dataMap.GetBoolean( "RequirePasswordReset" );
-            var commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 180;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            bool requirePasswordReset = GetAttributeValue( "RequirePasswordReset" ).AsBoolean();
+            var commandTimeout = GetAttributeValue( "CommandTimeout" ).AsIntegerOrNull() ?? 180;
 
             // Counters for displaying results
             int groupsSynced = 0;

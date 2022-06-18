@@ -108,7 +108,7 @@ namespace Rock.Jobs
         {
             try
             {
-                RockJobDataMap dataMap = context.JobDetail.DataMap;
+                // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
                 context.UpdateLastStatusMessage( $"Processing future follow-up workflows." );
 

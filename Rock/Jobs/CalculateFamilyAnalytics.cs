@@ -68,13 +68,11 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            var dataMap = context.JobDetail.DataMap;
+            Guid? entryWorkflowType = GetAttributeValue( "EraEntryWorkflow" ).AsGuidOrNull();
+            Guid? exitWorkflowType = GetAttributeValue( "EraExitWorkflow" ).AsGuidOrNull();
+            bool updateVisitDates = GetAttributeValue( "SetVisitDates" ).AsBoolean();
 
-            Guid? entryWorkflowType = dataMap.GetString( "EraEntryWorkflow" ).AsGuidOrNull();
-            Guid? exitWorkflowType = dataMap.GetString( "EraExitWorkflow" ).AsGuidOrNull();
-            bool updateVisitDates = dataMap.GetBooleanValue( "SetVisitDates" );
-
-            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
+            int commandTimeout = GetAttributeValue( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
 
             // configuration
             //

@@ -165,8 +165,8 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         private FinancialPersonSavedAccountService.RemoveExpiredSavedAccountsResult RemoveExpiredSavedAccounts( RockJobContext context )
         {
-            var dataMap = context.JobDetail.DataMap;
-            int? removedExpiredSavedAccountDays = dataMap.GetString( AttributeKey.RemovedExpiredSavedAccountDays ).AsIntegerOrNull();
+            var dataMap = context.JobDetail.JobDataMap;
+            int? removedExpiredSavedAccountDays = GetAttributeValue( AttributeKey.RemovedExpiredSavedAccountDays ).AsIntegerOrNull();
 
             if ( !removedExpiredSavedAccountDays.HasValue )
             {
@@ -185,11 +185,11 @@ namespace Rock.Jobs
         /// <exception cref="Exception">Expiring credit card email is missing.</exception>
         private SendExpiredCreditCardNoticesResult SendExpiredCreditCardNotices( RockJobContext context )
         {
-            var dataMap = context.JobDetail.DataMap;
+            var dataMap = context.JobDetail.JobDataMap;
             var rockContext = new RockContext();
 
             // Get the details for the email that we'll be sending out.
-            Guid? systemEmailGuid = dataMap.GetString( AttributeKey.ExpiringCreditCardEmail ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( AttributeKey.ExpiringCreditCardEmail ).AsGuidOrNull();
             SystemCommunication systemCommunication = null;
 
             if ( systemEmailGuid.HasValue )
@@ -199,7 +199,7 @@ namespace Rock.Jobs
             }
 
             // Fetch the configured Workflow once if one was set, we'll use it later.
-            Guid? workflowGuid = dataMap.GetString( AttributeKey.Workflow ).AsGuidOrNull();
+            Guid? workflowGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
             WorkflowTypeCache workflowType = null;
             WorkflowService workflowService = new WorkflowService( rockContext );
             if ( workflowGuid != null )
@@ -233,7 +233,7 @@ namespace Rock.Jobs
             };
 
             // get attibute value, so we don't have to keep calling it for every person,
-            bool enableSendingEvent = dataMap.GetString( AttributeKey.EnableSendingBusEvent ).AsBoolean();
+            bool enableSendingEvent = GetAttributeValue( AttributeKey.EnableSendingBusEvent ).AsBoolean();
 
             foreach ( ScheduledTransactionInfo scheduledTransactionInfo in scheduledTransactionInfoList.OrderByDescending( a => a.Id ) )
             {

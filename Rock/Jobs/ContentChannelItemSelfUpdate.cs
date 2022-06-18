@@ -76,12 +76,11 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            var jobDataMap = context.JobDetail.DataMap;
-            var contentChannelGuid = jobDataMap.GetString( AttributeKey.ContentChannel ).AsGuidOrNull();
+            var contentChannelGuid = GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
 
             if ( !contentChannelGuid.HasValue )
             {
-                context.Result = $"The Service Job {jobDataMap.GetString( "Name" )} did not specify a valid Content Channel";
+                context.Result = $"The Service Job {GetAttributeValue( "Name" )} did not specify a valid Content Channel";
                 ExceptionLogService.LogException( context.Result.ToString() );
                 return;
             }
@@ -92,7 +91,7 @@ namespace Rock.Jobs
             var contentChannelId = new ContentChannelService( rockContext ).GetId( contentChannelGuid.Value );
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( i => i.ContentChannelId == contentChannelId ).ToList();
 
-            var attributeLinks = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, jobDataMap.GetString( AttributeKey.AttributeLinks ), null, false );
+            var attributeLinks = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.AttributeLinks ), null, false );
             var itemMergeFields = new Dictionary<string, object>( Lava.LavaHelper.GetCommonMergeFields( null ) );
             var jobResultStringBuilder = new StringBuilder();
             var totalItems = contentChannelItems.Count();

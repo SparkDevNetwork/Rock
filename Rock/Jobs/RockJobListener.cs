@@ -55,16 +55,17 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Called by the <see cref="IScheduler"/> when a <see cref="IJobDetail"/>
-        /// is about to be executed (an associated <see cref="ITrigger"/>
+        /// Called by the <see cref="IScheduler" /> when a <see cref="IJobDetail" />
+        /// is about to be executed (an associated <see cref="ITrigger" />
         /// has occurred).
         /// <para>
         /// This method will not be invoked if the execution of the Job was vetoed
-        /// by a <see cref="ITriggerListener"/>.
+        /// by a <see cref="ITriggerListener" />.
         /// </para>
         /// </summary>
-        /// <param name="context"></param>
-        /// <seealso cref="JobExecutionVetoed(IJobExecutionContext)"/>
+        /// <param name="context">The context.</param>
+        /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <returns>Task.</returns>
         public Task JobToBeExecuted( IJobExecutionContext context, CancellationToken cancellationToken = default )
         {
             StringBuilder message = new StringBuilder();

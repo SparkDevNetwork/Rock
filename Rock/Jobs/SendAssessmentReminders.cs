@@ -109,10 +109,10 @@ namespace Rock.Jobs
         /// <exception cref="NotImplementedException"></exception>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            var sendreminderDateTime = RockDateTime.Now.Date.AddDays( -1 * dataMap.GetInt( AttributeKeys.ReminderEveryDays ) );
-            int cutOffDays = dataMap.GetInt( AttributeKeys.CutoffDays );
-            var assessmentSystemEmailGuid = dataMap.GetString( AttributeKeys.AssessmentSystemEmail ).AsGuid();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            var sendreminderDateTime = RockDateTime.Now.Date.AddDays( -1 * GetAttributeValue( AttributeKeys.ReminderEveryDays ).AsInteger() );
+            int cutOffDays = GetAttributeValue( AttributeKeys.CutoffDays ).AsInteger();
+            var assessmentSystemEmailGuid = GetAttributeValue( AttributeKeys.AssessmentSystemEmail ).AsGuid();
 
             var currentDate = RockDateTime.Now.Date;
             var result = new SendMessageResult();

@@ -57,10 +57,10 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            int expirationDays = dataMap.GetInt( "ExpirationPeriod" );
-            int delayMinutes = dataMap.GetInt( "DelayPeriod" );
-            int maxParallelization = dataMap.GetInt( "ParallelCommunications" );
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            int expirationDays = GetAttributeValue( "ExpirationPeriod" ).AsInteger();
+            int delayMinutes = GetAttributeValue( "DelayPeriod" ).AsInteger();
+            int maxParallelization = GetAttributeValue( "ParallelCommunications" ).AsInteger();
 
             List<Model.Communication> sendCommunications = null;
             var stopWatch = Stopwatch.StartNew();

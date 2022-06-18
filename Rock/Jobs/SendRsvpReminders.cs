@@ -94,11 +94,11 @@ namespace Rock.Jobs
         /// <param name="context">The job's execution context.</param>
         private void ProcessJob( RockJobContext context )
         {
-            var dataMap = context.JobDetail.DataMap;
+            var dataMap = context.JobDetail.JobDataMap;
             RockContext rockContext = new RockContext();
 
             // Make sure GroupType job attribute was assigned.
-            Guid? groupTypeGuid = dataMap.GetString( AttributeKey.GroupType ).AsGuidOrNull();
+            Guid? groupTypeGuid = GetAttributeValue( AttributeKey.GroupType ).AsGuidOrNull();
             List<GroupType> rsvpGroupTypes = new List<GroupType>();
             if ( groupTypeGuid != null )
             {

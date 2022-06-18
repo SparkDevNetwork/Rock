@@ -67,20 +67,20 @@ namespace Rock.Jobs
             var errors = new List<string>();
             var rockContext = new RockContext();
 
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            Guid? systemEmailGuid = dataMap.GetString( "NotificationEmailTemplate" ).AsGuidOrNull();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            Guid? systemEmailGuid = GetAttributeValue( "NotificationEmailTemplate" ).AsGuidOrNull();
 
             if ( systemEmailGuid.HasValue )
             {
                 var selectedGroupTypes = new List<Guid>();
-                if ( !string.IsNullOrWhiteSpace( dataMap.GetString( "GroupTypes" ) ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "GroupTypes" ) ) )
                 {
-                    selectedGroupTypes = dataMap.GetString( "GroupTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
+                    selectedGroupTypes = GetAttributeValue( "GroupTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
                 }
 
-                var notificationOption = dataMap.GetString( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
+                var notificationOption = GetAttributeValue( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
 
-                var accountAbilityGroupGuid = dataMap.GetString( "AccountabilityGroup" ).AsGuid();
+                var accountAbilityGroupGuid = GetAttributeValue( "AccountabilityGroup" ).AsGuid();
 
                 var groupRequirementsQry = new GroupRequirementService( rockContext ).Queryable();
 

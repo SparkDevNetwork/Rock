@@ -57,11 +57,11 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // run a SQL query to do something
-            string query = dataMap.GetString( "SQLQuery" );
-            int? commandTimeout = dataMap.GetString( "CommandTimeout").AsIntegerOrNull();
+            string query = GetAttributeValue( "SQLQuery" );
+            int? commandTimeout = GetAttributeValue( "CommandTimeout").AsIntegerOrNull();
             try
             {
                 int rows = DbService.ExecuteCommand( query, System.Data.CommandType.Text, null, commandTimeout );

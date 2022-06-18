@@ -55,8 +55,8 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            var dataMap = context.JobDetail.DataMap;
-            string workflowName = dataMap.GetString( "Workflow" );
+            var dataMap = context.JobDetail.JobDataMap;
+            string workflowName = GetAttributeValue( "Workflow" );
             LaunchTheWorkflow( workflowName, context );
         }
 

@@ -75,7 +75,7 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            var rootGroupGuid = context.JobDetail.DataMap.GetString( AttributeKey.RootGroup ).AsGuidOrNull();
+            var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
 
             var confirmationSends = SendGroupScheduleConfirmationCommunications( rootGroupGuid );
             var reminderSends = SendGroupScheduleReminderCommunications( rootGroupGuid );

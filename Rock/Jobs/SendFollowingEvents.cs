@@ -62,9 +62,9 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
-            Guid? groupGuid = dataMap.GetString( "EligibleFollowers" ).AsGuidOrNull();
-            Guid? systemEmailGuid = dataMap.GetString( "EmailTemplate" ).AsGuidOrNull();
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
+            Guid? groupGuid = GetAttributeValue( "EligibleFollowers" ).AsGuidOrNull();
+            Guid? systemEmailGuid = GetAttributeValue( "EmailTemplate" ).AsGuidOrNull();
             int followingEventsSent = 0;
 
             if ( groupGuid.HasValue && systemEmailGuid.HasValue )

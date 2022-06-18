@@ -109,11 +109,11 @@ TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
         /// <param name="context">The context.</param>
         public override void Execute( RockJobContext context )
         {
-            var dataMap = context.JobDetail.DataMap;
-            var groupDataViewGuid = dataMap.GetString( AttributeKey.GroupDataView ).AsGuidOrNull();
-            var reportingLabel = dataMap.GetString( AttributeKey.ReportingLabel );
-            var trackedValues = dataMap.GetString( AttributeKey.TrackedValues ).SplitDelimitedValues();
-            var commandTimeoutSeconds = dataMap.GetString( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+            var dataMap = context.JobDetail.JobDataMap;
+            var groupDataViewGuid = GetAttributeValue( AttributeKey.GroupDataView ).AsGuidOrNull();
+            var reportingLabel = GetAttributeValue( AttributeKey.ReportingLabel );
+            var trackedValues = GetAttributeValue( AttributeKey.TrackedValues ).SplitDelimitedValues();
+            var commandTimeoutSeconds = GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 
             if ( !groupDataViewGuid.HasValue )
             {

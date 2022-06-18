@@ -84,8 +84,8 @@ namespace Rock.Jobs
         public override void Execute( RockJobContext context )
         {
             _httpContext = HttpContext.Current;
-            var dataMap = context.JobDetail.DataMap;
-            commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 180;
+            var dataMap = context.JobDetail.JobDataMap;
+            commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 180;
             string reactivateResult = ReactivatePeople( context );
             string inactivateResult = InactivatePeople( context );
             string updateFamilyCampusResult = UpdateFamilyCampus( context );

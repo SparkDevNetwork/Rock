@@ -2500,7 +2500,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             public GivingAutomationContext( RockJobContext jobExecutionContext )
             {
                 JobExecutionContext = jobExecutionContext;
-                //RockJobDataMap = jobExecutionContext.JobDetail.DataMap;
+                //RockJobDataMap = jobExecutionContext.JobDetail.JobDataMap;
                 DataViewPersonQueries = new Dictionary<int, IQueryable<Person>>();
                 SqlCommandTimeoutSeconds = jobExecutionContext.ServiceJob.GetAttributeValue( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
                 DataViewPersonQueriesRockContext = new RockContext();

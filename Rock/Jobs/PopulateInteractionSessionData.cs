@@ -65,7 +65,7 @@ namespace Rock.Jobs
         IsRequired = false,
         DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
     [DisallowConcurrentExecution]
-    public class PopulateInteractionSessionData : IJob
+    public class PopulateInteractionSessionData : RockJob
     {
         #region Keys
 
@@ -134,7 +134,7 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void Execute( IJobExecutionContext context )
+        public override void Execute( RockJobContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             _errors = new List<string>();
@@ -142,7 +142,7 @@ namespace Rock.Jobs
             StringBuilder results = new StringBuilder();
 
             // Get the configured timeout, or default to 20 minutes if it is blank
-            _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            _commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
             // STEP 1: Process IP location lookups
             var result = ProcessInteractionSessionForIP( context );
@@ -178,7 +178,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string ProcessInteractionCountAndDuration( IJobExecutionContext context )
+        private string ProcessInteractionCountAndDuration( RockJobContext context )
         {
             // This portion of the job looks for interaction sessions that need to have their interaction count and
             // duration properties updated. This denormalization occurs to increase performance of the analytics.
@@ -264,7 +264,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="jobContext">The job context.</param>
         /// <returns></returns>
-        private string ProcessInteractionSessionForIP( IJobExecutionContext jobContext )
+        private string ProcessInteractionSessionForIP( RockJobContext jobContext )
         {
             // This portion of the job looks for interaction sessions tied to interaction channels whose websites
             // have geo tracking enabled. The logic is broken into two parts:
@@ -283,9 +283,9 @@ namespace Rock.Jobs
 
             // Read settings from job
             JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
-            var numberOfRecordsToProcess = dataMap.GetString( AttributeKey.MaxRecordsToProcessPerRun ).AsIntegerOrNull() ?? 50000;
-            var ipAddressComponentGuid = dataMap.GetString( AttributeKey.IPAddressGeoCodingComponent );
-            var lookbackMaximumInDays = dataMap.GetString( AttributeKey.LookbackMaximumInDays ).AsInteger();
+            var numberOfRecordsToProcess = GetAttributeValue( AttributeKey.MaxRecordsToProcessPerRun ).AsIntegerOrNull() ?? 50000;
+            var ipAddressComponentGuid = GetAttributeValue( AttributeKey.IPAddressGeoCodingComponent );
+            var lookbackMaximumInDays = GetAttributeValue( AttributeKey.LookbackMaximumInDays ).AsInteger();
 
             var lookBackStartDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );
 

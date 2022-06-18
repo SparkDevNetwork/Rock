@@ -60,11 +60,11 @@ namespace Rock.Jobs
         public override void Execute(RockJobContext context)
         {
             // get the job map
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            int maxRecords = dataMap.GetString( "MaxRecordsPerRun" ).AsIntegerOrNull() ?? 1000;
-            int throttlePeriod = dataMap.GetString( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;
-            int retryPeriod = dataMap.GetString( "RetryPeriod" ).AsIntegerOrNull() ?? 200;
+            int maxRecords = GetAttributeValue( "MaxRecordsPerRun" ).AsIntegerOrNull() ?? 1000;
+            int throttlePeriod = GetAttributeValue( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;
+            int retryPeriod = GetAttributeValue( "RetryPeriod" ).AsIntegerOrNull() ?? 200;
 
             var retryDate = RockDateTime.Now.Subtract( new TimeSpan( retryPeriod, 0, 0, 0 ) );
 

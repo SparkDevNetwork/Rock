@@ -156,17 +156,17 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         private void ProcessJob( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // Make sure we have valid entity Guids.
-            var parentGroupGuid = dataMap.Get( AttributeKey.ParentGroup ).ToString().AsGuidOrNull();
+            var parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).ToString().AsGuidOrNull();
             if ( parentGroupGuid == null )
             {
                 _errors.Add( "The selected parent group is not valid." );
                 return;
             }
 
-            var systemCommunicationGuid = dataMap.Get( AttributeKey.SystemCommunication ).ToString().AsGuidOrNull();
+            var systemCommunicationGuid = GetAttributeValue( AttributeKey.SystemCommunication ).ToString().AsGuidOrNull();
             if ( systemCommunicationGuid == null )
             {
                 _errors.Add( "The selected system communication is not valid." );
@@ -174,7 +174,7 @@ namespace Rock.Jobs
             }
 
             // Make sure we have a valid date range.
-            int.TryParse( dataMap.Get( AttributeKey.DateRange ).ToString(), out int dateRangeInt );
+            int.TryParse( GetAttributeValue( AttributeKey.DateRange ).ToString(), out int dateRangeInt );
             if ( dateRangeInt <= 0 || dateRangeInt > 2 )
             {
                 dateRangeInt = 1;

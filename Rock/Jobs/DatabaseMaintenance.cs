@@ -75,14 +75,14 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext jobContext )
         {
-            var dataMap = jobContext.JobDetail.DataMap;
+            var dataMap = jobContext.JobDetail.JobDataMap;
 
             // get job parms
-            bool runIntegrityCheck = dataMap.GetBoolean( "RunIntegrityCheck" );
-            bool runIndexRebuild = dataMap.GetBoolean( "RunIndexRebuild" );
-            bool runStatisticsUpdate = dataMap.GetBoolean( "RunStatisticsUpdate" );
+            bool runIntegrityCheck = GetAttributeValue( "RunIntegrityCheck" ).AsBoolean();
+            bool runIndexRebuild = GetAttributeValue( "RunIndexRebuild" ).AsBoolean();
+            bool runStatisticsUpdate = GetAttributeValue( "RunStatisticsUpdate" ).AsBoolean();
 
-            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsInteger();
+            int commandTimeout = GetAttributeValue( "CommandTimeout" ).AsInteger();
             bool integrityCheckPassed = false;
             bool integrityCheckIgnored = false;
 
@@ -120,7 +120,7 @@ namespace Rock.Jobs
             {
                 try
                 {
-                    string alertEmail = dataMap.GetString( "AlertEmail" );
+                    string alertEmail = GetAttributeValue( "AlertEmail" );
                     jobContext.UpdateLastStatusMessage( $"Integrity Check..." );
                     integrityCheckPassed = IntegrityCheck( commandTimeout, alertEmail );
                 }
@@ -274,11 +274,11 @@ namespace Rock.Jobs
         /// <param name="commandTimeoutSeconds">The command timeout seconds.</param>
         private void RebuildFragmentedIndexes( RockJobContext jobContext, int commandTimeoutSeconds )
         {
-            RockJobDataMap dataMap = jobContext.JobDetail.DataMap;
-            int minimumIndexPageCount = dataMap.GetString( "MinimumIndexPageCount" ).AsInteger();
-            int minimumFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
-            int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();
-            bool useONLINEIndexRebuild = dataMap.GetString( "UseONLINEIndexRebuild" ).AsBoolean();
+            var dataMap = jobContext.JobDetail.JobDataMap;
+            int minimumIndexPageCount = GetAttributeValue( "MinimumIndexPageCount" ).AsInteger();
+            int minimumFragmentationPercentage = GetAttributeValue( "MinimumFragmentationPercentage" ).AsInteger();
+            int rebuildThresholdPercentage = GetAttributeValue( "RebuildThresholdPercentage" ).AsInteger();
+            bool useONLINEIndexRebuild = GetAttributeValue( "UseONLINEIndexRebuild" ).AsBoolean();
 
             if ( useONLINEIndexRebuild
                  && !( RockInstanceConfig.Database.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql

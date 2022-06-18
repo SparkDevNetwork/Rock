@@ -65,7 +65,7 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute( RockJobContext context )
         {
-            RockJobDataMap dataMap = context.JobDetail.DataMap;
+            // RockJobDataMap dataMap = context.JobDetail.JobDataMap;
 
             try
             {
@@ -76,12 +76,12 @@ namespace Rock.Jobs
                 // get groups set to sync
                 RockContext rockContext = new RockContext();
 
-                Guid? groupTypeGuid = dataMap.GetString( "GroupType" ).AsGuidOrNull();
-                Guid? systemEmailGuid = dataMap.GetString( "NotificationEmail" ).AsGuidOrNull();
-                Guid? groupRoleFilterGuid = dataMap.GetString( "GroupRoleFilter" ).AsGuidOrNull();
-                int? pendingAge = dataMap.GetString( "PendingAge" ).AsIntegerOrNull();
+                Guid? groupTypeGuid = GetAttributeValue( "GroupType" ).AsGuidOrNull();
+                Guid? systemEmailGuid = GetAttributeValue( "NotificationEmail" ).AsGuidOrNull();
+                Guid? groupRoleFilterGuid = GetAttributeValue( "GroupRoleFilter" ).AsGuidOrNull();
+                int? pendingAge = GetAttributeValue( "PendingAge" ).AsIntegerOrNull();
 
-                bool includePreviouslyNotificed = dataMap.GetString( "IncludePreviouslyNotified" ).AsBoolean();
+                bool includePreviouslyNotificed = GetAttributeValue( "IncludePreviouslyNotified" ).AsBoolean();
 
                 // get system email
                 var emailService = new SystemCommunicationService( rockContext );
