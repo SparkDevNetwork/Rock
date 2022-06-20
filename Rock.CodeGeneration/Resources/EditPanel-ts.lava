@@ -21,11 +21,11 @@ import CheckBox from "@Obsidian/Controls/checkBox";{% endif %}{% if UseDescripti
 import TextBox from "@Obsidian/Controls/textBox";{% endif %}
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
-import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ Domain }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
+import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ Domain }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
 export default defineComponent({
-    name: "Core.{{ EntityName }}Detail.EditPanel",
+    name: "{{ Domain }}.{{ EntityName }}Detail.EditPanel",
 
     props: {
         modelValue: {
