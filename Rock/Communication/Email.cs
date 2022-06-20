@@ -31,6 +31,37 @@ namespace Rock.Communication
     /// </summary>
     public static class Email
     {
+        /// <summary>
+        /// Processes the spam complaint.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <param name="complaintDateTime">The complaint date time.</param>
+        /// <param name="emailDelivered"></param>
+        public static void ProcessSpamComplaint( string email, DateTime complaintDateTime, bool emailDelivered )
+        {
+            var actionVerb = "rejected";
+            if ( emailDelivered )
+            {
+                actionVerb = "deactivated";
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                // get people who have those emails
+                var personService = new PersonService( rockContext );
+                var peopleWithEmail = personService.GetByEmail( email ).Select( p => p.Id ).ToList();
+
+                foreach ( int personId in peopleWithEmail )
+                {
+                    var person = personService.Get( personId );
+                    person.IsEmailActive = false;
+                    person.EmailNote = $"Email was {actionVerb} due to a spam complaint for {email} on {complaintDateTime.ToShortDateString()}."
+                        .SubstringSafe( 0, 250 );
+                }
+
+                rockContext.SaveChanges();
+            }
+        }
 
         /// <summary>
         /// Processes the bounce.
