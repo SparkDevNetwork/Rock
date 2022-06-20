@@ -80,9 +80,9 @@
     <Compile Include="Migrations\202206102113081_BinaryFileType_MaxFileSizeBytes.designer.cs">
       <DependentUpon>202206102113081_BinaryFileType_MaxFileSizeBytes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202206132343431_UpdateGroupRequirementFeatures.cs" />
-    <Compile Include="Migrations\202206132343431_UpdateGroupRequirementFeatures.designer.cs">
-      <DependentUpon>202206132343431_UpdateGroupRequirementFeatures.cs</DependentUpon>
+    <Compile Include="Migrations\202206171609204_UpdateGroupRequirementFeatures.cs" />
+    <Compile Include="Migrations\202206171609204_UpdateGroupRequirementFeatures.designer.cs">
+      <DependentUpon>202206171609204_UpdateGroupRequirementFeatures.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
@@ -1162,8 +1162,8 @@
     <EmbeddedResource Include="Migrations\202206102113081_BinaryFileType_MaxFileSizeBytes.resx">
       <DependentUpon>202206102113081_BinaryFileType_MaxFileSizeBytes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202206132343431_UpdateGroupRequirementFeatures.resx">
-      <DependentUpon>202206132343431_UpdateGroupRequirementFeatures.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202206171609204_UpdateGroupRequirementFeatures.resx">
+      <DependentUpon>202206171609204_UpdateGroupRequirementFeatures.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
