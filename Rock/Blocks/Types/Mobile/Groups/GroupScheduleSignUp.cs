@@ -107,7 +107,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The required mobile application binary interface version.
         /// </value>
-        public override int RequiredMobileAbiVersion => 3;
+        public override int RequiredMobileAbiVersion => 4;
 
         /// <summary>
         /// Gets the class name of the mobile block to use during rendering on the device.

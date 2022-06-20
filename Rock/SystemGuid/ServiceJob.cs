@@ -144,6 +144,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_130_ADD_INTERACTION_INTERACTION_COMPONENT_ID_INDEX = "1D7FADEC-2A8A-46FD-898E-58544E7FD9F2";
 
         /// <summary>
+        /// The Job to run Post v13.3 Data Migrations for Adding InteractionSessionLocationId index to Interaction Session
+        /// </summary>
+        public const string DATA_MIGRATIONS_133_ADD_INTERACTION_SESSION_INTERACTION_SESSION_LOCATION_ID_INDEX = "219BF98C-C10C-4B19-86DB-C69D9B8705FC";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
