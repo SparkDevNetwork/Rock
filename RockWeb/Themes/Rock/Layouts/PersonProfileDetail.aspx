@@ -79,7 +79,7 @@
 	</div>
 
     <script>
-        const header = document.querySelector("#zone-profilenavigation");
+        const header = document.querySelector("#profilenavigation");
         const profileImage = document.querySelector("#profile-image");
 
         if (profileImage) {
