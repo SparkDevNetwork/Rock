@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202206132343431_UpdateGroupRequirementFeatures"; }
+            get { return "202206171609204_UpdateGroupRequirementFeatures"; }
         }
         
         string IMigrationMetadata.Source

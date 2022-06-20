@@ -45,8 +45,8 @@ namespace Rock.Migrations
             AddColumn("dbo.GroupRequirementType", "ShouldAutoInitiateWarningWorkflow", c => c.Boolean(nullable: false));
             AddColumn("dbo.GroupRequirementType", "WarningWorkflowLinkText", c => c.String(maxLength: 50));
             AddColumn("dbo.GroupRequirementType", "Summary", c => c.String(maxLength: 2000));
-            AddColumn("dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId", c => c.Int(nullable: false));
-            AddColumn("dbo.GroupMemberRequirement", "WarningWorkflowId", c => c.Int(nullable: false));
+            AddColumn("dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId", c => c.Int());
+            AddColumn("dbo.GroupMemberRequirement", "WarningWorkflowId", c => c.Int());
             AddColumn("dbo.GroupMemberRequirement", "WasManuallyCompleted", c => c.Boolean(nullable: false));
             AddColumn("dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId", c => c.Int());
             AddColumn("dbo.GroupMemberRequirement", "ManuallyCompletedDateTime", c => c.DateTime());
