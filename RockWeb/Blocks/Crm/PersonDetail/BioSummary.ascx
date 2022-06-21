@@ -2,26 +2,34 @@
 
 <asp:UpdatePanel ID="pnlContent" runat="server">
     <ContentTemplate>
-
+        <style>
+            .bio-summary-small-firstname {
+                font-size: 14px;
+                color: #6c757d;
+            }
+        </style>
         <div id="divBio" runat="server" class="card card-profile card-profile-bio">
-
-            <div id="profile-image" class="img-card-top profile-squish">
-                <asp:Literal ID="lImage" runat="server" />
-            </div>
-
-            <%-- Name and actions --%>
-            <div class="card-section position-relative">
-
-                <%-- Person Name --%>
-                <asp:Literal ID="lName" runat="server" />
-
-                <%-- Badges --%>
-                <div class="d-flex flex-wrap justify-content-center align-items-center mt-2">
-                    <Rock:BadgeListControl ID="blStatus" runat="server" />
+            <div class="row">
+                <div class="col-md-4">
+                    <div id="profile-image" class="img-card-top profile-squish">
+                        <asp:Literal ID="lImage" runat="server" />
+                    </div>
                 </div>
+                <div class="col-md-8">
+                    <%-- Name and actions --%>
+                    <div class="card-section position-relative">
 
+                        <%-- Person Name --%>
+                        <asp:Literal ID="lName" runat="server" />
+
+                        <%-- Badges --%>
+                        <div class="d-flex flex-wrap justify-content-center align-items-center mt-2">
+                            <Rock:BadgeListControl ID="blStatus" runat="server" />
+                        </div>
+
+                    </div>
+                </div>
             </div>
-
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>
