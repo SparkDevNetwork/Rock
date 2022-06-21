@@ -9,9 +9,10 @@
         </script>
 
         <div class="profile-sticky-nav-placeholder"></div>
-        <div class="profile-nav" data-layout="PersonProfileHome">
-            <div class="flex-1 z-10">
-                <div class="hide-scroll">
+        <div class="hide-scroll">
+            <div class="profile-nav" data-layout="PersonProfileHome">
+                <div class="flex-1 z-10">
+                
                     <div class="dropdown dropdown-family styled-scroll">
                         <asp:Literal ID="litFamilyMemberNav" runat="server"></asp:Literal>
                     </div>
