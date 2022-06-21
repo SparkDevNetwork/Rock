@@ -226,6 +226,49 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   Category: CRM > Person Detail
             //   Attribute: Badges
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7249D05F-0FD1-4F44-88EB-AD46DEB1DAEA", "602F273B-7EC2-42E6-9AA7-A36A268192A3", "Badges", "Badges", "Badges", @"The label badges to display in this block.", 0, @"", "FD5A5196-4231-4CD6-9D34-71EF6C65A312" );
+
+            
+            // Attribute for BlockType
+            //   BlockType: Group Members
+            //   Category: CRM > Person Detail
+            //   Attribute: Group Type
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F", "18E29E23-B43B-4CF7-AE41-C85672C09F50", "Group Type", "GroupType", "Group Type", @"The group type to display groups for (default is Family)", 0, @"790E3215-3B10-442B-AF69-616C0DCB998E", "8F07815E-791F-4CC2-BB90-8A0552EA6697" );
+
+            // Attribute for BlockType
+            //   BlockType: Group Members
+            //   Category: CRM > Person Detail
+            //   Attribute: Auto Create Group
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Auto Create Group", "AutoCreateGroup", "Auto Create Group", @"If person doesn't belong to a group of this type, should one be created for them (default is Yes).", 1, @"True", "BDB2514F-95C1-4054-B3EC-76C972048D56" );
+
+            // Attribute for BlockType
+            //   BlockType: Group Members
+            //   Category: CRM > Person Detail
+            //   Attribute: Group Edit Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Group Edit Page", "GroupEditPage", "Group Edit Page", @"Page used to edit the members of the selected group.", 2, @"", "FA36CC50-9FFC-4AC6-BC96-874C967EA44D" );
+
+            // Attribute for BlockType
+            //   BlockType: Group Members
+            //   Category: CRM > Person Detail
+            //   Attribute: Location Detail Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Location Detail Page", "LocationDetailPage", "Location Detail Page", @"Page used to edit the settings for a particular location.", 3, @"", "41D83CE7-8052-402E-9815-E4E0EDABD85E" );
+
+            // Attribute for BlockType
+            //   BlockType: Group Members
+            //   Category: CRM > Person Detail
+            //   Attribute: Show County
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show County", "ShowCounty", "Show County", @"Should County be displayed when editing an address?.", 4, @"False", "31233DD5-DCB7-42FC-8151-517E32B29CBD" );
+
+            // Attribute for BlockType
+            //   BlockType: Group Members
+            //   Category: CRM > Person Detail
+            //   Attribute: Group Header Lava
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Group Header Lava", "GroupHeaderLava", "Group Header Lava", @"Lava to put at the top of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.", 5, @"", "E620907F-A5BF-4AF0-8A6C-8618CFC0CBB4" );
+
+            // Attribute for BlockType
+            //   BlockType: Group Members
+            //   Category: CRM > Person Detail
+            //   Attribute: Group Footer Lava
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Group Footer Lava", "GroupFooterLava", "Group Footer Lava", @"Lava to put at the bottom of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.", 6, @"", "036C6A27-B0A9-4219-A0E0-A368FF8FE8D2" );
         }
 
         private void AddPersonProfileDetailLayout()
@@ -765,6 +808,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F".AsGuid(), "Family Members", "Profile", @"", @"", 1, "0E6D894F-EF32-45F4-A189-32E05E5559CB" );
 
+            
             // Add Block Attribute Value
             //   Block: Family Members
             //   BlockType: Group Members
@@ -772,7 +816,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Group Type
             /*   Attribute Value: 790e3215-3b10-442b-af69-616c0dcb998e */
-            RockMigrationHelper.AddBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "A243BEF8-D6B1-4F63-BA6A-1830DAF11729", @"790e3215-3b10-442b-af69-616c0dcb998e" );
+            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","8F07815E-791F-4CC2-BB90-8A0552EA6697",@"790e3215-3b10-442b-af69-616c0dcb998e");
 
             // Add Block Attribute Value
             //   Block: Family Members
@@ -781,7 +825,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Auto Create Group
             /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "0BD34461-AFEB-4D0D-84D5-3779DB559EDE", @"True" );
+            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","BDB2514F-95C1-4054-B3EC-76C972048D56",@"True");
 
             // Add Block Attribute Value
             //   Block: Family Members
@@ -790,7 +834,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Group Edit Page
             /*   Attribute Value: e9e1e5f2-467d-47cb-af41-b4d9ef8b0b27 */
-            RockMigrationHelper.AddBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "2B17A52F-1FB6-4DA8-A2C2-447E1AB57571", @"e9e1e5f2-467d-47cb-af41-b4d9ef8b0b27" );
+            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","FA36CC50-9FFC-4AC6-BC96-874C967EA44D",@"e9e1e5f2-467d-47cb-af41-b4d9ef8b0b27");
 
             // Add Block Attribute Value
             //   Block: Family Members
@@ -799,7 +843,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Location Detail Page
             /*   Attribute Value: 4ce2a5da-15f3-454c-8172-d146d938e203 */
-            RockMigrationHelper.AddBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "5F121290-D32B-4F36-BAC1-B3036C696E10", @"4ce2a5da-15f3-454c-8172-d146d938e203" );
+            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","41D83CE7-8052-402E-9815-E4E0EDABD85E",@"4ce2a5da-15f3-454c-8172-d146d938e203");
 
             // Add Block Attribute Value
             //   Block: Family Members
@@ -808,7 +852,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Show County
             /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "7E032ABA-2AFA-4B29-9024-A9281AEA1BE8", @"False" );
+            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","31233DD5-DCB7-42FC-8151-517E32B29CBD",@"False");
 
             // Add Block 
             //  Block Name: Badges
