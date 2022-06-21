@@ -116,6 +116,10 @@
     <Compile Include="Migrations\202206160618411_NewPersonPages.designer.cs">
       <DependentUpon>202206160618411_NewPersonPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202206171920483_RemoveNavigationProperties.cs" />
+    <Compile Include="Migrations\202206171920483_RemoveNavigationProperties.designer.cs">
+      <DependentUpon>202206171920483_RemoveNavigationProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1220,6 +1224,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202206160618411_NewPersonPages.resx">
       <DependentUpon>202206160618411_NewPersonPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206171920483_RemoveNavigationProperties.resx">
+      <DependentUpon>202206171920483_RemoveNavigationProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>

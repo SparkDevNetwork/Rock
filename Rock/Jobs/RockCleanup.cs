@@ -825,6 +825,17 @@ namespace Rock.Jobs
                         group.Guid = Guid.NewGuid();
                         group.GroupTypeId = relationshipGroupType.Id;
 
+                        /*
+                             6/16/2022 - NA
+
+                             We must set the groupMember's GroupTypeId here too because the records are added via
+                             BulkInsert() below which bypasses the Pre/PostSave operations that normally handle setting
+                             this from the groupMember's group.
+    
+                             Reason: GroupMember.GroupTypeId is non nullable.
+                        */
+                        groupMember.GroupTypeId = group.GroupTypeId;
+
                         groupGroupMembersToInsert.Add( group.Guid, groupMember );
 
                         groupsToInsert.Add( group );
