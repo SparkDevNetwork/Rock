@@ -282,7 +282,7 @@ namespace Rock.Jobs
              * Removed the call to this function as this was not the intended behavior.
              *
              */
-            // RunCleanupTask( "benevolence request missing person", () => RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( dataMap ) );
+            //// RunCleanupTask( "benevolence request missing person", () => RemoveBenevolenceRequestsWithoutRequestedPersonPastNumberOfDays( dataMap ) );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
@@ -390,23 +390,6 @@ namespace Rock.Jobs
                 rockContext.SaveChanges();
                 return count;
             }
-        }
-
-        /// <summary>
-        /// Updates the person account protection profile.
-        /// </summary>
-        /// <returns></returns>
-        private int UpdatePersonAccountProtectionProfile()
-        {
-            var rowsUpdated = 0;
-            using ( var rockContext = new RockContext() )
-            {
-                rockContext.Database.CommandTimeout = commandTimeout;
-
-                PersonService.UpdateAccountProtectionProfileAll( rockContext );
-            }
-
-            return rowsUpdated;
         }
 
         /// <summary>
@@ -2311,19 +2294,19 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
              */
             return 0;
 
-            var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = commandTimeout;
+            ////var rockContext = new RockContext();
+            ////rockContext.Database.CommandTimeout = commandTimeout;
 
-            var maxDays = dataMap.GetIntValue( AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays );
+            ////var maxDays = dataMap.GetIntValue( AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays );
 
-            var filter = rockContext.BenevolenceRequests
-                .Where( b => b.RequestedByPersonAliasId == null || b.RequestedByPersonAliasId == 0
-                        &  DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays) ;
+            ////var filter = rockContext.BenevolenceRequests
+            ////    .Where( b => (b.RequestedByPersonAliasId == null || b.RequestedByPersonAliasId == 0)
+            ////            && (DbFunctions.DiffDays( b.RequestDateTime, RockDateTime.Now ) > maxDays) );
 
-            rockContext.BenevolenceRequests.RemoveRange( filter );
-            var removedCount=rockContext.SaveChanges();
+            ////rockContext.BenevolenceRequests.RemoveRange( filter );
+            ////var removedCount = rockContext.SaveChanges();
 
-            return removedCount;
+            ////return removedCount;
         }
 
         /// <summary>

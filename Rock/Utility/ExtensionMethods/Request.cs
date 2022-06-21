@@ -41,7 +41,7 @@ namespace Rock
         public static Uri UrlProxySafe( this HttpRequest request )
         {
             // If no proxy just return the request URL
-            var isRequestForwardedFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
+            var isRequestForwardedFromProxy = request.Headers["X-Forwarded-Host"] != null && request.Headers["X-Forwarded-Proto"] != null;
 
             if ( !isRequestForwardedFromProxy )
             {
@@ -70,7 +70,7 @@ namespace Rock
         public static Uri UrlProxySafe( this HttpRequestBase request )
         {
             // If no proxy just return the request URL
-            var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
+            var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"] != null && request.Headers["X-Forwarded-Proto"] != null;
 
             if ( !isRequestForwaredFromProxy )
             {
@@ -83,6 +83,73 @@ namespace Rock
                 Scheme = request.Headers["X-Forwarded-Proto"].ToString(),
                 Host = request.Headers["X-Forwarded-Host"].ToString()
             }.Uri;
+        }
+
+        /// <summary>
+        /// Returns a common (friendly name) for the URL of the Referrer. This is used for analytics
+        /// (e.g. how many refers came from Google). If a friendly name can not be determined then
+        /// the host name will be returned.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        public static string UrlReferrerNormalize( this HttpRequest request )
+        {
+            // Consider making this a defined value someday
+
+            if ( request.UrlReferrer == null )
+            {
+                return null;
+            }
+
+            switch ( request.UrlReferrer.Host )
+            {
+                case string s when s.Contains( "google.com" ):
+                    return "Google";
+                case string s when s.Contains( "bing.com" ):
+                    return "Bing";
+                case string s when s.Contains( "facebook.com" ):
+                    return "Facebook";
+                case string s when s.Contains( "twitter.com" ):
+                    return "Twitter";
+                case string s when s.Contains( "linkedin.com" ):
+                    return "LinkedIn";
+                case string s when s.Contains( "instagram.com" ):
+                    return "Instagram";
+                case string s when s.Contains( "pinterest.com" ):
+                    return "Pinterest";
+                case string s when s.Contains( "duckduckgo.com" ):
+                    return "DuckDuckGo";
+                case string s when s.Contains( "reddit.com" ):
+                    return "Reddit";
+            }
+
+            // If it wasn't a common site then return the URL host
+            return request.UrlReferrer.Host;
+        }
+
+        /// <summary>
+        /// Returns the search terms from a referral site
+        /// e.g. https:www.google.com?q=test would return test
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        public static string UrlReferrerSearchTerms( this HttpRequest request )
+        {
+            if ( request.UrlReferrer == null )
+            {
+                return null;
+            }
+
+            // We want to return a friendly string of the query string parm "q" which most search engines use for the individuals query
+            var parms = HttpUtility.ParseQueryString( request.UrlReferrer.AbsoluteUri );
+            var searchQuery = parms["q"];
+
+            if ( searchQuery != null )
+            {
+                return null;
+            }
+
+            return HttpUtility.UrlDecode( searchQuery );
         }
     }
 }

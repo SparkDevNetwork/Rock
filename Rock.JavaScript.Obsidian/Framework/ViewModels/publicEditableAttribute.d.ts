@@ -130,10 +130,9 @@ export type PublicEditableAttributeViewModel = {
     fieldTypeGuid?: Guid | null;
 
     /**
-     * The configuration options for the attribute. These values are translated
-     * into Configuration Values on the server.
+     * The configuration values for the attribute.
      */
-    configurationOptions?: Record<string, string> | null;
+    configurationValues?: Record<string, string> | null;
 
     /**
      * The default value of the attribute.

@@ -122,6 +122,22 @@ namespace RockWeb.Blocks.CheckIn
         private List<AttributeCache> OptionalAttributesForFamilies { get; set; }
 
         /// <summary>
+        /// Gets or sets the display birthdate on children attribute.
+        /// </summary>
+        /// <value>
+        /// The display birthdate on children setting.
+        /// </value>
+        private string DisplayBirthdateOnChildren { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display grade on children attribute.
+        /// </summary>
+        /// <value>
+        /// The display grade on children setting.
+        /// </value>
+        private string DisplayGradeOnChildren { get; set; }
+
+        /// <summary>
         /// The group type role adult identifier
         /// </summary>
         private static int _groupTypeRoleAdultId = GroupTypeCache.GetFamilyGroupType().Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
@@ -155,6 +171,9 @@ namespace RockWeb.Blocks.CheckIn
             OptionalAttributesForChildren = CurrentCheckInState.CheckInType.Registration.OptionalAttributesForChildren.Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).ToList();
             RequiredAttributesForFamilies = CurrentCheckInState.CheckInType.Registration.RequiredAttributesForFamilies.Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).ToList();
             OptionalAttributesForFamilies = CurrentCheckInState.CheckInType.Registration.OptionalAttributesForFamilies.Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).ToList();
+
+            DisplayBirthdateOnChildren = CurrentCheckInState.CheckInType.Registration.DisplayBirthdateOnChildren;
+            DisplayGradeOnChildren = CurrentCheckInState.CheckInType.Registration.DisplayGradeOnChildren;
         }
 
         /// <summary>
@@ -905,8 +924,16 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             tglAdultMaritalStatus.Visible = isAdult;
-            dpBirthDate.Visible = !isAdult;
-            gpGradePicker.Visible = !isAdult;
+
+            var displayBirthdate = !isAdult && !DisplayBirthdateOnChildren.Equals( ControlOptions.HIDE );
+            var birthdateRequired = displayBirthdate && DisplayBirthdateOnChildren.Equals( ControlOptions.REQUIRED );
+            var displayGrade = !isAdult && !DisplayGradeOnChildren.Equals( ControlOptions.HIDE );
+            var gradeRequired = displayGrade && DisplayGradeOnChildren.Equals( ControlOptions.REQUIRED );
+            dpBirthDate.Visible = displayBirthdate;
+            dpBirthDate.Required = birthdateRequired;
+            gpGradePicker.Visible = displayGrade;
+            gpGradePicker.Required = gradeRequired;
+
             tbEmail.Visible = isAdult;
             pnlChildRelationshipToAdult.Visible = !isAdult;
 

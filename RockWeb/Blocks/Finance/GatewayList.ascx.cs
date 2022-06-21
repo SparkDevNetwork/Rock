@@ -162,7 +162,10 @@ namespace RockWeb.Blocks.Finance
                     qry = qry.OrderBy( g => g.Name );
                 }
 
-                rGridGateway.DataSource = qry.ToList();
+                var gateways = qry.ToList();
+                nbInactiveWarning.Visible = gateways.Where( g => g.IsActive == false ).Any();
+
+                rGridGateway.DataSource = gateways;
                 rGridGateway.DataBind();
             }
         }

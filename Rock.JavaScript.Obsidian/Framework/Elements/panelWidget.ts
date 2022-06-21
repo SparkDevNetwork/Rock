@@ -40,7 +40,7 @@ export default defineComponent({
     },
     template: `
 <section class="panel panel-widget rock-panel-widget">
-    <header class="panel-heading clearfix clickable" @click="toggle">
+    <header class="panel-heading clearfix cursor-pointer" @click="toggle">
         <div class="pull-left">
             <slot name="header" />
         </div>

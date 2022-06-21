@@ -48,6 +48,12 @@ namespace Rock.SystemGuid
         public const string ACCOUNTS = "2B630A3B-E081-4204-A3E4-17BB3A5F063D";
 
         /// <summary>
+        /// The financial account search guid
+        /// ParentPage: Internal Homepage > Finance > Administration
+        /// </summary>
+        public const string FINANCIAL_ACCOUNT_SEARCH = "7A36463B-8E63-4394-BE20-ECFC5970080C";
+
+        /// <summary>
         /// Gets the Achievement Type page guid
         /// ParentPage: <see cref="ENGAGEMENT"/>
         /// </summary>
@@ -2129,5 +2135,11 @@ namespace Rock.SystemGuid
         /// The Contribution Statement Page on the stock external site
         /// </summary>
         public const string CONTRIBUTION_STATEMENT_PAGE = "98EBADAF-CCA9-4893-9DD3-D8201D8BD7FA";
+
+        /// <summary>
+        /// The system communication preview internal page.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_PREVIEW = "FD8E0C71-9543-4CAB-9918-76A67EFE5093";
+
     }
 }

@@ -96,7 +96,7 @@ namespace Rock.Web.UI
                     postHtml = blockCache.PostHtml.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
                 }
 
-                if ( preHtml.HasMergeFields() || postHtml.HasMergeFields() )
+                if ( preHtml.IsLavaTemplate() || postHtml.IsLavaTemplate() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( _rockBlock.RockPage );
                     preHtml = preHtml.ResolveMergeFields( mergeFields, "All" );

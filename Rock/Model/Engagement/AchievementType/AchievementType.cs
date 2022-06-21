@@ -185,6 +185,25 @@ namespace Rock.Model
         [DataMember]
         public string CustomSummaryLavaTemplate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the color of the highlight.
+        /// </summary>
+        /// <value>
+        /// The color of the highlight.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string HighlightColor { get; set; }
+
+        /// <summary>
+        /// An alternate image that can be used for custom purposes.
+        /// </summary>
+        /// <value>
+        /// The image binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? AlternateImageBinaryFileId { get; set; }
+
         #endregion Entity Properties
 
         #region IHasActiveFlag
@@ -299,6 +318,15 @@ namespace Rock.Model
 
         private ICollection<AchievementTypePrerequisite> _dependencies;
 
+        /// <summary>
+        /// Gets or sets the alternate image binary file.
+        /// </summary>
+        /// <value>
+        /// The image binary file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile AlternateImageBinaryFile { get; set; }
+
         #endregion Navigation Properties
 
         #region Entity Configuration
@@ -322,6 +350,7 @@ namespace Rock.Model
                 HasOptional( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.Category ).WithMany().HasForeignKey( stat => stat.CategoryId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.ImageBinaryFile ).WithMany().HasForeignKey( stat => stat.ImageBinaryFileId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AlternateImageBinaryFile ).WithMany().HasForeignKey( stat => stat.AlternateImageBinaryFileId ).WillCascadeOnDelete( false );
             }
         }
 

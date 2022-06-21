@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Security
                 var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, mobilePhoneNumber );
                 person = personService.FindPerson( personQuery, true );
 
-                if ( person.IsNotNull() )
+                if ( person != null )
                 {
                     RockPage.LinkPersonAliasToDevice( person.PrimaryAlias.Id, hfMacAddress.Value );
                     return person.PrimaryAliasId;

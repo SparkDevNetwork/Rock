@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Cms
                 outputContents = lavaTemplate.ResolveMergeFields( mergeFields );
 
                 // run LavaMerge again in case there is lava in the MergeFields
-                if ( outputContents.HasMergeFields() )
+                if ( Rock.Lava.LavaHelper.IsLavaTemplate( outputContents ) )
                 {
                     outputContents = outputContents.ResolveMergeFields( mergeFields );
                 }

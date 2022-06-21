@@ -288,7 +288,6 @@ namespace RockWeb.Blocks.Steps
         private void InitializeActionButtons()
         {
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated Step Types and Step Participants will also be deleted!');", StepProgram.FriendlyTypeName );
-
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;
         }
 
@@ -1124,51 +1123,63 @@ namespace RockWeb.Blocks.Steps
                 pdAuditDetails.Visible = false;
             }
 
-            /*
-             SK - 10/28/2021
-             Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
-             */
-            bool editAllowed = stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson );
             pnlDetails.Visible = true;
-            hfStepProgramId.Value = stepProgram.Id.ToString();
-            lIcon.Text = string.Format( "<i class='{0}'></i>", stepProgram.IconCssClass );
-            bool readOnly = false;
-
-            nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed )
+            if ( stepProgram != null && stepProgram.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
-            }
+                /*
+                SK - 10/28/2021
+                Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+                */
+                bool editAllowed = stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                hfStepProgramId.Value = stepProgram.Id.ToString();
+                lIcon.Text = string.Format( "<i class='{0}'></i>", stepProgram.IconCssClass );
+                bool readOnly = false;
 
-            rblDefaultListView.Items.Clear();
-            rblDefaultListView.Items.Add( new ListItem( "Cards", StepProgram.ViewMode.Cards.ToString() ) );
-            rblDefaultListView.Items.Add( new ListItem( "Grid", StepProgram.ViewMode.Grid.ToString() ) );
-
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-                btnSecurity.Visible = false;
-                ShowReadonlyDetails( stepProgram );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                btnDelete.Visible = true;
-                btnSecurity.Visible = true;
-
-                btnSecurity.Title = "Secure " + stepProgram.Name;
-                btnSecurity.EntityId = stepProgram.Id;
-
-                if ( !stepProgramId.Equals( 0 ) )
+                nbEditModeMessage.Visible = false;
+                nbEditModeMessage.Text = string.Empty;
+                if ( !editAllowed )
                 {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
+                }
+
+                rblDefaultListView.Items.Clear();
+                rblDefaultListView.Items.Add( new ListItem( "Cards", StepProgram.ViewMode.Cards.ToString() ) );
+                rblDefaultListView.Items.Add( new ListItem( "Grid", StepProgram.ViewMode.Grid.ToString() ) );
+
+                if ( readOnly )
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
+                    btnSecurity.Visible = false;
                     ShowReadonlyDetails( stepProgram );
                 }
                 else
                 {
-                    ShowEditDetails( stepProgram );
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    btnSecurity.Visible = true;
+                    btnSecurity.Visible = stepProgram.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    btnSecurity.Title = "Secure " + stepProgram.Name;
+                    btnSecurity.EntityId = stepProgram.Id;
+
+                    if ( !stepProgramId.Equals( 0 ) )
+                    {
+                        ShowReadonlyDetails( stepProgram );
+                    }
+                    else
+                    {
+                        ShowEditDetails( stepProgram );
+                    }
                 }
+            }
+            else
+            {
+                nbEditModeMessage.Visible = true;
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToView( ContentChannel.FriendlyTypeName );
+                pnlEditDetails.Visible = false;
+                pnlViewDetails.Visible = false;
+                this.HideSecondaryBlocks( true );
             }
         }
 

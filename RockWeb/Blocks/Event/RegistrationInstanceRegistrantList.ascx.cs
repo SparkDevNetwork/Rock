@@ -986,8 +986,34 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void LbRegistrarCommunication_Click( object sender, EventArgs e )
         {
+            /*
+                04/01/2022 - CWR
+                This click event mirrors the Grid.cs -> Actions_Communicate event, without access to the private methods and properties.
+                Clicking a Grid Action button without selecting any rows assumes that all rows are desired (the behavior of Grid's Actions_Communicate).
+                In order to achieve this, we need to use the BindRegistrantsGrid method without paging to bring back all the Grid's DataKeys.
+             */
             var itemsSelected = new List<int>();
-            gRegistrants.SelectedKeys.ToList().ForEach( f => itemsSelected.Add( f.ToString().AsInteger() ) );
+            if ( gRegistrants.SelectedKeys.Any() )
+            {
+                gRegistrants.SelectedKeys.ToList().ForEach( f => itemsSelected.Add( f.ToString().AsInteger() ) );
+            }
+            else
+            {
+                // If nothing is selected, assume all, and add all the data keys to the itemsSelected list.
+
+                // If the grid allows paging and there's more than one page, rebind the grid without paging so that all keys are available.
+                if ( gRegistrants.AllowPaging && gRegistrants.PageCount > 1 )
+                {
+                    gRegistrants.AllowPaging = false;
+
+                    BindRegistrantsGrid();
+                }
+
+                foreach ( DataKey dataKey in gRegistrants.DataKeys )
+                {
+                    itemsSelected.Add( dataKey.Value.ToString().AsInteger() );
+                }
+            }
 
             // Create a dictionary of the additional merge fields that were created for the communication
             var communicationMergeFields = new Dictionary<string, string>();

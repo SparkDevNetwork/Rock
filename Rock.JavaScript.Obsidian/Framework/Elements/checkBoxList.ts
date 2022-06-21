@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, PropType, ref, watch, watchEffect } from "vue";
-import RockFormField from "./rockFormField";
-import { ListItem } from "../ViewModels";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { Guid } from "../Util/guid";
+import { updateRefValue } from "../Util/util";
+import { ListItem } from "../ViewModels";
+import RockFormField from "./rockFormField";
 
 export default defineComponent({
     name: "CheckBoxList",
@@ -51,8 +52,8 @@ export default defineComponent({
     setup(props, { emit }) {
         const internalValue = ref([...props.modelValue]);
 
-        watch(() => props.modelValue, () => internalValue.value = props.modelValue);
-        watchEffect(() => emit("update:modelValue", internalValue.value));
+        watch(() => props.modelValue, () => updateRefValue(internalValue, props.modelValue));
+        watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
         const valueForOption = (option: ListItem): string => option.value;
         const textForOption = (option: ListItem): string => option.text;

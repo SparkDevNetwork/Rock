@@ -478,10 +478,10 @@ namespace RockWeb.Blocks.Communication
             string content = tbContent.Text;
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
+                // Concatenate the content fields and search the result.
+                // This achieves better query performance than searching the fields individually.
                 communicationsQuery = communicationsQuery.Where( c =>
-                    c.Message.Contains( content ) ||
-                    c.SMSMessage.Contains( content ) ||
-                    c.PushMessage.Contains( content ) );
+                                    ( c.Message + c.SMSMessage + c.PushMessage ).Contains( content ) );
             }
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();

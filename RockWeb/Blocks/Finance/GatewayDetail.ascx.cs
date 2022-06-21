@@ -237,9 +237,42 @@ namespace RockWeb.Blocks.Finance
             dowBatchStartDay.SelectedDayOfWeek = gateway.BatchDayOfWeek;
             ddlBatchSchedule.SelectedValue = gateway.BatchDayOfWeek.HasValue ? BatchWeekly : BatchDaily;
 
+            ShowInactiveGatwayMessage( gateway );
             ToggleWeeklyBatchControls();
-
             BuildDynamicControls( gateway, true );
+        }
+
+        /// <summary>
+        /// Shows the inactive gatway message.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        private void ShowInactiveGatwayMessage( FinancialGateway financialGateway )
+        {
+            nbIsActiveWarning.Text = "An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
+
+            if ( cbIsActive.Checked )
+            {
+                nbIsActiveWarning.Visible = false;
+                return;
+            }
+
+            nbIsActiveWarning.Visible = true;
+
+            if ( financialGateway == null || financialGateway.Id == 0 )
+            {
+                // This is a new gateway so show the message but don't bother looking for registrations using it.
+                return;
+            }
+
+            var activeRegistrations = new FinancialGatewayService( new RockContext() ).GetRegistrationTemplatesForGateway( financialGateway.Id, false ).ToList();
+            if ( !activeRegistrations.Any() )
+            {
+                // This gateway isn't used by any registrations so show the message but don't bother looking for registrations using it.
+                return;
+            }
+
+            var registrationNames = " To prevent this choose a different payment gateway for these registrations: <b>'" + string.Join( "', '", activeRegistrations.Select( r => r.Name ) ).Trim().TrimEnd( ',' ) + "'</b>";
+            nbIsActiveWarning.Text += registrationNames;
         }
 
         /// <summary>
@@ -338,5 +371,11 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
+
+        protected void cbIsActive_CheckedChanged( object sender, EventArgs e )
+        {
+            var financialGateway = new FinancialGatewayService( new RockContext() ).Get( PageParameter( "GatewayId" ).AsInteger() );
+            ShowInactiveGatwayMessage( financialGateway );
+        }
     }
 }

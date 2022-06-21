@@ -159,7 +159,10 @@ namespace RockWeb.Blocks.Administration
             // Check for any unregistered entity types, field types, and block types
             EntityTypeService.RegisterEntityTypes();
             FieldTypeService.RegisterFieldTypes();
+
+            BlockTypeService.FlushRegistrationCache();
             BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
+
             msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
 
             // Delete all cached files

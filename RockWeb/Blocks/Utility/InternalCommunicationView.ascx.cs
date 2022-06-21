@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Utility
                     .Skip( _currentPage )
                     .ToList();
 
-                if ( contentChannelItems.IsNull() || contentChannelItems.Count == 0 )
+                if ( contentChannelItems == null || contentChannelItems.Count == 0 )
                 {
                     nbMessages.Text = "It appears that there are no active communications to display for this content channel.";
                     nbMessages.NotificationBoxType = NotificationBoxType.Info;

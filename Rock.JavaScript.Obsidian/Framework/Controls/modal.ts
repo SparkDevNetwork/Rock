@@ -15,6 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType, ref, watch } from "vue";
+import RockForm from "../Controls/rockForm";
 import RockButton from "../Elements/rockButton";
 import { trackModalState } from "../Util/page";
 
@@ -22,7 +23,8 @@ export default defineComponent({
     name: "Modal",
 
     components: {
-        RockButton
+        RockButton,
+        RockForm
     },
 
     props: {
@@ -39,7 +41,22 @@ export default defineComponent({
         subtitle: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        cancelText: {
+            type: String as PropType<string>,
+            default: "Cancel"
+        },
+
+        saveText: {
+            type: String as PropType<string>,
+            default: ""
         }
+    },
+
+    emits: {
+        "update:modelValue": (_value: boolean) => true,
+        save: () => true
     },
 
     setup(props, { emit }) {
@@ -65,6 +82,13 @@ export default defineComponent({
             }
         };
 
+        /**
+         * Event handler for when the form has been submitted.
+         */
+        const onSubmit = (): void => {
+            emit("save");
+        };
+
         // If we are starting visible, then update the modal tracking.
         if (props.modelValue) {
             trackModalState(true);
@@ -75,8 +99,9 @@ export default defineComponent({
 
         return {
             isShaking,
+            onClose,
             onScrollableClick,
-            onClose
+            onSubmit
         };
     },
 
@@ -102,14 +127,17 @@ export default defineComponent({
                     <slot v-else name="header" />
                 </div>
 
-                <div class="modal-body">
-                    <slot />
-                </div>
+                <RockForm @submit="onSubmit">
+                    <div class="modal-body">
+                        <slot />
+                    </div>
 
-                <div class="modal-footer">
-                    <a @click.prevent="onClose" class="btn btn-link">Cancel</a>
-                    <slot name="customButtons" />
-                </div>
+                    <div class="modal-footer">
+                        <RockButton @click="onClose" btnType="link">{{ cancelText }}</RockButton>
+                        <RockButton v-if="saveText" type="submit" btnType="primary">{{ saveText }}</RockButton>
+                        <slot name="customButtons" />
+                    </div>
+                </RockForm>
             </div>
         </div>
     </div>

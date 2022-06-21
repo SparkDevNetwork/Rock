@@ -436,22 +436,19 @@ namespace Rock.Web.UI.Controls
 
             _phFilterFieldRuleControls.Controls.Add( rockControlWrapper );
 
-            Panel pnlFilterRuleRow = new Panel { CssClass = "filter-rule row form-row" };
+            Panel pnlFilterRuleRow = new Panel { CssClass = "filter-rule" };
             rockControlWrapper.Controls.Add( pnlFilterRuleRow );
 
-            Panel pnlFilterRuleCol1 = new Panel { CssClass = "col-xs-10 col-sm-11" };
-            Panel pnlFilterRuleCol2 = new Panel { CssClass = "col-xs-2 col-sm-1" };
+            Panel pnlFilterRuleCol1 = new Panel { CssClass = "filter-rule-fields row form-row" };
+            Panel pnlFilterRuleCol2 = new Panel { CssClass = "filter-rule-remove" };
             pnlFilterRuleRow.Controls.Add( pnlFilterRuleCol1 );
             pnlFilterRuleRow.Controls.Add( pnlFilterRuleCol2 );
 
-            Panel pnlFilterRuleCol1Row = new Panel { CssClass = "row form-row" };
-            pnlFilterRuleCol1.Controls.Add( pnlFilterRuleCol1Row );
+            Panel pnlFilterRuleCompareField = new Panel { CssClass = "filter-rule-comparefield col-xs-12 col-md-4" };
+            Panel pnlFilterRuleFieldFilter = new Panel { CssClass = "filter-rule-fieldfilter col-xs-12 col-md-8" };
 
-            Panel pnlFilterRuleCompareField = new Panel { CssClass = "filter-rule-comparefield col-md-4" };
-            Panel pnlFilterRuleFieldFilter = new Panel { CssClass = "filter-rule-fieldfilter col-md-8" };
-
-            pnlFilterRuleCol1Row.Controls.Add( pnlFilterRuleCompareField );
-            pnlFilterRuleCol1Row.Controls.Add( pnlFilterRuleFieldFilter );
+            pnlFilterRuleCol1.Controls.Add( pnlFilterRuleCompareField );
+            pnlFilterRuleCol1.Controls.Add( pnlFilterRuleFieldFilter );
 
             HiddenFieldWithClass hiddenFieldRuleGuid = new HiddenFieldWithClass
             {

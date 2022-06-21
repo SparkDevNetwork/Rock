@@ -59,6 +59,9 @@ namespace Rock.Client
         public bool AllowOverAchievement { get; set; }
 
         /// <summary />
+        public int? AlternateImageBinaryFileId { get; set; }
+
+        /// <summary />
         public string BadgeLavaTemplate { get; set; }
 
         /// <summary />
@@ -81,6 +84,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string HighlightColor { get; set; }
 
         /// <summary />
         public int? ImageBinaryFileId { get; set; }
@@ -149,6 +155,7 @@ namespace Rock.Client
             this.AchievementSuccessWorkflowTypeId = source.AchievementSuccessWorkflowTypeId;
             this.AchieverEntityTypeId = source.AchieverEntityTypeId;
             this.AllowOverAchievement = source.AllowOverAchievement;
+            this.AlternateImageBinaryFileId = source.AlternateImageBinaryFileId;
             this.BadgeLavaTemplate = source.BadgeLavaTemplate;
             this.CategoryId = source.CategoryId;
             this.ComponentConfigJson = source.ComponentConfigJson;
@@ -157,6 +164,7 @@ namespace Rock.Client
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HighlightColor = source.HighlightColor;
             this.ImageBinaryFileId = source.ImageBinaryFileId;
             this.IsActive = source.IsActive;
             this.IsPublic = source.IsPublic;
@@ -197,6 +205,9 @@ namespace Rock.Client
 
         /// <summary />
         public WorkflowType AchievementSuccessWorkflowType { get; set; }
+
+        /// <summary />
+        public BinaryFile AlternateImageBinaryFile { get; set; }
 
         /// <summary />
         public ICollection<AchievementAttempt> Attempts { get; set; }

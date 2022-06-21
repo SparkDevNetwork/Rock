@@ -342,14 +342,14 @@ namespace Rock.Rest.Controllers
             // The returned type is great but lets add some schedule details from the ical string
             foreach ( var groupCheckinInfo in groups )
             {
-                if ( groupCheckinInfo.Locations.IsNull() )
+                if ( groupCheckinInfo.Locations == null )
                 {
                     return this.Request.CreateResponse( groupCheckinInfo );
                 }
 
                 foreach ( var location in groupCheckinInfo.Locations )
                 {
-                    if ( location.Schedules.IsNull() )
+                    if ( location.Schedules == null )
                     {
                         continue;
                     }

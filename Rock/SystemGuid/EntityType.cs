@@ -422,6 +422,26 @@ namespace Rock.SystemGuid
         public const string MOBILE_GROUPS_GROUP_REGISTRATION_BLOCK_TYPE = "E0664BDC-9583-44F2-AC8D-23AE48603EAB";
 
         /// <summary>
+        /// The GUID for entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupSchedulePreference"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE = "36B341A9-07FC-43A1-970A-E5D4CDB83E6A";
+
+        /// <summary>
+        /// The GUID for entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleSignUp"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_SIGNUP = "DE3893A7-C353-4D19-A3FA-8B8EA99984F9";
+
+        /// <summary>
+        /// The GUID for entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleToolbox"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_TOOLBOX = "DCC6C7C8-1040-4F0E-94ED-90450E2E9610";
+
+        /// <summary>
+        /// The GUID for entity <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleUnavailability"/>
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_UNAVAILABILITY = "300E3105-A9C9-4C86-8BD1-CC041B6953C6";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupView
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_VIEW_BLOCK_TYPE = "564C4D86-C9DF-48D0-84B6-DD3FCC1A5158";
@@ -455,6 +475,16 @@ namespace Rock.SystemGuid
         /// The obsidian event field type gallery
         /// </summary>
         public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "82F9C803-C998-46B2-B354-783D4D1E3B43";
+
+        /// <summary>
+        /// The obsidian form builder detail
+        /// </summary>
+        public const string OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE = "BB44D8ED-DEDC-4C9B-A30D-C636019BC960";
+
+        /// <summary>
+        /// The obsidian form template detail
+        /// </summary>
+        public const string OBSIDIAN_FORM_TEMPLATE_DETAIL_BLOCK_TYPE = "4A08BC88-AD45-4106-BDD7-184A14B39B9A";
 
         /// <summary>
         /// The guid for the Rock.Model.Note entity

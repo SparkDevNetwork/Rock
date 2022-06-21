@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             lPledgeAccountName.Text = financialPledge.Account?.Name;
             lPledgeTotalAmount.Text = financialPledge.TotalAmount.FormatAsCurrency();
-            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue.IsNotNull() ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ) : string.Empty;
+            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue != null ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ) : string.Empty;
             btnPledgeEdit.CommandArgument = financialPledge.Guid.ToString();
             btnPledgeDelete.CommandArgument = financialPledge.Guid.ToString();
 
@@ -742,8 +742,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var rockContext = new RockContext();
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
             var savedAccountList = financialPersonSavedAccountService
-                .Queryable()
-                .Where( a => a.PersonAliasId == this.Person.PrimaryAliasId.Value && a.FinancialPaymentDetail != null )
+                .GetByPersonId( this.Person.Id )
+                .Where( a => a.FinancialPaymentDetail != null )
                 .ToList();
 
             rptSavedAccounts.DataSource = savedAccountList;

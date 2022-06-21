@@ -129,7 +129,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                     {
                         var lavaContext = context.Registers["RockContext"];
 
-                        if ( lavaContext.IsNotNull() )
+                        if ( lavaContext != null )
                         {
                             dbContext = (DbContext) lavaContext;
                         }

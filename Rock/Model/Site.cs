@@ -448,6 +448,25 @@ namespace Rock.Model
         public bool EnableExclusiveRoutes { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable page view geo tracking].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable page view geo tracking]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnablePageViewGeoTracking { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether predictable Ids are disabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if predictable Ids are disabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        [DefaultValue( false )]
+        public bool DisablePredictableIds { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration mobile file path.
         /// </summary>
         /// <value>

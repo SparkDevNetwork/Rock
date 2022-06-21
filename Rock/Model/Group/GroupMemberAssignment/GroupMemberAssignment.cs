@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -62,6 +63,24 @@ namespace Rock.Model
         [DataMember]
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 2 )]
         public int? ScheduleId { get; set; }
+
+        /// <summary>
+        /// The date and time when the last RSVP reminder sent.
+        /// </summary>
+        /// <value>
+        /// The last RSVP reminder sent.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRSVPReminderSentDateTime { get; set; }
+
+        /// <summary>
+        /// The date and time when the confirmation is sent.
+        /// </summary>
+        /// <value>
+        /// The confirmation is sent.
+        /// </value>
+        [DataMember]
+        public DateTime? ConfirmationSentDateTime { get; set; }
 
         #endregion Entity Properties
 

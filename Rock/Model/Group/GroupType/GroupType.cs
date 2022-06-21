@@ -370,7 +370,7 @@ namespace Rock.Model
         }
         private string _groupViewLavaTemplate;
         private string _defaultLavaTemplate = @"{% if Group.GroupType.GroupCapacityRule != 'None' and Group.GroupCapacity != '' %}
-		{% assign warningLevel = ''warning'' %}
+		{% assign warningLevel = 'warning' %}
 
 		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
 			{% assign warningLevel = 'danger' %}

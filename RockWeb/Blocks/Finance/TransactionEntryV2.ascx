@@ -50,17 +50,18 @@
 
                             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
-                            <asp:Panel ID="pnlScheduledTransaction" runat="server">
+                            <asp:Panel ID="pnlScheduledTransactionFrequency" runat="server">
                                 <div class="form-group">
                                     <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" AutoPostBack="true" OnSelectedIndexChanged="ddlFrequency_SelectedIndexChanged" />
                                 </div>
+                            </asp:Panel>
 
-                                <asp:Panel ID="pnlSavedAccounts" runat="server" class="form-group" Visible="false">
-                                    <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" Label="Giving Method" AutoPostBack="true" OnSelectedIndexChanged="ddlPersonSavedAccount_SelectedIndexChanged" />
-                                </asp:Panel>
+                            <asp:Panel ID="pnlSavedAccounts" runat="server" class="form-group" Visible="false">
+                                <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" Label="Giving Method" AutoPostBack="true" OnSelectedIndexChanged="ddlPersonSavedAccount_SelectedIndexChanged" />
+                            </asp:Panel>
 
+                            <asp:Panel ID="pnlScheduledTransactionStartDate" runat="server">
                                 <Rock:DatePicker ID="dtpStartDate" runat="server" AllowPastDateSelection="false" Label="Start Date" />
-
                             </asp:Panel>
 
                             <Rock:RockTextBox ID="tbCommentEntry" runat="server" Required="true" Label="Comment" />
@@ -71,7 +72,7 @@
 
                             <%-- Cover the Fee checkbox (When a Saved Account is selected and we know the currency type already) --%>
                             <asp:Panel ID="pnlGiveNowCoverTheFee" runat="server" CssClass="js-coverthefee-container" Visible="false">
-                                <Rock:RockCheckBox ID="cbGiveNowCoverTheFee" runat="server" Text="Hello $<span class='js-coverthefee-checkbox-fee-amount-text'></span> World" CssClass="js-givenow-coverthefee" />
+                                <Rock:RockCheckBox ID="cbGiveNowCoverTheFee" runat="server" Text="$<span class='js-coverthefee-checkbox-fee-amount-text'></span>" CssClass="js-givenow-coverthefee" />
                             </asp:Panel>
 
                             <Rock:BootstrapButton ID="btnGiveNow" runat="server" CssClass="btn btn-primary btn-give-now" Text="Give Now" OnClick="btnGiveNow_Click" />

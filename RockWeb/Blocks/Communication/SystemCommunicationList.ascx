@@ -24,6 +24,7 @@
                             <Rock:RockBoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
                             <Rock:RockBoundField DataField="From" HeaderText="From Address" SortExpression="From" />
                             <Rock:RockLiteralField ID="lSupports" HeaderText="Supports" />
+                            <Rock:RockLiteralField ID="lEmailPreview" />
                             <Rock:BoolField DataField="IsActive" SortExpression="IsActive" HeaderText="Active" />
                             <Rock:SecurityField />
                             <Rock:DeleteField OnClick="gEmailTemplates_Delete" />

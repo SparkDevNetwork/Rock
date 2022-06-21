@@ -93,6 +93,12 @@ namespace Rock.Field.Types
             return helper.Render();
         }
 
+        /// <inheritdoc/>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return GetHtmlValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+        }
+
         /// <summary>
         /// Formats the value as HTML.
         /// </summary>

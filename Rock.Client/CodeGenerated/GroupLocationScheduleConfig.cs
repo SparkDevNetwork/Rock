@@ -32,6 +32,12 @@ namespace Rock.Client
     public partial class GroupLocationScheduleConfigEntity
     {
         /// <summary />
+        public string ConfigurationName { get; set; }
+
+        /// <summary />
+        public string ConfirmationAdditionalDetails { get; set; }
+
+        /// <summary />
         public int? DesiredCapacity { get; set; }
 
         /// <summary />
@@ -44,6 +50,9 @@ namespace Rock.Client
         public int? MinimumCapacity { get; set; }
 
         /// <summary />
+        public string RSVPReminderAdditionalDetails { get; set; }
+
+        /// <summary />
         public int ScheduleId { get; set; }
 
         /// <summary>
@@ -52,10 +61,13 @@ namespace Rock.Client
         /// <param name="source">The source.</param>
         public void CopyPropertiesFrom( GroupLocationScheduleConfig source )
         {
+            this.ConfigurationName = source.ConfigurationName;
+            this.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             this.DesiredCapacity = source.DesiredCapacity;
             this.GroupLocationId = source.GroupLocationId;
             this.MaximumCapacity = source.MaximumCapacity;
             this.MinimumCapacity = source.MinimumCapacity;
+            this.RSVPReminderAdditionalDetails = source.RSVPReminderAdditionalDetails;
             this.ScheduleId = source.ScheduleId;
 
         }

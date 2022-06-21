@@ -1914,6 +1914,38 @@ formfield .required-indicator {
 .search-layout .show-more-button {
     margin: 0, 12, 0, 0;
 }
+
+/*** Group Schedule Toolbox Block ***/
+
+.schedule-toolbox-container .detail-title
+{
+    font-size: ?shell-font-scale(18);
+    font-style: bold;
+}
+
+.schedule-toolbox-confirmations-container .confirmed-text {
+    color: green;
+}
+
+.schedule-toolbox-confirmations-container .declined-text {
+    color: red;
+}
+
+.schedule-preference-container .preferences-container {
+    padding: 16;
+}
+
+.schedule-preference-container .assignments-container {
+    padding: 16;
+}
+
+.schedule-signup .field-container {
+    padding: 16;
+}
+
+.schedule-signup .signups-container {
+    padding: 12;
+}
 ";
         #endregion
     }

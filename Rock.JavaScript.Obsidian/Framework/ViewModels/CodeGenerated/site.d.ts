@@ -36,9 +36,11 @@ export type Site = IEntity & {
     defaultPageId?: number | null;
     defaultPageRouteId?: number | null;
     description?: string | null;
+    disablePredictableIds?: boolean;
     enabledForShortening?: boolean;
     enableExclusiveRoutes?: boolean;
     enableMobileRedirect?: boolean;
+    enablePageViewGeoTracking?: boolean;
     enablePageViews?: boolean;
     errorPage?: string | null;
     externalUrl?: string | null;

@@ -34,7 +34,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Date Range field.
  */
 export class DateRangeFieldType extends FieldTypeBase {
-    public override getTextValueFromConfiguration(value: string, _configurationValues: Record<string, string>): string | null {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         const dateParts = (value ?? "").split(",");
 
         if (dateParts.length !== 2) {

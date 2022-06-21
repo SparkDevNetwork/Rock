@@ -22,6 +22,7 @@ using System.IO;
 using ImageResizer;
 
 using Rock.Data;
+using Rock.Logging;
 
 namespace Rock.Model
 {
@@ -71,57 +72,77 @@ namespace Rock.Model
                             }
                             Entity.ContentStream.Seek( 0, SeekOrigin.Begin );
 
-                            if ( !Entity.IsTemporary )
+                            var binaryFileType = Entity.BinaryFileType;
+                            var binaryFileTypeMaxHeight = binaryFileType.MaxHeight??0;
+                            var binaryFileTypeMaxWidth = binaryFileType.MaxWidth??0;
+                            var binaryFileTypeMaxHeightIsValid = binaryFileTypeMaxHeight > 0;
+                            var binaryFileTypeMaxWidthIsValid = binaryFileTypeMaxWidth > 0;
+                            var binaryFileTypeDimensionsAreValid = binaryFileTypeMaxHeightIsValid && binaryFileTypeMaxWidthIsValid;
+
+                            ResizeSettings settings = new ResizeSettings();
+                            MemoryStream resizedStream = new MemoryStream();
+                            if ( ( binaryFileTypeMaxWidthIsValid && binaryFileTypeMaxWidth < Entity.Width )
+                                || ( binaryFileTypeMaxHeightIsValid && binaryFileTypeMaxHeight < Entity.Height ) )
                             {
-                                var BinaryFileType = Entity.BinaryFileType;
+                                /* How to handle aspect-ratio conflicts between the image and width+height.
+                                     'pad' adds whitespace,
+                                     'crop' crops minimally,
+                                     'carve' uses seam carving,
+                                     'stretch' loses aspect-ratio, stretching the image.
+                                     'max' behaves like maxwidth/maxheight
+                                */
 
-                                if ( BinaryFileType.MaxHeight.HasValue &&
-                                    BinaryFileType.MaxHeight != 0 &&
-                                    BinaryFileType.MaxWidth.HasValue &&
-                                    BinaryFileType.MaxWidth != 0 )
+                                settings.Add( "mode", "max" );
+
+                                // Height and width are both set.
+                                if ( binaryFileTypeDimensionsAreValid )
                                 {
-                                    ResizeSettings settings = new ResizeSettings();
-                                    MemoryStream resizedStream = new MemoryStream();
-                                    if ( BinaryFileType.MaxWidth.Value < Entity.Width || BinaryFileType.MaxHeight < Entity.Height )
+                                    // A valid max height and width but the max height is greater or equal than the width.
+                                    if ( binaryFileTypeMaxHeight >= binaryFileTypeMaxWidth )
                                     {
-                                        settings.Add( "mode", "max" );
-                                        if ( BinaryFileType.MaxHeight < Entity.Height && BinaryFileType.MaxWidth < Entity.Width )
-                                        {
-                                            if ( BinaryFileType.MaxHeight >= BinaryFileType.MaxWidth )
-                                            {
-                                                settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
-                                            }
-                                            if ( BinaryFileType.MaxHeight <= BinaryFileType.MaxWidth )
-                                            {
-                                                settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
-                                            }
-                                        }
-                                        else if ( BinaryFileType.MaxHeight < Entity.Height )
-                                        {
+                                        settings.Add( "height", binaryFileTypeMaxHeight.ToString() );
+                                    }
 
-                                            settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
-                                        }
-                                        else
-                                        {
-                                            settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+                                    // A valid max height and width but the max height is less or equal the width.
+                                    else if ( binaryFileTypeMaxHeight <= binaryFileTypeMaxWidth )
+                                    {
+                                        settings.Add( "width", binaryFileTypeMaxWidth.ToString() );
+                                    }
+                                }
+                                else
+                                {
+                                    // A valid max height but less than the binary file height.
+                                    if ( binaryFileTypeMaxHeightIsValid && binaryFileTypeMaxHeight < Entity.Height )
+                                    {
+                                        settings.Add( "height", binaryFileTypeMaxHeight.ToString() );
+                                    }
+                                    else
+                                    {
+                                        // A Valid max width.
+                                        settings.Add( "width", binaryFileTypeMaxWidth.ToString() );
+                                    }
+                                }
 
-                                        }
-                                        ImageBuilder.Current.Build( Entity.ContentStream, resizedStream, settings );
-                                        Entity.ContentStream = resizedStream;
+                                if ( settings.HasKeys() )
+                                {
+                                    ImageBuilder.Current.Build( Entity.ContentStream, resizedStream, settings );
+                                    Entity.ContentStream = resizedStream;
 
-                                        using ( Bitmap bm = new Bitmap( Entity.ContentStream ) )
+                                    using ( Bitmap bm = new Bitmap( Entity.ContentStream ) )
+                                    {
+                                        if ( bm != null )
                                         {
-                                            if ( bm != null )
-                                            {
-                                                Entity.Width = bm.Width;
-                                                Entity.Height = bm.Height;
-                                            }
+                                            Entity.Width = bm.Width;
+                                            Entity.Height = bm.Height;
                                         }
                                     }
                                 }
                             }
                         }
-                        catch ( Exception ) { } // if the file is an invalid photo keep moving
+                        catch ( Exception ex )
+                        {
+                            RockLogger.Log.Error( RockLogDomains.Core, ex, "Error trying to resize the file {0}.", Entity?.FileName );
+                        }
                     }
 
                     if ( Entry.State == EntityContextState.Added )
@@ -155,6 +176,10 @@ namespace Rock.Model
                                 }
 
                                 Entity.Path = Entity.StorageProvider.GetPath( Entity );
+                            }
+                            else
+                            {
+                                throw new Rock.Web.FileUploadException( "A storage provider has not been registered for this file type or the current storage provider is inactive.", System.Net.HttpStatusCode.BadRequest );
                             }
                         }
                     }

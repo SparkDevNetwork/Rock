@@ -16,6 +16,7 @@
 //
 import { computed, defineComponent, PropType, reactive, ref, watch } from "vue";
 import { FormError, FormState, provideFormState } from "../Util/form";
+import { updateRefValue } from "../Util/util";
 import RockValidation from "./rockValidation";
 
 export default defineComponent({
@@ -63,7 +64,7 @@ export default defineComponent({
                     delete newErrors[id];
                 }
 
-                errors.value = newErrors;
+                updateRefValue(errors, newErrors);
             }
         });
 
@@ -92,7 +93,13 @@ export default defineComponent({
         });
 
         watch(errors, () => {
-            emit("validationChanged", errors.value);
+            const errorValues: FormError[] = [];
+
+            for (const key in errors.value) {
+                errorValues.push(errors.value[key]);
+            }
+
+            emit("validationChanged", errorValues);
         });
 
         return {
