@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1310,8 +1310,6 @@ namespace RockWeb.Blocks.Crm
                     cpCampus.SelectedCampusId = campuses.First().Id;
                     cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
                     pnlCampus.Visible = true;
-
-                    SetCampusInfo();
                 }
                 else
                 {
@@ -1430,7 +1428,6 @@ namespace RockWeb.Blocks.Crm
                     // Since the campus is not available for the campusScheduleAttribute just display the date panel
                     pnlPlannedDate.Visible = true;
                     pnlPlannedSchedule.Visible = false;
-                    litCampusTypeIcon.Text = "";
                     return;
                 }
             }
@@ -1438,88 +1435,6 @@ namespace RockWeb.Blocks.Crm
             // Display the schedule panel if there are multiple campuses and the campus picker is shown or if there is a single campus
             pnlPlannedDate.Visible = false;
             pnlPlannedSchedule.Visible = true;
-        }
-
-        /// <summary>
-        /// Sets the campus information.
-        /// </summary>
-        private void SetCampusInfo()
-        {
-            var showCampusStatus = GetAttributeValue( AttributeKey.ShowCampusStatus ).AsBoolean();
-            var showCampusType = GetAttributeValue( AttributeKey.ShowCampusType ).AsBoolean();
-
-            if ( !showCampusStatus && !showCampusType )
-            {
-                pnlCampusInfo.Visible = false;
-            }
-            else
-            {
-                pnlCampusInfo.Visible = true;
-
-                divCampusStatus.Visible = showCampusStatus;
-                divCampusType.Visible = showCampusType;
-            }
-
-            if ( cpCampus.SelectedCampusId.HasValue && cpCampus.SelectedCampusId.Value > 0 )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var campusService = new CampusService( rockContext );
-
-                    var thisCampus = campusService.Get( cpCampus.SelectedCampusId.Value );
-                    if ( thisCampus != null )
-                    {
-                        var campusStatusValue = thisCampus.CampusStatusValue?.Value;
-                        var campusTypeValue = thisCampus.CampusTypeValue?.Value;
-
-                        lblCampusStatus.Text = campusStatusValue;
-                        lblCampusType.Text = campusTypeValue;
-
-                        if ( campusStatusValue.IsNotNullOrWhiteSpace() )
-                        {
-                            switch ( campusStatusValue.ToUpper() )
-                            {
-                                case "CLOSED":
-                                    lblCampusStatus.CssClass = "label label-default";
-                                    break;
-                                case "OPEN":
-                                    lblCampusStatus.CssClass = "label label-success";
-                                    break;
-                                case "PENDING":
-                                    lblCampusStatus.CssClass = "label label-warning";
-                                    break;
-                                default:
-                                    lblCampusStatus.CssClass = "label label-info";
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            lblCampusStatus.CssClass = "label label-info";
-                        }
-
-                        if ( campusTypeValue.IsNotNullOrWhiteSpace() )
-                        {
-                            switch ( campusTypeValue.ToUpper() )
-                            {
-                                case "ONLINE":
-                                    litCampusTypeIcon.Text = "<i class='fa fa-globe fa-fw'></i>";
-                                    break;
-                                case "PHYSICAL":
-                                    litCampusTypeIcon.Text = "<i class='fa fa-home fa-fw'></i>";
-                                    break;
-                                default:
-                                    litCampusTypeIcon.Text = "<i class='fa fa-home fa-fw'></i>";
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            litCampusTypeIcon.Text = "";
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -1532,11 +1447,6 @@ namespace RockWeb.Blocks.Crm
 
             if ( !pnlPlannedSchedule.Visible || (cpCampus.Visible && cpCampus.SelectedValue.IsNullOrWhiteSpace() ) )
             {
-                if ( cpCampus.SelectedValue.IsNullOrWhiteSpace() )
-                {
-                    litCampusTypeIcon.Text = "";
-                }
-
                 return;
             }
 
@@ -1562,8 +1472,6 @@ namespace RockWeb.Blocks.Crm
                         nbError.Title = "Must Show Campus";
                         nbError.Text = "In order to show campus schedules the campus has to be shown so it can be selected. Change the this block's 'Show Campus' attribute to 'Yes'. A user without edit permission to this block will just see \"Planned Visit Date\".";
                         nbError.Visible = true;
-                        litCampusTypeIcon.Text = "";
-
                         return;
                     }
 
@@ -1586,7 +1494,6 @@ namespace RockWeb.Blocks.Crm
                     nbError.Title = "Missing Campus Schedule attribute.";
                     nbError.Text = "This requires the creation of an Entity attribute for 'Campus' using a Field Type of 'Schedules'. The schedules can then be selected in the 'Edit Campus' block. A user without edit permission to this block will just see \"Planned Visit Date\".";
                     nbError.Visible = true;
-                    litCampusTypeIcon.Text = "";
 
                     return;
                 }
@@ -2650,8 +2557,6 @@ namespace RockWeb.Blocks.Crm
 
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            SetCampusInfo();
-
             SetScheduleDateControl();
         }
         protected void ddlScheduleDate_SelectedIndexChanged( object sender, EventArgs e )
