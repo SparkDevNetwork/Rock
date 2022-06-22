@@ -39,7 +39,6 @@ namespace Rock.Utility.Settings
         private bool? _snapshotIsolationAllowed;
         private bool? _readCommittedSnapshotEnabled;
         private string _recoverMode = null;
-        private bool _serviceObjectiveInfoRetrieved = false;
         private string _edition = null;
         private string _serviceObjective = null;
 
@@ -314,11 +313,9 @@ WHERE  data_space_id = 0
         {
             get
             {
-                if ( !_serviceObjectiveInfoRetrieved )
-                {
-                    GetServiceObjectiveInfo();
-                }
-
+                // This needs to be retrieved from the database at the time it's requested as this
+                // may change while the service is running (e.g., Azure Sql service scaling).
+                GetServiceObjectiveInfo();
                 return _edition;
             }
         }
@@ -367,10 +364,9 @@ WHERE  name = DB_NAME()
         {
             get
             {
-                if ( !_serviceObjectiveInfoRetrieved )
-                {
-                    GetServiceObjectiveInfo();
-                }
+                // This needs to be retrieved from the database at the time it's requested as this
+                // may change while the service is running (e.g., Azure Sql service scaling).
+                GetServiceObjectiveInfo();
 
                 return _serviceObjective;
             }
