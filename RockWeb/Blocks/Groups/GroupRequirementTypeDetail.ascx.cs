@@ -304,7 +304,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
         /// <param name="dueDateType"></param>
         private void ShowDueDateOffset( DueDateType dueDateType )
         {
-            if ( dueDateType == DueDateType.ConfiguredDate || dueDateType == DueDateType.DaysAfterJoining )
+            if ( dueDateType == DueDateType.GroupAttribute || dueDateType == DueDateType.DaysAfterJoining )
             {
                 nbDueDateOffset.Visible = true;
             }
