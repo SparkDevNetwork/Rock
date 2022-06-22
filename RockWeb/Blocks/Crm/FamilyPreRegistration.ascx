@@ -91,7 +91,7 @@
 
                         <div class="row">
                             <asp:Panel ID="pnlProfileImage1" runat="server" CssClass="col-sm-6">
-                                <Rock:ImageEditor ID="imgProfile1" runat="server" RequiredErrorMessage="Profile photo is required for each adult." />
+                                <Rock:ImageEditor ID="imgProfile1" runat="server" Label="Profile Photo" RequiredErrorMessage="Profile photo is required for each adult." />
                             </asp:Panel>
                         </div>
 
@@ -103,7 +103,7 @@
                             <div class="col-md-12">
                                 <asp:Panel ID="pnlCreateAccount" runat="server">
                                     <div class="well card-createaccount">
-                                        <h5 class="heading-createaccount"><asp:Literal ID="rlCreateAccountTitle" runat="server"></asp:Literal></h5>
+                                        <h4 class="heading-createaccount"><asp:Literal ID="rlCreateAccountTitle" runat="server"></asp:Literal></h4>
                                         <p><asp:Literal ID="rlCreateAccountDescription" runat="server"></asp:Literal></p>
                                         <div class="row">
                                             <div class="col-md-6">
@@ -172,7 +172,7 @@
 
                             <div class="row">
                                 <asp:Panel ID="pnlProfileImage2" runat="server" CssClass="col-sm-6">
-                                    <Rock:ImageEditor ID="imgProfile2" runat="server" />
+                                    <Rock:ImageEditor ID="imgProfile2" runat="server" Label="Profile Photo" RequiredErrorMessage="Profile photo is required for each adult." />
                                 </asp:Panel>
                             </div>
 
