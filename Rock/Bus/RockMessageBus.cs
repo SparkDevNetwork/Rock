@@ -223,21 +223,19 @@ namespace Rock.Bus
                     /* 06/21/2022 MP
                       
                     If the bus is still in the process of starting, we'll wait
-                    for the bus to be started, and the do the publish. This could
-                    happen since CacheUpdateMessages can be published prior to the MessageBus getting
-                    started.
+                    for the bus to be started, and then do the publish. This can
+                    happen since CacheUpdateMessages can be published prior to
+                    the MessageBus getting started.
                      
-                     */
+                    */
 
-                    // Wait for up to 45 seconds. If the bus still instead started, we'll let _bus.Publish deal with it
-                    _busStartupCompleted.Task.Wait( maxStartupWaitTimeSeconds * 1000 );
-
-                    System.Diagnostics.Debug.WriteLine( $"Is Ready Now for {RockMessage.GetLogString( message )} " );
+                    // Wait for up to 45 seconds.
+                    await Task.WhenAny( _busStartupCompleted.Task, Task.Delay( maxStartupWaitTimeSeconds * 1000 ) );
                 }
 
                 if ( !IsReady() )
                 {
-                    // Just in case it still instead ready, log an exception
+                    // Just in case it still isn't ready, log an exception.
                     ExceptionLogService.LogException( new BusException( $"A message publish attempt could not be published before the message bus was able to be ready: {RockMessage.GetLogString( message )}" ) );
                     return;
                 }
