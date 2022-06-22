@@ -826,6 +826,13 @@ usernameTextbox.blur(function () {{
                 $('#{13}').closest('.form-group').removeClass('required');
             }}
 
+            required = $('#{14}').val() == 'True';
+            if (required) {{
+                $('#{15}').closest('.form-group').addClass('required');
+            }} else {{
+                $('#{15}').closest('.form-group').removeClass('required');
+            }}
+
 
         }} else {{
             $('#{3}').closest('.form-group').removeClass('required');
@@ -834,6 +841,7 @@ usernameTextbox.blur(function () {{
             $('#{9}').closest('.form-group').removeClass('required');
             $('#{11}').closest('.form-group').removeClass('required');
             $('#{13}').closest('.form-group').removeClass('required');
+            $('#{15}').closest('.form-group').removeClass('required');
         }}
     }}
 ",
@@ -856,8 +864,10 @@ usernameTextbox.blur(function () {{
                 pnMobilePhone2.ClientID,
 
                 hfEmailRequired.ClientID,
-                tbEmail2.ClientID
+                tbEmail2.ClientID,
 
+                hfProfileRequired.ClientID,
+                imgProfile2.ClientID
             );
 
             ScriptManager.RegisterStartupScript( tbFirstName2, tbFirstName2.GetType(), "adult2-validation", script, true );
@@ -2445,7 +2455,7 @@ usernameTextbox.blur(function () {{
             ValidateRequiredField( AttributeKey.AdultEmail, "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhiteSpace(), tbEmail2.Text.IsNotNullOrWhiteSpace(), errorMessages );
             //ValidateRequiredField( AttributeKey.AdultMOBILE_KEY, "A valid Mobile Phone is required for each adult.", pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
             bool isPhoneValid = ValidateRequiredField( AttributeKey.AdultMobilePhone, string.Empty, pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
-            ValidateRequiredField( AttributeKey.AdultProfilePhoto, "Profile photo is required for each adult", imgProfile1.BinaryFileId != null, imgProfile1.BinaryFileId != null, errorMessages );
+            ValidateRequiredField( AttributeKey.AdultProfilePhoto, "Profile photo is required for each adult", imgProfile1.BinaryFileId != null, imgProfile2.BinaryFileId != null, errorMessages );
 
             var smsCommunicationType = CommunicationType.SMS.ConvertToInt().ToString();
             var communicationPreference1IsValid = rblCommunicationPreference1.SelectedValue != smsCommunicationType
