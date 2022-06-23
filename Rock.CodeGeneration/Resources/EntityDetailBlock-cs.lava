@@ -37,12 +37,14 @@ namespace Rock.Blocks.{{ Domain }}
     [DisplayName( "{{ EntityName | SplitCase }} Detail" )]
     [Category( "{{ Domain }}" )]
     [Description( "Displays the details of a particular {{ EntityName | SplitCase | Downcase }}." )]
-    [IconCssClass( "fa fa-building" )]
+    [IconCssClass( "fa fa-question" )]
 
     #region Block Attributes
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( "{{ '' | UniqueIdentifier }}" )]
+    [Rock.SystemGuid.BlockTypeGuid( "{{ '' | UniqueIdentifier }}" )]
     public class {{ EntityName }}Detail : RockObsidianDetailBlockType
     {
         #region Keys
@@ -71,7 +73,7 @@ namespace Rock.Blocks.{{ Domain }}
                 SetBoxInitialEntityState( box, {% if UseAttributeValues == true %}true{% else %}false{% endif %}, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable );{% if UseAttributeValues == true %}
+                box.Options = GetBoxOptions( box.IsEditable, rockContext );{% if UseAttributeValues == true %}
                 box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<{{ EntityName }}>();{% endif %}
 
                 return box;
@@ -83,8 +85,9 @@ namespace Rock.Blocks.{{ Domain }}
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private {{ EntityName }}DetailOptionsBag GetBoxOptions( bool isEditable )
+        private {{ EntityName }}DetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
             var options = new {{ EntityName }}DetailOptionsBag();
 

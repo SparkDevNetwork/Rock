@@ -36,6 +36,7 @@ namespace Rock.CodeGeneration.Lava
             // Initialize the engine and register all the filters.
             fluidEngine.Initialize( engineOptions );
             fluidEngine.RegisterFilters( typeof( Rock.Lava.Filters.TemplateFilters ) );
+            fluidEngine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
             fluidEngine.RegisterFilters( typeof( CustomLavaFilters ) );
 
             _engine = fluidEngine;
