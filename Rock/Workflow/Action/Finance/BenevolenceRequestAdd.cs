@@ -39,13 +39,14 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Request Description", "Request Description Attribute", "Text or workflow attribute that contains the benevolence request description. <span class='tip tip-lava'></span>", false, "", "", 1, "RequestDescription",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS, "Request Status", "The request status to use.", true, false, Rock.SystemGuid.DefinedValue.BENEVOLENCE_PENDING, "", 2 )]
-    [WorkflowAttribute( "Case Worker", "Workflow attribute that contains the person who should be assigned as the case worker.", false, "", "", 3, null,
+    [BenevolenceTypeField( "Benevolence Type", "The benevolence type to use.", true, SystemGuid.BenevolenceType.BENEVOLENCE, "", 3 )]
+    [WorkflowAttribute( "Case Worker", "Workflow attribute that contains the person who should be assigned as the case worker.", false, "", "", 4, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [CampusField("Campus", "The campus for the request. If blank the person's campus will be used.", false, "", "", 4)]
-    [WorkflowTextOrAttribute( "Government Id", "Government Id Attribute", "Text or workflow attribute that contains the government. <span class='tip tip-lava'></span>", false, "", "", 5, "GovernmentId",
+    [CampusField("Campus", "The campus for the request. If blank the person's campus will be used.", false, "", "", 5)]
+    [WorkflowTextOrAttribute( "Government Id", "Government Id Attribute", "Text or workflow attribute that contains the government. <span class='tip tip-lava'></span>", false, "", "", 6, "GovernmentId",
         new string[] { "Rock.Field.Types.TextFieldType" } )]
 
-    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", false, "", "", 6, null,
+    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", false, "", "", 7, null,
         new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
     public class BenevolenceRequestAdd : ActionComponent
     {
@@ -85,6 +86,16 @@ namespace Rock.Workflow.Action
             if ( statusValue == null )
             {
                 var errorMessage = "Invalid request status provided.";
+                errorMessages.Add( errorMessage );
+                action.AddLogEntry( errorMessage, true );
+                return false;
+            }
+
+            // get request type
+            var requestType = new BenevolenceTypeService( rockContext ).Get( GetAttributeValue( action, "BenevolenceType" ) );
+            if ( requestType == null )
+            {
+                var errorMessage = "Invalid benevolence type provided.";
                 errorMessages.Add( errorMessage );
                 action.AddLogEntry( errorMessage, true );
                 return false;
@@ -146,6 +157,7 @@ namespace Rock.Workflow.Action
 
             request.ConnectionStatusValueId = requestPerson.ConnectionStatusValueId;
             request.RequestStatusValueId = statusValue.Id;
+            request.BenevolenceTypeId = requestType.Id;
 
             rockContext.SaveChanges();
 

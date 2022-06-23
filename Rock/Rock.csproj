@@ -486,6 +486,7 @@
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
+    <Compile Include="Attribute\BenevolenceTypeFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\IconSvgAttribute.cs" />
@@ -792,6 +793,7 @@
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Field\ConfigurationValueUsage.cs" />
     <Compile Include="Field\FieldTypeUsage.cs" />
+    <Compile Include="Field\Types\BenevolenceTypeFieldType.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianHostedGatewayComponent.cs" />
