@@ -260,8 +260,8 @@ namespace Rock.Chart
             if ( args.UnitType == UnitType.Currency )
             {
                 var currencyCode = RockCurrencyCodeInfo.GetCurrencyCode();
-                callbackStr = string.Format(@"function(label, index, labels) {{
-                return Intl.NumberFormat( undefined, {{ style: 'currency', currency: '{0}' }}).format( label );
+                callbackStr = string.Format( @"function(label, index, labels) {{
+                return Intl.NumberFormat( undefined, {{ maximumFractionDigits: 0, minimumFractionDigits: 0, style: 'currency', currency: '{0}' }}).format( label );
                 }}", currencyCode );
             }
             else if ( args.UnitType == UnitType.Percentage )
