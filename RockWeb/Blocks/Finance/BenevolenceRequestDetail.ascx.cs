@@ -1020,29 +1020,25 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Binds the upload documents.
         /// </summary>
-        private void BindUploadDocuments(  )
+        private void BindUploadDocuments()
         {
             var benevolenceTypeId = ddlEditRequestType.SelectedValue.ToIntSafe();
-
-            if ( benevolenceTypeId != 0 )
+            if ( benevolenceTypeId == 0 )
             {
-                var benevolenceTypeService = new BenevolenceTypeService( new RockContext() );
-
-                var benevolenceType = benevolenceTypeService.Get( benevolenceTypeId );
-
-                var additionalSettings = benevolenceType.AdditionalSettingsJson?.FromJsonOrNull<AdditionalSettings>();
-                var maxDocuments = additionalSettings?.MaximumNumberOfDocuments ?? 6;
-
-                var ds = _documentsState.ToList();
-
-                if ( ds.Count() < maxDocuments )
-                {
-                    ds.Add( 0 );
-                }
-
-                dlEditDocuments.DataSource = ds;
-                dlEditDocuments.DataBind();
+                return;
             }
+
+            var benevolenceType = new BenevolenceTypeService( new RockContext() ).Get( benevolenceTypeId );
+            var maxDocuments = benevolenceType.AdditionalSettingsJson?.FromJsonOrNull<BenevolenceType.AdditionalSettings>().MaximumNumberOfDocuments ?? 6;
+
+            var ds = _documentsState.ToList();
+            if ( ds.Count() < maxDocuments )
+            {
+                ds.Add( 0 );
+            }
+
+            dlEditDocuments.DataSource = ds;
+            dlEditDocuments.DataBind();
         }
 
         /// <summary>
@@ -1801,5 +1797,10 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
+
+        protected void ddlEditRequestType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindUploadDocuments();
+        }
     }
 }
