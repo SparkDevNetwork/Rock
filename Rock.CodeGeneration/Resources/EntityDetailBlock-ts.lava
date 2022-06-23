@@ -72,7 +72,7 @@ export default defineComponent({
          * The entity name to display in the block panel.
          */
         const panelName = computed((): string => {
-            return {{ EntityName | CamelCase }}ViewBag.value?.name ?? "";
+            return {% if UseName == true %}{{ EntityName | CamelCase }}ViewBag.value?.name ?? "";{% else %}"TODO: Fill Me In";{% endif %}
         });
 
         /**
