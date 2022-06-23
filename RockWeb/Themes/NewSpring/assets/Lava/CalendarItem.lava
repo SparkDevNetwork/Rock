@@ -1,4 +1,8 @@
 {% assign event = 'events' | PersistedDataset | Where:'Id',EventItemOccurrence.Id | First %}
+{% assign fallbackImage = 'Global' | Attribute:'ImageLandscape','Url' %}
+{% assign eventImage = event.ImageLandscape | Default:fallbackImage %}
+{% assign campusId = EventItemOccurrence.Campus.Id | AsInteger %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Id',campusId | First %}
 
 {% if Event.Summary != '' %}
   {{ Event.Summary | AddMetaTagToHead:'name','description' }}
@@ -11,18 +15,12 @@
 {{ Event.Name | AddMetaTagToHead:'property','og:title' }}
 {{ Event.Description | AddMetaTagToHead:'property','og:description' }}
 
-{% assign facebookPhoto = Event | Attribute:'core_calendar_FacebookPhoto','Object' %}
-{% if facebookPhoto %}
-  {{ facebookPhoto.Url | AddMetaTagToHead:'property','og:image' }}
-{% endif %}
-
-{% assign twitterPhoto = Event | Attribute:'core_calendar_TwitterPhoto','Object' %}
-{% if twitterPhoto != '' %}
-  {{ twitterPhoto.Url | AddMetaTagToHead:'property','twitter:image' }}
+{% if eventImage %}
+  {{ eventImage | AddMetaTagToHead:'property','og:image' }}
+  {{ eventImage | AddMetaTagToHead:'property','twitter:image' }}
 {% endif %}
 
 {% assign eventName = Event | Attribute:'PublicEventName' | Default:Event.Name %}
-{% assign eventImage = event.ImageLandscape %}
 
 <div class="container-fluid" data-column="none">
 
@@ -64,18 +62,29 @@
           <p>{{ EventItemOccurrence.Location }}</p>
         {% endif %}
 
-        {% if EventItemOccurrence.ContactPersonAliasId != null or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+        {% if EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+          {% assign phone = EventItemOccurrence.ContactPhone | Trim %}
+          {% assign email = EventItemOccurrence.ContactEmail | Trim %}
+        {% elseif campus.PhoneNumber != '' or campus.Email != '' %}
+          {% assign phone = campus.PhoneNumber | Trim %}
+          {% assign email = campus.Email | Trim %}
+        {% endif %}
+
+        {% if phone != '' or email != '' %}
           <h4 class="push-half-bottom">Contact</h4>
+
           <p>
             {% if EventItemOccurrence.ContactPersonAliasId != null %}
             <b>{{ EventItemOccurrence.ContactPersonAlias.Person.FullName }}</b><br />
             {% endif %}
 
-            {% if EventItemOccurrence.ContactEmail != '' %}
-            <a href="mailto:{{ EventItemOccurrence.ContactEmail }}">{{ EventItemOccurrence.ContactEmail }}</a> <br />
+            {% if email != '' %}
+            <a href="mailto:{{ email }}">{{ email }}</a> <br />
             {% endif %}
 
-            {{ EventItemOccurrence.ContactPhone }}
+            {% if phone != '' %}
+              <a href="tel:+1{{ phone | Remove:'-' }}">{{ phone | Prepend:'(' | ReplaceFirst:'-',') ' }}</a>
+            {% endif %}
           </p>
         {% endif %}
 

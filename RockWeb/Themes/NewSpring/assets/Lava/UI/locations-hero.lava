@@ -38,79 +38,29 @@
 {% capture hideforegroundelements %}{% endcapture %}
 
 <div data-column="none">
-
-  {% comment %} {[ hero id:'{{ id }}' title:'{{ title }}' titlesize:'{{ titlesize }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' contentalignment:'end' ]} {% endcomment %}
-
-
-
-
-
-
-  {% comment %} <section class="bg-white push-bottom">
-    <div class="row flush">
-      <div class="col-md-6 col-xs-12 hard">
-        <div class="ratio-square bg-white">
-          <div class="ratio-item floating floating-left">
-            <img src="/Content/Triangle.svg" class="position-absolute top-zero bring-forward hidden-xs hidden-sm" style="left: 100%; height: 100%;" />
-            <div class="floating-item soft-double">
-              <h1 class="push-half-bottom">NewSpring {{ campus.Name }}</h1>
-              <p class="lead">{{ campus.LocationStreet1 }}<br>{% if campus.LocationStreet2 != empty %}{{ campus.LocationStreet2 }}<br>{% endif %}{{ campus.LocationCity }}, {{ campus.LocationState }}<br><a href="tel:+1{{ campus.PhoneNumber | Replace:'-','' }}">{{ campus.PhoneNumber | Prepend:'(' | ReplaceFirst:'-',') ' }}</a><br><a href="mailto:{{ campus.Email }}">{{ campus.Email }}</a></p>
-            </div>
-          </div>
-        </div>
-
-      </div><div class="col-md-6 col-xs-12 hard">
-        <div class="ratio-square background-cover background-center" style="background-image:url('{{ imageurl }}');">
-        </div>
-      </div>
-    </div>
-  </section> {% endcomment %}
-
-
-
-  {% comment %} <section class="bg-white soft push-bottom bring-forward background-cover background-center" style="background-image:url('{{ imageurl }}');">
-    <div class="page-constrained mx-auto" style="margin-top: 300px;">
-      <div class="display-inline-block bg-white soft-double rounded-lg">
-        <h1 class="push-half-bottom">NewSpring {{ campus.Name }}</h1>
-        <p class="lead flush">{{ campus.LocationStreet1 }}<br>{% if campus.LocationStreet2 != empty %}{{ campus.LocationStreet2 }}<br>{% endif %}{{ campus.LocationCity }}, {{ campus.LocationState }}<br><a href="tel:+1{{ campus.PhoneNumber | Replace:'-','' }}">{{ campus.PhoneNumber | Prepend:'(' | ReplaceFirst:'-',') ' }}</a><br><a href="mailto:{{ campus.Email }}">{{ campus.Email }}</a></p>
-      </div>
-    </div>
-  </section> {% endcomment %}
-
-
-
-
-  {% comment %} <section class="overflow-hidden push-bottom">
-    <div class="row flush">
-      <div class="col-md-6 col-xs-12 hard">
-        <div class="ratio-square bg-white hidden-xs" style="filter: blur(10px); opacity:.4;">
-          <div class="full-screen background-cover" style="background-image:url('{{ imageurl }}'); background-position: left center; top: -50px; right: -50px; bottom: -50px; left: -50px;">
-          </div>
-        </div>
-      </div><div class="col-md-6 col-xs-12 hard">
-        <div class="ratio-square background-cover" style="background-image:url('{{ imageurl }}'); background-position: right center;">
-        </div>
-      </div>
-    </div>
-  </section> {% endcomment %}
-
-
-
   <section class="bg-black ratio-landscape sm-ratio-shuare xs-ratio-square push-bottom overflow-hidden">
-    <div class="full-screen background-cover" style="background-image: url('{{ imageurl }}'); background-position: bottom center; opacity: 1;" data-0="transform: scale(1);" data-900="transform: scale(1.2);"></div>
+    <div class="full-screen background-cover" style="background-image: url('{{ imageurl }}'); background-position: bottom center; opacity: 1;" data-0="transform: scale(1);" data-900="transform: scale(1.5);"></div>
     <div class="ratio-item bring-forward">
       <div class="position-absolute width-full bottom-zero">
-        <div class="page-constrained mx-auto soft-sides" style="margin-bottom: 200px;">
+        <div class="hero-text page-constrained mx-auto soft-sides">
           <h1 class="display-2 text-white flush">NewSpring {{ campus.Name }}</h1>
         </div>
       </div>
     </div>
-    <div class="full-screen gradient-overlay" style="top: 50%; opacity: .5;">
+    <div class="full-screen gradient-overlay" style="top: 50%; opacity: 1;">
     </div>
     <img src="/Content/BottomTriangle.svg" class="position-absolute bottom-zero left-zero right-zero width-full" style="" />
   </section>
 
   <style>
+    .hero-text {
+      margin-bottom: 200px;
+    }
+    @media only screen and (max-width: 668px) {
+      .hero-text {
+        margin-bottom: 100px;
+      }
+    }
     .gradient-overlay {
       /* Created with https://www.css-gradient.com */
       background: #010101;

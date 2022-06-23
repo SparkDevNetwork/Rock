@@ -12,4 +12,10 @@
     #locations-detail {
         margin-top: -200px;
     }
+
+    @media only screen and (max-width: 668px) {
+        #locations-detail {
+            margin-top: -100px;
+        }
+    }
 </style>

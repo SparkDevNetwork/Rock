@@ -1,5 +1,5 @@
 {%- capture eventsString -%}
-{%- eventitemoccurrence where:'Id != null' iterator:'occurrences' securityenabled:'false' -%}[
+{%- eventitemoccurrence where:'Id != null' iterator:'occurrences' securityenabled:'false' limit:'1000000' -%}[
     {%- for occurrence in occurrences -%}
         {%- assign calendarItem = occurrence.EventItem.EventCalendarItems | Where:'EventCalendarId',1 | First %}
         {%- assign scheduledDates = occurrence.Schedule.iCalendarContent | DatesFromICal:'all' -%}
@@ -32,7 +32,7 @@
                 "Email": {{ occurrence.ContactEmail | Default:null | ToJSON }},
                 "Phone": {{ occurrence.ContactPhone | Default:null | ToJSON }},
             },
-            "DetailsUrl": {%- if detailsUrlFirstChar == '/' -%}{{ occurrence.EventItem.DetailsUrl | RemoveFirst:'/' | ToJSON }}{% else %}{{ occurrence.EventItem.DetailsUrl | ToJSON }}{% endif %},
+            "DetailsUrl": {{ occurrence.EventItem.DetailsUrl | ToJSON }},
             "Linkages": [
                 {% for linkage in occurrence.Linkages %}{
                     "GroupId": {{ linkage.Group.Id | ToJSON }},
