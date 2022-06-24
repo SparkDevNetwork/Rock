@@ -1697,6 +1697,8 @@
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MediaElementPicker.cs" />
+    <Compile Include="Web\UI\Controls\GroupMemberRequirementCard.cs" />
+    <Compile Include="Web\UI\Controls\GroupMemberRequirementsContainer.cs" />
     <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategorizedValuePicker.cs" />
     <Compile Include="Web\UI\IDisallowReturnUrlBlock.cs" />
