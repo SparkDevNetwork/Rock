@@ -97,22 +97,22 @@ namespace RockWeb.Blocks.Core
             var lavaShortCodeService = new LavaShortcodeService( rockContext );
             var categoryService = new CategoryService( rockContext );
 
-            int lavaShortCode = hfLavaShortcodeId.ValueAsInt();
+            int lavaShortCodeId = hfLavaShortcodeId.ValueAsInt();
 
-            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text && a.Id != lavaShortCode ) )
+            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text && a.Id != lavaShortCodeId ) )
             {
                 Page.ModelState.AddModelError( "DuplicateTag", "Tag with the same name is already in use." );
                 return;
             }
 
-            if ( lavaShortCode == 0 )
+            if ( lavaShortCodeId == 0 )
             {
                 lavaShortcode = new LavaShortcode();
                 lavaShortCodeService.Add( lavaShortcode );
             }
             else
             {
-                lavaShortcode = lavaShortCodeService.Get( lavaShortCode );
+                lavaShortcode = lavaShortCodeService.Get( lavaShortCodeId );
             }
 
             var oldTagName = hfOriginalTagName.Value;
@@ -126,19 +126,15 @@ namespace RockWeb.Blocks.Core
             lavaShortcode.Markup = ceMarkup.Text;
             lavaShortcode.Parameters = kvlParameters.Value;
             lavaShortcode.EnabledLavaCommands = String.Join( ",", lcpLavaCommands.SelectedLavaCommands );
-                        
-            // Add lava shortcode categories
-            if ( lavaShortCode > 0 )
-            {
-                lavaShortcode.Categories.Clear();
-                foreach ( var categoryId in cpShortCodeCat.SelectedValuesAsInt() )
-                {
-                    lavaShortcode.Categories.Add( categoryService.Get( categoryId ) );
-                }
 
-                // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
-                lavaShortcode.ModifiedDateTime = RockDateTime.Now;
+            lavaShortcode.Categories.Clear();
+            foreach ( var categoryId in cpShortCodeCat.SelectedValuesAsInt() )
+            {
+                lavaShortcode.Categories.Add( categoryService.Get( categoryId ) );
             }
+
+            // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
+            lavaShortcode.ModifiedDateTime = RockDateTime.Now;
                         
             rockContext.SaveChanges();
 
