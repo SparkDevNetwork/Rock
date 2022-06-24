@@ -90,7 +90,7 @@ export default defineComponent({
          * made by the user.
          */
         const updateDateRangeText = async (): Promise<void> => {
-           const parameters: Record<string, string> = {
+            const parameters: Record<string, string> = {
                 slidingDateRangeType: rangeType.value || "0",
                 timeUnitType: timeUnit.value || "0",
                 number: timeValue.value || "1"

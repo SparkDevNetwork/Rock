@@ -22,7 +22,8 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import Block from "@Obsidian/Templates/block";
 import SectionHeader from "@Obsidian/Controls/sectionHeader";
 import RockForm from "@Obsidian/Controls/rockForm";
-import DateRangePicker, { DateRangeParts } from "@Obsidian/Controls/dateRangePicker";
+import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
+import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import FlowNodeDiagram from "./StepFlow/flowNodeDiagram";
@@ -33,6 +34,8 @@ import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/S
 import { FlowNodeDiagramSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramSettingsBag";
 import { StepFlowInitializationBox } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowInitializationBox";
 import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
+import { syncRefsWithQueryParams } from "@Obsidian/Utility/url";
+
 
 /**
  * Step Flow
@@ -55,7 +58,7 @@ export default defineComponent({
         RockButton,
         SectionHeader,
         RockForm,
-        DateRangePicker,
+        SlidingDateRangePicker,
         NumberBox,
         DropDownList,
         FlowNodeDiagram,
@@ -74,9 +77,11 @@ export default defineComponent({
 
         const isLoading = ref(false);
 
-        const dateRange = ref<DateRangeParts>({});
+        const dateRange = ref<SlidingDateRange | null>(null);
         const maxLevels = ref(4);
         const campus = ref(emptyGuid);
+
+        syncRefsWithQueryParams({ dateRange, maxLevels, campus });
 
         const campusOptions = ref<ListItemBag[]>([
             {
@@ -109,14 +114,18 @@ export default defineComponent({
             // If 1900-01-01 is passed to `new Date`, it'll parse it as GMT (if single-digit month starting with a 0).
             // If you change the separators to / instead, it'll be parsed in the current client's time zone, which is
             // preferable, so we convert the dates here. Then we convert them to ISO Strings for the server.
-            const startDateString = (dateRange.value.lowerValue || "1900-01-01").replace("-", "/");
-            const startDate = new Date(startDateString).toISOString();
-            const endDateString = (dateRange.value.upperValue || "9999-01-01").replace("-", "/");
-            const endDate = new Date(endDateString).toISOString();
+            const startDateString = (dateRange.value?.lowerDate || "").replace("-", "/");
+            const startDate = startDateString.length > 0 ? new Date(startDateString).toISOString() : undefined;
+            const endDateString = (dateRange.value?.upperDate || "").replace("-", "/");
+            const endDate = endDateString.length > 0 ? new Date(endDateString).toISOString() : undefined;
+
+            const dateRangeParam: SlidingDateRange = dateRange.value || { rangeType: -1 }; // Use a default if unset
+
+            dateRangeParam.lowerDate = startDate;
+            dateRangeParam.upperDate = endDate;
 
             const response = await invokeBlockAction<StepFlowGetDataBag>("GetData", {
-                startDate,
-                endDate,
+                dateRange: dateRangeParam,
                 maxLevels: maxLevels.value,
                 campus: campus.value,
             });
@@ -133,6 +142,9 @@ export default defineComponent({
         }
 
         // #endregion
+
+        // Fetch the data on load with the defaults
+        fetchData();
 
         return {
             flowNodes,
@@ -155,7 +167,7 @@ export default defineComponent({
         <SectionHeader :title="configurationValues.programName + ' Path Flow'" :description="'The flow below shows how individuals move through the ' + configurationValues.stepTypeCount + ' step types in the ' + configurationValues.programName + ' Path program. You can filter the steps shown by date range or the number of levels to limit&nbsp;to.'" />
 
         <RockForm class="row mb-5" @submit="fetchData">
-            <DateRangePicker v-model="dateRange" rules="required" formGroupClasses="col-sm-5" label="Step Completion Date Range" help="Limit steps to those that have been completed in the provided date range." />
+            <SlidingDateRangePicker v-model="dateRange" formGroupClasses="col-sm-5" label="Step Completion Date Range" help="Limit steps to those that have been completed in the provided date range." />
             <NumberBox v-model="maxLevels" :decimalCount="0" :minimumValue="2" rules="required" formGroupClasses="col-sm-3" label="Max Levels to Display" help="The maximum number of levels to show in the flow. It's possible that an individual could take the same level twice in the course of completing a step program." />
             <DropDownList v-model="campus" formGroupClasses="col-sm-3" label="Campus" :items="campusOptions" :showBlankItem="false" />
             <div class="col-sm-1">

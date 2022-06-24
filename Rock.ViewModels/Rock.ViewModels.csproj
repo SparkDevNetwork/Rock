@@ -88,6 +88,7 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateListItemViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormValueSourcesViewModel.cs" />
     <Compile Include="Blocks\Engagement\FlowNodeDiagramBag.cs" />
+    <Compile Include="Controls\SlidingDateRangeBox.cs" />
     <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
     <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
     <Compile Include="CRM\RenderedBadgeBag.cs" />

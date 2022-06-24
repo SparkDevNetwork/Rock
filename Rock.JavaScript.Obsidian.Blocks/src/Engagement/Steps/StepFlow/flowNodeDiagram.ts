@@ -445,7 +445,7 @@ export default defineComponent({
     <svg :width="chartWidth" :height="chartHeight" :viewBox="'0 0 ' + chartWidth + ' ' + chartHeight">
         <FlowNodeDiagramLevel
             v-for="(level, levelNum) in diagramData"
-            key="levelNum"
+            :key="'level' + levelNum"
             :levelData="level"
             :levelNumber="levelNum + 1"
             @showTooltip="showTooltip"
