@@ -70,15 +70,6 @@ namespace Rock.Migrations
         /// <param name="sql">The SQL.</param>
         public void Sql( string sql )
         {
-            System.Diagnostics.Debugger.Launch();
-            System.Diagnostics.Debugger.Break();
-            if ( !sql.Trim().EndsWith( "GO" ) )
-            {
-                sql += sql + @"
-GO
-";
-            }
-            
             Sql( sql, false, null );
         }
 
