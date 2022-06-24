@@ -17,14 +17,17 @@
 import { defineComponent, PropType, ref, watch } from "vue";
 import RockForm from "./rockForm";
 import RockButton from "./rockButton";
+import RockValidation from "./rockValidation";
 import { trackModalState } from "@Obsidian/Utility/page";
+import { FormError } from "@Obsidian/Utility/form";
 
 export default defineComponent({
     name: "Modal",
 
     components: {
         RockButton,
-        RockForm
+        RockForm,
+        RockValidation
     },
 
     props: {
@@ -62,6 +65,7 @@ export default defineComponent({
     setup(props, { emit }) {
         const internalModalVisible = ref(props.modelValue);
         const container = ref(document.fullscreenElement ?? document.body);
+        const validationErrors = ref<FormError[]>([]);
 
         /** Used to determine if shaking should be currently performed. */
         const isShaking = ref(false);
@@ -92,6 +96,16 @@ export default defineComponent({
             emit("save");
         };
 
+        /**
+         * Event handler for when the visible validation errors have changed.
+         * This should trigger us showing these errors in the modal.
+         * 
+         * @param errors The errors that should be displayed.
+         */
+        const onVisibleValidationChanged = (errors: FormError[]): void => {
+            validationErrors.value = errors;
+        };
+
         // If we are starting visible, then update the modal tracking.
         if (internalModalVisible.value) {
             trackModalState(true);
@@ -101,6 +115,10 @@ export default defineComponent({
         watch(() => props.modelValue, () => {
             if (props.modelValue) {
                 container.value = document.fullscreenElement || document.body;
+
+                // Clear any old validation errors. They will be updated when
+                // the submit button is next clicked.
+                validationErrors.value = [];
             }
 
             internalModalVisible.value = props.modelValue;
@@ -113,7 +131,9 @@ export default defineComponent({
             isShaking,
             onClose,
             onScrollableClick,
-            onSubmit
+            onSubmit,
+            onVisibleValidationChanged,
+            validationErrors
         };
     },
 
@@ -137,8 +157,10 @@ export default defineComponent({
                     <slot v-else name="header" />
                 </div>
 
-                <RockForm @submit="onSubmit">
+                <RockForm @submit="onSubmit" hideErrors @visibleValidationChanged="onVisibleValidationChanged">
                     <div class="modal-body">
+                        <RockValidation :errors="validationErrors" />
+
                         <slot />
                     </div>
 
