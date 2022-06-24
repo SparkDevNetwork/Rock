@@ -60,6 +60,9 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
+        const internalModalVisible = ref(props.modelValue);
+        const container = ref(document.fullscreenElement ?? document.body);
+
         /** Used to determine if shaking should be currently performed. */
         const isShaking = ref(false);
 
@@ -90,14 +93,23 @@ export default defineComponent({
         };
 
         // If we are starting visible, then update the modal tracking.
-        if (props.modelValue) {
+        if (internalModalVisible.value) {
             trackModalState(true);
         }
 
-        // Watch for changes in our visiblity and update the modal tracking.
-        watch(() => props.modelValue, () => trackModalState(props.modelValue));
+        // Watch for changes in our visiblity.
+        watch(() => props.modelValue, () => {
+            if (props.modelValue) {
+                container.value = document.fullscreenElement || document.body;
+            }
+
+            internalModalVisible.value = props.modelValue;
+            trackModalState(internalModalVisible.value);
+        });
 
         return {
+            container,
+            internalModalVisible,
             isShaking,
             onClose,
             onScrollableClick,
@@ -106,10 +118,8 @@ export default defineComponent({
     },
 
     template: `
-<teleport to="body" v-if="modelValue">
+<teleport :to="container" v-if="modelValue">
     <div>
-        <div class="modal-backdrop" style="z-index: 1060;"></div>
-
         <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1060;">
             <div @click.stop
                 class="modal container modal-content rock-modal rock-modal-frame modal-overflow"
@@ -140,6 +150,8 @@ export default defineComponent({
                 </RockForm>
             </div>
         </div>
+
+        <div class="modal-backdrop" style="z-index: 1050;"></div>
     </div>
 </teleport>
 `
