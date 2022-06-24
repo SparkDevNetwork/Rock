@@ -65,6 +65,7 @@
     <Folder Include="Framework\Core\Controls\" />
     <Folder Include="Framework\Core\Reporting\" />
     <Folder Include="Framework\Enums\" />
+    <Folder Include="Framework\Enums\Controls\" />
     <Folder Include="Framework\Enums\CRM\" />
     <Folder Include="Framework\Enums\Reporting\" />
     <Folder Include="Framework\Directives\" />
