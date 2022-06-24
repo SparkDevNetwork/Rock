@@ -248,8 +248,8 @@ namespace Rock.Model
         {
             this.HasRequired( a => a.GroupRequirement ).WithMany().HasForeignKey( a => a.GroupRequirementId ).WillCascadeOnDelete( true );
             this.HasRequired( a => a.GroupMember ).WithMany( a => a.GroupMemberRequirements ).HasForeignKey( a => a.GroupMemberId ).WillCascadeOnDelete( true );
-            this.HasRequired( a => a.DoesNotMeetWorkflow ).WithMany().HasForeignKey( a => a.DoesNotMeetWorkflowId ).WillCascadeOnDelete( false );
-            this.HasRequired( a => a.WarningWorkflow ).WithMany().HasForeignKey( a => a.WarningWorkflowId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.DoesNotMeetWorkflow ).WithMany().HasForeignKey( a => a.DoesNotMeetWorkflowId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.WarningWorkflow ).WithMany().HasForeignKey( a => a.WarningWorkflowId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.ManuallyCompletedByPersonAlias ).WithMany().HasForeignKey( a => a.ManuallyCompletedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.OverriddenByPersonAlias ).WithMany().HasForeignKey( a => a.OverriddenByPersonAliasId ).WillCascadeOnDelete( false );
         }
