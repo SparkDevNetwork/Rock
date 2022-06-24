@@ -450,11 +450,12 @@ namespace Rock.Model
             var metRequirements = this.GroupMemberRequirements.Select( a => new
             {
                 GroupRequirementId = a.GroupRequirement.Id,
-                MeetsGroupRequirement = a.RequirementMetDateTime.HasValue
+                MeetsGroupRequirement = a.RequirementMetDateTime.HasValue || a.WasManuallyCompleted  || a.WasOverridden
                     ? a.RequirementWarningDateTime.HasValue ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets
                     : MeetsGroupRequirement.NotMet,
                 a.RequirementWarningDateTime,
                 a.LastRequirementCheckDateTime,
+                GroupMemberRequirementId = a.Id
             } );
 
             // get all the group requirements that apply the group member's role
@@ -469,7 +470,8 @@ namespace Rock.Model
                              GroupRequirement = groupRequirement,
                              MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet,
                              RequirementWarningDateTime = metRequirement != null ? metRequirement.RequirementWarningDateTime : null,
-                             LastRequirementCheckDateTime = metRequirement != null ? metRequirement.LastRequirementCheckDateTime : null
+                             LastRequirementCheckDateTime = metRequirement != null ? metRequirement.LastRequirementCheckDateTime : null,
+                             GroupMemberRequirementId = metRequirement?.GroupMemberRequirementId,
                          };
 
             return result;

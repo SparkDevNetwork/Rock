@@ -57,6 +57,14 @@ namespace Rock.Model
         public DateTime? LastRequirementCheckDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the group member requirement id.
+        /// </summary>
+        /// <value>
+        /// The group member requirement id.
+        /// </value>
+        public int? GroupMemberRequirementId { get; set; }
+
+        /// <summary>
         /// Gets or sets the calculation exception.
         /// </summary>
         /// <value>
