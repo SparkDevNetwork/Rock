@@ -240,6 +240,7 @@ namespace RockWeb.Blocks.Groups
                 pnlEditDetails.Visible = false;
                 return;
             }
+            gmrcRequirements.GroupMemberId = groupMemberId;
 
             pnlEditDetails.Visible = true;
 
@@ -574,17 +575,12 @@ namespace RockWeb.Blocks.Groups
                 .Select(rr => rr.GroupRequirement.GroupRequirementType.CategoryId).Distinct().Count() > 0;
 
             var requirementCategories = requirementsResults
-                .Select( rr => new { categoryId = rr.GroupRequirement.GroupRequirementType.CategoryId,
-                    Name = rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? rr.GroupRequirement.GroupRequirementType.Category.Name : "No name"}  ).Distinct();
-                  //.Where( rr => rr.GroupRequirement.GroupRequirementType.Category != null )
-            
-            //var requirementCategories = requirementsResults.Select( rr => rr.GroupRequirement.GroupRequirementType.Category ).Any() ?
-            //    requirementsResults.Select( rr => rr.GroupRequirement.GroupRequirementType.Category ).Distinct().OrderBy( c => c.Order ).ThenBy( c => c.Name ).ToList() : new List<Category>();
-            rptRequirementCategories.DataSource = requirementCategories;
-
-            ////////// TO-DO!!!  Add the req types listings here into the repeater within rptRequirementCategories
-
-            rptRequirementCategories.DataBind();
+                .Select( rr => new GroupRequirementWithCategoryInfo
+                {
+                    CategoryId = rr.GroupRequirement.GroupRequirementType.CategoryId,
+                    Name = rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? rr.GroupRequirement.GroupRequirementType.Category.Name : "No name",
+                    RequirementResults = requirementsResults.Where( r=> r.GroupRequirement.GroupRequirementType.CategoryId == rr.GroupRequirement.GroupRequirementType.CategoryId)
+                } ).DistinctBy( c=> c.CategoryId);
 
             // only show the requirements that apply to the GroupRole (or all Roles)
             foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
@@ -1653,5 +1649,46 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion Events
+
+        protected void rptRequirementCategories_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var categoryInfo = e.Item.DataItem as GroupRequirementWithCategoryInfo;
+
+            if ( categoryInfo == null )
+            {
+                return;
+            }
+
+            var rptGroupMemberRequirements = e.Item.FindControl( "rptGroupMemberRequirements" ) as Repeater;
+            rptGroupMemberRequirements.DataSource = categoryInfo.RequirementResults;
+            rptGroupMemberRequirements.DataBind();
+
+            //var lCheckinResultsCheckinMessage = e.Item.FindControl( "lCheckinResultsCheckinMessage" ) as Literal;
+            //var pnlCheckinResultsAchievementsScoreboard = e.Item.FindControl( "pnlCheckinResultsAchievementsScoreboard" ) as Panel;
+
+            //lCheckinResultsPersonName.Text = checkinResult.Person.ToString();
+            //lCheckinResultsCheckinMessage.Text = $"{checkinResult.Group} in {checkinResult.Location.Name} at {checkinResult.Schedule}";
+
+            //PersonAchievementType[] personAchievementTypes = checkinResult.GetPersonAchievementTypes( false );
+
+            //if ( personAchievementTypes.Any() == true )
+            //{
+            //    pnlCheckinResultsAchievementsScoreboard.Visible = true;
+            //    var rptCheckinResultsAchievementsScoreboard = e.Item.FindControl( "rptCheckinResultsAchievementsScoreboard" ) as Repeater;
+            //    rptCheckinResultsAchievementsScoreboard.DataSource = personAchievementTypes;
+            //    rptCheckinResultsAchievementsScoreboard.DataBind();
+            //}
+            //else
+            //{
+            //    pnlCheckinResultsAchievementsScoreboard.Visible = false;
+            //}
+        }
+    }
+
+    internal class GroupRequirementWithCategoryInfo
+    {
+        public int? CategoryId { get; set; }
+        public string Name { get; set; }
+        public IEnumerable<GroupRequirementStatus> RequirementResults { get; set; }
     }
 }
