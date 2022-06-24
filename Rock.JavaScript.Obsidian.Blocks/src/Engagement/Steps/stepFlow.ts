@@ -114,12 +114,13 @@ export default defineComponent({
             // If 1900-01-01 is passed to `new Date`, it'll parse it as GMT (if single-digit month starting with a 0).
             // If you change the separators to / instead, it'll be parsed in the current client's time zone, which is
             // preferable, so we convert the dates here. Then we convert them to ISO Strings for the server.
-            const startDateString = (dateRange.value?.lowerDate || "").replace("-", "/");
+            const startDateString = (dateRange.value?.lowerDate || "").replace(/-/g, "/");
             const startDate = startDateString.length > 0 ? new Date(startDateString).toISOString() : undefined;
-            const endDateString = (dateRange.value?.upperDate || "").replace("-", "/");
+            const endDateString = (dateRange.value?.upperDate || "").replace(/-/g, "/");
             const endDate = endDateString.length > 0 ? new Date(endDateString).toISOString() : undefined;
 
-            const dateRangeParam: SlidingDateRange = dateRange.value || { rangeType: -1 }; // Use a default if unset
+            // Use a copy of the current dateRange or a default if unset
+            const dateRangeParam: SlidingDateRange = dateRange.value ? { ...(dateRange.value) } : { rangeType: -1 };
 
             dateRangeParam.lowerDate = startDate;
             dateRangeParam.upperDate = endDate;
