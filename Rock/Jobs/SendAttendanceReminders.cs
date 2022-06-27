@@ -70,6 +70,19 @@ namespace Rock.Jobs
         DefaultValue = "1",
         Order = 3 )]
 
+    [CampusesField( name:"Campuses",
+        description: "When set will filter groups by the campuses selected. This requires that groups have a campus set to work.",
+        required: false,
+        includeInactive: false,
+        order: 4,
+        key: AttributeKey.Campuses )]
+
+    [GroupField( "Parent Group",
+        Description = "When set only groups under this parent (at any level in the hierarchy) will be considered.",
+        Key = AttributeKey.ParentGroup,
+        IsRequired = false,
+        Order = 4 )]
+
     #endregion Job Attributes
 
     [DisallowConcurrentExecution]
@@ -101,6 +114,16 @@ namespace Rock.Jobs
             /// The method to use when determining how the notice should be sent.
             /// </summary>
             public const string SendUsingConfiguration = "SendUsingConfiguration";
+
+            /// <summary>
+            /// The campuses the groups should belong to.
+            /// </summary>
+            public const string Campuses = "Campuses";
+
+            /// <summary>
+            /// The parent group of the group.
+            /// </summary>
+            public const string ParentGroup = "ParentGroup";
         }
 
         #endregion Attribute Keys
@@ -178,8 +201,10 @@ namespace Rock.Jobs
             var dates = GetSearchDates( dataMap );
             var startDate = dates.Min();
             var endDate = dates.Max().AddDays( 1 );
+            var campuses = dataMap.GetString( AttributeKey.Campuses ).SplitDelimitedValues().AsGuidList();
+            var parentGroup = dataMap.GetString( AttributeKey.ParentGroup ).AsGuidOrNull();
 
-            var occurrences = GetAllOccurenceDates( groupType, dates, startDate, endDate, rockContext );
+            var occurrences = GetAllOccurenceDates( groupType, dates, startDate, endDate, campuses, parentGroup, rockContext );
 
             // Remove any occurrences during group type exclusion date ranges
             RemoveExclusionDates( groupType, occurrences );
@@ -235,8 +260,10 @@ namespace Rock.Jobs
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="campuses">The campuses to filter by</param>
+        /// <param name="parentGroupGuid">The parent group of the group</param>
         /// <returns></returns>
-        private static Dictionary<int, List<DateTime>> GetAllOccurenceDates( GroupTypeCache groupType, List<DateTime> dates, DateTime startDate, DateTime endDate, RockContext rockContext )
+        private static Dictionary<int, List<DateTime>> GetAllOccurenceDates( GroupTypeCache groupType, List<DateTime> dates, DateTime startDate, DateTime endDate, List<Guid> campuses, Guid? parentGroupGuid, RockContext rockContext )
         {
             var groupService = new GroupService( rockContext );
 
@@ -248,6 +275,18 @@ namespace Rock.Jobs
                 .IsActive()
                 .HasSchedule()
                 .HasActiveLeader();
+
+            if ( campuses.Count > 0 )
+            {
+                groupsToRemind = groupsToRemind.Where( g => g.CampusId.HasValue && campuses.Contains( g.Campus.Guid ) );
+            }
+
+            if ( parentGroupGuid.HasValue )
+            {
+                var parentGroup = groupService.Get( parentGroupGuid.Value );
+                var descendantIds = groupService.GetAllDescendentGroupIds( parentGroup.Id, false ).ToList();
+                groupsToRemind = groupsToRemind.Where( g => descendantIds.Contains( g.Id ) );
+            }
 
             foreach ( var group in groupsToRemind )
             {
