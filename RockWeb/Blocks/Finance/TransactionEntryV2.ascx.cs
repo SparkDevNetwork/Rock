@@ -1432,7 +1432,7 @@ mission. We are so grateful for your commitment.</p>
 
             var hostedGatewayComponentList = Rock.Financial.GatewayContainer.Instance.Components
                 .Select( a => a.Value.Value )
-                .Where( a => a is IHostedGatewayComponent )
+                .Where( a => a is IHostedGatewayComponent && !( a is TestGateway ) )
                 .Select( a => a as IHostedGatewayComponent ).ToList();
 
             rptInstalledGateways.DataSource = hostedGatewayComponentList;
@@ -2777,6 +2777,11 @@ mission. We are so grateful for your commitment.</p>
                     if ( financialPersonSavedAccount.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
                     {
                         paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.GatewayPersonIdentifier;
+                    }
+                    else
+                    {
+                        // If this is from a SavedAccount, and GatewayPersonIdentifier is unknown, this is probably from an older NMI gateway transaction that only saved the GatewayPersonIdentifier to ReferenceNumber.
+                        paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.ReferenceNumber;
                     }
                 }
             }
