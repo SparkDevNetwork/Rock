@@ -485,6 +485,7 @@
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
+    <Compile Include="Attribute\BenevolenceTypeFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
@@ -816,6 +817,7 @@
     <Compile Include="Field\FieldTypeUsage.cs" />
     <Compile Include="Field\ISecurityGrantFieldType.cs" />
     <Compile Include="Field\Types\CategorizedDefinedValueFieldType.cs" />
+    <Compile Include="Field\Types\BenevolenceTypeFieldType.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Field\Types\SignatureDocumentTemplateFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
