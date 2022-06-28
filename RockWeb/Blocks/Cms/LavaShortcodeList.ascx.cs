@@ -13,22 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Model;
-using Rock.Web.UI;
-using System.ComponentModel;
-using Rock.Security;
-
-using System.Web.UI.WebControls;
-using Rock.Lava.Shortcodes;
 using Rock.Lava;
-using System.Text;
+using Rock.Lava.Shortcodes;
+using Rock.Model;
+using Rock.Security;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -188,9 +189,18 @@ namespace RockWeb.Blocks.Cms
                 e.Item.FindControl( "divEditPanel" ).Visible = !dataItem.IsSystem;
                 e.Item.FindControl( "divViewPanel" ).Visible = dataItem.IsSystem;
 
-                // Add special logic for shortcodes in c# assemblies
                 var shortcode = e.Item.DataItem as LavaShortcode;
 
+                var sbItems = new StringBuilder();
+                foreach( var cat in shortcode.Categories )
+                {
+                    sbItems.AppendLine( $"<span class='label label-info pull-right' style='margin-right:4px'>{cat}</span>" );
+                }
+
+                var itemLitCategories = e.Item.FindControl( "litCategories" ) as Literal;
+                itemLitCategories.Text = sbItems.ToString();
+
+                // Add special logic for shortcodes in c# assemblies
                 if ( shortcode.Id == -1 )
                 {
                     // This is a shortcode from a c# assembly
@@ -227,10 +237,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( selectedItem != null )
             {
-                var categoryId = selectedItem.Value.AsInteger();
-
                 SetBlockUserPreference( UserPreferenceKey.CategoryId, selectedItem.Value );
-
                 LoadLavaShortcodes();
             }
         }
@@ -248,8 +255,9 @@ namespace RockWeb.Blocks.Cms
                 LoadShortcodes();
                 return;
             }
+            var lavaShortcodeService = new LavaShortcodeService( new RockContext() );
+            
 
-            LavaShortcodeService lavaShortcodeService = new LavaShortcodeService( new RockContext() );
             var lavaShortcodes = lavaShortcodeService.Queryable();
 
             if ( swShowInactive.Checked == false )
@@ -283,8 +291,8 @@ namespace RockWeb.Blocks.Cms
                 try
                 {
                     var shortcodeInstance = Activator.CreateInstance( shortcode ) as ILavaShortcode;
-
                     var shortcodeType = shortcodeInstance.ElementType;
+                    
 
                     shortcodeList.Add( new LavaShortcode
                     {
@@ -295,7 +303,8 @@ namespace RockWeb.Blocks.Cms
                         IsActive = true,
                         IsSystem = true,
                         Description = shortcodeMetadataAttribute.Description,
-                        Documentation = shortcodeMetadataAttribute.Documentation
+                        Documentation = shortcodeMetadataAttribute.Documentation,
+                        Categories = GetCategoriesFromMetaData( shortcodeMetadataAttribute )
                     } );
 
                 }
@@ -307,6 +316,17 @@ namespace RockWeb.Blocks.Cms
 
             rptShortcodes.DataSource = shortcodeList.ToList().OrderBy( s => s.Name );
             rptShortcodes.DataBind();
+        }
+
+        private List<Category> GetCategoriesFromMetaData( LavaShortcodeMetadataAttribute metaData )
+        {
+            List<Category> categories = new List<Category>();
+
+            var categoryService = new CategoryService( new RockContext() );
+            var shortcodeCategoryGuids = metaData.Categories.Split( ',' ).AsGuidOrNullList();
+            shortcodeCategoryGuids.ForEach( g => categories.Add( categoryService.Get( g.Value ) ) );
+
+            return categories;
         }
 
         /// <summary>
@@ -337,35 +357,6 @@ namespace RockWeb.Blocks.Cms
         #endregion
 
         #region RockLiquid Lava implementation
-
-        internal string GetShortcodeCategories( string shortCodeIdString)
-        {
-            var shortcodeService = new LavaShortcodeService( new RockContext() );
-
-            var categoryId = ddlCategoryFilter.SelectedValue.AsIntegerOrNull();
-
-            var shortCodeId = shortCodeIdString.AsInteger();
-            if ( shortCodeId == 0 )
-            {
-                return string.Empty;
-            }
-            var catList = shortcodeService.Queryable().SingleOrDefault(v=>v.Id==shortCodeId)?.Categories;
-
-            if ( catList != null )
-            {
-                var sbItems = new StringBuilder();
-                foreach(var cat in catList )
-                {
-                    sbItems.AppendLine( $"<span class='label label-info pull-right'>{cat}</span>" );
-                }
-
-                return sbItems.ToString();
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
 
         /// <summary>
         /// Loads the shortcodes.
@@ -411,7 +402,8 @@ namespace RockWeb.Blocks.Cms
                     IsActive = true,
                     IsSystem = true,
                     Description = shortcodeMetadataAttribute.Description,
-                    Documentation = shortcodeMetadataAttribute.Documentation
+                    Documentation = shortcodeMetadataAttribute.Documentation,
+                    Categories = GetCategoriesFromMetaData( shortcodeMetadataAttribute )
                 } );
             }
 

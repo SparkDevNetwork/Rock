@@ -113,15 +113,6 @@ namespace Rock.Model
         #region Navigation Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/>.
-        /// </summary>
-        /// <value>
-        /// The registration template.
-        /// </value>
-        [DataMember]
-        public virtual RegistrationTemplate RegistrationTemplate { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Registration"/>.
         /// </summary>
         /// <value>
@@ -200,7 +191,6 @@ namespace Rock.Model
         /// </summary> 
         public RegistrationRegistrantConfiguration()
         {
-            this.HasRequired( i => i.RegistrationTemplate ).WithMany().HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Registration ).WithMany( t => t.Registrants ).HasForeignKey( r => r.RegistrationId ).WillCascadeOnDelete( true );
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.GroupMember ).WithMany().HasForeignKey( r => r.GroupMemberId ).WillCascadeOnDelete( false );

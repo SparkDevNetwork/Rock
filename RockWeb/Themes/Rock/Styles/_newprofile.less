@@ -253,7 +253,6 @@
   }
 }
 
-
 .card-badges {
   min-height: 100px;
   margin-bottom: 0;
@@ -264,41 +263,49 @@
   flex-wrap: wrap;
   min-height: 60px;
   border-bottom: 1px solid #e5e7eb;
-}
-.card-badge-top .rockbadge-container {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-  overflow: hidden;
-  border-right: 1px solid #e5e7eb;
-}
-.card-badge-top .rockbadge-container:first-child,
-.card-badge-top .rockbadge-container:last-child {
-  flex: 0 0 50%;
-  order: -1;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 4px 12px;
-}
 
-.card-badge-top .rockbadge-container:last-child {
-  border-right: 0;
-}
-
-@media (min-width: 576px) {
-  .card-badge-top .rockbadge-container {
-    flex: 1 0 0%;
-    justify-content: start;
-  }
-  .card-badge-top .rockbadge-container:first-child,
-  .card-badge-top .rockbadge-container:last-child {
-    flex: 0 0 auto;
-    order: initial;
-    border-bottom: 0;
+  .rockbadge-container {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
     padding: 0 12px;
+    overflow: hidden;
+    border-right: 1px solid #e5e7eb;
+
+    &:empty {
+      display: none;
+    }
+
+    &:first-child,
+    &:last-child {
+      flex: 0 0 50%;
+      order: -1;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 4px 12px;
+    }
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+
+  @media (min-width: 576px) {
+    .rockbadge-container {
+      flex: 1 0 0%;
+      justify-content: start;
+
+      &:first-child,
+      &:last-child {
+        flex: 0 0 auto;
+        order: initial;
+        border-bottom: 0;
+        padding: 0 12px;
+      }
+    }
   }
 }
+
 .card-badge-bottom {
   display: flex;
   flex-wrap: wrap;

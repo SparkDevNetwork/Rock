@@ -156,8 +156,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void ShowPersonImage()
         {
             lImage.Text = Person.PhotoId.HasValue
-                    ? $@"<img src=""{Person.GetPersonPhotoUrl( Person, 114, 68 )}"" alt class=""img-cover inset-0"">"
-                    : Person.GetPersonPhotoImageTag( Person, 114, 68 );
+                    ? $@"<img src=""{Person.GetPersonPhotoUrl( Person, 340, 204 )}"" alt class=""img-cover inset-0"">"
+                    : Person.GetPersonPhotoImageTag( Person, 340, 204 );
         }
 
         private void ShowPersonName()
@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            lName.Text = $"<h1>{nameText} <small>{firstName}</small></h1>";
+            lName.Text = $@"<h1>{nameText} <span class=""bio-summary-small-firstname"">{firstName}</span></h1>";
         }
 
         private void ShowBadgeList()

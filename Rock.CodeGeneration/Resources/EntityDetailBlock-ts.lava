@@ -27,11 +27,11 @@ import { getSecurityGrant, provideSecurityGrant{% if UseAttributeValues == true 
 import { debounce } from "@Obsidian/Utility/util";{% endif %}
 import { NavigationUrlKey } from "./{{ EntityName }}Detail/types";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
-import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ Domain }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
+import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ Domain }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
 export default defineComponent({
-    name: "Core.{{ EntityName }}Detail",
+    name: "{{ Domain }}.{{ EntityName }}Detail",
 
     components: {
         Alert,
@@ -72,7 +72,7 @@ export default defineComponent({
          * The entity name to display in the block panel.
          */
         const panelName = computed((): string => {
-            return {{ EntityName | CamelCase }}ViewBag.value?.name ?? "";
+            return {% if UseName == true %}{{ EntityName | CamelCase }}ViewBag.value?.name ?? "";{% else %}"TODO: Fill Me In";{% endif %}
         });
 
         /**

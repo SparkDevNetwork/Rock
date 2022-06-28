@@ -65,6 +65,7 @@
     <Folder Include="Framework\Core\Controls\" />
     <Folder Include="Framework\Core\Reporting\" />
     <Folder Include="Framework\Enums\" />
+    <Folder Include="Framework\Enums\Controls\" />
     <Folder Include="Framework\Enums\CRM\" />
     <Folder Include="Framework\Enums\Reporting\" />
     <Folder Include="Framework\Directives\" />
@@ -304,8 +305,10 @@
     <TypeScriptCompile Include="Framework\Types\Utility\component.d.ts" />
     <TypeScriptCompile Include="Framework\Types\validationRules.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
+    <TypeScriptCompile Include="Framework\Utility\popover.ts" />
     <TypeScriptCompile Include="Framework\Utility\promiseUtils.ts" />
     <TypeScriptCompile Include="Framework\Utility\suspense.ts" />
+    <TypeScriptCompile Include="Framework\Utility\tooltip.ts" />
     <TypeScriptCompile Include="Framework\Utility\validationRules.ts" />
     <TypeScriptCompile Include="Framework\ValidationRules\index.ts" />
     <TypeScriptCompile Include="Framework\Utility\booleanUtils.ts" />
@@ -395,6 +398,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Controls\flowNodeDiagramNodeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\flowNodeDiagramSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Controls\gatewayControlBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Controls\slidingDateRangeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CRM\renderedBadgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Entities\achievementTypeBag.d.ts" />

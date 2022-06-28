@@ -175,6 +175,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             public const string CurrentCampusId = "CurrentCampusId";
             public const string CurrentLocationId = "CurrentLocationId";
+            public const string CurrentScheduleId = "CurrentScheduleId";
             public const string CurrentStatusFilter = "CurrentStatusFilter";
         }
 
@@ -211,6 +212,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
             set
             {
                 ViewState[ViewStateKey.CurrentLocationId] = value;
+            }
+        }
+
+        /// <summary>
+        /// The current schedule identifier.
+        /// </summary>
+        public int? CurrentScheduleId
+        {
+            get
+            {
+                return ViewState[ViewStateKey.CurrentScheduleId] as int?;
+            }
+
+            set
+            {
+                ViewState[ViewStateKey.CurrentScheduleId] = value;
             }
         }
 
@@ -293,6 +310,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         /// <summary>
+        /// Handles the SelectItem event of the spSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void spSchedule_SelectItem( object sender, EventArgs e )
+        {
+            var scheduleId = spSchedule.SelectedValueAsInt();
+            if ( scheduleId != null )
+            {
+                CheckinManagerHelper.SetSelectedSchedule( this, spSchedule, scheduleId, CurrentCampusId );
+            }
+            else
+            {
+                CheckinManagerHelper.SetSelectedSchedule( this, spSchedule, 0, CurrentCampusId );
+            }
+        }
+
+        /// <summary>
         /// Handles the SelectedIndexChanged event of the bgStatus control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -351,6 +386,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             CheckinManagerHelper.SetSelectedLocation( this, lpLocation, locationId, CurrentCampusId );
+
+            int? scheduleId = CheckinManagerHelper.GetSelectedSchedule( this, campus, spSchedule );
+            CheckinManagerHelper.SetSelectedSchedule( this, spSchedule, scheduleId, CurrentCampusId );
+
             if ( this.Response.IsRequestBeingRedirected )
             {
                 return;
@@ -375,6 +414,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             CurrentLocationId = locationId.Value;
+            CurrentScheduleId = scheduleId;
 
             BindGrid();
         }
@@ -642,8 +682,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 && a.Occurrence.GroupId.HasValue
                 && a.Occurrence.ScheduleId.HasValue
                 && a.Occurrence.LocationId.HasValue
-                && a.Occurrence.LocationId == CurrentLocationId
-                && a.Occurrence.ScheduleId.HasValue );
+                && a.Occurrence.LocationId == CurrentLocationId );
+
+            if ( CurrentScheduleId.HasValue )
+            {
+                attendanceQuery = attendanceQuery.Where( a => a.Occurrence.ScheduleId == CurrentScheduleId );
+            }
 
             var checkinAreaFilter = CheckinManagerHelper.GetCheckinAreaFilter( this );
             List<int> groupTypeIds;
@@ -661,7 +705,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
             attendanceQuery = attendanceQuery.Where( a => groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
 
             // Limit to Groups that are configured for the selected location.
-            var groupIdsForLocation = new GroupLocationService( rockContext ).Queryable().Where( a => a.LocationId == CurrentLocationId ).Select( a => a.GroupId ).Distinct().ToList();
+            var groupLocationQry = new GroupLocationService( rockContext ).Queryable( "Schedules" ).Where( a => a.LocationId == CurrentLocationId );
+
+            if ( CurrentScheduleId.HasValue )
+            {
+                groupLocationQry = groupLocationQry.Where( gl => gl.Schedules.Any( s => s.Id == CurrentScheduleId.Value ) );
+            }
+
+            var groupIdsForLocation = groupLocationQry.Select( a => a.GroupId ).Distinct().ToList();
             attendanceQuery = attendanceQuery.Where( a => groupIdsForLocation.Contains( a.Occurrence.GroupId.Value ) );
             List<RosterAttendeeAttendance> attendanceList = RosterAttendeeAttendance.Select( attendanceQuery ).ToList();
 

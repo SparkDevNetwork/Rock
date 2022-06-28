@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1429,6 +1429,7 @@ namespace RockWeb.Blocks.Examples
                         var ownerGroupMember = new GroupMember();
                         ownerGroupMember.PersonId = ownerPersonId;
                         ownerGroupMember.GroupRoleId = ownerRole.Id;
+                        ownerGroupMember.GroupTypeId = ownerRole.GroupTypeId.Value;
 
                         knownRelationshipGroup = new Group();
                         knownRelationshipGroup.Name = ownerRole.GroupType.Name;
@@ -1437,8 +1438,9 @@ namespace RockWeb.Blocks.Examples
 
                         var groupService = new GroupService( rockContext );
                         groupService.Add( knownRelationshipGroup );
+                        
                         rockContext.SaveChanges( disablePrePostProcessing: true );
-
+                        
                         knownRelationshipGroup = groupService.Get( knownRelationshipGroup.Id );
                     }
                 }
@@ -1458,6 +1460,7 @@ namespace RockWeb.Blocks.Examples
                         GroupId = knownRelationshipGroup.Id,
                         PersonId = forPersonId,
                         GroupRoleId = roleId,
+                        GroupTypeId = knownRelationshipGroup.GroupTypeId
                     };
 
                     rockContext.GroupMembers.Add( groupMember );
@@ -1947,6 +1950,7 @@ namespace RockWeb.Blocks.Examples
 
                     GroupMember groupMember = new GroupMember();
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    groupMember.GroupTypeId = group.GroupTypeId;
 
                     if ( elemPerson.Attribute( "isLeader" ) != null )
                     {
@@ -2247,6 +2251,7 @@ namespace RockWeb.Blocks.Examples
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                     groupMember.GroupRoleId = securityGroup.GroupType.DefaultGroupRoleId.Value;
                     groupMember.PersonId = personId;
+                    groupMember.GroupTypeId = securityGroup.GroupTypeId;
                     securityGroup.Members.Add( groupMember );
                 }
             }
@@ -2954,6 +2959,8 @@ namespace RockWeb.Blocks.Examples
             foreach ( var personElem in elemMembers.Elements( "person" ) )
             {
                 var groupMember = new GroupMember();
+                groupMember.GroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+
                 Guid guid = Guid.Parse( personElem.Attribute( "guid" ).Value.Trim() );
 
                 // Attempt to find an existing person...

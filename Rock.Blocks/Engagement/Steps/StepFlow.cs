@@ -22,9 +22,11 @@ using System.Collections.Generic;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Data;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Engagement.Steps;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Engagement.Steps
 {
@@ -136,13 +138,12 @@ namespace Rock.Blocks.Engagement.Steps
         /// <summary>
         /// Block action to get the data for the diagram
         /// </summary>
-        /// <param name="startDate">Filter dataset to only include steps that took place after this date.</param>
-        /// <param name="endDate">Filter dataset to only include steps that took place before this date.</param>
+        /// <param name="dateRange">Filter dataset to only include steps that took place within this date range.</param>
         /// <param name="maxLevels">The maximum number of levels for any one person to complete</param>
         /// <param name="campus">The campus where the steps take place</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetData( DateTimeOffset startDate, DateTimeOffset endDate, int maxLevels, Guid campus )
+        public BlockActionResult GetData( SlidingDateRangeBag dateRange, int maxLevels, Guid campus )
         {
             List<StepTypeCache> stepTypes = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ).AsInteger() ).StepTypes;
             var nodeResults = new List<FlowNodeDiagramNodeBag>();
@@ -159,7 +160,7 @@ namespace Rock.Blocks.Engagement.Steps
                 } );
             }
 
-            var parameters = GetParameters( maxLevels, startDate, endDate, campus );
+            var parameters = GetParameters( maxLevels, dateRange, campus );
             var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
             var flowEdgeResults = new List<FlowNodeDiagramEdgeBag>();
 
@@ -200,23 +201,42 @@ namespace Rock.Blocks.Engagement.Steps
         /// <param name="dateRangeEndDate">Filter dataset to only include steps that took place before this date.</param>
         /// <param name="campusGuid">The campus where the steps take place</param>
         /// <returns></returns>
-        private Dictionary<string, object> GetParameters( int maxLevels, DateTimeOffset dateRangeStartDate, DateTimeOffset dateRangeEndDate, Guid campusGuid )
+        private Dictionary<string, object> GetParameters( int maxLevels, SlidingDateRangeBag date, Guid campusGuid )
         {
             var parameters = new Dictionary<string, object>();
+
+            // Generate a date range from the SlidingDateRangePicker's value
+            var testRange = new SlidingDateRangePicker {
+                SlidingDateRangeMode = ( SlidingDateRangePicker.SlidingDateRangeType ) ( int ) date.RangeType,
+                TimeUnit = ( SlidingDateRangePicker.TimeUnitType ) (int) (date.TimeUnit ?? 0),
+                NumberOfTimeUnits = date.TimeValue ?? 1,
+                DateRangeModeStart = date.LowerDate?.DateTime,
+                DateRangeModeEnd = date.UpperDate?.DateTime
+            };
+
+            var dateRange = testRange.SelectedDateRange;
+
+            if ( dateRange.Start != null )
+            {
+                parameters.Add( "DateRangeStartDate", dateRange.Start );
+            }
+            else
+            {
+                parameters.Add( "DateRangeStartDate", DBNull.Value );
+            }
+
+            if ( dateRange.End != null )
+            {
+                parameters.Add( "DateRangeEndDate", dateRange.End );
+            }
+            else
+            {
+                parameters.Add( "DateRangeEndDate", DBNull.Value );
+            }
 
             if ( maxLevels > 0 )
             {
                 parameters.Add( "MaxLevels", maxLevels );
-            }
-
-            if ( dateRangeStartDate != null )
-            {
-                parameters.Add( "DateRangeStartDate", dateRangeStartDate.DateTime );
-            }
-
-            if ( dateRangeEndDate != null )
-            {
-                parameters.Add( "DateRangeEndDate", dateRangeEndDate.DateTime );
             }
 
             if ( campusGuid != null && campusGuid != Guid.Empty )

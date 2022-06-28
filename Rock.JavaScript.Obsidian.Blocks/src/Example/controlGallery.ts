@@ -91,6 +91,7 @@ import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilter
 import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
 import { useStore } from "@Obsidian/PageState";
 import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker";
+import Modal from "@Obsidian/Controls/modal";
 
 // #region Gallery Support
 
@@ -3177,6 +3178,38 @@ const auditDetailGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates modal. */
+const modalGallery = defineComponent({
+    name: "ModalGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        Modal,
+        TextBox
+    },
+    setup() {
+        return {
+            isOpen: ref(false),
+            value: "",
+            importCode: getControlImportPath("modal"),
+            exampleCode: `<Modal title="Modal Dialog Title" saveText="Save" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+    <CheckBox label="Is Open" v-model="isOpen" />
+
+    <Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+        <TextBox label="Required Value" v-model="value" rules="required" />
+    </Modal>
+
+    <template #settings>
+    </template>
+</GalleryAndResult>`
+});
+
 
 
 const controlGalleryComponents: Record<string, Component> = [
@@ -3235,7 +3268,8 @@ const controlGalleryComponents: Record<string, Component> = [
     assetStorageProviderPickerGallery,
     auditDetailGallery,
     binaryFileTypePickerGallery,
-    binaryFilePickerGallery
+    binaryFilePickerGallery,
+    modalGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

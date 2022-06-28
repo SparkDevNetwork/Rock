@@ -25,7 +25,7 @@ import { EntityTagListGetAvailableTagsOptionsBag } from "@Obsidian/ViewModels/Re
 import { EntityTagListRemoveEntityTagOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListRemoveEntityTagOptionsBag";
 import { EntityTagListTagBag } from "@Obsidian/ViewModels/Rest/Controls/entityTagListTagBag";
 import { AutoComplete } from "ant-design-vue";
-import { computed, defineComponent, PropType, Ref, ref, watch } from "vue";
+import { computed, defineComponent, nextTick, PropType, Ref, ref, watch } from "vue";
 import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 import { alert, confirm } from "@Obsidian/Utility/dialogs";
 
@@ -181,6 +181,7 @@ export default defineComponent({
         const searchValue = ref("");
         const searchOptions = ref<SelectOption[]>([]);
         const isNewTagVisible = ref(false);
+        const tagsInputRef = ref<HTMLElement | null>(null);
         let loadCancelledToken: Ref<boolean> | null = null;
         let searchCancelledToken: Ref<boolean> | null = null;
         let isAddNewTagCancelled: boolean = false;
@@ -448,6 +449,12 @@ export default defineComponent({
          */
         const onAddNewTagsClick = (): void => {
             isNewTagVisible.value = true;
+
+            // After the UI updates, put the keyboard focus on the input box.
+            nextTick(() => {
+                const input = tagsInputRef.value?.querySelector("input.ant-select-selection-search-input") as HTMLElement;
+                input?.focus();
+            });
         };
 
         // #endregion
@@ -475,7 +482,8 @@ export default defineComponent({
             onSearch,
             onSelect,
             searchOptions,
-            searchValue
+            searchValue,
+            tagsInputRef
         };
     },
 
@@ -525,7 +533,7 @@ export default defineComponent({
     </v-style>
 
     <div class="tag-wrap">
-        <div class="tagsInput">
+        <div class="tagsInput" ref="tagsInputRef">
             <Tag v-for="tag in currentTags"
                 :key="tag.value"
                 :modelValue="tag"

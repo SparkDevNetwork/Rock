@@ -485,6 +485,12 @@ namespace Rock.Web.UI.Controls
                 Debug.Assert( this.NoteOptions != null, "this.NoteOptions is null" );
             }
 
+            // If Both the title and Title Icon are not provided then don't show the heading.
+            if ( Title.IsNullOrWhiteSpace() && TitleIconCssClass.IsNullOrWhiteSpace() )
+            {
+                ShowHeading = false;
+            }
+
             if ( this.Page.IsPostBack )
             {
                 // RouteCustomAction handles ApproveNote, DenyApproveNote, WatchNote or UnwatchNote actions.
@@ -848,27 +854,23 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) ||
-                        !string.IsNullOrWhiteSpace( Title ) )
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.H3 );
+
+                    if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) )
                     {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.H3 );
-
-                        if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) )
-                        {
-                            writer.AddAttribute( HtmlTextWriterAttribute.Class, TitleIconCssClass );
-                            writer.RenderBeginTag( HtmlTextWriterTag.I );
-                            writer.RenderEndTag();      // I
-                        }
-
-                        if ( !string.IsNullOrWhiteSpace( Title ) )
-                        {
-                            writer.Write( " " );
-                            writer.Write( Title );
-                        }
-
-                        writer.RenderEndTag();
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, TitleIconCssClass );
+                        writer.RenderBeginTag( HtmlTextWriterTag.I );
+                        writer.RenderEndTag();      // I
                     }
+
+                    if ( !string.IsNullOrWhiteSpace( Title ) )
+                    {
+                        writer.Write( " " );
+                        writer.Write( Title );
+                    }
+
+                    writer.RenderEndTag();
 
                     if ( !NoteOptions.AddAlwaysVisible && canAdd && SortDirection == ListSortDirection.Descending )
                     {

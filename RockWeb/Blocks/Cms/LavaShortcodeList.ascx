@@ -44,15 +44,13 @@
                                     </p>
                                 </div>
                                 <div class="pull-right">
-                                    <div class="example-toggle text-nowrap d-none d-sm-block">
+                                    <div class="example-toggle text-nowrap d-none d-sm-block" style="text-align:right">
                                         <i class="fa fa-circle-o"></i>Show Details
                                     </div>
                                     <div class="pull-right margin-t-sm">
-                                        <%# !Boolean.Parse(Eval("IsActive").ToString()) ?
-                                        "<span class='label label-warning pull-right'>Inactive</span>" : "" %>
-                                        <%# Boolean.Parse(Eval("IsSystem").ToString()) ?
-                                        "<span class='label label-default pull-right'>System</span>" : "" %>
-                                        <%# GetShortcodeCategories(Eval("Id").ToString()) %>
+                                        <%# !Boolean.Parse(Eval("IsActive").ToString()) ? "<span class='label label-warning pull-right'>Inactive</span>" : "" %>
+                                        <%# Boolean.Parse(Eval("IsSystem").ToString()) ? "<span class='label label-default pull-right'>System</span>" : "" %>
+                                        <asp:Literal ID="litCategories" runat="server"></asp:Literal>
                                     </div>
                                 </div>
 

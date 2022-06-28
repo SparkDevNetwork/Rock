@@ -348,8 +348,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        ///
+        /// Also defined in Rock.Enums.Controls.SlidingDateRangePicker, so if changed, please update there as well
         /// </summary>
+        /// 
         [Flags]
         public enum SlidingDateRangeType
         {
@@ -390,7 +391,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        ///
+        /// Also defined in Rock.Enums.Controls.SlidingDateRangePicker, so if changed, please update there as well
         /// </summary>
         public enum TimeUnitType
         {
