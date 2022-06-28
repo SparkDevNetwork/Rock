@@ -1932,7 +1932,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// As a default object properties are not allowed as attribute keys. There are some exceptions:
         /// 
-        /// 1. Campus on Workflows - The need for this came when we added the 'CampusId' property to the Workflow model.
+        /// 1. Campus on Workflows and Registration - The need for this came when we added the 'CampusId' property to the Workflow and Registration models.
         ///    This caused existing workflows with an attribute key of 'Campus' to not be able to save. They ran fine but could not be edited.
         ///    The virtual navigation property blocks the use as an attribute key. This limitation was added back in the 'Legacy Lava' days but
         ///    is technically not needed any longer. As a solution we will allow the Campus attribute key on existing workflow attributes but 
@@ -1944,7 +1944,9 @@ namespace Rock.Web.UI.Controls
         private bool IsObjectPropertyAllowedAsAttributeKey( string propertyName, int? attributeId )
         {
             var workflowEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.WORKFLOW ).Id;
-            if ( propertyName == "Campus" && this.AttributeEntityTypeId == workflowEntityTypeId  && attributeId.HasValue && attributeId != 0 )
+            var registrationEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.REGISTRATION ).Id;
+
+            if ( propertyName == "Campus" && ( this.AttributeEntityTypeId == workflowEntityTypeId || this.AttributeEntityTypeId == registrationEntityTypeId ) && attributeId.HasValue && attributeId != 0 )
             {
                 return true;
             }

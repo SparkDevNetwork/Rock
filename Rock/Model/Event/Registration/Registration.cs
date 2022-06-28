@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -172,6 +172,16 @@ namespace Rock.Model
             private set { }
         }
 
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> the registration will be tied to
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> the event occured
+        /// </value>
+        [DataMember]
+        [FieldType(Rock.SystemGuid.FieldType.CAMPUS)]
+        public int? CampusId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -227,6 +237,15 @@ namespace Rock.Model
 
         private ICollection<RegistrationRegistrant> _registrants;
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> the registration will be tied to
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Campus"/> where the <see cref="Rock.Model.Person"/> attended.
+        /// </value>
+        [DataMember]
+        public virtual Campus Campus { get; set; }
+
         #endregion Navigation Properties
     }
 
@@ -245,6 +264,7 @@ namespace Rock.Model
             this.HasRequired( r => r.RegistrationInstance ).WithMany( t => t.Registrations ).HasForeignKey( r => r.RegistrationInstanceId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.Group ).WithMany().HasForeignKey( r => r.GroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
