@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Groups
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
+            gmrcRequirements.GroupMemberId = PageParameter( PageParameterKey.GroupMemberId ).AsInteger();
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += GroupMemberDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upDetail );
@@ -102,6 +102,12 @@ namespace RockWeb.Blocks.Groups
             base.OnLoad( e );
 
             ClearErrorMessage();
+            var groupMemberId = PageParameter( PageParameterKey.GroupMemberId ).AsInteger();
+            if ( groupMemberId > 0 )
+            {
+                gmrcRequirements.GroupMemberId = groupMemberId;
+            }
+            gmrcRequirements.Visible = groupMemberId > 0;
 
             if ( !Page.IsPostBack )
             {
