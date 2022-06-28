@@ -34,7 +34,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Lava Shortcode List" )]
     [Category( "CMS" )]
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Events 
+        #region Events
 
         /// <summary>
         /// Handles the BlockUpdated event of the Block control.
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
             var lavaShortcodeService = new LavaShortcodeService( new RockContext() );
-            
+
 
             var lavaShortcodes = lavaShortcodeService.Queryable();
 
@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     var shortcodeInstance = Activator.CreateInstance( shortcode ) as ILavaShortcode;
                     var shortcodeType = shortcodeInstance.ElementType;
-                    
+
 
                     shortcodeList.Add( new LavaShortcode
                     {
@@ -357,6 +357,35 @@ namespace RockWeb.Blocks.Cms
         #endregion
 
         #region RockLiquid Lava implementation
+
+        internal string GetShortcodeCategories( string shortCodeIdString)
+        {
+            var shortcodeService = new LavaShortcodeService( new RockContext() );
+
+            var categoryId = ddlCategoryFilter.SelectedValue.AsIntegerOrNull();
+
+            var shortCodeId = shortCodeIdString.AsInteger();
+            if ( shortCodeId == 0 )
+            {
+                return string.Empty;
+            }
+            var catList = shortcodeService.Queryable().SingleOrDefault(v=>v.Id==shortCodeId)?.Categories;
+
+            if ( catList != null )
+            {
+                var sbItems = new StringBuilder();
+                foreach(var cat in catList )
+                {
+                    sbItems.AppendLine( $"<span class='label label-info'>{cat}</span>" );
+                }
+
+                return sbItems.ToString();
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
 
         /// <summary>
         /// Loads the shortcodes.
