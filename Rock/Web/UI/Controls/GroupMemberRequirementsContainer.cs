@@ -25,6 +25,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using Rock.Model;
 using Rock.Data;
+using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -58,14 +59,40 @@ namespace Rock.Web.UI.Controls
 
         #endregion Properties
 
-
+        ///// <summary>
+        ///// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        ///// </summary>
+        ///// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        //protected override void OnInit( System.EventArgs e )
+        //{
+        //    EnsureChildControls();
+        //    base.OnInit( e );
+        //}
 
         /// <summary>
-        /// Renders the tag to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        public override void RenderControl( HtmlTextWriter writer )
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
+            base.OnLoad( e );
+
+            EnsureChildControls();
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            if ( !this.Visible )
+            {
+                return;
+            }
+
+            base.CreateChildControls();
+            Controls.Clear();
+
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( GroupMemberId );
             var attributeValueService = new AttributeValueService( rockContext );
@@ -82,23 +109,20 @@ namespace Rock.Web.UI.Controls
             int index = 1;
             foreach ( var requirementCategory in requirementCategories.OrderByDescending( a => a.Name ) )
             {
+                HtmlGenericControl categoryControl = new HtmlGenericControl( "div" );
+                categoryControl.AddCssClass( "row" );
                 var categoryName = requirementCategory.Name;
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                //this.Controls.Add( categoryControl );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                HtmlGenericControl columnControl = new HtmlGenericControl( "div" );
+                columnControl.AddCssClass( "col-xs-12" );
+
                 if ( Visible && categoryName.IsNotNullOrWhiteSpace() )
                 {
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.H5 );
-                    writer.Write( categoryName );
-
-                    // End heading tag.
-                    writer.RenderEndTag();
-
-
+                    HtmlGenericControl headerControl = new HtmlGenericControl( "h5" );
+                    headerControl.InnerText = categoryName;
+                    columnControl.Controls.Add( headerControl );
                 }
 
                 //TO-DO set up security access here
@@ -115,6 +139,8 @@ namespace Rock.Web.UI.Controls
                         TypeIconCssClass = requirementStatus.GroupRequirement.GroupRequirementType.IconCssClass,
                         MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
                         GroupMemberRequirementId = requirementStatus.GroupMemberRequirementId,
+                        GroupRequirementId = requirementStatus.GroupRequirement.Id,
+                        GroupMemberId = GroupMemberId,
                         GroupMemberRequirementDueDate = CalculateGroupMemberRequirementDueDate(
                             requirementStatus.GroupRequirement.GroupRequirementType.DueDateType,
                             requirementStatus.GroupRequirement.GroupRequirementType.DueDateOffsetInDays,
@@ -122,19 +148,15 @@ namespace Rock.Web.UI.Controls
                             requirementStatus.GroupRequirement.DueDateAttributeId.HasValue ? attributeValueService.GetByAttributeIdAndEntityId( requirementStatus.GroupRequirement.DueDateAttributeId.Value, groupMember.GroupId ).Value.AsDateTime() : null,
                 groupMember.DateTimeAdded )
                     };
-                    this.Controls.Add( card );
+                    columnControl.Controls.Add( card );
 
                     //card.RenderControl( writer );
                     index++;
                 }
 
-                // End Div Col tag.
-                writer.RenderEndTag();
-                base.RenderControl( writer );
-                // End of row div tag.
-                writer.RenderEndTag();
+                categoryControl.Controls.Add( columnControl );
+                this.Controls.Add( categoryControl );
             }
-            
         }
 
         private DateTime? CalculateGroupMemberRequirementDueDate( DueDateType dueDateType, int? dueDateOffsetInDays, DateTime? dueDateStaticDate, DateTime? dueDateFromGroupAttribute, DateTime? dueDateGroupMemberAdded )

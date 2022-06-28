@@ -24,6 +24,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using Rock.Model;
 using Rock.Data;
+using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -68,15 +69,28 @@ namespace Rock.Web.UI.Controls
             set { ViewState["Title"] = value; }
         }
 
+
+
+
         /// <summary>
-        /// Gets or sets the calculated due date for this group member requirement.
+        /// Gets or sets the identifier for this group requirement.
         /// </summary>
-        public DateTime? GroupMemberRequirementDueDate { get; set; }
+        public int? GroupRequirementId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier for this group member.
+        /// </summary>
+        public int GroupMemberId { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier for this group member requirement.
         /// </summary>
         public int? GroupMemberRequirementId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the calculated due date for this group member requirement.
+        /// </summary>
+        public DateTime? GroupMemberRequirementDueDate { get; set; }
 
         /// <summary>
         /// Gets or sets the CSS Class to use for the title icon of the requirement card.
@@ -90,6 +104,7 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["TypeIconCssClass"] as string; }
             set { ViewState["TypeIconCssClass"] = value; }
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -145,7 +160,7 @@ namespace Rock.Web.UI.Controls
             {
                 CausesValidation = false,
                 ID = "btnMarkasMetPopup" + this.ClientID,
-                Text = "<i class='fa fa-check-circle-o'></i> Mark as Met",
+                Text = "<i class='fa fa-check-circle-o fa-fw'></i>Mark as Met",
             };
             _lbMarkAsMet.Click += btnMarkasMetPopup_Click;
             Controls.Add( _lbMarkAsMet );
@@ -156,7 +171,11 @@ namespace Rock.Web.UI.Controls
             };
             _modalDialog.ValidationGroup = _modalDialog.ID + "_validationgroup";
             _modalDialog.Title = "Mark as met?";
-            _modalDialog.SubTitle = "Are you sure you want to manually mark this requirement as met?";
+
+            HtmlGenericControl headingControl = new HtmlGenericControl( "h5" );
+            headingControl.InnerText = "Are you sure you want to manually mark this requirement as met?";
+            _modalDialog.Content.Controls.Add( headingControl );
+
             _modalDialog.SaveButtonText = "OK";
             _modalDialog.SaveClick += btnMarkRequirementAsMet_Click;
             Controls.Add( _modalDialog );
@@ -186,10 +205,12 @@ namespace Rock.Web.UI.Controls
                     cardContentColumnClass = "col-xs-10";
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, TypeIconCssClass );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, TypeIconCssClass + " fa-fw fa-2x" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
+
                     // End the I tag.
                     writer.RenderEndTag();
+
                     // End the Span Col tag.
                     writer.RenderEndTag();
                 }
@@ -203,14 +224,16 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "mr-1" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Strong );
                 writer.Write( this.Title.Trim() );
+
                 // End the Strong tag.
                 writer.RenderEndTag();
 
                 // If there is a due date, add the short date in a "small" tag.
                 if ( GroupMemberRequirementDueDate.HasValue )
                 {
-                    writer.Write( "due: " + GroupMemberRequirementDueDate.Value.ToShortDateString() );
+                    writer.Write( "Due: " + GroupMemberRequirementDueDate.Value.ToShortDateString() );
                 }
+
                 // End the Small tag.
                 writer.RenderEndTag();
 
@@ -220,6 +243,7 @@ namespace Rock.Web.UI.Controls
                     var toolTipText = string.Format( "Requirement Marked Met by {0} on {1}",
                         _GroupMemberRequirement.OverriddenByPersonAlias.Person.FullName,
                         _GroupMemberRequirement.OverriddenDateTime.ToShortDateString() );
+
                     //This could be a good new control.
 
                     writer.AddAttribute( "class", "help" );
@@ -237,7 +261,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( "data-html", "true" );
                     writer.AddAttribute( "title", toolTipText );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.AddAttribute( "class", "fa fa-user-check" );
+                    writer.AddAttribute( "class", "fa fa-user-check fa-fw" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
                     writer.RenderEndTag();
@@ -284,7 +308,7 @@ namespace Rock.Web.UI.Controls
                                 writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.A );
 
-                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o" );
+                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                                 // End the I tag.
                                 writer.RenderEndTag();
@@ -314,7 +338,7 @@ namespace Rock.Web.UI.Controls
                                 writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.A );
 
-                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o" );
+                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                                 // End the I tag.
                                 writer.RenderEndTag();
@@ -327,8 +351,12 @@ namespace Rock.Web.UI.Controls
                         writer.RenderEndTag();
                     }
 
-                    // If this requirement can be marked as met manually, create the button.
-                    if ( _CanOverride )
+                    // If this requirement can be marked as met manually (overridden),
+                    // and the requirement has NOT been met,
+                    // and does not have a group member requirement,
+                    // or it does have a group member requirement but it has not been overridden,
+                    // then add the link button.
+                    if ( _CanOverride && (MeetsGroupRequirement != MeetsGroupRequirement.Meets) && ( _GroupMemberRequirement == null || ( _GroupMemberRequirement != null && !_GroupMemberRequirement.WasOverridden ) ) )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
                         _lbMarkAsMet.RenderControl( writer );
@@ -411,14 +439,26 @@ namespace Rock.Web.UI.Controls
             var rockContext = new RockContext();
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
-            if ( groupMemberRequirement != null )
+            if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
             {
-                groupMemberRequirement.WasManuallyCompleted = true;
-                var currentPerson = ( ( RockPage ) Page ).CurrentPerson;
-                groupMemberRequirement.ManuallyCompletedByPersonAliasId = currentPerson.PrimaryAliasId;
-                groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
+
+                groupMemberRequirement = new GroupMemberRequirement
+                {
+                    GroupRequirementId = GroupRequirementId.Value,
+                    GroupMemberId = GroupMemberId
+                };
+                //groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
             }
+            groupMemberRequirement.WasOverridden = true;
+            var currentPerson = ( ( RockPage ) Page ).CurrentPerson;
+            groupMemberRequirement.OverriddenByPersonAliasId = currentPerson.PrimaryAliasId;
+            groupMemberRequirement.OverriddenDateTime = RockDateTime.Now;
+
+            groupMemberRequirementService.Add( groupMemberRequirement );
+
             rockContext.SaveChanges();
+            _modalDialog.Hide();
+            //refresh page / control.
         }
     }
 }
