@@ -146,8 +146,7 @@ const FlowNodeDiagramLevel = defineComponent({ // eslint-disable-line @typescrip
             v-for="(flow, index) in node.inFlows"
             key="node.id + 'flow' + index"
             :d="flowPoints(flow)"
-            fill="#AAAAAA"
-            :fill-opacity="0.6"
+            fill="rgb(170, 170, 170, 0.6)"
             @mousemove="onHoverFlow(flow, $event)"
             @mouseout="onUnHover"
             :class="flowClass(flow)"
@@ -391,17 +390,20 @@ export default defineComponent({
     position: relative;
     width: max-content;
     max-width: 100%;
+    margin: 0 auto;
 }
 
 .flow-node-diagram-container .flow-tooltip {
     position: absolute;
-    background: white;
+    background: #fff;
     {{ tooltip.side }}: {{ tooltip.x }}px;
     top: {{ tooltip.y }}px;
-    width: max-content;
+    max-width: 260px;
     border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 1rem;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 14px;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,.05)
 }
 
 .flow-node-diagram-container svg {
@@ -437,12 +439,16 @@ export default defineComponent({
 .flow-node-diagram-container .fade-leave-active {
     transition: opacity .2s ease-in-out;
 }
+
+.step-flow-svg .edge:hover {
+    fill: rgba(170, 170, 170, 0.8);
+}
 </v-style>
 
 <div class="flow-node-diagram-container">
     <div class="flow-tooltip" v-html="tooltip.html" v-if="tooltip.isShown" />
 
-    <svg :width="chartWidth" :height="chartHeight" :viewBox="'0 0 ' + chartWidth + ' ' + chartHeight">
+    <svg class="step-flow-svg mx-auto" :width="chartWidth" :height="chartHeight" :viewBox="'0 0 ' + chartWidth + ' ' + chartHeight">
         <FlowNodeDiagramLevel
             v-for="(level, levelNum) in diagramData"
             :key="'level' + levelNum"

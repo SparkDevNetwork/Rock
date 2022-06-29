@@ -167,12 +167,18 @@ export default defineComponent({
     <template v-if="configurationValues.programName" #default>
         <SectionHeader :title="configurationValues.programName + ' Path Flow'" :description="'The flow below shows how individuals move through the ' + configurationValues.stepTypeCount + ' step types in the ' + configurationValues.programName + ' Path program. You can filter the steps shown by date range or the number of levels to limit&nbsp;to.'" />
 
-        <RockForm class="row mb-5" @submit="fetchData">
-            <SlidingDateRangePicker v-model="dateRange" formGroupClasses="col-sm-5" label="Step Completion Date Range" help="Limit steps to those that have been completed in the provided date range." />
-            <NumberBox v-model="maxLevels" :decimalCount="0" :minimumValue="2" rules="required" formGroupClasses="col-sm-3" label="Max Levels to Display" help="The maximum number of levels to show in the flow. It's possible that an individual could take the same level twice in the course of completing a step program." />
-            <DropDownList v-model="campus" formGroupClasses="col-sm-3" label="Campus" :items="campusOptions" :showBlankItem="false" />
-            <div class="col-sm-1">
-                <RockButton class="mt-4" type="submit" :disabled="isLoading"><i class="fa fa-refresh" :class="{'fa-spin': isLoading}"></i></RockButton>
+        <RockForm @submit="fetchData">
+            <div class="row form-row d-flex align-items-end flex-wrap mb-5">
+                <div class="col-xs-12 col-lg-3">
+                    <SlidingDateRangePicker v-model="dateRange" formGroupClasses="" label="Step Completion Date Range" help="Limit steps to those that have been completed in the provided date range." />
+                </div>
+                <NumberBox v-model="maxLevels" :decimalCount="0" :minimumValue="2" rules="required" formGroupClasses="col" label="Max Levels to Display" help="The maximum number of levels to show in the flow. It's possible that an individual could take the same level twice in the course of completing a step program." />
+                <DropDownList v-model="campus" formGroupClasses="col" label="Campus" :items="campusOptions" :showBlankItem="false" />
+                <div class="col flex-grow-0">
+                    <div class="form-group">
+                        <RockButton class="btn-square" type="submit" :disabled="isLoading"><i class="fa fa-refresh" :class="{'fa-spin': isLoading}"></i></RockButton>
+                    </div>
+                </div>
             </div>
         </RockForm>
 
