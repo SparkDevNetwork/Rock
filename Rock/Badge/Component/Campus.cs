@@ -71,7 +71,7 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            writer.Write( $"<span class=\"label label-campus\">{campusNames.AsDelimited( "," )}</span>" );
+            writer.Write( $"<div class=\"rockbadge rockbadge-label\" title=\"Campus\"><span class=\"label label-campus\">{campusNames.AsDelimited( "," )}</span></div>" );
         }
     }
 }
