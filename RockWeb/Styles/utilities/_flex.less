@@ -37,6 +37,8 @@
 }
 
 .display-flexbox(@infix) {
+  .col@{infix} { flex: 1 0 0;   padding-right: (@grid-gutter-width / 2); padding-left: (@grid-gutter-width / 2);}
+
   .flex@{infix}-row            { flex-direction: row !important; }
   .flex@{infix}-column         { flex-direction: column !important; }
   .flex@{infix}-row-reverse    { flex-direction: row-reverse !important; }

@@ -724,7 +724,7 @@ $@"Rock.controls.noteEditor.initialize({{
                 writer.RenderEndTag(); // meta-figure div
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body js-focus-within" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "noteentry-control" );

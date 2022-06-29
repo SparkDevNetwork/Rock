@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a person 
+    /// The main Person Profile block the main information about a person
     /// </summary>
     [DisplayName( "Person Bio" )]
     [Category( "CRM > Person Detail" )]
@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             public const string AdditionalCustomActions = @"
 Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current person's id.
-Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
+Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an
 &lt;li&gt; element for each available action.  Example:
 <pre>
     &lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
@@ -283,7 +283,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person.IsDeceased )
             {
-                divBio.AddCssClass( "deceased" );
+                // divBio.AddCssClass( "deceased" );
             }
 
             // Set the browser page title to include person's name
@@ -293,7 +293,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             ShowBadgeList();
             ShowEmailButton();
 
-            lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            divEditButton.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
             // only show if the when all these are true
             //   -- EnableImpersonation is enabled
@@ -305,7 +305,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             lbImpersonate.Visible = false;
             if ( enableImpersonation && Person.Id != CurrentPersonId && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
             {
-                // Impersonate for anybody that has Token Usage Allowed. If this Person doesn't have TokenUsage allowed 
+                // Impersonate for anybody that has Token Usage Allowed. If this Person doesn't have TokenUsage allowed
                 // and the logged-in user would normally see an Impersonate button disabled the button.
                 lbImpersonate.Visible = true;
                 lbImpersonate.Enabled = Person.IsPersonTokenUsageAllowed() == true ;
@@ -343,6 +343,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 ShowDemographicsInfo();
                 ShowPhoneInfo();
                 ShowEmailText();
+                if ( lEmail.Text.IsNullOrWhiteSpace() && rptPhones.Visible != true )
+                {
+                    divContactSection.Visible = false;
+                }
+
                 ShowSocialMediaButtons();
                 ShowCustomContent();
             }
@@ -437,13 +442,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             string formattedNumber = phoneNumber.IsUnlisted ? "Unlisted" : PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number, showCountryCode );
 
             var phoneMarkup = formattedNumber;
+            var phoneEnabledClass = originationEnabled ? "orig-enabled" : "orig-disabled";
 
             if ( e.Item.FindControl( "litPhoneNumber" ) is Literal litPhoneNumber )
             {
                 if ( originationEnabled )
                 {
                     var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( CurrentPerson );
-
                     if ( pbxComponent != null )
                     {
                         var jsScript = $"javascript: Rock.controls.pbx.originate('{CurrentPerson.Guid}', '{phoneNumber.Number}', '{CurrentPerson.FullName}','{Person.FullName}','{formattedNumber}');";
@@ -489,9 +494,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         private void ShowPersonImage()
         {
-            lImage.Text = Person.PhotoId.HasValue
-                    ? $@"<img src=""{Person.GetPersonPhotoUrl( Person, 340, 204 )}"" alt class=""img-cover inset-0"">"
-                    : Person.GetPersonPhotoImageTag( Person, 340, 204 );
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-cover inset-0"">";
         }
 
         private void ShowProtectionLevel()
@@ -518,7 +521,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 int recordTypeValueIdBusiness = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
-            
+
             if ( isBusiness )
             {
                 lName.Text = $@"<h1>{Person.LastName}</h1>";
@@ -605,11 +608,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             if ( !GetAttributeValue( AttributeKey.AllowFollowing ).AsBoolean() || CurrentPerson == null )
             {
-                pnlFollowing.Visible = false;
+                lbFollowing.Visible = false;
                 return;
             }
 
-            pnlFollowing.Visible = true;
+            lbFollowing.Visible = true;
             using ( var rockContext = new RockContext() )
             {
                 var followingList = new FollowingService( rockContext )
@@ -619,16 +622,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 if ( followingList.Where( f => f.PersonAlias.PersonId == CurrentPerson.Id ).Any() )
                 {
-                    pnlFollowing.AddCssClass( "is-followed" );
+                    lbFollowing.AddCssClass( "is-followed" );
+                    lbFollowing.Text = $@"
+                        <span class=""text-link"">Following</span>
+                        <span class=""font-weight-normal"">{followingList.Count}</span>";
                 }
                 else
                 {
-                    pnlFollowing.RemoveCssClass( "is-followed" );
+                    lbFollowing.RemoveCssClass( "is-followed" );
+                    lbFollowing.Text = $@"
+                        <span class=""text-link"">Follow</span>
+                        <span class=""font-weight-normal"">{followingList.Count}</span>";
                 }
-
-                lbFollowing.Text = $@"
-                <span class=""text-link"">Follow</span>
-                <span class=""font-weight-normal"">{followingList.Count}</span>";
             }
         }
 
@@ -748,7 +753,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private void ShowDemographicsInfo()
         {
             lGender.Text =
-                $@"<dt>{Person.Gender}</dt>
+                $@"<dt title=""Gender"">{Person.Gender}</dt>
                 <dd class=""d-none"">Gender</dd>";
 
             if ( Person.BirthDate.HasValue )
@@ -762,7 +767,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 var birthdateText = ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString();
                 lAge.Text = $"<dt>{formattedAge}</dt><dd>{birthdateText}</dd>";
             }
-            
+
             if ( Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
             {
                 lMaritalStatus.Text = $"<dt>{Person.MaritalStatusValueId.DefinedValue()} {Person.AnniversaryDate.Value.Age()} yrs</dt><dd>{Person.AnniversaryDate.Value.ToMonthDayString()}</dd>";
@@ -774,12 +779,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     lMaritalStatus.Text = $"<dt>{Person.MaritalStatusValueId.DefinedValue()}</dt>";
                 }
             }
-            
+
             if ( GetAttributeValue( AttributeKey.DisplayGraduation ).AsBoolean() )
             {
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                 {
-                    lGraduation.Text = 
+                    lGraduation.Text =
                         $@"<dt>{(Person.HasGraduated.Value ? "Graduated" : "Graduates")} {Person.GraduationYear.Value}</dt>
                         <dd class=""d-none"">Graduation</dd>";
                 }
@@ -801,8 +806,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 phoneNumbers = phoneNumbers.OrderBy( a => phoneNumberTypeIds.IndexOf( a.NumberTypeValueId.Value ) );
             }
 
-            rptPhones.DataSource = phoneNumbers;
-            rptPhones.DataBind();
+            // if phoneNumbers exist then bind
+            if ( phoneNumbers.Any() ) {
+                rptPhones.DataSource = phoneNumbers;
+                rptPhones.DataBind();
+            } else {
+                rptPhones.Visible = false;
+            }
         }
 
         private void ShowEmailText()
@@ -818,7 +828,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 communicationPageReference = null;
             }
 
-            lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference );
+            lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference, "d-block text-link text-truncate" );
+            if ( lEmail == null )
+            {
+                lEmail.Visible = false;
+            }
         }
 
         private void ShowSocialMediaButtons()
@@ -848,7 +862,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             color = r.Attribute.QualifierValues[COLOR_KEY].Value,
                         } )
                         .ToList();
-                    rptSocial.DataBind();
+                    // if rptSocial has any items then bind
+                    if ( rptSocial.Items.Count > 0 )
+                    {
+                        rptSocial.DataBind();
+                    }
+                    else
+                    {
+                        rptSocial.Visible = false;
+                    }
                 }
         }
 
