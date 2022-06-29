@@ -107,7 +107,7 @@ const tag = defineComponent({
 
 /**
  * Get the existing tags on an entity.
- * 
+ *
  * @param entityTypeGuid The unique identifier of the entity type.
  * @param entityKey The identifier key of the entity.
  * @param securityToken The security token to grant additional access.
@@ -192,7 +192,7 @@ export default defineComponent({
 
         /**
          * Finds an existing tag with the given name and returns it.
-         * 
+         *
          * @param name The name of the tag to find on the server.
          *
          * @returns An object that contains the tag information or null if no matching tag was found.
@@ -227,7 +227,7 @@ export default defineComponent({
 
         /**
          * Creates a new personal tag on the server with the given tag name.
-         * 
+         *
          * @param name The name of the tag to be created.
          *
          * @returns An object that contains the tag information that was created or null if one couldn't be created.
@@ -253,7 +253,7 @@ export default defineComponent({
 
         /**
          * Add an existing tag to the entity.
-         * 
+         *
          * @param tagKey The key identifier of the tag to be added.
          */
         const addTag = async (tagKey: string): Promise<void> => {
@@ -281,7 +281,7 @@ export default defineComponent({
 
         /**
          * Remove an existing tag from the entity.
-         * 
+         *
          * @param tagKey The identifier key of the tag to be removed.
          */
         const removeTag = async (tagKey: string): Promise<void> => {
@@ -307,7 +307,7 @@ export default defineComponent({
         /**
          * Add a tag by name to the entity. If the tag doesn't exist the user
          * will be prompted to create a new personal tag.
-         * 
+         *
          * @param tagName The name of the tag to be added.
          */
         const addNamedTag = async (tagName: string): Promise<void> => {
@@ -358,7 +358,7 @@ export default defineComponent({
 
         /**
          * Called when the user selects an existing tag from the popup list.
-         * 
+         *
          * @param value The value of the tag that was selected.
          */
         const onSelect = (value: string): void => {
@@ -377,7 +377,7 @@ export default defineComponent({
 
         /**
          * Called when an autocomplete search operation should start.
-         * 
+         *
          * @param value The value that has been typed so far that should be searched for.
          */
         const onSearch = async (value: string): Promise<void> => {
@@ -414,7 +414,7 @@ export default defineComponent({
 
         /**
          * Called when a key has been pressed while the tag search field has focus.
-         * 
+         *
          * @param ev The object that describes the event being handled.
          */
         const onInputKeyDown = (ev: KeyboardEvent): void => {
@@ -436,7 +436,7 @@ export default defineComponent({
 
         /**
          * Called when the remove button for an existing tag has been clicked.
-         * 
+         *
          * @param tagKey The identifier key of the tag to be removed.
          */
         const onRemoveTag = async (tagKey: string): Promise<void> => {
@@ -533,7 +533,7 @@ export default defineComponent({
     </v-style>
 
     <div class="tag-wrap">
-        <div class="tagsInput" ref="tagsInputRef">
+        <div class="tagsinput" ref="tagsInputRef">
             <Tag v-for="tag in currentTags"
                 :key="tag.value"
                 :modelValue="tag"
