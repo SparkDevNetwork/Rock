@@ -33,7 +33,7 @@ namespace Rock.Migrations
 
             Sql( @"
             WITH CTE AS 
-            (SELECT [Id],[Order],ROW_NUMBER() OVER (PARTITION BY [SourceStatusId] ORDER BY [SourceStatusId]) As [SuggestedOrder] FROM [ConnectionStatusAutomation])
+            (SELECT [Id],[Order],ROW_NUMBER() OVER (PARTITION BY [SourceStatusId] ORDER BY [Id]) As [SuggestedOrder] FROM [ConnectionStatusAutomation])
 
             UPDATE
 	            [CTE]

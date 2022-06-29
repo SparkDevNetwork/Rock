@@ -177,13 +177,16 @@ namespace Rock.Jobs
                     }
 
                     var connectionRequests = new List<ConnectionRequest>();
+
                     //if matchedConnectionRequests list is too long, we prevent passing long list to EF rather filter out the matchedConnectionRequest in memory.
                     if ( matchedConnectionRequests.Count < 100 )
                     {
+                        //If the matched connection request list is Less than 100, we pass the list to EF and let SQL handle this.
                         connectionRequests = connectionRequestQry.Where( a => !matchedConnectionRequests.Contains( a.Id ) ).ToList();
                     }
                     else
                     {
+                        //If we have more than 100 matched connection request list, we put the connectionRequestQry into a List then apply the filter to avoid sql exception.
                         connectionRequests = connectionRequestQry.ToList().Where(a=> !matchedConnectionRequests.Contains( a.Id ) ).ToList();
                     }
 
