@@ -15,9 +15,11 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Web.UI.WebControls;
 using Rock.Badge;
 using Rock.Web.Cache;
+using System.Linq;
 
 namespace Rock.Web.UI.Controls
 {
@@ -57,6 +59,7 @@ namespace Rock.Web.UI.Controls
                 return;
             }
 
+            var listItems = new List<ListItem>();
             foreach ( var kvp in componentDictionary )
             {
                 var badgeComponent = kvp.Value.Value as BadgeComponent;
@@ -70,9 +73,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( entityType != null )
                 {
-                    Items.Add( new ListItem( kvp.Value.Key.SplitCase(), entityType.Guid.ToString().ToUpper() ) );
+                    listItems.Add( new ListItem( kvp.Value.Key.SplitCase(), entityType.Guid.ToString().ToUpper() ) );
                 }
             }
+
+            Items.AddRange( listItems.OrderBy( a => a.Text ).ToArray() );
         }
     }
 }
