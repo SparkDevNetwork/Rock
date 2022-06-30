@@ -16,6 +16,7 @@
 //
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import Panel from "@Obsidian/Controls/panel";
+import Modal from "@Obsidian/Controls/modal";
 import { Guid } from "@Obsidian/Types";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
@@ -23,6 +24,7 @@ import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUti
 import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
 import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
 import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingSetFollowingOptionsBag";
+import AuditDetail from "@Obsidian/Controls/auditDetail";
 import BadgeList from "@Obsidian/Controls/badgeList";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import RockButton from "@Obsidian/Controls/rockButton";
@@ -42,7 +44,9 @@ export default defineComponent({
     name: "DetailBlock",
 
     components: {
+        AuditDetail,
         EntityTagList,
+        Modal,
         Panel,
         RockButton,
         RockForm,
@@ -234,6 +238,7 @@ export default defineComponent({
         const isFormSubmitting = ref(false);
         const isEditModeLoading = ref(false);
         const isEntityFollowed = ref<boolean | null>(null);
+        const showAuditDetailsModal = ref(false);
 
         let formSubmissionSource: PromiseCompletionSource | null = null;
         let editModeReadyCompletionSource: PromiseCompletionSource | null = null;
@@ -286,6 +291,14 @@ export default defineComponent({
         /** The secondary actions to show in the ellipsis of the panel header. */
         const internalHeaderSecondaryActions = computed((): PanelAction[] => {
             const actions: PanelAction[] = [];
+
+            if (!props.isAuditHidden) {
+                actions.push({
+                    type: "default",
+                    title: "Audit Details",
+                    handler: onAuditClick
+                });
+            }
 
             // If the block has their own actions, add them in.
             if (props.headerSecondaryActions) {
@@ -615,6 +628,10 @@ export default defineComponent({
             }
         };
 
+        const onAuditClick = async (): Promise<void> => {
+            showAuditDetailsModal.value = true;
+        };
+
         // #endregion
 
         // Watch for the RockForm component to toggle the isFormSubmitting value
@@ -658,7 +675,8 @@ export default defineComponent({
             onEditClick,
             onEditSuspenseReady,
             onSaveClick,
-            onSaveSubmit
+            onSaveSubmit,
+            showAuditDetailsModal
         };
     },
 
@@ -739,5 +757,9 @@ export default defineComponent({
         <slot v-if="isViewMode" name="view" />
     </template>
 </Panel>
+
+<Modal v-model="showAuditDetailsModal" title="Audit Details">
+    <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+</Modal>
 `
 });

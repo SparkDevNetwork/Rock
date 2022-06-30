@@ -149,6 +149,14 @@ export const enum BlockType {
     ObsidianExampleFieldTypeGallery = "B9C209C2-ABB8-4B48-A68E-944572007B03",
     /** Data Views with persistence enabled block Guid */
     PersistedDataViewList = "3C4FAFAE-41D1-4FF2-B6DC-FF99CD4DABBE",
+    /** The dataview search results block type */
+    DataviewSearchResults = "BFB625F7-75CA-48FE-9C82-90E47374242B",
+    /** The report search results block type */
+    ReportSearchResults = "13955B32-11F4-4606-8C31-4C6E5324C81A",
+    /** The Step Flow */
+    StepFlow = "2B4E0128-BCDF-48BF-AEC9-85001169DA3E",
+    /** The reporting dashboard liquid/lava dashboard widget. */
+    ReportingLavaDashboardWidget = "AC19A4F3-2E88-487E-8E88-377C1C20DBD5",
     /** The contribution statement lava (Legacy) */
     ContributionStatementLavaLegacy = "AF986B72-ADD9-4E05-971F-1DE4EBED8667",
 }

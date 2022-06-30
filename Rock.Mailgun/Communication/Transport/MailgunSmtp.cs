@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Communication.Transport
     [BooleanField( "Use SSL", "", true, "", 4 )]
     [BooleanField( "Track Clicks", "Allow Mailgun to track opens, clicks, and unsubscribes.", true, "", 5 )]
     [IntegerField( "Concurrent Send Workers", "", false, 10, "", 6, key: "MaxParallelization" )]
+    [Rock.SystemGuid.EntityTypeGuid( "40229185-BF3F-4428-8F98-0EC37EDD3BE2")]
     public class MailgunSmtp : SMTPComponent
     {
         /// <summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -440,6 +440,8 @@ namespace RockWeb.Blocks.Cms
                 site.RequiresEncryption = cbRequireEncryption.Checked;
                 site.EnabledForShortening = cbEnableForShortening.Checked;
                 site.EnableMobileRedirect = cbEnableMobileRedirect.Checked;
+                site.EnableVisitorTracking = cbEnableVisitorTracking.Checked;
+                site.EnablePersonalization = cbEnablePersonalization.Checked;
                 site.MobilePageId = ppMobilePage.PageId;
                 site.ExternalUrl = tbExternalURL.Text;
 
@@ -902,6 +904,8 @@ namespace RockWeb.Blocks.Cms
             tbGoogleAnalytics.Text = site.GoogleAnalyticsCode;
             cbRequireEncryption.Checked = site.RequiresEncryption;
             cbEnableForShortening.Checked = site.EnabledForShortening;
+            cbEnableVisitorTracking.Checked = site.EnableVisitorTracking;
+            cbEnablePersonalization.Checked = site.EnablePersonalization;
 
             cbEnableMobileRedirect.Checked = site.EnableMobileRedirect;
             ppMobilePage.SetValue( site.MobilePage );

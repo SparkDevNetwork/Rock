@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [ContextAware]
 
     [TextField( "Heading",
-        Description = "The text to display as the heading.  If left blank, the Note Type name will be used.",
+        Description = "The text to display as the heading.",
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.Heading )]
@@ -46,7 +46,6 @@ namespace RockWeb.Blocks.Core
     [TextField( "Heading Icon CSS Class",
         Description = "The css class name to use for the heading icon. ",
         IsRequired = false,
-        DefaultValue = "fa fa-sticky-note-o",
         Order = 2,
         Key = AttributeKey.HeadingIcon )]
 

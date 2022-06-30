@@ -111,6 +111,7 @@ namespace Rock.Model
                 Description = model.Description,
                 IconCssClass = model.IconCssClass,
                 IsSystem = model.IsSystem,
+                MaxFileSizeBytes = model.MaxFileSizeBytes,
                 MaxHeight = model.MaxHeight,
                 MaxWidth = model.MaxWidth,
                 Name = model.Name,
@@ -199,6 +200,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsSystem = source.IsSystem;
+            target.MaxFileSizeBytes = source.MaxFileSizeBytes;
             target.MaxHeight = source.MaxHeight;
             target.MaxWidth = source.MaxWidth;
             target.Name = source.Name;

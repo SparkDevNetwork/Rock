@@ -357,6 +357,7 @@ namespace Rock.Client.Enums
         AllActiveAdultsInGivingGroup = 0x0,
         PrimaryGiver = 0x1,
         AllActiveFamilyMembersInGivingGroup = 0x2,
+        DoNotSave = 0x3,
     }
 
     /// <summary>
@@ -399,6 +400,15 @@ namespace Rock.Client.Enums
         Text = 0x6,
         HTML = 0x7,
         Undefined = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum Gender
+    {
+        Unknown = 0x0,
+        Male = 0x1,
+        Female = 0x2,
     }
 
     /// <summary>
@@ -643,6 +653,14 @@ namespace Rock.Client.Enums
     {
         FromPersonAlias = 0x0,
         ToPersonAlias = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PersonalizationType
+    {
+        Segment = 0x0,
+        RequestFilter = 0x1,
     }
 
     /// <summary>
@@ -962,6 +980,15 @@ namespace Rock.Client.Enums
     {
         CpuUsagePercent = 0x0,
         MemoryUsageMegabytes = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UnitType
+    {
+        Numeric = 0x0,
+        Currency = 0x1,
+        Percentage = 0x2,
     }
 
     /// <summary>

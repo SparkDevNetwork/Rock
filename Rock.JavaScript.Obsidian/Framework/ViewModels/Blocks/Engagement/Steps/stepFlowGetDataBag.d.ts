@@ -24,6 +24,7 @@
 import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramEdgeBag";
 import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
 
+/** Class StepFlowGetDataBag. */
 export type StepFlowGetDataBag = {
     /** Gets or sets the list of edges */
     edges?: FlowNodeDiagramEdgeBag[] | null;

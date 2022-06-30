@@ -75,7 +75,7 @@ namespace Rock.Badge.Component
                 tooltip = $"Family attendance for the last {monthsToDisplay} months. Each bar is a month.";
             }
 
-            writer.Write( string.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='{2}'>", animateClass, badge.Id, tooltip ) );
+            writer.Write( string.Format( "<div class='rockbadge rockbadge-attendance{0} rockbadge-id-{1}' data-toggle='tooltip' data-original-title='{2}'>", animateClass, badge.Id, tooltip ) );
 
             writer.Write("</div>");
         }
@@ -106,7 +106,7 @@ $.ajax({{
             }});
             chartHtml += '</ul>';
 
-            $('.badge-attendance.badge-id-{badge.Id}').html(chartHtml);
+            $('.rockbadge-attendance.rockbadge-id-{badge.Id}').html(chartHtml);
         }}
     }},
 }});";

@@ -82,6 +82,7 @@ namespace Rock.Model
             var viewModel = new EventItemOccurrenceGroupMapBag
             {
                 IdKey = model.IdKey,
+                CampusId = model.CampusId,
                 EventItemOccurrenceId = model.EventItemOccurrenceId,
                 GroupId = model.GroupId,
                 PublicName = model.PublicName,
@@ -156,6 +157,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this EventItemOccurrenceGroupMap target, EventItemOccurrenceGroupMap source )
         {
             target.Id = source.Id;
+            target.CampusId = source.CampusId;
             target.EventItemOccurrenceId = source.EventItemOccurrenceId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

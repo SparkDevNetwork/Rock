@@ -58,7 +58,7 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            writer.Write( $"<div class='badge badge-personaldevice badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( $"<div class='rockbadge rockbadge-overlay rockbadge-personaldevice rockbadge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
             writer.Write( "</div>" );
         }
 
@@ -81,9 +81,7 @@ namespace Rock.Badge.Component
                     url: Rock.settings.get('baseUrl') + 'api/Badges/PersonalDevicesNumber/{person.Id}' ,
                     statusCode: {{
                         200: function (data, status, xhr) {{
-                            var badgeHtml = '';
                             var devicesNumber = data;
-                            var cssClass = '';
                             var linkUrl = '{detailPageUrl}';
                             var badgeContent = '';
                             var labelContent = '';
@@ -94,21 +92,20 @@ namespace Rock.Badge.Component
                             }}
 
                             if ( devicesNumber !=1 ) {{
-                                labelContent = 'There are ' + devicesNumber + ' devices linked to this individual.';                                 
+                                labelContent = 'There are ' + devicesNumber + ' devices linked to this individual.';
                             }} else {{
                                 labelContent = 'There is 1 device linked to this individual.';
                             }}
-        
+
                             if (linkUrl != '') {{
-                                badgeContent = '<a href=\'' + linkUrl + '\'><div class=\'badge-content \'><i class=\''+ badgeClass +' fa fa-mobile badge-icon\'></i><span class=\'deviceCount badge-icon '+ badgeClass +'\'>' + devicesNumber + '</span></div></a>';
+                                badgeContent = '<a href=\'' + linkUrl + '\' class=\'badge-content\'><i class=\''+ badgeClass +' fa fa-mobile badge-icon\'></i><span class=\'metric-value\'>' + devicesNumber + '</span></a>';
                             }} else {{
-                                badgeContent = '<div class=\'badge-content \'><i class=\''+ badgeClass +' fa  fa-mobile badge-icon\'></i><span class=\'deviceCount badge-icon '+ badgeClass +'\'>' + devicesNumber + '</span></div>';
+                                badgeContent = '<div class=\'badge-content\'><i class=\'badge-icon '+ badgeClass +' fa  fa-mobile\'></i><span class=\'metric-value\'>' + devicesNumber + '</span></div>';
                             }}
-                            $('.badge-personaldevice.badge-id-{badge.Id}').html(badgeContent);
-                            $('.badge-personaldevice.badge-id-{badge.Id}').attr('data-original-title', labelContent);
+                            $('.rockbadge-personaldevice.rockbadge-id-{badge.Id}').html(badgeContent).attr('data-original-title', labelContent);
 
                             if (devicesNumber < 1) {{
-                                $('.badge-personaldevice.badge-id-{badge.Id}').css('display', '{noneCss}');
+                                $('.rockbadge-personaldevice.rockbadge-id-{badge.Id}').css('display', '{noneCss}');
                             }}
                         }}
                     }},

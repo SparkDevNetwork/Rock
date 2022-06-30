@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -378,6 +378,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.IconCssClass = tbIconCssClass.Text;
             metric.SourceValueTypeId = ddlSourceType.SelectedValueAsId();
             metric.YAxisLabel = tbYAxisLabel.Text;
+            metric.UnitType = rblUnitType.SelectedValueAsEnum<Rock.Model.UnitType>();
             metric.IsCumulative = cbIsCumulative.Checked;
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
@@ -879,6 +880,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
             tbYAxisLabel.Text = metric.YAxisLabel;
+            rblUnitType.SetValue( metric.UnitType.ConvertToInt() );
             cbIsCumulative.Checked = metric.IsCumulative;
             cbEnableAnalytics.Checked = metric.EnableAnalytics;
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
@@ -1288,7 +1290,8 @@ The Lava can include Lava merge fields:";
             {
                 SizeToFitContainerWidth = true,
                 MaintainAspectRatio = false,
-                LineTension = 0m
+                LineTension = 0m,
+                UnitType = metric.UnitType
             } );
 
             string script = string.Format(
@@ -1542,6 +1545,8 @@ The Lava can include Lava merge fields:";
             {
                 ddlMetricPartitionDefinedTypePicker.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
+
+            rblUnitType.BindToEnum<Rock.Model.UnitType>();
         }
 
         /// <summary>

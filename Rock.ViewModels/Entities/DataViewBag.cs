@@ -116,6 +116,7 @@ namespace Rock.ViewModels.Entities
 
         /// <summary>
         /// Gets or sets the persisted schedule interval minutes.
+        /// If this is null, then the DataView is not persisted.
         /// </summary>
         /// <value>
         /// The persisted schedule interval minutes.

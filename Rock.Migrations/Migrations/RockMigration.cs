@@ -16,15 +16,12 @@
 //
 using System;
 using System.Data.Entity.Migrations;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Web;
 using System.Web.Hosting;
-using Rock;
 using Rock.Data;
-using Rock.Model;
 
 
 namespace Rock.Migrations
@@ -44,7 +41,7 @@ namespace Rock.Migrations
         {
             get
             {
-                if (_migrationHelper == null)
+                if ( _migrationHelper == null )
                 {
                     _migrationHelper = new Rock.Data.MigrationHelper( this );
                 }
@@ -71,24 +68,24 @@ namespace Rock.Migrations
         /// SQL injection attacks etc.
         /// </summary>
         /// <param name="sql">The SQL.</param>
-        public void Sql(string sql)
+        public void Sql( string sql )
         {
-            Sql(sql, false, null);
+            Sql( sql, false, null );
         }
 
         /// <summary>
         /// Runs the SQL found in a file.
         /// </summary>
         /// <param name="sqlFile">The file the SQL can be found it relative to the application path.</param>
-        public void SqlFile(string sqlFile)
+        public void SqlFile( string sqlFile )
         {
             // append application root
-            sqlFile = EfMapPath(sqlFile);
+            sqlFile = EfMapPath( sqlFile );
 
             string script = File.ReadAllText( sqlFile );
             using ( var rockContext = new RockContext() )
             {
-                Sql( script );  
+                Sql( script );
 
                 // delete file if being run in 'production'
                 if ( HttpContext.Current != null )
@@ -96,7 +93,8 @@ namespace Rock.Migrations
                     File.Delete( sqlFile );
 
                     // delete directory if it's empty
-                    if (Directory.GetFiles(Path.GetDirectoryName(sqlFile)).Length == 0){
+                    if ( Directory.GetFiles( Path.GetDirectoryName( sqlFile ) ).Length == 0 )
+                    {
                         Directory.Delete( Path.GetDirectoryName( sqlFile ) );
                     }
                 }
@@ -133,6 +131,23 @@ namespace Rock.Migrations
         public object SqlScalar( string sql )
         {
             return DbService.ExecuteScaler( sql );
+        }
+
+        /// <summary>
+        /// Launches the Visual Studio debugger and set a code break point so an individual migration can be debugged.
+        /// </summary>
+        [DebuggerStepThrough]
+        public void SetDebuggerBreakPoint()
+        {
+            if ( System.Diagnostics.Debugger.IsAttached == false )
+            {
+                System.Diagnostics.Debugger.Launch();
+            }
+
+            if ( System.Diagnostics.Debugger.IsAttached )
+            {
+                System.Diagnostics.Debugger.Break();
+            }
         }
     }
 }

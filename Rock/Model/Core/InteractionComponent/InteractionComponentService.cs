@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -113,9 +114,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Deletes the specified GroupLocation and sets GroupLocationHistorical.GroupLocationId to NULL.
-        /// Will not delete the GroupLocation and return false if the GroupLocationHistorical.GroupLocationId fails to update.
-        /// Will try to determine current person alias from HttpContext.
+        /// Returns a queryable of Interaction Components that are tied to Rock Sites with Geo Tracking enabled.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<InteractionComponent> QueryByPagesOnSitesWithGeoTracking()
+        {
+            var rockContext = this.Context as Rock.Data.RockContext;
+            var interactionChannelService = new InteractionChannelService( rockContext );
+
+            // Get a queryable of interaction channels of sites with geo tracking enabled
+            var interactionChannelQry = interactionChannelService.QueryBySitesWithGeoTracking().Select( a => a.Id );
+            
+            return this.Queryable().Where( a => interactionChannelQry.Contains( a.InteractionChannelId ) );
+        }
+
+        /// <summary>
+        /// Deletes the specified Interaction Component after deleting all the related Interactions.
         /// Caller is responsible to save changes.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -182,6 +196,59 @@ namespace Rock.Model
                 ic.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
                 ic.InteractionChannel.ChannelEntityId == siteId &&
                 ic.EntityId == pageId );
+        }
+
+        /// <summary>
+        /// Returns a Queryable of Interaction Components that relate to the specified Sites and Pages.
+        /// </summary>
+        /// <param name="siteIds">The site ids.</param>
+        /// <param name="pageIds">The page ids.</param>
+        /// <returns>IQueryable&lt;InteractionComponent&gt;.</returns>
+        public IQueryable<InteractionComponent> QueryByPages( int[] siteIds, int[] pageIds )
+        {
+            var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+
+            return Queryable().Where( ic =>
+                ic.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
+                siteIds.Contains(ic.InteractionChannel.ChannelEntityId.Value) &&
+                pageIds.Contains(ic.EntityId.Value ));
+        }
+
+        /// <summary>
+        /// Returns a component query for those components that are tied to a particular <see cref="Site"/>.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <returns>IQueryable&lt;InteractionComponent&gt;.</returns>
+        public IQueryable<InteractionComponent> QueryBySite( int siteId )
+        {
+            return QueryBySites( new int[] { siteId } );
+        }
+
+        /// <summary>
+        /// Returns a component query for those components that are tied to particular <see cref="Site"/>s.
+        /// </summary>
+        /// <param name="siteIds">The site ids.</param>
+        /// <returns>IQueryable&lt;InteractionComponent&gt;.</returns>
+        public IQueryable<InteractionComponent> QueryBySites( int[] siteIds )
+        {
+            var channelMediumTypeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Value;
+
+            var componentQuery = this.Queryable().Where( ic =>
+                ic.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId
+                    && ic.InteractionChannel.ChannelEntityId.HasValue );
+
+
+            if ( siteIds.Length == 1 )
+            {
+                var siteId = siteIds[0];
+                componentQuery = componentQuery.Where( ic => ic.InteractionChannel.ChannelEntityId == siteId );
+            }
+            else
+            {
+                componentQuery = componentQuery.Where( ic => siteIds.Contains( ic.InteractionChannel.ChannelEntityId.Value ) );
+            }
+
+            return componentQuery;
         }
     }
 }

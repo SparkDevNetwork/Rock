@@ -431,7 +431,7 @@ namespace Rock.Apps.StatementGenerator
             {
                 Headless = true,
                 DefaultViewport = new ViewPortOptions { Width = 1280, Height = 1024, DeviceScaleFactor = 1 },
-                ExecutablePath = browserFetcher.RevisionInfo().ExecutablePath
+                ExecutablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath
             };
 
             browser = Puppeteer.LaunchAsync( launchOptions ).Result;

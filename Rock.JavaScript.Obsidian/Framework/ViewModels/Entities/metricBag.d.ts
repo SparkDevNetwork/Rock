@@ -83,6 +83,9 @@ export type MetricBag = {
     /** Gets or sets the Title of this Metric. */
     title?: string | null;
 
+    /** Gets or sets the type of the unit. */
+    unitType: number;
+
     /**
      * Gets or sets the x axis label.
      * Note that in Rock, graphs typically actually use the MetricValue.MetricValueDateTime as the graph's X Axis.

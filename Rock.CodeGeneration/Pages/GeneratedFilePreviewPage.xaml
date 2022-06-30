@@ -111,6 +111,12 @@
                             Grid.Column="0">
                     <Button Content="Save"
                         Click="Save_Click"/>
+
+                    <ProgressBar x:Name="SaveProgressBar"
+                             Margin="8,0,0,0"
+                             Width="200"
+                             IsIndeterminate="True"
+                             Visibility="Collapsed" />
                 </StackPanel>
 
                 <Border Grid.Row="0"

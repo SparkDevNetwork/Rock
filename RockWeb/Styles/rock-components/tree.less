@@ -33,12 +33,12 @@
   .search-results {
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
     bottom: 0;
-    overflow:auto;
+    left: 0;
     height: 100%;
     padding: 4px 12px;
+    overflow: auto;
   }
 }
 
@@ -61,14 +61,18 @@ ul.rocktree-children {
 }
 
 ul.rocktree-children {
-  margin: 0 0 0 26px; // 30px
+  width: 100%;
+  margin: 0 0 0 26px;
 }
 
 .rocktree {
   .rocktree-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     color: @text-color;
     white-space: nowrap;
-    
+
     &.is-inactive {
       color: lighten(@text-color, 20%);
     }
@@ -109,8 +113,7 @@ ul.rocktree-children {
   .rocktree-name {
     position: relative;
     display: inline-block;
-    width: 100%;
-    max-width: 400px;
+    flex-grow: 1;
     padding: 0;
     margin-right: 16px;
     line-height: 30px;
@@ -207,8 +210,8 @@ ul.rocktree-children {
 }
 
 .preview-item {
-  line-height: 1.2;
   padding: 8px 6px;
+  line-height: 1.2;
   cursor: default;
   border-radius: 4px;
 
@@ -218,8 +221,8 @@ ul.rocktree-children {
 
   .title,
   .subtitle {
-    color: @text-color;
     display: block;
+    color: @text-color;
   }
 
   .subtitle {

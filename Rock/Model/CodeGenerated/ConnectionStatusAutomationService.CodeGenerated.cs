@@ -86,6 +86,7 @@ namespace Rock.Model
                 DataViewId = model.DataViewId,
                 DestinationStatusId = model.DestinationStatusId,
                 GroupRequirementsFilter = ( int ) model.GroupRequirementsFilter,
+                Order = model.Order,
                 SourceStatusId = model.SourceStatusId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -162,6 +163,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupRequirementsFilter = source.GroupRequirementsFilter;
+            target.Order = source.Order;
             target.SourceStatusId = source.SourceStatusId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

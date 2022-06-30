@@ -45,7 +45,7 @@ namespace Rock.Blocks
             var entityService = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
 
             // If a zero identifier is specified then create a new entity.
-            if ( ( id.HasValue && id.Value == 0 ) || ( !id.HasValue && !guid.HasValue ) )
+            if ( ( id.HasValue && id.Value == 0 ) || ( guid.HasValue && guid.Value == Guid.Empty ) || ( !id.HasValue && !guid.HasValue && entityId.IsNullOrWhiteSpace() ) )
             {
                 return new TEntity
                 {

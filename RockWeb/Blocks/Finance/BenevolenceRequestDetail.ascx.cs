@@ -580,7 +580,7 @@ namespace RockWeb.Blocks.Finance
             if ( fuEditDoc.BinaryFileId.HasValue )
             {
                 _documentsState.Add( fuEditDoc.BinaryFileId.Value );
-                BindUploadDocuments( true );
+                BindUploadDocuments(  );
             }
         }
 
@@ -593,7 +593,7 @@ namespace RockWeb.Blocks.Finance
             if ( e.BinaryFileId.HasValue )
             {
                 _documentsState.Remove( e.BinaryFileId.Value );
-                BindUploadDocuments( true );
+                BindUploadDocuments(  );
             }
         }
 
@@ -851,7 +851,8 @@ namespace RockWeb.Blocks.Finance
         }
         #endregion View Events
 
-        #region Edit Methods        
+        #region Edit Methods
+        
         /// <summary>
         /// Sets the edit mode.
         /// </summary>
@@ -995,7 +996,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 _documentsState = benevolenceRequest.Documents.OrderBy( s => s.Order ).Select( s => s.BinaryFileId ).ToList();
-                BindUploadDocuments( true );
+                BindUploadDocuments(  );
 
                 benevolenceRequest.LoadAttributes();
                 Rock.Attribute.Helper.AddEditControls( benevolenceRequest, phEditAttributes, true, BlockValidationGroup, 2 );
@@ -1019,12 +1020,19 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Binds the upload documents.
         /// </summary>
-        /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
-        private void BindUploadDocuments( bool canEdit )
+        private void BindUploadDocuments()
         {
-            var ds = _documentsState.ToList();
+            var benevolenceTypeId = ddlEditRequestType.SelectedValue.ToIntSafe();
+            if ( benevolenceTypeId == 0 )
+            {
+                return;
+            }
 
-            if ( ds.Count() < 6 )
+            var benevolenceType = new BenevolenceTypeService( new RockContext() ).Get( benevolenceTypeId );
+            var maxDocuments = benevolenceType.AdditionalSettingsJson?.FromJsonOrNull<BenevolenceType.AdditionalSettings>().MaximumNumberOfDocuments ?? 6;
+
+            var ds = _documentsState.ToList();
+            if ( ds.Count() < maxDocuments )
             {
                 ds.Add( 0 );
             }
@@ -1239,9 +1247,11 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
             }
         }
+
         #endregion Edit Methods
 
-        #region View Methods      
+        #region View Methods
+
         /// <summary>
         /// Formats the phone number.
         /// </summary>
@@ -1755,9 +1765,11 @@ namespace RockWeb.Blocks.Finance
             ShowRequestDetails();
             ShowRequestSummary();
         }
+
         #endregion View Methods
 
         #region Shared Methods        
+
         /// <summary>
         /// Sets the page parameters.
         /// </summary>
@@ -1767,6 +1779,28 @@ namespace RockWeb.Blocks.Finance
             _isNewRecord = _benevolenceRequestId == 0;
             _isExistingRecord = _benevolenceRequestId > 0;
         }
+
         #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// Class AdditionalSettings.
+        /// </summary>
+        public class AdditionalSettings
+        {
+            /// <summary>
+            /// Gets or sets the maximum number of documents.
+            /// </summary>
+            /// <value>The maximum number of documents.</value>
+            public int MaximumNumberOfDocuments { get; set; }
+        }
+
+        #endregion
+
+        protected void ddlEditRequestType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindUploadDocuments();
+        }
     }
 }

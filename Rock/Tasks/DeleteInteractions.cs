@@ -37,6 +37,7 @@ namespace Rock.Tasks
         public override void Execute( Message message )
         {
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
             var interactionComponentService = new InteractionComponentService( rockContext );
             var interactionService = new InteractionService( rockContext );
 

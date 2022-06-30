@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -59,14 +60,20 @@ namespace RockWeb.Blocks.Finance
     public partial class BenevolenceTypeDetail : Rock.Web.UI.RockBlock
     {
         #region Variables
+
         private int benevolenceTypeIdPageParameter = 0;
         private const string WORKFLOW_SESSIONSTATE_KEY = "BENEVOLENCEWORKFLOWSTATE";
-        #endregion
+
+        #endregion Variables
+
+        #region Attribute Key
 
         private static class AttributeKey
         {
             public const string BenevolenceTypeAttributes = "BenevolenceTypeAttributes";
         }
+
+        #endregion Attribute Key
 
         #region Properties        
         /// <summary>
@@ -206,7 +213,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     Id = 0,
                     IsActive = true,
-                    ShowFinancialResults=true
+                    ShowFinancialResults = true
                 };
 
                 lActionTitle.Text = ActionTitle.Add( BenevolenceType.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -216,10 +223,11 @@ namespace RockWeb.Blocks.Finance
             }
 
             tbName.Text = benevolenceType.Name;
+            cbIsActive.Checked = benevolenceType.IsActive;
+            numberBoxMaxDocuments.IntegerValue = benevolenceType.AdditionalSettingsJson?.FromJsonOrNull<BenevolenceType.AdditionalSettings>().MaximumNumberOfDocuments;
+            cbShowFinancialResults.Checked = benevolenceType.ShowFinancialResults;
             tbDescription.Text = benevolenceType.Description;
             ceLavaTemplate.Text = benevolenceType.RequestLavaTemplate;
-            cbShowFinancialResults.Checked = benevolenceType.ShowFinancialResults;
-            cbIsActive.Checked = benevolenceType.IsActive;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -316,10 +324,14 @@ namespace RockWeb.Blocks.Finance
                 if ( benevolenceType != null )
                 {
                     benevolenceType.Name = tbName.Text;
+                    benevolenceType.IsActive = cbIsActive.Checked;
+                    benevolenceType.ShowFinancialResults = cbShowFinancialResults.Checked;
                     benevolenceType.Description = tbDescription.Text;
                     benevolenceType.RequestLavaTemplate = ceLavaTemplate.Text;
-                    benevolenceType.ShowFinancialResults = cbShowFinancialResults.Checked;
-                    benevolenceType.IsActive = cbIsActive.Checked;
+
+                    var additionalSettings = benevolenceType.AdditionalSettingsJson?.FromJsonOrNull<BenevolenceType.AdditionalSettings>() ?? new BenevolenceType.AdditionalSettings();
+                    additionalSettings.MaximumNumberOfDocuments = numberBoxMaxDocuments.IntegerValue;
+                    benevolenceType.AdditionalSettingsJson = additionalSettings.ToJson();
 
                     // remove any workflows that were removed in the UI
                     var uiWorkflows = WorkflowStateModel.Select( l => l.Guid );

@@ -81,5 +81,10 @@ namespace Rock.SystemGuid
         /// The system communication preview route 'Admin/Communications/System/Preview'
         /// </summary>
         public const string SYSTEM_COMMUNICATION_PREVIEW = "AAC42941-8B2C-4F20-923D-E74146D2E103";
+
+        /// <summary>
+        /// The Step Program Flow route 'steps/program/{ProgramId}/flow'
+        /// </summary>
+        public const string STEP_FLOW = "4F75872B-EBE0-43FA-A8F3-ED716B45A1A6";
     }
 }

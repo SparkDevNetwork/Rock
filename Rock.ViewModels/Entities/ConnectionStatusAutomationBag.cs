@@ -66,6 +66,11 @@ namespace Rock.ViewModels.Entities
         public int GroupRequirementsFilter { get; set; }
 
         /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets or sets the source Rock.Model.ConnectionStatus identifier.
         /// </summary>
         /// <value>

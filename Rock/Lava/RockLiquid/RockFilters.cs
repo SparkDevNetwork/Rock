@@ -785,21 +785,6 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Trims the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static string Trim( object input )
-        {
-            if ( input == null )
-            {
-                return string.Empty;
-            }
-
-            return input.ToString().Trim();
-        }
-
-        /// <summary>
         /// Remove the first occurrence of a substring - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>
@@ -1655,6 +1640,11 @@ namespace Rock.Lava
             if ( startDate != null && endDate != null )
             {
                 TimeSpan difference = endDate.Value - startDate.Value;
+
+                if ( difference.TotalSeconds >= 0 && difference.TotalSeconds < 1 )
+                {
+                    return "just now";
+                }
 
                 if ( direction.ToLower() == "max" )
                 {
@@ -3605,27 +3595,10 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Campus( Context context, object input, object option = null )
         {
-            var person = GetPerson( input );
-
-            bool getAll = false;
-            if ( option != null && option.GetType() == typeof( string ) )
-            {
-                // if a string of "all" is specified for the option, return all of the campuses (if they are part of multiple families from different campuses)
-                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    getAll = true;
-                }
-            }
-
-            if ( getAll )
-            {
-                return person.GetFamilies().Select( a => a.Campus ).OrderBy( a => a.Name );
-            }
-            else
-            {
-                return person.GetCampus();
-            }
-
+            // Call the newer Lava Filter implementation, and inject a null Lava context.
+            // This is safe, because the Lava context is only used to retrieve the current data context,
+            // and the fallback for that process creates a new data context instead.
+            return LavaFilters.Campus( null, input, option );
         }
 
         /// <summary>
@@ -5023,6 +4996,19 @@ namespace Rock.Lava
             }
 
             return parmReturn;
+        }
+
+        /// <summary>
+        /// Sets a parameter in the input URL and returns a modified URL in the specified format.
+        /// </summary>
+        /// <param name="inputUrl">The input URL to be modified.</param>
+        /// <param name="parameterName">The name of the URL parameter to modify.</param>
+        /// <param name="parameterValue">The new value parameter value.</param>
+        /// <param name="outputUrlFormat">The format of the output URL, specified as {"absolute"|"relative"}. If not specified, the default value is "absolute".</param>
+        /// <returns></returns>
+        public static string SetUrlParameter( object inputUrl, object parameterName, object parameterValue, object outputUrlFormat = null )
+        {
+            return LavaFilters.SetUrlParameter( inputUrl, parameterName, parameterValue, outputUrlFormat );
         }
 
         /// <summary>

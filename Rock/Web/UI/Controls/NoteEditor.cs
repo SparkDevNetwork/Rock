@@ -127,6 +127,12 @@ namespace Rock.Web.UI.Controls
             set => ViewState["_hasAttributes"] = value;
         }
 
+        private string _noteTerm
+        {
+            get => ViewState["_noteTerm"] as string ?? "Note";
+            set => ViewState["_noteTerm"] = value;
+        }
+
         /// <summary>
         /// Sets the note.
         /// </summary>
@@ -260,7 +266,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the label for the note entry box
+        /// Gets or sets the label for the note entry box, and the html attributes data-note-term and data-placeholder.
         /// </summary>
         /// <value>
         /// The label.
@@ -274,10 +280,13 @@ namespace Rock.Web.UI.Controls
 
             set
             {
+                // This is going to be used seperately in editor attributes as "data-note-term"
+                _noteTerm = value;
+
                 ViewState["Label"] = value;
                 if ( value != null )
                 {
-                    _tbNote.Placeholder = string.Format( "Write a {0}...", value.ToLower() );
+                    _tbNote.Placeholder = string.Format( "Add a {0}...", value.ToLower() );
                 }
             }
         }
@@ -673,6 +682,8 @@ $@"Rock.controls.noteEditor.initialize({{
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, noteCss.ToString() );
+            writer.AddAttribute( "data-placeholder", this.Label );
+            writer.AddAttribute( "data-note-term", this._noteTerm );
             if ( this.Style[HtmlTextWriterStyle.Display] != null )
             {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, this.Style[HtmlTextWriterStyle.Display] );
@@ -713,7 +724,7 @@ $@"Rock.controls.noteEditor.initialize({{
                 writer.RenderEndTag(); // meta-figure div
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body js-focus-within" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "noteentry-control" );

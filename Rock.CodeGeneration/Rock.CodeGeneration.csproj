@@ -48,6 +48,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\bin\Rock.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Blocks">
+      <HintPath>..\RockWeb\Bin\Rock.Blocks.dll</HintPath>
+    </Reference>
     <Reference Include="Rock.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\bin\Rock.Common.dll</HintPath>
@@ -186,6 +189,9 @@
     <PackageReference Include="EntityFramework">
       <Version>6.4.4</Version>
     </PackageReference>
+    <PackageReference Include="FontAwesome.WPF">
+      <Version>4.7.0.9</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Core">
       <Version>5.2.3</Version>
     </PackageReference>
@@ -260,6 +266,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Rock.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

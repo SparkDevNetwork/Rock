@@ -27,6 +27,8 @@ namespace Rock.Badge
     /// <summary>
     /// Base class for person profile icon badges
     /// </summary>
+    [RockObsolete( "1.14" )]
+    [Obsolete( "HighlightLabelBadge depends on Webforms, use BadgeComponent instead and render the HTML." )]
     public abstract class HighlightLabelBadge : BadgeComponent
     {
         /// <summary>

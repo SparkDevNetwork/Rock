@@ -82,6 +82,16 @@ namespace Rock.Model
         /// <value><c>true</c> if [show financial results]; otherwise, <c>false</c>.</value>
         [DataMember]
         public bool ShowFinancialResults { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings json.
+        /// </summary>
+        /// <value>
+        /// The additional settings json.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

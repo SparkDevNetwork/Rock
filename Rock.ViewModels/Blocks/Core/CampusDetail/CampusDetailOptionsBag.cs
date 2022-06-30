@@ -21,10 +21,21 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.CampusDetail
 {
+    /// <summary>
+    /// Class CampusDetailOptionsBag.
+    /// </summary>
     public class CampusDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is multi time zone supported.
+        /// </summary>
+        /// <value><c>true</c> if this instance is multi time zone supported; otherwise, <c>false</c>.</value>
         public bool IsMultiTimeZoneSupported { get; set; }
 
+        /// <summary>
+        /// Gets or sets the time zone options.
+        /// </summary>
+        /// <value>The time zone options.</value>
         public List<ListItemBag> TimeZoneOptions { get; set; }
     }
 }

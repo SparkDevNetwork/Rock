@@ -19,8 +19,15 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks
 {
+    /// <summary>
+    /// Interface IValidPropertiesBox
+    /// </summary>
     public interface IValidPropertiesBox
     {
+        /// <summary>
+        /// Gets the valid properties.
+        /// </summary>
+        /// <value>The valid properties.</value>
         List<string> ValidProperties { get; }
     }
 }

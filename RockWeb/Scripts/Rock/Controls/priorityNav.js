@@ -63,7 +63,10 @@
 
             _setupMenu: function() {
                 var $allNavElements = this._$allNavElements;
-
+                // Checking position of the menu
+                var menuPosition = this._$menu.position();
+                // Get position of right
+                var menuRight = menuPosition.left + this._$menu.outerWidth();
                 // Checking top position of first item (sometimes changes)
                 var firstPos = this._$menu.find(Selector.FIRST_ELEMENT).position();
 
@@ -79,8 +82,10 @@
 
                     // ...in which to find wrapped elements
                     var pos = $elm.position();
+                    // Get position of right
+                    var right = pos.left + $elm.outerWidth();
 
-                    if (pos.top !== firstPos.top) {
+                    if (pos.top !== firstPos.top || right > menuRight) {
                         // If element is wrapped, add it to set
                         $wrappedElements = $wrappedElements.add($elm);
 

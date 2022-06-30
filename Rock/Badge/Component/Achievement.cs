@@ -163,7 +163,7 @@ $@"$.ajax({{
             var html = [];
 
             if (data && data.BadgeMarkup) {{
-                html.push('<div class=""badge badge-achievement"" data-tooltip-key=""{domElementKey}"" data-toggle=""tooltip"" data-original-title=""' + data.AchievementTypeName + '"">');
+                html.push('<div class=""rockbadge badge-achievement"" data-tooltip-key=""{domElementKey}"" data-toggle=""tooltip"" data-original-title=""' + data.AchievementTypeName + '"">');
                 html.push(data.BadgeMarkup);
                 html.push('</div>\n');
             }}

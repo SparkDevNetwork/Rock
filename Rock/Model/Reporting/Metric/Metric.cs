@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -205,6 +205,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool AutoPartitionOnPrimaryCampus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the unit.
+        /// </summary>
+        /// <value>
+        /// The type of the unit.
+        /// </value>
+        [DataMember]
+        public UnitType UnitType { get; set; }
 
         #endregion
 

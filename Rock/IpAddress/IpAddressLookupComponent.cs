@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using Rock.Attribute;
 using Rock.Extension;
+using Rock.IpAddress.Classes;
 
 namespace Rock.IpAddress
 {
@@ -38,32 +39,23 @@ namespace Rock.IpAddress
     public abstract class IpAddressLookupComponent : Component
     {
         /// <summary>
-        /// Gets all the IP Address result
+        /// Takes a list of IP Addresses and returns the location information associated with them.
         /// </summary>
-        public virtual LookupResult Lookup( Dictionary<string, List<int>> ipAddressesWithSessionIds, out string resultMsg )
+        public virtual List<IpLocation> BulkLookup( List<string> ipAddresses, out string resultMsg )
         {
             throw new NotImplementedException();
         }
 
-    }
-
-    #region Nested Classes
-
-    /// <summary>
-    /// The Lookup result
-    /// </summary>
-    public class LookupResult
-    {
         /// <summary>
-        /// Gets or sets the success count.
+        /// Lookups the specified IP Address and returns it's location.
         /// </summary>
-        public int SuccessCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the failed count.
-        /// </summary>
-        public int FailedCount { get; set; }
+        /// <param name="ipAddress">The ip address.</param>
+        /// <param name="resultMsg">The result MSG.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public virtual IpLocation Lookup( string ipAddress, out string resultMsg )
+        {
+            throw new NotImplementedException();
+        }
     }
-
-    #endregion
 }

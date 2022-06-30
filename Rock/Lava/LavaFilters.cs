@@ -22,7 +22,6 @@ using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -36,7 +35,6 @@ using System.Web.UI.HtmlControls;
 using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
-using Ical.Net.DataTypes;
 using ImageResizer;
 using Rock;
 using Rock.Attribute;
@@ -45,11 +43,11 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using UAParser;
-using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Lava
 {
@@ -732,21 +730,6 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Trims the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static string Trim( object input )
-        {
-            if ( input == null )
-            {
-                return string.Empty;
-            }
-
-            return input.ToString().Trim();
-        }
-
-        /// <summary>
         /// Remove the first occurrence of a substring - this is a Rock version on this filter which takes any object
         /// </summary>
         /// <param name="input"></param>
@@ -1177,7 +1160,7 @@ namespace Rock.Lava
 
             var calendar = CalendarCollection.Load( new StringReader( iCalString ) ).First();
             var calendarEvent = calendar.Events[0];
-            
+
             var tzName = RockDateTime.OrgTimeZoneInfo.Id;
             List<DateTimeOffset> dates;
 
@@ -1450,6 +1433,11 @@ namespace Rock.Lava
             if ( startDate != null && endDate != null )
             {
                 var difference = endDate.Value - startDate.Value;
+
+                if ( difference.TotalSeconds >= 0 && difference.TotalSeconds < 1 )
+                {
+                    return "just now";
+                }
 
                 if ( direction.ToLower() == "max" )
                 {
@@ -3274,6 +3262,10 @@ namespace Rock.Lava
         public static object Campus( ILavaRenderContext context, object input, object option = null )
         {
             var person = GetPerson( input, context );
+            if ( person == null )
+            {
+                return null;
+            }
 
             bool getAll = false;
             if ( option != null && option.GetType() == typeof( string ) )
@@ -4164,7 +4156,7 @@ namespace Rock.Lava
                     // Get without purpose key
                     followedEntityIds = new FollowingService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id )
                         .Where( e => entityIdList.Contains( e.Id ) ).Select( a => a.Id ).ToList();
-                } 
+                }
             }
             else
             {
@@ -4806,6 +4798,148 @@ namespace Rock.Lava
             }
 
             return parmReturn;
+        }
+
+        /// <summary>
+        /// Sets a parameter in the input URL string and returns the updated URL.
+        /// </summary>
+        /// <param name="inputUrl">The input URL to be modified.</param>
+        /// <param name="parameterName">The name of the URL parameter to modify.</param>
+        /// <param name="parameterValue">The new value parameter value.</param>
+        /// <param name="outputUrlFormat">The format of the output URL, specified as {"absolute"|"relative"}. If not specified, the default value is "absolute".</param>
+        /// <returns>The updated URL, or the unmodified input string if it cannot be parsed as a URL.</returns>
+        public static string SetUrlParameter( object inputUrl, object parameterName, object parameterValue, object outputUrlFormat )
+        {
+            // Determine the input URL.
+            var inputUrlString = inputUrl.ToStringSafe();
+            if ( string.IsNullOrWhiteSpace( inputUrlString ) )
+            {
+                return string.Empty;
+            }
+
+            Uri inputUri = null;
+            if ( inputUrlString.Trim().ToLower() == "current" )
+            {
+                inputUri = HttpContext.Current?.Request?.Url;
+            }
+            else
+            {
+                try
+                {
+                    inputUri = new Uri( inputUrlString );
+                }
+                catch
+                {
+                    // If the Uri failed to parse, it cannot be processed further.
+                }
+            }
+            // If the input string cannot be parsed as a URL, return it unmodified.
+            if ( inputUri == null )
+            {
+                return inputUrl.ToStringSafe();
+            }
+
+            // Determine if the input URL is associated with a Rock Page.
+            var uriBuilder = new UriBuilder( inputUri );
+            var inputPageReference = new PageReference( uriBuilder.Uri, null );
+
+            var isRockPage = ( inputPageReference.PageId != 0 );
+
+            // Determine the parameter type.
+            var parameterNameString = parameterName.ToStringSafe().Trim();
+            var isPageChange = isRockPage && parameterNameString.Equals( "pageid", StringComparison.OrdinalIgnoreCase );
+
+            // Collate the route and query parameters.
+            var allParameters = new Dictionary<string, string>();
+            Dictionary<string, string> routeParameterValues = null;
+            Dictionary<string, string> queryParameterValues = null;
+
+            foreach ( var kvp in inputPageReference.Parameters )
+            {
+                allParameters.AddOrIgnore( kvp.Key, kvp.Value );
+            }
+            foreach ( var nv in inputPageReference.QueryString.AllKeys )
+            {
+                allParameters.AddOrIgnore( nv, inputPageReference.QueryString[nv] );
+            }
+
+            // Add, remove or modify the target parameter.
+            var setValue = parameterValue?.ToString() ?? string.Empty;
+            if ( isPageChange )
+            {
+                // If this is a Rock page change, it will be handled separately as a special route parameter.
+                setValue = "";
+            }
+            if ( string.IsNullOrEmpty( setValue ) )
+            {
+                allParameters.Remove( parameterNameString );
+            }
+            else
+            {
+                allParameters[parameterNameString] = setValue;
+            }
+
+            if ( isRockPage )
+            {
+                // If the input URL refers to an existing Rock page, determine the correct output page.
+                int outputPageId;
+                if ( isPageChange )
+                {
+                    // If the input URL refers to an existing Rock page and the parameter to modify is "PageId",
+                    // we are switching to a new target page.
+                    // In this case, we will try to apply the route and query parameters from the input URL to the new page.
+                    outputPageId = parameterValue.ToIntSafe();
+                }
+                else
+                {
+                    outputPageId = inputPageReference.PageId;
+                }
+
+                var outputPage = PageCache.Get( outputPageId );
+
+                // Determine which route is the best fit for all of the available parameters,
+                // including the parameter that is being added or modified.
+                var outputPageReference = PageReference.GetBestMatchForParameters( outputPageId, allParameters );
+
+                // Now that we have determined the correct route, redistribute the route and query parameters.
+                var routeParameterNames = RouteUtils.ParseRouteParameters( outputPageReference.Route );
+                routeParameterValues = allParameters.Where( x => routeParameterNames.Contains( x.Key ) )
+                    .ToDictionary( k => k.Key, v => v.Value );
+                queryParameterValues = allParameters.Where( x => !routeParameterNames.Contains( x.Key ) )
+                    .ToDictionary( k => k.Key, v => v.Value );
+
+                uriBuilder.Path = outputPageReference.BuildRouteURL( routeParameterValues ).TrimEnd( '/' );
+            }
+            else
+            {
+                // If the URL does not reference a Rock page, all parameters are part of the query string.
+                queryParameterValues = allParameters;
+            }
+
+            // Update or add the parameter in the query string of the URL.
+            var queryValues = new NameValueCollection();
+            if ( !string.IsNullOrWhiteSpace( parameterNameString ) )
+            {
+                foreach ( var qpv in queryParameterValues )
+                {
+                    queryValues[qpv.Key] = qpv.Value;
+                }
+            }
+            uriBuilder.Query = queryValues.ToQueryString( false );
+
+            // Construct the output URL.
+            string url;
+            if ( outputUrlFormat.ToStringSafe().ToLower() == "relative" )
+            {
+                var baseUri = new Uri( uriBuilder.Uri.GetLeftPart( UriPartial.Authority ) );
+                url = "/" + baseUri.MakeRelativeUri( uriBuilder.Uri ).ToString();
+            }
+            else
+            {
+                url = uriBuilder.Uri.AbsoluteUri;
+            }
+
+            return url;
         }
 
         /// <summary>

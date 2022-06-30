@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -127,6 +127,7 @@ namespace Rock.Blocks.Event
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     public class RegistrationEntry : RockObsidianBlockType
     {
         #region Keys
@@ -641,6 +642,7 @@ namespace Rock.Blocks.Event
             Person registrar = null;
             List<int> previousRegistrantPersonIds = null;
             var isNewRegistration = context.Registration == null;
+            
 
             if ( isNewRegistration )
             {
@@ -818,6 +820,20 @@ namespace Rock.Blocks.Event
                     context.Registration.GroupId = group.Id;
                     History.EvaluateChange( registrationChanges, "Group", string.Empty, group.Name );
                 }
+            }
+
+            var registrationSlug = PageParameter( PageParameterKey.Slug );
+            var linkage = GetRegistrationLinkage( registrationSlug, rockContext );
+
+            if ( linkage?.CampusId.HasValue == true )
+            {
+                campusId = linkage.CampusId;
+            }
+
+            if ( campusId.HasValue )
+            {
+                context.Registration.CampusId = campusId;
+                History.EvaluateChange( registrationChanges, "Campus", string.Empty, linkage.Campus.Name );
             }
 
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
@@ -1022,6 +1038,32 @@ namespace Rock.Blocks.Event
             }
 
             return groupId;
+        }
+
+        /// <summary>
+        /// Gets the registration linkage.
+        /// </summary>
+        /// <param name="slug">The slug.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private EventItemOccurrenceGroupMap GetRegistrationLinkage( string slug, RockContext rockContext )
+        {
+            var dateTime = RockDateTime.Now;
+
+            var linkage = new EventItemOccurrenceGroupMapService( rockContext ?? new RockContext() )
+                .Queryable().AsNoTracking()
+                .Include( m => m.Campus )
+                .Where( l =>
+                    l.UrlSlug == slug &&
+                    l.RegistrationInstance != null &&
+                    l.RegistrationInstance.IsActive &&
+                    l.RegistrationInstance.RegistrationTemplate != null &&
+                    l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                    ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                    ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                .FirstOrDefault();
+
+            return linkage;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Slingshot.Rest.Controllers
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
     [RockObsolete( "1.11" )]
     [Obsolete( "Use the Slingshot BulkImport block instead" )]
+    [Rock.SystemGuid.RestControllerGuid( "4E1EB99D-9C0E-418F-8710-7953B7068280")]
     public class BulkImportController : Rock.Rest.ApiControllerBase
     {
 

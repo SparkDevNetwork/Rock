@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,6 +59,7 @@ namespace Rock.Communication.Transport
         DefaultIntegerValue = 10,
         Order = 5,
         Key = AttributeKey.MaxParallelization )]
+    [Rock.SystemGuid.EntityTypeGuid( "BF3123A0-E5D1-42E0-9B95-C077DCD3C8BF")]
     public class SendGridHttp : EmailTransportComponent, IAsyncTransport
     {
         /// <summary>
