@@ -798,6 +798,7 @@
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsUpdateCurrentSessions.cs" />
     <Compile Include="Model\Core\InteractionChannel\InteractionChannelService.cs" />
+    <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.SaveHook.cs" />
     <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrant.SaveHook.cs" />
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Model\Reporting\Metric\UnitType.cs" />
