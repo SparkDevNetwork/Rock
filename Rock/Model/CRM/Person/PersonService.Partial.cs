@@ -866,7 +866,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets an <see cref="Rock.Model.Person"/> entity that have a matching business name and a record type of business with either of email, phone or street1 matched.
+        /// Gets an <see cref="Rock.Model.Person"/> entity that have a first 12 character of business name and a record type of business with either of email, phone or street1 matches with existing record.
         /// </summary>
         /// <param name="businessName">Name of the business.</param>
         /// <param name="email">The email.</param>
@@ -885,10 +885,13 @@ namespace Rock.Model
                 query = query.Where( p => p.RecordTypeValueId == recordTypeBusiness );
             }
 
-            //only consider first 12 char
-            businessName = businessName.SubstringSafe( 12 );
+            /*
+               SK - 07/01/2022
+               We consider only first 12 character of the given business name to look for any matching existing record.
+            */
+            businessName = businessName.SubstringSafe( 0, 12 );
             query = query
-                .Where( p => businessName != "" && p.LastName.Contains( businessName ) );
+                .Where( p => businessName != "" && p.LastName.StartsWith( businessName ) );
 
             var matchedPersons = new List<Person>();
             if ( email.IsNotNullOrWhiteSpace() )
@@ -3210,14 +3213,14 @@ namespace Rock.Model
                     {
                         anonymousPersonId = anonymousPerson.Id;
 
-                    // Write a history record about the merge
-                    var changes = new History.HistoryChangeList();
+                        // Write a history record about the merge
+                        var changes = new History.HistoryChangeList();
                         changes.AddChange( History.HistoryVerb.Merge, History.HistoryChangeType.Record, string.Format( "{0} [ID: {1}]", expungePerson.FullName, expungePerson.Id ) );
 
                         HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), anonymousPerson.Id, changes );
 
-                    // Photo Id
-                    anonymousPerson.PhotoId = GetSelectedValue( anonymousPerson.PhotoId, expungePerson.PhotoId );
+                        // Photo Id
+                        anonymousPerson.PhotoId = GetSelectedValue( anonymousPerson.PhotoId, expungePerson.PhotoId );
                         anonymousPerson.TitleValueId = GetSelectedValue( anonymousPerson.TitleValueId, expungePerson.TitleValueId );
                         anonymousPerson.FirstName = GetSelectedValue( anonymousPerson.FirstName, expungePerson.FirstName );
                         anonymousPerson.NickName = GetSelectedValue( anonymousPerson.NickName, expungePerson.NickName );
@@ -3243,32 +3246,32 @@ namespace Rock.Model
                         anonymousPerson.SystemNote = GetSelectedValue( anonymousPerson.SystemNote, expungePerson.SystemNote );
                         anonymousPerson.ContributionFinancialAccountId = GetSelectedValue( anonymousPerson.ContributionFinancialAccountId, expungePerson.ContributionFinancialAccountId );
 
-                    // Update phone numbers
-                    var phoneTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
+                        // Update phone numbers
+                        var phoneTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
                         foreach ( var phoneType in phoneTypes )
                         {
                             var anonymousPersonPhoneNumber = anonymousPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
                             if ( anonymousPersonPhoneNumber == null )
                             {
                                 var expungePersonphoneNumber = expungePerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
-                            // New phone doesn't match old
-                            if ( expungePersonphoneNumber != null )
+                                // New phone doesn't match old
+                                if ( expungePersonphoneNumber != null )
                                 {
-                                // Old value didn't exist... create new phone record
-                                anonymousPersonPhoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id };
+                                    // Old value didn't exist... create new phone record
+                                    anonymousPersonPhoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id };
                                     anonymousPerson.PhoneNumbers.Add( anonymousPersonPhoneNumber );
 
-                                // Update phone number
-                                anonymousPersonPhoneNumber.Number = expungePersonphoneNumber.Number;
+                                    // Update phone number
+                                    anonymousPersonPhoneNumber.Number = expungePersonphoneNumber.Number;
                                 }
                             }
                         }
 
-                    // Save the new record
-                    rockContext.SaveChanges();
+                        // Save the new record
+                        rockContext.SaveChanges();
 
-                    // Update the attributes
-                    anonymousPerson.LoadAttributes( rockContext );
+                        // Update the attributes
+                        anonymousPerson.LoadAttributes( rockContext );
                         expungePerson.LoadAttributes( rockContext );
 
                         foreach ( var attribute in expungePerson.Attributes.OrderBy( a => a.Value.Order ) )
@@ -3285,8 +3288,8 @@ namespace Rock.Model
                             }
                         }
 
-                    // Update the family attributes
-                    var anonymousFamily = anonymousPerson.GetFamily( rockContext );
+                        // Update the family attributes
+                        var anonymousFamily = anonymousPerson.GetFamily( rockContext );
                         var expungePersonFamily = expungePerson.GetFamily( rockContext );
 
                         if ( expungePersonFamily != null && expungePersonFamily != null )
@@ -3314,8 +3317,8 @@ namespace Rock.Model
 
                         rockContext.SaveChanges();
 
-                    // Merge search keys on merge
-                    if ( expungePerson.Email.IsNotNullOrWhiteSpace() )
+                        // Merge search keys on merge
+                        if ( expungePerson.Email.IsNotNullOrWhiteSpace() )
                         {
                             var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
                             var personSearchKeys = anonymousPerson.GetPersonSearchKeys( rockContext ).Where( a => a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue == expungePerson.Email ).ToList();
@@ -3341,39 +3344,39 @@ namespace Rock.Model
                             }
                         }
 
-                    // Delete the merged person's phone numbers (we've already updated the anonymous person's values)
-                    foreach ( var phoneNumber in phoneNumberService.GetByPersonId( expungePerson.Id ) )
+                        // Delete the merged person's phone numbers (we've already updated the anonymous person's values)
+                        foreach ( var phoneNumber in phoneNumberService.GetByPersonId( expungePerson.Id ) )
                         {
                             phoneNumberService.Delete( phoneNumber );
                         }
 
                         rockContext.SaveChanges();
 
-                    // Delete the merged person's other family member records and the family if they were the only one in the family
-                    Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                        // Delete the merged person's other family member records and the family if they were the only one in the family
+                        Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
                         foreach ( var familyMember in groupMemberService.Queryable().Where( m => m.PersonId == expungePerson.Id && m.Group.GroupType.Guid == familyGuid ) )
                         {
                             groupMemberService.Delete( familyMember );
 
                             rockContext.SaveChanges();
 
-                        // Get the family
-                        var family = groupService.Queryable( "Members" ).Where( f => f.Id == familyMember.GroupId ).FirstOrDefault();
+                            // Get the family
+                            var family = groupService.Queryable( "Members" ).Where( f => f.Id == familyMember.GroupId ).FirstOrDefault();
                             if ( !family.Members.Any() )
                             {
-                            // If there are not any other family members, delete the family record.
+                                // If there are not any other family members, delete the family record.
 
-                            // If theres any people that have this group as a giving group, set it to null (the person being merged should be the only one)
-                            foreach ( Person gp in personService.Queryable().Where( g => g.GivingGroupId == family.Id ) )
+                                // If theres any people that have this group as a giving group, set it to null (the person being merged should be the only one)
+                                foreach ( Person gp in personService.Queryable().Where( g => g.GivingGroupId == family.Id ) )
                                 {
                                     gp.GivingGroupId = null;
                                 }
 
-                            // save to the database prior to doing groupService.Delete since .Delete quietly might not delete if thinks the Family is used for a GivingGroupId
-                            rockContext.SaveChanges();
+                                // save to the database prior to doing groupService.Delete since .Delete quietly might not delete if thinks the Family is used for a GivingGroupId
+                                rockContext.SaveChanges();
 
-                            // Delete the family
-                            string errorMessage;
+                                // Delete the family
+                                string errorMessage;
                                 if ( groupService.CanDelete( family, out errorMessage ) )
                                 {
                                     groupService.Delete( family );
@@ -3383,8 +3386,8 @@ namespace Rock.Model
                         }
 
 
-                    // Flush any security roles that the merged person's other records were a part of
-                    foreach ( var groupMember in groupMemberService.Queryable().Where( m => m.PersonId == expungePerson.Id ) )
+                        // Flush any security roles that the merged person's other records were a part of
+                        foreach ( var groupMember in groupMemberService.Queryable().Where( m => m.PersonId == expungePerson.Id ) )
                         {
                             Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                             if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )

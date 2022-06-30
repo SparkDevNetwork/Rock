@@ -152,7 +152,7 @@ namespace Rock.Workflow.Action
             string businessName = GetAttributeValue( _action, AttributeKey.BusinessName, true ).ResolveMergeFields( mergeFields );
             if ( businessName.IsNullOrWhiteSpace() )
             {
-                errorMessages.Add( "Business Name is required and could not be found!" );
+                errorMessages.Add( "Business Name is required and could not be found." );
                 errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
                 return false;
             }
