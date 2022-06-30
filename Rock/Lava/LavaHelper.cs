@@ -171,6 +171,12 @@ namespace Rock.Lava
                 }
             }
 
+            if ( options.GetCurrentVisitor && rockPage != null )
+            {
+                var currentVisitor = rockPage.CurrentVisitor;
+                mergeFields.Add( "CurrentVisitor", currentVisitor );
+            }
+
             if ( options.GetCampuses )
             {
                 mergeFields.Add( "Campuses", CampusCache.All() );

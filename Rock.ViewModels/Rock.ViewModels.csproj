@@ -243,6 +243,7 @@
     <Compile Include="Entities\PageRouteBag.cs" />
     <Compile Include="Entities\PageShortLinkBag.cs" />
     <Compile Include="Entities\PersonalDeviceBag.cs" />
+    <Compile Include="Entities\PersonalizationSegmentBag.cs" />
     <Compile Include="Entities\PersonalLinkBag.cs" />
     <Compile Include="Entities\PersonalLinkSectionBag.cs" />
     <Compile Include="Entities\PersonalLinkSectionOrderBag.cs" />
@@ -271,10 +272,12 @@
     <Compile Include="Entities\RemoteAuthenticationSessionBag.cs" />
     <Compile Include="Entities\ReportBag.cs" />
     <Compile Include="Entities\ReportFieldBag.cs" />
+    <Compile Include="Entities\RequestFilterBag.cs" />
     <Compile Include="Entities\RestActionBag.cs" />
     <Compile Include="Entities\RestControllerBag.cs" />
     <Compile Include="Entities\ScheduleBag.cs" />
     <Compile Include="Entities\ScheduleCategoryExclusionBag.cs" />
+    <Compile Include="Entities\SegmentBag.cs" />
     <Compile Include="Entities\ServiceJobBag.cs" />
     <Compile Include="Entities\ServiceJobHistoryBag.cs" />
     <Compile Include="Entities\ServiceLogBag.cs" />

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -2792,7 +2792,10 @@ namespace RockWeb.Blocks.WorkFlow
 
             var interactionTransactionInfo = new InteractionTransactionInfo
             {
-                PersonAliasId = this.CurrentPersonAliasId,
+                // NOTE: InteractionTransactionInfo.PersonAliasId will do this same logic if PersonAliasId isn't specified. Doing it here to
+                // make it more obvious.
+                PersonAliasId = this.CurrentPersonAliasId ?? this.CurrentVisitor?.Id,
+
                 InteractionEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.WORKFLOW.AsGuid() ),
                 InteractionDateTime = RockDateTime.Now,
                 InteractionChannelId = workflowLaunchInteractionChannelId ?? 0,

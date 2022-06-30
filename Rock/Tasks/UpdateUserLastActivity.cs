@@ -44,7 +44,7 @@ namespace Rock.Tasks
 
                 This is because this GetCurrentUser method could be called on the same user
                 100s or 1000s of times a minute under heavy load, especialy during Checkin.
-                Since this involves and UPDATE on the UserLogin table, at the same time there
+                Since this involves an UPDATE on the UserLogin table, at the same time there
                 are SELECTS on the same row, we can minimize database contention
                 and unnecessary overhead in the message bus.
             */

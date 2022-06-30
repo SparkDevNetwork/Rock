@@ -764,6 +764,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the sliding date range type from delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>SlidingDateRangeType.</returns>
+        public static SlidingDateRangeType GetSlidingDateRangeTypeFromDelimitedValues( string value )
+        {
+            string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+            if ( splitValues.Length == 5 )
+            {
+                return splitValues[0].ConvertToEnum<SlidingDateRangeType>();
+            }
+            else
+            {
+                return SlidingDateRangeType.All;
+            }
+        }
+
+        /// <summary>
         /// Formats the delimited values as a phrase such as "Last 14 Days"
         /// </summary>
         /// <param name="value">The value.</param>

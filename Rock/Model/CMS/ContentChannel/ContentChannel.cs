@@ -209,6 +209,15 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS )]
         public int? StructuredContentToolValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable personalization].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable personalization]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnablePersonalization { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

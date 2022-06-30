@@ -12234,7 +12234,7 @@ BEGIN
         VALUES (
             @spousePersonId
             ,@spousePersonId
-            ,@personGuid
+            ,@spousePersonGuid
             ,NEWID()
             );
 

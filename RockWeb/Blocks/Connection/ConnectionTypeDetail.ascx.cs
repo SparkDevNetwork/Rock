@@ -531,8 +531,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     // Controls will render the error messages
                     return;
-                }           
-                                
+                }
 
                 // need WrapTransaction due to Attribute saves
                 rockContext.WrapTransaction( () =>

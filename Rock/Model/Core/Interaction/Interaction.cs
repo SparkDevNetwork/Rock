@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,7 +69,7 @@ namespace Rock.Model
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the operation. For example: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'
+        /// Gets or sets the operation. For example: 'View', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed', 'Complete', 'Incomplete', 'Watch', 'Present'.
         /// </summary>
         /// <value>
         /// The operation.

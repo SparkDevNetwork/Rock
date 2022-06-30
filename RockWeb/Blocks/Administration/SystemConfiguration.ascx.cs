@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,9 +47,14 @@ namespace RockWeb.Blocks.Administration
         private static class SettingDefault
         {
             /// <summary>
-            /// The cookie timeout
+            /// The visitor cookie timeout days
             /// </summary>
-            public const int CookieTimeout = 43200;
+            public const int VisitorCookieTimeoutDays = 365;
+
+            /// <summary>
+            /// The login cookie timeout (in minutes)
+            /// </summary>
+            public const int LoginCookieTimeoutMinutes = 43200;
         }
 
         #endregion Defaults
@@ -110,7 +115,7 @@ namespace RockWeb.Blocks.Administration
 
             BindOtherAppSettings();
             BindMaxFileSize();
-            BindCookieTimeout();
+            BindLoginCookieTimeout();
 
             BindExperimentalSettings();
 
@@ -150,6 +155,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER, cbIncludeBusinessInPersonPicker.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_KEEP_ALIVE, cbEnableKeepAlive.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT, tbPDFExternalRenderEndpoint.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS, nbVisitorCookiePersistenceLengthDays.Text );
 
             nbGeneralMessage.NotificationBoxType = NotificationBoxType.Success;
             nbGeneralMessage.Title = string.Empty;
@@ -176,7 +182,7 @@ namespace RockWeb.Blocks.Administration
 
             var section = ( System.Web.Configuration.SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
             section.HttpRuntime.MaxRequestLength = int.Parse( numbMaxSize.Text ) * 1024;
-            section.Authentication.Forms.Timeout = TimeSpan.FromMinutes( numCookieTimeout.IntegerValue ?? SettingDefault.CookieTimeout );
+            section.Authentication.Forms.Timeout = TimeSpan.FromMinutes( numLoginCookieTimeout.IntegerValue ?? SettingDefault.LoginCookieTimeoutMinutes );
 
             rockWebConfig.Save();
 
@@ -219,6 +225,7 @@ namespace RockWeb.Blocks.Administration
             cbIncludeBusinessInPersonPicker.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER ).AsBoolean();
             cbEnableKeepAlive.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean();
             tbPDFExternalRenderEndpoint.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
+            nbVisitorCookiePersistenceLengthDays.Text = (Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays).ToString();
         }
 
         /// <summary>
@@ -262,20 +269,20 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Binds the cookie timeout.
+        /// Binds the login cookie timeout.
         /// </summary>
-        private void BindCookieTimeout()
+        private void BindLoginCookieTimeout()
         {
             var rockWebConfig = WebConfigurationManager.OpenWebConfiguration( "~" );
             var systemWebSection = ( SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
 
             if ( systemWebSection == null )
             {
-                numCookieTimeout.IntegerValue = SettingDefault.CookieTimeout;
+                numLoginCookieTimeout.IntegerValue = SettingDefault.LoginCookieTimeoutMinutes;
                 return;
             }
 
-            numCookieTimeout.IntegerValue = ( int ) systemWebSection.Authentication.Forms.Timeout.TotalMinutes;
+            numLoginCookieTimeout.IntegerValue = ( int ) systemWebSection.Authentication.Forms.Timeout.TotalMinutes;
         }
 
         /// <summary>

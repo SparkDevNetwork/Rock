@@ -23,6 +23,7 @@ using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.BulkExport;
 using Rock.Data;
@@ -158,6 +159,14 @@ namespace Rock.Model
             ///   <c>true</c> if [include rest users]; otherwise, <c>false</c>.
             /// </value>
             public bool IncludeRestUsers { get; set; } = true;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include anonymous visitor].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include anonymous visitor]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeAnonymousVisitor { get; set; } = false;
         }
 
         /// <summary>
@@ -173,7 +182,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities with eager loading of properties that are included in the includes parameter.
-        /// using the option specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people and nameless person records)
+        /// using the option specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people, nameless person records and the anonymous visitor. )
         /// </summary>
         /// <param name="includes">The includes.</param>
         /// <param name="personQueryOptions">The person query options.</param>
@@ -228,6 +237,12 @@ namespace Rock.Model
             if ( personQueryOptions.IncludeDeceased == false )
             {
                 qry = qry.Where( p => p.IsDeceased == false );
+            }
+
+            if ( personQueryOptions.IncludeAnonymousVisitor == false )
+            {
+                var anonymousVisitorGuid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid();
+                qry = qry.Where( p => p.Guid != anonymousVisitorGuid );
             }
 
             return qry;
@@ -2488,8 +2503,8 @@ namespace Rock.Model
         /// <returns>Person.</returns>
         public Person GetCurrentPerson()
         {
-                var currentUser = new UserLoginService( (RockContext) this.Context ).GetByUserName( UserLogin.GetCurrentUserName() );
-                return currentUser != null ? currentUser.Person : null;
+            var currentUser = new UserLoginService( ( RockContext ) this.Context ).GetByUserName( UserLogin.GetCurrentUserName() );
+            return currentUser != null ? currentUser.Person : null;
         }
 
         /// <summary>
@@ -4682,6 +4697,79 @@ FROM (
 
         #endregion
 
+        #region Anonymous Visitor
+
+        /// <summary>
+        /// Gets the AnonymousVisitorPersonId, and creates it if it doesn't exist.
+        /// <seealso cref="GetOrCreateAnonymousVisitorPerson"/>
+        /// </summary>
+        /// <returns>System.Int32.</returns>
+        public int GetOrCreateAnonymousVisitorPersonId()
+        {
+            var anonymousVisitorPersonId = GetId( SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() );
+            if ( !anonymousVisitorPersonId.HasValue )
+            {
+                anonymousVisitorPersonId = GetOrCreateAnonymousVisitorPerson().Id;
+            }
+
+            return anonymousVisitorPersonId.Value;
+        }
+
+        /// <summary>
+        /// Gets or creates the anonymous visitor person.
+        /// </summary>
+        /// <returns>A <see cref="Person"/> that matches the SystemGuid.Person.ANONYMOUS_VISITOR Guid value.</returns>
+        public Person GetOrCreateAnonymousVisitorPerson()
+        {
+            var anonymousVisitor = Get( SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() );
+            if ( anonymousVisitor == null )
+            {
+                CreateAnonymousVisitorPerson();
+                anonymousVisitor = Get( SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() );
+            }
+
+            return anonymousVisitor;
+        }
+
+        /// <summary>
+        /// Creates the anonymous visitor person.  Used by GetOrCreateAnonymousVisitorPerson().
+        /// </summary>
+        private void CreateAnonymousVisitorPerson()
+        {
+            using ( var anonymousVisitorPersonRockContext = new RockContext() )
+            {
+
+                var connectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
+                var recordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var recordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
+                var anonymousVisitor = new Person()
+                {
+                    IsSystem = true,
+                    RecordTypeValueId = recordTypeValueId,
+                    RecordStatusValueId = recordStatusValueId,
+                    ConnectionStatusValueId = connectionStatusValueId,
+                    IsDeceased = false,
+                    FirstName = "Anonymous",
+                    NickName = "Anonymous",
+                    LastName = "Visitor",
+                    Gender = Gender.Unknown,
+                    IsEmailActive = true,
+                    Guid = SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid(),
+                    EmailPreference = EmailPreference.EmailAllowed,
+                    CommunicationPreference = CommunicationType.Email
+                };
+
+                new PersonService( anonymousVisitorPersonRockContext ).Add( anonymousVisitor );
+                if ( anonymousVisitor != null )
+                {
+                    PersonService.SaveNewPerson( anonymousVisitor, anonymousVisitorPersonRockContext, null, false );
+                }
+
+                anonymousVisitorPersonRockContext.SaveChanges();
+            }
+        }
+
+        #endregion
         #region Anonymous Giver
 
         /// <summary>
@@ -4696,6 +4784,7 @@ FROM (
                 CreateAnonymousGiverPerson();
                 anonymousGiver = Get( SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
             }
+
             return anonymousGiver;
         }
 
@@ -4728,6 +4817,11 @@ FROM (
                 };
 
                 new PersonService( anonymousGiverPersonRockContext ).Add( anonymousGiver );
+                if ( anonymousGiver != null )
+                {
+                    PersonService.SaveNewPerson( anonymousGiver, anonymousGiverPersonRockContext, null, false );
+                }
+
                 anonymousGiverPersonRockContext.SaveChanges();
             }
         }

@@ -128,6 +128,10 @@
     <Compile Include="Migrations\202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.designer.cs">
       <DependentUpon>202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202206301739408_Personalization.cs" />
+    <Compile Include="Migrations\202206301739408_Personalization.designer.cs">
+      <DependentUpon>202206301739408_Personalization.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1241,6 +1245,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.resx">
       <DependentUpon>202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206301739408_Personalization.resx">
+      <DependentUpon>202206301739408_Personalization.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>

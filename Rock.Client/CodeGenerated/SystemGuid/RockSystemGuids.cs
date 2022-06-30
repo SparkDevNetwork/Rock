@@ -1628,6 +1628,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Person
     {
+        public const string ANONYMOUS_VISITOR = "7EBC167B-512D-4683-9D80-98B6BB02E1B9";
         public const string GIVER_ANONYMOUS = "802235DC-3CA5-94B0-4326-AACE71180F48";
     }
 

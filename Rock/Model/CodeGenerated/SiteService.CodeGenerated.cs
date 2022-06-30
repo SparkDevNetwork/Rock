@@ -73,6 +73,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, RemoteAuthenticationSession.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<RequestFilter>( Context ).Queryable().Any( a => a.SiteId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, RequestFilter.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -118,6 +124,8 @@ namespace Rock.Model
                 EnableMobileRedirect = model.EnableMobileRedirect,
                 EnablePageViewGeoTracking = model.EnablePageViewGeoTracking,
                 EnablePageViews = model.EnablePageViews,
+                EnablePersonalization = model.EnablePersonalization,
+                EnableVisitorTracking = model.EnableVisitorTracking,
                 ErrorPage = model.ErrorPage,
                 ExternalUrl = model.ExternalUrl,
                 FavIconBinaryFileId = model.FavIconBinaryFileId,
@@ -229,6 +237,8 @@ namespace Rock.Model
             target.EnableMobileRedirect = source.EnableMobileRedirect;
             target.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
             target.EnablePageViews = source.EnablePageViews;
+            target.EnablePersonalization = source.EnablePersonalization;
+            target.EnableVisitorTracking = source.EnableVisitorTracking;
             target.ErrorPage = source.ErrorPage;
             target.ExternalUrl = source.ExternalUrl;
             target.FavIconBinaryFileId = source.FavIconBinaryFileId;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -106,6 +106,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the persisted schedule interval minutes.
+        /// If this is null, then the DataView is not persisted.
         /// </summary>
         /// <value>
         /// The persisted schedule interval minutes.

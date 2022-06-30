@@ -134,7 +134,9 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonalizationSegmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\RequestFiltersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
     <Compile Include="v2\ControlsController.cs" />

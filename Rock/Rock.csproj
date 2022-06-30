@@ -796,12 +796,32 @@
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
+    <Compile Include="Jobs\UpdatePersonalizationData.cs" />
+    <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegment.SaveHook.cs" />
+    <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegmentService.cs" />
+    <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
+    <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
+    <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
+    <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />
+    <Compile Include="Personalization\PersonalizationSegmentFilters\PageViewSegmentFilter.cs" />
+    <Compile Include="Personalization\PersonalizationSegmentFilters\SessionCountSegmentFilter.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilter.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilterConfiguration.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilters\IPAddressRequestFilter.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilters\BrowserRequestFilter.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilters\CookieRequestFilter.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilters\QueryStringRequestFilter.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilters\DeviceTypeRequestFilter.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilters\PreviousActivityRequestFilter.cs" />
+    <Compile Include="Personalization\RequestCookies.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsUpdateCurrentSessions.cs" />
     <Compile Include="Model\Core\InteractionChannel\InteractionChannelService.cs" />
     <Compile Include="Model\CRM\PersonalDevice\PersonalDevice.SaveHook.cs" />
     <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrant.SaveHook.cs" />
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Model\Reporting\Metric\UnitType.cs" />
+    <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
@@ -848,6 +868,7 @@
     <Compile Include="Model\CMS\PersonalLink\PersonalLink.SaveHook.cs" />
     <Compile Include="Model\CodeGenerated\CampusTopicService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractionSessionLocationService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\RequestFilterService.CodeGenerated.cs" />
     <Compile Include="Model\Core\AuthAuditLog\AuthAuditLog.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.Logic.cs" />
     <Compile Include="Model\CMS\Block\Block.Logic.cs" />
@@ -1012,6 +1033,12 @@
     <Compile Include="Model\Core\Document\Document.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
     <Compile Include="Model\Core\ExceptionLog\ExceptionLogService.WebForms.cs" />
+    <Compile Include="Model\CRM\PersonAliasPersonalization\PersonAliasPersonalization.cs" />
+    <Compile Include="Model\CRM\PersonAliasPersonalization\PersonalizationType.cs" />
+    <Compile Include="Model\CRM\PersonalizedEntity\PersonalizedEntity.cs" />
+    <Compile Include="Model\CMS\RequestFilter\RequestFilter.cs" />
+    <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegment.cs" />
+    <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegment.Logic.cs" />
     <Compile Include="Model\Finance\FinancialAccount\FinancialAccount.Logic.cs" />
     <Compile Include="Model\Core\FollowingEventType\FollowingEventType.Logic.cs" />
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedStatus.cs" />
@@ -1406,6 +1433,7 @@
     <Compile Include="Tasks\UpdatePersonSignalTypes.cs" />
     <Compile Include="Tasks\UpdateReportStatistics.cs" />
     <Compile Include="Tasks\LaunchWorkflow.cs" />
+    <Compile Include="Tasks\UpdatePersonAliasLastVisitDateTime.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
@@ -1666,6 +1694,8 @@
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
+    <Compile Include="Web\Cache\Entities\RequestFilterCache.cs" />
+    <Compile Include="Web\Cache\Entities\PersonalizationSegmentCache.cs" />
     <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
@@ -3946,6 +3976,8 @@
     <Compile Include="Model\CRM\PersonAlias\PersonAlias.Logic.cs" />
     <Compile Include="Model\CRM\PersonPreviousName\PersonPreviousName.SaveHook.cs" />
     <Compile Include="Model\CMS\PersonalLinkSection\PersonalLinkSection.SaveHook.cs" />
+    <Compile Include="Model\CRM\PersonAlias\PersonAlias.SaveHook.cs" />
+    <Compile Include="Model\CMS\RequestFilter\RequestFilter.Logic.cs" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

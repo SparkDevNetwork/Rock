@@ -89,6 +89,12 @@ namespace Rock.Client
         public bool EnablePageViews { get; set; } = true;
 
         /// <summary />
+        public bool EnablePersonalization { get; set; }
+
+        /// <summary />
+        public bool EnableVisitorTracking { get; set; }
+
+        /// <summary />
         public string ErrorPage { get; set; }
 
         /// <summary />
@@ -222,6 +228,8 @@ namespace Rock.Client
             this.EnableMobileRedirect = source.EnableMobileRedirect;
             this.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
             this.EnablePageViews = source.EnablePageViews;
+            this.EnablePersonalization = source.EnablePersonalization;
+            this.EnableVisitorTracking = source.EnableVisitorTracking;
             this.ErrorPage = source.ErrorPage;
             this.ExternalUrl = source.ExternalUrl;
             this.FavIconBinaryFileId = source.FavIconBinaryFileId;
