@@ -125,6 +125,31 @@ namespace Rock.Migrations
             BlocksPagesUp();
 
             AddUpdatePersonalizationDataJob_Up();
+
+            PageRoutes_Up();
+        }
+
+        private void PageRoutes_Up()
+        {
+            // Add Page Route
+            //   Page:Request Filter Detail
+            //   Route:admin/cms/request-filters/{RequestFilterId}
+            RockMigrationHelper.AddPageRoute( "435496F7-6C3F-4007-97F0-0B439F5D910E", "admin/cms/request-filters/{RequestFilterId}", "1009E2CB-7D77-4A94-B927-B38FB099F871" );
+
+            // Add Page Route
+            //   Page:Personalization Segment Detail
+            //   Route:admin/cms/personalization-segments/{PersonalizationSegmentId}
+            RockMigrationHelper.AddPageRoute( "28B26424-5EC3-498B-8407-620FA763EE09", "admin/cms/personalization-segments/{PersonalizationSegmentId}", "2B7EDBA9-B1B6-48F1-A541-7B78002E1EAE" );
+
+            // Add Page Route
+            //   Page:Request Filters
+            //   Route:admin/cms/request-filters
+            RockMigrationHelper.AddPageRoute( "511FC29A-EAF2-4AC0-B9B3-8613739A9ACF", "admin/cms/request-filters", "4463198E-1187-4CCC-88A2-26484E1565B8" );
+
+            // Add Page Route
+            //   Page:Personalization Segments
+            //   Route:admin/cms/personalization-segments
+            RockMigrationHelper.AddPageRoute( "905F6132-AE1C-4C85-9752-18D22E604C3A", "admin/cms/personalization-segments", "55D0D8A0-D534-467E-9C85-12B4C79EC5B1" );
         }
 
 
