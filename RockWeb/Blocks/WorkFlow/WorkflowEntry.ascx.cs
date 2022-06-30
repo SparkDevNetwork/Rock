@@ -2062,7 +2062,7 @@ namespace RockWeb.Blocks.WorkFlow
                     }
 
                     break;
-                case CampusSetFrom.QueryString:
+                default:
                     {
                         var campusIdFromUrl = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
                         var campusGuidFromUrl = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
@@ -2076,8 +2076,6 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    break;
-                default:
                     break;
             }
 

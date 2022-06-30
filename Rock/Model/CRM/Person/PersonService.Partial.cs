@@ -866,6 +866,74 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an <see cref="Rock.Model.Person"/> entity that have a first 12 character of business name and a record type of business with either of email, phone or street1 matches with existing record.
+        /// </summary>
+        /// <param name="businessName">Name of the business.</param>
+        /// <param name="email">The email.</param>
+        /// <param name="phone">The phone.</param>
+        /// <param name="street1">The street1.</param>
+        /// <returns></returns>
+        public Person FindBusiness( string businessName, string email, string phone, string street1 )
+        {
+            businessName = businessName ?? string.Empty;
+            email = email ?? string.Empty;
+            var query = Queryable( false, true );
+            var definedValueBusinessType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+            if ( definedValueBusinessType != null )
+            {
+                int recordTypeBusiness = definedValueBusinessType.Id;
+                query = query.Where( p => p.RecordTypeValueId == recordTypeBusiness );
+            }
+
+            /*
+               SK - 07/01/2022
+               We consider only first 12 character of the given business name to look for any matching existing record.
+            */
+            businessName = businessName.SubstringSafe( 0, 12 );
+            query = query
+                .Where( p => businessName != "" && p.LastName.StartsWith( businessName ) );
+
+            var matchedPersons = new List<Person>();
+            if ( email.IsNotNullOrWhiteSpace() )
+            {
+                var emailMatchingQry = query.Where( a => a.Email.Equals( email, StringComparison.CurrentCultureIgnoreCase ) );
+                var emailMatchedPerson = emailMatchingQry.FirstOrDefault();
+                if ( emailMatchedPerson != null )
+                {
+                    return emailMatchedPerson;
+                }
+            }
+
+            if ( phone.IsNotNullOrWhiteSpace() )
+            {
+                var workPhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ).Id;
+                var numericPhone = phone.AsNumeric();
+                var phnNumberMatchingQry = query.Where( p => p.PhoneNumbers.Any( n => n.NumberTypeValueId == workPhoneTypeId && n.Number.Contains( numericPhone ) ) );
+                var phnNumberMatchedPerson = phnNumberMatchingQry.FirstOrDefault();
+                if ( phnNumberMatchedPerson != null )
+                {
+                    return phnNumberMatchedPerson;
+                }
+            }
+
+            if ( street1.IsNotNullOrWhiteSpace() )
+            {
+                var rockContext = this.Context as RockContext;
+                var groupMemberService = new GroupMemberService( rockContext );
+                int groupTypeIdFamilyOrBusiness = GroupTypeCache.GetFamilyGroupType().Id;
+
+                var personIdAddressQry = groupMemberService.Queryable()
+                    .Where( m => m.Group.GroupTypeId == groupTypeIdFamilyOrBusiness )
+                    .Where( m => m.Group.GroupLocations.Any( gl => gl.Location.Street1.Contains( street1 ) ) )
+                    .Select( a => a.PersonId );
+
+                query = query.Where( a => personIdAddressQry.Contains( a.Id ) );
+            }
+
+            return query.FirstOrDefault();
+        }
+
+        /// <summary>
         /// Adds a contact to a business.
         /// </summary>
         /// <param name="businessId">The business identifier.</param>
@@ -916,10 +984,16 @@ namespace Rock.Model
                 contactKnownRelationshipGroup.Members.Add( ownerMember );
             }
 
-            var groupMember = new GroupMember();
-            groupMember.PersonId = businessId;
-            groupMember.GroupRoleId = businessRoleId;
-            contactKnownRelationshipGroup.Members.Add( groupMember );
+            var businessRoleGroupMember = contactKnownRelationshipGroup.Members
+                .Where( a => a.PersonId == businessId && a.GroupRoleId == businessRoleId )
+                .FirstOrDefault();
+            if ( businessRoleGroupMember == null )
+            {
+                businessRoleGroupMember = new GroupMember();
+                businessRoleGroupMember.PersonId = businessId;
+                businessRoleGroupMember.GroupRoleId = businessRoleId;
+                contactKnownRelationshipGroup.Members.Add( businessRoleGroupMember );
+            }
 
             // get the known relationship group of the business
             // add the business contact as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT
@@ -943,10 +1017,16 @@ namespace Rock.Model
                 businessKnownRelationshipGroup.Members.Add( ownerMember );
             }
 
-            var businessGroupMember = new GroupMember();
-            businessGroupMember.PersonId = contactPersonId;
-            businessGroupMember.GroupRoleId = businessContactRoleId;
-            businessKnownRelationshipGroup.Members.Add( businessGroupMember );
+            var businessContactRoleGroupMember = businessKnownRelationshipGroup.Members
+                .Where( a => a.PersonId == contactPersonId && a.GroupRoleId == businessContactRoleId )
+                .FirstOrDefault();
+            if ( businessContactRoleGroupMember == null )
+            {
+                businessContactRoleGroupMember = new GroupMember();
+                businessContactRoleGroupMember.PersonId = contactPersonId;
+                businessContactRoleGroupMember.GroupRoleId = businessContactRoleId;
+                businessKnownRelationshipGroup.Members.Add( businessContactRoleGroupMember );
+            }
         }
 
         /// <summary>

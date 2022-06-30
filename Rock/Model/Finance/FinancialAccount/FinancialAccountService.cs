@@ -214,6 +214,29 @@ namespace Rock.Model
             return qry;
         }
 
+        /// <summary>
+        /// Populates the path variable for <see cref="Rock.Web.UI.Controls.AccountTreeViewItem"/>s using the fewest database queries necessary.
+        /// </summary>
+        /// <param name="accountTreeViewItems">The account TreeView items.</param>
+        /// <param name="accountList">The account list.</param>
+        /// <returns>List&lt;Rock.Web.UI.Controls.AccountTreeViewItem&gt;.</returns>
+        public List<Rock.Web.UI.Controls.AccountTreeViewItem> GetTreeviewPaths( List<Rock.Web.UI.Controls.AccountTreeViewItem> accountTreeViewItems, List<FinancialAccount> accountList )
+        {
+            var accountPaths = new Dictionary<string, string>();
+            foreach ( var accountTreeViewItem in accountTreeViewItems )
+            {
+                if ( !accountPaths.ContainsKey( accountTreeViewItem.ParentId) )
+                {
+                    var account = accountList.Where ( a => a.Id.ToString() == accountTreeViewItem.Id ).FirstOrDefault();
+                    accountPaths.Add( accountTreeViewItem.ParentId,
+                        this.GetDelimitedAccountHierarchy( account, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent) );
+                }
+
+                accountTreeViewItem.Path = accountPaths[accountTreeViewItem.ParentId];
+            }
+
+            return accountTreeViewItems;
+        }
 
         /// <summary>
         /// Gets the account hierarchy path as a '^' delimited string..
@@ -221,7 +244,7 @@ namespace Rock.Model
         /// <param name="account">The account.</param>
         /// <param name="accountHierarchyDirection">The account hierarchy direction.</param>
         /// <returns>System.String.</returns>
-        public string GetDelimitedAccountHierarchy( FinancialAccount account, AccountHierarchyDirection accountHierarchyDirection = AccountHierarchyDirection.ParentAccountToLastDescendantAccount )
+        private string GetDelimitedAccountHierarchy( FinancialAccount account, AccountHierarchyDirection accountHierarchyDirection = AccountHierarchyDirection.ParentAccountToLastDescendantAccount )
         {
             var selectedAccounts = new List<SimpleFinancialAccount>();
 
