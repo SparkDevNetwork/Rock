@@ -48,6 +48,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\bin\Rock.dll</HintPath>
     </Reference>
+    <Reference Include="Rock.Blocks">
+      <HintPath>..\RockWeb\Bin\Rock.Blocks.dll</HintPath>
+    </Reference>
     <Reference Include="Rock.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\bin\Rock.Common.dll</HintPath>
