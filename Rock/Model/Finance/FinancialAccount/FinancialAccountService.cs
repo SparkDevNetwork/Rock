@@ -244,7 +244,7 @@ namespace Rock.Model
         /// <param name="account">The account.</param>
         /// <param name="accountHierarchyDirection">The account hierarchy direction.</param>
         /// <returns>System.String.</returns>
-        private string GetDelimitedAccountHierarchy( FinancialAccount account, AccountHierarchyDirection accountHierarchyDirection = AccountHierarchyDirection.ParentAccountToLastDescendantAccount )
+        public string GetDelimitedAccountHierarchy( FinancialAccount account, AccountHierarchyDirection accountHierarchyDirection = AccountHierarchyDirection.ParentAccountToLastDescendantAccount )
         {
             var selectedAccounts = new List<SimpleFinancialAccount>();
 
