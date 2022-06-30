@@ -83,6 +83,7 @@ namespace Rock.Rest.Controllers
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}/{personGuid}" )]
+        [Rock.SystemGuid.RestActionGuid( "1071DB79-DB8D-4310-B11C-2637F1A6A630" )]
         public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, Guid personGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             // Convert and validate the input parameters.
@@ -151,6 +152,7 @@ namespace Rock.Rest.Controllers
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}" )]
+        [Rock.SystemGuid.RestActionGuid( "A3358897-942F-4332-B060-12718DC87CE6" )]
         public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             // Convert and validate the input parameters.
@@ -225,6 +227,7 @@ namespace Rock.Rest.Controllers
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}" )]
+        [Rock.SystemGuid.RestActionGuid( "3D09FD68-06F9-4860-9110-60A015004071" )]
         [System.Web.Http.HttpPost]
         public virtual HttpResponseMessage Follow( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {

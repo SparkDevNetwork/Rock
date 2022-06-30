@@ -133,7 +133,12 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="Controllers\CodeGenerated\AuthAuditLogsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\BenevolenceTypesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\BenevolenceWorkflowsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\CampusTopicsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonalizationSegmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RequestFiltersController.CodeGenerated.cs" />

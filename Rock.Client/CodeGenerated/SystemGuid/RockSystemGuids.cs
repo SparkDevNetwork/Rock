@@ -479,6 +479,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class DefinedType
     {
+        public const string APPLE_DEVICE_MODELS = "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C";
         public const string ASSESSMENT_CONFLICT_PROFILE = "EE7E089E-DF81-4407-8BFA-AD865FA5427A";
         public const string BACKGROUND_CHECK_TYPES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
         public const string BENEVOLENCE_REQUEST_STATUS = "2787B088-D607-4D69-84FF-850A6891EE34";
@@ -1661,6 +1662,7 @@ namespace Rock.Client.SystemGuid
         public const string SEND_GROUP_ATTENDANCE_DIGEST = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B";
         public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
         public const string SYNC_MEDIA = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9";
+        public const string UPDATE_PERSONALIZATION_DATA = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B";
     }
 
     /// <summary>

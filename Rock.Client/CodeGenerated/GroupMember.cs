@@ -185,9 +185,6 @@ namespace Rock.Client
         public GroupTypeRole GroupRole { get; set; }
 
         /// <summary />
-        public GroupType GroupType { get; set; }
-
-        /// <summary />
         public Person Person { get; set; }
 
         /// <summary />
