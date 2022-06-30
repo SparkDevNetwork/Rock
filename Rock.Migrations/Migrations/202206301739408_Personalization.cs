@@ -216,15 +216,17 @@ CREATE UNIQUE NONCLUSTERED INDEX[IX_AliasPersonId] ON[dbo].[PersonAlias]
                     ,[Class]
                     ,[CronExpression]
                     ,[NotificationStatus]
+                    ,[HistoryCount]
                     ,[Guid]
                 ) VALUES (
-                    1
+                    0
                     ,1
                     ,'Update Personalization Data'
                     ,'Job that updates Personalization Data.'
                     ,'Rock.Jobs.UpdatePersonalizationData'
-                    ,'0 0 2 1/1 * ? *'
+                    ,'0 20 1 1/1 * ? *'
                     ,1
+                    ,500 
                     ,'{SystemGuid.ServiceJob.UPDATE_PERSONALIZATION_DATA}'
                 );
             END" );
