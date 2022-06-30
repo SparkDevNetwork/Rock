@@ -141,8 +141,10 @@ namespace Rock.Rest.Controllers
                 Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name ),
                 GlCode = a.GlCode,
                 IsActive = a.IsActive,
-                Path = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                ParentId = a.ParentAccountId.GetValueOrDefault( 0 ).ToString(),
             } ).ToList();
+
+            accountTreeViewItems = financialAccountService.GetTreeviewPaths( accountTreeViewItems, accountList );
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 
@@ -211,8 +213,10 @@ namespace Rock.Rest.Controllers
                     Name = HttpUtility.HtmlEncode( displayPublicName ? a.PublicName : a.Name ),
                     GlCode = a.GlCode,
                     IsActive = a.IsActive,
-                    Path = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                    ParentId = a.ParentAccountId.GetValueOrDefault( 0 ).ToString(),
                 } ).ToList();
+
+            accountTreeViewItems = financialAccountService.GetTreeviewPaths( accountTreeViewItems, accountList );
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 
@@ -287,8 +291,9 @@ namespace Rock.Rest.Controllers
                     GlCode = a.GlCode,
                     IsActive = a.IsActive,
                     ParentId = a.ParentAccountId.GetValueOrDefault( 0 ).ToString(),
-                    Path = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
                 } ).ToList();
+
+            accountTreeViewItems = financialAccountService.GetTreeviewPaths( accountTreeViewItems, accountList );
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
 
