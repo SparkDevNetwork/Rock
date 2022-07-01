@@ -988,14 +988,16 @@ body.nav-open {
   }
 
   .navbar-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: absolute;
     width: @navbarside-width;
     height: @navbar-top-height;
-    padding: 0 28px;
+    padding: 0;
     margin: 0;
     font-size: 1.5em;
-    line-height: @navbar-top-height;
-    color: @white;
+    color: @navbar-top-color;
     cursor: pointer;
 
     .navbar-side-open & {
@@ -1022,13 +1024,11 @@ body.nav-open {
     height: @navbar-top-height;
     padding: 6px;
     color: @white;
-    background-color: @brand-primary;
-    background-color: var(--brand-primary, @brand-primary);
+    background-color: var(--brand-primary);
     background-size: 45px;
 
     .nav-open & {
-      background-color: @navbarside-background-color;
-      background-color: var(--navbarside-background-color, @navbarside-background-color);
+      background-color: var(--navbarside-background-color);
     }
 
     &.no-logo::after {
@@ -1038,10 +1038,7 @@ body.nav-open {
       bottom: 0;
       left: 0;
       content: "";
-      background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: (@navbarside-width * .525);
+      background: url("../../../Assets/Images/rock-logo-circle-white.svg") no-repeat center/(@navbarside-width * .525);
     }
 
     .logo {
@@ -1056,10 +1053,12 @@ body.nav-open {
   }
 
   .smartsearch {
+    display: flex;
+    align-items: center;
     width: 100%;
-    height: 50px;
+    height: @navbar-element-height;
     padding: 0;
-    margin: 15px 0;
+    margin: @navbar-element-margin 0;
     font-size: .875em;
     border: 0;
 
@@ -1068,28 +1067,20 @@ body.nav-open {
     }
 
     i {
-      margin-top: 16px;
-      margin-left: 10px;
+      margin: 0 0 0 10px;
     }
 
     .twitter-typeahead {
-      margin-right: 80px;
+      flex-grow: 1;
+      margin-right: 0;
     }
 
     .smartsearch-type {
-      position: absolute;
-      right: 0;
-      z-index: 100;
+      order: 10;
       width: auto;
     }
 
-    input.searchinput {
-      padding: 15px 0 15px 34px;
-    }
-
     .dropdown {
-      margin-top: 10px;
-
       .dropdown-menu {
         font-size: 1em;
       }
@@ -1101,7 +1092,7 @@ body.nav-open {
 
     .tt-hint {
       padding: 14.5px 4px 4px 34px;
-      color: @navbartop-color;
+      color: @navbar-top-color;
       opacity: .5;
     }
 
@@ -1121,12 +1112,13 @@ body.nav-open {
       }
 
       > a {
+        display: flex;
+        align-items: center;
         padding: 0 18px;
-        line-height: @navbar-top-height;
-        color: @navbartop-color;
+        color: @navbar-top-color;
 
         @media (max-width: @screen-sm-max) {
-          padding: 0 12px;
+          padding: 0 8px;
           .fa-caret-down {
             display: none;
           }
@@ -1136,14 +1128,12 @@ body.nav-open {
           float: left;
           width: 36px;
           height: 36px;
-          margin-top: 22px;
           background-repeat: no-repeat;
           background-size: cover;
           border-radius: 50%;
           @media (min-width: @screen-sm-min) {
-            width: 43px;
-            height: 43px;
-            margin-top: 17px;
+            width: @navbar-element-height;
+            height: @navbar-element-height;
             margin-right: 12px;
           }
 
@@ -1174,12 +1164,10 @@ body.nav-open {
           top: @navbar-top-height;
           left: 0;
           z-index: 1000;
-          background-color: @brand-primary;
-          background-color: var(--brand-primary, @brand-primary);
+          background-color: var(--brand-primary);
 
           & > li > a {
-            color: @navbartop-color;
-            color: var(--navbartop-color);
+            color: var(--navbar-top-color);
           }
         }
       }
@@ -1192,8 +1180,7 @@ body.nav-open {
     a {
       &:hover {
         color: @white;
-        background-color: @brand-primary;
-        background-color: var(--brand-primary, @brand-primary);
+        background-color: var(--brand-primary);
         opacity: 1;
       }
     }
@@ -1216,9 +1203,9 @@ body.nav-open {
   .header-content {
     display: flex;
     flex-direction: row-reverse;
+    align-items: center;
     width: 100%;
     margin-left: @navbarside-width;
-
   }
 }
 
@@ -1233,10 +1220,7 @@ body.nav-open {
     bottom: 0;
     left: 0;
     content: "";
-    background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: (@navbarside-width * .525);
+    background: url("../../../Assets/Images/rock-logo-circle-white.svg") no-repeat center/(@navbarside-width * .525);
   }
 
   .logo {
@@ -1860,18 +1844,23 @@ body.navbar-side-open {
   }
 }
 
+
+
 .rock-bookmark {
-  display: inline-block;
-  padding: 10px 15px;
-  margin: 15px 2px 15px 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: @navbar-element-height;
+  height: @navbar-element-height;
+  margin: @navbar-element-margin 8px @navbar-element-margin 0;
   font-size: 20px;
-  color: #fff !important;
-  opacity: .75;
+  color: fade(@white, 75%);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: @border-radius-base;
 
   &:hover,
   &:active {
-    color: #fff;
-    opacity: .5;
+    color: fade(@white, 50%)
   }
 }
 

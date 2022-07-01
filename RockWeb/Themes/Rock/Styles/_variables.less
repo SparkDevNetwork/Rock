@@ -225,11 +225,12 @@
 @text-selection-bg:           @text-selection-background;
 
 
-@navbartop-color:             @white;
-
 @body-bg:                     @body-background;
 
 @navbar-top-height:           80px;
+@navbar-top-color:             @white;
+@navbar-element-height:       40px;
+@navbar-element-margin:       ((@navbar-top-height - @navbar-element-height) / 2);
 @full-worksurface-offset:     (@navbar-top-height + 72px);
 
 @input-height-small:             34px;
@@ -568,10 +569,11 @@
 @smartsearch-bg:                          rgba(255, 255, 255, .1);
 @smartsearch-border-color:                #2c2c2c;
 @smartsearch-box-shadow:                  0 1px 2px rgba(0, 0, 0, .1) inset, 0 1px 0 rgba(255, 255, 255, .15);
-@smartsearch-input-text-color:            @navbartop-color;
+@smartsearch-input-padding:               15px 0 15px 34px;
+@smartsearch-input-text-color:            @navbar-top-color;
 @smartsearch-input-selection-background:  #2e2e2e;
 @smartsearch-input-selection-text-color:  @white;
-@smartsearch-text-color:                  @navbartop-color;
+@smartsearch-text-color:                  @navbar-top-color;
 
 // Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
 @wizard-bg:                             @pagetitle-bg;
