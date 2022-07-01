@@ -787,10 +787,13 @@ $@"Rock.controls.noteEditor.initialize({{
                 }
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel js-editnote-cancel btn btn-link btn-xs" );
-            writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.Write( "Cancel" );
-            writer.RenderEndTag();
+            if ( !NoteOptions.AddAlwaysVisible )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel js-editnote-cancel btn btn-link btn-xs" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.Write( "Cancel" );
+                writer.RenderEndTag();
+            }
 
             _lbSaveNote.Text = "Save " + Label;
             _lbSaveNote.CommandName = "SaveNote";
