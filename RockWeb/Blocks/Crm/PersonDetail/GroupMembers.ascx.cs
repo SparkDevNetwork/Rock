@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             <div class=""photo-shadow inset-0""></div>
                         </a>
                         <a href=""{personLink}"" class=""name-link"">
-                            <span class=""name"">{groupMember.Person.NickName}</span>
+                            <span class=""name"">{FormatPersonName( groupMember.Person.NickName, groupMember.Person.LastName )}</span>
                             <span class=""person-age"">{groupMember.Person.Age}</span>
                         </a>
                     </div>";
