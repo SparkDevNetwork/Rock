@@ -1688,6 +1688,11 @@ namespace Rock.ViewModels.Entities
                 restControllerGuid = _restControllerGuidLookupFromDatabase.GetValueOrNull( fullClassName );
             }
 
+            if ( restControllerGuid == null)
+            {
+                restControllerGuid = Guid.NewGuid();
+            }
+
             var sb = new StringBuilder();
 
             sb.AppendLine( "//------------------------------------------------------------------------------" );
