@@ -22,7 +22,7 @@
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <%-- Segment Name --%>
-                <div class="row">
+                <div class="row mb-5">
                     <div class="col-md-6">
                         <Rock:HiddenFieldWithClass ID="hfExistingSegmentKeyNames" runat="server" CssClass="js-existing-key-names" />
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.PersonalizationSegment, Rock" PropertyName="Name" Required="true" onblur="populateSegmentKey()" />
@@ -61,10 +61,12 @@
                 <%-- Session Filters --%>
                 <asp:Panel ID="pnlSessionCountFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title">Session Filters</div>
-                        <Rock:Toggle ID="tglSessionCountFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
+                        <h1 class="panel-title pull-left">Session Filters</h1>
+                        <div class="panel-labels">
+                            <Rock:Toggle ID="tglSessionCountFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
+                        </div>
                     </div>
-                    <div class="panel-panel-body">
+                    <div class="panel-body">
                         <Rock:Grid ID="gSessionCountFilters" runat="server" DisplayType="Light" RowItemText="Session Filter">
                             <Columns>
                                 <Rock:RockLiteralField ID="lSessionCountFilterDescription" HeaderText="Description" OnDataBound="lSessionCountFilterDescription_DataBound" />
@@ -80,10 +82,10 @@
                 <%-- Page View Filters --%>
                 <asp:Panel ID="pnlPageViewFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title">Page View Filters</div>
+                        <h1 class="panel-title pull-left">Page View Filters</h1>
                         <Rock:Toggle ID="tglPageViewFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
                     </div>
-                    <div class="panel-panel-body">
+                    <div class="panel-body">
                         <Rock:Grid ID="gPageViewFilters" runat="server" DisplayType="Light" RowItemText="Page View Filter">
                             <Columns>
                                 <Rock:RockLiteralField ID="lPageViewFilterDescription" HeaderText="Description" OnDataBound="lPageViewFilterDescription_DataBound" />
@@ -100,7 +102,7 @@
                 <%-- Interaction Filters --%>
                 <asp:Panel ID="pnlInteractionFilters" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
-                        <div class="panel-title">Interaction Filters</div>
+                        <h1 class="panel-title pull-left">Interaction Filters</h1>
                         <Rock:Toggle ID="tglInteractionFiltersAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" />
                     </div>
                     <div class="panel-body">
