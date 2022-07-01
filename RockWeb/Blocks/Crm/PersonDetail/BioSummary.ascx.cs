@@ -112,6 +112,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             // Set the browser page title to include person's name
             RockPage.BrowserTitle = Person.FullName;
 
+            ShowProtectionLevel();
             ShowBadgeList();
         }
 
@@ -152,6 +153,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #endregion Base Control Methods
 
         #region Methods
+
+        private void ShowProtectionLevel()
+        {
+            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low )
+            {
+                string acctProtectionLevel = $@"
+                    <div class=""protection-profile"">
+                        <span class=""profile-label"">Protection Profile: {Person.AccountProtectionProfile.ConvertToString( true )}</span>
+                        <i class=""fa fa-lock""></i>
+                    </div>";
+
+                litAccountProtectionLevel.Text = acctProtectionLevel;
+            }
+        }
 
         private void ShowPersonImage()
         {

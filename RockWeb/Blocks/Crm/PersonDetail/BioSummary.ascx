@@ -8,6 +8,9 @@
 
         <%-- Name and actions --%>
         <div class="w-75 px-3 border-0">
+            <%-- Account Protection Level --%>
+            <asp:Literal ID="litAccountProtectionLevel" runat="server" />
+
             <%-- Person Name --%>
             <asp:Literal ID="lName" runat="server" />
 
