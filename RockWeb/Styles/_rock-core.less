@@ -1216,3 +1216,28 @@ div.aspNetDisabled {
     }
   }
 }
+
+.segment-and {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  max-width: 580px;
+  margin: 32px auto;
+  .text {
+    padding: 0 6px;
+    text-transform: uppercase;
+    border: 1px solid @panel-border;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #E4E4E4;
+    font-weight: 500;
+    margin: 0 10px;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    border: 1px solid @panel-border;
+    flex: 1;
+  }
+}

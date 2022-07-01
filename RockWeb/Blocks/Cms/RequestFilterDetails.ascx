@@ -22,7 +22,7 @@
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <%-- Request Filter Name --%>
-                <div class="row">
+                <div class="row mb-5">
                     <div class="col-md-6">
                         <Rock:HiddenFieldWithClass ID="hfExistingRequestFilterKeyNames" runat="server" CssClass="js-existing-key-names" />
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" PropertyName="Name" onblur="populateRequestFilterKey()"/>
@@ -35,7 +35,7 @@
                         <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                     </div>
                 </div>
-                
+
                 <%-- Previous Activity --%>
                 <asp:Panel ID="pnlPreviousActivity" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
@@ -46,7 +46,7 @@
                     </div>
                 </asp:Panel>
 
-                <span class="segment-and">--[AND]--</span>
+                <span class="segment-and"><span class="text">And</span></span>
 
                 <%-- Device Types --%>
                 <asp:Panel ID="pnlDeviceType" runat="server" CssClass="panel panel-section">
@@ -58,7 +58,7 @@
                     </div>
                 </asp:Panel>
 
-                <span class="segment-and">--[AND]--</span>
+                <span class="segment-and"><span class="text">And</span></span>
 
                 <%-- Query String Filter --%>
                 <asp:Panel ID="pnlQueryStringFilter" runat="server" CssClass="panel panel-section">
@@ -80,14 +80,14 @@
                     </div>
                 </asp:Panel>
 
-                <span class="segment-and">--[AND]--</span>
+                <span class="segment-and"><span class="text">And</span></span>
 
                 <%-- Cookie --%>
                 <asp:Panel ID="pnlCookie" runat="server" CssClass="panel panel-section">
                     <div class="panel-heading">
                         <div class="panel-title pull-left">Cookie</div>
                         <Rock:Toggle ID="tglCookiesAllAny" runat="server" OnText="All" OffText="Any" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" CssClass="panel-title pull-right" />
-                        <div class="clearfix"></div>                        
+                        <div class="clearfix"></div>
                     </div>
                     <div class="panel-body">
                         <Rock:Grid ID="gCookie" runat="server" DisplayType="Light" RowItemText="Cookie">
@@ -102,7 +102,7 @@
                     </div>
                 </asp:Panel>
 
-                <span class="segment-and">--[AND]--</span>
+                <span class="segment-and"><span class="text">And</span></span>
 
                 <%-- Browser --%>
                 <asp:Panel ID="pnlBrowser" runat="server" CssClass="panel panel-section">
@@ -122,7 +122,7 @@
                     </div>
                 </asp:Panel>
 
-                <span class="segment-and">--[AND]--</span>
+                <span class="segment-and"><span class="text">And</span></span>
 
                 <%-- IP Addresses --%>
                 <asp:Panel ID="pnlIpAddress" runat="server" CssClass="panel panel-section">
@@ -151,99 +151,149 @@
             <%-- Modal for Query String Filter --%>
             <Rock:ModalDialog ID="mdQueryStringFilter" runat="server" OnSaveClick="mdQueryStringFilter_SaveClick" ValidationGroup="vgQueryStringFilter">
                 <Content>
-                    <div class="panel-body">
-                        <asp:HiddenField ID="hfQueryStringFilterGuid" runat="server" />
+                    <asp:HiddenField ID="hfQueryStringFilterGuid" runat="server" />
 
-                        <asp:ValidationSummary ID="vsQueryFilterString" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgQueryFilterString" />
+                    <asp:ValidationSummary ID="vsQueryFilterString" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgQueryFilterString" />
 
-                        <div class="container">
-                            <div class="row">
-                                <span class="col-sm-2">Where the parameter </span>
-                                <Rock:RockTextBox ID="tbQueryStringFilterParameter" runat="server" CssClass="col-sm-4" ValidationGroup="vgQueryStringFilter" />
-                                <Rock:RockDropDownList ID="ddlQueryStringFilterMatchOptions" runat="server" CssClass="col-sm-2" ValidationGroup="vgQueryStringFilter" />
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">Where the parameter</span>
                             </div>
                         </div>
-
-
-                        <span>the value</span>
-                        
-                        <Rock:RockTextBox ID="tbQueryStringFilterValue" runat="server" ValidationGroup="vgQueryStringFilter" />
-
+                        <div class="col">
+                            <div class="form-group">
+                                <Rock:RockTextBox ID="tbQueryStringFilterParameter" runat="server" CssClass="" ValidationGroup="vgQueryStringFilter" />
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockDropDownList ID="ddlQueryStringFilterMatchOptions" runat="server" CssClass="input-width-lg" ValidationGroup="vgQueryStringFilter" />
+                            </div>
+                        </div>
                     </div>
-
-
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">the value</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <Rock:RockTextBox ID="tbQueryStringFilterValue" runat="server" ValidationGroup="vgQueryStringFilter" />
+                            </div>
+                        </div>
+                    </div>
                 </Content>
             </Rock:ModalDialog>
 
             <%-- Modal for Cookie --%>
             <Rock:ModalDialog ID="mdCookie" runat="server" OnSaveClick="mdCookie_SaveClick" ValidationGroup="vgCookie">
                 <Content>
-                    <div class="panel-body">
-                        <asp:HiddenField ID="hfCookieFilterGuid" runat="server" />
+                    <asp:HiddenField ID="hfCookieFilterGuid" runat="server" />
 
-                        <asp:ValidationSummary ID="vsCookie" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgCookie" />
+                    <asp:ValidationSummary ID="vsCookie" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgCookie" />
 
-                        <div class="container">
-                            <div class="row">
-                                <span class="col-sm-2">Where the parameter </span>
-                                <Rock:RockTextBox ID="tbCookieParameter" runat="server" CssClass="col-sm-4" ValidationGroup="vgCookie" />
-                                <Rock:RockDropDownList ID="ddlCookieMatchOptions" runat="server" CssClass="col-sm-2" ValidationGroup="vgCookie" />
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">Where the parameter</span>
                             </div>
                         </div>
-
-
-                        <span>the value</span>
-                        
-                        <Rock:RockTextBox ID="tbCookieValue" runat="server" ValidationGroup="vgCookie" />
-
+                        <div class="col">
+                            <div class="form-group">
+                                <Rock:RockTextBox ID="tbCookieParameter" runat="server" CssClass="" ValidationGroup="vgCookie" />
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockDropDownList ID="ddlCookieMatchOptions" runat="server" CssClass="input-width-lg" ValidationGroup="vgCookie" />
+                            </div>
+                        </div>
                     </div>
 
-
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">the value</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <Rock:RockTextBox ID="tbCookieValue" runat="server" ValidationGroup="vgCookie" />
+                            </div>
+                        </div>
+                    </div>
                 </Content>
             </Rock:ModalDialog>
 
             <%-- Modal  for Browser Filter --%>
             <Rock:ModalDialog ID="mdBrowser" runat="server" OnSaveClick="mdBrowser_SaveClick" ValidationGroup="vgBrowser">
                 <Content>
-                    <div class="panel-body">
-                        <asp:HiddenField ID="hfBrowserFilterGuid" runat="server" />
+                    <asp:HiddenField ID="hfBrowserFilterGuid" runat="server" />
 
-                        <asp:ValidationSummary ID="vsBrowser" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgBrowser" />
+                    <asp:ValidationSummary ID="vsBrowser" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgBrowser" />
 
-                        <div class="container">
-                            <div class="row">
-                                <span class="col-sm-2">Where </span>
-                                <Rock:RockDropDownList ID="ddlBrowserFamily" runat="server" CssClass="col-sm-2" ValidationGroup="vgBrowser" />
-                                <span class="col-sm-2"> version is </span>
-                                <Rock:RockDropDownList ID="ddlBrowserMatchOptions" runat="server" CssClass="col-sm-2" ValidationGroup="vgBrowser" />
-                                <Rock:NumberBox ID="tbBrowserVersion" runat="server" CssClass="col-sm-4" ValidationGroup="vgBrowser" />
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">Where</span>
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockDropDownList ID="ddlBrowserFamily" runat="server" CssClass="input-width-lg" ValidationGroup="vgBrowser" />
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">version</span>
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockDropDownList ID="ddlBrowserMatchOptions" runat="server" CssClass="input-width-lg" ValidationGroup="vgBrowser" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <Rock:NumberBox ID="tbBrowserVersion" runat="server" CssClass="" ValidationGroup="vgBrowser" />
                             </div>
                         </div>
                     </div>
-
-
                 </Content>
             </Rock:ModalDialog>
 
             <%-- Modal for IP Address Filter --%>
             <Rock:ModalDialog ID="mdIPAddress" runat="server" OnSaveClick="mdIpAddress_SaveClick" ValidationGroup="vgIPAddress">
                 <Content>
-                    <div class="panel-body">
-                        <asp:HiddenField ID="hfIPAddressFilterGuid" runat="server" />
+                    <asp:HiddenField ID="hfIPAddressFilterGuid" runat="server" />
 
-                        <asp:ValidationSummary ID="vsIPAddress" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgIPAddress" />
+                    <asp:ValidationSummary ID="vsIPAddress" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgIPAddress" />
 
-                        <div class="container">
-                            <div class="row">
-                                <span class="col-sm-2">Where the client IP is </span>
-                                <Rock:Toggle ID="tglIPAddressRange" runat="server" OnText="Not in Range" OffText="In Range"
-                                    ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" ValidationGroup="vgIPAddress" />
-                                <Rock:RockTextBox ID="tbIPAddressStartRange" runat="server" CssClass="col-sm-4" ValidationGroup="vgIPAddress" />
-                                <Rock:RockTextBox ID="tbIPAddressEndRange" runat="server" CssClass="col-sm-4" ValidationGroup="vgIPAddress" />
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">Where the client IP is</span>
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:Toggle ID="tglIPAddressRange" runat="server" ButtonGroupCssClass="d-flex" OnText="Not in Range" OffText="In Range"
+                                    ActiveButtonCssClass="btn-primary" ValidationGroup="vgIPAddress" />
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm">
+                            <div class="form-group">
+                                <Rock:RockTextBox ID="tbIPAddressStartRange" runat="server" CssClass="" ValidationGroup="vgIPAddress" />
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm">
+                            <div class="form-group">
+                                <Rock:RockTextBox ID="tbIPAddressEndRange" runat="server" CssClass="" ValidationGroup="vgIPAddress" />
                             </div>
                         </div>
                     </div>
-
                 </Content>
             </Rock:ModalDialog>
 

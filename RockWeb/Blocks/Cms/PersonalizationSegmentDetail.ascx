@@ -56,7 +56,7 @@
                     </div>
                 </asp:Panel>
 
-                <span class="segment-and">--[AND]--</span>
+                <span class="segment-and"><span class="text">And</span></span>
 
                 <%-- Session Filters --%>
                 <asp:Panel ID="pnlSessionCountFilters" runat="server" CssClass="panel panel-section">
@@ -75,7 +75,7 @@
                     </div>
                 </asp:Panel>
 
-                <span class="segment-and">--[AND]--</span>
+                <span class="segment-and"><span class="text">And</span></span>
 
                 <%-- Page View Filters --%>
                 <asp:Panel ID="pnlPageViewFilters" runat="server" CssClass="panel panel-section">
@@ -95,7 +95,7 @@
 
                 </asp:Panel>
 
-                <span class="segment-and">--[AND]--</span>
+                <span class="segment-and"><span class="text">And</span></span>
 
                 <%-- Interaction Filters --%>
                 <asp:Panel ID="pnlInteractionFilters" runat="server" CssClass="panel panel-section">
@@ -129,90 +129,150 @@
             <%-- Modal for Session Count Filter --%>
             <Rock:ModalDialog ID="mdSessionCountFilterConfiguration" runat="server" OnSaveClick="mdSessionCountFilterConfiguration_SaveClick" ValidationGroup="vgSessionCountFilterConfiguration">
                 <Content>
-                    <div class="panel-body">
-                        <asp:HiddenField ID="hfSessionCountFilterGuid" runat="server" />
+                    <asp:HiddenField ID="hfSessionCountFilterGuid" runat="server" />
 
-                        <asp:ValidationSummary ID="vsSessionCountFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgSessionCountFilterConfiguration" />
+                    <asp:ValidationSummary ID="vsSessionCountFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgSessionCountFilterConfiguration" />
 
-                        <div class="field-criteria">
-                            <Rock:RockDropDownList ID="ddlSessionCountFilterComparisonType" CssClass="js-filter-compare" runat="server" ValidationGroup="vgSessionCountFilterConfiguration" />
-                            <Rock:NumberBox ID="nbSessionCountFilterCompareValue" runat="server" Required="true" CssClass="js-filter-control" ValidationGroup="vgSessionCountFilterConfiguration" />
+                    <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockDropDownList ID="ddlSessionCountFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgSessionCountFilterConfiguration" />
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:NumberBox ID="nbSessionCountFilterCompareValue" runat="server" Required="true" CssClass="input-width-sm js-filter-control" ValidationGroup="vgSessionCountFilterConfiguration" />
+                            </div>
                         </div>
 
-                        <span>sessions on the</span>
-                        <Rock:RockListBox ID="lstSessionCountFilterWebSites" runat="server" Required="true" ValidationGroup="vgSessionCountFilterConfiguration" RequiredErrorMessage="Website is required." />
-                        <span>website(s)</span>
-
-                        <br />
-
-                        <span>In the following date range</span>
-                        <Rock:SlidingDateRangePicker ID="drpSessionCountFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgSessionCountFilterConfiguration" />
+                        <div class="col flex-sm-grow-0">
+                            <div class="form-group"><span class="text-nowrap">sessions on the</span></div>
+                        </div>
+                        <div class="w-100 d-sm-none"></div>
+                        <div class="col">
+                            <div class="form-group">
+                                <Rock:RockListBox ID="lstSessionCountFilterWebSites" runat="server" Required="true" ValidationGroup="vgSessionCountFilterConfiguration" RequiredErrorMessage="Website is required." />
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <span>website(s)</span>
+                        </div>
                     </div>
 
 
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0"><span class="text-nowrap">In the following date range</span></div>
+                        <div class="col">
+                            <Rock:SlidingDateRangePicker ID="drpSessionCountFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgSessionCountFilterConfiguration" />
+                        </div>
+                    </div>
                 </Content>
             </Rock:ModalDialog>
 
             <%-- Modal for Page Views Filter --%>
             <Rock:ModalDialog ID="mdPageViewFilterConfiguration" runat="server" OnSaveClick="mdPageViewFilterConfiguration_SaveClick" ValidationGroup="vgPageViewFilterConfiguration">
                 <Content>
-                    <div class="panel-body">
+
                         <asp:HiddenField ID="hfPageViewFilterGuid" runat="server" />
 
                         <asp:ValidationSummary ID="vsPageViewFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgPageViewFilterConfiguration" />
-
-                        <div class="field-criteria">
-                            <Rock:RockDropDownList ID="ddlPageViewFilterComparisonType" CssClass="js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
-                            <Rock:NumberBox ID="nbPageViewFilterCompareValue" runat="server" Required="true" CssClass="js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                    <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                            <Rock:RockDropDownList ID="ddlPageViewFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                            <Rock:NumberBox ID="nbPageViewFilterCompareValue" runat="server" Required="true" CssClass="input-width-sm js-filter-control" ValidationGroup="vgPageViewFilterConfiguration" />
+                            </div>
                         </div>
 
-                        <span>page views on the</span>
-                        <Rock:RockListBox ID="lstPageViewFilterWebSites" runat="server" Required="true" ValidationGroup="vgPageViewFilterConfiguration" RequiredErrorMessage="Web Site is required." />
-                        <span>website(s)</span>
+                        <div class="col flex-sm-grow-0">
+                            <div class="form-group"><span class="text-nowrap">page views on the</span></div>
+                        </div>
 
-                        <br />
+                        <div class="col">
+                            <Rock:RockListBox ID="lstPageViewFilterWebSites" runat="server" Required="true" ValidationGroup="vgPageViewFilterConfiguration" RequiredErrorMessage="Web Site is required." />
+                        </div>
 
-                        <span>In the following date range</span>
-                        <Rock:SlidingDateRangePicker ID="drpPageViewFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgPageViewFilterConfiguration" ToolTip="<div class='js-slidingdaterange-info'></>" />
-
-                        <br />
-
-                        <span>optionally limited to the following pages</span>
-
-                        <Rock:PagePicker ID="ppPageViewFilterPages" runat="server" AllowMultiSelect="true" ValidationGroup="vgPageViewFilterConfiguration" Label=""/>
+                        <div class="col flex-grow-0">
+                            <span>website(s)</span>
+                        </div>
                     </div>
 
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">In the following date range</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <Rock:SlidingDateRangePicker ID="drpPageViewFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgPageViewFilterConfiguration" ToolTip="<div class='js-slidingdaterange-info'></>" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0"><span class="text-nowrap">optionally limited to the following pages</span></div>
 
+                        <div class="col">
+                            <Rock:PagePicker ID="ppPageViewFilterPages" runat="server" AllowMultiSelect="true" ValidationGroup="vgPageViewFilterConfiguration" Label=""/>
+                        </div>
+                    </div>
                 </Content>
             </Rock:ModalDialog>
 
             <%-- Modal for Interactions Filter --%>
             <Rock:ModalDialog ID="mdInteractionFilterConfiguration" runat="server" OnSaveClick="mdInteractionFilterConfiguration_SaveClick" ValidationGroup="vgInteractionFilterConfiguration">
                 <Content>
-                    <div class="panel-body">
-                        <asp:HiddenField ID="hfInteractionFilterGuid" runat="server" />
+                    <asp:HiddenField ID="hfInteractionFilterGuid" runat="server" />
 
-                        <asp:ValidationSummary ID="vsInteractionFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgInteractionFilterConfiguration" />
+                    <asp:ValidationSummary ID="vsInteractionFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgInteractionFilterConfiguration" />
 
-                        <div class="field-criteria">
-                            <Rock:RockDropDownList ID="ddlInteractionFilterComparisonType" CssClass="js-filter-compare" runat="server" ValidationGroup="vgInteractionFilterConfiguration" />
-                            <Rock:NumberBox ID="nbInteractionFilterCompareValue" runat="server" Required="true" CssClass="js-filter-control" ValidationGroup="vgInteractionFilterConfiguration" />
+                    <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:RockDropDownList ID="ddlInteractionFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgInteractionFilterConfiguration" />
+                            </div>
                         </div>
-
-                        <span>interactions in the channel/component</span>
-
-                        <Rock:InteractionChannelPicker ID="pInteractionFilterInteractionChannel" runat="server" Label="Channel" ValidationGroup="vgInteractionFilterConfiguration" Required="true" AutoPostBack="true" OnSelectedIndexChanged="pInteractionFilterInteractionChannel_SelectedIndexChanged" />
-                        <Rock:InteractionComponentPicker ID="pInteractionFilterInteractionComponent" runat="server" Label="Component" ValidationGroup="vgInteractionFilterConfiguration" Required="false" />
-
-                        <Rock:RockTextBox ID="tbInteractionFilterOperation" runat="server" Label="Operation" Help="Examples: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'" />
-
-                        <span>In the following date range</span>
-                        <Rock:SlidingDateRangePicker ID="drpInteractionFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgInteractionFilterConfiguration" ToolTip="<div class='js-slidingdaterange-info'></>" />
-
-                        <br />
-
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <Rock:NumberBox ID="nbInteractionFilterCompareValue" runat="server" Required="true" CssClass="input-width-sm js-filter-control" ValidationGroup="vgInteractionFilterConfiguration" />
+                            </div>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <div class="form-group">
+                                <span class="text-nowrap">interactions in the channel/component</span>
+                            </div>
+                        </div>
                     </div>
 
+                    <div class="row form-row">
+                        <div class="col">
+                            <Rock:InteractionChannelPicker ID="pInteractionFilterInteractionChannel" runat="server" Label="Channel" CssClass="input-width-xxl" ValidationGroup="vgInteractionFilterConfiguration" Required="true" AutoPostBack="true" OnSelectedIndexChanged="pInteractionFilterInteractionChannel_SelectedIndexChanged" />
+                        </div>
+                    </div>
+                    <div class="row form-row">
+                        <div class="col">
+                            <Rock:InteractionComponentPicker ID="pInteractionFilterInteractionComponent" runat="server" Label="Component" CssClass="input-width-xxl" ValidationGroup="vgInteractionFilterConfiguration" Required="false" />
+                        </div>
+                    </div>
+
+                    <div class="row form-row">
+                        <div class="col">
+                            <Rock:RockTextBox ID="tbInteractionFilterOperation" runat="server" Label="Operation" CssClass="input-width-xxl" Help="Examples: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'" />
+                        </div>
+                    </div>
+
+
+                    <div class="row form-row d-flex flex-wrap align-items-center">
+                        <div class="col flex-grow-0"><span class="text-nowrap">In the following date range</span></div>
+
+                        <div class="col">
+                        <Rock:SlidingDateRangePicker ID="drpInteractionFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgInteractionFilterConfiguration" ToolTip="<div class='js-slidingdaterange-info'></>" />
+                        </div>
+                    </div>
 
                 </Content>
             </Rock:ModalDialog>
