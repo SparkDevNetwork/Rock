@@ -625,7 +625,7 @@ namespace RockWeb.Blocks.Connection
                         }
                         else
                         {
-                            mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
+                            mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
                         }
 
                         mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", opportunitySummary.DaysUntilRequestIdle ) );
