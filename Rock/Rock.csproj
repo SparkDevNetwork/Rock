@@ -1349,6 +1349,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Pdf\PdfGenerator.cs" />
     <Compile Include="Pdf\PdfGeneratorException.cs" />
+    <Compile Include="Plugin\HotFixes\152_MigrationRolupsFor13_6_0.cs" />
     <Compile Include="Plugin\HotFixes\151_LavaDashboardWidget.cs" />
     <Compile Include="Plugin\HotFixes\150_MigrationRollupsFor13_5_2.cs" />
     <Compile Include="Plugin\HotFixes\149_MigrationRollupsFor13_5_1.cs" />
