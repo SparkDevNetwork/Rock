@@ -54,9 +54,16 @@ namespace RockWeb.Blocks.Groups
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_LIST )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Constants
+
         private const string SHOW_FIRST_LAST_ATTENDANCE_KEY = "ShowAttendance";
         private const string SHOW_DATE_ADDED_KEY = "ShowDateAdded";
         private const string DATE_ADDED_FILTER_KEY = "Date Added";
+
+        private const string GROUP_MEMBERS_TAB_TITLE = "Group Members";
+        private const string REQUIREMENTS_TAB_TITLE = "Requirements";
+
+        #endregion
 
         #region Private Variables
 
@@ -99,7 +106,6 @@ namespace RockWeb.Blocks.Groups
         private RockLiteralField _exportLatitudeField = null;
         private RockLiteralField _exportLongitude = null;
 
-
         private RockLiteralField _requirementFullNameField = null;
         private RockLiteralField _requirementStatesField = null;
         #endregion
@@ -114,6 +120,11 @@ namespace RockWeb.Blocks.Groups
         /// </value>
         public List<AttributeCache> AvailableAttributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the active tab when group or group type has requirements.
+        /// </summary>
+        private string MemberRequirementsTab { get; set; }
+
         #endregion
 
         #region Control Methods
@@ -125,7 +136,7 @@ namespace RockWeb.Blocks.Groups
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-
+            MemberRequirementsTab = ViewState["MemberRequirementsTab"] as string ?? GROUP_MEMBERS_TAB_TITLE;
             if ( ViewState["AvailableAttributeIds"] != null )
             {
                 AvailableAttributes = ( ViewState["AvailableAttributeIds"] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
@@ -273,6 +284,12 @@ namespace RockWeb.Blocks.Groups
                         .Where( r => !_group.GroupSyncs.Select( s => s.GroupTypeRoleId )
                         .Contains( r.Id ) )
                         .Any();
+
+                    // If there are any group requirements, display the group member and requirements tabs.
+                    if ( _group.GroupRequirements.Any() || _group.GroupType.GroupRequirements.Any() )
+                    {
+                        phPills.Visible = true;
+                    }
                 }
             }
 
@@ -339,6 +356,7 @@ namespace RockWeb.Blocks.Groups
         protected override object SaveViewState()
         {
             ViewState["AvailableAttributeIds"] = AvailableAttributes == null ? null : AvailableAttributes.Select( a => a.Id ).ToArray();
+            ViewState["MemberRequirementsTab"] = MemberRequirementsTab;
             return base.SaveViewState();
         }
 
@@ -356,7 +374,7 @@ namespace RockWeb.Blocks.Groups
         private List<int> _groupMemberIdsWithWarnings = new List<int>();
         private List<int> _groupMemberIdsPersonInMultipleRoles = new List<int>();
         private List<int> _groupMemberIdsWithMetRequirements = new List<int>();
-        Dictionary<int, List<GroupRequirementStatus>> _memberRequirements = new Dictionary<int, List<GroupRequirementStatus>>();
+        private Dictionary<int, List<GroupRequirementStatus>> _memberRequirements = new Dictionary<int, List<GroupRequirementStatus>>();
         private bool _showDateAdded = false;
         private bool _showNoteColumn = false;
 
@@ -782,7 +800,6 @@ namespace RockWeb.Blocks.Groups
             SetFilter();
         }
 
-
         protected void gGroupMemberRequirements_RowCreated( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType != DataControlRowType.DataRow )
@@ -953,7 +970,6 @@ namespace RockWeb.Blocks.Groups
             {
                 e.Row.AddCssClass( "is-inactive" );
             }
-
         }
 
         /// <summary>
@@ -986,9 +1002,9 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void filterRequirements_ApplyFilterClick( object sender, EventArgs e )
         {
-            filterRequirements.SaveUserPreference( "RequirementRole", "RequirementRole", cblRequirementsRole.SelectedValues.AsDelimited( ";" ) );
-            filterRequirements.SaveUserPreference( "RequirementType", "RequirementType", ddlRequirementType.SelectedValue );
-            filterRequirements.SaveUserPreference( "RequirementState", "RequirementState", cblRequirementState.SelectedValues.AsDelimited( ";" ) );
+            filterRequirements.SaveUserPreference( "RequirementRole", "Requirement Role", cblRequirementsRole.SelectedValues.AsDelimited( ";" ) );
+            filterRequirements.SaveUserPreference( "RequirementType", "Requirement Type", ddlRequirementType.SelectedValue );
+            filterRequirements.SaveUserPreference( "RequirementState", "Requirement State", cblRequirementState.SelectedValues.AsDelimited( ";" ) );
 
             if ( AvailableAttributes != null )
             {
@@ -1018,7 +1034,6 @@ namespace RockWeb.Blocks.Groups
             BindGroupMemberRequirementsGrid();
         }
 
-
         /// <summary>
         /// Rs the filter_ display filter value.
         /// </summary>
@@ -1044,76 +1059,25 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            if ( e.Key == "First Name" )
-            {
-                return;
-            }
-            else if ( e.Key == "Last Name" )
-            {
-                return;
-            }
-            else if ( e.Key == "Role" )
+            if ( e.Key == "RequirementRole" )
             {
                 e.Value = ResolveValues( e.Value, cblRole );
             }
-            else if ( e.Key == "Status" )
+            else if ( e.Key == "RequirementState" )
             {
-                e.Value = ResolveValues( e.Value, cblGroupMemberStatus );
+                e.Value = ResolveValues( e.Value, cblRequirementState );
             }
-            else if ( e.Key == "Gender" )
+            else if ( e.Key == "RequirementType" )
             {
-                e.Value = ResolveValues( e.Value, cblGenderFilter );
-            }
-            else if ( e.Key == "Campus" )
-            {
-                var campusId = e.Value.AsIntegerOrNull();
-                if ( campusId.HasValue )
+                var typeId = e.Value.AsIntegerOrNull();
+                if ( typeId.HasValue )
                 {
-                    var campusCache = CampusCache.Get( campusId.Value );
-                    if ( campusCache != null )
-                    {
-                        e.Value = campusCache.Name;
-                    }
-                    else
-                    {
-                        e.Value = string.Empty;
-                    }
+                    e.Value = ddlRequirementType.SelectedItem.Text;
                 }
                 else
                 {
                     e.Value = string.Empty;
                 }
-            }
-            else if ( e.Key == "Registration" )
-            {
-                var instanceId = e.Value.AsIntegerOrNull();
-                if ( instanceId.HasValue )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
-                        if ( instance != null )
-                        {
-                            e.Value = instance.ToString();
-                        }
-                        else
-                        {
-                            e.Value = string.Empty;
-                        }
-                    }
-                }
-                else
-                {
-                    e.Value = string.Empty;
-                }
-            }
-            else if ( e.Key == "Signed Document" )
-            {
-                return;
-            }
-            else if ( e.Key == DATE_ADDED_FILTER_KEY )
-            {
-                e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
             }
             else
             {
@@ -1386,10 +1350,26 @@ namespace RockWeb.Blocks.Groups
                     ddlRequirementType.Items.Insert( 0, new ListItem() );
                 }
             }
+
             cblRequirementState.BindToEnum<MeetsGroupRequirement>();
 
-            //BindAttributes();
-            //AddDynamicControls();
+            string requirementRoleValue = rFilter.GetUserPreference( "RequirementRole" );
+            if ( !string.IsNullOrWhiteSpace( requirementRoleValue ) )
+            {
+                cblRequirementsRole.SetValues( requirementRoleValue.Split( ';' ).ToList() );
+            }
+
+            string requirementTypeValue = rFilter.GetUserPreference( "RequirementType" );
+            if ( !string.IsNullOrWhiteSpace( requirementTypeValue ) )
+            {
+                ddlRequirementType.SelectedValue = requirementTypeValue;
+            }
+
+            string requirementStateValue = rFilter.GetUserPreference( "RequirementState" );
+            if ( !string.IsNullOrWhiteSpace( requirementStateValue ) )
+            {
+                cblRequirementState.SetValues( requirementStateValue.Split( ';' ).ToList() );
+            }
         }
 
         /// <summary>
@@ -2094,7 +2074,6 @@ namespace RockWeb.Blocks.Groups
             gGroupMembers.DataBind();
         }
 
-
         /// <summary>
         /// Binds the group members grid.
         /// </summary>
@@ -2192,7 +2171,7 @@ namespace RockWeb.Blocks.Groups
                 qry = qry.Where( m => roles.Contains( m.GroupRoleId ) );
             }
 
-            // Filter by Group Member Status
+            // Filter by Requirement state
             var meetsRequirementStates = new List<MeetsGroupRequirement>();
             foreach ( string state in cblRequirementState.SelectedValues )
             {
@@ -2205,12 +2184,10 @@ namespace RockWeb.Blocks.Groups
             foreach ( var member in _group.Members )
             {
                 _memberRequirements.Add( member.Id, member.GetGroupRequirementsStatuses( rockContext ).ToList() );
-
-                foreach ( var status in member.GetGroupRequirementsStatuses( rockContext ) )
-                {
-                    //_meetsGroupRequirements.Add( member.Id, status.MeetsGroupRequirement );
-                }
             }
+
+            // Set the selected requirement type to filter states as well as types.
+            var requirementTypeId = ddlRequirementType.SelectedValueAsInt();
 
             if ( meetsRequirementStates.Any() )
             {
@@ -2218,15 +2195,25 @@ namespace RockWeb.Blocks.Groups
                 HashSet<int> matchingMemberIds = new HashSet<int>();
                 foreach ( var requirement in _memberRequirements )
                 {
-                    if ( requirement.Value.Where( r => meetsRequirementStates.Contains( r.MeetsGroupRequirement ) ).Any() )
+                    if ( requirementTypeId.HasValue )
                     {
-                        matchingMemberIds.Add( requirement.Key );
+                        if ( requirement.Value.Where( r => meetsRequirementStates.Contains( r.MeetsGroupRequirement ) && r.GroupRequirement.GroupRequirementTypeId == requirementTypeId ).Any() )
+                        {
+                            matchingMemberIds.Add( requirement.Key );
+                        }
+                    }
+                    else
+                    {
+                        if ( requirement.Value.Where( r => meetsRequirementStates.Contains( r.MeetsGroupRequirement ) ).Any() )
+                        {
+                            matchingMemberIds.Add( requirement.Key );
+                        }
                     }
                 }
+
                 qry = qry.Where( m => matchingMemberIds.Contains( m.Id ) );
             }
 
-            var requirementTypeId = ddlRequirementType.SelectedValueAsInt();
             if ( requirementTypeId.HasValue )
             {
                 HashSet<int> matchingMemberIds = new HashSet<int>();
@@ -2237,6 +2224,7 @@ namespace RockWeb.Blocks.Groups
                         matchingMemberIds.Add( requirement.Key );
                     }
                 }
+
                 qry = qry.Where( m => matchingMemberIds.Contains( m.Id ) );
             }
 
@@ -2466,5 +2454,32 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        protected void lbRequirementsTab_Click( object sender, EventArgs e )
+        {
+            // Hide and un-select Group Members.
+            divGroupMembers.Visible = false;
+            divGroupMembers.RemoveCssClass( "active" );
+            liGroupMembers.RemoveCssClass( "active" );
+
+            // Show and select Requirements
+            divRequirements.Visible = true;
+            divRequirements.AddCssClass( "active" );
+            liRequirements.AddCssClass( "active" );
+            MemberRequirementsTab = REQUIREMENTS_TAB_TITLE;
+        }
+
+        protected void lbGroupMembersTab_Click( object sender, EventArgs e )
+        {
+            // Show and select Group Members.
+            divGroupMembers.Visible = true;
+            divGroupMembers.AddCssClass( "active" );
+            liGroupMembers.AddCssClass( "active" );
+
+            // Hide and un-select Requirements
+            divRequirements.Visible = false;
+            divRequirements.RemoveCssClass( "active" );
+            liRequirements.RemoveCssClass( "active" );
+            MemberRequirementsTab = GROUP_MEMBERS_TAB_TITLE;
+        }
     }
 }

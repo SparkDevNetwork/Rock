@@ -38,10 +38,10 @@
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
                         <asp:HiddenField ID="hfActivePill" runat="server" />
-                        <asp:PlaceHolder ID="phPills" runat="server">
+                        <asp:PlaceHolder ID="phPills" runat="server" Visible="false">
                             <ul class="nav nav-pills margin-b-lg">
-                                <li id="liGroupMembers" runat="server" class="active"><a href='#<%=divGroupMembers.ClientID%>' data-toggle="pill">Group Members</a></li>
-                                <li id="liRequirements" runat="server"><a href='#<%=divRequirements.ClientID%>' data-toggle="pill">Requirements</a></li>
+                                <li id="liGroupMembers" runat="server" class="active"><asp:LinkButton ID="lbGroupMembersTab" runat="server" Text="Group Members" OnClick="lbGroupMembersTab_Click"></asp:LinkButton></li>
+                                <li id="liRequirements" runat="server"><asp:LinkButton ID="lbRequirementsTab" runat="server" Text="Requirements" OnClick="lbRequirementsTab_Click"></asp:LinkButton></li>
                             </ul>
                         </asp:PlaceHolder>
                         <div class="grid grid-panel">
@@ -224,30 +224,6 @@
 
                 } );
 
-                 $( document ).ready( function ()
-                 {
-                     showTab();
-                 } );
-
-                 function showTab ()
-                 {
-
-                     var tab = document.getElementById( '<%= hfActivePill.ClientID%>' ).value;
-                     $( '#phPills a[href="#' + tab + '"]' ).tab( 'show' );
-
-                     // register the "on" event here else it will be lost on partial postback
-                     $( 'a[data-toggle="pill"]' ).on( 'nav nav-pills', function ( e )
-                     {
-                         // e.target is the activated tab
-                         if ( e.target )
-                         {
-                             $( e.target ).parent().find( '.active' ).removeClass( 'active' );
-                             $( e.target ).addClass( 'active' );
-                         }
-                     } )
-                 }
-
-                 Sys.WebForms.PageRequestManager.getInstance().add_endRequest( showTab );
              </script>
             <Rock:ModalDialog ID="mdActiveRecords" runat="server" Visible="false" Title="Include Inactive Group Members" CancelLinkVisible="false" CloseLinkVisible="false">
                 <Content>
