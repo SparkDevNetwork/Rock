@@ -14,15 +14,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 
 using System;
-using System.Data.Entity;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Web;
-
-using Rock;
+using System.IO;
+using System.Net;
 using Rock.Model;
 
 namespace RockWeb.Webhooks
@@ -68,17 +65,6 @@ namespace RockWeb.Webhooks
                     postedData = reader.ReadToEnd();
                 }
 
-                // Check the hash of the request body agaist the value in X-Checkr-Signature
-                var token = GetApiToken();
-                var checkrHash = request.Headers["X-Checkr-Signature"];
-                var securityHash = postedData.HmacSha256Hash( token );
-
-                if ( !checkrHash.Equals( securityHash ) )
-                {
-                    // If the request is not valid then just return.
-                    return;
-                }
-
                 Rock.Checkr.Checkr.SaveWebhookResults( postedData );
 
                 // Per Gerhard this has to be set to 200 regardless of the result or the page will not function.
@@ -99,41 +85,6 @@ namespace RockWeb.Webhooks
             {
                 return false;
             }
-        }
-
-        private string GetApiToken()
-        {
-            var checkrEntityType = Rock.Web.Cache.EntityTypeCache.Get( typeof( Rock.Checkr.Checkr ) );
-
-            if ( checkrEntityType == null )
-            {
-                return string.Empty;
-            }
-
-            var encryptedToken = string.Empty;
-            var decryptedToken = string.Empty;
-
-            using ( var rockContext = new Rock.Data.RockContext() )
-            {
-                encryptedToken = new AttributeValueService( rockContext )
-                    .Queryable( "Attribute" )
-                    .AsNoTracking()
-                    .Where( v => v.Attribute.EntityTypeId == checkrEntityType.Id )
-                    .Where( v => v.Attribute.Key == "AccessToken" )
-                    .Select( v => v.Value )
-                    .FirstOrDefault();
-            }
-
-            if ( encryptedToken.IsNotNullOrWhiteSpace() )
-            {
-                try
-                {
-                    decryptedToken = Rock.Security.Encryption.DecryptString( encryptedToken );
-                }
-                catch { }
-            }
-
-            return decryptedToken;
         }
     }
 }
