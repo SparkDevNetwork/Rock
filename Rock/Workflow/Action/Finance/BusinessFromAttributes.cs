@@ -127,13 +127,6 @@ namespace Rock.Workflow.Action
             public const string Business = "Business";
         }
 
-        #region Instance Properties
-
-        private WorkflowAction _action;
-        private RockContext _rockContext;
-
-        #endregion Instance Properties
-
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -146,11 +139,8 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            // Initialize instance properties
-            _action = action;
-            _rockContext = rockContext;
-            var mergeFields = GetMergeFields( _action );
-            string businessName = GetAttributeValue( _action, AttributeKey.BusinessName, true ).ResolveMergeFields( mergeFields );
+            var mergeFields = GetMergeFields( action );
+            string businessName = GetAttributeValue( action, AttributeKey.BusinessName, true ).ResolveMergeFields( mergeFields );
             if ( businessName.IsNullOrWhiteSpace() )
             {
                 errorMessages.Add( "Business Name is required and could not be found." );
@@ -158,9 +148,9 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var email = GetAttributeValue( _action, AttributeKey.Email, true ).ResolveMergeFields( mergeFields );
-            var phoneNumber = GetAttributeValue( _action, AttributeKey.PhoneNumber, true ).ResolveMergeFields( mergeFields ) ?? string.Empty;
-            var address = GetLocationFromSelectedAttribute( AttributeKey.Address );
+            var email = GetAttributeValue( action, AttributeKey.Email, true ).ResolveMergeFields( mergeFields );
+            var phoneNumber = GetAttributeValue( action, AttributeKey.PhoneNumber, true ).ResolveMergeFields( mergeFields ) ?? string.Empty;
+            var address = GetLocationFromSelectedAttribute( AttributeKey.Address, rockContext, action );
 
             if ( email.IsNullOrWhiteSpace() && phoneNumber.IsNullOrWhiteSpace() && address == null )
             {
@@ -169,7 +159,7 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var personService = new PersonService( _rockContext );
+            var personService = new PersonService( rockContext );
             var business = personService.FindBusiness( businessName, email, phoneNumber, address?.Street1 );
             if ( business == null )
             {
@@ -194,7 +184,7 @@ namespace Rock.Workflow.Action
                     business.PhoneNumbers.Add( businessPhoneNumber );
                 }
 
-                var smsEnabled = GetBooleanFromSelectedAttribute( AttributeKey.SMSEnabled );
+                var smsEnabled = GetBooleanFromSelectedAttribute( AttributeKey.SMSEnabled, action );
 
                 // TODO handle country code here
                 businessPhoneNumber.Number = PhoneNumber.CleanNumber( phoneNumber );
@@ -217,7 +207,7 @@ namespace Rock.Workflow.Action
             {
                 rockContext.SaveChanges();
 
-                var defaultCampusGuid = GetAttributeValue( _action, AttributeKey.Campus, true ).AsGuidOrNull();
+                var defaultCampusGuid = GetAttributeValue( action, AttributeKey.Campus, true ).AsGuidOrNull();
                 var defaultCampus = defaultCampusGuid.HasValue ? CampusCache.Get( defaultCampusGuid.Value ) : null;
                 var defaultCampusId = defaultCampus?.Id;
 
@@ -280,7 +270,7 @@ namespace Rock.Workflow.Action
                     workLocation.IsMailingLocation = true;
                 }
 
-                var contactPerson = GetPersonFromSelectedAttribute( AttributeKey.Contact );
+                var contactPerson = GetPersonFromSelectedAttribute( AttributeKey.Contact, rockContext, action );
                 if ( contactPerson != null )
                 {
                     personService.AddContactToBusiness( business.Id, contactPerson.Id );
@@ -363,24 +353,27 @@ namespace Rock.Workflow.Action
         /// Get a bool value from a workflow attribute
         /// </summary>
         /// <param name="attributeKey"></param>
+        /// <param name="action">The action.</param>
         /// <returns></returns>
-        private bool? GetBooleanFromSelectedAttribute( string attributeKey )
+        private bool? GetBooleanFromSelectedAttribute( string attributeKey, WorkflowAction action )
         {
-            return GetAttributeValue( _action, attributeKey, true ).AsBooleanOrNull();
+            return GetAttributeValue( action, attributeKey, true ).AsBooleanOrNull();
         }
 
         /// <summary>
         /// Get the person value from a workflow attribute
         /// </summary>
         /// <param name="attributeKey"></param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">The action.</param>
         /// <returns></returns>
-        private Person GetPersonFromSelectedAttribute( string attributeKey )
+        private Person GetPersonFromSelectedAttribute( string attributeKey, RockContext rockContext, WorkflowAction action )
         {
-            var personAliasGuid = GetAttributeValue( _action, attributeKey, true ).AsGuidOrNull();
+            var personAliasGuid = GetAttributeValue( action, attributeKey, true ).AsGuidOrNull();
             Person person = null;
             if ( personAliasGuid.HasValue )
             {
-                person = new PersonAliasService( _rockContext ).GetPerson( personAliasGuid.Value );
+                person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid.Value );
             }
 
             return person;
@@ -390,14 +383,16 @@ namespace Rock.Workflow.Action
         /// Get a location value from a workflow attribute
         /// </summary>
         /// <param name="attributeKey"></param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">The action.</param>
         /// <returns></returns>
-        private Location GetLocationFromSelectedAttribute( string attributeKey )
+        private Location GetLocationFromSelectedAttribute( string attributeKey, RockContext rockContext, WorkflowAction action )
         {
-            var locationGuid = GetAttributeValue( _action, attributeKey, true ).AsGuidOrNull();
+            var locationGuid = GetAttributeValue( action, attributeKey, true ).AsGuidOrNull();
             Location location = null;
             if ( locationGuid.HasValue )
             {
-                location = new LocationService( _rockContext ).Get( locationGuid.Value );
+                location = new LocationService( rockContext ).Get( locationGuid.Value );
             }
 
             return location;
