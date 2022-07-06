@@ -367,42 +367,6 @@ namespace RockWeb.Blocks.Cms
         #region RockLiquid Lava implementation
 
         /// <summary>
-        /// Gets the shortcode categories.  NOTE: This method is no longer being used by the .ASCX like
-        /// this: <%# GetShortcodeCategories(Eval("Id").ToString()) %> so if the UI team does not want
-        /// this used like that we can remove this method too.
-        /// </summary>
-        /// <param name="shortCodeIdString">The short code identifier string.</param>
-        /// <returns>System.String.</returns>
-        internal string GetShortcodeCategories( string shortCodeIdString )
-        {
-            var shortcodeService = new LavaShortcodeService( new RockContext() );
-
-            var categoryId = ddlCategoryFilter.SelectedValue.AsIntegerOrNull();
-
-            var shortCodeId = shortCodeIdString.AsInteger();
-            if ( shortCodeId == 0 )
-            {
-                return string.Empty;
-            }
-            var catList = shortcodeService.Queryable().SingleOrDefault( v => v.Id == shortCodeId )?.Categories;
-
-            if ( catList != null )
-            {
-                var sbItems = new StringBuilder();
-                foreach ( var cat in catList )
-                {
-                    sbItems.AppendLine( $"<span class='label label-info'>{cat}</span>" );
-                }
-
-                return sbItems.ToString();
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
         /// Loads the shortcodes.
         /// </summary>
         private void LoadShortcodes()
