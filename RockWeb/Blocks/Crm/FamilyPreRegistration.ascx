@@ -19,10 +19,8 @@
                     </div>
                     <div class="panel-body">
                         <div class="row">
-                            <asp:Panel CssClass="col-md-4 pb-2" runat="server" ID="pnlCampus">
-                                <div class="row pl-3">
-                                    <Rock:CampusPicker ID="cpCampus" runat="server" CssClass="input-width-lg" Label="Campus" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" AutoPostBack="true" />
-                                </div>
+                            <asp:Panel CssClass="col-md-4" runat="server" ID="pnlCampus">
+                                <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" AutoPostBack="true" />
                             </asp:Panel>
                             <asp:Panel CssClass="col-md-5" runat="server" ID="pnlPlannedDate" Visible="true">
                                 <Rock:DatePicker ID="dpPlannedDate" runat="server" Label="Planned Visit Date" AllowPastDateSelection="false" />
