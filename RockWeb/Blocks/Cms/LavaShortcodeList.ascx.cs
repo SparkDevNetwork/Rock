@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Cms
                 var sbItems = new StringBuilder();
                 foreach( var cat in shortcode.Categories )
                 {
-                    sbItems.AppendLine( $"<span class='label label-info pull-right' style='margin-right:4px'>{cat}</span>" );
+                    sbItems.AppendLine( $"<span class='label label-info'>{cat}</span>" );
                 }
 
                 var itemLitCategories = e.Item.FindControl( "litCategories" ) as Literal;
