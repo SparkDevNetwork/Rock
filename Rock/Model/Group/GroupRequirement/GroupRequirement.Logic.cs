@@ -50,6 +50,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the parent security authority for this GroupRequirement.
+        /// </summary>
+        /// <value>
+        /// The parent security authority for this GroupRequirement.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.GroupRequirementType != null ? this.GroupRequirementType : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
         /// Returns a list of each person and their GroupRequirement status for this group requirement
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -62,7 +76,7 @@ namespace Rock.Model
         {
             if ( ( this.GroupRoleId != null ) && ( groupRoleId != null ) && ( this.GroupRoleId != groupRoleId ) )
             {
-                // if this GroupRequirement is for a specific role, the groupRole we are checking for is something different
+                // If this GroupRequirement is for a specific group role, and the groupRole we are comparing is not the same role.
                 var result = personQry.Select( p => p.Id ).ToList().Select( a =>
                      new PersonGroupRequirementStatus
                      {
@@ -74,6 +88,8 @@ namespace Rock.Model
                 return result;
             }
 
+            var attributeValueService = new AttributeValueService( rockContext );
+
             if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
             {
                 var personService = new PersonService( rockContext );
@@ -83,6 +99,12 @@ namespace Rock.Model
                 {
                     var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression );
                     warningDataViewPersonIdList = personService.Get( paramExpression, warningDataViewWhereExpression ).Where( a => personQry.Any( p => p.Id == a.Id ) ).Select( a => a.Id ).ToList();
+                }
+
+                if ( this.AppliesToAgeClassification != AppliesToAgeClassification.All )
+                {
+                    // If the requirement's Applies To Age Classification is not "All", filter the person query to the corresponding Age Classification.
+                    personQry = personQry.Where( p => ( int ) p.AgeClassification == ( int ) this.AppliesToAgeClassification );
                 }
 
                 if ( this.GroupRequirementType.DataViewId.HasValue )
@@ -125,8 +147,7 @@ namespace Rock.Model
                             }
 
                             return personGroupRequirementStatus;
-                        }
-                        );
+                        } );
 
                         return result;
                     }
@@ -144,7 +165,6 @@ namespace Rock.Model
                             } );
 
                     return result;
-
                 }
             }
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
@@ -334,6 +354,48 @@ namespace Rock.Model
                 }
             }
         }
+
+        /// <summary>
+        /// Calculates the due date if the properties allow it.
+        /// </summary>
+        /// <param name="dueDateType"></param>
+        /// <param name="dueDateOffsetInDays"></param>
+        /// <param name="dueDateStaticDate"></param>
+        /// <param name="dueDateFromGroupAttribute"></param>
+        /// <param name="dueDateGroupMemberAdded"></param>
+        /// <returns></returns>
+        public DateTime? CalculateGroupMemberRequirementDueDate( DueDateType dueDateType, int? dueDateOffsetInDays, DateTime? dueDateStaticDate, DateTime? dueDateFromGroupAttribute, DateTime? dueDateGroupMemberAdded )
+        {
+            switch ( dueDateType )
+            {
+                case DueDateType.ConfiguredDate:
+                    if ( dueDateStaticDate.HasValue )
+                    {
+                        return dueDateStaticDate.Value;
+                    }
+
+                    return null;
+                case DueDateType.GroupAttribute:
+                    if ( dueDateFromGroupAttribute.HasValue )
+                    {
+                        return dueDateFromGroupAttribute.Value.AddDays( dueDateOffsetInDays.HasValue ? dueDateOffsetInDays.Value : 0 );
+                    }
+
+                    return null;
+                case DueDateType.DaysAfterJoining:
+                    if ( dueDateGroupMemberAdded.HasValue )
+                    {
+                        return dueDateGroupMemberAdded.Value.AddDays( dueDateOffsetInDays.HasValue ? dueDateOffsetInDays.Value : 0 );
+                    }
+
+                    return null;
+
+                case DueDateType.Immediate:
+                default:
+                    return null;
+            }
+        }
+
         #endregion
     }
 }

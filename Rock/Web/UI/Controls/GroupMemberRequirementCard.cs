@@ -15,16 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Web;
-using System.Web.UI;
-
-using System.Linq;
-using System.Web.UI.WebControls;
-using System.ComponentModel;
 using System.Collections.Generic;
-using Rock.Model;
-using Rock.Data;
+using System.ComponentModel;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
@@ -34,22 +31,21 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:GroupMemberRequirementCard runat=server></{0}:GroupMemberRequirementCard>" )]
     public class GroupMemberRequirementCard : Control, INamingContainer
     {
+        private GroupRequirementType _groupMemberRequirementType;
 
-        private GroupRequirementType _GroupMemberRequirementType;
+        private bool _canOverride;
 
-        private bool _CanOverride;
-
-        private GroupMemberRequirement _GroupMemberRequirement;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected LinkButton _lbMarkAsMet;
+        private GroupMemberRequirement _groupMemberRequirement;
 
         /// <summary>
-        /// 
+        /// Link Button control for overriding requirements.
         /// </summary>
-        protected ModalDialog _modalDialog;
+        private LinkButton _lbMarkAsMet;
+
+        /// <summary>
+        /// Modal Dialog control to permit an override.
+        /// </summary>
+        private ModalDialog _modalDialog;
 
         /// <summary>
         /// Gets or sets the title text.
@@ -68,9 +64,6 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["Title"] as string ?? string.Empty; }
             set { ViewState["Title"] = value; }
         }
-
-
-
 
         /// <summary>
         /// Gets or sets the identifier for this group requirement.
@@ -106,7 +99,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        /// Gets or sets the <see cref="Rock.Model.MeetsGroupRequirement"/> for the requirement card.
         /// </summary>
         [Bindable( true ), Category( "Appearance" ), Description( "The group requirement state for the card div." )]
         public MeetsGroupRequirement MeetsGroupRequirement
@@ -119,8 +112,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public GroupMemberRequirementCard( GroupRequirementType groupRequirementType, bool canOverride )
         {
-            this._GroupMemberRequirementType = groupRequirementType;
-            this._CanOverride = canOverride;
+            this._groupMemberRequirementType = groupRequirementType;
+            this._canOverride = canOverride;
         }
 
         /// <summary>
@@ -156,42 +149,54 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
-            _lbMarkAsMet = new LinkButton
+
+            if ( !GroupRequirementId.HasValue )
             {
-                CausesValidation = false,
-                ID = "btnMarkasMetPopup" + this.ClientID,
-                Text = "<i class='fa fa-check-circle-o fa-fw'></i>Mark as Met",
-            };
-            _lbMarkAsMet.Click += btnMarkasMetPopup_Click;
-            Controls.Add( _lbMarkAsMet );
+                return;
+            }
 
-            _modalDialog = new ModalDialog
+            var currentPerson = ( ( RockPage ) Page ).CurrentPerson;
+            var rockContext = new RockContext();
+            GroupRequirementService groupRequirementService = new GroupRequirementService( rockContext );
+            var groupRequirement = groupRequirementService.Get( GroupRequirementId.Value );
+
+            if ( groupRequirement.IsAuthorized( "Override", currentPerson ) )
             {
-                ID = "modalDialog_" + this.ClientID
-            };
-            _modalDialog.ValidationGroup = _modalDialog.ID + "_validationgroup";
-            _modalDialog.Title = "Mark as met?";
+                _lbMarkAsMet = new LinkButton
+                {
+                    CausesValidation = false,
+                    ID = "btnMarkasMetPopup" + this.ClientID,
+                    Text = "<i class='fa fa-check-circle-o fa-fw'></i>Mark as Met",
+                };
+                _lbMarkAsMet.Click += btnMarkasMetPopup_Click;
+                Controls.Add( _lbMarkAsMet );
 
-            HtmlGenericControl headingControl = new HtmlGenericControl( "h5" );
-            headingControl.InnerText = "Are you sure you want to manually mark this requirement as met?";
-            _modalDialog.Content.Controls.Add( headingControl );
+                _modalDialog = new ModalDialog
+                {
+                    ID = "modalDialog_" + this.ClientID
+                };
+                _modalDialog.ValidationGroup = _modalDialog.ID + "_validationgroup";
+                _modalDialog.Title = "Mark as met?";
 
-            _modalDialog.SaveButtonText = "OK";
-            _modalDialog.SaveClick += btnMarkRequirementAsMet_Click;
-            Controls.Add( _modalDialog );
+                HtmlGenericControl headingControl = new HtmlGenericControl( "h5" );
+                headingControl.InnerText = "Are you sure you want to manually mark this requirement as met?";
+                _modalDialog.Content.Controls.Add( headingControl );
+
+                _modalDialog.SaveButtonText = "OK";
+                _modalDialog.SaveClick += btnMarkRequirementAsMet_Click;
+                Controls.Add( _modalDialog );
+            }
         }
 
-
         /// <summary>
-        /// 
+        /// Renders this Group Member Requirement Card control.
         /// </summary>
         /// <param name="writer"></param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            _GroupMemberRequirement = new GroupMemberRequirementService( new RockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
+            _groupMemberRequirement = new GroupMemberRequirementService( new RockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
             if ( this.Title.Trim() != string.Empty )
             {
-
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3 ml-3 mr-3 " + CardStatus( MeetsGroupRequirement ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -218,7 +223,10 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, cardContentColumnClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                _modalDialog.RenderControl( writer );
+                if ( _modalDialog != null )
+                {
+                    _modalDialog.RenderControl( writer );
+                }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Small );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "mr-1" );
@@ -237,14 +245,13 @@ namespace Rock.Web.UI.Controls
                 // End the Small tag.
                 writer.RenderEndTag();
 
-                //If there is an overridden requirement, indicate it here.
-                if ( _GroupMemberRequirement != null && _GroupMemberRequirement.WasOverridden )
+                // If there is an overridden requirement, indicate it here.
+                if ( _groupMemberRequirement != null && _groupMemberRequirement.WasOverridden )
                 {
-                    var toolTipText = string.Format( "Requirement Marked Met by {0} on {1}",
-                        _GroupMemberRequirement.OverriddenByPersonAlias.Person.FullName,
-                        _GroupMemberRequirement.OverriddenDateTime.ToShortDateString() );
-
-                    //This could be a good new control.
+                    var toolTipText = string.Format(
+                        "Requirement Marked Met by {0} on {1}",
+                        _groupMemberRequirement.OverriddenByPersonAlias.Person.FullName,
+                        _groupMemberRequirement.OverriddenDateTime.ToShortDateString() );
 
                     writer.AddAttribute( "class", "help" );
                     writer.AddAttribute( "href", "#" );
@@ -266,42 +273,42 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                     writer.RenderEndTag();
                 }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( CardMessage( MeetsGroupRequirement ) );
+
                 // End the Div tag.
                 writer.RenderEndTag();
 
-                if ( this._GroupMemberRequirementType.Summary.IsNotNullOrWhiteSpace() )
+                if ( this._groupMemberRequirementType.Summary.IsNotNullOrWhiteSpace() )
                 {
                     writer.RenderBeginTag( HtmlTextWriterTag.Small );
-                    writer.Write( this._GroupMemberRequirementType.Summary );
+                    writer.Write( this._groupMemberRequirementType.Summary );
+
                     // End the Small tag.
                     writer.RenderEndTag();
                 }
 
-                var hasDoesNotMeetWorkflow = _GroupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue && !_GroupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow;
-                var hasWarningWorkflow = _GroupMemberRequirementType.WarningWorkflowTypeId.HasValue && !_GroupMemberRequirementType.ShouldAutoInitiateWarningWorkflow;
-                // If "Does Not Meet" has a workflow and it is not automatically initiated, it should be added as a control.
+                var hasDoesNotMeetWorkflow = _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue && !_groupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow;
+                var hasWarningWorkflow = _groupMemberRequirementType.WarningWorkflowTypeId.HasValue && !_groupMemberRequirementType.ShouldAutoInitiateWarningWorkflow;
 
-                if ( hasDoesNotMeetWorkflow || hasWarningWorkflow || _CanOverride )
+                // If "Does Not Meet" has a workflow and it is not automatically initiated, it should be added as a control.
+                if ( hasDoesNotMeetWorkflow || hasWarningWorkflow || _canOverride )
                 {
                     writer.AddStyleAttribute( "list-style-type", "none" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
                     if ( hasDoesNotMeetWorkflow )
                     {
-                        //writer.AddAttribute( HtmlTextWriterAttribute.Class, "list-group-item" );
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
                         var qryParms = new Dictionary<string, string>();
-                        qryParms.Add( "WorkflowTypeId", _GroupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
+                        qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
                         var workflowLink = new PageReference( SystemGuid.Page.LAUNCHWORKFLOW, qryParms );
-
-                        //var workflowLink = new PageReference( rockPage.GetAttributeValue( "EntryPage" ), qryParms );
 
                         if ( workflowLink.PageId > 0 )
                         {
-                            bool showLinkToEntry = _GroupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.HasValue ? _GroupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.Value : false;
+                            bool showLinkToEntry = _groupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.HasValue ? _groupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.Value : false;
                             if ( showLinkToEntry )
                             {
                                 writer.AddAttribute( HtmlTextWriterAttribute.Href, workflowLink.BuildUrl() );
@@ -310,28 +317,30 @@ namespace Rock.Web.UI.Controls
 
                                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.I );
+
                                 // End the I tag.
                                 writer.RenderEndTag();
-                                writer.Write( _GroupMemberRequirementType.DoesNotMeetWorkflowLinkText );
+                                writer.Write( _groupMemberRequirementType.DoesNotMeetWorkflowLinkText );
+
                                 // End the A tag.
                                 writer.RenderEndTag();
                             }
                         }
+
                         // End the Li tag.
                         writer.RenderEndTag();
                     }
 
                     if ( hasWarningWorkflow )
                     {
-                        //writer.AddAttribute( HtmlTextWriterAttribute.Class, "list-group-item" );
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
                         var qryParms = new Dictionary<string, string>();
-                        qryParms.Add( "WorkflowTypeId", _GroupMemberRequirementType.WarningWorkflowTypeId.ToString() );
+                        qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
                         var workflowLink = new PageReference( SystemGuid.Page.LAUNCHWORKFLOW, qryParms );
                         if ( workflowLink.PageId > 0 )
                         {
-                            bool showLinkToEntry = _GroupMemberRequirementType.WarningWorkflowType.IsActive.HasValue ? _GroupMemberRequirementType.WarningWorkflowType.IsActive.Value : false;
+                            bool showLinkToEntry = _groupMemberRequirementType.WarningWorkflowType.IsActive.HasValue ? _groupMemberRequirementType.WarningWorkflowType.IsActive.Value : false;
                             if ( showLinkToEntry )
                             {
                                 writer.AddAttribute( HtmlTextWriterAttribute.Href, workflowLink.BuildUrl() );
@@ -340,26 +349,31 @@ namespace Rock.Web.UI.Controls
 
                                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
                                 writer.RenderBeginTag( HtmlTextWriterTag.I );
+
                                 // End the I tag.
                                 writer.RenderEndTag();
-                                writer.Write( _GroupMemberRequirementType.WarningWorkflowLinkText );
+                                writer.Write( _groupMemberRequirementType.WarningWorkflowLinkText );
+
                                 // End the A tag.
                                 writer.RenderEndTag();
                             }
                         }
+
                         // End the Li tag.
                         writer.RenderEndTag();
                     }
 
                     // If this requirement can be marked as met manually (overridden),
+                    // and the link button exists ( the current person has authorization to override / "mark as met")
                     // and the requirement has NOT been met,
                     // and does not have a group member requirement,
                     // or it does have a group member requirement but it has not been overridden,
                     // then add the link button.
-                    if ( _CanOverride && (MeetsGroupRequirement != MeetsGroupRequirement.Meets) && ( _GroupMemberRequirement == null || ( _GroupMemberRequirement != null && !_GroupMemberRequirement.WasOverridden ) ) )
+                    if ( _canOverride && _lbMarkAsMet != null && ( MeetsGroupRequirement != MeetsGroupRequirement.Meets ) && ( _groupMemberRequirement == null || ( _groupMemberRequirement != null && !_groupMemberRequirement.WasOverridden ) ) )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
                         _lbMarkAsMet.RenderControl( writer );
+
                         // End the Li tag.
                         writer.RenderEndTag();
                     }
@@ -376,10 +390,8 @@ namespace Rock.Web.UI.Controls
 
                 // End the Div Col tag.
                 writer.RenderEndTag();
-
             }
         }
-
 
         private string CardStatus( MeetsGroupRequirement meetsGroupRequirement )
         {
@@ -404,13 +416,13 @@ namespace Rock.Web.UI.Controls
             switch ( meetsGroupRequirement )
             {
                 case MeetsGroupRequirement.Meets:
-                    return this._GroupMemberRequirementType.PositiveLabel;
+                    return this._groupMemberRequirementType.PositiveLabel;
 
                 case MeetsGroupRequirement.NotMet:
-                    return this._GroupMemberRequirementType.NegativeLabel;
+                    return this._groupMemberRequirementType.NegativeLabel;
 
                 case MeetsGroupRequirement.MeetsWithWarning:
-                    return this._GroupMemberRequirementType.WarningLabel;
+                    return this._groupMemberRequirementType.WarningLabel;
 
                 default:
                     return "Issue with this message.";
@@ -435,20 +447,19 @@ namespace Rock.Web.UI.Controls
         protected void btnMarkRequirementAsMet_Click( object sender, EventArgs e )
         {
             // Save the Requirement change.
-            //Get the requirement ID, the group member ID, and mark it as completed.
+            // Get the requirement ID, the group member ID, and mark it as completed.
             var rockContext = new RockContext();
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
             if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
             {
-
                 groupMemberRequirement = new GroupMemberRequirement
                 {
                     GroupRequirementId = GroupRequirementId.Value,
                     GroupMemberId = GroupMemberId
                 };
-                //groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
             }
+
             groupMemberRequirement.WasOverridden = true;
             var currentPerson = ( ( RockPage ) Page ).CurrentPerson;
             groupMemberRequirement.OverriddenByPersonAliasId = currentPerson.PrimaryAliasId;
@@ -458,7 +469,6 @@ namespace Rock.Web.UI.Controls
 
             rockContext.SaveChanges();
             _modalDialog.Hide();
-            //refresh page / control.
         }
     }
 }
