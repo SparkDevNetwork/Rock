@@ -255,20 +255,14 @@ namespace RockWeb.Blocks.Cms
                 LoadShortcodes();
                 return;
             }
-            var lavaShortcodeService = new LavaShortcodeService( new RockContext() );
 
+            var lavaShortcodeService = new LavaShortcodeService( new RockContext() );
 
             var lavaShortcodes = lavaShortcodeService.Queryable();
 
             if ( swShowInactive.Checked == false )
             {
                 lavaShortcodes = lavaShortcodes.Where( s => s.IsActive == true );
-            }
-
-            var selectedCategoryId = ddlCategoryFilter.SelectedValue.AsInteger();
-            if ( selectedCategoryId > 0 )
-            {
-                lavaShortcodes = lavaShortcodes.Where( s => s.Categories.Any( v => v.Id == selectedCategoryId ) );
             }
 
             // To list the items from the database as we now need to add
@@ -314,17 +308,31 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            rptShortcodes.DataSource = shortcodeList.ToList().OrderBy( s => s.Name );
+            // Now filter them based on any selected filter.
+            var selectedCategoryId = ddlCategoryFilter.SelectedValue.AsInteger();
+            if ( selectedCategoryId > 0 )
+            {
+                shortcodeList = shortcodeList.Where( s => s.Categories.Any( v => v.Id == selectedCategoryId ) ).ToList();
+            }
+
+            rptShortcodes.DataSource = shortcodeList.OrderBy( s => s.Name );
             rptShortcodes.DataBind();
         }
 
+        /// <summary>
+        /// Gets the categories from meta data. If the metaData does not include any
+        /// categories, that's still ok.  In that case this will just return an empty
+        /// list of categories.
+        /// </summary>
+        /// <param name="metaData">The meta data.</param>
+        /// <returns>List&lt;Category&gt;.</returns>
         private List<Category> GetCategoriesFromMetaData( LavaShortcodeMetadataAttribute metaData )
         {
             List<Category> categories = new List<Category>();
 
             var categoryService = new CategoryService( new RockContext() );
-            var shortcodeCategoryGuids = metaData.Categories.Split( ',' ).AsGuidOrNullList();
-            shortcodeCategoryGuids.ForEach( g => categories.Add( categoryService.Get( g.Value ) ) );
+            var shortcodeCategoryGuids = metaData.Categories.Split( ',' ).AsGuidList();
+            shortcodeCategoryGuids.ForEach( g => categories.Add( categoryService.Get( g ) ) );
 
             return categories;
         }
@@ -358,7 +366,14 @@ namespace RockWeb.Blocks.Cms
 
         #region RockLiquid Lava implementation
 
-        internal string GetShortcodeCategories( string shortCodeIdString)
+        /// <summary>
+        /// Gets the shortcode categories.  NOTE: This method is no longer being used by the .ASCX like
+        /// this: <%# GetShortcodeCategories(Eval("Id").ToString()) %> so if the UI team does not want
+        /// this used like that we can remove this method too.
+        /// </summary>
+        /// <param name="shortCodeIdString">The short code identifier string.</param>
+        /// <returns>System.String.</returns>
+        internal string GetShortcodeCategories( string shortCodeIdString )
         {
             var shortcodeService = new LavaShortcodeService( new RockContext() );
 
@@ -369,12 +384,12 @@ namespace RockWeb.Blocks.Cms
             {
                 return string.Empty;
             }
-            var catList = shortcodeService.Queryable().SingleOrDefault(v=>v.Id==shortCodeId)?.Categories;
+            var catList = shortcodeService.Queryable().SingleOrDefault( v => v.Id == shortCodeId )?.Categories;
 
             if ( catList != null )
             {
                 var sbItems = new StringBuilder();
-                foreach(var cat in catList )
+                foreach ( var cat in catList )
                 {
                     sbItems.AppendLine( $"<span class='label label-info'>{cat}</span>" );
                 }
@@ -398,12 +413,6 @@ namespace RockWeb.Blocks.Cms
             if ( swShowInactive.Checked == false )
             {
                 lavaShortcodes = lavaShortcodes.Where( s => s.IsActive == true );
-            }
-
-            var selectedCategoryId = ddlCategoryFilter.SelectedValue.AsInteger();
-            if ( selectedCategoryId > 0 )
-            {
-                lavaShortcodes = lavaShortcodes.Where( s => s.Categories.Any( v => v.Id == selectedCategoryId ) );
             }
 
             // To list the items from the database as we now need to add
@@ -461,7 +470,14 @@ namespace RockWeb.Blocks.Cms
                 } );
             }
 
-            rptShortcodes.DataSource = shortcodeList.ToList().OrderBy( s => s.Name );
+            // Now filter them based on any selected filter.
+            var selectedCategoryId = ddlCategoryFilter.SelectedValue.AsInteger();
+            if ( selectedCategoryId > 0 )
+            {
+                shortcodeList = shortcodeList.Where( s => s.Categories.Any( v => v.Id == selectedCategoryId ) ).ToList();
+            }
+
+            rptShortcodes.DataSource = shortcodeList.OrderBy( s => s.Name );
             rptShortcodes.DataBind();
         }
 
