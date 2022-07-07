@@ -57,7 +57,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "AchievementTypePickerGetAchievementTypes" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "F98E3033-C652-4031-94B3-E7C44ECA51AA" )]
-        public IHttpActionResult AchievementTypePickerGetEntityTypes( [FromBody] AchievementTypePickerGetAchievementTypesOptionsBag options )
+        public IHttpActionResult AchievementTypePickerGetAchievementTypes( [FromBody] AchievementTypePickerGetAchievementTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -777,6 +777,40 @@ namespace Rock.Rest.v2
                     .ToList();
 
                 return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Event Item Picker
+
+        /// <summary>
+        /// Gets the event items that can be displayed in the event item picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of view models that represent the tree items.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "EventItemPickerGetEventItems" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1D558F8A-08C9-4B62-A3A9-853C9F66B748" )]
+        public IHttpActionResult EventItemPickerGetEventItems( [FromBody] EventItemPickerGetEventItemsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+
+                var eventItems = new EventCalendarItemService( rockContext ).Queryable()
+                    .Where( i => options.IncludeInactive ? true : i.EventItem.IsActive )
+                    .Select( i => new ListItemBag
+                    {
+                        Category = i.EventCalendar.Name,
+                        Value = i.EventItem.Id.ToString(),
+                        Text = i.EventItem.Name
+                    } )
+                    .OrderBy( i => i.Category )
+                    .ThenBy( i => i.Text )
+                    .ToList();
+
+                return Ok( eventItems );
             }
         }
 

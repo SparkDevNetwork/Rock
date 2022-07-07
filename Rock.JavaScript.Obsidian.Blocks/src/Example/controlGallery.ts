@@ -92,6 +92,7 @@ import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle"
 import { useStore } from "@Obsidian/PageState";
 import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker";
 import Modal from "@Obsidian/Controls/modal";
+import EventItemPicker from "@Obsidian/Controls/eventItemPicker";
 
 // #region Gallery Support
 
@@ -3140,6 +3141,78 @@ const binaryFilePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Event Item picker */
+const eventItemPickerGallery = defineComponent({
+    name: "EventItemPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        EventItemPicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            includeInactive: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("eventItemPicker"),
+            exampleCode: `<EventItemPicker label="Event Item" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <EventItemPicker label="Event Item"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :includeInactive="includeInactive" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Include Inactive Items" v-model="includeInactive" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates audit detail. */
 const auditDetailGallery = defineComponent({
     name: "AuditDetailGallery",
@@ -3270,6 +3343,7 @@ const controlGalleryComponents: Record<string, Component> = [
     binaryFileTypePickerGallery,
     binaryFilePickerGallery,
     modalGallery,
+    eventItemPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
