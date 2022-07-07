@@ -470,6 +470,12 @@ namespace Rock.Model
                              GroupRequirement = groupRequirement,
                              MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet,
                              RequirementWarningDateTime = metRequirement != null ? metRequirement.RequirementWarningDateTime : null,
+                             RequirementDueDate = groupRequirement.CalculateGroupMemberRequirementDueDate(
+                            groupRequirement.GroupRequirementType.DueDateType,
+                            groupRequirement.GroupRequirementType.DueDateOffsetInDays,
+                            groupRequirement.DueDateStaticDate,
+                            groupRequirement.DueDateAttributeId.HasValue ? new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( groupRequirement.DueDateAttributeId.Value, this.GroupId ).Value.AsDateTime() : null,
+                this.DateTimeAdded ),
                              LastRequirementCheckDateTime = metRequirement != null ? metRequirement.LastRequirementCheckDateTime : null,
                              GroupMemberRequirementId = metRequirement?.GroupMemberRequirementId,
                          };

@@ -141,12 +141,7 @@ namespace Rock.Web.UI.Controls
                         GroupMemberRequirementId = requirementStatus.GroupMemberRequirementId,
                         GroupRequirementId = requirementStatus.GroupRequirement.Id,
                         GroupMemberId = GroupMemberId,
-                        GroupMemberRequirementDueDate = CalculateGroupMemberRequirementDueDate(
-                            requirementStatus.GroupRequirement.GroupRequirementType.DueDateType,
-                            requirementStatus.GroupRequirement.GroupRequirementType.DueDateOffsetInDays,
-                            requirementStatus.GroupRequirement.DueDateStaticDate,
-                            requirementStatus.GroupRequirement.DueDateAttributeId.HasValue ? attributeValueService.GetByAttributeIdAndEntityId( requirementStatus.GroupRequirement.DueDateAttributeId.Value, groupMember.GroupId ).Value.AsDateTime() : null,
-                groupMember.DateTimeAdded )
+                        GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate
                     };
                     columnControl.Controls.Add( card );
 
