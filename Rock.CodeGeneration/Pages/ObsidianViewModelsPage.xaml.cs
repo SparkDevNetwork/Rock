@@ -96,7 +96,8 @@ namespace Rock.CodeGeneration.Pages
             }
 
             // If type is in the Rock.Enums assembly, it's supported.
-            if ( type.IsEnum && type.Assembly == typeof( Enums.Reporting.FieldFilterSourceType ).Assembly )
+            var underlyingType = Nullable.GetUnderlyingType( type ) ?? type;
+            if ( underlyingType.IsEnum && underlyingType.Assembly == typeof( Enums.Reporting.FieldFilterSourceType ).Assembly )
             {
                 return true;
             }
