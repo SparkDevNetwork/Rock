@@ -298,7 +298,7 @@ namespace Rock.Rest.v2
         #region Binary File Picker
 
         /// <summary>
-        /// Gets the asset storage providers that can be displayed in the asset storage provider picker.
+        /// Gets the binary files that can be displayed in the binary file picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
         /// <returns>A collection of view models that represent the tree items.</returns>
@@ -390,6 +390,8 @@ namespace Rock.Rest.v2
                     IncludeCategoriesWithoutChildren = options.IncludeCategoriesWithoutChildren,
                     DefaultIconCssClass = options.DefaultIconCssClass,
                     IncludeInactiveItems = options.IncludeInactiveItems,
+                    ItemFilterPropertyName = options.ItemFilterPropertyName,
+                    ItemFilterPropertyValue = options.ItemFilterPropertyValue,
                     LazyLoad = options.LazyLoad,
                     SecurityGrant = grant
                 } );
@@ -433,6 +435,45 @@ namespace Rock.Rest.v2
             else
             {
                 return value;
+            }
+        }
+
+        #endregion
+
+        #region Data View Picker
+
+        /// <summary>
+        /// Gets the child items that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which data views to load.</param>
+        /// <returns>A collection of view models that represent the defined values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "DataViewPickerGetDataViews" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1E079A57-9B44-4365-9C9C-2383A9A3F45B" )]
+        public IHttpActionResult DataViewPickerGetDataViews( [FromBody] DataViewPickerGetDataViewsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.GetCategorizedItems,
+                    EntityTypeGuid = EntityTypeCache.Get<Rock.Model.DataView>().Guid,
+                    IncludeUnnamedEntityItems = options.IncludeUnnamedEntityItems,
+                    IncludeCategoriesWithoutChildren = options.IncludeCategoriesWithoutChildren,
+                    DefaultIconCssClass = options.DefaultIconCssClass,
+                    ItemFilterPropertyName = options.EntityTypeGuidFilter.HasValue ? "EntityTypeId" : null,
+                    ItemFilterPropertyValue = options.EntityTypeGuidFilter.HasValue ? EntityTypeCache.GetId( options.EntityTypeGuidFilter.Value ).ToString() : "",
+                    LazyLoad = options.LazyLoad,
+                    SecurityGrant = grant
+                } );
+
+                return Ok( items );
             }
         }
 
@@ -1326,6 +1367,43 @@ namespace Rock.Rest.v2
                     Detail = "The account has been saved for future use",
                     IsSuccess = true
                 };
+            }
+        }
+
+        #endregion
+
+        #region Workflow Type Picker
+
+        /// <summary>
+        /// Gets the workflow type items that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which workflow types to load.</param>
+        /// <returns>A collection of view models that represent the defined values.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "WorkflowTypePickerGetWorkflowTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "622EE929-7A18-46BE-9AEA-9E0725293612" )]
+        public IHttpActionResult WorkflowTypePickerGetWorkflowTypes( [FromBody] WorkflowTypePickerGetWorkflowTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = true,
+                    EntityTypeGuid = Rock.SystemGuid.EntityType.WORKFLOW_TYPE.AsGuid(),
+                    IncludeUnnamedEntityItems = true,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeInactiveItems = options.IncludeInactiveItems,
+                    LazyLoad = false,
+                    SecurityGrant = grant
+                } );
+
+                return Ok( items );
             }
         }
 

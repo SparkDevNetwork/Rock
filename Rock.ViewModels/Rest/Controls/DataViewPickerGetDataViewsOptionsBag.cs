@@ -21,9 +21,9 @@ namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
     /// The options that can be passed to the ChildTreeItems API action of
-    /// the CategoryPicker control.
+    /// the DataViewPicker control.
     /// </summary>
-    public class CategoryPickerChildTreeItemsOptionsBag
+    public class DataViewPickerGetDataViewsOptionsBag
     {
         /// <summary>
         /// Gets or sets the parent unique identifier whose children are to
@@ -38,30 +38,6 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         /// <value><c>true</c> if items should be loaded; otherwise, <c>false</c>.</value>
         public bool GetCategorizedItems { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entity type unique identifier to limit the
-        /// results to.
-        /// </summary>
-        /// <value>The entity type unique identifier.</value>
-        public Guid? EntityTypeGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entity qualifier that is used to filter category
-        /// results. If not blank, then the category EntityTypeQualifierColumn
-        /// property must match this value.
-        /// </summary>
-        /// <value>The entity qualifier used to filter results.</value>
-        public string EntityTypeQualifierColumn { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entity qualifier value that is used to filter
-        /// category results. If both this and <see cref="EntityTypeQualifierColumn"/>
-        /// are not blank, then the category EntityTypeQualifierValue property
-        /// must match this value.
-        /// </summary>
-        /// <value>The entity qualifier value used to filter results.</value>
-        public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether entity items without a name
@@ -80,7 +56,7 @@ namespace Rock.ViewModels.Rest.Controls
         /// <value>
         ///   <c>true</c> if categories with no children should be included; otherwise, <c>false</c>.
         /// </value>
-        public bool IncludeCategoriesWithoutChildren { get; set; } = true;
+        public bool IncludeCategoriesWithoutChildren { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the default icon CSS class to use for items that do not
@@ -90,29 +66,12 @@ namespace Rock.ViewModels.Rest.Controls
         public string DefaultIconCssClass { get; set; } = "fa fa-list-ol";
 
         /// <summary>
-        /// Gets or sets a value indicating whether inactive items should be
-        /// included in the results. If the entity type does not support the
-        /// IsActive property then this value will be ignored.
-        /// </summary>
-        /// <value><c>true</c> if inactive items should be included; otherwise, <c>false</c>.</value>
-        public bool IncludeInactiveItems { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the item property to use for comparison
-        /// with <see cref="ItemFilterPropertyValue"/>. When set the item query
-        /// will attempt to filter on this property name. If it does not exist
-        /// then an exception will be thrown.
-        /// </summary>
-        /// <value>The name of the item property to use for custom filtering.</value>
-        public string ItemFilterPropertyName { get; set; }
-
-        /// <summary>
         /// Gets or sets the item property value to compare against. This should
         /// be either an integer-string, Guid-string or plain string for
         /// comparison. And must match the database property type.
         /// </summary>
         /// <value>The item property value to compare against.</value>
-        public string ItemFilterPropertyValue { get; set; }
+        public Guid? EntityTypeGuidFilter { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether child categories and items
@@ -132,3 +91,4 @@ namespace Rock.ViewModels.Rest.Controls
         public string SecurityGrantToken { get; set; }
     }
 }
+

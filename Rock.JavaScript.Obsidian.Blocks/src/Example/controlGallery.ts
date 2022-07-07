@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { Component, computed, defineComponent, getCurrentInstance, onMounted, onUnmounted, PropType, ref, useAttrs, watch } from "vue";
+import { Component, computed, defineComponent, getCurrentInstance, onMounted, onUnmounted, PropType, ref, watch } from "vue";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -93,6 +93,9 @@ import { useStore } from "@Obsidian/PageState";
 import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker";
 import Modal from "@Obsidian/Controls/modal";
 import EventItemPicker from "@Obsidian/Controls/eventItemPicker";
+import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
+import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker";
+
 
 // #region Gallery Support
 
@@ -2671,11 +2674,22 @@ const categoryPickerGallery = defineComponent({
         GalleryAndResult,
         CheckBox,
         CategoryPicker,
-        TextBox
+        TextBox,
+        EntityTypePicker
     },
     setup() {
+        const entityType = ref<ListItemBag | null>(null);
+        const entityTypeGuid = computed(() => {
+            if (entityType?.value?.value) {
+                return entityType.value.value;
+            }
+
+            return null;
+        });
+
         return {
-            entityTypeGuid: ref(EntityType.DefinedType),
+            entityType,
+            entityTypeGuid,
             multiple: ref(false),
             value: ref(null),
             importCode: getControlImportPath("categoryPicker"),
@@ -2692,8 +2706,15 @@ const categoryPickerGallery = defineComponent({
     <CategoryPicker label="Category Picker" v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" />
 
     <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
-        <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-6">
+                <EntityTypePicker label="For Entity Type" v-model="entityType" enhanceForLongLists showBlankItem />
+            </div>
+        </div>
 
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
@@ -3213,6 +3234,99 @@ const eventItemPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+
+/** Demonstrates data views picker */
+const dataViewPickerGallery = defineComponent({
+    name: "DataViewPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        DataViewPicker,
+        NumberUpDown,
+        EntityTypePicker
+    },
+    setup() {
+        return {
+            entityTypeGuid: ref(null),
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("dataViewPicker"),
+            exampleCode: `<DataViewPicker label="Data View" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <DataViewPicker label="Data Views"
+        v-model="value"
+        :multiple="multiple"
+        :showBlankItem="showBlankItem"
+        :entityTypeGuid="entityTypeGuid?.value" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates workflow type picker */
+const workflowTypePickerGallery = defineComponent({
+    name: "WorkflowTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        WorkflowTypePicker,
+        NumberUpDown,
+        EntityTypePicker
+    },
+    setup() {
+        return {
+            includeInactiveItems: ref(false),
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("workflowTypePicker"),
+            exampleCode: `<WorkflowTypePicker label="Data View" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <WorkflowTypePicker label="Data Views"
+        v-model="value"
+        :multiple="multiple"
+        :showBlankItem="showBlankItem"
+        :includeInactiveItems="includeInactiveItems" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Include Inactive Items" v-model="includeInactiveItems" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates audit detail. */
 const auditDetailGallery = defineComponent({
     name: "AuditDetailGallery",
@@ -3344,6 +3458,8 @@ const controlGalleryComponents: Record<string, Component> = [
     binaryFilePickerGallery,
     modalGallery,
     eventItemPickerGallery,
+    dataViewPickerGallery,
+    workflowTypePickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

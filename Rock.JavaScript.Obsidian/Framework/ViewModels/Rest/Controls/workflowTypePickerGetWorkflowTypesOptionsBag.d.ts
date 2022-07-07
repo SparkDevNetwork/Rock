@@ -25,9 +25,9 @@ import { Guid } from "@Obsidian/Types";
 
 /**
  * The options that can be passed to the ChildTreeItems API action of
- * the CategoryPicker control.
+ * the WorkflowTypePicker control.
  */
-export type CategoryPickerChildTreeItemsOptionsBag = {
+export type WorkflowTypePickerGetWorkflowTypesOptionsBag = {
     /**
      * Gets or sets the parent unique identifier whose children are to
      * be retrieved. If null then the root items are being requested.
@@ -41,30 +41,9 @@ export type CategoryPickerChildTreeItemsOptionsBag = {
     getCategorizedItems: boolean;
 
     /**
-     * Gets or sets the entity type unique identifier to limit the
-     * results to.
-     */
-    entityTypeGuid?: Guid | null;
-
-    /**
-     * Gets or sets the entity qualifier that is used to filter category
-     * results. If not blank, then the category EntityTypeQualifierColumn
-     * property must match this value.
-     */
-    entityTypeQualifierColumn?: string | null;
-
-    /**
-     * Gets or sets the entity qualifier value that is used to filter
-     * category results. If both this and Rock.ViewModels.Rest.Controls.CategoryPickerChildTreeItemsOptionsBag.EntityTypeQualifierColumn
-     * are not blank, then the category EntityTypeQualifierValue property
-     * must match this value.
-     */
-    entityTypeQualifierValue?: string | null;
-
-    /**
      * Gets or sets a value indicating whether entity items without a name
      * should be included in the results. Only applies if
-     * Rock.ViewModels.Rest.Controls.CategoryPickerChildTreeItemsOptionsBag.GetCategorizedItems is true.
+     * Rock.ViewModels.Rest.Controls.WorkflowTypePickerGetWorkflowTypesOptionsBag.GetCategorizedItems is true.
      */
     includeUnnamedEntityItems: boolean;
 
@@ -88,24 +67,16 @@ export type CategoryPickerChildTreeItemsOptionsBag = {
     includeInactiveItems: boolean;
 
     /**
-     * Gets or sets the name of the item property to use for comparison
-     * with Rock.ViewModels.Rest.Controls.CategoryPickerChildTreeItemsOptionsBag.ItemFilterPropertyValue. When set the item query
-     * will attempt to filter on this property name. If it does not exist
-     * then an exception will be thrown.
-     */
-    itemFilterPropertyName?: string | null;
-
-    /**
      * Gets or sets the item property value to compare against. This should
      * be either an integer-string, Guid-string or plain string for
      * comparison. And must match the database property type.
      */
-    itemFilterPropertyValue?: string | null;
+    entityTypeGuidFilter?: Guid | null;
 
     /**
      * Gets or sets a value indicating whether child categories and items
      * are loaded automatically. If true then all descendant categories
-     * will be loaded along with the items if Rock.ViewModels.Rest.Controls.CategoryPickerChildTreeItemsOptionsBag.GetCategorizedItems
+     * will be loaded along with the items if Rock.ViewModels.Rest.Controls.WorkflowTypePickerGetWorkflowTypesOptionsBag.GetCategorizedItems
      * is also true. This results in the Children property of the results
      * being null to indicate they must be loaded on demand.
      */

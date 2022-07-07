@@ -21,6 +21,8 @@ import { post } from "./http";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
 import { LocationPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationPickerGetActiveChildrenOptionsBag";
+import { DataViewPickerGetDataViewsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataViewPickerGetDataViewsOptionsBag";
+import { WorkflowTypePickerGetWorkflowTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowTypePickerGetWorkflowTypesOptionsBag";
 
 /**
  * The methods that must be implemented by tree item providers. These methods
@@ -37,7 +39,7 @@ export interface ITreeItemProvider {
 
     /**
      * Get the child items of the given tree item.
-     * 
+     *
      * @param item The parent item whose children should be loaded.
      *
      * @returns A collection of TreeItem objects, optionally wrapped in a Promise
@@ -83,7 +85,7 @@ export class CategoryTreeItemProvider implements ITreeItemProvider {
 
     /**
      * Gets the child items from the server.
-     * 
+     *
      * @param parentGuid The parent item whose children are retrieved.
      *
      * @returns A collection of TreeItem objects as an asynchronous operation.
@@ -137,7 +139,7 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
 
     /**
      * Gets the child items from the server.
-     * 
+     *
      * @param parentGuid The parent item whose children are retrieved.
      *
      * @returns A collection of TreeItem objects as an asynchronous operation.
@@ -165,6 +167,123 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
      */
     async getRootItems(): Promise<TreeItemBag[]> {
         return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+/**
+ * Tree Item Provider for retrieving data views from the server and displaying
+ * them inside a tree list.
+ */
+export class DataViewTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The entity type unique identifier to restrict results to. Set to undefined
+     * to include all categories, regardless of entity type.
+     */
+    public entityTypeGuid?: Guid;
+
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+        const options: Partial<DataViewPickerGetDataViewsOptionsBag> = {
+            parentGuid,
+            getCategorizedItems: true,
+            includeCategoriesWithoutChildren: false,
+            entityTypeGuidFilter: this.entityTypeGuid,
+            lazyLoad: false,
+            securityGrantToken: this.securityGrantToken,
+        };
+
+        const response = await post<TreeItemBag[]>("/api/v2/Controls/DataViewPickerGetDataViews", {}, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+/**
+ * Tree Item Provider for retrieving categories from the server and displaying
+ * them inside a tree list.
+ */
+export class WorkflowTypeTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The entity type unique identifier to restrict results to. Set to undefined
+     * to include all categories, regardless of entity type.
+     */
+    public includeInactiveItems?: boolean;
+
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+        const options: Partial<WorkflowTypePickerGetWorkflowTypesOptionsBag> = {
+            parentGuid,
+            includeInactiveItems: this.includeInactiveItems ?? false,
+            securityGrantToken: this.securityGrantToken,
+        };
+
+        const response = await post<TreeItemBag[]>("/api/v2/Controls/WorkflowTypePickerGetWorkflowTypes", {}, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems();
     }
 
     /**

@@ -16,17 +16,20 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { defineComponent, PropType, ref, watch } from "vue";
-import { CategoryTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-import { updateRefValue } from "@Obsidian/Utility/component";
+import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+import { standardAsyncPickerProps, updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { defineComponent, PropType, ref, watch } from "vue";
+import { WorkflowTypeTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+import RockFormField from "./rockFormField";
 import TreeItemPicker from "./treeItemPicker";
 
 export default defineComponent({
-    name: "CategoryPicker",
+    name: "WorkflowTypePicker",
 
     components: {
-        TreeItemPicker
+        TreeItemPicker,
+        RockFormField
     },
 
     props: {
@@ -35,31 +38,12 @@ export default defineComponent({
             required: false
         },
 
-        rootCategoryGuid: {
-            type: String as PropType<Guid>
-        },
-
-        entityTypeGuid: {
-            type: String as PropType<Guid>
-        },
-
-        entityTypeQualifierColumn: {
-            type: String as PropType<string>
-        },
-
-        entityTypeQualifierValue: {
-            type: String as PropType<string>
-        },
-
-        securityGrantToken: {
-            type: String as PropType<string | null>,
-            required: false
-        },
-
-        multiple: {
+        includeInactiveItems: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        ...standardAsyncPickerProps
     },
 
     emits: {
@@ -67,33 +51,33 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
-        const internalValue = ref(props.modelValue ?? null);
+        // #region Values
 
-        // Configure the item provider with our settings.
-        const itemProvider = ref(new CategoryTreeItemProvider());
-        itemProvider.value.rootCategoryGuid = props.rootCategoryGuid;
-        itemProvider.value.entityTypeGuid = props.entityTypeGuid;
-        itemProvider.value.entityTypeQualifierColumn = props.entityTypeQualifierColumn;
-        itemProvider.value.entityTypeQualifierValue = props.entityTypeQualifierValue;
-        itemProvider.value.securityGrantToken = props.securityGrantToken;
+        const internalValue = ref(props.modelValue ?? null);
+        const securityGrantToken = useSecurityGrantToken();
+
+        const itemProvider = ref(new WorkflowTypeTreeItemProvider());
+        itemProvider.value.includeInactiveItems = props.includeInactiveItems;
+        itemProvider.value.securityGrantToken = securityGrantToken.value;
+
+        // #endregion
+
+        // #region Watchers
 
         // Keep security token up to date, but don't need refetch data
-        watch(() => props.securityGrantToken, () => {
-            itemProvider.value.securityGrantToken = props.securityGrantToken;
+        watch(securityGrantToken, () => {
+            itemProvider.value.securityGrantToken = securityGrantToken.value;
         });
 
         // When this changes, we need to refetch the data, so reset the whole itemProvider
-        watch(() => props.entityTypeGuid, () => {
+        watch(() => props.includeInactiveItems, () => {
             const oldProvider = itemProvider.value;
-            const newProvider = new CategoryTreeItemProvider();
+            const newProvider = new WorkflowTypeTreeItemProvider();
 
             // copy old provider's properties
-            newProvider.rootCategoryGuid = oldProvider.rootCategoryGuid;
-            newProvider.entityTypeQualifierColumn = oldProvider.entityTypeQualifierColumn;
-            newProvider.entityTypeQualifierValue = oldProvider.entityTypeQualifierValue;
             newProvider.securityGrantToken = oldProvider.securityGrantToken;
             // Use new value
-            newProvider.entityTypeGuid = props.entityTypeGuid;
+            newProvider.includeInactiveItems = props.includeInactiveItems;
 
             // Set the provider to the new one
             itemProvider.value = newProvider;
@@ -107,18 +91,20 @@ export default defineComponent({
             updateRefValue(internalValue, props.modelValue ?? null);
         });
 
+        // #endregion
+
         return {
             internalValue,
             itemProvider
         };
     },
-
     template: `
 <TreeItemPicker v-model="internalValue"
     formGroupClasses="category-picker"
-    iconCssClass="fa fa-folder-open"
+    iconCssClass="fa fa-cogs"
     :provider="itemProvider"
     :multiple="multiple"
+    disableFolderSelection
 />
 `
 });
