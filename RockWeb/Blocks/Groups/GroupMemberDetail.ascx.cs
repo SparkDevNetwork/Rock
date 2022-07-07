@@ -50,6 +50,42 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 1 )]
 
+    [BooleanField( "Show requirements publicly",
+        Description = "Set to false to hide the requirements.",
+        Key = AttributeKey.ShowRequirementsPublicly,
+        DefaultBooleanValue = true,
+        Order = 2 )]
+
+    [BooleanField( "Show public note",
+        Description = "Set to false to hide the public note.",
+        Key = AttributeKey.ShowPublicNotes,
+        DefaultBooleanValue = true,
+        Order = 3 )]
+
+    [BooleanField( "Enable Communications",
+        Description = "Enables the capability to send quick communications from the block.",
+        Key = AttributeKey.EnableCommunications,
+        DefaultBooleanValue = true,
+        Order = 4 )]
+
+    [BooleanField( "Enable SMS",
+        Description = "Allows SMS to be able to be sent from the communications if the individual has SMS enabled. Otherwise only email will be an option.",
+        Key = AttributeKey.EnableSMS,
+        DefaultBooleanValue = true,
+        Order = 5 )]
+
+    [BooleanField( "Append Organization Email Header/Footer",
+        Description = "Will append the organization’s email header and footer to the email message.",
+        Key = AttributeKey.AppendHeaderFooter,
+        DefaultBooleanValue = true,
+        Order = 6 )]
+
+    [BooleanField( "Allow Selecting 'From'",
+        Description = "Allows the 'from' of the communication to be changed to a different person.",
+        Key = AttributeKey.AllowSelectingFrom,
+        DefaultBooleanValue = true,
+        Order = 7 )]
+
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_DETAIL )]
     public partial class GroupMemberDetail : RockBlock
     {
@@ -57,6 +93,12 @@ namespace RockWeb.Blocks.Groups
         {
             public const string RegistrationPage = "RegistrationPage";
             public const string ShowMoveToOtherGroup = "ShowMoveToOtherGroup";
+            public const string ShowRequirementsPublicly = "ShowRequirementsPublicly";
+            public const string ShowPublicNotes = "ShowPublicNotes";
+            public const string EnableCommunications = "EnableCommunications";
+            public const string EnableSMS = "EnableSMS";
+            public const string AppendHeaderFooter = "AppendHeaderFooter";
+            public const string AllowSelectingFrom = "AllowSelectingFrom";
         }
 
         private static class PageParameterKey
@@ -123,6 +165,9 @@ namespace RockWeb.Blocks.Groups
         {
             bool showMoveToOtherGroup = this.GetAttributeValue( AttributeKey.ShowMoveToOtherGroup ).AsBooleanOrNull() ?? true;
             btnShowMoveDialog.Visible = showMoveToOtherGroup;
+
+            bool enableCommunications = this.GetAttributeValue( AttributeKey.EnableCommunications ).AsBooleanOrNull() ?? true;
+            btnShowCommunicationDialog.Visible = enableCommunications;
         }
 
         /// <summary>
@@ -544,14 +589,12 @@ namespace RockWeb.Blocks.Groups
                     groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
                 }
             }
-
-            cblManualRequirements.Items.Clear();
-            lRequirementsLabels.Text = string.Empty;
+            gmrcRequirements.DataBind();
 
             if ( groupMember == null )
             {
                 // no person selected yet, so don't show anything
-                rcwRequirements.Visible = false;
+                gmrcRequirements.Visible = false;
                 return;
             }
 
@@ -561,7 +604,7 @@ namespace RockWeb.Blocks.Groups
                 groupMember.GroupRoleId = selectedGroupRoleId;
             }
 
-            rcwRequirements.Visible = true;
+            gmrcRequirements.Visible = true;
 
             IEnumerable<GroupRequirementStatus> requirementsResults;
 
@@ -589,66 +632,66 @@ namespace RockWeb.Blocks.Groups
                 } ).DistinctBy( c=> c.CategoryId);
 
             // only show the requirements that apply to the GroupRole (or all Roles)
-            foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
-            {
-                if ( requirementResult.GroupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
-                {
-                    var checkboxItem = new ListItem( requirementResult.GroupRequirement.GroupRequirementType.CheckboxLabel, requirementResult.GroupRequirement.Id.ToString() );
-                    if ( string.IsNullOrEmpty( checkboxItem.Text ) )
-                    {
-                        checkboxItem.Text = requirementResult.GroupRequirement.GroupRequirementType.Name;
-                    }
+            //foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
+            //{
+            //    if ( requirementResult.GroupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+            //    {
+            //        var checkboxItem = new ListItem( requirementResult.GroupRequirement.GroupRequirementType.CheckboxLabel, requirementResult.GroupRequirement.Id.ToString() );
+            //        if ( string.IsNullOrEmpty( checkboxItem.Text ) )
+            //        {
+            //            checkboxItem.Text = requirementResult.GroupRequirement.GroupRequirementType.Name;
+            //        }
 
-                    checkboxItem.Selected = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
-                    cblManualRequirements.Items.Add( checkboxItem );
-                }
-                else
-                {
-                    string labelText;
-                    string labelType;
-                    string labelTooltip;
-                    if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
-                    {
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
-                        labelType = "success";
-                    }
-                    else if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
-                    {
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
-                        labelType = "warning";
-                    }
-                    else
-                    {
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
-                        labelType = "danger";
-                    }
+            //        checkboxItem.Selected = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
+            //        cblManualRequirements.Items.Add( checkboxItem );
+            //    }
+            //    else
+            //    {
+            //        string labelText;
+            //        string labelType;
+            //        string labelTooltip;
+            //        if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
+            //        {
+            //            labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
+            //            labelType = "success";
+            //        }
+            //        else if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+            //        {
+            //            labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
+            //            labelType = "warning";
+            //        }
+            //        else
+            //        {
+            //            labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
+            //            labelType = "danger";
+            //        }
 
-                    if ( string.IsNullOrEmpty( labelText ) )
-                    {
-                        labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
-                    }
+            //        if ( string.IsNullOrEmpty( labelText ) )
+            //        {
+            //            labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
+            //        }
 
-                    if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
-                    {
-                        labelTooltip = requirementResult.RequirementWarningDateTime.HasValue
-                            ? "Last Checked: " + requirementResult.RequirementWarningDateTime.Value.ToString( "g" )
-                            : "Not calculated yet";
-                    }
-                    else
-                    {
-                        labelTooltip = requirementResult.LastRequirementCheckDateTime.HasValue
-                            ? "Last Checked: " + requirementResult.LastRequirementCheckDateTime.Value.ToString( "g" )
-                            : "Not calculated yet";
-                    }
+            //        if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
+            //        {
+            //            labelTooltip = requirementResult.RequirementWarningDateTime.HasValue
+            //                ? "Last Checked: " + requirementResult.RequirementWarningDateTime.Value.ToString( "g" )
+            //                : "Not calculated yet";
+            //        }
+            //        else
+            //        {
+            //            labelTooltip = requirementResult.LastRequirementCheckDateTime.HasValue
+            //                ? "Last Checked: " + requirementResult.LastRequirementCheckDateTime.Value.ToString( "g" )
+            //                : "Not calculated yet";
+            //        }
 
-                    lRequirementsLabels.Text += string.Format(
-                        @"<span class='label label-{1}' title='{2}'>{0}</span>
-                        ",
-                        labelText,
-                        labelType,
-                        labelTooltip );
-                }
-            }
+            //        lRequirementsLabels.Text += string.Format(
+            //            @"<span class='label label-{1}' title='{2}'>{0}</span>
+            //            ",
+            //            labelText,
+            //            labelType,
+            //            labelTooltip );
+            //    }
+            //}
 
             var requirementsWithErrors = requirementsResults.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
             if ( requirementsWithErrors.Any() )
@@ -1248,39 +1291,39 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                if ( pnlRequirements.Visible )
-                {
-                    foreach ( var checkboxItem in cblManualRequirements.Items.OfType<ListItem>() )
-                    {
-                        int groupRequirementId = checkboxItem.Value.AsInteger();
-                        var groupMemberRequirement = groupMember.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == groupRequirementId );
-                        bool metRequirement = checkboxItem.Selected;
-                        if ( metRequirement )
-                        {
-                            if ( groupMemberRequirement == null )
-                            {
-                                groupMemberRequirement = new GroupMemberRequirement();
-                                groupMemberRequirement.GroupRequirementId = groupRequirementId;
+                //if ( pnlRequirements.Visible )
+                //{
+                //    foreach ( var checkboxItem in cblManualRequirements.Items.OfType<ListItem>() )
+                //    {
+                //        int groupRequirementId = checkboxItem.Value.AsInteger();
+                //        var groupMemberRequirement = groupMember.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == groupRequirementId );
+                //        bool metRequirement = checkboxItem.Selected;
+                //        if ( metRequirement )
+                //        {
+                //            if ( groupMemberRequirement == null )
+                //            {
+                //                groupMemberRequirement = new GroupMemberRequirement();
+                //                groupMemberRequirement.GroupRequirementId = groupRequirementId;
 
-                                groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
-                            }
+                //                groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
+                //            }
 
-                            // set the RequirementMetDateTime if it hasn't been set already
-                            groupMemberRequirement.RequirementMetDateTime = groupMemberRequirement.RequirementMetDateTime ?? RockDateTime.Now;
+                //            // set the RequirementMetDateTime if it hasn't been set already
+                //            groupMemberRequirement.RequirementMetDateTime = groupMemberRequirement.RequirementMetDateTime ?? RockDateTime.Now;
 
-                            groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
-                        }
-                        else
-                        {
-                            if ( groupMemberRequirement != null )
-                            {
-                                // doesn't meets the requirement
-                                groupMemberRequirement.RequirementMetDateTime = null;
-                                groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
-                            }
-                        }
-                    }
-                }
+                //            groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
+                //        }
+                //        else
+                //        {
+                //            if ( groupMemberRequirement != null )
+                //            {
+                //                // doesn't meets the requirement
+                //                groupMemberRequirement.RequirementMetDateTime = null;
+                //                groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
+                //            }
+                //        }
+                //    }
+                //}
 
                 if ( pnlScheduling.Visible )
                 {
@@ -1688,6 +1731,75 @@ namespace RockWeb.Blocks.Groups
             //{
             //    pnlCheckinResultsAchievementsScoreboard.Visible = false;
             //}
+        }
+
+        protected void btnShowCommunicationDialog_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+            if ( groupMember != null )
+            {
+                bool enableSMS = this.GetAttributeValue( AttributeKey.EnableSMS ).AsBooleanOrNull() ?? true;
+                tglCommunicationPreference.Visible = enableSMS;
+                //tglCommunicationPreference.Checked = enableSMS;
+
+                mdQuickCommunication.Visible = true;
+                mdQuickCommunication.Show();
+            }
+        }
+
+        protected void tglCommunicationPreference_CheckedChanged( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+            if ( groupMember != null )
+            {
+                if ( tglCommunicationPreference.Checked )
+                {
+                    // SMS was chosen.
+                    ebEmailCommunicationFrom.Visible = false;
+                    tbEmailCommunicationSubject.Visible = false;
+                    ppSMSCommunicationFrom.Visible = true;
+                    var smsAvailablePhoneNumbers = groupMember.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled && p.IsValid );
+                    if ( !smsAvailablePhoneNumbers.Any() )
+                    {
+                        nbSendGroupMemberCommunication.Visible = true;
+                        nbSendGroupMemberCommunication.Text = String.Format( "No SMS enabled phone number exists for {0}.", groupMember.Person.FullName );
+                        return;
+                    }
+                    lCommunicationTo.Text = String.Format( "{0} | {1}", groupMember.Person.FullName, smsAvailablePhoneNumbers.First().ToString() );
+                }
+                else
+                {
+                    // Email was chosen.
+                    ebEmailCommunicationFrom.Visible = true;
+                    tbEmailCommunicationSubject.Visible = true;
+                    ppSMSCommunicationFrom.Visible = false;
+                    if ( !groupMember.Person.IsEmailActive || !groupMember.Person.CanReceiveEmail() )
+                    {
+                        nbSendGroupMemberCommunication.Visible = true;
+                        nbSendGroupMemberCommunication.Text = "No email address is available for Ted Decker.";
+                        return;
+                    }
+                    lCommunicationTo.Text = String.Format( "{0} | {1}", groupMember.Person.FullName, groupMember.Person.Email.ToString() );
+                }
+            }
+        }
+
+        protected void mdQuickCommunication_SaveClick( object sender, EventArgs e )
+        {
+            var communicationType = tglCommunicationPreference.Checked ? CommunicationType.SMS : CommunicationType.Email;
+            // If Email, make sure the person has an email address that's allowed
+
+            // If SMS, make sure the person has an SMS-enabled phone number
+
+            SendCommunication( communicationType );
+        }
+
+        private bool SendCommunication( CommunicationType communicationType )
+        {
+
+            return false;
         }
     }
 

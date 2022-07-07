@@ -100,9 +100,10 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:GroupMemberRequirementsContainer ID="gmrcRequirements" runat="server" Visible="true" ></Rock:GroupMemberRequirementsContainer>
+                                <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
                             </div>
                         </div>
-                        <div class="row">
+<%--                        <div class="row">
                             <div class="col-md-12">
                                 <Rock:RockControlWrapper ID="rcwRequirements" runat="server" Label="OLD Requirements" CssClass="well well-lg">
                                     <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
@@ -112,7 +113,7 @@
                                     </div>
                                 </Rock:RockControlWrapper>
                             </div>
-                        </div>
+                        </div>--%>
                     </asp:Panel>
 
                     <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false" />
@@ -140,6 +141,7 @@
                         <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" ToolTip="Alt+A" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+C" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
                         <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default btn-square btn-sm pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnShowCommunicationDialog" runat="server" CssClass="btn btn-default btn-square btn-sm pull-right" ToolTip="Quick Communication" OnClick="btnShowCommunicationDialog_Click"><i class="fa fa-envelope-o"></i></asp:LinkButton>
                     </div>
 
                 </div>
@@ -163,6 +165,24 @@
                 <br />
                 <div class="actions">
                     <asp:LinkButton ID="btnMoveGroupMember" runat="server" CssClass="btn btn-primary" Text="Move" ValidationGroup="vgMoveGroupMember" OnClick="btnMoveGroupMember_Click" />
+                </div>
+            </Content>
+        </Rock:ModalDialog>
+        
+        <Rock:ModalDialog ID="mdQuickCommunication" runat="server" Title="Send Group Member Communication" ValidationGroup="vgSendGroupMemberCommunication" Visible="false" SaveButtonText="Send" SaveButtonCausesValidation="true" OnSaveClick="mdQuickCommunication_SaveClick" CancelLinkVisible ="true">
+            <Content>
+                <asp:ValidationSummary ID="vsSendGroupMemberCommunication" runat="server" ValidationGroup="vgSendGroupMemberCommunication" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:Toggle ID="tglCommunicationPreference" runat="server" OnText="SMS" OffText="Email" Checked="false" ButtonSizeCssClass="btn-xs" OnCssClass="btn-primary" OffCssClass="btn-default" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
+                        <Rock:RockLiteral ID="lCommunicationTo" runat="server" Label="To:"></Rock:RockLiteral>
+                        <Rock:EmailBox ID="ebEmailCommunicationFrom" runat="server" Label="From" Required="true" ValidationGroup="vgEmailGroupMemberCommunication"></Rock:EmailBox>
+                        <Rock:RockTextBox ID="tbEmailCommunicationSubject" runat="server" Label="Subject" Required="true" ValidationGroup="vgEmailGroupMemberCommunication" />
+
+                        <Rock:PersonPicker ID="ppSMSCommunicationFrom" runat="server" Label="From" Required="true" Visible="false" ValidationGroup="vgSMSGroupMemberCommunication" />
+                        <Rock:RockTextBox ID="tbCommunicationMessage" runat="server" Label="Message" Required="true" TextMode="MultiLine" Rows="4" ValidationGroup="vgSendGroupMemberCommunication" ></Rock:RockTextBox>
+                        <Rock:NotificationBox ID="nbSendGroupMemberCommunication" runat="server" NotificationBoxType="Warning" Visible="false" />
+                    </div>
                 </div>
             </Content>
         </Rock:ModalDialog>
