@@ -35,7 +35,7 @@
                 </div>
 
                 <div class="action-container">
-                    <button type="button" class="dropdown-toggle btn btn-default btn-go btn-square stretched-link" data-toggle="dropdown" title="Actions aria-label="Actions">
+                    <button type="button" class="dropdown-toggle btn btn-default btn-go btn-square stretched-link" data-toggle="dropdown" title="Actions" aria-label="Actions">
                         <i class="fa fa-bolt"></i>
                     </button>
                     <ul class="dropdown-menu">
