@@ -20,6 +20,9 @@ using Rock.Enums.Controls;
 
 namespace Rock.ViewModels.Controls
 {
+    /// <summary>
+    /// Class SlidingDateRangeBag.
+    /// </summary>
     public class SlidingDateRangeBag
     {
         /// <summary>
