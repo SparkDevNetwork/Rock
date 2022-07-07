@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -619,17 +620,17 @@ namespace RockWeb.Blocks.Groups
 
             // Determine if requirementResults contain any categories.
             var requirementsWithCategories = requirementsResults.Where( rr => rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue )
-                .Select(rr => rr.GroupRequirement.GroupRequirementType.Category).Distinct().OrderBy( c => c.Order ).ThenBy( c => c.Name );
+                .Select( rr => rr.GroupRequirement.GroupRequirementType.Category ).Distinct().OrderBy( c => c.Order ).ThenBy( c => c.Name );
             var hasRequirementsWithoutCategories = requirementsResults.Where( rr => !rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue )
-                .Select(rr => rr.GroupRequirement.GroupRequirementType.CategoryId).Distinct().Count() > 0;
+                .Select( rr => rr.GroupRequirement.GroupRequirementType.CategoryId ).Distinct().Count() > 0;
 
             var requirementCategories = requirementsResults
                 .Select( rr => new GroupRequirementWithCategoryInfo
                 {
                     CategoryId = rr.GroupRequirement.GroupRequirementType.CategoryId,
                     Name = rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? rr.GroupRequirement.GroupRequirementType.Category.Name : "No name",
-                    RequirementResults = requirementsResults.Where( r=> r.GroupRequirement.GroupRequirementType.CategoryId == rr.GroupRequirement.GroupRequirementType.CategoryId)
-                } ).DistinctBy( c=> c.CategoryId);
+                    RequirementResults = requirementsResults.Where( r => r.GroupRequirement.GroupRequirementType.CategoryId == rr.GroupRequirement.GroupRequirementType.CategoryId )
+                } ).DistinctBy( c => c.CategoryId );
 
             // only show the requirements that apply to the GroupRole (or all Roles)
             //foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
@@ -1739,6 +1740,7 @@ namespace RockWeb.Blocks.Groups
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
             if ( groupMember != null )
             {
+                lCommunicationTo.Text = String.Format( "<strong>To: </strong>{0}", groupMember.Person.FullName );
                 bool enableSMS = this.GetAttributeValue( AttributeKey.EnableSMS ).AsBooleanOrNull() ?? true;
                 tglCommunicationPreference.Visible = enableSMS;
                 //tglCommunicationPreference.Checked = enableSMS;
@@ -1757,31 +1759,39 @@ namespace RockWeb.Blocks.Groups
                 if ( tglCommunicationPreference.Checked )
                 {
                     // SMS was chosen.
-                    ebEmailCommunicationFrom.Visible = false;
-                    tbEmailCommunicationSubject.Visible = false;
-                    ppSMSCommunicationFrom.Visible = true;
+                    pnlEmailControls.Visible = false;
+                    pnlSMSControls.Visible = true;
                     var smsAvailablePhoneNumbers = groupMember.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled && p.IsValid );
                     if ( !smsAvailablePhoneNumbers.Any() )
                     {
+                        pnlSMSControls.Visible = false;
+                        tbCommunicationMessage.Visible = false;
                         nbSendGroupMemberCommunication.Visible = true;
                         nbSendGroupMemberCommunication.Text = String.Format( "No SMS enabled phone number exists for {0}.", groupMember.Person.FullName );
+
                         return;
                     }
-                    lCommunicationTo.Text = String.Format( "{0} | {1}", groupMember.Person.FullName, smsAvailablePhoneNumbers.First().ToString() );
+                    tbCommunicationMessage.Visible = true;
+                    nbSendGroupMemberCommunication.Visible = false;
+                    lCommunicationTo.Text = String.Format( "<strong>To: </strong>{0} | {1}", groupMember.Person.FullName, smsAvailablePhoneNumbers.First().ToString() );
+                    hfSMSNumber.Value = smsAvailablePhoneNumbers.First().ToSmsNumber();
                 }
                 else
                 {
                     // Email was chosen.
-                    ebEmailCommunicationFrom.Visible = true;
-                    tbEmailCommunicationSubject.Visible = true;
-                    ppSMSCommunicationFrom.Visible = false;
+                    pnlEmailControls.Visible = true;
+                    pnlSMSControls.Visible = false;
                     if ( !groupMember.Person.IsEmailActive || !groupMember.Person.CanReceiveEmail() )
                     {
+                        pnlEmailControls.Visible = false;
+                        tbCommunicationMessage.Visible = false;
                         nbSendGroupMemberCommunication.Visible = true;
-                        nbSendGroupMemberCommunication.Text = "No email address is available for Ted Decker.";
+                        nbSendGroupMemberCommunication.Text = String.Format( "No email address is available for {0}.", groupMember.Person.FullName );
                         return;
                     }
-                    lCommunicationTo.Text = String.Format( "{0} | {1}", groupMember.Person.FullName, groupMember.Person.Email.ToString() );
+                    tbCommunicationMessage.Visible = true;
+                    nbSendGroupMemberCommunication.Visible = false;
+                    lCommunicationTo.Text = String.Format( "<strong>To: </strong>{0}", groupMember.Person.FullName );
                 }
             }
         }
@@ -1793,12 +1803,101 @@ namespace RockWeb.Blocks.Groups
 
             // If SMS, make sure the person has an SMS-enabled phone number
 
-            SendCommunication( communicationType );
+            var communicationSuccessful = SendCommunication( communicationType );
+            if (communicationSuccessful)
+            {
+                mdQuickCommunication.Hide();
+                nbCommunicationSuccess.Visible = true;
+            }
         }
+
+        /// <summary>
+        /// Sends email to the intended recipient.
+        /// </summary>
+        /// <param name="recipient"></param>
+        /// <param name="fromEmail"></param>
+        /// <param name="fromName"></param>
+        /// <param name="subject"></param>
+        /// <param name="message"></param>
+        /// <param name="createCommunicationRecord"></param>
+        private void SendEmail( RockEmailMessageRecipient recipient, string fromEmail, string fromName, string subject, string message, bool createCommunicationRecord )
+        {
+            var emailMessage = new RockEmailMessage();
+            emailMessage.AddRecipient( recipient );
+            emailMessage.FromEmail = fromEmail;
+            emailMessage.FromName = fromName;
+            emailMessage.Subject = subject;
+            emailMessage.Message = message;
+            emailMessage.CreateCommunicationRecord = createCommunicationRecord;
+            emailMessage.Send();
+        }
+
+        /// <summary>
+        /// Sends SMS to the intended recipient.
+        /// </summary>
+        /// <param name="recipient"></param>
+        /// <param name="fromValue"></param>
+        /// <param name="message"></param>
+        /// <param name="createCommunicationRecord"></param>
+        private void SendSMS( RockSMSMessageRecipient recipient, DefinedValueCache fromValue, string message, bool createCommunicationRecord )
+        {
+            var smsMessage = new RockSMSMessage();
+            smsMessage.AddRecipient( recipient );
+            smsMessage.FromNumber = fromValue;
+            smsMessage.Message = message;
+            smsMessage.CreateCommunicationRecord = createCommunicationRecord;
+            smsMessage.CommunicationName = "Group Member Quick Communication";
+            smsMessage.Send();
+        }
+
 
         private bool SendCommunication( CommunicationType communicationType )
         {
+            var rockContext = new RockContext();
+            var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+            if ( groupMember != null )
+            {
+                // Send to either SMS or Email.
+                if ( communicationType == CommunicationType.Email )
+                {
+                    string emailMessage = tbCommunicationMessage.Text;
+                    RockEmailMessageRecipient rockEmailMessageRecipient = new RockEmailMessageRecipient( groupMember.Person, new Dictionary<string, object>() );
 
+                    bool appendHeaderFooter = this.GetAttributeValue( AttributeKey.AppendHeaderFooter ).AsBooleanOrNull() ?? true;
+                    if ( appendHeaderFooter )
+                    {
+                        var globalAttributes = GlobalAttributesCache.Get();
+                        string emailHeader = globalAttributes.GetValue( "EmailHeader" );
+                        string emailFooter = globalAttributes.GetValue( "EmailFooter" );
+                        emailMessage = $"{emailHeader} {emailMessage} {emailFooter}";
+                    }
+                    SendEmail( rockEmailMessageRecipient, groupMember.Person.Email, groupMember.Person.FullName, tbEmailCommunicationSubject.Text, emailMessage, false );
+                    return true;
+                }
+                else if ( communicationType == CommunicationType.SMS && hfSMSNumber.Value.IsNotNullOrWhiteSpace() )
+                {
+                    // var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+                    var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
+                    var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).ToList();
+                    //if ( selectedNumberGuids.Any() )
+                    //{
+                    //    smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
+                    //}
+                    
+                    if ( !smsDefinedValues.Any() )
+                    {
+                        //If there aren't any available SMS numbers to send from, set warning and return false.
+                        nbSendGroupMemberCommunication.Text = String.Format("Unable to send an SMS message, as you do not have an SMS-enabled phone number from which to send.");
+                        return false;
+                    }
+                    //This needs to change to be a specific SMS number
+                    var selectedSMSFrom = smsDefinedValues.First();
+                    RockSMSMessageRecipient rockSMSMessageRecipient = new RockSMSMessageRecipient( groupMember.Person, hfSMSNumber.Value, new Dictionary<string, object>() );
+                    SendSMS( rockSMSMessageRecipient, selectedSMSFrom, tbCommunicationMessage.Text, false );
+                    return true;
+                }
+                return false;
+            }
             return false;
         }
     }

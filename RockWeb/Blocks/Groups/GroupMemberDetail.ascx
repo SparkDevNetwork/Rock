@@ -115,7 +115,7 @@
                             </div>
                         </div>--%>
                     </asp:Panel>
-
+                    <Rock:NotificationBox runat="server" ID="nbCommunicationSuccess" NotificationBoxType="Success" Dismissable="true" Text="Communication was sent." Visible="false" />
                     <Rock:NotificationBox runat="server" ID="nbRecheckedNotification" NotificationBoxType="Success" Dismissable="true" Text="Successfully re-checked requirements at {0}" Visible="false" />
                     <Rock:ModalDialog ID="mdRestoreArchivedPrompt" runat="server" Visible="false" Title="Restore Group Member" CancelLinkVisible="false">
                         <Content>
@@ -175,12 +175,17 @@
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:Toggle ID="tglCommunicationPreference" runat="server" OnText="SMS" OffText="Email" Checked="false" ButtonSizeCssClass="btn-xs" OnCssClass="btn-primary" OffCssClass="btn-default" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
-                        <Rock:RockLiteral ID="lCommunicationTo" runat="server" Label="To:"></Rock:RockLiteral>
-                        <Rock:EmailBox ID="ebEmailCommunicationFrom" runat="server" Label="From" Required="true" ValidationGroup="vgEmailGroupMemberCommunication"></Rock:EmailBox>
-                        <Rock:RockTextBox ID="tbEmailCommunicationSubject" runat="server" Label="Subject" Required="true" ValidationGroup="vgEmailGroupMemberCommunication" />
+                        <Rock:RockLiteral ID="lCommunicationTo" runat="server"></Rock:RockLiteral>
+                        <asp:Panel ID="pnlEmailControls" runat="server">
+                            <Rock:EmailBox ID="ebEmailCommunicationFrom" runat="server" Label="From" Required="true" ValidationGroup="vgEmailGroupMemberCommunication"></Rock:EmailBox>
+                            <Rock:RockTextBox ID="tbEmailCommunicationSubject" runat="server" Label="Subject" Required="true" ValidationGroup="vgEmailGroupMemberCommunication" />
+                        </asp:Panel>
+                        <asp:Panel ID="pnlSMSControls" runat="server">
+                            <Rock:PersonPicker ID="ppSMSCommunicationFrom" runat="server" Label="From" Required="true" Visible="false" ValidationGroup="vgSMSGroupMemberCommunication" />
+                            <asp:HiddenField ID="hfSMSNumber" runat="server" Visible="false" />
+                        </asp:Panel>
+                        <Rock:RockTextBox ID="tbCommunicationMessage" runat="server" Label="Message" Required="true" TextMode="MultiLine" Rows="4" ValidationGroup="vgSendGroupMemberCommunication"></Rock:RockTextBox>
 
-                        <Rock:PersonPicker ID="ppSMSCommunicationFrom" runat="server" Label="From" Required="true" Visible="false" ValidationGroup="vgSMSGroupMemberCommunication" />
-                        <Rock:RockTextBox ID="tbCommunicationMessage" runat="server" Label="Message" Required="true" TextMode="MultiLine" Rows="4" ValidationGroup="vgSendGroupMemberCommunication" ></Rock:RockTextBox>
                         <Rock:NotificationBox ID="nbSendGroupMemberCommunication" runat="server" NotificationBoxType="Warning" Visible="false" />
                     </div>
                 </div>
