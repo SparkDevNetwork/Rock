@@ -292,7 +292,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             ShowProtectionLevel();
             ShowBadgeList();
-            ShowEmailButton();
 
             divEditButton.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
@@ -339,15 +338,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 ShowPersonName();
                 ShowFollowingButton();
                 ShowSmsButton();
-                //ShowEmailButton(); This needs to be done in OnInit since a conditional click event is being added.
+                ShowEmailButton();
                 CreateActionMenu();
                 ShowDemographicsInfo();
                 ShowPhoneInfo();
                 ShowEmailText();
-                if ( lEmail.Text.IsNullOrWhiteSpace() && rptPhones.Visible != true )
-                {
-                    divContactSection.Visible = false;
-                }
+
+                divContactSection.Visible = lEmail.Text.IsNotNullOrWhiteSpace() || rptPhones.Visible == true;
 
                 ShowSocialMediaButtons();
                 ShowCustomContent();
@@ -669,19 +666,28 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             var globalAttributes = GlobalAttributesCache.Get();
             var emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
+            var emailLink = $"mailto:{Person.Email}";;
 
-            // create link
             if ( string.IsNullOrWhiteSpace( emailLinkPreference ) || emailLinkPreference == "1" )
             {
-                lbSendEmail.Click += lbSendEmail_Click;
-            }
-            else
-            {
-                lbSendEmail.Attributes.Add( "href", $"mailto:{Person.Email}" );
-                lbSendEmail.Click -= lbSendEmail_Click;
+                if ( communicationPageReference != null )
+                {
+                    communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() )
+                    {
+                        ["person"] = Person.Id.ToString()
+                    };
+
+                    emailLink = new Rock.Web.PageReference( communicationPageReference.PageId, communicationPageReference.RouteId, communicationPageReference.Parameters, communicationPageReference.QueryString ).BuildUrl();
+                }
+                else
+                {
+                    emailLink = $"{ResolveRockUrl( "/" )}Communication?person={Person.Id}";
+                }
             }
 
-            lbSendEmail.ToolTip = Person.EmailPreference == EmailPreference.NoMassEmails ? "Email Preference is set to \"No Mass Emails\"" : string.Empty;
+            var emailButtonTitle = Person.EmailPreference == EmailPreference.NoMassEmails ? @"Email Preference is set to ""No Mass Emails""" : "Send an email";
+
+            lEmailButton.Text = $@"<a href='{emailLink}' class='btn btn-default btn-go btn-square stretched-link' title='{emailButtonTitle}' aria-label='{emailButtonTitle}'><i class='fa fa-envelope'></i></a><span>Email</span>";
         }
 
         protected void CreateActionMenu()
@@ -848,40 +854,38 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private void ShowSocialMediaButtons()
         {
             var socialCategoryGuid = GetAttributeValue( AttributeKey.SocialMediaCategory ).AsGuidOrNull();
-                if ( socialCategoryGuid.HasValue )
-                {
-                    var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid.Value ) );
-                    var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value, QualifierValues = a.Value.QualifierValues } );
 
-                    rptSocial.DataSource = result
-                        .Where( r =>
-                            r.Value != null &&
-                            r.Value.Value != string.Empty &&
-                            r.QualifierValues != null &&
-                            r.QualifierValues.ContainsKey( NAME_KEY ) &&
-                            r.QualifierValues.ContainsKey( ICONCSSCLASS_KEY ) &&
-                            r.QualifierValues.ContainsKey( COLOR_KEY ) )
-                        .OrderBy( r => r.Attribute.Order )
-                        .Select( r => new
-                        {
-                            url = r.Value.Value,
-                            name = r.QualifierValues[NAME_KEY].Value,
-                            icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
-                                    r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
-                                    r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
-                            color = r.Attribute.QualifierValues[COLOR_KEY].Value,
-                        } )
-                        .ToList();
-                    // if rptSocial has any items then bind
-                    if ( rptSocial.Items.Count > 0 )
-                    {
-                        rptSocial.DataBind();
-                    }
-                    else
-                    {
-                        rptSocial.Visible = false;
-                    }
-                }
+            if ( !socialCategoryGuid.HasValue )
+            {
+                rptSocial.Visible = false;
+                return;
+            }
+
+            var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid.Value ) );
+            var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value, QualifierValues = a.Value.QualifierValues } );
+
+            rptSocial.DataSource = result
+                .Where( r =>
+                    r.Value != null &&
+                    r.Value.Value != string.Empty &&
+                    r.QualifierValues != null &&
+                    r.QualifierValues.ContainsKey( NAME_KEY ) &&
+                    r.QualifierValues.ContainsKey( ICONCSSCLASS_KEY ) &&
+                    r.QualifierValues.ContainsKey( COLOR_KEY ) )
+                .OrderBy( r => r.Attribute.Order )
+                .Select( r => new
+                {
+                    url = r.Value.Value,
+                    name = r.QualifierValues[NAME_KEY].Value,
+                    icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
+                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
+                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
+                    color = r.Attribute.QualifierValues[COLOR_KEY].Value,
+                } )
+                .ToList();
+
+            rptSocial.DataBind();
+            rptSocial.Visible = rptSocial.Items.Count > 0;
         }
 
         private void ShowCustomContent()
