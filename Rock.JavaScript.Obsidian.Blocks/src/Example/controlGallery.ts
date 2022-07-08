@@ -3529,7 +3529,7 @@ const controlGalleryComponents: Record<string, Component> = [
     modalGallery,
     eventItemPickerGallery,
     dataViewPickerGallery,
-    workflowTypePickerGallery
+    workflowTypePickerGallery,
     componentPickerGallery
 ]
     // Sort list by component name
