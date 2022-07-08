@@ -221,7 +221,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   BlockType: Person Bio
             //   Category: CRM > Person Detail
             //   Attribute: Communication Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "030CCDDC-8D43-40F8-A298-78B416F9E828", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Communication Page", "CommunicationPage", "Communication Page", @"The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", 15, @"", "66CFDF24-8D19-4885-8C09-31DBE8C4126D" );
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "030CCDDC-8D43-40F8-A298-78B416F9E828", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Communication Page", "CommunicationPage", "Communication Page", @"The communication page to use when the email button or person's email address is clicked. Leave this blank to use the default.", 15, @"", "66CFDF24-8D19-4885-8C09-31DBE8C4126D" );
+
+            // Attribute for BlockType
+            //   BlockType: Person Bio
+            //   Category: CRM > Person Detail
+            //   Attribute: SMS Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "030CCDDC-8D43-40F8-A298-78B416F9E828", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "SMS Page", "SmsPage", "SMS Page", @"The communication page to use when the text button is clicked. Leave this blank to use the default.", 16, @"", "860FCAFF-6DE4-4221-BCD9-6533BE90FC0C" );
 
             // Attribute for BlockType
             //   BlockType: Person Bio Summary

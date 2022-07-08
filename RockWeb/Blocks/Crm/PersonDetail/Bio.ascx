@@ -25,13 +25,11 @@
             <div class="profile-actions">
 
                 <div id="divSmsButton" runat="server" class="action-container">
-                    <asp:LinkButton ID="lbSendText" runat="server" class="btn btn-default btn-go btn-square stretched-link" OnClick="lbSendText_Click" title="Send a SMS" aria-label="Send a SMS"><i class="fa fa-comment-alt"></i></asp:LinkButton>
-                    <span>Text</span>
+                    <asp:Literal ID="lSmsButton" runat="server" />
                 </div>
 
                 <div id="divEmailButton" runat="server" class="action-container">
-                    <asp:LinkButton ID="lbSendEmail" runat="server" class="btn btn-default btn-go btn-square stretched-link" title="Send an email" aria-label="Send an email"><i class="fa fa-envelope"></i></asp:LinkButton>
-                    <span>Email</span>
+                    <asp:Literal ID="lEmailButton" runat="server" />
                 </div>
 
                 <div class="action-container">

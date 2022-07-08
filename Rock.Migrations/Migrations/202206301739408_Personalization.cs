@@ -373,13 +373,7 @@ VALUES (
 			        ELSE 'P' + CONVERT([varchar], [Id])
 			        END
 		        )
-        WHERE GivingId IS NULL OR GivingId != (
-		        CASE 
-			        WHEN [GivingGroupId] IS NOT NULL
-				        THEN 'G' + CONVERT([varchar], [GivingGroupId])
-			        ELSE 'P' + CONVERT([varchar], [Id])
-			        END
-		        )
+        WHERE GivingId IS NULL AND Id = @personId
 
         UPDATE x
         SET x.PrimaryFamilyId = x.CalculatedPrimaryFamilyId
@@ -407,7 +401,7 @@ VALUES (
             WHERE (
                     (ISNULL(p.PrimaryFamilyId, 0) != ISNULL(pf.CalculatedPrimaryFamilyId, 0))
                     OR (ISNULL(p.PrimaryCampusId, 0) != ISNULL(pf.CalculatedPrimaryCampusId, 0))
-                    ) ) x
+                    ) AND ( p.Id = @personId) ) x
 
             UPDATE x
             SET x.GivingLeaderId = x.CalculatedGivingLeaderId
@@ -435,8 +429,7 @@ VALUES (
 	            WHERE (
 			            p.GivingLeaderId IS NULL
 			            OR (p.GivingLeaderId != pf.CalculatedGivingLeaderId)
-			            )) x
-
+			            ) AND ( p.GivingId in (select GivingId from Person where Id = @personId ) )) x
 " );
         }
 
