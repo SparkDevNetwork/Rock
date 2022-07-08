@@ -648,6 +648,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListTagBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTypePickerGetEntityTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\eventItemPickerGetEventItemsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\financialGatewayPickerGetFinancialGatewaysOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingGetFollowingOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingGetFollowingResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingSetFollowingOptionsBag.d.ts" />

@@ -96,7 +96,7 @@ import Modal from "@Obsidian/Controls/modal";
 import EventItemPicker from "@Obsidian/Controls/eventItemPicker";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
 import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker";
-
+import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
 
 // #region Gallery Support
 
@@ -2393,7 +2393,7 @@ const entityTypePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-3">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-3">
@@ -2462,7 +2462,7 @@ const achievementTypePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-3">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-3">
@@ -2527,7 +2527,7 @@ const badgeComponentPickerGallery = defineComponent({
         </div>
         <div class="row">
             <div class="col-md-4">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
             <div class="col-md-4">
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
@@ -2936,7 +2936,7 @@ const assessmentTypePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-3">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-3">
@@ -3006,7 +3006,7 @@ const assetStorageProviderPickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-4">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-4">
@@ -3076,7 +3076,7 @@ const binaryFileTypePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-4">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-4">
@@ -3148,7 +3148,7 @@ const binaryFilePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-4">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-4">
@@ -3220,7 +3220,7 @@ const eventItemPickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-3">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-3">
@@ -3322,6 +3322,78 @@ const workflowTypePickerGallery = defineComponent({
             </div>
             <div class="col-md-4">
                 <CheckBox label="Include Inactive Items" v-model="includeInactiveItems" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Financial Gateway picker */
+const financialGatewayPickerGallery = defineComponent({
+    name: "FinancialGatewayPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        FinancialGatewayPicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            showAll: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("financialGatewayPicker"),
+            exampleCode: `<FinancialGatewayPicker label="Financial Gateway" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <FinancialGatewayPicker label="Financial Gateway"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :showAll="showAll" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox label="Show All Gateways" v-model="showAll" />
             </div>
         </div>
     </template>
@@ -3454,7 +3526,7 @@ const componentPickerGallery = defineComponent({
         </div>
         <div class="row">
             <div class="col-md-3">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
             <div class="col-md-4">
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
@@ -3530,7 +3602,8 @@ const controlGalleryComponents: Record<string, Component> = [
     eventItemPickerGallery,
     dataViewPickerGallery,
     workflowTypePickerGallery,
-    componentPickerGallery
+    componentPickerGallery,
+    financialGatewayPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

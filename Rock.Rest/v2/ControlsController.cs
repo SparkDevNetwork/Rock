@@ -27,6 +27,7 @@ using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Extension;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -947,6 +948,45 @@ namespace Rock.Rest.v2
                 ConfigurationValues = publicConfigurationValues,
                 DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
+        }
+
+        #endregion
+
+        #region Financial Gateway Picker
+
+        /// <summary>
+        /// Gets the financial gateways that can be displayed in the financial gateway picker.
+        /// </summary>
+        /// <returns>A List of view models that represent the financial gateways.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FinancialGatewayPickerGetFinancialGateways" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "DBF12D3D-09BF-419F-A315-E3B6C0206344" )]
+        public IHttpActionResult FinancialGatewayPickerGetFinancialGateways( [FromBody] FinancialGatewayPickerGetFinancialGatewaysOptionsBag options )
+        {
+
+            using ( var rockContext = new RockContext() )
+            {
+                List<ListItemBag> items = new List<ListItemBag> { };
+
+                foreach ( var gateway in new FinancialGatewayService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( g => g.EntityTypeId.HasValue )
+                    .OrderBy( g => g.Name )
+                    .ToList() )
+                {
+                    var entityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
+                    GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
+
+                    if ( options.ShowAll || gateway.Id == options.SelectedItem || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
+                    {
+                        items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Id.ToString() } );
+                    }
+                }
+
+                return Ok( items );
+            }
+
         }
 
         #endregion
