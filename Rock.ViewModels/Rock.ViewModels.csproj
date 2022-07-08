@@ -326,6 +326,7 @@
     <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowTypesPickerGetWorkflowTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\DataViewPickerGetDataViewsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ComponentPickerGetComponentsOptionsBag.cs" />
     <Compile Include="Rest\Controls\BinaryFilePickerGetBinaryFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\BinaryFileTypePickerGetBinaryFileTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetStorageProviderPickerGetAssetStorageProviderOptionsBag.cs" />

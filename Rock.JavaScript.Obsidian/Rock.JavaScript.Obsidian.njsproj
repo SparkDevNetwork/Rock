@@ -638,6 +638,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewsPickerGetDataViewsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\componentPickerGetComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetDefinedValuesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListAddEntityTagOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListCreatePersonalTagOptionsBag.d.ts" />

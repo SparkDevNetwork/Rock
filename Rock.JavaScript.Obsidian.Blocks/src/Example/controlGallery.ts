@@ -91,6 +91,7 @@ import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilter
 import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
 import { useStore } from "@Obsidian/PageState";
 import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker";
+import ComponentPicker from "@Obsidian/Controls/componentPicker";
 import Modal from "@Obsidian/Controls/modal";
 import EventItemPicker from "@Obsidian/Controls/eventItemPicker";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
@@ -3399,6 +3400,75 @@ const modalGallery = defineComponent({
 
 
 
+/** Demonstrates  Component picker */
+const componentPickerGallery = defineComponent({
+    name: "ComponentPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        ComponentPicker,
+        NumberUpDown,
+        TextBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            containerType: ref("Rock.Badge.BadgeContainer, Rock"),
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("componentPicker"),
+            exampleCode: `<ComponentPicker label="Component" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <ComponentPicker label="Component"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :containerType="containerType" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-5">
+                <TextBox label="Container Assembly Name" v-model="containerType" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
+
 const controlGalleryComponents: Record<string, Component> = [
     attributeValuesContainerGallery,
     fieldFilterEditorGallery,
@@ -3460,6 +3530,7 @@ const controlGalleryComponents: Record<string, Component> = [
     eventItemPickerGallery,
     dataViewPickerGallery,
     workflowTypePickerGallery
+    componentPickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

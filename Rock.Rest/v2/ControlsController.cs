@@ -440,6 +440,26 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Component Picker
+
+        /// <summary>
+        /// Gets the components that can be displayed in the component picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A collection of list items that represent the components.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ComponentPickerGetComponents" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "75DA0671-38E2-4FF9-B334-CC0C88B559D0" )]
+        public IHttpActionResult ComponentPickerGetEntityTypes( [FromBody] ComponentPickerGetComponentsOptionsBag options )
+        {
+            var componentsList = GetComponentListItems( options.ContainerType );
+
+            return Ok( componentsList );
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>
