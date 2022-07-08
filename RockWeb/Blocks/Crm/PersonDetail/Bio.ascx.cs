@@ -159,9 +159,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [LinkedPage(
         "Communication Page",
         Key = AttributeKey.CommunicationPage,
-        Description = "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.",
+        Description = "The communication page to use when the email button or person's email address is clicked. Leave this blank to use the default.",
         IsRequired = false,
         Order = 15 )]
+
+    [LinkedPage(
+        "SMS Page",
+        Key = AttributeKey.SmsPage,
+        Description = "The communication page to use when the text button is clicked. Leave this blank to use the default.",
+        IsRequired = false,
+        Order = 16 )]
 
     #endregion Block Attributes
 
@@ -193,6 +200,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string SocialMediaCategory = "SocialMediaCategory";
             public const string EnableCallOrigination = "EnableCallOrigination";
             public const string CommunicationPage = "CommunicationPage";
+            public const string SmsPage = "SmsPage";
         }
 
         private static class PageParameterKey
@@ -222,12 +230,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private const string COLOR_KEY = "color";
 
         #endregion Fields
-
-        private static class MediumTypes
-        {
-            public static string Email = "Email";
-            public static string SMS = "SMS";
-        }
 
         #region Base Control Methods
 
@@ -409,16 +411,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
                 }
             }
-        }
-
-        protected void lbSendText_Click( object sender, EventArgs e )
-        {
-            NavigateToCommunicationPage( MediumTypes.SMS );
-        }
-
-        protected void lbSendEmail_Click( object sender, EventArgs e )
-        {
-            NavigateToCommunicationPage( MediumTypes.Email );
         }
 
         protected void rptPhones_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
@@ -640,7 +632,47 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             if ( !Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
             {
                 divSmsButton.Visible = false;
+                return;
             }
+
+            divSmsButton.Visible = true;
+
+            Rock.Web.PageReference communicationPageReference = null;
+
+            var communicationLinkedPageValue = this.GetAttributeValue( AttributeKey.SmsPage );
+            if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
+            {
+                communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+            }
+
+            var mediums = GetCommunicationMediums();
+            var smsLink = string.Empty;
+
+            if ( communicationPageReference != null )
+            {
+                communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() )
+                {
+                    ["person"] = Person.Id.ToString()
+                };
+
+                if( mediums.ContainsKey( "SMS" ) )
+                {
+                    communicationPageReference.QueryString.Add( "MediumId", mediums["SMS"].Value.ToString() );
+                }
+
+                smsLink = new Rock.Web.PageReference( communicationPageReference.PageId, communicationPageReference.RouteId, communicationPageReference.Parameters, communicationPageReference.QueryString ).BuildUrl();
+            }
+            else
+            {
+                smsLink = $"{ResolveRockUrl( "/" )}communications/new/simple?person={Person.Id}";
+
+                if ( mediums.ContainsKey( "SMS" ) )
+                {
+                    smsLink += $"&MediumId={mediums["SMS"].Value}";
+                }
+            }
+
+            lSmsButton.Text = $@"<a href='{smsLink}' class='btn btn-default btn-go btn-square stretched-link' title='Send a SMS' aria-label='Send a SMS'><i class='fa fa-comment-alt'></i></a><span>Text</span>";
         }
 
         private void ShowEmailButton()
@@ -653,20 +685,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             divEmailButton.Visible = true;
 
+            Rock.Web.PageReference communicationPageReference = null;
+
             var communicationLinkedPageValue = this.GetAttributeValue( AttributeKey.CommunicationPage );
-            Rock.Web.PageReference communicationPageReference;
             if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
             {
                 communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
             }
-            else
-            {
-                communicationPageReference = null;
-            }
 
             var globalAttributes = GlobalAttributesCache.Get();
             var emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
-            var emailLink = $"mailto:{Person.Email}";;
+            var emailLink = $"mailto:{Person.Email}";
 
             if ( string.IsNullOrWhiteSpace( emailLinkPreference ) || emailLinkPreference == "1" )
             {
@@ -681,7 +710,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
                 else
                 {
-                    emailLink = $"{ResolveRockUrl( "/" )}Communication?person={Person.Id}";
+                    emailLink = $"{ResolveRockUrl( "/" )}communications/new?person={Person.Id}";
                 }
             }
 
