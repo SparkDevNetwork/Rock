@@ -952,6 +952,30 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Field Type Picker
+
+        /// <summary>
+        /// Gets the field types that can be displayed in the field type picker.
+        /// </summary>
+        /// <returns>A List of view models that represent the field types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FieldTypePickerGetFieldTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "AB53509A-C8A9-481B-839F-DA53232A698A" )]
+        public IHttpActionResult FieldTypePickerGetFieldTypes()
+        {
+            List<ListItemBag> items = new List<ListItemBag> { };
+
+            foreach ( var item in FieldTypeCache.All() )
+            {
+                items.Add( new ListItemBag { Text = item.Name, Value = item.Id.ToString() } );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
         #region Financial Gateway Picker
 
         /// <summary>
@@ -987,6 +1011,38 @@ namespace Rock.Rest.v2
                 return Ok( items );
             }
 
+        }
+
+        #endregion
+
+        #region Financial Statement Template Picker
+
+        /// <summary>
+        /// Gets the financial statement templates that can be displayed in the financial statement template picker.
+        /// </summary>
+        /// <returns>A List of view models that represent the financial statement templates.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FinancialStatementTemplatePickerGetFinancialStatementTemplates" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "4E10F2DC-BD7C-4F75-919C-B3F71868ED24" )]
+        public IHttpActionResult FinancialStatementTemplatePickerGetFinancialStatementTemplates()
+        {
+
+            using ( var rockContext = new RockContext() )
+            {
+                List<ListItemBag> items = new FinancialStatementTemplateService( rockContext )
+                    .Queryable()
+                    .Where( s => s.IsActive == true )
+                    .Select( i => new ListItemBag
+                    {
+                        Value = i.Id.ToString(),
+                        Text = i.Name
+                    } )
+                    .OrderBy( a => a.Text )
+                    .ToList();
+
+                return Ok( items );
+            }
         }
 
         #endregion
