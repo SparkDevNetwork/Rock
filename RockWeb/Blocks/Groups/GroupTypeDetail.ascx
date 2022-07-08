@@ -392,6 +392,12 @@
                                 <Columns>
                                     <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
+                                    <Rock:RockBoundField DataField="AppliesToAgeClassification" HeaderText="Age Classification" />
+                                    <Rock:RockTemplateField HeaderText="Data View" ItemStyle-HorizontalAlign="Center">
+                                        <ItemTemplate>
+                                            <%# ((int?)Eval("AppliesToDataViewId")).HasValue ? "<i class=\"fa fa-check\"></i>" : "" %>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
                                     <Rock:BoolField DataField="MustMeetRequirementToAddMember" HeaderText="Required For New Members" />
                                     <Rock:BoolField DataField="GroupRequirementType.CanExpire" HeaderText="Can Expire" />
                                     <Rock:EnumField DataField="GroupRequirementType.RequirementCheckType" HeaderText="Type" />
@@ -565,7 +571,7 @@
 
                 <Rock:RockCheckBox ID="cbAllowLeadersToOverride" runat="server" Text="Allow Leaders to Override" Help="Determines if the leader should be allowed to override meeting the requirement." />
 
-                <Rock:DatePicker ID="dpDueDate" runat="server" Required="true" Label="Due Date" ValidationGroup="vg_GroupTypeGroupRequirement" />
+                <Rock:DatePicker ID="dpDueDate" runat="server" Label="Due Date" ValidationGroup="vg_GroupTypeGroupRequirement" />
                 <Rock:RockDropDownList ID="ddlDueDateGroupAttribute" runat="server" Label="Due Date Group Attribute" Help="The group attribute that contains the due date for requirements."></Rock:RockDropDownList>
 
                 <Rock:RockCheckBox ID="cbMembersMustMeetRequirementOnAdd" runat="server" Text="Members must meet this requirement before adding" Help="If this is enabled, a person can only become a group member if this requirement is met. Note: only applies to Data View and SQL type requirements since manual ones can't be checked until after the person is added." />

@@ -2583,7 +2583,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeGroupRequirement.AppliesToDataViewId = dvpAppliesToDataView.SelectedValueAsId();
             groupTypeGroupRequirement.AllowLeadersToOverride = cbAllowLeadersToOverride.Checked;
             groupTypeGroupRequirement.DueDateStaticDate = dpDueDate.SelectedDate;
-            groupTypeGroupRequirement.DueDateAttributeId = ddlDueDateGroupAttribute.SelectedValueAsInt();
+            groupTypeGroupRequirement.DueDateAttributeId = AttributeCache.AllForEntityType<Group>().Where( a=> a.Key == ddlDueDateGroupAttribute.SelectedValue).FirstOrDefault().Id;
 
             // make sure we aren't adding a duplicate group requirement (same group requirement type and role)
             var duplicateGroupRequirement = this.GroupTypeGroupRequirementsState.Any( a =>
@@ -2640,6 +2640,16 @@ namespace RockWeb.Blocks.Groups
             gGroupTypeGroupRequirements.AddCssClass( "group-requirements-grid" );
             gGroupTypeGroupRequirements.DataSource = GroupTypeGroupRequirementsState.OrderBy( a => a.GroupRequirementType.Name ).ToList();
             gGroupTypeGroupRequirements.DataBind();
+        }
+
+        protected string GroupRequirementHasDataView( object dataViewValue )
+        {
+            var dataViewId = dataViewValue.ToString().AsIntegerOrNull();
+            if (dataViewId.HasValue)
+            {
+                return "<i class=\"fa fa-check\"></i>";
+            }
+            return "";
         }
 
         #endregion

@@ -261,6 +261,12 @@
                                         <Columns>
                                             <Rock:RockBoundField DataField="GroupRequirementType.Name" HeaderText="Name" />
                                             <Rock:RockBoundField DataField="GroupRole" HeaderText="Group Role" />
+                                            <Rock:RockBoundField DataField="AppliesToAgeClassification" HeaderText="Age Classification" />
+                                            <Rock:RockTemplateField HeaderText="Data View" ItemStyle-HorizontalAlign="Center">
+                                                <ItemTemplate>
+                                                    <%# ((int?)Eval("AppliesToDataViewId")).HasValue ? "<i class=\"fa fa-check\"></i>" : "" %>
+                                                </ItemTemplate>
+                                            </Rock:RockTemplateField>
                                             <Rock:BoolField DataField="MustMeetRequirementToAddMember" HeaderText="Required For New Members" />
                                             <Rock:BoolField DataField="GroupRequirementType.CanExpire" HeaderText="Can Expire" />
                                             <Rock:EnumField DataField="GroupRequirementType.RequirementCheckType" HeaderText="Type" />
