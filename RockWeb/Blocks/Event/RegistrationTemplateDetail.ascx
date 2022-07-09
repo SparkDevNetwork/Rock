@@ -292,10 +292,12 @@
                     </Rock:PanelWidget>
 
                     <%-- Show Communication Settings --%>
-                    <div class="clearfix" id="registration-detailscheckbox">
-                        <div class="pull-right">
-                            <input id="cb-showdetails" type="checkbox" />
-                            Show Communication Settings
+                    <div class="d-flex justify-content-end" id="registration-detailscheckbox">
+                        <div class="checkbox pull-right">
+                            <label>
+                                <input id="cb-showdetails" type="checkbox" />
+                                <span class="label-text">Show Communication Settings</span>
+                            </label>
                         </div>
                     </div>
 
