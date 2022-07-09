@@ -16,9 +16,15 @@
 //
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
+
+using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -115,6 +121,47 @@ namespace RockWeb.Blocks.Utility
             }
         }
 
+        private static void TestConcurrent_ProcessSendPaymentReceiptEmails()
+        {
+            var financialTransactionList = new FinancialTransactionService( new RockContext() ).Queryable()
+                .Where( a => a.AuthorizedPersonAlias.Person.Email != "" && a.AuthorizedPersonAlias.Person.Email != null )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.AuthorizedPersonAlias.PersonId
+                } ).ToList();
+
+
+            var financialTransactionIds = financialTransactionList
+                .GroupBy( a => a.PersonId ).Select( a => a.OrderBy( x => Guid.NewGuid() ).FirstOrDefault() )
+                .Select( a => a.Id ).OrderBy( a => Guid.NewGuid() ).ToArray();
+
+            var financialTransactionIds2 = financialTransactionIds.OrderBy( a => Guid.NewGuid() ).ToArray();
+
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 200 };
+
+            // New Spring
+            var systemEmailGuid = "72aa54e5-90bc-4866-a0f9-1e494e96d9a5".AsGuid();
+
+            Parallel.For( 1, 2000, parallelOptions, ( x ) =>
+            {
+                var financialTransactionId = financialTransactionIds[x];
+
+                new ProcessSendPaymentReceiptEmails.Message
+                {
+                    TransactionId = financialTransactionId,
+                    SystemEmailGuid = systemEmailGuid
+                }.Send();
+
+                var financialTransactionId2 = financialTransactionIds2[x];
+                new ProcessSendPaymentReceiptEmails.Message
+                {
+                    TransactionId = financialTransactionId2,
+                    SystemEmailGuid = Rock.SystemGuid.SystemCommunication.FINANCE_GIVING_RECEIPT.AsGuid()
+                }.Send();
+            } );
+        }
+
         #endregion
 
         #region Events
@@ -138,5 +185,10 @@ namespace RockWeb.Blocks.Utility
         // helper functional methods (like BindGrid(), etc.)
 
         #endregion
+
+        protected void btnTest_Click( object sender, EventArgs e )
+        {
+            TestConcurrent_ProcessSendPaymentReceiptEmails();
+        }
     }
 }

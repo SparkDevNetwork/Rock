@@ -36,7 +36,7 @@ namespace Rock.Web.Cache
         /// </summary>
         private LavaTemplateCache()
         {
-            DefaultLifespan = TimeSpan.FromMinutes( 10 );
+            DefaultLifespan = TimeSpan.FromSeconds( 10 );
         }
 
         #endregion
