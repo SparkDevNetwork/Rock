@@ -21,6 +21,7 @@ using System.Net.Mime;
 using System.Threading.Tasks;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Communication.Transport
 {
@@ -133,15 +134,7 @@ namespace Rock.Communication.Transport
         /// <returns></returns>
         protected override EmailSendResponse SendEmail( RockEmailMessage rockEmailMessage )
         {
-            var mailMessage = GetMailMessageFromRockEmailMessage( rockEmailMessage );
-            var smtpClient = GetSmtpClient();
-            smtpClient.Send( mailMessage );
-
-            return new EmailSendResponse
-            {
-                Status = CommunicationRecipientStatus.Delivered,
-                StatusNote = StatusNote
-            };
+            return AsyncHelper.RunSync( () => SendEmailAsync( rockEmailMessage ) );
         }
 
         /// <summary>
