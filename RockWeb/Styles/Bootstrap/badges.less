@@ -5,18 +5,30 @@
 
 // Base class
 .badge {
+    // scss-docs-start badge-css-vars
+    --bs-badge-padding-x: 7px;
+    --bs-badge-padding-y: 3px;
+    --bs-badge-font-size: @font-size-small;
+    --bs-badge-font-weight: @badge-font-weight;
+    --bs-badge-color: @badge-color;
+    --bs-badge-border-radius: @badge-border-radius;
+    // scss-docs-end badge-css-vars
+    --bs-line-height: @badge-line-height;
+    --bs-badge-bg: @badge-bg;
+
+
   display: inline-block;
   min-width: 10px;
-  padding: 3px 7px;
-  font-size: @font-size-small;
-  font-weight: @badge-font-weight;
-  line-height: @badge-line-height;
-  color: @badge-color;
+  padding: ~"var(--bs-badge-padding-y) var(--bs-badge-padding-x)";
+  font-size: ~"var(--bs-badge-font-size)";
+  font-weight: ~"var(--bs-badge-font-weight)";
+  line-height: ~"var(--bs-line-height)";
+  color: ~"var(--bs-badge-color)";
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
-  background-color: @badge-bg;
-  border-radius: @badge-border-radius;
+  background-color: ~"var(--bs-badge-bg)";
+  border-radius: ~"var(--bs-badge-border-radius)";
 
   // Empty badges collapse automatically (not available in IE8)
   &:empty {

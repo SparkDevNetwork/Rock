@@ -61,7 +61,7 @@
                         </div>
                         <div class="d-block">
                             <hr />
-                            <div class="row d-flex flex-wrap align-items-end align-items-md-center justify-content-center">
+                            <div class="row align-items-end align-items-md-center justify-content-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
                                     Former Giver
                                 </div>
@@ -79,7 +79,7 @@
                                 </div>
                             </div>
                             <hr />
-                            <div class="row d-flex flex-wrap align-items-end align-items-md-center justify-content-center">
+                            <div class="row align-items-end align-items-md-center justify-content-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
                                     Lapsed Giver
                                 </div>
@@ -97,7 +97,7 @@
                                 </div>
                             </div>
                             <hr />
-                            <div class="row d-flex flex-wrap align-items-end align-items-md-center justify-content-center">
+                            <div class="row align-items-end align-items-md-center justify-content-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
                                     New Giver
                                 </div>
@@ -115,7 +115,7 @@
                                 </div>
                             </div>
                             <hr />
-                            <div class="row d-flex flex-wrap align-items-end align-items-md-center">
+                            <div class="row align-items-end align-items-md-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
                                     Occasional Giver
                                 </div>
@@ -127,7 +127,7 @@
                                 </div>
                             </div>
                             <hr />
-                            <div class="row d-flex flex-wrap align-items-end align-items-md-center">
+                            <div class="row align-items-end align-items-md-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
                                     Consistent Giver
                                 </div>
@@ -140,7 +140,7 @@
                                 </div>
                             </div>
                             <hr />
-                            <div class="row d-flex flex-wrap align-items-end align-items-md-center justify-content-center">
+                            <div class="row align-items-end align-items-md-center justify-content-center">
                                 <div class="col-xs-12 col-md-12 col-lg-2 font-weight-semibold mb-2 mb-md-0">
                                     Non-Giver
                                 </div>
@@ -249,7 +249,7 @@
                             </div>
                             <div class="col-md-7 text-sm">
                                 <asp:Literal ID="lAmountSensitivityScaleHelp" runat="server" />
-                               
+
                             </div>
                         </div>
                         <hr>
@@ -259,7 +259,7 @@
                             </div>
                             <div class="col-md-7 text-sm">
                                 <asp:Literal ID="lFrequencySensitivityScaleHelp" runat="server" />
-                                
+
                             </div>
                         </div>
                         <hr>

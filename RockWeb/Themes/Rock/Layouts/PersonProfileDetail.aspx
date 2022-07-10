@@ -29,7 +29,7 @@
                 <p><strong>Error</strong></p>
                 <span class="ajax-error-message"></span>
             </div>
-            <div class="row d-flex flex-wrap">
+            <div class="row">
                 <div class="col-xs-12 col-md-4 mb-4">
                     <Rock:Zone Name="Profile" CssClass="zone-h-100" runat="server" />
                 </div>

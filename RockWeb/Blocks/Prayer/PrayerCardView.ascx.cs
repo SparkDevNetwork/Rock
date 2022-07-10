@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Prayer
         DefaultBooleanValue = false,
         Order = 13,
         Key = AttributeKey.LoadLastPrayedCollection )]
-    
+
     #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( "1FEE129E-E46A-4805-AF5A-6F98E1DA7A16" )]
     public partial class PrayerCardView : RockBlock
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// The Default Value for the LavaTemplate block attribute
         /// </summary>
-        private const string LavaTemplateDefaultValue = @"<div class=""row d-flex flex-wrap"">
+        private const string LavaTemplateDefaultValue = @"<div class=""row"">
     {% assign prayedButtonText = PrayedButtonText %}
     {% for item in PrayerRequestItems %}
         <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">

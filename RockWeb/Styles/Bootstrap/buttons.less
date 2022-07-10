@@ -9,55 +9,79 @@
 // --------------------------------------------------
 
 .btn {
+  --bs-btn-padding-x: @padding-base-horizontal;
+  --bs-btn-padding-y: @padding-base-vertical;
+  --bs-btn-font-family: @font-family-base;
+  --bs-btn-font-weight: @btn-font-weight;
+  --bs-btn-line-height: @line-height-base;
+  --bs-btn-color: @body-bg;
+  --bs-btn-bg: transparent;
+  --bs-btn-border-width: 1px;
+  --bs-btn-border-color: transparent;
+  --bs-btn-border-radius: @btn-border-radius-base;
+  --bs-btn-box-shadow: inset 0 1px 0rgba(255, 255, 255, 0.15),0 1px 1px rgba(0, 0, 0, 0.075);
+  --bs-btn-disabled-opacity: 0.65;
+  --bs-btn-focus-box-shadow: ~"0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), .5)";
+
   display: inline-block;
-  margin-bottom: 0; // For input.btn
-  font-weight: @btn-font-weight;
+  padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
+  font-family: var(--bs-btn-font-family);
+  font-size: var(--bs-btn-font-size);
+  font-weight: var(--bs-btn-font-weight);
+  line-height: var(--bs-btn-line-height);
+  color: var(--bs-btn-color);
   text-align: center;
+  text-decoration: none;
   white-space: nowrap;
   vertical-align: middle;
-  touch-action: manipulation;
   cursor: pointer;
-  background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
-  border: 1px solid transparent;
-  .button-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @btn-border-radius-base);
-  .user-select(none);
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
+  border-radius: var(--bs-btn-border-radius);
+  background-color: var(--bs-btn-bg);
+  transition: @btn-transition;
+  box-shadow: var(--bs-btn-box-shadow);
 
-  &,
-  &:active,
-  &.active {
-    &:focus,
-    &.focus {
-      .tab-focus();
-    }
+  &:hover {
+    color: var(--bs-btn-hover-color);
+    background-color: var(--bs-btn-hover-bg);
+    border-color: var(--bs-btn-hover-border-color);
   }
 
-  &:hover,
-  &:focus,
-  &.focus {
-    color: @btn-default-color;
-    text-decoration: none;
-  }
-
-  &:active,
-  &.active {
-    background-image: none;
+  .btn-check:focus + &,
+  &:focus {
+    color: var(--bs-btn-hover-color);
+    border-color: var(--bs-btn-hover-border-color);
+    background-color: var(--bs-btn-hover-bg);
     outline: 0;
-    .box-shadow(inset 0 3px 5px rgba(0, 0, 0, .125));
+    box-shadow: var(--bs-btn-focus-box-shadow);
   }
 
-  &.disabled,
-  &[disabled],
-  fieldset[disabled] & {
-    cursor: @cursor-disabled;
-    .opacity(.65);
-    .box-shadow(none);
-  }
+  .btn-check:checked + &,
+  .btn-check:active + &,
+  &:active,
+  &.active,
+  &.show {
+    color: var(--bs-btn-active-color);
+    background-color: var(--bs-btn-active-bg);
+    border-color: var(--bs-btn-active-border-color);
 
-  a& {
-    &.disabled,
-    fieldset[disabled] & {
-      pointer-events: none; // Future-proof disabling of clicks on `<a>` elements
+    &:focus {
+        box-shadow: var(--bs-btn-focus-box-shadow);
     }
+  }
+
+  &:disabled,
+  &.disabled,
+  &.aspNetDisabled,
+  fieldset:disabled & {
+    color: var(--bs-btn-disabled-color);
+    pointer-events: none;
+    background-color: var(--bs-btn-disabled-bg);
+    border-color: var(--bs-btn-disabled-border-color);
+    opacity: var(--bs-btn-disabled-opacity);
   }
 }
 
@@ -94,38 +118,18 @@
 
 // Make a button look and behave like a link
 .btn-link {
-  font-weight: 400;
-  color: @link-color;
-  border-radius: 0;
-
-  &,
-  &:active,
-  &.active,
-  &[disabled],
-  fieldset[disabled] & {
-    background-color: transparent;
-    .box-shadow(none);
-  }
-  &,
-  &:hover,
-  &:focus,
-  &:active {
-    border-color: transparent;
-  }
-  &:hover,
-  &:focus {
-    color: @link-hover-color;
-    text-decoration: @link-hover-decoration;
-    background-color: transparent;
-  }
-  &[disabled],
-  fieldset[disabled] & {
-    &:hover,
-    &:focus {
-      color: @btn-link-disabled-color;
-      text-decoration: none;
-    }
-  }
+  --bs-btn-font-weight: 400;
+  --bs-btn-color: @link-color;
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: @link-hover-color;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  --bs-btn-disabled-color:  @btn-link-disabled-color;
+  --bs-btn-box-shadow: none;
+  --bs-btn-disabled-opacity: 1;
+  text-decoration: @link-hover-decoration;
 }
 
 

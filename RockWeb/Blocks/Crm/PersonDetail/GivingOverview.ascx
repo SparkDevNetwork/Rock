@@ -32,7 +32,7 @@
                         <asp:Literal ID="lLastGiving" runat="server" />
                         <hr class="mt-1 mb-0 mx--panel-body">
 
-                        <div class="row d-flex flex-wrap align-items-start py-3">
+                        <div class="row align-items-start py-3">
                             <div class="col-xs-12 col-sm-12 col-lg-12 giving-by-month">
                                 <h5 class="mt-0 mb-3">Giving by Month</h5>
                                 <ul class="trend-chart trend-chart-gap" style="height:85px;">
@@ -50,7 +50,7 @@
                                 <h5 class="m-0">Giving Characteristics</h5>
                                 <%-- Warning if Giving Characteristics are stale, probably because the person hasn't given for a while --%>
                                 <Rock:NotificationBox ID="nbGivingCharacteristicsStaleWarning" runat="server" NotificationBoxType="Warning" CssClass="my-3" Text="The giving characteristics below were generated 3 months ago at the time of the last gift. Information on bin, percentile and typical gift patterns represent values from that time period." />
-                                <div class="row d-flex flex-wrap align-items-lg-center">
+                                <div class="row align-items-lg-center">
                                     <div class="col-xs-12 col-sm-8 col-md-9 giving-characteristics">
                                         <%-- Lava Output for Giving Characteristics  --%>
                                         <asp:Literal ID="lGivingCharacteristicsHtml" runat="server" />
@@ -95,7 +95,7 @@
 
                         <%-- Yearly Summary for each year  --%>
                         <h5 class="mt-3">Yearly Summary</h5>
-                        <div class="row d-flex flex-wrap">
+                        <div class="row">
                             <asp:Repeater ID="rptYearSummary" runat="server" OnItemDataBound="rptYearSummary_ItemDataBound">
                                 <ItemTemplate>
                                     <div class="col-xs-12 col-sm-6">

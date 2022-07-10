@@ -1,227 +1,175 @@
-// stylelint-disable selector-no-qualifying-type, selector-max-type
-
-//
-// Navs
-// --------------------------------------------------
-
-
 // Base class
-// --------------------------------------------------
+//
+// Kickstart any navigation component with a set of style resets. Works with
+// `<nav>`s, `<ul>`s or `<ol>`s.
 
 .nav {
-  padding-left: 0; // Override default ul/ol
+  // scss-docs-start nav-css-vars
+  --bs-nav-link-padding-x: @nav-link-padding-x;
+  --bs-nav-link-padding-y: @nav-link-padding-y;
+  --bs-nav-link-font-size: @font-size-base;
+  & when not (@nav-link-font-weight = ~"") { --bs-nav-link-font-weight: @nav-link-font-weight; }
+  --bs-nav-link-color: @nav-link-color;
+  --bs-nav-link-hover-color: @nav-link-hover-color;
+  --bs-nav-link-hover-bg: transparent;
+  --bs-nav-link-hover-decoration: @link-hover-decoration;
+  --bs-nav-link-disabled-color: @nav-link-disabled-color;
+  // scss-docs-end nav-css-vars
+
+  padding-left: 0;
   margin-bottom: 0;
   list-style: none;
   &:extend(.clearfix all);
+}
 
-  > li {
-    position: relative;
-    display: block;
+.nav-link {
+  display: block;
+  padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+  font-size: var(--bs-nav-link-font-size);
+  font-weight: var(--bs-nav-link-font-weight);
+  color: var(--bs-nav-link-color);
+  text-decoration: none;
+  //@include transition($nav-link-transition);
 
-    > a {
-      position: relative;
-      display: block;
-      padding: @nav-link-padding;
-      &:hover,
-      &:focus {
-        text-decoration: none;
-        background-color: @nav-link-hover-bg;
-      }
-    }
-
-    // Disabled state sets text to gray and nukes hover/tab effects
-    &.disabled > a {
-      color: @nav-disabled-link-color;
-
-      &:hover,
-      &:focus {
-        color: @nav-disabled-link-hover-color;
-        text-decoration: none;
-        cursor: @cursor-disabled;
-        background-color: transparent;
-      }
-    }
+  .active & {
+    color: var(--bs-nav-link-active-color);
+    background-color: var(--bs-nav-link-active-bg);
   }
 
-  // Open dropdowns
-  .open > a {
-    &,
+  &:hover,
+  &:focus {
+    color: var(--bs-nav-link-hover-color);
+    background-color: var(--bs-nav-link-hover-bg);
+    text-decoration: var(--bs-nav-link-hover-decoration);
+  }
+
+  // Disabled state lightens text
+  &.disabled {
+    color: var(--bs-nav-link-disabled-color);
+    background-color: var(--bs-nav-link-disabled-bg);
+    pointer-events: none;
+    cursor: default;
+  }
+}
+
+//
+// Tabs
+//
+
+.nav-tabs {
+  // scss-docs-start nav-tabs-css-vars
+  --bs-nav-tabs-border-width: @nav-tabs-border-width;
+  --bs-nav-tabs-border-color: @nav-tabs-border-color;
+  --bs-nav-tabs-border-radius: @nav-tabs-border-radius;
+  --bs-nav-tabs-link-hover-border-color: @nav-tabs-link-hover-border-color;
+  --bs-nav-tabs-link-active-color: @nav-tabs-link-active-color;
+  --bs-nav-tabs-link-active-bg: @nav-tabs-link-active-bg;
+  --bs-nav-tabs-link-active-border-color: @nav-tabs-link-active-border-color;
+  // scss-docs-end nav-tabs-css-vars
+
+  border-bottom: var(--bs-nav-tabs-border-width) solid var(--bs-nav-tabs-border-color);
+
+  .nav-link {
+    margin-bottom: ~"calc(var(--bs-nav-tabs-border-width) * -1)"; // stylelint-disable-line function-disallowed-list
+    background: none;
+    border: var(--bs-nav-tabs-border-width) solid transparent;
+    .border-top-radius(var(--bs-nav-tabs-border-radius));
+
     &:hover,
     &:focus {
-      background-color: @nav-link-hover-bg;
-      border-color: @link-color;
+      // Prevents active .nav-link tab overlapping focus outline of previous/next .nav-link
+      isolation: isolate;
+      border-color: var(--bs-nav-tabs-link-hover-border-color);
+    }
+
+    &.disabled,
+    &:disabled {
+      color: var(--bs-nav-link-disabled-color);
+      background-color: transparent;
+      border-color: transparent;
     }
   }
 
-  // Nav dividers (deprecated with v3.0.1)
-  //
-  // This should have been removed in v3 with the dropping of `.nav-list`, but
-  // we missed it. We don't currently support this anywhere, but in the interest
-  // of maintaining backward compatibility in case you use it, it's deprecated.
-  .nav-divider {
-    .nav-divider();
+  .nav-link.active,
+  .nav-item.show .nav-link {
+    color: var(--bs-nav-tabs-link-active-color);
+    background-color: var(--bs-nav-tabs-link-active-bg);
+    border-color: var(--bs-nav-tabs-link-active-border-color);
   }
 
-  // Prevent IE8 from misplacing imgs
-  //
-  // See https://github.com/h5bp/html5-boilerplate/issues/984#issuecomment-3985989
-  > li > a > img {
-    max-width: none;
+  .dropdown-menu {
+    // Make dropdown border overlap tab border
+    margin-top: ~"calc(var(--bs-nav-tabs-border-width) * -1)"; // stylelint-disable-line function-disallowed-list
+    // Remove the top rounded corners here since there is a hard edge above the menu
+    .border-top-radius(0);
   }
 }
 
 
-// Tabs
-// -------------------------
-
-// Give the tabs something to sit on
-.nav-tabs {
-  border-bottom: 1px solid @nav-tabs-border-color;
-  > li {
-    float: left;
-    // Make the list-items overlay the bottom border
-    margin-bottom: -1px;
-
-    // Actual tabs (as links)
-    > a {
-      margin-right: 2px;
-      line-height: @line-height-base;
-      border: 1px solid transparent;
-      border-radius: @border-radius-base @border-radius-base 0 0;
-      &:hover {
-        border-color: @nav-tabs-link-hover-border-color @nav-tabs-link-hover-border-color @nav-tabs-border-color;
-      }
-    }
-
-    // Active state, and its :hover to override normal :hover
-    &.active > a {
-      &,
-      &:hover,
-      &:focus {
-        color: @nav-tabs-active-link-hover-color;
-        cursor: default;
-        background-color: @nav-tabs-active-link-hover-bg;
-        border: 1px solid @nav-tabs-active-link-hover-border-color;
-        border-bottom-color: transparent;
-      }
-    }
-  }
-  // pulling this in mainly for less shorthand
-  &.nav-justified {
-    .nav-justified();
-    .nav-tabs-justified();
-  }
-}
-
-
+//
 // Pills
-// -------------------------
+//
+
 .nav-pills {
-  > li {
-    float: left;
+  // scss-docs-start nav-pills-css-vars
+  --bs-nav-pills-border-radius: @nav-pills-border-radius;
+  --bs-nav-pills-link-active-color: @nav-pills-link-active-color;
+  --bs-nav-pills-link-active-bg: @nav-pills-link-active-bg;
+  // scss-docs-end nav-pills-css-vars
 
-    // Links rendered as pills
-    > a {
-      border-radius: @nav-pills-border-radius;
-    }
-    + li {
-      margin-left: 2px;
-    }
+  .nav-link {
+    background: none;
+    border: 0;
+    border-radius: var(--bs-nav-pills-border-radius);
 
-    // Active state
-    &.active > a {
-      &,
-      &:hover,
-      &:focus {
-        color: @nav-pills-active-link-hover-color;
-        background-color: @nav-pills-active-link-hover-bg;
-      }
+    &:disabled {
+      color: var(--bs-nav-link-disabled-color);
+      background-color: transparent;
+      border-color: transparent;
     }
+  }
+
+  .nav-link.active,
+  .show > .nav-link {
+    color: var(--bs-nav-pills-link-active-color);
+    background: var(--bs-nav-pills-link-active-bg);
   }
 }
 
 
-// Stacked pills
-.nav-stacked {
-  > li {
-    float: none;
-    + li {
-      margin-top: 2px;
-      margin-left: 0; // no need for this gap between nav items
-    }
+//
+// Justified variants
+//
+
+.nav-fill {
+  > .nav-link,
+  .nav-item {
+    flex: 1 1 auto;
+    text-align: center;
   }
 }
-
-
-// Nav variations
-// --------------------------------------------------
-
-// Justified nav links
-// -------------------------
 
 .nav-justified {
-  width: 100%;
-
-  > li {
-    float: none;
-    > a {
-      margin-bottom: 5px;
-      text-align: center;
-    }
-  }
-
-  > .dropdown .dropdown-menu {
-    top: auto;
-    left: auto;
-  }
-
-  @media (min-width: @screen-sm-min) {
-    > li {
-      display: table-cell;
-      width: 1%;
-      > a {
-        margin-bottom: 0;
-      }
-    }
+  > .nav-link,
+  .nav-item {
+    flex-basis: 0;
+    flex-grow: 1;
+    text-align: center;
   }
 }
 
-// Move borders to anchors instead of bottom of list
-//
-// Mixin for adding on top the shared `.nav-justified` styles for our tabs
-.nav-tabs-justified {
-  border-bottom: 0;
-
-  > li > a {
-    // Override margin from .nav-tabs
-    margin-right: 0;
-    border-radius: @border-radius-base;
-  }
-
-  > .active > a,
-  > .active > a:hover,
-  > .active > a:focus {
-    border: 1px solid @nav-tabs-justified-link-border-color;
-  }
-
-  @media (min-width: @screen-sm-min) {
-    > li > a {
-      border-bottom: 1px solid @nav-tabs-justified-link-border-color;
-      border-radius: @border-radius-base @border-radius-base 0 0;
-    }
-    > .active > a,
-    > .active > a:hover,
-    > .active > a:focus {
-      border-bottom-color: @nav-tabs-justified-active-link-border-color;
-    }
+.nav-fill,
+.nav-justified {
+  .nav-item .nav-link {
+    width: 100%; // Make sure button will grow
   }
 }
 
 
 // Tabbable tabs
-// -------------------------
-
+//
 // Hide tabbable panes to start, show them when `.active`
+
 .tab-content {
   > .tab-pane {
     display: none;
@@ -232,13 +180,266 @@
 }
 
 
-// Dropdowns
-// -------------------------
+// BS3 Compatibility
 
-// Specific dropdowns
-.nav-tabs .dropdown-menu {
-  // make dropdown border overlap tab border
-  margin-top: -1px;
-  // Remove the top rounded corners here since there is a hard edge above the menu
-  .border-top-radius(0);
+.nav > li > a {
+  &:extend(.nav-link all);
 }
+
+.nav > li.active > a,
+.nav > li.open > a {
+  &,
+  &:hover,
+  &:focus {
+    &:extend(.active .nav-link);
+  }
+}
+
+.nav > li.disabled > a {
+  &:extend(.nav-link.disabled);
+}
+
+// stylelint-disable selector-no-qualifying-type, selector-max-type
+
+//
+// Navs
+// --------------------------------------------------
+
+
+// Base class
+// --------------------------------------------------
+
+// .nav {
+//   padding-left: 0; // Override default ul/ol
+//   margin-bottom: 0;
+//   list-style: none;
+//   &:extend(.clearfix all);
+
+//   > li {
+//     position: relative;
+//     display: block;
+
+//     > a {
+//       position: relative;
+//       display: block;
+//       padding: @nav-link-padding;
+//       &:hover,
+//       &:focus {
+//         text-decoration: none;
+//         background-color: @nav-link-hover-bg;
+//       }
+//     }
+
+//     // Disabled state sets text to gray and nukes hover/tab effects
+//     &.disabled > a {
+//       color: @nav-disabled-link-color;
+
+//       &:hover,
+//       &:focus {
+//         color: @nav-disabled-link-hover-color;
+//         text-decoration: none;
+//         cursor: @cursor-disabled;
+//         background-color: transparent;
+//       }
+//     }
+//   }
+
+//   // Open dropdowns
+//   .open > a {
+//     &,
+//     &:hover,
+//     &:focus {
+//       background-color: @nav-link-hover-bg;
+//       border-color: @link-color;
+//     }
+//   }
+
+//   // Nav dividers (deprecated with v3.0.1)
+//   //
+//   // This should have been removed in v3 with the dropping of `.nav-list`, but
+//   // we missed it. We don't currently support this anywhere, but in the interest
+//   // of maintaining backward compatibility in case you use it, it's deprecated.
+//   .nav-divider {
+//     .nav-divider();
+//   }
+
+//   // Prevent IE8 from misplacing imgs
+//   //
+//   // See https://github.com/h5bp/html5-boilerplate/issues/984#issuecomment-3985989
+//   > li > a > img {
+//     max-width: none;
+//   }
+// }
+
+
+// // Tabs
+// // -------------------------
+
+// // Give the tabs something to sit on
+// .nav-tabs {
+//   border-bottom: 1px solid @nav-tabs-border-color;
+//   > li {
+//     float: left;
+//     // Make the list-items overlay the bottom border
+//     margin-bottom: -1px;
+
+//     // Actual tabs (as links)
+//     > a {
+//       margin-right: 2px;
+//       line-height: @line-height-base;
+//       border: 1px solid transparent;
+//       border-radius: @border-radius-base @border-radius-base 0 0;
+//       &:hover {
+//         border-color: @nav-tabs-link-hover-border-color @nav-tabs-link-hover-border-color @nav-tabs-border-color;
+//       }
+//     }
+
+//     // Active state, and its :hover to override normal :hover
+//     &.active > a {
+//       &,
+//       &:hover,
+//       &:focus {
+//         color: @nav-tabs-active-link-hover-color;
+//         cursor: default;
+//         background-color: @nav-tabs-active-link-hover-bg;
+//         border: 1px solid @nav-tabs-active-link-hover-border-color;
+//         border-bottom-color: transparent;
+//       }
+//     }
+//   }
+//   // pulling this in mainly for less shorthand
+//   &.nav-justified {
+//     .nav-justified();
+//     .nav-tabs-justified();
+//   }
+// }
+
+
+// // Pills
+// // -------------------------
+// .nav-pills {
+//   > li {
+//     float: left;
+
+//     // Links rendered as pills
+//     > a {
+//       border-radius: @nav-pills-border-radius;
+//     }
+//     + li {
+//       margin-left: 2px;
+//     }
+
+//     // Active state
+//     &.active > a {
+//       &,
+//       &:hover,
+//       &:focus {
+//         color: @nav-pills-active-link-hover-color;
+//         background-color: @nav-pills-active-link-hover-bg;
+//       }
+//     }
+//   }
+// }
+
+
+// // Stacked pills
+// .nav-stacked {
+//   > li {
+//     float: none;
+//     + li {
+//       margin-top: 2px;
+//       margin-left: 0; // no need for this gap between nav items
+//     }
+//   }
+// }
+
+
+// // Nav variations
+// // --------------------------------------------------
+
+// // Justified nav links
+// // -------------------------
+
+// .nav-justified {
+//   width: 100%;
+
+//   > li {
+//     float: none;
+//     > a {
+//       margin-bottom: 5px;
+//       text-align: center;
+//     }
+//   }
+
+//   > .dropdown .dropdown-menu {
+//     top: auto;
+//     left: auto;
+//   }
+
+//   @media (min-width: @screen-sm-min) {
+//     > li {
+//       display: table-cell;
+//       width: 1%;
+//       > a {
+//         margin-bottom: 0;
+//       }
+//     }
+//   }
+// }
+
+// // Move borders to anchors instead of bottom of list
+// //
+// // Mixin for adding on top the shared `.nav-justified` styles for our tabs
+// .nav-tabs-justified {
+//   border-bottom: 0;
+
+//   > li > a {
+//     // Override margin from .nav-tabs
+//     margin-right: 0;
+//     border-radius: @border-radius-base;
+//   }
+
+//   > .active > a,
+//   > .active > a:hover,
+//   > .active > a:focus {
+//     border: 1px solid @nav-tabs-justified-link-border-color;
+//   }
+
+//   @media (min-width: @screen-sm-min) {
+//     > li > a {
+//       border-bottom: 1px solid @nav-tabs-justified-link-border-color;
+//       border-radius: @border-radius-base @border-radius-base 0 0;
+//     }
+//     > .active > a,
+//     > .active > a:hover,
+//     > .active > a:focus {
+//       border-bottom-color: @nav-tabs-justified-active-link-border-color;
+//     }
+//   }
+// }
+
+
+// // Tabbable tabs
+// // -------------------------
+
+// // Hide tabbable panes to start, show them when `.active`
+// .tab-content {
+//   > .tab-pane {
+//     display: none;
+//   }
+//   > .active {
+//     display: block;
+//   }
+// }
+
+
+// // Dropdowns
+// // -------------------------
+
+// // Specific dropdowns
+// .nav-tabs .dropdown-menu {
+//   // make dropdown border overlap tab border
+//   margin-top: -1px;
+//   // Remove the top rounded corners here since there is a hard edge above the menu
+//   .border-top-radius(0);
+// }

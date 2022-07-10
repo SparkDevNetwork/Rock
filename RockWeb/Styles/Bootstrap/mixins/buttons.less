@@ -4,47 +4,18 @@
 // and disabled options for all buttons
 
 .button-variant(@color; @background; @border) {
-  color: @color;
-  background-color: @background;
-  border-color: @border;
-
-  &:focus,
-  &.focus {
-    color: @color;
-    background-color: darken(@background, 10%);
-    border-color: darken(@border, 25%);
-  }
-  &:hover {
-    color: @color;
-    background-color: darken(@background, 10%);
-    border-color: darken(@border, 12%);
-  }
-  &:active,
-  &.active,
-  .open > .dropdown-toggle& {
-    color: @color;
-    background-color: darken(@background, 10%);
-    background-image: none;
-    border-color: darken(@border, 12%);
-
-    &:hover,
-    &:focus,
-    &.focus {
-      color: @color;
-      background-color: darken(@background, 17%);
-      border-color: darken(@border, 25%);
-    }
-  }
-  &.disabled,
-  &[disabled],
-  fieldset[disabled] & {
-    &:hover,
-    &:focus,
-    &.focus {
-      background-color: @background;
-      border-color: @border;
-    }
-  }
+  --bs-btn-color: @color;
+  --bs-btn-bg: @background;
+  --bs-btn-border-color: @border;
+  --bs-btn-hover-color: @color;
+  --bs-btn-hover-bg: darken(@background, 10%);
+  --bs-btn-hover-border-color: darken(@border, 12%);
+  --bs-btn-active-color: ~"var(--bs-btn-hover-color)";
+  --bs-btn-active-bg: darken(@background, 10%);
+  --bs-btn-active-border-color: darken(@border, 12%);
+  --bs-btn-disabled-color: @color;
+  --bs-btn-disabled-bg: @background;
+  --bs-btn-disabled-border-color: @border;
 
   .badge {
     color: @background;
@@ -54,8 +25,9 @@
 
 // Button sizes
 .button-size(@padding-vertical; @padding-horizontal; @font-size; @line-height; @border-radius) {
-  padding: @padding-vertical @padding-horizontal;
-  font-size: @font-size;
-  line-height: @line-height;
-  border-radius: @border-radius;
+  --bs-btn-padding-x: @padding-horizontal;
+  --bs-btn-padding-y: @padding-vertical;
+  --bs-btn-font-size: @font-size;
+  --bs-btn-line-height: @line-height;
+  --bs-btn-border-radius: @border-radius;
 }

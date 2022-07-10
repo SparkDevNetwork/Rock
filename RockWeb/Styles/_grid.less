@@ -29,27 +29,6 @@
   content: "\f111";
 }
 
-.table > tbody > tr > td {
-  color: @grid-row-even-color;
-}
-
-.table-striped {
-  > tbody > tr:nth-of-type(odd) {
-    color: @grid-row-odd-color;
-    background-color: @grid-row-odd-bg;
-  }
-
-  > tbody > tr:nth-of-type(even) {
-    color: @grid-row-even-color;
-    background-color: @grid-row-even-bg;
-  }
-}
-
-.table.table-hover > tbody > tr:hover > td {
-  color: @grid-hover-color;
-  background-color: @grid-hover-bg;
-}
-
 td.grid-select-cell {
   cursor: pointer;
 }
@@ -81,37 +60,31 @@ td.wrap-contents {
 
 .grid {
   margin-bottom: 15px;
-
-  .grid-table {
-    border: 1px solid @grid-border-color;
-  }
-
-  .grid-table.table-light {
-    border: 0;
-  }
 }
 
 .grid.grid-panel {
-  th:first-child,
-  td:first-child {
-    border-left: 0;
-  }
+  // th:first-child,
+  // td:first-child {
+  //   border-left: 0;
+  // }
 
-  th:last-child,
-  td:last-child {
-    border-right: 0;
-  }
-  .grid-table {
-    border: 0 !important;
-  }
+  // th:last-child,
+  // td:last-child {
+  //   border-right: 0;
+  // }
+
 
   tfoot > tr:last-child {
-    td:first-child {
-      border-bottom-left-radius: @panel-border-radius;
-    }
+    td {
+      border-bottom-width: 0;
 
-    td:last-child {
-      border-bottom-right-radius: @panel-border-radius;
+      &:first-child {
+        border-bottom-left-radius: @panel-border-radius;
+      }
+
+      &:last-child {
+        border-bottom-right-radius: @panel-border-radius;
+      }
     }
   }
 }
@@ -251,20 +224,25 @@ td.wrap-contents {
   }
 }
 
-.table.table-light > thead > tr > th {
-  color: @text-color;
-  background-color: transparent;
-  border-color: lighten(@text-color, 40%);
-}
-
 // 5. Footer
 // -------------------------
 
 // pagination
 .grid-paging {
-  padding: 5px 0;
+  padding: 8px !important;
 
   .grid-pager {
+    --bs-pagination-padding-x: 12px;
+    --bs-pagination-padding-y: 5px;
+
+    --bs-pagination-color: @grid-pager-button-color;
+    --bs-pagination-bg: @grid-pager-button-bg;
+    --bs-pagination-border-color: @grid-pager-button-border;
+    --bs-pagination-active-color: @grid-pager-button-active-color;
+    --bs-pagination-active-bg: @grid-pager-button-active-bg;
+    --bs-pagination-active-border-color: @grid-pager-button-active-border;
+
+    --bs-pagination-disabled-color: @grid-pager-button-color;
     float: right;
     margin-top: 0;
     margin-bottom: 0;
@@ -272,22 +250,12 @@ td.wrap-contents {
     li {
       > a {
         min-width: 23px;
-        padding: 5px 12px;
         margin: 0 8px 0 0;
-        color: @grid-pager-button-color;
         text-align: center;
-        background-color: @grid-pager-button-bg;
-        border-color: @grid-pager-button-border;
       }
 
       &.disabled > a {
         cursor: default;
-      }
-
-      &.active > a {
-        color: @grid-pager-button-active-color;
-        background-color: @grid-pager-button-active-bg;
-        border-color: @grid-pager-button-active-border;
       }
     }
   }
@@ -304,7 +272,6 @@ td.wrap-contents {
 
   .grid-itemcount {
     float: left;
-    margin-top: 7px;
     margin-left: 10px;
     font-size: @font-size-xs;
   }
@@ -325,9 +292,11 @@ td.grid-col-actions {
   }
 
   .btn-grid-action {
-    color: @grid-footer-button-text-color;
-    background-color: @grid-footer-button-bg;
-    border-color: @grid-footer-button-border;
+    --bs-btn-color: @grid-footer-button-text-color;
+    --bs-btn-bg: @grid-footer-button-bg;
+    --bs-btn-border-color: @grid-footer-button-border;
+    --bs-btn-hover-bg: @grid-footer-button-bg;
+    --bs-btn-active-bg: @grid-footer-button-bg;
   }
 
   .btn-grid-custom-action {
@@ -339,6 +308,7 @@ td.grid-col-actions {
 // -------------------------
 
 .table-light {
+  border-width: 0;
 
   thead th {
     font-weight: @font-weight-bold;
@@ -431,7 +401,7 @@ td.grid-col-actions {
   > thead > tr > th,
   > tbody > tr > td {
     // get buttons and text columns to look good together
-    padding: 12px;
+    // padding: 12px;
 
     &.grid-columncommand {
       min-width: @input-height-small;
@@ -451,15 +421,19 @@ td.grid-col-actions {
   > tbody > tr > td.grid-columncommand {
     padding: 6px;
   }
+
+  > tfoot > * {
+    border-width: 0;
+  }
 }
 
 .table .color-field {
   width: 4px;
   padding: 0;
-
-  & + th {
-    border-left-width: 0;
-  }
+  border-right-width: 0;
+    & + th {
+      border-left-width: 0;
+    }
 }
 
 .table .grid-icon img {

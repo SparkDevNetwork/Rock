@@ -7,11 +7,35 @@
 
 // Base class
 .panel {
+  --bs-panel-border-color: transparent;
+  --bs-panel-border-radius: @panel-border-radius;
+  --bs-panel-box-shadow: @panel-box-shadow;
+  --bs-panel-bg: @panel-bg;
+
   margin-bottom: @line-height-computed;
-  background-color: @panel-bg;
-  border: 1px solid transparent;
-  border-radius: @panel-border-radius;
-  .box-shadow(0 1px 1px rgba(0, 0, 0, .05));
+  background-color: ~"var(--bs-panel-bg)";
+  border: 1px solid ~"var(--bs-panel-border-color)";
+  border-radius: ~"var(--bs-panel-border-radius)";
+  box-shadow: ~"var(--bs-panel-box-shadow)";
+
+  & > .panel-heading {
+    color: ~"var(--bs-panel-heading-color)";
+    background-color: ~"var(--bs-panel-heading-bg)";
+    border-color: ~"var(--bs-panel-heading-border)";
+
+    + .panel-collapse > .panel-body {
+      border-top-color: ~"var(--bs-panel-border-color)";
+    }
+    .badge {
+      color: ~"var(--bs-panel-heading-bg)";
+      background-color: ~"var(--bs-panel-heading-color)";
+    }
+  }
+  & > .panel-footer {
+    + .panel-collapse > .panel-body {
+      border-bottom-color: ~"var(--bs-panel-border-color)";
+    }
+  }
 }
 
 // Panel contents

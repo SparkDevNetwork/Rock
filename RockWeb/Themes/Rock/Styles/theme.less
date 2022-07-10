@@ -135,7 +135,6 @@ textarea,
 
 .form-control {
   &::placeholder {
-    color: #90949c;
     transition: color 100ms ease-in-out;
   }
 
@@ -172,30 +171,23 @@ textarea,
   .box-shadow(none);
 }
 
-.toggle-container {
-  .btn-group {
-    vertical-align: top;
-  }
-}
-
-.btn {
-  transition: @btn-transition;
-}
 
 .btn-square {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: @padding-base-vertical;
   width: 38px;
-  padding: @padding-base-vertical 0;
 
   &.btn-xs {
+    --bs-btn-padding-y: @padding-xs-vertical;
     width: @input-height-xs;
     height: @input-height-xs;
-    padding: @padding-xs-vertical 0;
   }
 
   &.btn-sm {
+    @btn-sm-padding: (@padding-small-vertical - 2);
+    --bs-btn-padding-y: @btn-sm-padding;
     width: @input-height-small;
     height: @input-height-small;
-    padding: (@padding-small-vertical - 2) 0;
   }
 
   i.fa {
@@ -213,29 +205,29 @@ textarea,
 
 // Show Toggle Buttons without muted colors
 .btn-toggle {
-  .btn-primary.active {
-    background-color: @btn-primary-bg;
-    border-color: @btn-primary-border;
+  .btn-primary {
+    --bs-btn-active-bg: @btn-primary-bg;
+    --bs-btn-active-border-color: @btn-primary-border;
   }
 
-  .btn-success.active {
-    background-color: @btn-success-bg;
-    border-color: @btn-success-border;
+  .btn-success {
+    --bs-btn-active-bg: @btn-success-bg;
+    --bs-btn-active-border-color: @btn-success-border;
   }
 
-  .btn-info.active {
-    background-color: @btn-info-bg;
-    border-color: @btn-info-border;
+  .btn-info {
+    --bs-btn-active-bg: @btn-info-bg;
+    --bs-btn-active-border-color: @btn-info-border;
   }
 
-  .btn-warning.active {
-    background-color: @btn-warning-bg;
-    border-color: @btn-warning-border;
+  .btn-warning {
+    --bs-btn-active-bg: @btn-warning-bg;
+    --bs-btn-active-border-color: @btn-warning-border;
   }
 
-  .btn-danger.active {
-    background-color: @btn-danger-bg;
-    border-color: @btn-danger-border;
+  .btn-danger {
+    --bs-btn-active-bg: @btn-danger-bg;
+    --bs-btn-active-border-color: @btn-danger-border;
   }
 }
 
@@ -245,9 +237,10 @@ textarea,
 }
 
 .label.btn-label {
+  --bs-label-color: @btn-default-color;
+  --bs-label-bg: @btn-default-bg;
+  --bs-label-hover-color: @btn-default-color;
   padding: @label-padding;
-  color: @btn-default-color;
-  background: @btn-default-bg;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   box-shadow: inset 0 0 0 1px @btn-default-border;
@@ -337,50 +330,6 @@ textarea,
   }
 }
 
-.tooltip {
-  &.top {
-    margin-bottom: 1px;
-    .tooltip-arrow {
-      bottom: 1px;
-      border-width: 0 1px 1px 0;
-    }
-  }
-
-  &.bottom {
-    margin-top: 1px;
-    .tooltip-arrow {
-      top: 1px;
-      border-width: 1px 0 0 1px;
-    }
-  }
-}
-
-
-.tooltip-arrow {
-  width: 10px;
-  height: 10px;
-  background: @gray-darker;
-  border: 1px solid @ui-4;
-  transform: rotate(45deg);
-}
-
-.tooltip-inner {
-  padding: (@padding-base-horizontal / 2);
-  color: @white;
-  text-align: left;
-  background-color: @gray-darker;
-  border: 1px solid @ui-4;
-  .box-shadow(@shadow-overlay);
-}
-
-.close {
-  opacity: .5;
-  &:focus,
-  &:hover {
-    opacity: .75;
-  }
-}
-
 @media (max-width: @screen-sm-max) {
   .form-well {
     padding: @panel-body-padding;
@@ -392,18 +341,12 @@ textarea,
 }
 
 .alert {
-  border-width: 0;
   border-top-width: 3px;
-  border-radius: 0 0 @alert-border-radius @alert-border-radius;
   box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
 }
 
 .btn-group.open .dropdown-toggle {
   box-shadow: none;
-}
-
-.dropdown-menu {
-  font-size: 14px;
 }
 
 .has-error {
@@ -454,25 +397,19 @@ textarea,
 }
 
 .grid-table {
-  font-size: @font-size-base;
-  //TEMP
   @table-padding-vertical: 16px;
+  --bs-table-border-color: @grid-border-color;
 
-  td,
-  th {
-    &.grid-select-field {
-      width: @custom-control-indicator-size * 3;
-    }
+  font-size: @font-size-base;
+
+  > :not(caption) > * > * {
+    padding: 16px 16px 16px 12px;
   }
 
-  > tbody > tr > td,
-  > tbody > tr > th,
-  > thead > tr > td,
-  > thead > tr > th {
-    padding: @table-padding-vertical 16px @table-padding-vertical 12px;
-    border-width: @table-column-border-width;
-    border-top-width: 1px;
+  .grid-select-field {
+    width: @custom-control-indicator-size * 3;
   }
+
 
   > thead > tr > td,
   > thead > tr > th {
@@ -515,64 +452,39 @@ textarea,
   }
 
   > tfoot {
-    > tr:first-child > td,
-    & {
-      border-top: 1px solid @grid-border-color;
-    }
-
-    > tr > td,
-    > tr > th {
-      color: @text-color;
-      background: @panel-bg;
-      border-top: 1px solid @ui-4;
-    }
+    border-color: @ui-4;
   }
 }
 
 .grid-columncommand {
   .btn {
+    --bs-btn-padding-x: 0;
+    --bs-btn-padding-y: @padding-small-vertical;
     width: @input-height-small;
-    padding: @padding-small-vertical 0;
   }
 
   .btn-default,
   .btn-security,
   .btn-danger {
-    background-color: transparent;
-    border-color: transparent;
-    box-shadow: none;
+    --bs-btn-bg: transparent;
+    --bs-btn-border-color: transparent;
+    --bs-btn-box-shadow: none;
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: transparent;
+    --bs-btn-disabled-color: none;
   }
 
   .btn-default,
   .btn-security {
-    &:focus,
-    &:hover,
-    &:active {
-      background-color: darken(@btn-default-bg, 10%);
-    }
+    --bs-btn-hover-bg: darken(@btn-default-bg, 10%);
+    --bs-btn-active-bg: darken(@btn-default-bg, 10%);
   }
 
   .btn-danger {
-    background: transparent;
-    &:active,
-    &:hover {
-      color: @btn-danger-bg;
-      background: fade(@btn-danger-bg, 10%);
-    }
-
-    &:focus,
-    &:active &:active:hover,
-    &:active:focus {
-      color: @btn-danger-color;
-      background: @btn-danger-bg;
-      border-color: @btn-danger-border;
-    }
+    --bs-btn-hover-bg: fade(@btn-danger-bg, 10%);
+    --bs-btn-hover-color: @btn-danger-bg;
+    --bs-btn-hover-border-color: @btn-danger-border;
   }
-}
-
-.btn.active,
-.btn:active { // removes the shadow from the toggles
-  .box-shadow(none);
 }
 
 .badge-circle {
@@ -653,12 +565,6 @@ textarea,
   line-height: 26px;
 }
 
-.list-as-blocks {
-  ul {
-    margin-top: 0;
-  }
-}
-
 .rating-input i {
   color: @brand-primary;
   color: var(--brand-primary);
@@ -685,7 +591,6 @@ textarea,
 }
 
 .panel {
-  .box-shadow(@shadow-raised);
 
   .panel-title {
     i {
@@ -697,13 +602,10 @@ textarea,
 
 .panel-widget {
   // DO NOT HIDE OVERFLOW BECAUSE OF PICKERS
-  .box-shadow(none);
 
   .panel-heading .btn-link {
-    color: @text-color;
-    &:hover {
-      color: @text-muted;
-    }
+    --bs-btn-color: @text-color;
+    --bs-btn-hover: @text-muted;
   }
 }
 
@@ -751,21 +653,14 @@ textarea,
     margin: -6px -12px -6px 0 !important;
 
     .btn-link {
+      --bs-btn-color: @text-muted;
+      --bs-btn-hover-color: @link-color;
+      --bs-btn-disabled-opacity: 0.4;
+      --bs-btn-padding-y: 6px;
+      --bs-btn-padding-x: 0;
+      --bs-btn-font-size: @font-size-sm;
       width: 28px;
-      padding: 6px 0;
       margin-bottom: 0;
-      font-size: @font-size-sm;
-      color: @text-muted;
-      border: 0;
-
-      &:hover {
-        color: @link-color;
-      }
-
-      &.aspNetDisabled {
-        cursor: not-allowed !important;
-        opacity: .4 !important;
-      }
     }
   }
 }
@@ -871,27 +766,22 @@ textarea,
 
 // grid styles
 
-td.grid-actions {
-  padding: 0 !important;
-  font-size: 1em;
-}
-
 .grid-actions {
-  .btn-grid-action {
-    padding: 5px 7px;
-    margin: 0 0 0 2px;
-    font-size: @font-size-base;
-    border: 0;
-    box-shadow: none;
-    transition: color 250ms;
+  padding: 0 !important;
 
-    &:hover {
-      color: @grid-footer-button-hover-text-color;
-    }
+  .btn-grid-action {
+    --bs-btn-padding-x: 7px;
+    --bs-btn-padding-y: 5px;
+    --bs-btn-hover-color: @grid-footer-button-hover-text-color;
+    --bs-btn-font-size: @font-size-base;
+    --bs-btn-border-width: 0;
+    --bs-btn-box-shadow: none;
+    --bs-btn-focus-box-shadow: none;
+    margin: 0 0 0 2px;
   }
 
-  .btn-add:hover {
-    color: @brand-success;
+  .btn-add {
+    --bs-btn-hover-color: @brand-success;
   }
 }
 
@@ -1178,15 +1068,9 @@ body.nav-open {
   }
 
   .dropdown-menu {
-    border: 0;
-
-    a {
-      &:hover {
-        color: @white;
-        background-color: var(--brand-primary);
-        opacity: 1;
-      }
-    }
+    --bs-dropdown-border-width: 0;
+    --bs-dropdown-link-hover-color: @white;
+    --bs-dropdown-link-hover-bg: @brand-primary;
 
     @media (min-width: @screen-sm-min) {
       &::after {
@@ -1596,8 +1480,6 @@ body.navbar-side-open {
     }
 
     .breadcrumb {
-      padding: 0;
-      margin: 0;
       font-size: @font-size-xs;
 
       a:hover {
@@ -1892,10 +1774,11 @@ body.navbar-side-open {
 }
 
 .nav-sm {
+  --bs-nav-link-padding-x: 12px;
+  --bs-nav-link-padding-y: 8px;
+  --bs-nav-link-font-size: 14px;
+  --bs-nav-link-font-weight: 500;
   > li > a {
-    padding: 8px 12px;
-    font-size: 14px;
-    font-weight: 500;
     line-height: 16px;
   }
 }

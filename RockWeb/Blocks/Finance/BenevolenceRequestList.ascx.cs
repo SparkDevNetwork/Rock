@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Finance
             gList.Actions.ShowAdd = CanAddEditDelete;
             gList.IsDeleteEnabled = CanAddEditDelete;
 
-            // in case this is used as a Person Block, set the TargetPerson 
+            // in case this is used as a Person Block, set the TargetPerson
             TargetPerson = ContextEntity<Person>();
         }
 
@@ -201,7 +201,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AvailableAttributes = new List<AttributeCache>();
 
             int entityTypeId = new BenevolenceRequest().TypeId;
@@ -711,14 +711,14 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                // Filter by First Name 
+                // Filter by First Name
                 string firstName = tbFirstName.Text;
                 if ( !string.IsNullOrWhiteSpace( firstName ) )
                 {
                     benevolenceRequests = benevolenceRequests.Where( b => b.FirstName.StartsWith( firstName ) );
                 }
 
-                // Filter by Last Name 
+                // Filter by Last Name
                 string lastName = tbLastName.Text;
                 if ( !string.IsNullOrWhiteSpace( lastName ) )
                 {
@@ -855,7 +855,7 @@ namespace RockWeb.Blocks.Finance
                 phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'>{0}: </div><div class='col-xs-4 text-right'>{1}</div></div>", keyValuePair.Key, keyValuePair.Value.FormatAsCurrency() ) ) );
             }
 
-            phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'><b>Total: </div><div class='col-xs-4 text-right'>{0}</b></div></div>", grandTotal.FormatAsCurrency() ) ) );
+            phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'><strong>Total:</strong></div><div class='col-xs-4 text-right'><strong>{0}</strong></div></div>", grandTotal.FormatAsCurrency() ) ) );
         }
 
         #endregion Methods

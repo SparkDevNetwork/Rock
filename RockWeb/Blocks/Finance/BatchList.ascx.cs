@@ -55,9 +55,9 @@ namespace RockWeb.Blocks.Finance
                 {% assign totalAmount = totalAmount | Plus: batchSummary.TotalAmount %}
                 {% endfor %}
                 <div class='row'>
-                    <div class='col-xs-8'><b>Total: </div>
+                    <div class='col-xs-8'><strong>Total:</strong></div>
                     <div class='col-xs-4 text-right'>
-                        {{ totalAmount | FormatAsCurrency }}
+                        <strong>{{ totalAmount | FormatAsCurrency }}</strong>
                     </div>
                 </div>
             </div>

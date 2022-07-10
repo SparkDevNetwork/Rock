@@ -135,7 +135,7 @@
 
                     <asp:ValidationSummary ID="vsSessionCountFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgSessionCountFilterConfiguration" />
 
-                    <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                    <div class="row form-row align-items-center form-group">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <Rock:RockDropDownList ID="ddlSessionCountFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgSessionCountFilterConfiguration" />
@@ -162,7 +162,7 @@
                     </div>
 
 
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0"><span class="text-nowrap">In the following date range</span></div>
                         <div class="col">
                             <Rock:SlidingDateRangePicker ID="drpSessionCountFilterSlidingDateRange" runat="server" Label="" PreviewLocation="Right" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" ValidationGroup="vgSessionCountFilterConfiguration" />
@@ -178,7 +178,7 @@
                         <asp:HiddenField ID="hfPageViewFilterGuid" runat="server" />
 
                         <asp:ValidationSummary ID="vsPageViewFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgPageViewFilterConfiguration" />
-                    <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                    <div class="row form-row align-items-center form-group">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                             <Rock:RockDropDownList ID="ddlPageViewFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgPageViewFilterConfiguration" />
@@ -203,7 +203,7 @@
                         </div>
                     </div>
 
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <span class="text-nowrap">In the following date range</span>
@@ -215,7 +215,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0"><span class="text-nowrap">optionally limited to the following pages</span></div>
 
                         <div class="col">
@@ -232,7 +232,7 @@
 
                     <asp:ValidationSummary ID="vsInteractionFilterConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgInteractionFilterConfiguration" />
 
-                    <div class="row form-row d-flex flex-wrap align-items-center form-group">
+                    <div class="row form-row align-items-center form-group">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <Rock:RockDropDownList ID="ddlInteractionFilterComparisonType" CssClass="input-width-xl js-filter-compare" runat="server" ValidationGroup="vgInteractionFilterConfiguration" />
@@ -268,7 +268,7 @@
                     </div>
 
 
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0"><span class="text-nowrap">In the following date range</span></div>
 
                         <div class="col">

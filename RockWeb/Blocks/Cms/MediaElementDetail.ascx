@@ -30,7 +30,7 @@
             </div>
 
             <asp:Panel ID="pnlViewAnalytics" runat="server" CssClass="panel-body">
-                <div class="row d-flex flex-wrap">
+                <div class="row">
                     <div class="col-xs-12 col-md-6 align-self-center">
                         <asp:Panel ID="pnlChart" runat="server">
                             <div class="video-container">

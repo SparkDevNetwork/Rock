@@ -3,22 +3,25 @@
 // --------------------------------------------------
 
 .label {
+  --bs-label-color: @label-color;
+  --bs-label-hover-color: @label-link-hover-color;
   display: inline;
   padding: .2em .6em .3em;
   font-size: 75%;
   font-weight: 700;
   line-height: 1;
-  color: @label-color;
+  color: var(--bs-label-color);
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
   border-radius: .25em;
+  background: var(--bs-label-bg);
 
   // Add hover effects, but only for links
   a& {
     &:hover,
     &:focus {
-      color: @label-link-hover-color;
+      color: var(--bs-label-hover-color );
       text-decoration: none;
       cursor: pointer;
     }

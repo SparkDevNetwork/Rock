@@ -1,5 +1,11 @@
 // stylelint-disable selector-max-type, selector-max-compound-selectors, selector-no-qualifying-type
 
+tbody, td, tfoot, th, thead, tr {
+    border-color: inherit;
+    border-style: solid;
+    border-width: 0;
+}
+
 //
 // Tables
 // --------------------------------------------------
@@ -43,47 +49,38 @@ th {
 // Baseline styles
 
 .table {
+  --bs-table-bg: @table-bg;
+  --bs-table-color: @text-color;
+  --bs-table-border-color: @table-border-color;
+  --bs-table-striped-bg: @table-bg-accent;
+  --bs-table-hover-color:  @table-hover-color;
+  --bs-table-hover-bg: @table-hover-bg;
+
   width: 100%;
   max-width: 100%;
+  color: ~"var(--bs-table-color)";
   margin-bottom: @line-height-computed;
-  // Cells
-  > thead,
-  > tbody,
-  > tfoot {
-    > tr {
-      > th,
-      > td {
-        padding: @table-cell-padding;
-        line-height: @line-height-base;
-        vertical-align: top;
-        border-top: 1px solid @table-border-color;
-      }
-    }
-  }
-  // Bottom align for column headings
-  > thead > tr > th {
-    vertical-align: bottom;
-    border-bottom: 2px solid @table-border-color;
-  }
-  // Remove top border from thead by default
-  > caption + thead,
-  > colgroup + thead,
-  > thead:first-child {
-    > tr:first-child {
-      > th,
-      > td {
-        border-top: 0;
-      }
-    }
-  }
-  // Account for multiple tbody instances
-  > tbody + tbody {
-    border-top: 2px solid @table-border-color;
+  border-color: ~"var(--bs-table-border-color)";
+
+
+  // Target th & td
+  // We need the child combinator to prevent styles leaking to nested tables which doesn't have a `.table` class.
+  // We use the universal selectors here to simplify the selector (else we would need 6 different selectors).
+  // Another advantage is that this generates less code and makes the selector less specific making it easier to override.
+  // stylelint-disable-next-line selector-max-universal
+  > :not(caption) > * > * {
+    padding: @table-cell-padding;
+    line-height: @line-height-base;
+    border-bottom-width: 1px;
+    box-shadow: inset 0 0 0 9999px ~"var(--bs-table-accent-bg)";
   }
 
-  // Nesting
-  .table {
-    background-color: @body-bg;
+  > tbody {
+    vertical-align: inherit;
+  }
+
+  > thead {
+    vertical-align: bottom;
   }
 }
 
@@ -91,43 +88,31 @@ th {
 // Condensed table w/ half padding
 
 .table-condensed {
-  > thead,
-  > tbody,
-  > tfoot {
-    > tr {
-      > th,
-      > td {
-        padding: @table-condensed-cell-padding;
-      }
-    }
+  > :not(caption) > * > * {
+    padding: @table-condensed-cell-padding;
   }
 }
 
 
-// Bordered version
+// Border versions
 //
-// Add borders all around the table and between all the columns.
+// Add or remove borders all around the table and between all the columns.
+//
+// When borders are added on all sides of the cells, the corners can render odd when
+// these borders do not have the same color or if they are semi-transparent.
+// Therefor we add top and border bottoms to the `tr`s and left and right borders
+// to the `td`s or `th`s
 
 .table-bordered {
-  border: 1px solid @table-border-color;
-  > thead,
-  > tbody,
-  > tfoot {
-    > tr {
-      > th,
-      > td {
-        border: 1px solid @table-border-color;
-      }
-    }
-  }
-  > thead > tr {
-    > th,
-    > td {
-      border-bottom-width: 2px;
+  > :not(caption) > * {
+    border-width: 1px 0;
+
+    // stylelint-disable-next-line selector-max-universal
+    > * {
+      border-width: 0 1px;
     }
   }
 }
-
 
 // Zebra-striping
 //
@@ -135,7 +120,31 @@ th {
 
 .table-striped {
   > tbody > tr:nth-of-type(odd) {
-    background-color: @table-bg-accent;
+    //color: @grid-row-odd-color;
+    background-color: var(--bs-table-bg);
+  }
+
+  > tbody > tr:nth-of-type(even) {
+    //color: @grid-row-even-color;
+    background-color: var(--bs-table-striped-bg);
+  }
+}
+
+// Zebra-striping
+//
+// Default zebra-stripe styles (alternating gray and transparent backgrounds)
+
+// For rows
+.table-striped {
+  > tbody > tr:nth-of-type(#{$table-striped-order}) > * {
+    --bg-table-accent-bg: ~"var(--bs-table-striped-bg)";
+  }
+}
+
+// For columns
+.table-striped-columns {
+  > :not(caption) > tr > :nth-child(#{$table-striped-columns-order}) {
+    --bg-table-accent-bg: ~"var(--bs-table-striped-bg)";
   }
 }
 
@@ -145,8 +154,9 @@ th {
 // Placed here since it has to come after the potential zebra striping
 
 .table-hover {
-  > tbody > tr:hover {
-    background-color: @table-bg-hover;
+  > tbody > tr:hover > * {
+    background-color: ~"var(--bs-table-hover-bg)";
+    color: ~"var(--bs-table-hover-color)";
   }
 }
 

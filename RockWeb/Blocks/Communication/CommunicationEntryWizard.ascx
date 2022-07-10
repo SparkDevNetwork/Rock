@@ -1373,7 +1373,7 @@
                                 <hr />
                                 </div>
                                 <Rock:NotificationBox ID="nbConfirmation" runat="server" NotificationBoxType="Info" />
-                                <div class="row d-flex flex-wrap flex-fill">
+                                <div class="row flex-fill">
                                     <div class="col-xs-12 col-md-4">
                                         <Rock:RockLiteral runat="server" ID="litRecipientCount" Label="Recipient Count" Text="234" />
                                         <Rock:RockLiteral runat="server" ID="litCommunicationName" Label="Communication Name" Text="234" />

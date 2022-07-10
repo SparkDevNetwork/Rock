@@ -131,6 +131,10 @@
 
 
 @close-color:                 @gray-100;
+@close-opacity:               .5;
+@close-hover-opacity:         .75;
+@close-focus-opacity:         1;
+
 
 @brand-primary:               @brand-color;
 
@@ -197,8 +201,9 @@
 //## Define alert colors, border radius, and padding.
 
 @alert-padding:               16px;
-@alert-border-radius:         @border-radius-base;
+@alert-border-radius:         0 0 @border-radius-base @border-radius-base;
 @alert-link-font-weight:      bold;
+@alert-border-width:          0;
 
 @alert-success-bg:            @state-success-bg;
 @alert-success-text:          @state-success-text;
@@ -272,6 +277,9 @@
 
 //// Breadcrumbs
 @breadcrumb-bg:               transparent;                    // Background color for the breadcrumbs. #color
+@breadcrumb-padding-horizontal:          0;
+@breadcrumb-padding-vertical:          0;
+@breadcrumb-margin-bottom:     0;
 @breadcrumb-color:            lighten(@theme-4-text, 20%);    // Text color for the breadcrumbs. #color
 @breadcrumb-active-color:     @gray;                          // The color of the active item in the breadcrumbs. #color
 @breadcrumb-separator:        @fa-var-chevron-right;          // Separator character in the breadcrumbs. (Uses FontAwesome)
@@ -317,7 +325,7 @@
 @input-focus-box-shadow:      ~"0 0 0 2px @{input-focus-rgba}";
 @input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
 
-@input-color-placeholder:        @gray-500;               // The text color of input placeholder text.
+@input-color-placeholder:        #90949c;               // The text color of input placeholder text.
 @input-group-addon-bg:           @gray-50;               // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds.
 @input-group-addon-border-color: @input-border;           // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
 
@@ -353,6 +361,7 @@
 @panel-bg:                    @white;                         // The background color of the panel body.
 @panel-body-padding:          18px;
 @panel-heading-padding:       14px 18px;
+@panel-box-shadow:            @shadow-raised;
 @panel-heading-bg:            @gray-100;                 // The background color of the panel's header.
 @panel-text:                  @text-color;                    // The text color of the panel.
 @panel-border:                @gray-200;                          // The panel's border color.
@@ -432,6 +441,8 @@
 @grid-pager-button-active-bg:           @gray-lightest;
 @grid-pager-button-active-border:       @gray;
 @grid-pager-button-active-color:        @gray;
+
+@table-hover-bg:                        @grid-hover-bg;
 @table-border-color:                    @grid-border-color;
 
 //== Pagination
@@ -510,10 +521,11 @@
 @tooltip-header-text-color:   @theme-8-text;
 
 @tooltip-max-width:           240px;
-@tooltip-color:               @text-color;
-@tooltip-bg:                  @white;
+@tooltip-color:               @white;
+@tooltip-bg:                  @gray-darker;
 @tooltip-opacity:             1;
-@tooltip-arrow-width:         5px;
+@tooltip-arrow-width:               10px;
+@tooltip-arrow-height:              10px;
 @tooltip-arrow-color:         @tooltip-bg;
 
 
@@ -694,6 +706,8 @@
 @dropdown-fallback-border:       @gray-300;
 @dropdown-divider-bg:            @gray-100;
 
+@dropdown-font-size:             14px;
+
 @dropdown-item-padding-y:        5px;
 @dropdown-item-padding-x:        16px;
 
@@ -726,12 +740,8 @@
     outline: 0;
   }
   .button-variant(@color; @background; @border) {
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
-
-    &:focus,
-    &:not(:disabled):not(.disabled):active:focus {
-      box-shadow: 0 0 0 @btn-focus-width fade(@border, 50%);
-    }
+    --bs-btn-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
+    --bs-btn-focus-box-shadow: 0 0 0 @btn-focus-width fade(@border, 50%);
   }
 }
 // stylelint-disable block-no-empty -- Required empty rule for false option

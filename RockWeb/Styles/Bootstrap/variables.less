@@ -132,12 +132,17 @@
 @table-condensed-cell-padding:  5px;
 
 //** Default background color used for all tables.
+@table-color:                   ~"var(--bs-body-color)";
 @table-bg:                      transparent;
 //** Background color used for `.table-striped`.
 @table-bg-accent:               #f9f9f9;
 //** Background color used for `.table-hover`.
+@table-bg-color:                @text-color;
 @table-bg-hover:                #f5f5f5;
 @table-bg-active:               @table-bg-hover;
+
+@table-hover-color:             @table-color;
+@table-hover-bg:                @table-bg-hover;
 
 //** Border color for table and cell borders.
 @table-border-color:            #ddd;
@@ -146,8 +151,21 @@
 //== Buttons
 //
 //## For each of Bootstrap's buttons, define text, background and border color.
+@btn-padding-y:                  @padding-base-vertical;
+@btn-padding-x:                  @padding-base-horizontal;
 
 @btn-font-weight:                normal;
+
+@btn-transition:                 color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+
+@btn-padding-y-sm:               @padding-small-vertical;
+@btn-padding-x-sm:               @padding-small-horizontal;
+
+@btn-padding-y-lg:               @padding-large-vertical;
+@btn-padding-x-lg:               @padding-large-horizontal;
+
+@btn-padding-y-xs:               @padding-xs-vertical;
+@btn-padding-x-xs:               @padding-xs-horizontal;
 
 @btn-default-color:              #333;
 @btn-default-bg:                 #fff;
@@ -294,14 +312,21 @@
 @dropdown-min-width:             160px;
 @dropdown-padding-x:             0;
 @dropdown-padding-y:             5px;
+
+@dropdown-font-size:             @font-size-base;
+@dropdown-color:                 @text-color;
 //** Background for the dropdown menu.
 @dropdown-bg:                    #fff;
 //** Dropdown menu `border-color`.
-@dropdown-border:                rgba(0, 0, 0, .15);
+@dropdown-border-color:                rgba(0, 0, 0, .15);
 //** Dropdown menu `border-color` **for IE8**.
 @dropdown-fallback-border:       #ccc;
+
+@dropdown-border-radius:         @border-radius-base;
+@dropdown-border-width:          1px;
+
 //** Divider color for between dropdown items.
-@dropdown-divider-bg:            #e5e5e5;
+@dropdown-divider-bg:            @dropdown-border;
 //** Rock Add
 @dropdown-divider-margin-y:      ((@line-height-computed / 2) - 1);
 @dropdown-box-shadow:            0 6px 12px rgba(0, 0, 0, .175);
@@ -326,6 +351,8 @@
 
 //** Text color for headers within dropdown menus.
 @dropdown-header-color:          @gray-light;
+@dropdown-header-padding-x:      @dropdown-item-padding-x;
+@dropdown-header-padding-y:      @dropdown-padding-y;
 
 //** Deprecated `@dropdown-caret-color` as of v3.1.0
 @dropdown-caret-color:           #000;
@@ -488,28 +515,39 @@
 //##
 
 //=== Shared nav styles
-@nav-link-padding:                          10px 15px;
+// @nav-link-padding:                          10px 15px;
+@nav-link-padding-x:                        15px;
+@nav-link-padding-y:                        10px;
+
+@nav-link-font-weight:                      ~"";
+@nav-link-color:                            var(--bs-link-color);
+@nav-link-hover-color:                      var(--bs-link-hover-color);
+@nav-disabled-link-color:                   @gray-light; // DEPRECATED
+@nav-link-disabled-color:                   @nav-disabled-link-color;
+
 @nav-link-hover-bg:                         @gray-lighter;
 
-@nav-disabled-link-color:                   @gray-light;
+
 @nav-disabled-link-hover-color:             @gray-light;
 
 //== Tabs
 @nav-tabs-border-color:                     #ddd;
+@nav-tabs-border-width:                     1px;
+@nav-tabs-border-radius:                    @border-radius-base;
 
 @nav-tabs-link-hover-border-color:          @gray-lighter;
 
-@nav-tabs-active-link-hover-bg:             @body-bg;
-@nav-tabs-active-link-hover-color:          @gray;
-@nav-tabs-active-link-hover-border-color:   #ddd;
+@nav-tabs-link-active-bg:             @body-bg;
+@nav-tabs-link-active-color:          @gray;
+@nav-tabs-link-active-border-color:   #ddd;
 
 @nav-tabs-justified-link-border-color:            #ddd;
 @nav-tabs-justified-active-link-border-color:     @body-bg;
 
 //== Pills
 @nav-pills-border-radius:                   @border-radius-base;
-@nav-pills-active-link-hover-bg:            @component-active-bg;
-@nav-pills-active-link-hover-color:         @component-active-color;
+@nav-pills-link-active-bg:            @component-active-bg;
+@nav-pills-link-active-color:         @component-active-color;
 
 
 //== Pagination
@@ -518,7 +556,15 @@
 
 @pagination-color:                     @link-color;
 @pagination-bg:                        #fff;
-@pagination-border:                    #ddd;
+@pagination-border-radius:             @border-radius-base;
+@pagination-border-width:              1px;
+@pagination-border:                    #ddd; // V4 Deprecated
+@pagination-border-color:              @pagination-border;
+
+@pagination-focus-color:                @link-hover-color;
+@pagination-focus-bg:                   @gray-lighter;
+@pagination-focus-box-shadow:           0; //@input-btn-focus-box-shadow;
+@pagination-focus-outline:              0;
 
 @pagination-hover-color:               @link-hover-color;
 @pagination-hover-bg:                  @gray-lighter;
@@ -592,7 +638,14 @@
 @tooltip-color:               #fff;
 //** Tooltip background color
 @tooltip-bg:                  #000;
+@tooltip-border-radius:        @border-radius-base;
 @tooltip-opacity:             .9;
+@tooltip-padding-y:            3px;
+@tooltip-padding-x:            8px;
+@tooltip-margin:               0;
+
+@tooltip-arrow-width:               .8rem;
+@tooltip-arrow-height:              .4rem;
 
 //** Tooltip arrow width
 @tooltip-arrow-width:         5px;
@@ -690,8 +743,10 @@
 //## Define alert colors, border radius, and padding.
 
 @alert-padding:               15px;
+@alert-margin-bottom:         @line-height-computed;
 @alert-border-radius:         @border-radius-base;
 @alert-link-font-weight:      bold;
+@alert-border-width:          1px;
 
 @alert-success-bg:            @state-success-bg;
 @alert-success-text:          @state-success-text;
@@ -776,6 +831,8 @@
 @panel-heading-padding:       10px 15px;
 @panel-footer-padding:        @panel-heading-padding;
 @panel-border-radius:         @border-radius-base;
+@panel-box-shadow:            0 1px 1px rgba(0, 0, 0, .05);
+
 
 //** Border color for elements within panels
 @panel-inner-border:          #ddd;
@@ -858,6 +915,7 @@
 
 @breadcrumb-padding-vertical:   8px;
 @breadcrumb-padding-horizontal: 15px;
+@breadcrumb-margin-bottom:      @line-height-computed;
 //** Breadcrumb background color
 @breadcrumb-bg:                 #f5f5f5;
 //** Breadcrumb text color
@@ -892,7 +950,9 @@
 @close-font-weight:           bold;
 @close-color:                 #000;
 @close-text-shadow:           0 1px 0 #fff;
-
+@close-opacity:               .2;
+@close-hover-opacity:         .5;
+@close-focus-opacity:         @close-hover-opacity;
 
 //== Code
 //

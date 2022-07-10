@@ -1568,7 +1568,7 @@ $('#{0}').tooltip();
             // give this a specific ID so that Postback to cbSignupSchedule works consistently
             scheduleSignUpRowItem.ID = $"scheduleSignUpRowItem_{personScheduleSignup.GroupId}_{personScheduleSignup.ScheduleId}_{personScheduleSignup.ScheduledDateTime.Date.ToString( "yyyyMMdd" )}";
 
-            scheduleSignUpRowItem.Attributes.Add( "class", "row d-flex flex-wrap align-items-center" );
+            scheduleSignUpRowItem.Attributes.Add( "class", "row align-items-center" );
             scheduleSignUpRowItem.AddCssClass( "js-person-schedule-signup-row" );
             phSignUpSchedules.Controls.Add( scheduleSignUpRowItem );
 

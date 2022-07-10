@@ -1655,7 +1655,7 @@ $('#{0}').tooltip();
         private void CreateScheduleSignUpRow( PersonScheduleSignup personScheduleSignup, List<PersonScheduleSignup> availableGroupLocationSchedules )
         {
             var scheduleSignUpRowItem = new HtmlGenericContainer();
-            scheduleSignUpRowItem.Attributes.Add( "class", "row d-flex flex-wrap align-items-center" );
+            scheduleSignUpRowItem.Attributes.Add( "class", "row align-items-center" );
             scheduleSignUpRowItem.AddCssClass( "js-person-schedule-signup-row" );
             phSignUpSchedules.Controls.Add( scheduleSignUpRowItem );
 
@@ -1690,7 +1690,7 @@ $('#{0}').tooltip();
             {
                 cbSignupSchedule.Text += " <span class='text-muted small'>(filled)</span>";
             }
-            
+
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
 
             var locations = availableGroupLocationSchedules

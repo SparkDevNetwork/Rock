@@ -4,23 +4,38 @@
 
 
 .breadcrumb {
-  padding: @breadcrumb-padding-vertical @breadcrumb-padding-horizontal;
-  margin-bottom: @line-height-computed;
+  // scss-docs-start breadcrumb-css-vars
+  --bs-breadcrumb-padding-x: @breadcrumb-padding-horizontal;
+  --bs-breadcrumb-padding-y: @breadcrumb-padding-vertical;
+  --bs-breadcrumb-margin-bottom: @breadcrumb-margin-bottom;
+  --bs-breadcrumb-bg: @breadcrumb-bg;
+  --bs-breadcrumb-border-radius: @border-radius-base;
+  --bs-breadcrumb-divider-color: @breadcrumb-color;
+  --bs-breadcrumb-item-padding-x: 5px;
+  --bs-breadcrumb-item-active-color: @breadcrumb-active-color;
+  // scss-docs-end breadcrumb-css-vars
+
+  display: flex;
+  flex-wrap: wrap;
+  padding: ~"var(--bs-breadcrumb-padding-y) var(--bs-breadcrumb-padding-x)";
+  margin-bottom: ~"var(--bs-breadcrumb-margin-bottom)";
   list-style: none;
-  background-color: @breadcrumb-bg;
-  border-radius: @border-radius-base;
+  background-color: ~"var(--bs-breadcrumb-bg)";
+  border-radius: ~"var(--bs-breadcrumb-border-radius)";
+}
 
-  > li {
-    display: inline-block;
+.breadcrumb-item {
+  // The separator between breadcrumbs (by default, a forward-slash: "/")
+  + .breadcrumb-item {
 
-    + li:before {
-      padding: 0 5px;
-      color: @breadcrumb-color;
+    &::before {
+      padding: 0 ~"var(--bs-breadcrumb-item-padding-x)";
+      color: ~"var(--bs-breadcrumb-divider-color)";
       content: "@{breadcrumb-separator}\00a0"; // Unicode space added since inline-block means non-collapsing white-space
     }
   }
 
-  > .active {
-    color: @breadcrumb-active-color;
+  &.active {
+    color: ~"var(--bs-breadcrumb-item-active-color)";
   }
 }

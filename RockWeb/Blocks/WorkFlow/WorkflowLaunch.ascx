@@ -19,7 +19,7 @@
                     <asp:Literal ID="lEntityTypeName" runat="server" />
                 </div>
 
-                <div class="row d-flex flex-wrap margin-t-sm">
+                <div class="row margin-t-sm">
                     <asp:Repeater ID="rEntitySetItems" runat="server">
                         <ItemTemplate>
                             <div class="col-xs-12 col-sm-6 col-md-3 mb-sm-3">

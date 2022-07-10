@@ -11,8 +11,8 @@
                 </div>
             </div>
             <div class="panel-body">
-                <div class="clearfix margin-b-md">
-                    <ul class="nav nav-pills pull-left">
+                <div class="d-flex flex-wrap justify-content-between">
+                    <ul class="nav nav-pills">
                         <li class='<%= personalTagsCss %>'>
                             <asp:LinkButton ID="lbPersonalTags" runat="server" OnClick="lbPersonalTags_Click" Text="Personal Tags" CssClass="active"></asp:LinkButton>
                         </li>
@@ -20,7 +20,7 @@
                             <asp:LinkButton ID="lbPublicTags" runat="server" OnClick="lbPublicTags_Click" Text="Organizational Tags"></asp:LinkButton>
                         </li>
                     </ul>
-                    <Rock:Toggle ID="tglStatus" runat="server" CssClass="pull-right" OffText="Active" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OnText="All" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
+                    <Rock:Toggle ID="tglStatus" runat="server" CssClass="" OffText="Active" ActiveButtonCssClass="btn-success" ButtonSizeCssClass="btn-xs" OnText="All" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
                 </div>
 
                 <asp:Literal ID="lLetters" runat="server"></asp:Literal>

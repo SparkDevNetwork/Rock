@@ -12,9 +12,7 @@
   4. Add reference to _rock-fa-mixins.less
   5. Add Flexbox Option, with default using grid
 */
-@import "../FontAwesome/_rock-fa-mixins.less";
 
-@import "../FontAwesome/_rock-upgrade-map-classes.less";
 
 // Core variables and mixins
 @import "variables.less";
@@ -23,7 +21,12 @@
 // Reset and dependencies
 @import "normalize.less";
 @import "print.less";
-//@import "glyphicons.less"; // custom to save space
+
+@import "root.less";
+
+@import "../FontAwesome/_rock-fa-mixins.less";
+
+@import "../FontAwesome/_rock-upgrade-map-classes.less";
 
 // Core CSS
 @import "scaffolding.less";

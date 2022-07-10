@@ -16,27 +16,34 @@
 
 body.rock-modal {
   background: transparent;
-
+  --bs-modal-box-shadow: none;
   .modal-content {
-    box-shadow: none;
     border: 0 !important;
-    //background: transparent;
   }
 }
 
 .modal-content.rock-modal,
 .rock-modal .modal-content {
+  --bs-modal-header-bg: @modal-header-bg;
+  --bs-modal-header-color:  @modal-header-text-color;
+  --bs-modal-header-padding-x: @modal-rock-header-padding-x;
+  --bs-modal-header-padding-y: @modal-rock-header-padding-y;
+  --bs-modal-padding: @modal-rock-inner-padding;
+  --bs-modal-footer-gap: @modal-rock-footer-margin-top;
+  --bs-modal-footer-bg: @modal-footer-bg;
+  --bs-modal-footer-padding-x: @modal-title-padding;
+  --bs-modal-footer-padding-y: @modal-title-padding;
+  --bs-modal-footer-color: @modal-footer-text-color;
+  --bs-modal-color: @modal-body-text-color;
+  --bs-modal-bg: @modal-body-bg;
+  --bs-modal-border-radius: @modal-rock-border-radius;
+
   background: transparent;
-  border: 0;
+  border-width: 0;
   .box-shadow(@shadow-modal);
 
   .modal-header {
     min-height: 34px;
-    padding: @modal-rock-header-padding-y @modal-rock-header-padding-x;
-    color: @modal-header-text-color;
-    background-color: @modal-header-bg;
-
-    .clearfix();
 
     h3 {
       float: left;
@@ -66,9 +73,7 @@ body.rock-modal {
   }
 
   .modal-body {
-    padding: @modal-rock-inner-padding;
-    color: @modal-body-text-color;
-    background-color: @modal-body-bg;
+
     text-align: left;
 
     > .scroll-container {
@@ -85,10 +90,6 @@ body.rock-modal {
   }
 
   .modal-footer {
-    padding: @modal-rock-footer-padding-y @modal-rock-footer-padding-x;
-    margin-top: @modal-rock-footer-margin-top;
-    color: @modal-footer-text-color;
-    background-color: @modal-footer-bg;
     border-radius: 0 0 @border-radius-base @border-radius-base;
   }
 }
@@ -99,10 +100,6 @@ body.rock-modal {
     float: right;
     margin-left: 5px;
   }
-}
-
-.rock-modal-frame {
-  border-radius: @modal-rock-border-radius !important;
 }
 
 // Fix for overflow scrolling on iOS
@@ -145,8 +142,4 @@ body.rock-modal {
 .modal-dialog {
   width: auto;
   margin: 0;
-}
-
-.modal-content {
-  border: none;
 }

@@ -215,24 +215,27 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget" );
                 writer.RenderBeginTag( "section" );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading" );
                 writer.RenderBeginTag( "header" );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( "Show if" );
                 writer.RenderEndTag();
-                toggleAllAny.CssClass = "d-flex pull-left";
+                // toggleAllAny.CssClass = "d-flex pull-left";
                 toggleAllAny.RenderControl( writer );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( "of these are" );
                 writer.RenderEndTag();
-                toggleTrueFalse.CssClass = "d-flex pull-left";
+                // toggleTrueFalse.CssClass = "d-flex pull-left";
                 toggleTrueFalse.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm d-sm-flex pull-right" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-labels ml-auto" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 btnAddGroup.Visible = ( AddGroupClick != null );
@@ -251,6 +254,7 @@ namespace Rock.Web.UI.Controls
                     lbDelete.Visible = false;
                 }
 
+                writer.RenderEndTag();
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 

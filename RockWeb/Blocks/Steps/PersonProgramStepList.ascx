@@ -60,7 +60,7 @@
                 </asp:Panel><!-- pnlGridView -->
 
                 <asp:Panel runat="server" id="pnlCardView">
-                    <div class="row d-flex flex-wrap">
+                    <div class="row">
                         <asp:repeater id="rStepTypeCards" runat="server" OnItemDataBound="rStepTypeCards_ItemDataBound">
                             <itemtemplate>
                                 <div class="col-steps">

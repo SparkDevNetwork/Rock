@@ -155,7 +155,7 @@
 
                     <asp:ValidationSummary ID="vsQueryFilterString" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgQueryFilterString" />
 
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <span class="text-nowrap">Where the parameter</span>
@@ -172,7 +172,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <span class="text-nowrap">the value</span>
@@ -194,7 +194,7 @@
 
                     <asp:ValidationSummary ID="vsCookie" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgCookie" />
 
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <span class="text-nowrap">Where the parameter</span>
@@ -212,7 +212,7 @@
                         </div>
                     </div>
 
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <span class="text-nowrap">the value</span>
@@ -234,7 +234,7 @@
 
                     <asp:ValidationSummary ID="vsBrowser" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgBrowser" />
 
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <span class="text-nowrap">Where</span>
@@ -271,7 +271,7 @@
 
                     <asp:ValidationSummary ID="vsIPAddress" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgIPAddress" />
 
-                    <div class="row form-row d-flex flex-wrap align-items-center">
+                    <div class="row form-row align-items-center">
                         <div class="col flex-grow-0">
                             <div class="form-group">
                                 <span class="text-nowrap">Where the client IP is</span>

@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Crm
         private static class CodeEditorValue
         {
             public const string LavaTemplate = @"
-<div class=""panel panel-block"">       
+<div class=""panel panel-block"">
     <div class=""panel-heading"">
         <h4 class=""panel-title"">
             <i class=""fa fa-mobile""></i>
@@ -76,10 +76,10 @@ namespace RockWeb.Blocks.Crm
         </h4>
     </div>
     <div class=""panel-body"">
-        <div class=""row d-flex flex-wrap"">
+        <div class=""row"">
             {% for item in PersonalDevices %}
-                <div class=""col-xs-6 col-sm-4 col-md-3 mb-4"">                  
-                    <div class=""well h-100 mb-0 rollover-container"">                        
+                <div class=""col-xs-6 col-sm-4 col-md-3 mb-4"">
+                    <div class=""well h-100 mb-0 rollover-container"">
                         <a class=""pull-right rollover-item btn btn-xs btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this Device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
                         <div style=""min-height: 120px;"">
                             <h3 class=""margin-v-none"">
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Crm
                             </h3>
                             <dl>
                                 {% if item.PlatformValue != '' %}<dt>{{ item.PlatformValue }} {{ item.PersonalDevice.DeviceVersion }}</dt>{% endif %}
-                                {% if item.PersonalDevice.CreatedDateTime != null %}<dt>Discovered</dt><dd>{{ item.PersonalDevice.CreatedDateTime }}</dd>{% endif %}                              
+                                {% if item.PersonalDevice.CreatedDateTime != null %}<dt>Discovered</dt><dd>{{ item.PersonalDevice.CreatedDateTime }}</dd>{% endif %}
                                 {% if item.PersonalDevice.MACAddress != '' and item.PersonalDevice.MACAddress != null %}<dt>MAC Address</dt><dd>{{ item.PersonalDevice.MACAddress }}</dd>{% endif %}
                             </dl>
                         </div>

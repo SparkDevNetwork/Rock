@@ -232,7 +232,7 @@
                 <asp:Panel ID="pnlMessage" runat="server" CssClass="tab-panel h-100">
                     <asp:UpdatePanel runat="server" UpdateMode="Conditional" class="d-flex flex-column h-100">
                         <ContentTemplate>
-                            <div class="row d-flex flex-wrap flex-fill">
+                            <div class="row flex-fill">
                                 <div class="col-md-4">
                                     <dl>
                                         <asp:Literal ID="lFutureSend" runat="server"></asp:Literal>

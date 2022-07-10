@@ -2,44 +2,75 @@
 // Pagination (multiple pages)
 // --------------------------------------------------
 .pagination {
-  display: inline-block;
+    // scss-docs-start pagination-css-vars
+    --bs-pagination-padding-x: @padding-base-horizontal;
+    --bs-pagination-padding-y: @padding-base-vertical;
+    --bs-pagination-font-size: @font-size-base;
+    --bs-pagination-color: @pagination-color;
+    --bs-pagination-bg: @pagination-bg;
+    --bs-pagination-border-width: @pagination-border-width;
+    --bs-pagination-border-color: @pagination-border-color;
+    --bs-pagination-border-radius: @pagination-border-radius;
+    --bs-pagination-hover-color: @pagination-hover-color;
+    --bs-pagination-hover-bg: @pagination-hover-bg;
+    --bs-pagination-hover-border-color: @pagination-hover-border;
+    --bs-pagination-focus-color: @pagination-focus-color;
+    --bs-pagination-focus-bg: @pagination-focus-bg;
+    --bs-pagination-focus-box-shadow: @pagination-focus-box-shadow;
+    --bs-pagination-active-color: @pagination-active-color;
+    --bs-pagination-active-bg: @pagination-active-bg;
+    --bs-pagination-active-border-color: @pagination-active-border;
+    --bs-pagination-disabled-color: @pagination-disabled-color;
+    --bs-pagination-disabled-bg: @pagination-disabled-bg;
+    --bs-pagination-disabled-border-color: @pagination-disabled-border;
+    // scss-docs-end pagination-css-vars
+
+  display: flex;
   padding-left: 0;
   margin: @line-height-computed 0;
-  border-radius: @border-radius-base;
+  border-radius: var(--bs-pagination-border-radius);
 
   > li {
     display: inline; // Remove list-style and block-level defaults
     > a,
     > span {
       position: relative;
-      float: left; // Collapse white-space
-      padding: @padding-base-vertical @padding-base-horizontal;
+      display: block;
+      padding: var(--bs-pagination-padding-y) var(--bs-pagination-padding-x);
+      font-size: var(--bs-pagination-font-size);
       margin-left: -1px;
-      line-height: @line-height-base;
-      color: @pagination-color;
+      color: var(--bs-pagination-color);
       text-decoration: none;
-      background-color: @pagination-bg;
-      border: 1px solid @pagination-border;
+      line-height: var(--bs-pagination-line-height);
+      background-color: var(--bs-pagination-bg);
+      border: var(--bs-pagination-border-width) solid var(--bs-pagination-border-color);
 
-      &:hover,
-      &:focus {
+      &:hover {
         z-index: 2;
-        color: @pagination-hover-color;
-        background-color: @pagination-hover-bg;
-        border-color: @pagination-hover-border;
+        color: var(--bs-pagination-hover-color);
+        background-color: var(--bs-pagination-hover-bg);
+        border-color: var(--bs-pagination-hover-border-color);
+      }
+
+      &:focus {
+        z-index: 3;
+        color: var(--bs-pagination-focus-color);
+        background-color: var(--bs-pagination-focus-bg);
+        outline: @pagination-focus-outline;
+        border-color: var(--bs-pagination-focus-border-color);
       }
     }
     &:first-child {
       > a,
       > span {
         margin-left: 0;
-        .border-left-radius(@border-radius-base);
+        .border-left-radius(var(--bs-pagination-border-radius));
       }
     }
     &:last-child {
       > a,
       > span {
-        .border-right-radius(@border-radius-base);
+        .border-right-radius(var(--bs-pagination-border-radius));
       }
     }
   }
@@ -50,10 +81,10 @@
     &:hover,
     &:focus {
       z-index: 3;
-      color: @pagination-active-color;
+      color: var(--bs-pagination-active-color);
       cursor: default;
-      background-color: @pagination-active-bg;
-      border-color: @pagination-active-border;
+      background-color: var(--bs-pagination-active-bg);
+      border-color: var(--bs-pagination-active-border-color);
     }
   }
 
@@ -64,10 +95,10 @@
     > a,
     > a:hover,
     > a:focus {
-      color: @pagination-disabled-color;
+      color: var(--bs-pagination-disabled-color);
       cursor: @cursor-disabled;
-      background-color: @pagination-disabled-bg;
-      border-color: @pagination-disabled-border;
+      background-color: var(--bs-pagination-disabled-bg);
+      border-color:var(--bs-pagination-disabled-border-color);
     }
   }
 }

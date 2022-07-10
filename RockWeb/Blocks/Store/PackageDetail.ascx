@@ -90,7 +90,7 @@
 
                                 <asp:Literal ID="lVersionWarning" runat="server" />
 
-                                <div class="row d-flex flex-wrap">
+                                <div class="row">
                                     <asp:Repeater ID="rptScreenshots" runat="server">
                                         <ItemTemplate>
                                             <div class="col-xs-12 col-sm-6">

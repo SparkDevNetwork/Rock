@@ -14,12 +14,43 @@
 
 // Container that the modal scrolls within
 .modal {
+    // scss-docs-start modal-css-vars
+    --bs-modal-zindex: @zindex-modal;
+    --bs-modal-width: @modal-md;
+    --bs-modal-padding: @modal-inner-padding;
+    // --bs-modal-margin: #{$modal-dialog-margin};
+    // --bs-modal-color: #{$modal-content-color};
+    --bs-modal-bg: @modal-content-bg;
+    --bs-modal-border-color: @modal-content-border-color;
+    --bs-modal-border-width: 1px;
+    --bs-modal-border-radius: @border-radius-large;
+    --bs-modal-box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+    --bs-modal-inner-border-radius: (@border-radius-large - 1);
+    --bs-modal-header-padding-x: @modal-title-padding;
+    --bs-modal-header-padding-y: @modal-title-padding;
+    --bs-modal-header-padding: @modal-title-padding; // Todo in v6: Split this padding into x and y
+    --bs-modal-header-border-color: @modal-header-border-color;
+    --bs-modal-header-border-width: 1px;
+
+    --bs-modal-header-color: @text-color;
+    --bs-modal-header-bg: @modal-header-bg;
+
+    --bs-modal-title-line-height: @modal-title-line-height;
+    --bs-modal-footer-padding-x: @modal-title-padding;
+    --bs-modal-footer-padding-y: @modal-title-padding;
+    --bs-modal-footer-gap: 0;
+    --bs-modal-footer-color: @text-color;
+    --bs-modal-footer-bg: #fff;
+    --bs-modal-footer-border-color: @modal-footer-border-color;
+    --bs-modal-footer-border-width: 1px;
+    // scss-docs-end modal-css-vars
+
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: @zindex-modal;
+  z-index: var(--bs-modal-zindex);
   display: none;
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
@@ -50,60 +81,75 @@
 // Actual modal
 .modal-content {
   position: relative;
-  background-color: @modal-content-bg;
+  background-color: var(--bs-modal-bg);
   background-clip: padding-box;
-  border: 1px solid @modal-content-fallback-border-color; //old browsers fallback (ie8 etc)
-  border: 1px solid @modal-content-border-color;
-  border-radius: @border-radius-large;
-  .box-shadow(0 3px 9px rgba(0, 0, 0, .5));
+  border: var(--bs-modal-border-width) solid var(--bs-modal-border-color);
+  border-radius: var(--bs-modal-border-radius);
+  box-shadow: var(--bs-modal-box-shadow);
   // Remove focus outline from opened modal
   outline: 0;
 }
 
 // Modal background
 .modal-backdrop {
+  --bs-backdrop-zindex: @zindex-modal-background;
+  --bs-backdrop-bg: @modal-backdrop-bg;
+  --bs-backdrop-opacity: @modal-backdrop-opacity;
+
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: @zindex-modal-background;
-  background-color: @modal-backdrop-bg;
+  z-index: var(--bs-backdrop-zindex);
+  background-color: var(--bs-backdrop-bg);
   // Fade for backdrop
   &.fade { .opacity(0); }
-  &.in { .opacity(@modal-backdrop-opacity); }
+  &.in { opacity: var(--bs-backdrop-opacity); }
 }
 
 // Modal header
 // Top section of the modal w/ title and dismiss
 .modal-header {
-  padding: @modal-title-padding;
-  border-bottom: 1px solid @modal-header-border-color;
-  &:extend(.clearfix all);
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--bs-modal-header-padding-y) var(--bs-modal-header-padding-x);
+  border-bottom: var(--bs-modal-header-border-width) solid var(--bs-modal-header-border-color);
+  border-top-left-radius: var(--bs-modal-inner-border-radius);
+  border-top-right-radius: var(--bs-modal-inner-border-radius);
+  background: var(--bs-modal-header-bg);
+  color: var(--bs-modal-header-color);
 }
 // Close icon
 .modal-header .close {
-  margin-top: -2px;
+  margin-left: auto;
+  order: 999;
 }
 
 // Title text within header
 .modal-title {
   margin: 0;
-  line-height: @modal-title-line-height;
+  line-height: var(--bs-modal-title-line-height);
 }
 
 // Modal body
 // Where all modal content resides (sibling of .modal-header and .modal-footer)
 .modal-body {
   position: relative;
-  padding: @modal-inner-padding;
+  padding: var(--bs-modal-padding);
+  background: var(--bs-modal-bg);
+  color: var(--bs-modal-color);
 }
 
 // Footer (for actions)
 .modal-footer {
-  padding: @modal-inner-padding;
+  padding: var(--bs-modal-footer-padding-y) var(--bs-modal-footer-padding-x);
+  background: var(--bs-modal-footer-bg);
+  margin-top: var(--bs-modal-footer-gap);
   text-align: right; // right align buttons
-  border-top: 1px solid @modal-footer-border-color;
+  border-top: var(--bs-modal-footer-border-width) solid var(--bs-modal-footer-border-color);
   &:extend(.clearfix all); // clear it in case folks use .pull-* classes on buttons
 
   // Properly space out buttons
@@ -134,7 +180,7 @@
 @media (min-width: @screen-sm-min) {
   // Automatically set modal's width for larger viewports
   .modal-dialog {
-    width: @modal-md;
+    width: var(--bs-modal-width);
     margin: 30px auto;
   }
   .modal-content {

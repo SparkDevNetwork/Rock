@@ -7,10 +7,21 @@
 // -------------------------
 
 .alert {
-  padding: @alert-padding;
-  margin-bottom: @line-height-computed;
-  border: 1px solid transparent;
-  border-radius: @alert-border-radius;
+  --bs-alert-bg: transparent;
+  --bs-alert-padding-x: @alert-padding;
+  --bs-alert-padding-y: @alert-padding;
+  --bs-alert-margin-bottom: @alert-margin-bottom;
+  --bs-alert-color: inherit;
+  --bs-alert-border-color: transparent;
+  --bs-alert-border: @alert-border-width solid var(--bs-alert-border-color);
+  --bs-alert-border-radius: @alert-border-radius;
+
+  padding: ~"var(--bs-alert-padding-y) var(--bs-alert-padding-x)";
+  margin-bottom: ~"var(--bs-alert-margin-bottom)";
+  color: ~"var(--bs-alert-color)";
+  background-color: ~"var(--bs-alert-bg)";
+  border: ~"var(--bs-alert-border)";
+  border-radius: ~"var(--bs-alert-border-radius)";
 
   // Headings for larger alerts
   h4 {
@@ -31,6 +42,14 @@
 
   > p + p {
     margin-top: 5px;
+  }
+
+  hr {
+    border-top-color: var(--bs-alert-hr-color);
+  }
+
+  .alert-link {
+    color: var(--bs-alert-link-color);
   }
 }
 

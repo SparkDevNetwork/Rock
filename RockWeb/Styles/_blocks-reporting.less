@@ -12,7 +12,10 @@
 
 /* data views */
 .filter-toggle {
-  align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  align-self: center;
+  align-items: center;
   padding-right: 8px;
   //margin-top: 5px;
 
@@ -26,19 +29,22 @@
 }
 
 .filter-item-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   span {
-    float: left;
-    padding: 8px 6px 0 0;
+    padding: 4px 6px 4px 0;
   }
 
   select {
-    float: left;
-    width: 250px;
+    width: 100%;
+    max-width: 250px;
   }
 }
 
 // add top margin to checkbox lists in filters
 .field-criteria {
+  --bs-gutter-y: 6px;
   // Add margin to in-columns because checkbox-inline is not inherited
   .in-columns,
   .checkbox-inline {
@@ -46,6 +52,7 @@
   }
 
   @media @md {
+    --bs-gutter-y: 0;
     // Vertically align criteria fields to the top
     > div {
       display: table-cell;
@@ -56,13 +63,6 @@
     .vertical-align-bottom {
       vertical-align: bottom;
     }
-  }
-}
-
-.filter-item div[class*="col"] {
-  margin-bottom: 6px;
-  @media (min-width: @screen-md-min) {
-    margin-bottom: 0;
   }
 }
 
@@ -78,21 +78,21 @@ span.data-view-filter-label {
 // 2. Dynamic Report
 // -------------------------
 
-.filterfield {
-  margin-bottom: 12px;
+// .filterfield {
+//   margin-bottom: 12px;
 
-  // Override table-cell alignment for dynamic reports and data views
-  .field-criteria > div {
-    display: block;
-    float: left;
-  }
-}
+//   // Override table-cell alignment for dynamic reports and data views
+//   .field-criteria > div {
+//     display: block;
+//     float: left;
+//   }
+// }
 
-.filterfield-label {
-  display: block;
-  margin-top: 8px;
-  font-weight: @font-weight-semibold;
-}
+// .filterfield-label {
+//   display: block;
+//   margin-top: 8px;
+//   font-weight: @font-weight-semibold;
+// }
 
 // 3. Interactions
 // -------------------------

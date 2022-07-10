@@ -281,7 +281,7 @@ $('.js-stop-immediate-propagation').on('click', function (event) {
                 writer.RenderBeginTag( "section" );
 
                 // Header
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix clickable" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clickable" );
                 writer.RenderBeginTag( "header" );
 
                 // Hidden Field to track expansion

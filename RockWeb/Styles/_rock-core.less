@@ -84,13 +84,7 @@ iframe {
 //--------------------------------
 
 .form-row {
-  .make-row(10px);
-  .clearfix();
-  & > .col,
-  & > [class*="col-"] {
-    padding-right: 5px;
-    padding-left: 5px;
-  }
+  --bs-gutter-x: 10px;
 
   .form-control-group & {
     margin-right: 0;
@@ -567,7 +561,11 @@ th[align="right"] {
 }
 
 .panel-widget {
-  .panel-variant(@panel-widget-border; @panel-widget-text; @panel-widget-heading-bg; @panel-widget-heading-border;);
+  --bs-panel-border-color: @panel-widget-border;
+  --bs-panel-heading-bg: @panel-widget-heading-bg;
+  --bs-panel-heading-border: @panel-widget-heading-border;
+  --bs-panel-heading-color: @panel-widget-text;
+  --bs-panel-box-shadow: none;
 
   &.collapsed {
     overflow: hidden;
@@ -595,7 +593,11 @@ th[align="right"] {
   }
 
   > .panel-body {
-    border-top: 1px solid @panel-widget-heading-border;
+    border-top: 1px solid var(--bs-panel-heading-border);
+
+    > .panel-widget:last-child {
+      margin-bottom: 0;
+    }
   }
 }
 
@@ -677,12 +679,13 @@ th[align="right"] {
 }
 
 .panel-block {
-  border-top-color: @panel-top-border-color;
+  --bs-panel-border-color: @panel-border;
+
 
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   > .panel-heading {
-    .clearfix();
+    // .clearfix();
 
     .panel-title {
       float: left;
@@ -713,14 +716,6 @@ th[align="right"] {
         margin-bottom: -@panel-body-padding;
         // TODO: This doesn't work without overflow hidden
         // border-radius: 0 0 @border-radius-base @border-radius-base;
-      }
-
-      .table-bordered {
-        border-width: 1px 0 0 0;
-
-        & > tfoot > tr > td {
-          border: 0;
-        }
       }
     }
   }
@@ -857,14 +852,6 @@ th[align="right"] {
 }
 
 // extensions for buttons    ->   .button-variant(@color; @background; @border) {}
-
-.btn.aspNetDisabled {
-  pointer-events: none; // Future-proof disabling of clicks
-  cursor: not-allowed;
-
-  .opacity(.65);
-  .box-shadow(none);
-}
 
 .btn-action {
   .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
@@ -1106,37 +1093,16 @@ div.aspNetDisabled {
 }
 // Danger and error appear as red
 .btn-danger {
-  color: @btn-default-color;
-  background-color: @btn-default-bg;
-  border-color: @btn-default-border;
+  --bs-btn-color: @btn-default-color;
+  --bs-btn-bg: @btn-default-bg;
+  --bs-btn-border-color: @btn-default-border;
+  --bs-btn-hover-color: @btn-danger-color;
+  --bs-btn-hover-bg: darken(@btn-danger-bg, 10%);
+  --bs-btn-hover-border-color: darken(@btn-danger-border, 12%);
+  --bs-btn-active-color: @btn-danger-color;
+  --bs-btn-active-bg: darken(@btn-danger-bg, 10%);
+  --bs-btn-active-border-color: darken(@btn-danger-border, 12%);
 
-  &:focus,
-  &.focus {
-    color: @btn-danger-color;
-    background-color: darken(@btn-danger-bg, 10%);
-    border-color: darken(@btn-danger-border, 25%);
-  }
-  &:hover {
-    color: @btn-danger-color;
-    background-color: darken(@btn-danger-bg, 10%);
-    border-color: darken(@btn-danger-border, 12%);
-  }
-  &:active,
-  &.active,
-  .open > .dropdown-toggle& {
-    color: @btn-danger-color;
-    background-color: darken(@btn-danger-bg, 10%);
-    background-image: none;
-    border-color: darken(@btn-danger-border, 12%);
-
-    &:hover,
-    &:focus,
-    &.focus {
-      color: @btn-danger-color;
-      background-color: darken(@btn-danger-bg, 17%);
-      border-color: darken(@btn-danger-border, 25%);
-    }
-  }
   &.disabled,
   &[disabled],
   fieldset[disabled] & {
