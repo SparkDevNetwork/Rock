@@ -99,6 +99,7 @@ import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker";
 import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
 import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker";
 import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
+import GradePicker from "@Obsidian/Controls/gradePicker";
 
 // #region Gallery Support
 
@@ -3604,8 +3605,6 @@ const modalGallery = defineComponent({
 </GalleryAndResult>`
 });
 
-
-
 /** Demonstrates  Component picker */
 const componentPickerGallery = defineComponent({
     name: "ComponentPickerGallery",
@@ -3673,6 +3672,77 @@ const componentPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Grade Picker */
+const gradePickerGallery = defineComponent({
+    name: "GradePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        GradePicker,
+        NumberUpDown,
+        TextBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            useAbbreviation: ref(false),
+            useGradeOffsetAsValue: ref(false),
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("gradePicker"),
+            exampleCode: `<GradePicker label="Grade" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <GradePicker label="Grade"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :useAbbreviation="useAbbreviation"
+        :useGradeOffsetAsValue="useGradeOffsetAsValue" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Use Abbreviations" v-model="useAbbreviation" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Use Grade Offset Value" v-model="useGradeOffsetAsValue" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
 
 
 const controlGalleryComponents: Record<string, Component> = [
@@ -3740,6 +3810,7 @@ const controlGalleryComponents: Record<string, Component> = [
     financialGatewayPickerGallery,
     financialStatementTemplatePickerGallery,
     fieldTypePickerGallery,
+    gradePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

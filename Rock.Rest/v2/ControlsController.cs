@@ -1214,6 +1214,49 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Grade Picker
+
+        /// <summary>
+        /// Gets the school grades that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which grades to load.</param>
+        /// <returns>A collection of view models that represent the grades.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GradePickerGetGrades" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2C8F0B8E-F54D-460D-91DB-97B34A9AA174" )]
+        public IHttpActionResult GradePickerGetGrades( GradePickerGetGradesOptionsBag options )
+        {
+            var list = new List<ListItemBag>();
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+
+            if ( schoolGrades != null )
+            {
+                foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
+                {
+                    ListItemBag listItem = new ListItemBag();
+                    if ( options.UseAbbreviation )
+                    {
+                        string abbreviation = schoolGrade.GetAttributeValue( "Abbreviation" );
+                        listItem.Text = string.IsNullOrWhiteSpace( abbreviation ) ? schoolGrade.Description : abbreviation;
+                    }
+                    else
+                    {
+                        listItem.Text = schoolGrade.Description;
+                    }
+
+                    listItem.Value = options.UseGradeOffsetAsValue ? schoolGrade.Value : schoolGrade.Guid.ToString();
+
+                    list.Add( listItem );
+                }
+            }
+
+            return Ok( list );
+        }
+
+        #endregion
+
         #region Location Picker
 
         /// <summary>
