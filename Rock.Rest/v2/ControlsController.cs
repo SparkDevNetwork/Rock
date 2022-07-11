@@ -1228,28 +1228,74 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "2C8F0B8E-F54D-460D-91DB-97B34A9AA174" )]
         public IHttpActionResult GradePickerGetGrades( GradePickerGetGradesOptionsBag options )
         {
-            var list = new List<ListItemBag>();
             var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
 
-            if ( schoolGrades != null )
+            if ( schoolGrades == null)
             {
-                foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
+                return NotFound();
+            }
+
+            var list = new List<ListItemBag>();
+
+            foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
+            {
+                ListItemBag listItem = new ListItemBag();
+                if ( options.UseAbbreviation )
                 {
-                    ListItemBag listItem = new ListItemBag();
-                    if ( options.UseAbbreviation )
-                    {
-                        string abbreviation = schoolGrade.GetAttributeValue( "Abbreviation" );
-                        listItem.Text = string.IsNullOrWhiteSpace( abbreviation ) ? schoolGrade.Description : abbreviation;
-                    }
-                    else
-                    {
-                        listItem.Text = schoolGrade.Description;
-                    }
-
-                    listItem.Value = options.UseGradeOffsetAsValue ? schoolGrade.Value : schoolGrade.Guid.ToString();
-
-                    list.Add( listItem );
+                    string abbreviation = schoolGrade.GetAttributeValue( "Abbreviation" );
+                    listItem.Text = string.IsNullOrWhiteSpace( abbreviation ) ? schoolGrade.Description : abbreviation;
                 }
+                else
+                {
+                    listItem.Text = schoolGrade.Description;
+                }
+
+                listItem.Value = options.UseGradeOffsetAsValue ? schoolGrade.Value : schoolGrade.Guid.ToString();
+
+                list.Add( listItem );
+            }
+
+            return Ok( list );
+        }
+
+        #endregion
+
+        #region Group Member Picker
+
+        /// <summary>
+        /// Gets the group members that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which group members to load.</param>
+        /// <returns>A collection of view models that represent the grades.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
+        public IHttpActionResult GroupMemberPickerGetGroupMembers( GroupMemberPickerGetGroupMembersOptionsBag options )
+        {
+            if ( !options.GroupId.HasValue )
+            {
+                return NotFound();
+            }
+
+            var group = new GroupService( new RockContext() ).Get( options.GroupId.Value );
+
+            if ( group == null && !group.Members.Any() )
+            {
+                return NotFound();
+            }
+
+            var list = new List<ListItemBag>();
+
+            foreach ( var groupMember in group.Members.OrderBy( m => m.Person.FullName ) )
+            {
+                var li = new ListItemBag {
+                    Text = groupMember.Person.FullName,
+                    Value = groupMember.Id.ToString()
+                };
+
+                list.Add( li );
             }
 
             return Ok( list );

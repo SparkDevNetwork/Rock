@@ -325,6 +325,7 @@
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />
     <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberPickerGetGroupMembersOptionsBag.cs" />
     <Compile Include="Rest\Controls\GradePickerGetGradePickerOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowTypesPickerGetWorkflowTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\DataViewPickerGetDataViewsOptionsBag.cs" />
