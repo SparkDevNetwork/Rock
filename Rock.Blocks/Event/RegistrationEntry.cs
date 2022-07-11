@@ -453,6 +453,8 @@ namespace Rock.Blocks.Event
             List<int> previousRegistrantPersonIds = null;
             var isNewRegistration = context.Registration == null;
 
+            var personService = new PersonService( rockContext );
+
             if ( isNewRegistration )
             {
                 // This is a new registration
@@ -469,6 +471,22 @@ namespace Rock.Blocks.Event
                 {
                     registrar = currentPerson;
                     context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
+                }
+                else if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant )
+                {
+                    var registrantInfo = args.Registrants.FirstOrDefault();
+
+                    var firstName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
+                    var lastName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
+                    var email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
+                    var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime();
+                    var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+                    bool forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+                    var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+
+                    registrar = personService.FindPerson( personQuery, forceEmailUpdate );
+                    context.Registration.PersonAliasId = registrar?.PrimaryAliasId;
                 }
             }
             else
@@ -509,10 +527,7 @@ namespace Rock.Blocks.Event
             var discountAmount = context.Discount?.RegistrationTemplateDiscount.DiscountAmount ?? 0;
             History.EvaluateChange( registrationChanges, "Discount Amount", context.Registration.DiscountAmount, discountAmount );
             context.Registration.DiscountAmount = discountAmount;
-
             // If the registrar person record does not exist, find or create that record
-            var personService = new PersonService( rockContext );
-
             if ( registrar == null )
             {
                 /**
@@ -729,6 +744,7 @@ namespace Rock.Blocks.Event
                 foreach ( var registrantInfo in args.Registrants )
                 {
                     var forceWaitlist = context.SpotsRemaining < 1;
+                    bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     UpsertRegistrant(
                         rockContext,
@@ -739,7 +755,8 @@ namespace Rock.Blocks.Event
                         index,
                         multipleFamilyGroupIds,
                         ref singleFamilyId,
-                        forceWaitlist );
+                        forceWaitlist,
+                        isCreatedAsRegistrant );
 
                     index++;
                 }
@@ -1278,6 +1295,7 @@ namespace Rock.Blocks.Event
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
         /// <param name="isWaitlist">if set to <c>true</c> [is waitlist].</param>
+        /// <param name="isCreatedAsRegistrant">if set to <c>true</c> person has already been created as registrar</param>
         private void UpsertRegistrant(
             RockContext rockContext,
             RegistrationContext context,
@@ -1287,7 +1305,8 @@ namespace Rock.Blocks.Event
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
-            bool isWaitlist )
+            bool isWaitlist,
+            bool isCreatedAsRegistrant  )
         {
             // Force waitlist if specified by param, but allow waitlist if requested
             isWaitlist |= ( context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList );
@@ -1392,23 +1411,42 @@ namespace Rock.Blocks.Event
 
             if ( person == null )
             {
-                // If a match was not found, create a new person
-                person = new Person();
-                person.FirstName = firstName;
-                person.LastName = lastName;
-                person.IsEmailActive = true;
-                person.Email = email;
-                person.EmailPreference = EmailPreference.EmailAllowed;
-                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-
-                if ( dvcConnectionStatus != null )
+                /**
+                  * 06/07/2022 - KA
+                  * 
+                  * Logic is as follows. If the Template RegistrarOption was set to UseFirstRegistrant
+                  * then chances are a Person was created or found for the first Registrant and used
+                  * as the Registrar. In that case then we don't create a new Person for the first
+                  * Registrant. Otherwise we go ahead and create a new Person. This is of Particular
+                  * importance when the AccountProtectionProfilesForDuplicateDetectionToIgnore includes
+                  * AccountProtectionProfile.Low. That means the PersonMatch query will return a null
+                  * any time it is called. This prevents us from creating duplicate Person entities for
+                  * both the Registrar and first Registrant who are the same person in this scenario.
+                */
+                if ( isCreatedAsRegistrant )
                 {
-                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    person = registrar;
                 }
-
-                if ( dvcRecordStatus != null )
+                else
                 {
-                    person.RecordStatusValueId = dvcRecordStatus.Id;
+                    // If a match was not found, create a new person
+                    person = new Person();
+                    person.FirstName = firstName;
+                    person.LastName = lastName;
+                    person.IsEmailActive = true;
+                    person.Email = email;
+                    person.EmailPreference = EmailPreference.EmailAllowed;
+                    person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
+                    if ( dvcConnectionStatus != null )
+                    {
+                        person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    }
+
+                    if ( dvcRecordStatus != null )
+                    {
+                        person.RecordStatusValueId = dvcRecordStatus.Id;
+                    }
                 }
             }
 
