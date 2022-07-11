@@ -3622,7 +3622,7 @@ const componentPickerGallery = defineComponent({
             columnCount: ref(0),
             displayStyle: ref(PickerDisplayStyle.Auto),
             displayStyleItems,
-            containerType: ref("Rock.Badge.BadgeContainer, Rock"),
+            containerType: ref("Rock.Badge.BadgeContainer"),
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),

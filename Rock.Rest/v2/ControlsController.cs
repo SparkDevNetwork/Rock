@@ -36,6 +36,7 @@ using Rock.ViewModels.CRM;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Utility;
 
 namespace Rock.Rest.v2
 {
@@ -1551,7 +1552,7 @@ namespace Rock.Rest.v2
                 return null;
             }
 
-            var resolvedContainerType = Type.GetType( containerType );
+            var resolvedContainerType = Container.resolveContainer( containerType );
 
             if ( resolvedContainerType == null )
             {
