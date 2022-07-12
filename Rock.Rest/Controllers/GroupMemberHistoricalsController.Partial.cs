@@ -52,7 +52,7 @@ namespace Rock.Rest.Controllers
             {
                 var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
                 List<int> groupTypeIdList = groupTypeIds?.SplitDelimitedValues().AsIntegerList();
-                return groupMemberHistoricalService.GetGroupHistoricalSummary( personId, startDateTime, stopDateTime, groupTypeIdList );
+                return groupMemberHistoricalService.GetGroupHistoricalSummary( personId, startDateTime, stopDateTime, groupTypeIdList, GetPerson() );
             }
         }
     }
