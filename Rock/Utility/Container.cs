@@ -16,7 +16,7 @@ namespace Rock.Utility
         /// </summary>
         /// <param name="containerAssemblyName">Name of the container assembly.</param>
         /// <returns>The container type.</returns>
-        public static Type resolveContainer (string containerAssemblyName)
+        public static Type ResolveContainer (string containerAssemblyName)
         {
             return Type.GetType( containerAssemblyName );
         }

@@ -86,7 +86,7 @@ namespace Rock.Web.UI.Controls
                 return null;
             }
 
-            var resolvedContainerType = Container.resolveContainer( ContainerType );
+            var resolvedContainerType = Container.ResolveContainer( ContainerType );
 
             if ( resolvedContainerType == null )
             {

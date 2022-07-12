@@ -1641,7 +1641,7 @@ namespace Rock.Rest.v2
                 return null;
             }
 
-            var resolvedContainerType = Container.resolveContainer( containerType );
+            var resolvedContainerType = Container.ResolveContainer( containerType );
 
             if ( resolvedContainerType == null )
             {
