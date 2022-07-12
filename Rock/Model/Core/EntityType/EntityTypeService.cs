@@ -411,6 +411,37 @@ namespace Rock.Model
                     var reflectedTypeGuid = reflectedType?.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
                     if ( reflectedTypeGuid != null && reflectedTypeGuid.Value != existingEntityType.Guid )
                     {
+                        /*
+                         * 2022-07-11 ETD
+                         * Since the GUID has changed we need to check for AttributeValues that use the old GUID and update it to the new one.
+                         * Do this on the same context since the two changes should occur at the same time.
+                         * Limit to attributes that are chosen by EntityType, Component, and Components FieldTypes since those are what store the GUIDs as attribute values.
+                         * The filtered attributes list should be less than 300, even on very large DBs.
+                         */
+
+                        if ( existingEntityType.Guid != null )
+                        {
+                            var attributeService = new AttributeService( rockContext );
+                            var attributeValueService = new AttributeValueService( rockContext );
+                            var entityTypeFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.ENTITYTYPE ).Id;
+                            var componentFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.COMPONENT ).Id;
+                            var componentsFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.COMPONENTS ).Id;
+
+                            var attributeIdsUsingFieldType = attributeService.Queryable()
+                                .Where( a => a.FieldTypeId == entityTypeFieldTypeId
+                                    || a.FieldTypeId == componentFieldTypeId
+                                    || a.FieldTypeId == componentsFieldTypeId )
+                                .Select( a => a.Id );
+
+                            var attributeValues = attributeValueService.Queryable().Where( av => attributeIdsUsingFieldType.Contains( av.AttributeId ) && av.Value.Contains( existingEntityType.Guid.ToString() ) );
+
+                            foreach ( var attributeValue in attributeValues )
+                            {
+                                attributeValue.Value = attributeValue.Value.ToLower().Replace( existingEntityType.Guid.ToString().ToLower(), reflectedTypeGuid.Value.ToString().ToLower() );
+                            }
+                        }
+
+                        // Now update the Guid of the EntityType
                         existingEntityType.Guid = reflectedTypeGuid.Value;
                     }
 

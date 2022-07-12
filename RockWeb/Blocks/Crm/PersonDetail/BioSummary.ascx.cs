@@ -28,7 +28,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a person 
+    /// The main Person Profile block the main information about a person
     /// </summary>
     [DisplayName( "Person Bio Summary" )]
     [Category( "CRM > Person Detail" )]
@@ -106,12 +106,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person.IsDeceased )
             {
-                divBio.AddCssClass( "deceased" );
+                // pnlContent.AddCssClass( "deceased" );
             }
 
             // Set the browser page title to include person's name
             RockPage.BrowserTitle = Person.FullName;
 
+            ShowProtectionLevel();
             ShowBadgeList();
         }
 
@@ -153,11 +154,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         #region Methods
 
+        private void ShowProtectionLevel()
+        {
+            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low )
+            {
+                string acctProtectionLevel = $@"
+                    <div class=""protection-profile"">
+                        <span class=""profile-label"">Protection Profile: {Person.AccountProtectionProfile.ConvertToString( true )}</span>
+                        <i class=""fa fa-lock""></i>
+                    </div>";
+
+                litAccountProtectionLevel.Text = acctProtectionLevel;
+            }
+        }
+
         private void ShowPersonImage()
         {
-            lImage.Text = Person.PhotoId.HasValue
-                    ? $@"<img src=""{Person.GetPersonPhotoUrl( Person, 340, 204 )}"" alt class=""img-cover inset-0"">"
-                    : Person.GetPersonPhotoImageTag( Person, 340, 204 );
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-cover inset-0"">";
         }
 
         private void ShowPersonName()
@@ -170,10 +183,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 int recordTypeValueIdBusiness = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
-            
+
             if ( isBusiness )
             {
-                lName.Text = $@"<h1>{Person.LastName}</h1>";
+                lName.Text = $@"<h1 class=""text-truncate text-left"">{Person.LastName}</h1>";
                 return;
             }
 
@@ -190,17 +203,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             string nameText =  $"{titleText}{Person.NickName} {Person.LastName}";
 
-            // Add First Name if different from NickName.
-            string firstName = string.Empty;
-            if ( Person.NickName != Person.FirstName )
-            {
-                if ( !string.IsNullOrWhiteSpace( Person.FirstName ) )
-                {
-                    firstName = $"{Person.FirstName}";
-                }
-            }
-
-            lName.Text = $@"<h1>{nameText} <span class=""bio-summary-small-firstname"">{firstName}</span></h1>";
+            lName.Text = $@"<h1 class=""text-truncate text-left"">{nameText}</h1>";
         }
 
         private void ShowBadgeList()

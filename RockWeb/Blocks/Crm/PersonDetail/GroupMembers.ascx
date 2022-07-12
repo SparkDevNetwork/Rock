@@ -9,11 +9,11 @@
 
                     <asp:Panel ID="pnlGroup" runat="server" CssClass="card card-profile group-hover card-family-member">
                         <asp:HiddenField ID="hfGroupId" runat="server" Value='<%# Eval("Id") %>' />
-                            <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs panel-widget-reorder align-self-center pull-left js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
                             <div class="card-header">
                                 <span class="card-title"><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></span>
 
                                 <div class="panel-labels group-hover-item group-hover-show">
+                                    <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
                                     <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="btn btn-link btn-xs"><i class="fa fa-pencil"></i></asp:HyperLink>
                                 </div>
                             </div>
@@ -36,14 +36,18 @@
                             </dl>
                         </asp:panel>
 
-                        <div class="card-section">
+
                             <asp:Repeater ID="rptrAddresses" runat="server" OnItemDataBound="rptrAddresses_ItemDataBound">
+                                <HeaderTemplate>
+                                    <div class="card-section">
+                                </HeaderTemplate>
                                 <ItemTemplate>
                                     <asp:Literal ID="litAddress" runat="server"></asp:Literal>
                                 </ItemTemplate>
+                                <FooterTemplate>
+                                    </div>
+                                </FooterTemplate>
                             </asp:Repeater>
-                        </div>
-
                         <asp:Literal ID="lGroupFooter" runat="server" />
 
                     </asp:Panel>

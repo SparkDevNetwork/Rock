@@ -13,26 +13,31 @@
                     </div>
                 </asp:PlaceHolder>
             </div>
-            <div class="horizontal-dl horizontal-dl-striped">
-                <asp:Literal ID="lAccessWarning" runat="server" />
-                <asp:Repeater ID="rGroupMembers" runat="server">
-                    <ItemTemplate>
-                        <dl class="group-hover">
-                            <dt><Rock:PersonLink runat="server"
-                                    PersonId='<%# Eval("PersonId") %>'
-                                    PersonName='<%# Eval("Person.FullName") %>' /></dt>
-                            <dd class="group-hover-item group-hover-hide"><%# ShowRole ? Eval("GroupRole.Name") : "" %></dd>
-                            <div class="group-hover-item group-hover-show group-hover-0-show">
-                                    <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" Text="Edit Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
-                                        CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="lbRemove" runat="server" CssClass="btn btn-danger btn-xs btn-square" Text="Remove Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
-                                        CommandName="RemoveRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
-                            </div>
-                        </dl>
-                    </ItemTemplate>
-                </asp:Repeater>
 
-            </div>
+            <asp:Literal ID="lAccessWarning" runat="server" />
+            <asp:Repeater ID="rGroupMembers" runat="server">
+                <HeaderTemplate>
+                    <div class="horizontal-dl horizontal-dl-striped">
+                </HeaderTemplate>
+                <ItemTemplate>
+                    <dl class="group-hover">
+                        <dt><Rock:PersonLink runat="server"
+                                PersonId='<%# Eval("PersonId") %>'
+                                PersonName='<%# Eval("Person.FullName") %>' /></dt>
+                        <dd class="group-hover-item group-hover-hide"><%# ShowRole ? Eval("GroupRole.Name") : "" %></dd>
+                        <div class="group-hover-item group-hover-show group-hover-0-show">
+                                <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" Text="Edit Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
+                                    CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbRemove" runat="server" CssClass="btn btn-danger btn-xs btn-square" Text="Remove Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
+                                    CommandName="RemoveRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
+                        </div>
+                    </dl>
+                </ItemTemplate>
+                <FooterTemplate>
+                    </div>
+                    <div ID="divNoRelationshipsFound" runat="server" Visible='<%# rGroupMembers.Items.Count == 0 %>' class="card-body"></div>
+                </FooterTemplate>
+            </asp:Repeater>
         </div>
 
         <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" ValidationGroup="NewRelationship">

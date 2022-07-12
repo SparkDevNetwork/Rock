@@ -99,7 +99,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the enum description.
+        /// Gets the enum description. Returns null if the enum doesn't have a <see cref="DescriptionAttribute"/>.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>

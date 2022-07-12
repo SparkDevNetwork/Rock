@@ -130,9 +130,6 @@ namespace Rock.Client
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
 
-        /// <summary />
-        public RegistrationTemplate RegistrationTemplate { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

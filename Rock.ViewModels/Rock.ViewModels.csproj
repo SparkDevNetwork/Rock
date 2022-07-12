@@ -88,6 +88,7 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateListItemViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormValueSourcesViewModel.cs" />
     <Compile Include="Blocks\Engagement\FlowNodeDiagramBag.cs" />
+    <Compile Include="Controls\SlidingDateRangeBox.cs" />
     <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
     <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
     <Compile Include="CRM\RenderedBadgeBag.cs" />
@@ -242,6 +243,7 @@
     <Compile Include="Entities\PageRouteBag.cs" />
     <Compile Include="Entities\PageShortLinkBag.cs" />
     <Compile Include="Entities\PersonalDeviceBag.cs" />
+    <Compile Include="Entities\PersonalizationSegmentBag.cs" />
     <Compile Include="Entities\PersonalLinkBag.cs" />
     <Compile Include="Entities\PersonalLinkSectionBag.cs" />
     <Compile Include="Entities\PersonalLinkSectionOrderBag.cs" />
@@ -270,10 +272,12 @@
     <Compile Include="Entities\RemoteAuthenticationSessionBag.cs" />
     <Compile Include="Entities\ReportBag.cs" />
     <Compile Include="Entities\ReportFieldBag.cs" />
+    <Compile Include="Entities\RequestFilterBag.cs" />
     <Compile Include="Entities\RestActionBag.cs" />
     <Compile Include="Entities\RestControllerBag.cs" />
     <Compile Include="Entities\ScheduleBag.cs" />
     <Compile Include="Entities\ScheduleCategoryExclusionBag.cs" />
+    <Compile Include="Entities\SegmentBag.cs" />
     <Compile Include="Entities\ServiceJobBag.cs" />
     <Compile Include="Entities\ServiceJobHistoryBag.cs" />
     <Compile Include="Entities\ServiceLogBag.cs" />
@@ -319,6 +323,10 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
+    <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\WorkflowTypesPickerGetWorkflowTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DataViewPickerGetDataViewsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ComponentPickerGetComponentsOptionsBag.cs" />
     <Compile Include="Rest\Controls\BinaryFilePickerGetBinaryFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\BinaryFileTypePickerGetBinaryFileTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetStorageProviderPickerGetAssetStorageProviderOptionsBag.cs" />

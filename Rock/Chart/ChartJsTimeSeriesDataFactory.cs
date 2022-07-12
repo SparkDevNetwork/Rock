@@ -260,8 +260,8 @@ namespace Rock.Chart
             if ( args.UnitType == UnitType.Currency )
             {
                 var currencyCode = RockCurrencyCodeInfo.GetCurrencyCode();
-                callbackStr = string.Format(@"function(label, index, labels) {{
-                return Intl.NumberFormat( undefined, {{ style: 'currency', currency: '{0}' }}).format( label );
+                callbackStr = string.Format( @"function(label, index, labels) {{
+                return Intl.NumberFormat( undefined, {{ maximumFractionDigits: 0, minimumFractionDigits: 0, style: 'currency', currency: '{0}' }}).format( label );
                 }}", currencyCode );
             }
             else if ( args.UnitType == UnitType.Percentage )
@@ -292,6 +292,32 @@ namespace Rock.Chart
                 args.SizeToFitContainerWidth = true;
             }
 
+            var tooltipsCallbackStr = "";
+            if ( args.UnitType == UnitType.Currency )
+            {
+                var currencyCode = RockCurrencyCodeInfo.GetCurrencyCode();
+                tooltipsCallbackStr = string.Format( @"function (tooltipItem, data) {{
+                let label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+                if (label) {{
+                    label += ': ';
+                }}
+                return label + Intl.NumberFormat( undefined, {{ style: 'currency', currency: '{0}' }}).format( tooltipItem.yLabel );
+                }}", currencyCode );
+            }
+            else if ( args.UnitType == UnitType.Percentage )
+            {
+                tooltipsCallbackStr = @"function (tooltipItem, data) {
+                 return Chart.defaults.global.tooltips.callbacks.label(tooltipItem, data) + '%';
+              }";
+            }
+            else
+            {
+                tooltipsCallbackStr = @"function (tooltipItem, data) {
+                return Chart.defaults.global.tooltips.callbacks.label(tooltipItem, data);
+                }";
+            }
+
             var optionsData = new
             {
                 maintainAspectRatio = args.MaintainAspectRatio,
@@ -301,6 +327,13 @@ namespace Rock.Chart
                 {
                     xAxes = optionsXaxes,
                     yAxes = optionsYaxes
+                },
+                tooltips = new
+                {
+                    callbacks = new
+                    {
+                        label = new JRaw( tooltipsCallbackStr )
+                    }
                 }
             };
 

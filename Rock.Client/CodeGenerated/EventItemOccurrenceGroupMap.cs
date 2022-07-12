@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public int? EventItemOccurrenceId { get; set; }
 
         /// <summary />
@@ -93,6 +96,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( EventItemOccurrenceGroupMap source )
         {
             this.Id = source.Id;
+            this.CampusId = source.CampusId;
             this.EventItemOccurrenceId = source.EventItemOccurrenceId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -116,6 +120,9 @@ namespace Rock.Client
     /// </summary>
     public partial class EventItemOccurrenceGroupMap : EventItemOccurrenceGroupMapEntity
     {
+        /// <summary />
+        public Campus Campus { get; set; }
+
         /// <summary />
         public Group Group { get; set; }
 

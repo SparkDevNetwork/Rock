@@ -253,6 +253,7 @@
 .rockbadge {
   position: relative;
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   margin: 0 .133333em;
@@ -449,7 +450,7 @@
     left: .2em;
     display: block;
     width: 1em;
-    font-size: .4em;
+    font-size: .45em;
     font-weight: @font-weight-bold;
     text-align: center;
     letter-spacing: -.1em;
@@ -598,10 +599,14 @@
   }
 
   .metric-value {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     position: absolute;
     top: .5em; // 8px
     right: .3em;
     left: .3em;
+    bottom: .95em;
     font-size: .4em; // 16px
     font-weight: @font-weight-bold;
     text-align: center;
@@ -613,7 +618,6 @@
 
     &.today {
       .metric-value {
-        top: 1em;
         font-size: .275em;
       }
     }
@@ -646,6 +650,7 @@
 .rockbadge-assessment {
   a {
     color: inherit;
+    display: inline-flex;
   }
 
   .fa-stack-1x {

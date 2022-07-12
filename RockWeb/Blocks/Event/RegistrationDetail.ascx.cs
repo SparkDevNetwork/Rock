@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -466,6 +466,13 @@ namespace RockWeb.Blocks.Event
 
                     History.EvaluateChange( changes, "Discount Amount", registration.DiscountAmount, cbDiscountAmount.Value );
                     registration.DiscountAmount = cbDiscountAmount.Value == null ? 0 : cbDiscountAmount.Value.Value;
+
+                    bool campusChanged = !registration.CampusId.Equals( cpRegistrationCampus.SelectedValueAsInt() );
+                    if ( campusChanged )
+                    {
+                        History.EvaluateChange( changes, "Campus", registration.CampusId, cpRegistrationCampus.SelectedValueAsInt() );
+                        registration.CampusId = cpRegistrationCampus.SelectedValueAsInt();
+                    }
 
                     if ( !Page.IsValid )
                     {
@@ -1557,16 +1564,27 @@ namespace RockWeb.Blocks.Event
                 registration.RegistrationInstance.Linkages != null &&
                 registration.RegistrationInstance.Linkages.Any() )
             {
-                foreach ( var group in registration.RegistrationInstance.Linkages
+                var linkageGroups = registration.RegistrationInstance.Linkages
                     .Where( l => l.Group != null )
                     .OrderBy( l => l.Group.Name )
-                    .Select( l => l.Group ) )
+                    .Select( l => l.Group );
+                if ( linkageGroups.Any() )
                 {
-                    ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                    foreach ( var group in linkageGroups )
+                    {
+                        ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                    }
+
+                    ddlGroup.Visible = true;
                 }
             }
 
             ddlGroup.SetValue( registration.Group );
+
+            if ( registration.CampusId.HasValue )
+            {
+                cpRegistrationCampus.SelectedCampusId = registration.CampusId;
+            }
 
             registration.LoadAttributes();
 

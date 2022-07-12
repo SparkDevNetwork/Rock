@@ -315,7 +315,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     .Where( l => l.GroupId == group.Id )
                     .OrderBy( l => l.GroupLocationTypeValue.Order )
                     .ToList();
-                rptrAddresses.DataBind();
+                // if datasource has no items, then don't bind
+                if ( rptrAddresses.DataSource is List<GroupLocation> groupLocations && groupLocations.Any() )
+                {
+                    rptrAddresses.DataBind();
+                }
+                else
+                {
+                    rptrAddresses.Visible = false;
+                }
             }
 
             ShowGroupAttributes( group, e );
@@ -349,7 +357,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             <div class=""photo-shadow inset-0""></div>
                         </a>
                         <a href=""{personLink}"" class=""name-link"">
-                            <span class=""name"">{groupMember.Person.NickName}</span>
+                            <span class=""name"">{FormatPersonName( groupMember.Person.NickName, groupMember.Person.LastName )}</span>
                             <span class=""person-age"">{groupMember.Person.Age}</span>
                         </a>
                     </div>";
@@ -380,8 +388,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var iconCssClass = groupLocation.GroupLocationTypeValue.GetAttributeValue( "IconCSSClass" ) ?? "fa fa-map-marker";
 
                 litAddress.Text = $@"
-                    <div class=""d-flex flex-wrap align-items-center"">
-                        <span style=""margin-right: 12px;font-size:18px"">
+                    <div class=""profile-row"">
+                        <span class=""profile-row-icon"">
                             <a href=""{groupLocation.Location.GoogleMapLink( Person.FullName )}"" title=""Map This Address"" class=""map"" target=""_blank"">
                                 <i class=""{iconCssClass}""></i>
                             </a>

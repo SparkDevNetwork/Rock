@@ -479,6 +479,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class DefinedType
     {
+        public const string APPLE_DEVICE_MODELS = "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C";
         public const string ASSESSMENT_CONFLICT_PROFILE = "EE7E089E-DF81-4407-8BFA-AD865FA5427A";
         public const string BACKGROUND_CHECK_TYPES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
         public const string BENEVOLENCE_REQUEST_STATUS = "2787B088-D607-4D69-84FF-850A6891EE34";
@@ -1212,6 +1213,8 @@ namespace Rock.Client.SystemGuid
         public const string FULL_WIDTH_INTERNAL_SITE = "D65F783D-87A9-4CC9-8110-E83466A0EADB";
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
         public const string PERSON_DETAIL = "F66758C6-3E3D-4598-AF4C-B317047B5987";
+        public const string PERSON_PROFILE_DETAIL = "6AD84AFC-B3A1-4E30-B53B-C6E57B513839";
+        public const string PERSON_PROFILE_HOME = "92A60013-B8D4-403A-BDFB-C3DA4D867B12";
     }
 
     /// <summary>
@@ -1628,6 +1631,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class Person
     {
+        public const string ANONYMOUS_VISITOR = "7EBC167B-512D-4683-9D80-98B6BB02E1B9";
         public const string GIVER_ANONYMOUS = "802235DC-3CA5-94B0-4326-AACE71180F48";
     }
 
@@ -1660,6 +1664,7 @@ namespace Rock.Client.SystemGuid
         public const string SEND_GROUP_ATTENDANCE_DIGEST = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B";
         public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
         public const string SYNC_MEDIA = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9";
+        public const string UPDATE_PERSONALIZATION_DATA = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B";
     }
 
     /// <summary>

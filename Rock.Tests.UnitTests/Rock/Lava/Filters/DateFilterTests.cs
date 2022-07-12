@@ -1354,6 +1354,17 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Comparing an input date/time to a supplied reference that is the same, it should return "just now".
+        /// </summary>
+        [TestMethod]
+        public void HumanizeTimeSpan_CompareWithSame_YieldsJustNow()
+        {
+            var template = "{{ '3-Sep-2020 11:30:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30:00 PM' }}";
+
+            TestHelper.AssertTemplateOutput( "just now", template );
+        }
+
+        /// <summary>
         /// Comparing an input date/time to a supplied reference that is weeks/days/hours/minutes later should return "W weeks, D days, H hours, M minutes".
         /// </summary>
         [TestMethod]

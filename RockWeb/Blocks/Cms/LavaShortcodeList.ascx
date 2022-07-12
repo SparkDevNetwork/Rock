@@ -17,42 +17,38 @@
         <asp:Panel ID="pnlLavaShortcodeList" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-cube"></i>Lava Shortcodes</h1>
-                <div class="pull-right flex-btn-gap">
-                    <asp:LinkButton ID="btnAddShortcut" runat="server" CssClass="btn btn-xs btn-default btn-square" OnClick="btnAddShortcut_Click" Text="Add Shortcut">
+                <div class="panel-labels">
+                    <asp:LinkButton ID="btnAddShortcut" runat="server" CssClass="btn btn-xs btn-default btn-square" OnClick="btnAddShortcut_Click" Title="Add Shortcode">
                             <i class="fa fa-plus"></i>
                     </asp:LinkButton>
                 </div>
             </div>
-            <div class="container-flex">
-                <div class="pull-left pt-4 pl-3">
-                    <Rock:Switch ID="swShowInactive" runat="server" OnCheckedChanged="swShowInactive_CheckedChanged" Text="Show Inactive" AutoPostBack="true" />
-                </div>
-                <div class="pull-right pt-4 pr-3">
-                    <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Width="300px" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" AutoPostBack="true"/>
-                </div>
-            </div>
+
             <div class="panel-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <Rock:Switch ID="swShowInactive" runat="server" OnCheckedChanged="swShowInactive_CheckedChanged" Text="Show Inactive" AutoPostBack="true" />
+
+                    <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" CssClass="input-width-xl mt-1 mt-sm-0" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" AutoPostBack="true"/>
+                </div>
                 <asp:Repeater ID="rptShortcodes" runat="server" OnItemDataBound="rptShortcodes_ItemDataBound">
                     <ItemTemplate>
                         <div class="panel panel-widget panel-shortcodeitem collapsed">
-                            <div class="panel-heading cursor-pointer js-shortcode-toggle clearfix flex-column flex-sm-row align-items-start align-items-sm-center">
+                            <div class="panel-heading cursor-pointer js-shortcode-toggle flex-column flex-sm-row align-items-start align-items-sm-center">
                                 <a name="<%# Eval("TagName").ToString().ToLower() %>"></a>
-                                <div>
+                                <div class="order-1">
                                     <h1 class="panel-title mb-1"><%# Eval("Name") %></h1>
                                     <p class="text-sm text-muted w-auto">
                                         <%# Eval("Description") %>
                                     </p>
                                 </div>
-                                <div class="pull-right">
-                                    <div class="example-toggle text-nowrap d-none d-sm-block">
-                                        <i class="fa fa-circle-o"></i>Show Details
+                                <div class="ml-sm-auto order-0 order-sm-1">
+                                    <div class="example-toggle text-nowrap text-right d-none d-sm-block">
+                                        <i class="fa fa-circle-o"></i> Show Details
                                     </div>
-                                    <div class="pull-right margin-t-sm">
-                                        <%# !Boolean.Parse(Eval("IsActive").ToString()) ?
-                                        "<span class='label label-warning pull-right'>Inactive</span>" : "" %>
-                                        <%# Boolean.Parse(Eval("IsSystem").ToString()) ?
-                                        "<span class='label label-default pull-right'>System</span>" : "" %>
-                                        <%# GetShortcodeCategories(Eval("Id").ToString()) %>
+                                    <div class="mb-2 mb-sm-0 mt-sm-2">
+                                        <%# !Boolean.Parse(Eval("IsActive").ToString()) ? "<span class='label label-warning'>Inactive</span>" : "" %>
+                                        <%# Boolean.Parse(Eval("IsSystem").ToString()) ? "<span class='label label-default'>System</span>" : "" %>
+                                        <asp:Literal ID="litCategories" runat="server"></asp:Literal>
                                     </div>
                                 </div>
 

@@ -155,7 +155,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
-        public string BackgroundColor { get; set; } = "#BCBCBD";
+        public string BackgroundColor { get; set; } = "#F4F5F7";
 
         #endregion
 

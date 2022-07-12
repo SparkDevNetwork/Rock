@@ -1641,6 +1641,11 @@ namespace Rock.Lava
             {
                 TimeSpan difference = endDate.Value - startDate.Value;
 
+                if ( difference.TotalSeconds >= 0 && difference.TotalSeconds < 1 )
+                {
+                    return "just now";
+                }
+
                 if ( direction.ToLower() == "max" )
                 {
                     return difference.Humanize( maxUnit: unitValue );

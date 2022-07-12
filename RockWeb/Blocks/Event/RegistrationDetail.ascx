@@ -75,19 +75,13 @@
                             <div class="col-md-6">
                                 <Rock:PersonPicker ID="ppPerson" runat="server" Label="Registered By" OnSelectPerson="ppPerson_SelectPerson" EnableSelfSelection="true" />
                                 <Rock:EmailBox ID="ebConfirmationEmail" runat="server" Label="Confirmation Email" />
-                                <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Target Group" />
+                                <Rock:CampusPicker ID="cpRegistrationCampus" runat="server" Label="Campus" />
+                                <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Target Group" Visible="false" />
                                 <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="Registered by First Name" Required="true" />
                                 <Rock:RockTextBox ID="tbLastName" runat="server" Label="Registered by Last Name" Required="true" />
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                            </div>
-                            <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlDiscountCode" runat="server" Label="Discount Code" DataValueField="Key" DataTextField="Value" AutoPostBack="true" OnSelectedIndexChanged="ddlDiscountCode_SelectedIndexChanged" />
                                 <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" AutoPostBack="true" OnTextChanged="nbDiscountPercentage_TextChanged" />
                                 <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount (per Registrant)" AutoPostBack="true" OnTextChanged="cbDiscountAmount_TextChanged" />

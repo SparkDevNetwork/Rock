@@ -348,8 +348,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        ///
+        /// Also defined in Rock.Enums.Controls.SlidingDateRangePicker, so if changed, please update there as well
         /// </summary>
+        /// 
         [Flags]
         public enum SlidingDateRangeType
         {
@@ -390,7 +391,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        ///
+        /// Also defined in Rock.Enums.Controls.SlidingDateRangePicker, so if changed, please update there as well
         /// </summary>
         public enum TimeUnitType
         {
@@ -759,6 +760,24 @@ namespace Rock.Web.UI.Controls
                     this.DateRangeModeStart = null;
                     this.DateRangeModeEnd = null;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the sliding date range type from delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>SlidingDateRangeType.</returns>
+        public static SlidingDateRangeType GetSlidingDateRangeTypeFromDelimitedValues( string value )
+        {
+            string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+            if ( splitValues.Length == 5 )
+            {
+                return splitValues[0].ConvertToEnum<SlidingDateRangeType>();
+            }
+            else
+            {
+                return SlidingDateRangeType.All;
             }
         }
 

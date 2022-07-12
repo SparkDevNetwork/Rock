@@ -79,6 +79,8 @@ namespace Rock.Migrations
             AddPersonProfileDetailLayout();
 
             UpdatePersonPageLayouts();
+
+            Sql("UPDATE [Page] set PageTitle = 'Profile', InternalName = 'Person Profile', BrowserTitle = 'Profile' where [Guid] ='08DBD8A5-2C35-4146-B4A8-0F7652348B25'");
         }
 
         /// <summary>
@@ -219,7 +221,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   BlockType: Person Bio
             //   Category: CRM > Person Detail
             //   Attribute: Communication Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "030CCDDC-8D43-40F8-A298-78B416F9E828", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Communication Page", "CommunicationPage", "Communication Page", @"The communication page to use for when the person's email address is clicked. Leave this blank to use the default.", 15, @"", "66CFDF24-8D19-4885-8C09-31DBE8C4126D" );
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "030CCDDC-8D43-40F8-A298-78B416F9E828", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Communication Page", "CommunicationPage", "Communication Page", @"The communication page to use when the email button or person's email address is clicked. Leave this blank to use the default.", 15, @"", "66CFDF24-8D19-4885-8C09-31DBE8C4126D" );
+
+            // Attribute for BlockType
+            //   BlockType: Person Bio
+            //   Category: CRM > Person Detail
+            //   Attribute: SMS Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "030CCDDC-8D43-40F8-A298-78B416F9E828", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "SMS Page", "SmsPage", "SMS Page", @"The communication page to use when the text button is clicked. Leave this blank to use the default.", 16, @"", "860FCAFF-6DE4-4221-BCD9-6533BE90FC0C" );
 
             // Attribute for BlockType
             //   BlockType: Person Bio Summary
@@ -227,7 +235,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   Attribute: Badges
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "7249D05F-0FD1-4F44-88EB-AD46DEB1DAEA", "602F273B-7EC2-42E6-9AA7-A36A268192A3", "Badges", "Badges", "Badges", @"The label badges to display in this block.", 0, @"", "FD5A5196-4231-4CD6-9D34-71EF6C65A312" );
 
-            
             // Attribute for BlockType
             //   BlockType: Group Members
             //   Category: CRM > Person Detail
@@ -274,7 +281,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private void AddPersonProfileDetailLayout()
         {
             // Site:Rock RMS
-            RockMigrationHelper.AddLayout( "C2D29296-6A87-47A9-A753-EE4E9159C4C4", "PersonProfileDetail", "Person Profile Detail", "", "6AD84AFC-B3A1-4E30-B53B-C6E57B513839" );
+            RockMigrationHelper.AddLayout( "C2D29296-6A87-47A9-A753-EE4E9159C4C4", "PersonProfileDetail", "Person Profile Detail", "", Rock.SystemGuid.Layout.PERSON_PROFILE_DETAIL );
+
+            #region Login Status Block
 
             // Add Block 
             //  Block Name: Login Status
@@ -284,22 +293,23 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "04712F3D-9667-4901-A49D-4507573EF7AD".AsGuid(), "Login Status", "Login", @"", @"", 0, "A87E9E32-5EA6-461A-8590-526B1E0B0C3A" );
 
             // Add Block Attribute Value
-            //   Block: Login Status
-            //   BlockType: Login Status
-            //   Category: Security
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: My Settings Page
-            /*   Attribute Value: cf54e680-2e02-4f16-b54b-a2f2d29cd932 */
-            RockMigrationHelper.AddBlockAttributeValue( "A87E9E32-5EA6-461A-8590-526B1E0B0C3A", "FAF7DAAF-4927-44A8-BF4B-080FF556EBB0", @"cf54e680-2e02-4f16-b54b-a2f2d29cd932" );
+            // Block: Login Status
+            // BlockType: Login Status
+            // Category: Security
+            // Block Location: Layout=Person Profile Detail, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Login Status
-            //   BlockType: Login Status
-            //   Category: Security
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: My Profile Page
-            /*   Attribute Value: 08dbd8a5-2c35-4146-b4a8-0f7652348b25 */
-            RockMigrationHelper.AddBlockAttributeValue( "A87E9E32-5EA6-461A-8590-526B1E0B0C3A", "6CFDDF63-0B21-48FC-90AE-362C0E73420B", @"08dbd8a5-2c35-4146-b4a8-0f7652348b25" );
+            // Attribute: My Profile Page
+            RockMigrationHelper.AddBlockAttributeValue( "A87E9E32-5EA6-461A-8590-526B1E0B0C3A", "6CFDDF63-0B21-48FC-90AE-362C0E73420B", @"08DBD8A5-2C35-4146-B4A8-0F7652348B25" );
+
+            // Attribute: My Settings Page
+            AddPersonPageBlockAttributeValue( "A87E9E32-5EA6-461A-8590-526B1E0B0C3A", "FAF7DAAF-4927-44A8-BF4B-080FF556EBB0", Rock.SystemGuid.Layout.PERSON_DETAIL, "04712F3D-9667-4901-A49D-4507573EF7AD", "Login Status", "MySettingsPage" );
+
+            // Attribute: Logged In Page List
+            AddPersonPageBlockAttributeValue( "A87E9E32-5EA6-461A-8590-526B1E0B0C3A", "1B0E8904-196B-433E-B1CC-937AD3CA5BF2", Rock.SystemGuid.Layout.PERSON_DETAIL, "04712F3D-9667-4901-A49D-4507573EF7AD", "Login Status", "LoggedInPageList" );
+
+            #endregion Login Status Block
+
+            #region Smart Search Block
 
             // Add Block 
             //  Block Name: Smart Search
@@ -307,6 +317,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Detail
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "9D406BD5-88C1-45E5-AFEA-70F9CFB66C74".AsGuid(), "Smart Search", "Header", @"", @"", 0, "4A6902BC-6594-48FE-8750-7BF935DEFB2C" );
+
+            #endregion Smart Search Block
+
+            #region Menu Block
 
             // Add Block 
             //  Block Name: Menu
@@ -320,54 +334,37 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   BlockType: Page Menu
             //   Category: CMS
             //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Include Current Parameters
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"False" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Template
-            /*   Attribute Value: {% include '~~/Assets/Lava/PageNav.lava' %} */
-            RockMigrationHelper.AddBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include '~~/Assets/Lava/PageNav.lava' %}" );
+            // Attribute: CSS File
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "CSSFile" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Root Page
-            /*   Attribute Value: 20f97a93-7949-4c2a-8a5e-c756fe8585ca */
-            RockMigrationHelper.AddBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"20f97a93-7949-4c2a-8a5e-c756fe8585ca" );
+            // Attribute: Include Current Parameters
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "IncludeCurrentParameters" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Is Secondary Block
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+            // Attribute: Include Current QueryString
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "IncludeCurrentQueryString" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Number of Levels
-            /*   Attribute Value: 3 */
-            RockMigrationHelper.AddBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"3" );
+            // Attribute: Include Page List
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "0A49DABE-42EE-40E5-9E06-0E6530944865", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "IncludePageList" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Include Current QueryString
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"False" );
+            // Attribute: Is Secondary Block
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "IsSecondaryBlock" );
+
+            // Attribute: Number of Levels
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "6C952052-BC79-41BA-8B88-AB8EA3E99648", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "NumberofLevels" );
+
+            // Attribute: Root Page
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "41F1C42E-2395-4063-BD4F-031DF8D5B231", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "RootPage" );
+
+            // Attribute: Template
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "1322186A-862A-4CF1-B349-28ECB67229BA", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "Template" );
+
+            // Attribute: Enabled Lava Commands
+            AddPersonPageBlockAttributeValue( "61BE0C07-D64A-4748-9F51-AD27830E0BAA", "EF10B2F9-93E5-426F-8D43-8C020224670F", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "EnabledLavaCommands" );
+
+            #endregion Menu Block
+
+            #region Family Navigation Block
 
             // Add Block 
             //  Block Name: Family Navigation
@@ -375,6 +372,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Detail
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "35D091FA-8311-42D1-83F7-3E67B9EE9675".AsGuid(), "Family Navigation", "ProfileNavigationLeft", @"", @"", 0, "7F709821-5B69-49EA-948C-976F63C1A82F" );
+
+            #endregion Family Navigation Block
+
+            #region Sub Page Menu
 
             // Add Block 
             //  Block Name: Sub Page Menu
@@ -384,58 +385,41 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "CACB9D1A-A820-4587-986A-D66A69EE9948".AsGuid(), "Sub Page Menu", "ProfileNavigation", @"", @"", 0, "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A" );
 
             // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Include Current QueryString
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"False" );
+            // Block: Sub Page Menu
+            // BlockType: Page Menu
+            // Category: CMS
+            // Block Location: Layout=Person Profile Detail, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Number of Levels
-            /*   Attribute Value: 1 */
-            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"1" );
+            // Attribute: CSS File
+            AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "CSSFile" );
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Is Secondary Block
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+            // Attribute: Include Current Parameters
+            AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "IncludeCurrentParameters" );
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Template
-            /*   Attribute Value: {% include '~~/Assets/Lava/PageListAsTabs.lava' %} */
-            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include '~~/Assets/Lava/PageListAsTabs.lava' %}" );
+            // Attribute: Include Current QueryString
+            AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "IncludeCurrentQueryString" );
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Root Page
-            /*   Attribute Value: bf04bb7e-be3a-4a38-a37c-386b55496303 */
-            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"bf04bb7e-be3a-4a38-a37c-386b55496303" );
+            // Attribute: Include Page List
+            AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "0A49DABE-42EE-40E5-9E06-0E6530944865", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "IncludePageList" );
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Include Current Parameters
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"True" );
+            // Attribute: Is Secondary Block
+            AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "IsSecondaryBlock" );
+
+            // Attribute: Number of Levels
+            AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "6C952052-BC79-41BA-8B88-AB8EA3E99648", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "NumberofLevels" );
+
+            // Attribute: Root Page
+            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"BF04BB7E-BE3A-4A38-A37C-386B55496303" );
+
+            // Attribute: Template
+            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "1322186A-862A-4CF1-B349-28ECB67229BA", "{% include '~~/Assets/Lava/PageListProfile.lava' %}" );
+
+            // Attribute: Enabled Lava Commands
+            AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "EF10B2F9-93E5-426F-8D43-8C020224670F", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "EnabledLavaCommands" );
+
+            #endregion Sub Page Menu
+
+            #region Person Edit Block
 
             // Add Block 
             //  Block Name: Person Edit
@@ -443,6 +427,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Layout: Person Profile Detail
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "8C94620B-0FC1-4C39-9474-1714546E7D9E".AsGuid(), "Person Edit", "ProfileNavigationRight", @"", @"", 0, "9EECF41A-36C6-489C-93DF-2480A3E3BD9B" );
+
+            #endregion Person Edit Block
+
+            #region Badges Block
 
             // Add Block 
             //  Block Name: Badges
@@ -452,40 +440,47 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             RockMigrationHelper.AddBlock( true, null, "6AD84AFC-B3A1-4E30-B53B-C6E57B513839".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "2412C653-9369-4772-955E-80EE8FA051E3".AsGuid(), "Badges", "BadgeBar", @"", @"", 0, "B2680AB4-CC89-47D5-80CD-58F3BA575A08" );
 
             // Add Block Attribute Value
-            //   Block: Badges
-            //   BlockType: Badges
-            //   Category: Obsidian > CRM > Person Detail
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Top Left Badges
-            /*   Attribute Value: b4b336ce-137e-44be-9123-27740d0064c2,8a9ad88e-359f-46fd-9ba1-8b0603644f17,260ead7d-5073-4f88-a6a9-427f6e95985e,66972bff-42cd-49ab-9a7a-e1b9deca4eba,7fc986b9-ca1e-cbb7-4e63-c79eac34f39d */
-            RockMigrationHelper.AddBlockAttributeValue( "B2680AB4-CC89-47D5-80CD-58F3BA575A08", "B22C1920-16D2-45B3-97FD-2EF00D38DD25", @"b4b336ce-137e-44be-9123-27740d0064c2,8a9ad88e-359f-46fd-9ba1-8b0603644f17,260ead7d-5073-4f88-a6a9-427f6e95985e,66972bff-42cd-49ab-9a7a-e1b9deca4eba,7fc986b9-ca1e-cbb7-4e63-c79eac34f39d" );
+            // Block: Badges
+            // BlockType: Badges
+            // Category: Obsidian > CRM > Person Detail
+            // Block Location: Layout=Person Profile Detail, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Badges
-            //   BlockType: Badges
-            //   Category: Obsidian > CRM > Person Detail
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Top Middle Badges
-            /*   Attribute Value: 3f7d648d-d6ba-4f03-931c-afbdfa24bbd8 */
-            RockMigrationHelper.AddBlockAttributeValue( "B2680AB4-CC89-47D5-80CD-58F3BA575A08", "61540A33-0905-4ABE-A164-F5F5BA8524DD", @"3f7d648d-d6ba-4f03-931c-afbdfa24bbd8" );
+            // Attribute: Top Left Badges
+            AddPersonPageBlockAttributeValue( "B2680AB4-CC89-47D5-80CD-58F3BA575A08", "B22C1920-16D2-45B3-97FD-2EF00D38DD25", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC8AF928-C4AF-40C7-A667-4B24390F03A1", "Badges 1", "Badges" );
 
-            // Add Block Attribute Value
-            //   Block: Badges
-            //   BlockType: Badges
-            //   Category: Obsidian > CRM > Person Detail
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Top Right Badges
-            /*   Attribute Value: 66972bff-42cd-49ab-9a7a-e1b9deca4ebe,e0455598-82b0-4f49-b806-c3a41c71e9da */
-            RockMigrationHelper.AddBlockAttributeValue( "B2680AB4-CC89-47D5-80CD-58F3BA575A08", "D87184D5-50A4-47D3-BA50-06D39FCCD328", @"66972bff-42cd-49ab-9a7a-e1b9deca4ebe,e0455598-82b0-4f49-b806-c3a41c71e9da" );
+            // Attribute: Top Middle Badges
+            AddPersonPageBlockAttributeValue( "B2680AB4-CC89-47D5-80CD-58F3BA575A08", "61540A33-0905-4ABE-A164-F5F5BA8524DD", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC8AF928-C4AF-40C7-A667-4B24390F03A1", "Badges 2", "Badges" );
 
-            // Add Block Attribute Value
-            //   Block: Badges
-            //   BlockType: Badges
-            //   Category: Obsidian > CRM > Person Detail
-            //   Block Location: Layout=Person Profile Detail, Site=Rock RMS
-            //   Attribute: Bottom Right Badges
-            /*   Attribute Value: cce09793-89f6-4042-a98a-ed38392bcfcc */
-            RockMigrationHelper.AddBlockAttributeValue( "B2680AB4-CC89-47D5-80CD-58F3BA575A08", "B39D9047-7D28-42C5-A776-03D71E3A0F36", @"cce09793-89f6-4042-a98a-ed38392bcfcc" );
+            // Attribute: Top Right Badges. Needed to remove the assesments badge from this list if it exists because it will be displayed below.
+            var sqlStringForBadges3Values = $@"
+                DECLARE @BlockEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65')
+                DECLARE @V1LayoutId INT = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{Rock.SystemGuid.Layout.PERSON_DETAIL}')
+                DECLARE @V1BlockTypeId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = 'FC8AF928-C4AF-40C7-A667-4B24390F03A1')
+                DECLARE @V1BlockId INT = (SELECT [Id] FROM [Block] WHERE [LayoutId] = @V1LayoutId AND [Name] = 'Badges 3')
+                DECLARE @AttributeKey VARCHAR(1000) = 'Badges'
+
+                SELECT av.[Value]
+                FROM [Attribute] a
+                JOIN [AttributeValue] av on a.[Id] = av.[AttributeId]
+                WHERE a.[EntityTypeId] = @BlockEntityTypeId
+                    AND a.[EntityTypeQualifierColumn] = 'BlockTypeId'
+                    AND a.[EntityTypeQualifierValue] = @V1BlockTypeId
+                    AND a.[Key] = @AttributeKey
+                    AND av.EntityId = @V1BlockId";
+
+            var personBioBadgesAttributeValue = SqlScalar( sqlStringForBadges3Values ).ToStringSafe().Replace( "CCE09793-89F6-4042-A98A-ED38392BCFCC", string.Empty );
+
+            if ( personBioBadgesAttributeValue != null )
+            {
+                RockMigrationHelper.AddBlockAttributeValue( "B2680AB4-CC89-47D5-80CD-58F3BA575A08", "D87184D5-50A4-47D3-BA50-06D39FCCD328", personBioBadgesAttributeValue );
+            }
+
+            // Attribute: Bottom Right Badges
+            RockMigrationHelper.AddBlockAttributeValue( "B2680AB4-CC89-47D5-80CD-58F3BA575A08", "B39D9047-7D28-42C5-A776-03D71E3A0F36", @"CCE09793-89F6-4042-A98A-ED38392BCFCC" );
+
+            #endregion Badges Block
+
+            #region Person Bio Summary Block
 
             // Add Block 
             //  Block Name: Person Bio Summary
@@ -502,12 +497,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //   Attribute: Badges
             /*   Attribute Value: 66972bff-42cd-49ab-9a7a-e1b9deca4ebf,b21dcd49-ac35-4b2b-9857-75213209b643 */
             RockMigrationHelper.AddBlockAttributeValue( "C9523ABF-7FFA-4F43-ACEE-EE20D5D2C9E5", "FD5A5196-4231-4CD6-9D34-71EF6C65A312", @"66972bff-42cd-49ab-9a7a-e1b9deca4ebf,b21dcd49-ac35-4b2b-9857-75213209b643" );
+
+            #endregion Person Bio Summary Block
         }
 
         private void AddPersonProfileHomeLayout()
         {
             // Site:Rock RMS
-            RockMigrationHelper.AddLayout( "C2D29296-6A87-47A9-A753-EE4E9159C4C4", "PersonProfileHome", "Person Profile Home", "", "92A60013-B8D4-403A-BDFB-C3DA4D867B12" );
+            RockMigrationHelper.AddLayout( "C2D29296-6A87-47A9-A753-EE4E9159C4C4", "PersonProfileHome", "Person Profile Home", "", Rock.SystemGuid.Layout.PERSON_PROFILE_HOME );
+
+            #region Login Status Block
 
             // Add Block 
             //  Block Name: Login Status
@@ -516,32 +515,24 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "04712F3D-9667-4901-A49D-4507573EF7AD".AsGuid(), "Login Status", "Login", @"", @"", 0, "7E9F8B26-BD00-464B-B209-F4D60FFD829C" );
 
-            // Add Block Attribute Value
-            //   Block: Login Status
-            //   BlockType: Login Status
-            //   Category: Security
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: My Profile Page
-            /*   Attribute Value: 08dbd8a5-2c35-4146-b4a8-0f7652348b25 */
+            // Add Block Attribute Value from the v1 value
+            // Block: Login Status
+            // BlockType: Login Status
+            // Category: Security
+            // Block Location: Layout=Person Profile Home, Site=Rock RMS
+
+            // Attribute: My Profile Page
             RockMigrationHelper.AddBlockAttributeValue( "7E9F8B26-BD00-464B-B209-F4D60FFD829C", "6CFDDF63-0B21-48FC-90AE-362C0E73420B", @"08dbd8a5-2c35-4146-b4a8-0f7652348b25" );
 
-            // Add Block Attribute Value
-            //   Block: Login Status
-            //   BlockType: Login Status
-            //   Category: Security
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: My Settings Page
-            /*   Attribute Value: cf54e680-2e02-4f16-b54b-a2f2d29cd932 */
-            RockMigrationHelper.AddBlockAttributeValue( "7E9F8B26-BD00-464B-B209-F4D60FFD829C", "FAF7DAAF-4927-44A8-BF4B-080FF556EBB0", @"cf54e680-2e02-4f16-b54b-a2f2d29cd932" );
+            // Attribute: My Settings Page
+            AddPersonPageBlockAttributeValue( "7E9F8B26-BD00-464B-B209-F4D60FFD829C", "FAF7DAAF-4927-44A8-BF4B-080FF556EBB0", Rock.SystemGuid.Layout.PERSON_DETAIL, "04712F3D-9667-4901-A49D-4507573EF7AD", "Login Status", "MySettingsPage" );
 
-            // Add Block Attribute Value
-            //   Block: Login Status
-            //   BlockType: Login Status
-            //   Category: Security
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Logged In Page List
-            /*   Attribute Value: My Dashboard^~/MyDashboard */
-            RockMigrationHelper.AddBlockAttributeValue( "7E9F8B26-BD00-464B-B209-F4D60FFD829C", "1B0E8904-196B-433E-B1CC-937AD3CA5BF2", @"My Dashboard^~/MyDashboard" );
+            // Attribute: Logged In Page List
+            AddPersonPageBlockAttributeValue( "7E9F8B26-BD00-464B-B209-F4D60FFD829C", "1B0E8904-196B-433E-B1CC-937AD3CA5BF2", Rock.SystemGuid.Layout.PERSON_DETAIL, "04712F3D-9667-4901-A49D-4507573EF7AD", "Login Status", "LoggedInPageList" );
+
+            #endregion Login Status Block
+
+            #region Smart Search Block
 
             // Add Block 
             //  Block Name: Smart Search
@@ -550,66 +541,53 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "9D406BD5-88C1-45E5-AFEA-70F9CFB66C74".AsGuid(), "Smart Search", "Header", @"", @"", 0, "34BE95FD-1CC9-4A08-BB8C-15088CAAAB8B" );
 
+            #endregion Smart Search Block
+
+            #region Menu Block
+
             // Add Block 
-            //  Block Name: Menu
-            //  Page Name: -
-            //  Layout: Person Profile Home
-            //  Site: Rock RMS
+            // Block Name: Menu
+            // Page Name: -
+            // Layout: Person Profile Home
+            // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "CACB9D1A-A820-4587-986A-D66A69EE9948".AsGuid(), "Menu", "Navigation", @"", @"", 0, "6A62DC1C-1A29-4156-A431-B3355A3B84AB" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Is Secondary Block
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+            // Add Block Attribute Value from the v1 value
+            // Block: Menu
+            // BlockType: Page Menu
+            // Category: CMS
+            // Block Location: Layout=Person Profile Home, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Include Current QueryString
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"False" );
+            // Attribute: CSS File
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "CSSFile" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Template
-            /*   Attribute Value: {% include '~~/Assets/Lava/PageNav.lava' %} */
-            RockMigrationHelper.AddBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include '~~/Assets/Lava/PageNav.lava' %}" );
+            // Attribute: Include Current Parameters
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "IncludeCurrentParameters" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Include Current Parameters
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"False" );
+            // Attribute: Include Current QueryString
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "IncludeCurrentQueryString" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Number of Levels
-            /*   Attribute Value: 3 */
-            RockMigrationHelper.AddBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"3" );
+            // Attribute: Include Page List
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "0A49DABE-42EE-40E5-9E06-0E6530944865", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "IncludePageList" );
 
-            // Add Block Attribute Value
-            //   Block: Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Root Page
-            /*   Attribute Value: 20f97a93-7949-4c2a-8a5e-c756fe8585ca */
-            RockMigrationHelper.AddBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"20f97a93-7949-4c2a-8a5e-c756fe8585ca" );
+            // Attribute: Is Secondary Block
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "IsSecondaryBlock" );
+
+            // Attribute: Number of Levels
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "6C952052-BC79-41BA-8B88-AB8EA3E99648", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "NumberofLevels" );
+
+            // Attribute: Root Page
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "41F1C42E-2395-4063-BD4F-031DF8D5B231", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "RootPage" );
+
+            // Attribute: Template
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "1322186A-862A-4CF1-B349-28ECB67229BA", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "Template" );
+
+            // Attribute: Enabled Lava Commands
+            AddPersonPageBlockAttributeValue( "6A62DC1C-1A29-4156-A431-B3355A3B84AB", "EF10B2F9-93E5-426F-8D43-8C020224670F", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Menu", "EnabledLavaCommands" );
+
+            #endregion Menu Block
+
+            #region Family Navigation Block
 
             // Add Block 
             //  Block Name: Family Navigation
@@ -618,66 +596,53 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "35D091FA-8311-42D1-83F7-3E67B9EE9675".AsGuid(), "Family Navigation", "ProfileNavigationLeft", @"", @"", 0, "B54D1924-BEE5-43C5-8F19-91B320DF99EC" );
 
+            #endregion Family Navigation Block
+
+            #region Sub Page Menu Block
+
             // Add Block 
-            //  Block Name: Sub Page Menu
-            //  Page Name: -
-            //  Layout: Person Profile Home
-            //  Site: Rock RMS
+            // Block Name: Sub Page Menu
+            // Page Name: -
+            // Layout: Person Profile Home
+            // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "CACB9D1A-A820-4587-986A-D66A69EE9948".AsGuid(), "Sub Page Menu", "ProfileNavigation", @"", @"", 0, "CB964B6B-107E-44D4-8731-7A2D40A9F15B" );
 
             // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Root Page
-            /*   Attribute Value: bf04bb7e-be3a-4a38-a37c-386b55496303 */
-            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"bf04bb7e-be3a-4a38-a37c-386b55496303" );
+            // Block: Sub Page Menu
+            // BlockType: Page Menu
+            // Category: CMS
+            // Block Location: Layout=Person Profile Home, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Number of Levels
-            /*   Attribute Value: 1 */
-            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"1" );
+            // Attribute: CSS File
+            AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "CSSFile" );
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Include Current Parameters
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"True" );
+            // Attribute: Include Current Parameters
+            AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "IncludeCurrentParameters" );
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Template
-            /*   Attribute Value: {% include '~~/Assets/Lava/PageListAsTabs.lava' %} */
-            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include '~~/Assets/Lava/PageListAsTabs.lava' %}" );
+            // Attribute: Include Current QueryString
+            AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "IncludeCurrentQueryString" );
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Include Current QueryString
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"False" );
+            // Attribute: Include Page List
+            AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "0A49DABE-42EE-40E5-9E06-0E6530944865", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "IncludePageList" );
 
-            // Add Block Attribute Value
-            //   Block: Sub Page Menu
-            //   BlockType: Page Menu
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Is Secondary Block
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+            // Attribute: Is Secondary Block
+            AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "IsSecondaryBlock" );
+
+            // Attribute: Number of Levels
+            AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "6C952052-BC79-41BA-8B88-AB8EA3E99648", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "NumberofLevels" );
+
+            // Attribute: Root Page
+            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"BF04BB7E-BE3A-4A38-A37C-386B55496303" );
+
+            // Attribute: Template
+            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "1322186A-862A-4CF1-B349-28ECB67229BA", "{% include '~~/Assets/Lava/PageListProfile.lava' %}" );
+
+            // Attribute: Enabled Lava Commands
+            AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "EF10B2F9-93E5-426F-8D43-8C020224670F", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "EnabledLavaCommands" );
+
+            #endregion Sub Page Menu Block
+
+            #region Person Edit Block
 
             // Add Block 
             //  Block Name: Person Edit
@@ -686,6 +651,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "8C94620B-0FC1-4C39-9474-1714546E7D9E".AsGuid(), "Person Edit", "ProfileNavigationRight", @"", @"", 0, "99AD76C5-0D75-44CB-95AA-7AED3E9FC860" );
 
+            #endregion Person Edit Block
+
+            #region Person Bio Block
+
             // Add Block 
             //  Block Name: Person Bio
             //  Page Name: -
@@ -693,309 +662,206 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "030CCDDC-8D43-40F8-A298-78B416F9E828".AsGuid(), "Person Bio", "Profile", @"", @"", 0, "1E6AF671-9C1A-4C6C-8156-36B6D7589F34" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Badges
-            /*   Attribute Value: 66972bff-42cd-49ab-9a7a-e1b9deca4ebf,b21dcd49-ac35-4b2b-9857-75213209b643,66972bff-42cd-49ab-9a7a-e1b9deca4eca */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "63F838EB-0B94-4F03-8E59-9AFAC8E72FAC", @"66972bff-42cd-49ab-9a7a-e1b9deca4ebf,b21dcd49-ac35-4b2b-9857-75213209b643,66972bff-42cd-49ab-9a7a-e1b9deca4eca" );
+            // Add Block Attribute Value from the v1 value
+            // Block: Person Bio
+            // BlockType: Person Bio
+            // Category: CRM > Person Detail
+            // Block Location: Layout=Person Profile Home, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Workflow Actions
-            /*   Attribute Value: 221bf486-a82c-40a7-85b7-bb44da45582f,036f2f0b-c2dc-49d0-a17b-ccdac7fc71e2,31ddc001-c91a-4418-b375-cab1475f7a62,9bc07356-3b2f-4bff-9320-fa8f3a28fc39 */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "B8419489-84A9-40AB-B85D-DD5E07255B17", @"221bf486-a82c-40a7-85b7-bb44da45582f,036f2f0b-c2dc-49d0-a17b-ccdac7fc71e2,31ddc001-c91a-4418-b375-cab1475f7a62,9bc07356-3b2f-4bff-9320-fa8f3a28fc39" );
+            // Attribute: Badges
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "63F838EB-0B94-4F03-8E59-9AFAC8E72FAC", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "Badges" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Enable Impersonation
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "D77CB1E1-E4BC-429A-81C3-FB4AFC924618", @"False" );
+            // Attribute: Workflow Actions
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "B8419489-84A9-40AB-B85D-DD5E07255B17", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "WorkflowActions" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Business Detail Page
-            /*   Attribute Value: d2b43273-c64f-4f57-9aae-9571e1982bac */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "64695DF9-2196-4EB8-AD3B-AE4988FECD65", @"d2b43273-c64f-4f57-9aae-9571e1982bac" );
+            // Attribute: Actions
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "419196C7-46F9-4AB3-85AA-3ABEE55BD210", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "Actions" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Nameless Person Detail Page
-            /*   Attribute Value: 62f18233-0395-4bea-adc7-bc08271edaf1 */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "8D355AC2-BB9D-468C-98BF-D0D426EE98EA", @"62f18233-0395-4bea-adc7-bc08271edaf1" );
+            // Attribute: Enable Impersonation
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "D77CB1E1-E4BC-429A-81C3-FB4AFC924618", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "EnableImpersonation" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Display Country Code
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "B8CF7391-3AFD-4D71-ADB2-BB95714425EC", @"False" );
+            // Attribute: ImpersonationStartPage
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "63964E1F-42E6-4E5E-BAD1-3DB5A971DB10", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "ImpersonationStartPage" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Display Middle Name
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "9FC18F95-7857-4A4C-8A5F-A6AF5550D9D2", @"False" );
+            // Attribute: Business Detail Page
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "64695DF9-2196-4EB8-AD3B-AE4988FECD65", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "BusinessDetailPage" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Allow Following
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "6E268729-EEED-48F9-A2EF-47188E37A538", @"True" );
+            // Attribute: Nameless Person Detail Page
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "8D355AC2-BB9D-468C-98BF-D0D426EE98EA", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "NamelessPersonDetailPage" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Display Graduation
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "0B501CDE-15F6-4882-8FF9-214676875503", @"True" );
+            // Attribute: Display Country Code
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "B8CF7391-3AFD-4D71-ADB2-BB95714425EC", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "DisplayCountryCode" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Display Anniversary Date
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "2EA7A2C0-64D8-450B-AD06-FC085E724AD1", @"True" );
+            // Attribute: Display Middle Name
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "9FC18F95-7857-4A4C-8A5F-A6AF5550D9D2", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "DisplayMiddleName" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Social Media Category
-            /*   Attribute Value: dd8f467d-b83c-444f-b04c-c681167046a1 */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "53583EDF-1932-4A16-8602-8B083DE5FC8F", @"dd8f467d-b83c-444f-b04c-c681167046a1" );
+            // Attribute: CustomContent
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "1CD682C8-FEF3-420A-A925-E158194DCC69", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "CustomContent" );
 
-            // Add Block Attribute Value
-            //   Block: Person Bio
-            //   BlockType: Person Bio
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Enable Call Origination
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "65241392-6A20-4EBA-8C54-0DA5E03124E4", @"True" );
+            // Attribute: Allow Following
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "6E268729-EEED-48F9-A2EF-47188E37A538", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "AllowFollowing" );
+
+            // Attribute: Display Graduation
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "0B501CDE-15F6-4882-8FF9-214676875503", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "DisplayGraduation" );
+
+            // Attribute: Display Anniversary Date
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "2EA7A2C0-64D8-450B-AD06-FC085E724AD1", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "DisplayAnniversaryDate" );
+
+            // Attribute: Social Media Category
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "53583EDF-1932-4A16-8602-8B083DE5FC8F", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "SocialMediaCategory" );
+
+            // Attribute: Enable Call Origination
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "65241392-6A20-4EBA-8C54-0DA5E03124E4", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "EnableCallOrigination" );
+
+            // Attribute: CommunicationPage 
+            AddPersonPageBlockAttributeValue( "1E6AF671-9C1A-4C6C-8156-36B6D7589F34", "66CFDF24-8D19-4885-8C09-31DBE8C4126D", Rock.SystemGuid.Layout.PERSON_DETAIL, "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "Bio", "CommunicationPage" );
+
+            #endregion Person Bio Block
+
+            #region Family Members Block
 
             // Add Block 
-            //  Block Name: Family Members
-            //  Page Name: -
-            //  Layout: Person Profile Home
-            //  Site: Rock RMS
+            // Block Name: Family Members
+            // Page Name: -
+            // Layout: Person Profile Home
+            // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F".AsGuid(), "Family Members", "Profile", @"", @"", 1, "0E6D894F-EF32-45F4-A189-32E05E5559CB" );
 
-            
             // Add Block Attribute Value
-            //   Block: Family Members
-            //   BlockType: Group Members
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Group Type
-            /*   Attribute Value: 790e3215-3b10-442b-af69-616c0dcb998e */
-            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","8F07815E-791F-4CC2-BB90-8A0552EA6697",@"790e3215-3b10-442b-af69-616c0dcb998e");
+            // Block: Family Members
+            // BlockType: Group Members
+            // Category: CRM > Person Detail
+            // Block Location: Layout=Person Profile Home, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Family Members
-            //   BlockType: Group Members
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Auto Create Group
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","BDB2514F-95C1-4054-B3EC-76C972048D56",@"True");
+            // Attribute: Group Type
+            AddPersonPageBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "8F07815E-791F-4CC2-BB90-8A0552EA6697", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC137BDA-4F05-4ECE-9899-A249C90D11FC", "Family Members", "GroupType" );
 
-            // Add Block Attribute Value
-            //   Block: Family Members
-            //   BlockType: Group Members
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Group Edit Page
-            /*   Attribute Value: e9e1e5f2-467d-47cb-af41-b4d9ef8b0b27 */
-            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","FA36CC50-9FFC-4AC6-BC96-874C967EA44D",@"e9e1e5f2-467d-47cb-af41-b4d9ef8b0b27");
+            // Attribute: Auto Create Group
+            AddPersonPageBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "BDB2514F-95C1-4054-B3EC-76C972048D56", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC137BDA-4F05-4ECE-9899-A249C90D11FC", "Family Members", "AutoCreateGroup" );
 
-            // Add Block Attribute Value
-            //   Block: Family Members
-            //   BlockType: Group Members
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Location Detail Page
-            /*   Attribute Value: 4ce2a5da-15f3-454c-8172-d146d938e203 */
-            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","41D83CE7-8052-402E-9815-E4E0EDABD85E",@"4ce2a5da-15f3-454c-8172-d146d938e203");
+            // Attribute: Group Edit Page
+            RockMigrationHelper.AddBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "FA36CC50-9FFC-4AC6-BC96-874C967EA44D", @"E9E1E5F2-467D-47CB-AF41-B4D9EF8B0B27" );
 
-            // Add Block Attribute Value
-            //   Block: Family Members
-            //   BlockType: Group Members
-            //   Category: CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Show County
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue("0E6D894F-EF32-45F4-A189-32E05E5559CB","31233DD5-DCB7-42FC-8151-517E32B29CBD",@"False");
+            // Attribute: Location Detail Page
+            RockMigrationHelper.AddBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "41D83CE7-8052-402E-9815-E4E0EDABD85E", @"4CE2A5DA-15F3-454C-8172-D146D938E203" );
+
+            // Attribute: Show County
+            AddPersonPageBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "31233DD5-DCB7-42FC-8151-517E32B29CBD", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC137BDA-4F05-4ECE-9899-A249C90D11FC", "Family Members", "ShowCounty" );
+
+            // Attribute: Group Header Lava
+            AddPersonPageBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "E620907F-A5BF-4AF0-8A6C-8618CFC0CBB4", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC137BDA-4F05-4ECE-9899-A249C90D11FC", "Family Members", "GroupHeaderLava" );
+
+            // Attribute: Group Footer Lava
+            AddPersonPageBlockAttributeValue( "0E6D894F-EF32-45F4-A189-32E05E5559CB", "036C6A27-B0A9-4219-A0E0-A368FF8FE8D2", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC137BDA-4F05-4ECE-9899-A249C90D11FC", "Family Members", "GroupFooterLava" );
+
+            #endregion Family Members Block
+
+            #region Badges Block
 
             // Add Block 
-            //  Block Name: Badges
-            //  Page Name: -
-            //  Layout: Person Profile Home
-            //  Site: Rock RMS
+            // Block Name: Badges
+            // Page Name: -
+            // Layout: Person Profile Home
+            // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "2412C653-9369-4772-955E-80EE8FA051E3".AsGuid(), "Badges", "BadgeBar", @"", @"", 0, "E82F7A07-FBD5-417B-A976-AC63CC53BF68" );
 
             // Add Block Attribute Value
-            //   Block: Badges
-            //   BlockType: Badges
-            //   Category: Obsidian > CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Top Left Badges
-            /*   Attribute Value: b4b336ce-137e-44be-9123-27740d0064c2,8a9ad88e-359f-46fd-9ba1-8b0603644f17,260ead7d-5073-4f88-a6a9-427f6e95985e,66972bff-42cd-49ab-9a7a-e1b9deca4eba,7fc986b9-ca1e-cbb7-4e63-c79eac34f39d */
-            RockMigrationHelper.AddBlockAttributeValue( "E82F7A07-FBD5-417B-A976-AC63CC53BF68", "B22C1920-16D2-45B3-97FD-2EF00D38DD25", @"b4b336ce-137e-44be-9123-27740d0064c2,8a9ad88e-359f-46fd-9ba1-8b0603644f17,260ead7d-5073-4f88-a6a9-427f6e95985e,66972bff-42cd-49ab-9a7a-e1b9deca4eba,7fc986b9-ca1e-cbb7-4e63-c79eac34f39d" );
+            // Block: Badges
+            // BlockType: Badges
+            // Category: Obsidian > CRM > Person Detail
+            // Block Location: Layout=Person Profile Home, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Badges
-            //   BlockType: Badges
-            //   Category: Obsidian > CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Top Middle Badges
-            /*   Attribute Value: 3f7d648d-d6ba-4f03-931c-afbdfa24bbd8 */
-            RockMigrationHelper.AddBlockAttributeValue( "E82F7A07-FBD5-417B-A976-AC63CC53BF68", "61540A33-0905-4ABE-A164-F5F5BA8524DD", @"3f7d648d-d6ba-4f03-931c-afbdfa24bbd8" );
+            // Attribute: Top Left Badges
+            AddPersonPageBlockAttributeValue( "E82F7A07-FBD5-417B-A976-AC63CC53BF68", "B22C1920-16D2-45B3-97FD-2EF00D38DD25", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC8AF928-C4AF-40C7-A667-4B24390F03A1", "Badges 1", "Badges" );
 
-            // Add Block Attribute Value
-            //   Block: Badges
-            //   BlockType: Badges
-            //   Category: Obsidian > CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Top Right Badges
-            /*   Attribute Value: 66972bff-42cd-49ab-9a7a-e1b9deca4ebe,e0455598-82b0-4f49-b806-c3a41c71e9da */
-            RockMigrationHelper.AddBlockAttributeValue( "E82F7A07-FBD5-417B-A976-AC63CC53BF68", "D87184D5-50A4-47D3-BA50-06D39FCCD328", @"66972bff-42cd-49ab-9a7a-e1b9deca4ebe,e0455598-82b0-4f49-b806-c3a41c71e9da" );
+            // Attribute: Top Middle Badges
+            AddPersonPageBlockAttributeValue( "E82F7A07-FBD5-417B-A976-AC63CC53BF68", "61540A33-0905-4ABE-A164-F5F5BA8524DD", Rock.SystemGuid.Layout.PERSON_DETAIL, "FC8AF928-C4AF-40C7-A667-4B24390F03A1", "Badges 2", "Badges" );
 
-            // Add Block Attribute Value
-            //   Block: Badges
-            //   BlockType: Badges
-            //   Category: Obsidian > CRM > Person Detail
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Bottom Right Badges
-            /*   Attribute Value: cce09793-89f6-4042-a98a-ed38392bcfcc */
-            RockMigrationHelper.AddBlockAttributeValue( "E82F7A07-FBD5-417B-A976-AC63CC53BF68", "B39D9047-7D28-42C5-A776-03D71E3A0F36", @"cce09793-89f6-4042-a98a-ed38392bcfcc" );
+            // Attribute: Top Right Badges. Needed to remove the assesments badge from this list if it exists because it will be displayed below.
+            var sqlStringForBadges3Values = $@"
+                DECLARE @BlockEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65')
+                DECLARE @V1LayoutId INT = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{Rock.SystemGuid.Layout.PERSON_DETAIL}')
+                DECLARE @V1BlockTypeId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = 'FC8AF928-C4AF-40C7-A667-4B24390F03A1')
+                DECLARE @V1BlockId INT = (SELECT [Id] FROM [Block] WHERE [LayoutId] = @V1LayoutId AND [Name] = 'Badges 3')
+                DECLARE @AttributeKey VARCHAR(1000) = 'Badges'
+
+                SELECT av.[Value]
+                FROM [Attribute] a
+                JOIN [AttributeValue] av on a.[Id] = av.[AttributeId]
+                WHERE a.[EntityTypeId] = @BlockEntityTypeId
+                    AND a.[EntityTypeQualifierColumn] = 'BlockTypeId'
+                    AND a.[EntityTypeQualifierValue] = @V1BlockTypeId
+                    AND a.[Key] = @AttributeKey
+                    AND av.EntityId = @V1BlockId";
+
+            var personBioBadgesAttributeValue = SqlScalar( sqlStringForBadges3Values ).ToStringSafe().Replace( "CCE09793-89F6-4042-A98A-ED38392BCFCC", string.Empty );
+
+            if ( personBioBadgesAttributeValue != null )
+            {
+                RockMigrationHelper.AddBlockAttributeValue( "E82F7A07-FBD5-417B-A976-AC63CC53BF68", "D87184D5-50A4-47D3-BA50-06D39FCCD328", personBioBadgesAttributeValue );
+            }
+
+            // Attribute: Bottom Right Badges
+            RockMigrationHelper.AddBlockAttributeValue( "E82F7A07-FBD5-417B-A976-AC63CC53BF68", "B39D9047-7D28-42C5-A776-03D71E3A0F36", @"CCE09793-89F6-4042-A98A-ED38392BCFCC" );
+
+            #endregion Badges Block
+
+            #region Footer Content Block
 
             // Add Block 
-            //  Block Name: Footer Content
-            //  Page Name: -
-            //  Layout: Person Profile Home
-            //  Site: Rock RMS
+            // Block Name: Footer Content
+            // Page Name: -
+            // Layout: Person Profile Home
+            // Site: Rock RMS
             RockMigrationHelper.AddBlock( true, null, "92A60013-B8D4-403A-BDFB-C3DA4D867B12".AsGuid(), "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "19B61D65-37E3-459F-A44F-DEF0089118A3".AsGuid(), "Footer Content", "Footer", @"", @"", 0, "85A5921B-41CE-4E90-BAB4-24C51F8C1D23" );
 
             // Add/Update HtmlContent for Block: Footer Content
-            RockMigrationHelper.UpdateHtmlContentBlock( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", @"<p>Crafted by <a href=""https://www.rockrms.com"" tabindex=""0"">Spark Development Network</a> / <a href=""~/License.aspx"" tabindex=""0"">License</a></p>", "C940149C-3C57-4949-9EB2-61E326CC2772" );
+            var footerContentHtmlSql = $@"
+                DECLARE @V1PersonDetailLayoutId INT = (SELECT [Id] FROM [Layout] WHERE [Guid] = 'F66758C6-3E3D-4598-AF4C-B317047B5987')
+                DECLARE @V1BlockId INT = (SELECT [Id] FROM [Block] WHERE [LayoutId] = @V1PersonDetailLayoutId AND [Name] = 'Footer Content')
+
+                SELECT * FROM [HtmlContent] WHERE [BlockId] = @V1BlockId";
+
+            var footerContentHtmlValue = SqlScalar( footerContentHtmlSql ).ToStringSafe();
+            RockMigrationHelper.UpdateHtmlContentBlock( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", footerContentHtmlValue, "C940149C-3C57-4949-9EB2-61E326CC2772" );
 
             // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Start in Code Editor mode
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "0673E015-F8DD-4A52-B380-C758011331B2", @"True" );
+            // Block: Footer Content
+            // BlockType: HTML Content
+            // Category: CMS
+            // Block Location: Layout=Person Profile Home, Site=Rock RMS
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: Image Root Folder
-            /*   Attribute Value: ~/Content */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "26F3AFC6-C05B-44A4-8593-AFE1D9969B0E", @"~/Content" );
+            // Attribute: Start in Code Editor mode
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "0673E015-F8DD-4A52-B380-C758011331B2", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "UseCodeEditor" );
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
-            //   Attribute: User Specific Folders
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "9D3E4ED9-1BEF-4547-B6B0-CE29FE3835EE", @"False" );
+            // Attribute: Image Root Folder
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "26F3AFC6-C05B-44A4-8593-AFE1D9969B0E", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "ImageRootFolder" );
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
+            // Attribute: User Specific Folders
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "9D3E4ED9-1BEF-4547-B6B0-CE29FE3835EE", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "UserSpecificFolders" );
+
             //   Attribute: Document Root Folder
-            /*   Attribute Value: ~/Content */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "3BDB8AED-32C5-4879-B1CB-8FC7C8336534", @"~/Content" );
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "3BDB8AED-32C5-4879-B1CB-8FC7C8336534", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "DocumentRootFolder" );
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Is Secondary Block
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "04C15DC1-DFB6-4D63-A7BC-0507D0E33EF4", @"False" );
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "04C15DC1-DFB6-4D63-A7BC-0507D0E33EF4", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "IsSecondaryBlock" );
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Validate Markup
-            /*   Attribute Value: True */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "6E71FE26-5628-4DDA-BDBC-8E4D47BE72CD", @"True" );
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "6E71FE26-5628-4DDA-BDBC-8E4D47BE72CD", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "ValidateMarkup" );
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Context Name
-            /*   Attribute Value: RockFooterText */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "466993F7-D838-447A-97E7-8BBDA6A57289", @"RockFooterText" );
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "466993F7-D838-447A-97E7-8BBDA6A57289", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "ContextName" );
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Cache Duration
-            /*   Attribute Value: 3600 */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4", @"3600" );
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "CacheDuration" );
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Require Approval
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "EC2B701B-4C1D-4F3F-9C77-A73C75D7FF7A", @"False" );
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "EC2B701B-4C1D-4F3F-9C77-A73C75D7FF7A", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "RequireApproval" );
 
-            // Add Block Attribute Value
-            //   Block: Footer Content
-            //   BlockType: HTML Content
-            //   Category: CMS
-            //   Block Location: Layout=Person Profile Home, Site=Rock RMS
             //   Attribute: Enable Versioning
-            /*   Attribute Value: False */
-            RockMigrationHelper.AddBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "7C1CE199-86CF-4EAE-8AB3-848416A72C58", @"False" );
+            AddPersonPageBlockAttributeValue( "85A5921B-41CE-4E90-BAB4-24C51F8C1D23", "7C1CE199-86CF-4EAE-8AB3-848416A72C58", Rock.SystemGuid.Layout.PERSON_DETAIL, "19B61D65-37E3-459F-A44F-DEF0089118A3", "Footer Content", "SupportVersions" );
+
+            #endregion Footer Content Block
         }
 
         private void AddNewProfileLayoutsDown()
@@ -1142,6 +1008,38 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             RockMigrationHelper.UpdatePageLayout( "15FA4176-1C8E-409D-8B47-85ADA35DE5D2", "6AD84AFC-B3A1-4E30-B53B-C6E57B513839" );
             RockMigrationHelper.UpdatePageLayout( "0E56F56E-FB32-4827-A69A-B90D43CB47F5", "6AD84AFC-B3A1-4E30-B53B-C6E57B513839" );
             RockMigrationHelper.UpdatePageLayout( "BC8E5377-0F6C-457A-9CF0-0F0A0AB2A418", "6AD84AFC-B3A1-4E30-B53B-C6E57B513839" );
+        }
+
+        /// <summary>
+        /// Adds the attribute value from the old block to the new one.
+        /// </summary>
+        /// <param name="v2blockGuid">The v2block unique identifier.</param>
+        /// <param name="v2attributeGuid">The v2attribute unique identifier.</param>
+        /// <param name="v1LayoutGuid">The v1 layout unique identifier.</param>
+        /// <param name="v1BlockTypeGuid">The v1 block type unique identifier.</param>
+        /// <param name="v1BlockName">Name of the v1 block.</param>
+        /// <param name="v1AttributeKey">The v1 attribute key.</param>
+        private void AddPersonPageBlockAttributeValue( string v2blockGuid, string v2attributeGuid, string v1LayoutGuid, string v1BlockTypeGuid, string v1BlockName, string v1AttributeKey )
+        {
+            var sqlString = $@"
+                DECLARE @BlockEntityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65')
+                DECLARE @V1LayoutId INT = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{v1LayoutGuid}')
+                DECLARE @V1BlockTypeId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{v1BlockTypeGuid}')
+                DECLARE @V1BlockId INT = (SELECT [Id] FROM [Block] WHERE [LayoutId] = @V1LayoutId AND [Name] = '{v1BlockName}')
+                DECLARE @AttributeKey VARCHAR(1000) = '{v1AttributeKey}'
+
+                SELECT av.[Value]
+                FROM [Attribute] a
+                JOIN [AttributeValue] av on a.[Id] = av.[AttributeId]
+                WHERE a.[EntityTypeId] = @BlockEntityTypeId
+	                AND a.[EntityTypeQualifierColumn] = 'BlockTypeId'
+	                AND a.[EntityTypeQualifierValue] = @V1BlockTypeId
+	                AND a.[Key] = @AttributeKey
+	                AND av.EntityId = @V1BlockId";
+
+            var attributeValueToInsert = SqlScalar( sqlString ).ToStringSafe();
+
+            RockMigrationHelper.AddBlockAttributeValue( v2blockGuid, v2attributeGuid, attributeValueToInsert );
         }
     }
 }

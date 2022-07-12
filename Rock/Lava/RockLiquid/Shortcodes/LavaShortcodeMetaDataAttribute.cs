@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
@@ -72,6 +74,19 @@ namespace Rock.Lava.Shortcodes
         public string EnabledCommands { get; set; } = string.Empty;
 
         /// <summary>
+        /// One or more LavaShortcode categories to assign to this LavaShortCode.
+        /// </summary>
+        /// <value>The categories.</value>
+        public string Categories { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LavaShortcodeMetadataAttribute"/> class.
+        /// </summary>
+        public LavaShortcodeMetadataAttribute()
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LavaShortcodeMetadataAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -80,6 +95,8 @@ namespace Rock.Lava.Shortcodes
         /// <param name="documentation">The documentation.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="enabledCommands">The enabled commands.</param>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Use the default constructor with named parameters instead." )]
         public LavaShortcodeMetadataAttribute( string name, string tagName, string description, string documentation, string parameters, string enabledCommands )
         {
             this.Name = name;

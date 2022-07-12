@@ -247,15 +247,18 @@ namespace Rock.Badge.Component
 
                 string badgeToolTipColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};'" : string.Empty;
                 toolTipText.AppendLine( $@"
-                    <p class='margin-b-sm'>
-                        <span {badgeToolTipColorHtml} class='{assessmentTypeClass}'>
+                    <span class='mb-2'>
+                        <span class='d-flex align-items-center'>
+                        <span {badgeToolTipColorHtml} class='mr-1 {assessmentTypeClass}'>
                             <span class='fa-stack'>
                                 <i class='fa fa-circle fa-stack-2x'></i>
                                 <i class='{assessmentType.IconCssClass} fa-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
                             </span>
                         </span>
-                        <strong>{assessmentTitle}:</strong> {mergedBadgeSummaryLava}
-                    </p>" );
+                        <strong>{assessmentTitle}</strong>
+                        </span>
+                        <span class='text-xs' style='padding-left:32px;'>{mergedBadgeSummaryLava}</span>
+                    </span>" );
             }
 
             badgeRow1.AppendLine( $@"</div>" );
@@ -265,7 +268,7 @@ namespace Rock.Badge.Component
                 badgeRow2.AppendLine( $@"</div>" );
             }
 
-            writer.Write( $@" <div class='rockbadge rockbadge-grid rockbadge-id-{badge.Id}' data-toggle='tooltip' data-html='true' data-original-title=""{toolTipText.ToString()}"">" );
+            writer.Write( $@" <div class='rockbadge rockbadge-grid rockbadge-id-{badge.Id}' data-toggle='tooltip' data-html='true' data-placement='bottom' data-original-title=""{toolTipText.ToString()}"">" );
             writer.Write( badgeRow1.ToString() );
             writer.Write( badgeRow2.ToString() );
             writer.Write( "</div>" );

@@ -17,6 +17,8 @@
 
 import { Guid } from "@Obsidian/Types";
 import { post } from "@Obsidian/Utility/http";
+import { popover } from "@Obsidian/Utility/popover";
+import { tooltip } from "@Obsidian/Utility/tooltip";
 import { BadgeListGetBadgesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/badgeListGetBadgesOptionsBag";
 import { RenderedBadgeBag } from "@Obsidian/ViewModels/CRM/renderedBadgeBag";
 import { defineComponent, nextTick, PropType, ref, watch } from "vue";
@@ -49,7 +51,14 @@ export default defineComponent({
     },
 
     setup(props) {
+        // #region Values
+
         const badges = ref<string[]>([]);
+        const containerRef = ref<HTMLElement | null>(null);
+
+        // #endregion
+
+        // #region Functions
 
         /** Load the badges from our property data and render the output to the DOM. */
         const loadBadges = async (): Promise<void> => {
@@ -82,12 +91,24 @@ export default defineComponent({
                         document.body.appendChild(scriptNode);
                     });
                 }
+
+                // Enable tooltips and popovers.
+                nextTick(() => {
+                    if (!containerRef.value) {
+                        return;
+                    }
+
+                    tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")));
+                    popover(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
+                });
             }
             else {
                 console.error(`Error loading badges: ${result.errorMessage || "Unknown error"}`);
                 badges.value = [];
             }
         };
+
+        // #endregion
 
         watch([() => props.badgeTypeGuids, () => props.entityKey, () => props.entityTypeGuid], () => {
             loadBadges();
@@ -97,12 +118,13 @@ export default defineComponent({
         loadBadges();
 
         return {
-            badges
+            badges,
+            containerRef
         };
     },
 
     template: `
-<div style="display: flex;">
+<div ref="containerRef" style="display: flex;">
     <div v-for="badge in badges" v-html="badge" />
 </div>
 `

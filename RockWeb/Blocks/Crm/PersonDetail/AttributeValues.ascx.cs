@@ -434,12 +434,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 var h4 = new HtmlGenericControl( "h4" );
                                 h4.InnerText = category.Name;
                                 fsAttributes.Controls.AddAt( index, h4 );
-                                var hr = new HtmlGenericControl( "hr/" );
-                                fsAttributes.Controls.AddAt( index + 1, hr );
                             }
                         }
                     }
-                    
                 }
                 else
                 {

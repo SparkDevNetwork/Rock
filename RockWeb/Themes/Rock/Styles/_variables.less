@@ -16,20 +16,20 @@
 @white:    #fff;
 @black:    #000;
 @gray-50:  #fcfcfc;
-@gray-100: #f5f5f5;
-@gray-200: #eeeeee;
+@gray-100: #F8F9FA;
+@gray-200: #E9ECEF;
 @gray-300: #dfe0e1;
 @gray-400: #bcbcbd;
 @gray-500: #9e9ea0;
-@gray-600: #737475;
+@gray-600: #6c757d;
 @gray-700: #606162;
 @gray-800: #343A40;
-@gray-900: #2d2e31;
+@gray-900: #212529;
 
 // Theme Colors *show in editor*
 @brand-color:                 #ee7725;  // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
-@body-background:             #F2F2F2;  // The page background color. #color
-@text-color:                  @gray-800;  // The default text color. #color
+@body-background:             #EFEFEF;  // The page background color. #color
+@text-color:                  @gray-900;  // The default text color. #color
 @text-muted:                  @gray-600;  // The muted color for text #color
 @headings-small-color:        @gray-500;
 
@@ -225,11 +225,12 @@
 @text-selection-bg:           @text-selection-background;
 
 
-@navbartop-color:             @white;
-
 @body-bg:                     @body-background;
 
 @navbar-top-height:           80px;
+@navbar-top-color:             @white;
+@navbar-element-height:       40px;
+@navbar-element-margin:       ((@navbar-top-height - @navbar-element-height) / 2);
 @full-worksurface-offset:     (@navbar-top-height + 72px);
 
 @input-height-small:             34px;
@@ -354,7 +355,8 @@
 @panel-heading-padding:       14px 18px;
 @panel-heading-bg:            @gray-100;                 // The background color of the panel's header.
 @panel-text:                  @text-color;                    // The text color of the panel.
-@panel-border:                @gray-300;                          // The panel's border color.
+@panel-border:                @gray-200;                          // The panel's border color.
+@panel-default-border:        @panel-border;                // The panel's default border color.
 @panel-top-border-color:      @panel-border;                          // Color of the panel's top border often used as an accent color.
 @panel-border-radius:         @border-radius-base;            // Panel Border Radius subtracts 1, so set to 1 so there's not invalid CSS
 @panel-subheading:            @ui-2;
@@ -479,8 +481,8 @@
 //// Badge Bar
 @persondetails-badge-bg:                @gray-50;
 
-@persondetails-badge-color-light:       @gray-300;
-@persondetails-badge-color:             @gray-400;
+@persondetails-badge-color-light:       @gray-100;
+@persondetails-badge-color:             @gray-200;
 @persondetails-badge-color-emphasis:    @gray-400;
 
 //// Family Bar
@@ -567,10 +569,11 @@
 @smartsearch-bg:                          rgba(255, 255, 255, .1);
 @smartsearch-border-color:                #2c2c2c;
 @smartsearch-box-shadow:                  0 1px 2px rgba(0, 0, 0, .1) inset, 0 1px 0 rgba(255, 255, 255, .15);
-@smartsearch-input-text-color:            @navbartop-color;
+@smartsearch-input-padding:               15px 0 15px 34px;
+@smartsearch-input-text-color:            @navbar-top-color;
 @smartsearch-input-selection-background:  #2e2e2e;
 @smartsearch-input-selection-text-color:  @white;
-@smartsearch-text-color:                  @navbartop-color;
+@smartsearch-text-color:                  @navbar-top-color;
 
 // Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
 @wizard-bg:                             @pagetitle-bg;
@@ -640,7 +643,7 @@
 @alert-default-text:          @theme-6-text;
 
 // Custom Labels { The bootstrap labels use the brand colors. }
-@label-padding:               .333em 0.6em .4em;
+@label-padding:               .5em 1em;
 @label-link-color:            inherit;
 
 @label-default-bg:            @gray-200;

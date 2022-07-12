@@ -150,5 +150,10 @@ namespace Rock.SystemGuid
         /// The Process Elevated Security Job. <see cref="Rock.Jobs.ProcessElevatedSecurity"/>
         /// </summary>
         public const string PROCESS_ELEVATED_SECURITY = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714";
+
+        /// <summary>
+        /// The <see cref="Rock.Jobs.UpdatePersonalizationData" /> job.
+        /// </summary>
+        public const string UPDATE_PERSONALIZATION_DATA = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B";
     }
 }

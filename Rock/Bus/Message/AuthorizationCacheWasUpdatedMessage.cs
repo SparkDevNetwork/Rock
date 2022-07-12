@@ -15,8 +15,6 @@
 // </copyright>
 using Rock.Bus.Queue;
 using Rock.Logging;
-using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Bus.Message
 {
@@ -75,24 +73,15 @@ namespace Rock.Bus.Message
         /// </summary>
         public static void Publish( string key )
         {
-            if ( !RockMessageBus.IsRockStarted )
-            {
-                // Don't publish cache events until Rock is all the way started
-                var logMessage = $"Authorization Update message was not published because Rock is not fully started yet.";
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+            /*  06-07-2022 MP
 
-                if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
-                {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
-                    ExceptionLogService.LogException( new BusException( logMessage ) );
-                }
-                else
-                {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
-                }
+              In the case of publishing a AuthorizationCacheWasUpdatedMessage, we don't need to check RockMessageBus.IsRockStarted. The AuthorizationCacheWasUpdatedMessage publish
+              logic doesn't have a dependency on having Rock fully started.
 
-                return;
-            }
+              Also, we really need to publish these messages regardless of IsRockStarted to prevent AuthorizationCacheWasUpdatedMessage caches on other servers from getting stale.
+
+              If we later discover that this isn't OK, we'll revisit this decision and make any updates to make it OK again.
+           */
 
             var message = new AuthorizationCacheWasUpdatedMessage
             {

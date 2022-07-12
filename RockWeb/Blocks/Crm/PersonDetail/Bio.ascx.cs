@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -33,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a person 
+    /// The main Person Profile block the main information about a person
     /// </summary>
     [DisplayName( "Person Bio" )]
     [Category( "CRM > Person Detail" )]
@@ -158,9 +159,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [LinkedPage(
         "Communication Page",
         Key = AttributeKey.CommunicationPage,
-        Description = "The communication page to use for when the person's email address is clicked. Leave this blank to use the default.",
+        Description = "The communication page to use when the email button or person's email address is clicked. Leave this blank to use the default.",
         IsRequired = false,
         Order = 15 )]
+
+    [LinkedPage(
+        "SMS Page",
+        Key = AttributeKey.SmsPage,
+        Description = "The communication page to use when the text button is clicked. Leave this blank to use the default.",
+        IsRequired = false,
+        Order = 16 )]
 
     #endregion Block Attributes
 
@@ -192,6 +200,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string SocialMediaCategory = "SocialMediaCategory";
             public const string EnableCallOrigination = "EnableCallOrigination";
             public const string CommunicationPage = "CommunicationPage";
+            public const string SmsPage = "SmsPage";
         }
 
         private static class PageParameterKey
@@ -205,7 +214,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             public const string AdditionalCustomActions = @"
 Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current person's id.
-Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
+Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an
 &lt;li&gt; element for each available action.  Example:
 <pre>
     &lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
@@ -221,12 +230,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private const string COLOR_KEY = "color";
 
         #endregion Fields
-
-        private static class MediumTypes
-        {
-            public static string Email = "Email";
-            public static string SMS = "SMS";
-        }
 
         #region Base Control Methods
 
@@ -283,7 +286,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person.IsDeceased )
             {
-                divBio.AddCssClass( "deceased" );
+                // divBio.AddCssClass( "deceased" );
             }
 
             // Set the browser page title to include person's name
@@ -291,9 +294,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             ShowProtectionLevel();
             ShowBadgeList();
-            ShowEmailButton();
 
-            lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            divEditButton.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
 
             // only show if the when all these are true
             //   -- EnableImpersonation is enabled
@@ -305,7 +307,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             lbImpersonate.Visible = false;
             if ( enableImpersonation && Person.Id != CurrentPersonId && Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
             {
-                // Impersonate for anybody that has Token Usage Allowed. If this Person doesn't have TokenUsage allowed 
+                // Impersonate for anybody that has Token Usage Allowed. If this Person doesn't have TokenUsage allowed
                 // and the logged-in user would normally see an Impersonate button disabled the button.
                 lbImpersonate.Visible = true;
                 lbImpersonate.Enabled = Person.IsPersonTokenUsageAllowed() == true ;
@@ -338,11 +340,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 ShowPersonName();
                 ShowFollowingButton();
                 ShowSmsButton();
-                //ShowEmailButton(); This needs to be done in OnInit since a conditional click event is being added.
+                ShowEmailButton();
                 CreateActionMenu();
                 ShowDemographicsInfo();
                 ShowPhoneInfo();
                 ShowEmailText();
+
+                divContactSection.Visible = lEmail.Text.IsNotNullOrWhiteSpace() || rptPhones.Visible == true;
+
                 ShowSocialMediaButtons();
                 ShowCustomContent();
             }
@@ -408,16 +413,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
         }
 
-        protected void lbSendText_Click( object sender, EventArgs e )
-        {
-            NavigateToCommunicationPage( MediumTypes.SMS );
-        }
-
-        protected void lbSendEmail_Click( object sender, EventArgs e )
-        {
-            NavigateToCommunicationPage( MediumTypes.Email );
-        }
-
         protected void rptPhones_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem )
@@ -437,13 +432,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             string formattedNumber = phoneNumber.IsUnlisted ? "Unlisted" : PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number, showCountryCode );
 
             var phoneMarkup = formattedNumber;
+            var phoneEnabledClass = originationEnabled ? "orig-enabled" : "orig-disabled";
 
             if ( e.Item.FindControl( "litPhoneNumber" ) is Literal litPhoneNumber )
             {
                 if ( originationEnabled )
                 {
                     var pbxComponent = Rock.Pbx.PbxContainer.GetAllowedActiveComponentWithOriginationSupport( CurrentPerson );
-
                     if ( pbxComponent != null )
                     {
                         var jsScript = $"javascript: Rock.controls.pbx.originate('{CurrentPerson.Guid}', '{phoneNumber.Number}', '{CurrentPerson.FullName}','{Person.FullName}','{formattedNumber}');";
@@ -489,9 +484,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         private void ShowPersonImage()
         {
-            lImage.Text = Person.PhotoId.HasValue
-                    ? $@"<img src=""{Person.GetPersonPhotoUrl( Person, 340, 204 )}"" alt class=""img-cover inset-0"">"
-                    : Person.GetPersonPhotoImageTag( Person, 340, 204 );
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-cover inset-0"">";
         }
 
         private void ShowProtectionLevel()
@@ -518,7 +511,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 int recordTypeValueIdBusiness = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
-            
+
             if ( isBusiness )
             {
                 lName.Text = $@"<h1>{Person.LastName}</h1>";
@@ -605,11 +598,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             if ( !GetAttributeValue( AttributeKey.AllowFollowing ).AsBoolean() || CurrentPerson == null )
             {
-                pnlFollowing.Visible = false;
+                lbFollowing.Visible = false;
                 return;
             }
 
-            pnlFollowing.Visible = true;
+            lbFollowing.Visible = true;
             using ( var rockContext = new RockContext() )
             {
                 var followingList = new FollowingService( rockContext )
@@ -619,16 +612,18 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                 if ( followingList.Where( f => f.PersonAlias.PersonId == CurrentPerson.Id ).Any() )
                 {
-                    pnlFollowing.AddCssClass( "is-followed" );
+                    lbFollowing.AddCssClass( "is-followed" );
+                    lbFollowing.Text = $@"
+                        <span class=""text-link"">Following</span>
+                        <span class=""font-weight-normal"">{followingList.Count}</span>";
                 }
                 else
                 {
-                    pnlFollowing.RemoveCssClass( "is-followed" );
+                    lbFollowing.RemoveCssClass( "is-followed" );
+                    lbFollowing.Text = $@"
+                        <span class=""text-link"">Follow</span>
+                        <span class=""font-weight-normal"">{followingList.Count}</span>";
                 }
-
-                lbFollowing.Text = $@"
-                <span class=""text-link"">Follow</span>
-                <span class=""font-weight-normal"">{followingList.Count}</span>";
             }
         }
 
@@ -637,7 +632,47 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             if ( !Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).Any() )
             {
                 divSmsButton.Visible = false;
+                return;
             }
+
+            divSmsButton.Visible = true;
+
+            Rock.Web.PageReference communicationPageReference = null;
+
+            var communicationLinkedPageValue = this.GetAttributeValue( AttributeKey.SmsPage );
+            if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
+            {
+                communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+            }
+
+            var mediums = GetCommunicationMediums();
+            var smsLink = string.Empty;
+
+            if ( communicationPageReference != null )
+            {
+                communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() )
+                {
+                    ["person"] = Person.Id.ToString()
+                };
+
+                if( mediums.ContainsKey( "SMS" ) )
+                {
+                    communicationPageReference.QueryString.Add( "MediumId", mediums["SMS"].Value.ToString() );
+                }
+
+                smsLink = new Rock.Web.PageReference( communicationPageReference.PageId, communicationPageReference.RouteId, communicationPageReference.Parameters, communicationPageReference.QueryString ).BuildUrl();
+            }
+            else
+            {
+                smsLink = $"{ResolveRockUrl( "/" )}communications/new/simple?person={Person.Id}";
+
+                if ( mediums.ContainsKey( "SMS" ) )
+                {
+                    smsLink += $"&MediumId={mediums["SMS"].Value}";
+                }
+            }
+
+            lSmsButton.Text = $@"<a href='{smsLink}' class='btn btn-default btn-go btn-square stretched-link' title='Send a SMS' aria-label='Send a SMS'><i class='fa fa-comment-alt'></i></a><span>Text</span>";
         }
 
         private void ShowEmailButton()
@@ -650,32 +685,38 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             divEmailButton.Visible = true;
 
+            Rock.Web.PageReference communicationPageReference = null;
+
             var communicationLinkedPageValue = this.GetAttributeValue( AttributeKey.CommunicationPage );
-            Rock.Web.PageReference communicationPageReference;
             if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
             {
                 communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
             }
-            else
-            {
-                communicationPageReference = null;
-            }
 
             var globalAttributes = GlobalAttributesCache.Get();
             var emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
+            var emailLink = $"mailto:{Person.Email}";
 
-            // create link
             if ( string.IsNullOrWhiteSpace( emailLinkPreference ) || emailLinkPreference == "1" )
             {
-                lbSendEmail.Click += lbSendEmail_Click;
-            }
-            else
-            {
-                lbSendEmail.Attributes.Add( "href", $"mailto:{Person.Email}" );
-                lbSendEmail.Click -= lbSendEmail_Click;
+                if ( communicationPageReference != null )
+                {
+                    communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() )
+                    {
+                        ["person"] = Person.Id.ToString()
+                    };
+
+                    emailLink = new Rock.Web.PageReference( communicationPageReference.PageId, communicationPageReference.RouteId, communicationPageReference.Parameters, communicationPageReference.QueryString ).BuildUrl();
+                }
+                else
+                {
+                    emailLink = $"{ResolveRockUrl( "/" )}communications/new?person={Person.Id}";
+                }
             }
 
-            lbSendEmail.ToolTip = Person.EmailPreference == EmailPreference.NoMassEmails ? "Email Preference is set to \"No Mass Emails\"" : string.Empty;
+            var emailButtonTitle = Person.EmailPreference == EmailPreference.NoMassEmails ? @"Email Preference is set to ""No Mass Emails""" : "Send an email";
+
+            lEmailButton.Text = $@"<a href='{emailLink}' class='btn btn-default btn-go btn-square stretched-link' title='{emailButtonTitle}' aria-label='{emailButtonTitle}'><i class='fa fa-envelope'></i></a><span>Email</span>";
         }
 
         protected void CreateActionMenu()
@@ -748,38 +789,47 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         private void ShowDemographicsInfo()
         {
             lGender.Text =
-                $@"<dt>{Person.Gender}</dt>
+                $@"<dt title=""Gender"">{Person.Gender}</dt>
                 <dd class=""d-none"">Gender</dd>";
 
             if ( Person.BirthDate.HasValue )
             {
-                var formattedAge = Person.FormatAge();
-                if ( formattedAge.IsNotNullOrWhiteSpace() )
+                if ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year )
                 {
-                    formattedAge += " old";
-                }
+                    var formattedAge = Person.FormatAge();
+                    if ( formattedAge.IsNotNullOrWhiteSpace() )
+                    {
+                        formattedAge += " old";
+                    }
 
-                var birthdateText = ( Person.BirthYear.HasValue && Person.BirthYear != DateTime.MinValue.Year ) ? Person.BirthDate.Value.ToShortDateString() : Person.BirthDate.Value.ToMonthDayString();
-                lAge.Text = $"<dt>{formattedAge}</dt><dd>{birthdateText}</dd>";
+                    var birthdateText = Person.BirthDate.Value.ToShortDateString();
+                    lAge.Text = $"<dt>{formattedAge}</dt><dd>{birthdateText}</dd>";
+                }
+                else
+                {
+                    var birthdateText = Person.BirthDate.Value.ToString("MMM d");
+                    lAge.Text = $"<dt>{birthdateText}</dt><dd>Birthdate</dd>";
+
+                }
             }
-            
+
             if ( Person.AnniversaryDate.HasValue && GetAttributeValue( AttributeKey.DisplayAnniversaryDate ).AsBoolean() )
             {
-                lMaritalStatus.Text = $"<dt>{Person.MaritalStatusValueId.DefinedValue()} {Person.AnniversaryDate.Value.Age()} yrs</dt><dd>{Person.AnniversaryDate.Value.ToMonthDayString()}</dd>";
+                lMaritalStatus.Text = $"<dt>{Person.MaritalStatusValueId.DefinedValue()} {Person.AnniversaryDate.Value.Humanize().Replace( "ago", "" )}</dt><dd>{Person.AnniversaryDate.Value.ToShortDateString()}</dd>";
             }
             else
             {
                 if ( Person.MaritalStatusValueId.HasValue )
                 {
-                    lMaritalStatus.Text = $"<dt>{Person.MaritalStatusValueId.DefinedValue()}</dt>";
+                    lMaritalStatus.Text = $@"<dt>{Person.MaritalStatusValueId.DefinedValue()}</dt><dd class=""d-none"">Marital Status</dd>";
                 }
             }
-            
+
             if ( GetAttributeValue( AttributeKey.DisplayGraduation ).AsBoolean() )
             {
                 if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
                 {
-                    lGraduation.Text = 
+                    lGraduation.Text =
                         $@"<dt>{(Person.HasGraduated.Value ? "Graduated" : "Graduates")} {Person.GraduationYear.Value}</dt>
                         <dd class=""d-none"">Graduation</dd>";
                 }
@@ -801,8 +851,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 phoneNumbers = phoneNumbers.OrderBy( a => phoneNumberTypeIds.IndexOf( a.NumberTypeValueId.Value ) );
             }
 
-            rptPhones.DataSource = phoneNumbers;
-            rptPhones.DataBind();
+            // if phoneNumbers exist then bind
+            if ( phoneNumbers.Any() ) {
+                rptPhones.DataSource = phoneNumbers;
+                rptPhones.DataBind();
+            } else {
+                rptPhones.Visible = false;
+            }
         }
 
         private void ShowEmailText()
@@ -818,38 +873,48 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 communicationPageReference = null;
             }
 
-            lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference );
+            lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference, "d-block text-link text-truncate" );
+            if ( lEmail == null )
+            {
+                lEmail.Visible = false;
+            }
         }
 
         private void ShowSocialMediaButtons()
         {
             var socialCategoryGuid = GetAttributeValue( AttributeKey.SocialMediaCategory ).AsGuidOrNull();
-                if ( socialCategoryGuid.HasValue )
-                {
-                    var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid.Value ) );
-                    var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value, QualifierValues = a.Value.QualifierValues } );
 
-                    rptSocial.DataSource = result
-                        .Where( r =>
-                            r.Value != null &&
-                            r.Value.Value != string.Empty &&
-                            r.QualifierValues != null &&
-                            r.QualifierValues.ContainsKey( NAME_KEY ) &&
-                            r.QualifierValues.ContainsKey( ICONCSSCLASS_KEY ) &&
-                            r.QualifierValues.ContainsKey( COLOR_KEY ) )
-                        .OrderBy( r => r.Attribute.Order )
-                        .Select( r => new
-                        {
-                            url = r.Value.Value,
-                            name = r.QualifierValues[NAME_KEY].Value,
-                            icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
-                                    r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
-                                    r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
-                            color = r.Attribute.QualifierValues[COLOR_KEY].Value,
-                        } )
-                        .ToList();
-                    rptSocial.DataBind();
-                }
+            if ( !socialCategoryGuid.HasValue )
+            {
+                rptSocial.Visible = false;
+                return;
+            }
+
+            var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid.Value ) );
+            var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Value = v.Value, QualifierValues = a.Value.QualifierValues } );
+
+            rptSocial.DataSource = result
+                .Where( r =>
+                    r.Value != null &&
+                    r.Value.Value != string.Empty &&
+                    r.QualifierValues != null &&
+                    r.QualifierValues.ContainsKey( NAME_KEY ) &&
+                    r.QualifierValues.ContainsKey( ICONCSSCLASS_KEY ) &&
+                    r.QualifierValues.ContainsKey( COLOR_KEY ) )
+                .OrderBy( r => r.Attribute.Order )
+                .Select( r => new
+                {
+                    url = r.Value.Value,
+                    name = r.QualifierValues[NAME_KEY].Value,
+                    icon = r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value.Contains( "fa-fw" ) ?
+                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value :
+                        r.Attribute.QualifierValues[ICONCSSCLASS_KEY].Value + " fa-fw",
+                    color = r.Attribute.QualifierValues[COLOR_KEY].Value,
+                } )
+                .ToList();
+
+            rptSocial.DataBind();
+            rptSocial.Visible = rptSocial.Items.Count > 0;
         }
 
         private void ShowCustomContent()

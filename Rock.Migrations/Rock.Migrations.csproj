@@ -120,6 +120,30 @@
     <Compile Include="Migrations\202206171920483_RemoveNavigationProperties.designer.cs">
       <DependentUpon>202206171920483_RemoveNavigationProperties.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202206241516012_AddOrderToConnectionStatusAutomation.cs" />
+    <Compile Include="Migrations\202206241516012_AddOrderToConnectionStatusAutomation.designer.cs">
+      <DependentUpon>202206241516012_AddOrderToConnectionStatusAutomation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.cs" />
+    <Compile Include="Migrations\202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.designer.cs">
+      <DependentUpon>202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206301739408_Personalization.cs" />
+    <Compile Include="Migrations\202206301739408_Personalization.designer.cs">
+      <DependentUpon>202206301739408_Personalization.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207052234237_Rollup_20220705.cs" />
+    <Compile Include="Migrations\202207052234237_Rollup_20220705.designer.cs">
+      <DependentUpon>202207052234237_Rollup_20220705.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207052258541_CodeGenerated_20220705.cs" />
+    <Compile Include="Migrations\202207052258541_CodeGenerated_20220705.designer.cs">
+      <DependentUpon>202207052258541_CodeGenerated_20220705.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207121900210_CodeGenerated_20220712.cs" />
+    <Compile Include="Migrations\202207121900210_CodeGenerated_20220712.designer.cs">
+      <DependentUpon>202207121900210_CodeGenerated_20220712.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1227,6 +1251,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202206171920483_RemoveNavigationProperties.resx">
       <DependentUpon>202206171920483_RemoveNavigationProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206241516012_AddOrderToConnectionStatusAutomation.resx">
+      <DependentUpon>202206241516012_AddOrderToConnectionStatusAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.resx">
+      <DependentUpon>202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206301739408_Personalization.resx">
+      <DependentUpon>202206301739408_Personalization.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207052234237_Rollup_20220705.resx">
+      <DependentUpon>202207052234237_Rollup_20220705.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207052258541_CodeGenerated_20220705.resx">
+      <DependentUpon>202207052258541_CodeGenerated_20220705.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207121900210_CodeGenerated_20220712.resx">
+      <DependentUpon>202207121900210_CodeGenerated_20220712.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>

@@ -76,4 +76,6 @@ export const enum ServiceJob {
     SyncMedia = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
     /** The Process Elevated Security Job. Rock.Jobs.ProcessElevatedSecurity */
     ProcessElevatedSecurity = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
+    /** The Rock.Jobs.UpdatePersonalizationData job. */
+    UpdatePersonalizationData = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
 }

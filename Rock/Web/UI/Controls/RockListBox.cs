@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -373,7 +374,7 @@ namespace Rock.Web.UI.Controls
         /// Selects the values as int.
         /// </summary>
         /// <value>
-        /// The selected values as int.
+        /// The selected values as a list of integers.
         /// </value>
         public List<int> SelectedValuesAsInt
         {
@@ -384,6 +385,26 @@ namespace Rock.Web.UI.Controls
                 {
                     int numValue = int.MinValue;
                     if ( int.TryParse( stringValue, out numValue ) )
+                    {
+                        values.Add( numValue );
+                    }
+                }
+                return values;
+            }
+        }
+
+        /// <summary>
+        /// Gets the selected values as a list of Guids.
+        /// </summary>
+        /// <value>The selected values as unique identifier.</value>
+        public List<Guid> SelectedValuesAsGuid
+        {
+            get
+            {
+                var values = new List<Guid>();
+                foreach ( string stringValue in SelectedValues )
+                {
+                    if ( Guid.TryParse( stringValue, out Guid numValue ) )
                     {
                         values.Add( numValue );
                     }
