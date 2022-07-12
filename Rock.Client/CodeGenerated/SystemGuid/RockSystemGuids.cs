@@ -1213,6 +1213,8 @@ namespace Rock.Client.SystemGuid
         public const string FULL_WIDTH_INTERNAL_SITE = "D65F783D-87A9-4CC9-8110-E83466A0EADB";
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
         public const string PERSON_DETAIL = "F66758C6-3E3D-4598-AF4C-B317047B5987";
+        public const string PERSON_PROFILE_DETAIL = "6AD84AFC-B3A1-4E30-B53B-C6E57B513839";
+        public const string PERSON_PROFILE_HOME = "92A60013-B8D4-403A-BDFB-C3DA4D867B12";
     }
 
     /// <summary>

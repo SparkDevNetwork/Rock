@@ -87,6 +87,12 @@ export type SiteBag = {
     /** Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site */
     enablePageViews: boolean;
 
+    /** Gets or sets a value indicating whether [enable personalization]. */
+    enablePersonalization: boolean;
+
+    /** Gets or sets a value indicating whether /[enable visitor tracking]. */
+    enableVisitorTracking: boolean;
+
     /** Gets or sets the path to the error page. */
     errorPage?: string | null;
 

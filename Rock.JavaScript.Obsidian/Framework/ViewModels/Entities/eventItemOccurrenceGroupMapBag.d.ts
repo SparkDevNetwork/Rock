@@ -25,6 +25,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** EventItemOccurrenceGroupMap View Model */
 export type EventItemOccurrenceGroupMapBag = {
+    /** Gets or sets the Id of the Rock.Model.Campus the event will be tied to. */
+    campusId?: number | null;
+
     /** Gets or sets the Rock.Model.EventItemOccurrence identifier. */
     eventItemOccurrenceId?: number | null;
 

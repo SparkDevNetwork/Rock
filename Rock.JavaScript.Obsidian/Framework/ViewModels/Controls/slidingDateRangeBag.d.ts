@@ -24,6 +24,7 @@
 import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
 import { TimeUnitType } from "@Obsidian/Enums/Controls/timeUnitType";
 
+/** Class SlidingDateRangeBag. */
 export type SlidingDateRangeBag = {
     /** Gets or sets the range type */
     rangeType: SlidingDateRangeType;
