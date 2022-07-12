@@ -344,18 +344,20 @@ namespace Rock.Lava.Shortcodes
             return blockContent.Trim();
         }
 
-        /// <summary>Parses the markup.</summary>
+        /// <summary>
+        /// Parses the markup.
+        /// </summary>
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
-        /// <param name="_internalMergeFields"></param>
-        /// <returns>
-        ///   <br />
-        /// </returns>
-        private Dictionary<string, object> ParseMarkup( string markup, Context context, LavaShortcodeCache shortcode, out ReadOnlyDictionary<string, object> _internalMergeFields )
+        /// <param name="shortcode">The shortcode.</param>
+        /// <param name="internalMergeFields">The internal merge fields.</param>
+        /// <returns><br /></returns>
+        private Dictionary<string, object> ParseMarkup( string markup, Context context, LavaShortcodeCache shortcode, out ReadOnlyDictionary<string, object> internalMergeFields )
         {
             var parms = new Dictionary<string, object>();
 
-            _internalMergeFields = GetBlockMergeFields( context, parms );
+            // Populate 'out internalMergeFields' variable
+            internalMergeFields = GetBlockMergeFields( context, parms );
 
             // create all the parameters from the shortcode with their default values
             var shortcodeParms = RockSerializableDictionary.FromUriEncodedString( shortcode.Parameters );
@@ -366,7 +368,7 @@ namespace Rock.Lava.Shortcodes
             }
 
             // first run lava across the inputted markup
-            var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
@@ -413,7 +415,7 @@ namespace Rock.Lava.Shortcodes
         }
 
         /// <summary>
-        /// Loads the block merge fields.
+        /// Gets the block merge fields.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="parms">The parms.</param>
