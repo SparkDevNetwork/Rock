@@ -32,6 +32,12 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:GroupMemberRequirementCard runat=server></{0}:GroupMemberRequirementCard>" )]
     public class GroupMemberRequirementCard : Control, INamingContainer
     {
+        private static class LabelKey
+        {
+            public const string RequirementMet = " Requirement Met";
+            public const string RequirementNotMet = " Requirement Not Met";
+            public const string RequirementMetWithWarning = "Requirement Met With Warning";
+        }
         private GroupRequirementType _groupMemberRequirementType;
 
         private bool _canOverride;
@@ -198,7 +204,9 @@ namespace Rock.Web.UI.Controls
             _groupMemberRequirement = new GroupMemberRequirementService( new RockContext() ).Get( this.GroupMemberRequirementId ?? 0 );
             if ( this.Title.Trim() != string.Empty )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3 ml-3 mr-3 " + CardStatus( MeetsGroupRequirement ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ml-1 mr-1 " + CardStatus( MeetsGroupRequirement ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
@@ -383,6 +391,9 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
+                // End the Div "padding" tag.
+                writer.RenderEndTag();
+
                 // End the Div Col tag.
                 writer.RenderEndTag();
 
@@ -417,16 +428,16 @@ namespace Rock.Web.UI.Controls
             switch ( meetsGroupRequirement )
             {
                 case MeetsGroupRequirement.Meets:
-                    return this._groupMemberRequirementType.PositiveLabel;
+                    return _groupMemberRequirementType.PositiveLabel.IsNotNullOrWhiteSpace() ? _groupMemberRequirementType.PositiveLabel : LabelKey.RequirementMet;
 
                 case MeetsGroupRequirement.NotMet:
-                    return this._groupMemberRequirementType.NegativeLabel;
+                    return _groupMemberRequirementType.NegativeLabel.IsNotNullOrWhiteSpace() ? _groupMemberRequirementType.NegativeLabel : LabelKey.RequirementNotMet;
 
                 case MeetsGroupRequirement.MeetsWithWarning:
-                    return this._groupMemberRequirementType.WarningLabel;
+                    return _groupMemberRequirementType.WarningLabel.IsNotNullOrWhiteSpace() ? _groupMemberRequirementType.WarningLabel : LabelKey.RequirementMetWithWarning;
 
                 default:
-                    return "Issue with this message.";
+                    return "Issue With Requirement.";
             }
         }
 
@@ -459,6 +470,7 @@ namespace Rock.Web.UI.Controls
                     GroupRequirementId = GroupRequirementId.Value,
                     GroupMemberId = GroupMemberId
                 };
+                groupMemberRequirementService.Add( groupMemberRequirement );
             }
 
             groupMemberRequirement.WasOverridden = true;
@@ -466,10 +478,11 @@ namespace Rock.Web.UI.Controls
             groupMemberRequirement.OverriddenByPersonAliasId = currentPerson.PrimaryAliasId;
             groupMemberRequirement.OverriddenDateTime = RockDateTime.Now;
 
-            groupMemberRequirementService.Add( groupMemberRequirement );
-
             rockContext.SaveChanges();
             _modalDialog.Hide();
+            //groupMemberRequirement.GroupMember.CalculateRequirements( rockContext, true );
+            // Rebind the card to make sure that the current status is reflected in the styling.
+            this.Page.DataBind();//.DataBind();
         }
     }
 }
