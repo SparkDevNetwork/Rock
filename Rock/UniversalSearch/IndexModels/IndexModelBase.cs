@@ -410,17 +410,10 @@ namespace Rock.UniversalSearch.IndexModels
         {
             get
             {
-                try
+                // try to get from properties collection first
+                if ( _members.ContainsKey( key ) )
                 {
-                    // try to get from properties collection first
-                    if ( _members.ContainsKey( key ) )
-                    {
-                        return _members[key];
-                    }
-                }
-                catch ( KeyNotFoundException )
-                {
-                    // if there is a KeyNotFoundException (even though we check), ignore and use the GetProperty Approach
+                    return _members[key];
                 }
 
                 // try reflection on instanceType
