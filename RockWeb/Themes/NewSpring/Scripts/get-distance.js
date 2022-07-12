@@ -108,8 +108,8 @@ document.addEventListener("DOMContentLoaded", function(){
                 distanceSearchLocations.appendChild(itemsArr[i]);
             }
 
-            swiper.update();
-            swiper.slideTo(0, 50, false);
+            // swiper.update();
+            // swiper.slideTo(0, 50, false);
 
             // Scroll to locations card slider after sorting
             var anchor = document.querySelector('#locations');
