@@ -73,11 +73,11 @@ namespace Rock.Model
             if ( this.AliasPersonId.HasValue )
             {
                 // Not sure how useful this is
-                return string.Format( "{0}->{1}", this.AliasPersonId, this.PersonId );
+                return $"{this.AliasPersonId}->{this.PersonId}";
             }
             else
             {
-                return string.Format( "Anonymous PersonAliasId:{1}", this.Id );
+                return $"Anonymous PersonAliasId:{this.Id}";
             }
         }
 

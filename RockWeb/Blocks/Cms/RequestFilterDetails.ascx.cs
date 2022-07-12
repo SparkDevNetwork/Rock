@@ -39,24 +39,11 @@ namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Request Filter Detail" )]
     [Category( "Cms" )]
-    [Description( "Block that lists the existing request details" )]
+    [Description( "Displays the details of a request filter." )]
 
-    #region Block Attributes
-
-    #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( "0CE221F6-EECE-46F9-A703-FCD09DEBC653" )]
     public partial class RequestFilterDetails : Rock.Web.UI.RockBlock
     {
-
-        #region Attribute Keys
-
-        private static class AttributeKey
-        {
-            //
-        }
-
-        #endregion Attribute Keys
-
         #region ViewState Keys
 
         private static class ViewStateKey

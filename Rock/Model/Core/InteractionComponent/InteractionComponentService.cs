@@ -124,7 +124,7 @@ namespace Rock.Model
 
             // Get a queryable of interaction channels of sites with geo tracking enabled
             var interactionChannelQry = interactionChannelService.QueryBySitesWithGeoTracking().Select( a => a.Id );
-            
+
             return this.Queryable().Where( a => interactionChannelQry.Contains( a.InteractionChannelId ) );
         }
 
@@ -210,8 +210,8 @@ namespace Rock.Model
 
             return Queryable().Where( ic =>
                 ic.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
-                siteIds.Contains(ic.InteractionChannel.ChannelEntityId.Value) &&
-                pageIds.Contains(ic.EntityId.Value ));
+                siteIds.Contains( ic.InteractionChannel.ChannelEntityId.Value ) &&
+                pageIds.Contains( ic.EntityId.Value ) );
         }
 
         /// <summary>
@@ -240,6 +240,9 @@ namespace Rock.Model
 
             if ( siteIds.Length == 1 )
             {
+                // If we only have 1 Id in our list, we don't have to use Contains
+                // Contains is less efficient, since Linq has to Recompile the SQL everytime.
+                // See https://docs.microsoft.com/en-us/ef/ef6/fundamentals/performance/perf-whitepaper#41-using-ienumerabletcontainstt-value
                 var siteId = siteIds[0];
                 componentQuery = componentQuery.Where( ic => ic.InteractionChannel.ChannelEntityId == siteId );
             }
