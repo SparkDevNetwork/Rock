@@ -638,6 +638,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Called just before rendering begins on the page.
+        /// </summary>
+        /// <param name="e">The EventArgs that describe this event.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( IsEditing )
+            {
+                ScriptManager.GetCurrent( this.Page ).SetFocus( this._tbNote );
+            }
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -724,13 +738,22 @@ $@"Rock.controls.noteEditor.initialize({{
                 writer.RenderEndTag(); // meta-figure div
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body js-focus-within" );
+            if ( IsEditing )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body js-focus-within focus-within" );
+            }
+            else
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-body js-focus-within" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "noteentry-control" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _vsEditNote.RenderControl( writer );
             _tbNote.RenderControl( writer );
+
             _avcNoteAttributes.RenderControl( writer );
 
             _hfNoteId.RenderControl( writer );
