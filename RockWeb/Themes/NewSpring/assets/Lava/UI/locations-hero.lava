@@ -1,5 +1,4 @@
 {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
-
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
 {% if campus == null %}

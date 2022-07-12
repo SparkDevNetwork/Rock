@@ -1,5 +1,5 @@
 {% assign event = 'events' | PersistedDataset | Where:'Id',EventItemOccurrence.Id | First %}
-{% assign fallbackImage = 'Global' | Attribute:'ImageLandscape','Url' %}
+{% assign fallbackImage = 'Global' | Attribute:'EventsImageLandscape','Url' %}
 {% assign eventImage = event.ImageLandscape | Default:fallbackImage %}
 {% assign campusId = EventItemOccurrence.Campus.Id | AsInteger %}
 {% assign campus = 'campuses' | PersistedDataset | Where:'Id',campusId | First %}

@@ -1,6 +1,8 @@
 {%- capture eventsString -%}
 {%- eventitemoccurrence where:'Id != null' iterator:'occurrences' securityenabled:'false' limit:'1000000' -%}[
     {%- for occurrence in occurrences -%}
+        {%- assign fallbackImageLandscape = 'Global' | Attribute:'EventsImageLandscape','Url' -%}
+        {%- assign fallbackImageSquare = 'Global' | Attribute:'EventsImageSquare','Url' -%}
         {%- assign calendarItem = occurrence.EventItem.EventCalendarItems | Where:'EventCalendarId',1 | First %}
         {%- assign scheduledDates = occurrence.Schedule.iCalendarContent | DatesFromICal:'all' -%}
         {%- assign now = 'Now' | Date -%}
@@ -25,8 +27,8 @@
             "Childcare": {{ occurrence.EventItem | Attribute:'Childcare' | ToJSON }},
             "IsFeatured": {{ occurrence.EventItem | Attribute:'IsFeatured' | ToJSON }},
             "IsFeaturedOccurrence": {{ occurrence | Attribute:'IsFeaturedOccurrence' | ToJSON }},
-            "ImageLandscape": {{ occurrence.EventItem | Attribute:'ImageLandscape' | ToJSON }},
-            "ImageSquare": {{ occurrence.EventItem | Attribute:'ImageSquare' | ToJSON }},
+            "ImageLandscape": {{ occurrence.EventItem | Attribute:'ImageLandscape' | Default:fallbackImageLandscape | ToJSON }},
+            "ImageSquare": {{ occurrence.EventItem | Attribute:'ImageSquare' | Default:fallbackImageSquare | ToJSON }},
             "Contact": {
                 "PersonAliasId": {{ occurrence.ContactPersonAliasId | ToJSON }},
                 "Email": {{ occurrence.ContactEmail | Default:null | ToJSON }},

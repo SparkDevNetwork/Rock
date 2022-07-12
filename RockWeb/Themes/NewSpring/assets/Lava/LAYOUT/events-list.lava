@@ -2,7 +2,6 @@
 {% assign currentMonthYear = 'Now' | Date:'MMyyyy' %}
 {% assign displayMonthYear = 'Now' | Date | DateAdd:offset,'M' | Date:'MMyyyy' %}
 
-
 {% assign fallbackImage = 'Global' | Attribute:'ImageSquare','Url' %}
 {% assign Items = 'events' | PersistedDataset %}
 {% assign campusid = campusid | AsInteger %}
@@ -34,10 +33,6 @@
     {% endif %}
     {% assign prevEventMonth = eventMonth %}
 
-
-
-
-
     //- Define URL for event tile
     {% assign linkages = event.Linkages %}
     {% assign campusLinkage = linkages | Where:'GroupCampusId',campusid | First %}
@@ -52,20 +47,15 @@
         {% assign slug = event.DetailsUrl %}
     {% endif %}
 
-
-
-
-
-
     //- Don't show an event that doesn't have a link
     {% if slug and slug != empty %}
     <a href="{{ slug }}" class="text-decoration-none text-gray-dark">
 
         <div class="bg-white soft-half rounded-lg push-half-bottom">
             <div class="floating floating-left row">
-                <div class="floating-item col-md-1 col-sm-2 hidden-xs">
-                    <div class="ratio-square rounded-lg background-cover background-center bg-gray-lighter" style="background-image:url('{{ event.ImageSquare | Default:fallbackImage }}'); max-width: 60px;"></div>
-                </div><div class="floating-item col-md-11 col-sm-9 col-xs-12">
+                <div class="floating-item col-md-1 col-sm-2 col-xs-3">
+                    <div class="ratio-square rounded-lg background-cover background-center bg-gray-lighter" style="background-image:url('{{ event.ImageSquare | Default:fallbackImage }}');"></div>
+                </div><div class="floating-item col-md-11 col-sm-9 col-xs-9">
 
                     <div class="row">
                         <div class="floating-item col-md-4 col-sm-12 col-xs-12">
@@ -87,8 +77,8 @@
                             {% endif %}
                             </p>
                         </div><div class="floating-item col-md-2 col-sm-11 col-xs-11">
-                            <p class="flush sm-push-half-bottom xs-push-half-bottom">{{ event.Campus.Name | Default:'All Campuses' }}</p>
-                        </div><div class="floating-item col-md-2 col-sm-1 col-xs-1">
+                            <p class="flush sm-push-half-bottom xs-flush">{{ event.Campus.Name | Default:'All Campuses' }}</p>
+                        </div><div class="floating-item col-md-2 col-sm-1 col-xs-1 hidden">
 
                             <i class="fas fa-lg fa-baby {% if event.Childcare == 'Yes' %}text-success{% else %}text-gray-lighter{% endif %} push-right" data-toggle="tooltip" data-placement="top" title="{% if event.Childcare == 'Yes' %}Childcare Provided{% else %}No Childcare{% endif %}"></i>
 
