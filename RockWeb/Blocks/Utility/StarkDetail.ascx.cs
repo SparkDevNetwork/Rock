@@ -15,16 +15,21 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -123,6 +128,7 @@ namespace RockWeb.Blocks.Utility
 
         private static void TestConcurrent_ProcessSendPaymentReceiptEmails()
         {
+            Debug.WriteLine( "TestConcurrent_ProcessSendPaymentReceiptEmails Loop" );
             var financialTransactionList = new FinancialTransactionService( new RockContext() ).Queryable()
                 .Where( a => a.AuthorizedPersonAlias.Person.Email != "" && a.AuthorizedPersonAlias.Person.Email != null )
                 .Select( a => new
@@ -143,23 +149,101 @@ namespace RockWeb.Blocks.Utility
             // New Spring
             var systemEmailGuid = "72aa54e5-90bc-4866-a0f9-1e494e96d9a5".AsGuid();
 
-            Parallel.For( 1, 2000, parallelOptions, ( x ) =>
+            Debug.WriteLine( "Starting Loop" );
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int loopCount = 100; //            financialTransactionIds.Count() - 1;
+            //LavaTemplateCache.EnableCache = true;
+
+            var lavaTemplateNewSpring = new SystemCommunicationService( new RockContext() ).GetSelect( systemEmailGuid, s => s.Body );
+            var lavaTemplateSmall = "Hello {{ SomeColor }} World";
+            var lavaTemplateCore = new SystemCommunicationService( new RockContext() ).GetSelect( Rock.SystemGuid.SystemCommunication.FINANCE_GIVING_RECEIPT.AsGuid(), s => s.Body );
+            var coreMergeFields = LavaHelper.GetCommonMergeFields( null );
+
+            var lavaTemplateKitchenSink1 = @"
+{% calendarevents calendarid:'1' audienceids:'' startdate:'1/1/2000' %}
+    {% for item in EventScheduledInstances %}
+        {{ item.Name }} 
+        on {{ item.Date }}
+        at {{ item.Time }}
+        for {{ item.AudienceNames | Join:', ' }} 
+
+        Contact: {{ item.EventItemOccurrence.ContactEmail }}
+    {% endfor %}
+{% endcalendarevents %}";
+
+            var lavaTemplateKitchenSink2 = @"
+
+{% execute import:'RestSharp,Newtonsoft.Json,Newtonsoft.Json.Linq' %}
+    
+
+    int i = 1 + 3;
+    int x = 4 * i;
+
+    return x.ToString();    
+{% endexecute %}
+";
+
+            try
             {
-                var financialTransactionId = financialTransactionIds[x];
-
-                new ProcessSendPaymentReceiptEmails.Message
+                Parallel.For( 1, loopCount, parallelOptions, ( x ) =>
                 {
-                    TransactionId = financialTransactionId,
-                    SystemEmailGuid = systemEmailGuid
-                }.Send();
+                    try
+                    {
+                        var financialTransactionId = financialTransactionIds[x];
 
-                var financialTransactionId2 = financialTransactionIds2[x];
-                new ProcessSendPaymentReceiptEmails.Message
-                {
-                    TransactionId = financialTransactionId2,
-                    SystemEmailGuid = Rock.SystemGuid.SystemCommunication.FINANCE_GIVING_RECEIPT.AsGuid()
-                }.Send();
-            } );
+
+                        var threadMergeFields = new Dictionary<string, object>( coreMergeFields );
+                        threadMergeFields.Add( Guid.NewGuid().ToString(), Guid.NewGuid() );
+                        threadMergeFields.Add( "SomethingElse", Guid.NewGuid() );
+                        threadMergeFields.Add( "SomeColor", "Blue" );
+                        //threadMergeFields.Add( "Custom Person", person );
+
+                        var result = lavaTemplateKitchenSink2.ResolveMergeFields( threadMergeFields, enabledLavaCommands: "all" );
+
+                        var result2 = result.Trim();
+
+                        if ( result2 != @"16" )
+                        {
+                            Debug.WriteLine( $" Oh OH {result2}" );
+                        }
+
+
+                        /*new ProcessSendPaymentReceiptEmails.Message
+                        {
+                            TransactionId = financialTransactionId,
+                            SystemEmailGuid = systemEmailGuid
+                        }.Send();
+
+
+                        var financialTransactionId2 = financialTransactionIds2[x];
+                        new ProcessSendPaymentReceiptEmails.Message
+                        {
+                            TransactionId = financialTransactionId2,
+                            SystemEmailGuid = Rock.SystemGuid.SystemCommunication.FINANCE_GIVING_RECEIPT.AsGuid()
+                        }.Send();
+                        */
+                    }
+                    catch
+                    {
+                        //
+                    }
+                }
+                );
+
+            }
+            catch ( Exception ex )
+            {
+                Debug.WriteLine( ex );
+            }
+            finally
+            {
+
+                //stopwatch.Stop();
+                //Debug.WriteLine( $"{ stopwatch.Elapsed.TotalMilliseconds} ms, loopCount:{loopCount}, ms/loop:{stopwatch.Elapsed.TotalMilliseconds/loopCount}" );
+            }
+
+            Debug.WriteLine( "done" );
         }
 
         #endregion
