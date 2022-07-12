@@ -22,8 +22,8 @@
 //
 
 /**
- * The options that can be passed to the GetGrades API action of
- * the GradePicker control.
+ * The options that can be passed to the GetGroupMembers API action of
+ * the GroupMemberPicker control.
  */
 export type GroupMemberPickerGetGroupMembersOptionsBag = {
     /** Type of the container the components are within */

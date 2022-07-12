@@ -20,8 +20,8 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the GetGrades API action of
-    /// the GradePicker control.
+    /// The options that can be passed to the GetGroupMembers API action of
+    /// the GroupMemberPicker control.
     /// </summary>
     public class GroupMemberPickerGetGroupMembersOptionsBag
     {

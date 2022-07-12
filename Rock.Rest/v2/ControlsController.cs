@@ -1267,7 +1267,7 @@ namespace Rock.Rest.v2
         /// This endpoint returns items formatted for use in a basic picker control.
         /// </summary>
         /// <param name="options">The options that describe which group members to load.</param>
-        /// <returns>A collection of view models that represent the grades.</returns>
+        /// <returns>A collection of view models that represent the group members.</returns>
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
@@ -1299,6 +1299,40 @@ namespace Rock.Rest.v2
             }
 
             return Ok( list );
+        }
+
+        #endregion
+
+        #region Interaction Channel Picker
+
+        /// <summary>
+        /// Gets the interaction channels that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which interaction channels to load.</param>
+        /// <returns>A collection of view models that represent the interaction channels.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "InteractionChannelPickerGetInteractionChannels" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2F855DC7-7C20-4C09-9CB1-FFC1E022385B" )]
+        public IHttpActionResult InteractionChannelPickerGetInteractionChannels( )
+        {
+            //var list = new List<ListItemBag>();
+
+            var rockContext = new RockContext();
+            var interactionChannelService = new InteractionChannelService( rockContext );
+            var channels = interactionChannelService.Queryable().AsNoTracking()
+                .Include( "ChannelTypeMediumValue" )
+                .Where( ic => ic.IsActive )
+                .OrderBy( ic => ic.Name )
+                .Select( ic => new ListItemBag
+                {
+                    Text = ic.Name,
+                    Value = ic.Id.ToString()
+                } )
+                .ToList();
+
+            return Ok( channels );
         }
 
         #endregion
