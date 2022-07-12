@@ -55,7 +55,10 @@ export type DataViewBag = {
     /** Gets or sets the persisted last run duration in milliseconds. */
     persistedLastRunDurationMilliseconds?: number | null;
 
-    /** Gets or sets the persisted schedule interval minutes. */
+    /**
+     * Gets or sets the persisted schedule interval minutes.
+     * If this is null, then the DataView is not persisted.
+     */
     persistedScheduleIntervalMinutes?: number | null;
 
     /** Gets or sets the run count. */

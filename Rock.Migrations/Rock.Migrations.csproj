@@ -140,6 +140,10 @@
     <Compile Include="Migrations\202207052258541_CodeGenerated_20220705.designer.cs">
       <DependentUpon>202207052258541_CodeGenerated_20220705.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202207121900210_CodeGenerated_20220712.cs" />
+    <Compile Include="Migrations\202207121900210_CodeGenerated_20220712.designer.cs">
+      <DependentUpon>202207121900210_CodeGenerated_20220712.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1262,6 +1266,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202207052258541_CodeGenerated_20220705.resx">
       <DependentUpon>202207052258541_CodeGenerated_20220705.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207121900210_CodeGenerated_20220712.resx">
+      <DependentUpon>202207121900210_CodeGenerated_20220712.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>

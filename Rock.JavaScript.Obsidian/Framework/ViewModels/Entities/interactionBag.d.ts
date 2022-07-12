@@ -93,7 +93,7 @@ export type InteractionBag = {
     /** Gets or sets the campaign medium. */
     medium?: string | null;
 
-    /** Gets or sets the operation. For example: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed' */
+    /** Gets or sets the operation. For example: 'View', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed', 'Complete', 'Incomplete', 'Watch', 'Present'. */
     operation?: string | null;
 
     /** Gets or sets the personal device identifier. */

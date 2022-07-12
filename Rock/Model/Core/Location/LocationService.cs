@@ -424,6 +424,14 @@ namespace Rock.Model
             }
             else
             {
+                // If the Country field contains an undefined value, return an appropriate validation message...
+                if ( !string.IsNullOrWhiteSpace( location.Country ) )
+                {
+                    errorMessage = $"Incomplete Address. Country value \"{location.Country}\" is invalid.";
+                    return false;
+                }
+
+                // ... otherwise, return the standard message for a required field.
                 invalidFields.Add( "Country" );
             }
 

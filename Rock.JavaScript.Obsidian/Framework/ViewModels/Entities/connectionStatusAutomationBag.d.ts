@@ -37,6 +37,9 @@ export type ConnectionStatusAutomationBag = {
     /** Gets or sets the Group Requirements filter. */
     groupRequirementsFilter: number;
 
+    /** Gets or sets the order. */
+    order: number;
+
     /** Gets or sets the source Rock.Model.ConnectionStatus identifier. */
     sourceStatusId: number;
 

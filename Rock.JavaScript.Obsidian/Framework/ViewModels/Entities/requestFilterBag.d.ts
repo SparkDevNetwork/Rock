@@ -23,43 +23,22 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** Registration View Model */
-export type RegistrationBag = {
-    /** Gets or sets the Id of the Rock.Model.Campus the registration will be tied to */
-    campusId?: number | null;
+/** RequestFilter View Model */
+export type RequestFilterBag = {
+    /** Gets or sets the filter json. */
+    filterJson?: string | null;
 
-    /** Gets or sets the confirmation email. */
-    confirmationEmail?: string | null;
+    /** Gets or sets a value indicating whether this instance is active. */
+    isActive: boolean;
 
-    /** Gets or sets the discount amount. */
-    discountAmount?: number;
+    /** Gets or sets the name. */
+    name?: string | null;
 
-    /** Gets or sets the code. */
-    discountCode?: string | null;
+    /** Gets or sets the request filter key. */
+    requestFilterKey?: string | null;
 
-    /** Gets or sets the discount percentage. */
-    discountPercentage?: number;
-
-    /** Gets or sets the first name. */
-    firstName?: string | null;
-
-    /** Gets or sets the Rock.Model.Group identifier. */
-    groupId?: number | null;
-
-    /** Gets or sets a value indicating whether this instance is temporary. */
-    isTemporary: boolean;
-
-    /** Gets or sets the last name. */
-    lastName?: string | null;
-
-    /** Gets or sets the last payment reminder date time. */
-    lastPaymentReminderDateTime?: string | null;
-
-    /** Gets or sets the Rock.Model.PersonAlias identifier. */
-    personAliasId?: number | null;
-
-    /** Gets or sets the registration instance identifier. */
-    registrationInstanceId: number;
+    /** Gets or sets the site identifier. */
+    siteId?: number | null;
 
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;

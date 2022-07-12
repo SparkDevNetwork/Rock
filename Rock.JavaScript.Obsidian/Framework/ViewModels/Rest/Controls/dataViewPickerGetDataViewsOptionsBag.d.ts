@@ -25,7 +25,7 @@ import { Guid } from "@Obsidian/Types";
 
 /**
  * The options that can be passed to the ChildTreeItems API action of
- * the CategoryPicker control.
+ * the DataViewPicker control.
  */
 export type DataViewPickerGetDataViewsOptionsBag = {
     /**

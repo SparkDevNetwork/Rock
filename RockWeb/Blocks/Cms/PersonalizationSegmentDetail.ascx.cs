@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Personalization Segment Detail" )]
     [Category( "Cms" )]
-    [Description( "Displays the details of an personalization segment." )]
+    [Description( "Displays the details of a personalization segment." )]
 
     #region Block Attributes
 

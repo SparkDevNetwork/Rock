@@ -1834,7 +1834,8 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         {
                             // Our current visitor cookie was associated with GhostPerson, but now we have a current person,
                             // so convert the GhostVisitor PersonAlias to a PersonAlias of the CurrentPerson.
-                            // NOTE: This needs to be done synchronously because we'll need to know if this PersonAlias is
+                            // NOTE: This needs to be done synchronously because we'll need to know which real person this
+                            // PersonAlias is for on subsequent requests.
                             if ( new PersonAliasService( rockContext ).MigrateAnonymousVisitorAliasToRealPerson( currentVisitorCookiePersonAlias, currentPerson ) )
                             {
                                 rockContext.SaveChanges();
@@ -1877,14 +1878,10 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
 
         /// <summary>
         /// Loads the matching <see cref="PersonalizationSegmentIds"/> for the <see cref="CurrentPerson"/> or <see cref="CurrentVisitor"/>.
+        /// Only call this if the Site.EnablePersonalization is true. 
         /// </summary>
         private void LoadPersonalizationSegments()
         {
-            if ( !Site.EnablePersonalization )
-            {
-                return;
-            }
-
             var rockSegmentFiltersCookie = GetCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS );
             var personalizationPersonAliasId = CurrentVisitor?.Id ?? CurrentPersonAliasId;
             if ( !personalizationPersonAliasId.HasValue )

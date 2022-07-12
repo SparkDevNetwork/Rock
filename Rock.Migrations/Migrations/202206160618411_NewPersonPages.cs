@@ -412,7 +412,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"BF04BB7E-BE3A-4A38-A37C-386B55496303" );
 
             // Attribute: Template
-            AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "1322186A-862A-4CF1-B349-28ECB67229BA", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "Template" );
+            RockMigrationHelper.AddBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "1322186A-862A-4CF1-B349-28ECB67229BA", "{% include '~~/Assets/Lava/PageListProfile.lava' %}" );
 
             // Attribute: Enabled Lava Commands
             AddPersonPageBlockAttributeValue( "74EA6E95-4DC8-4490-8911-C56FA0AB4E4A", "EF10B2F9-93E5-426F-8D43-8C020224670F", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "EnabledLavaCommands" );
@@ -635,7 +635,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"BF04BB7E-BE3A-4A38-A37C-386B55496303" );
 
             // Attribute: Template
-            AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "1322186A-862A-4CF1-B349-28ECB67229BA", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "Template" );
+            RockMigrationHelper.AddBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "1322186A-862A-4CF1-B349-28ECB67229BA", "{% include '~~/Assets/Lava/PageListProfile.lava' %}" );
 
             // Attribute: Enabled Lava Commands
             AddPersonPageBlockAttributeValue( "CB964B6B-107E-44D4-8731-7A2D40A9F15B", "EF10B2F9-93E5-426F-8D43-8C020224670F", Rock.SystemGuid.Layout.PERSON_DETAIL, "CACB9D1A-A820-4587-986A-D66A69EE9948", "Sub Page Menu", "EnabledLavaCommands" );

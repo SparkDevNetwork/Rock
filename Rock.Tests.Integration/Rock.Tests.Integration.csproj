@@ -166,6 +166,8 @@
     <Compile Include="Connections\ConnectionOpportunityTests.cs" />
     <Compile Include="Core\AttributeTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
+    <Compile Include="Crm\CrmModuleTestHelper.cs" />
+    <Compile Include="Crm\PersonAddressTests.cs" />
     <Compile Include="Field.Types\AddressFieldTypeTests.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
     <Compile Include="Jobs\GivingAutomationClassificationTests.cs" />

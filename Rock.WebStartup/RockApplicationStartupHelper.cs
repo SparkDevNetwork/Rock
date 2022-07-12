@@ -846,6 +846,7 @@ namespace Rock.WebStartup
             // Register the set of filters that are compatible with RockLiquid.
             Template.RegisterFilter( typeof( Rock.Lava.Filters.TemplateFilters ) );
             Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+            Template.DefaultIsThreadSafe = true;
 
             // Initialize the RockLiquid file system.
             Template.FileSystem = new LavaFileSystem();
