@@ -115,15 +115,28 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Build\build.ts" />
-    <TypeScriptCompile Include="Framework\Controls\achievementPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\achievementTypePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\assessmentTypePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\assetStorageProviderPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\badgeComponentPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\badgeList.ts" />
     <TypeScriptCompile Include="Framework\Controls\baseAsyncPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\binaryFilePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\binaryFileTypePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\componentPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\copyButton.ts" />
+    <TypeScriptCompile Include="Framework\Controls\dataViewPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\definedValuePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\electronicSignature.ts" />
     <TypeScriptCompile Include="Framework\Controls\entityTypePicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\flowNodeDiagram.ts" />
+    <TypeScriptCompile Include="Framework\Controls\eventItemPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\fieldTypePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\financialGatewayPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\financialStatementTemplatePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\following.ts" />
+    <TypeScriptCompile Include="Framework\Controls\gradePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\groupMemberPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\InteractionChannelPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />
@@ -159,6 +172,7 @@
     <TypeScriptCompile Include="Framework\Controls\entityTagList.ts" />
     <TypeScriptCompile Include="Framework\Controls\treeItemPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\valueDetailList.ts" />
+    <TypeScriptCompile Include="Framework\Controls\workflowTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Core\Controls\valueDetailListItemBuilder.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragDrop.ts" />
     <TypeScriptCompile Include="Framework\Controls\auditDetail.ts" />
@@ -648,9 +662,12 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTagListTagBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\entityTypePickerGetEntityTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\eventItemPickerGetEventItemsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\financialGatewayPickerGetFinancialGatewaysOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingGetFollowingOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingGetFollowingResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingSetFollowingOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationPickerGetActiveChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\personPickerSearchOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\saveFinancialAccountFormSaveAccountOptionsBag.d.ts" />

@@ -323,7 +323,11 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
+    <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />
     <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\InteractionComponentPickerGetInteractionComponentsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberPickerGetGroupMembersOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GradePickerGetGradePickerOptionsBag.cs" />
     <Compile Include="Rest\Controls\WorkflowTypesPickerGetWorkflowTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\DataViewPickerGetDataViewsOptionsBag.cs" />
     <Compile Include="Rest\Controls\ComponentPickerGetComponentsOptionsBag.cs" />

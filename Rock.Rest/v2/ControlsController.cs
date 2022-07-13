@@ -27,6 +27,7 @@ using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Extension;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -35,6 +36,7 @@ using Rock.ViewModels.CRM;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Utility;
 
 namespace Rock.Rest.v2
 {
@@ -951,6 +953,101 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Field Type Picker
+
+        /// <summary>
+        /// Gets the field types that can be displayed in the field type picker.
+        /// </summary>
+        /// <returns>A List of view models that represent the field types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FieldTypePickerGetFieldTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "AB53509A-C8A9-481B-839F-DA53232A698A" )]
+        public IHttpActionResult FieldTypePickerGetFieldTypes()
+        {
+            List<ListItemBag> items = new List<ListItemBag> { };
+
+            foreach ( var item in FieldTypeCache.All() )
+            {
+                items.Add( new ListItemBag { Text = item.Name, Value = item.Id.ToString() } );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Financial Gateway Picker
+
+        /// <summary>
+        /// Gets the financial gateways that can be displayed in the financial gateway picker.
+        /// </summary>
+        /// <returns>A List of view models that represent the financial gateways.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FinancialGatewayPickerGetFinancialGateways" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "DBF12D3D-09BF-419F-A315-E3B6C0206344" )]
+        public IHttpActionResult FinancialGatewayPickerGetFinancialGateways( [FromBody] FinancialGatewayPickerGetFinancialGatewaysOptionsBag options )
+        {
+
+            using ( var rockContext = new RockContext() )
+            {
+                List<ListItemBag> items = new List<ListItemBag> { };
+
+                foreach ( var gateway in new FinancialGatewayService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( g => g.EntityTypeId.HasValue )
+                    .OrderBy( g => g.Name )
+                    .ToList() )
+                {
+                    var entityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
+                    GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
+
+                    if ( options.ShowAll || gateway.Id == options.SelectedItem || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
+                    {
+                        items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Id.ToString() } );
+                    }
+                }
+
+                return Ok( items );
+            }
+
+        }
+
+        #endregion
+
+        #region Financial Statement Template Picker
+
+        /// <summary>
+        /// Gets the financial statement templates that can be displayed in the financial statement template picker.
+        /// </summary>
+        /// <returns>A List of view models that represent the financial statement templates.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "FinancialStatementTemplatePickerGetFinancialStatementTemplates" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "4E10F2DC-BD7C-4F75-919C-B3F71868ED24" )]
+        public IHttpActionResult FinancialStatementTemplatePickerGetFinancialStatementTemplates()
+        {
+
+            using ( var rockContext = new RockContext() )
+            {
+                List<ListItemBag> items = new FinancialStatementTemplateService( rockContext )
+                    .Queryable()
+                    .Where( s => s.IsActive == true )
+                    .Select( i => new ListItemBag
+                    {
+                        Value = i.Id.ToString(),
+                        Text = i.Name
+                    } )
+                    .OrderBy( a => a.Text )
+                    .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
         #region Following
 
         /// <summary>
@@ -1113,6 +1210,164 @@ namespace Rock.Rest.v2
 
                 return Ok();
             }
+        }
+
+        #endregion
+
+        #region Grade Picker
+
+        /// <summary>
+        /// Gets the school grades that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which grades to load.</param>
+        /// <returns>A collection of view models that represent the grades.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GradePickerGetGrades" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2C8F0B8E-F54D-460D-91DB-97B34A9AA174" )]
+        public IHttpActionResult GradePickerGetGrades( GradePickerGetGradesOptionsBag options )
+        {
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+
+            if ( schoolGrades == null)
+            {
+                return NotFound();
+            }
+
+            var list = new List<ListItemBag>();
+
+            foreach ( var schoolGrade in schoolGrades.DefinedValues.OrderByDescending( a => a.Value.AsInteger() ) )
+            {
+                ListItemBag listItem = new ListItemBag();
+                if ( options.UseAbbreviation )
+                {
+                    string abbreviation = schoolGrade.GetAttributeValue( "Abbreviation" );
+                    listItem.Text = string.IsNullOrWhiteSpace( abbreviation ) ? schoolGrade.Description : abbreviation;
+                }
+                else
+                {
+                    listItem.Text = schoolGrade.Description;
+                }
+
+                listItem.Value = options.UseGradeOffsetAsValue ? schoolGrade.Value : schoolGrade.Guid.ToString();
+
+                list.Add( listItem );
+            }
+
+            return Ok( list );
+        }
+
+        #endregion
+
+        #region Group Member Picker
+
+        /// <summary>
+        /// Gets the group members that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which group members to load.</param>
+        /// <returns>A collection of view models that represent the group members.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
+        public IHttpActionResult GroupMemberPickerGetGroupMembers( GroupMemberPickerGetGroupMembersOptionsBag options )
+        {
+            if ( !options.GroupId.HasValue )
+            {
+                return NotFound();
+            }
+
+            var group = new GroupService( new RockContext() ).Get( options.GroupId.Value );
+
+            if ( group == null && !group.Members.Any() )
+            {
+                return NotFound();
+            }
+
+            var list = new List<ListItemBag>();
+
+            foreach ( var groupMember in group.Members.OrderBy( m => m.Person.FullName ) )
+            {
+                var li = new ListItemBag {
+                    Text = groupMember.Person.FullName,
+                    Value = groupMember.Id.ToString()
+                };
+
+                list.Add( li );
+            }
+
+            return Ok( list );
+        }
+
+        #endregion
+
+        #region Interaction Channel Picker
+
+        /// <summary>
+        /// Gets the interaction channels that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which interaction channels to load.</param>
+        /// <returns>A collection of view models that represent the interaction channels.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "InteractionChannelPickerGetInteractionChannels" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2F855DC7-7C20-4C09-9CB1-FFC1E022385B" )]
+        public IHttpActionResult InteractionChannelPickerGetInteractionChannels( )
+        {
+            var rockContext = new RockContext();
+            var interactionChannelService = new InteractionChannelService( rockContext );
+            var channels = interactionChannelService.Queryable().AsNoTracking()
+                .Include( "ChannelTypeMediumValue" )
+                .Where( ic => ic.IsActive )
+                .OrderBy( ic => ic.Name )
+                .Select( ic => new ListItemBag
+                {
+                    Text = ic.Name,
+                    Value = ic.Id.ToString()
+                } )
+                .ToList();
+
+            return Ok( channels );
+        }
+
+        #endregion
+
+        #region Interaction Component Picker
+
+        /// <summary>
+        /// Gets the interaction channels that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which interaction channels to load.</param>
+        /// <returns>A collection of view models that represent the interaction channels.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "InteractionComponentPickerGetInteractionComponents" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "BD61A390-39F9-4FDE-B9AD-02E53B5F2073" )]
+        public IHttpActionResult InteractionComponentPickerGetInteractionComponents( InteractionComponentPickerGetInteractionComponentsOptionsBag options)
+        {
+
+            if ( !options.InteractionChannelId.HasValue )
+            {
+                return NotFound();
+            }
+
+            var rockContext = new RockContext();
+            var interactionComponentService = new InteractionComponentService( rockContext );
+            var components = interactionComponentService.Queryable().AsNoTracking()
+                .Where( ic => ic.InteractionChannelId == options.InteractionChannelId.Value )
+                .OrderBy( ic => ic.Name )
+                .Select(ic => new ListItemBag
+                {
+                    Text = ic.Name,
+                    Value = ic.Id.ToString()
+                } )
+                .ToList();
+
+            return Ok( components );
         }
 
         #endregion
@@ -1455,7 +1710,7 @@ namespace Rock.Rest.v2
                 return null;
             }
 
-            var resolvedContainerType = Type.GetType( containerType );
+            var resolvedContainerType = Container.ResolveContainer( containerType );
 
             if ( resolvedContainerType == null )
             {
