@@ -1507,6 +1507,41 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Remote Auths Picker
+
+        /// <summary>
+        /// Gets the remote auths that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which remote auths to load.</param>
+        /// <returns>A collection of view models that represent the remote auths.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RemoteAuthsPickerGetRemoteAuths" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "844D17E3-45FF-4A63-8BC7-32956A11CC94" )]
+        public IHttpActionResult RemoteAuthsPickerGetRemoteAuths()
+        {
+            var items = new List<ListItemBag>();
+
+            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+
+                if ( component.IsActive && component.RequiresRemoteAuthentication )
+                {
+                    var entityType = EntityTypeCache.Get( component.GetType() );
+                    if ( entityType != null )
+                    {
+                        items.Add( new ListItemBag { Text = entityType.FriendlyName, Value = entityType.Guid.ToString() } );
+                    }
+                }
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
         #region Save Financial Account Form
 
         /// <summary>

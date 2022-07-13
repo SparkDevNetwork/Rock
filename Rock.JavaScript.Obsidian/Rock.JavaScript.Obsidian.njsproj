@@ -135,9 +135,10 @@
     <TypeScriptCompile Include="Framework\Controls\financialStatementTemplatePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\following.ts" />
     <TypeScriptCompile Include="Framework\Controls\gradePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\lavaCommandPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\interactionComponentPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\groupMemberPicker.ts" />
-    <TypeScriptCompile Include="Framework\Controls\InteractionChannelPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\interactionChannelPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\keyValueList.ts" />
     <TypeScriptCompile Include="Framework\Controls\locationPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\rockSuspense.ts" />

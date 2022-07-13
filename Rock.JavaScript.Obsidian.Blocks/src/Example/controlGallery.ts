@@ -104,6 +104,7 @@ import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
 import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
 import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
 import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
+import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker";
 
 // #region Gallery Support
 
@@ -3904,7 +3905,7 @@ const interactionComponentPickerGallery = defineComponent({
             showBlankItem: ref(false),
             value: ref({}),
             importCode: getControlImportPath("interactionComponentPicker"),
-            exampleCode: `<InteractionComponentPicker label="Interaction Component" v-model="value" />`
+            exampleCode: `<InteractionComponentPicker label="Interaction Component" v-model="value" :interactionChannelId="interactionChannelId" />`
         };
     },
     template: `
@@ -3987,8 +3988,70 @@ const lavaCommandPickerGallery = defineComponent({
         :columnCount="columnCount"
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
-        :showBlankItem="showBlankItem"
-        :groupId="groupId" />
+        :showBlankItem="showBlankItem" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Remote Auths Picker */
+const remoteAuthsPickerGallery = defineComponent({
+    name: "RemoteAuthsPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        RemoteAuthsPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("remoteAuthsPicker"),
+            exampleCode: `<RemoteAuthsPicker label="Remote Auths" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <RemoteAuthsPicker label="Remote Auths"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
     <template #settings>
         <div class="row">
             <div class="col-md-4">
@@ -4084,6 +4147,7 @@ const controlGalleryComponents: Record<string, Component> = [
     interactionChannelPickerGallery,
     interactionComponentPickerGallery,
     lavaCommandPickerGallery,
+    remoteAuthsPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
