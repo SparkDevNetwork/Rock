@@ -71,11 +71,21 @@ namespace Rock.Web.Cache
         public static IEnumerable<PersonalizationSegmentCache> GetActiveSegments( bool includeSegmentsWithNonPersistedDataViews )
         {
             var activeSegments = All().Where( a => a.IsActive );
+            if ( includeSegmentsWithNonPersistedDataViews )
+            {
+                return activeSegments;
+            }
+
             var segmentFilterDataViewIds = activeSegments.Where( a => a.FilterDataViewId.HasValue ).Select( a => a.FilterDataViewId.Value ).ToList();
+            if ( !segmentFilterDataViewIds.Any() )
+            {
+                return activeSegments;
+            }
+
             var nonPersistedDataFilterDataViewIds = new DataViewService( new RockContext() ).GetByIds( segmentFilterDataViewIds )
                 .Where( a => a.PersistedScheduleIntervalMinutes == null ).Select( a => a.Id );
 
-            if ( nonPersistedDataFilterDataViewIds.Any() && !includeSegmentsWithNonPersistedDataViews )
+            if ( nonPersistedDataFilterDataViewIds.Any() )
             {
                 /* 06/22/2022 MP
 
