@@ -1372,6 +1372,34 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Lava Command Picker
+
+        /// <summary>
+        /// Gets the lava commands that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which lava commands to load.</param>
+        /// <returns>A collection of view models that represent the lava commands.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "LavaCommandPickerGetLavaCommands" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9FD03EE7-49E8-4C64-AC25-648422579F28" )]
+        public IHttpActionResult LavaCommandPickerGetLavaCommands()
+        {
+            var items = new List<ListItemBag>();
+
+            items.Add( new ListItemBag { Text = "All", Value = "All" } );
+
+            foreach ( var command in Rock.Lava.LavaHelper.GetLavaCommands() )
+            {
+                items.Add( new ListItemBag { Text = command.SplitCase(), Value = command } );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
         #region Location Picker
 
         /// <summary>
