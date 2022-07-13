@@ -28,7 +28,7 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <Rock:Switch ID="swShowInactive" runat="server" OnCheckedChanged="swShowInactive_CheckedChanged" Text="Show Inactive" AutoPostBack="true" />
 
-                    <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" CssClass="input-width-xl mt-1 mt-sm-0" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" AutoPostBack="true"/>
+                    <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" CssClass="input-width-xl input-sm mt-1 mt-sm-0" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" AutoPostBack="true"/>
                 </div>
                 <asp:Repeater ID="rptShortcodes" runat="server" OnItemDataBound="rptShortcodes_ItemDataBound">
                     <ItemTemplate>
@@ -58,11 +58,11 @@
                                 <asp:Literal ID="lMessages" runat="server" />
                                 <asp:HiddenField ID="hfShortcodeId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "Id").ToString() %>' />
                                 <div id="divViewPanel" runat="server" class="pull-right">
-                                    <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEdit_Click"><i class="fa fa-search"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-default btn-xs btn-square"><i class="fa fa-search"></i></asp:LinkButton>
                                 </div>
                                 <div id="divEditPanel" runat="server" class="pull-right">
 
-                                    <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs btn-square" OnClick="btnDelete_Click" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Lava Shortcode');"><i class="fa fa-times"></i></asp:LinkButton>
                                 </div>
                             </div>
