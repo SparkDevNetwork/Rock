@@ -1338,11 +1338,11 @@ namespace Rock.Rest.v2
         #region Interaction Component Picker
 
         /// <summary>
-        /// Gets the interaction channels that match the options sent in the request body.
+        /// Gets the interaction components that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a basic picker control.
         /// </summary>
-        /// <param name="options">The options that describe which interaction channels to load.</param>
-        /// <returns>A collection of view models that represent the interaction channels.</returns>
+        /// <param name="options">The options that describe which interaction components to load.</param>
+        /// <returns>A collection of view models that represent the interaction components.</returns>
         [HttpPost]
         [System.Web.Http.Route( "InteractionComponentPickerGetInteractionComponents" )]
         [Authenticate]
@@ -1368,6 +1368,34 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return Ok( components );
+        }
+
+        #endregion
+
+        #region Lava Command Picker
+
+        /// <summary>
+        /// Gets the lava commands that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which lava commands to load.</param>
+        /// <returns>A collection of view models that represent the lava commands.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "LavaCommandPickerGetLavaCommands" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9FD03EE7-49E8-4C64-AC25-648422579F28" )]
+        public IHttpActionResult LavaCommandPickerGetLavaCommands()
+        {
+            var items = new List<ListItemBag>();
+
+            items.Add( new ListItemBag { Text = "All", Value = "All" } );
+
+            foreach ( var command in Rock.Lava.LavaHelper.GetLavaCommands() )
+            {
+                items.Add( new ListItemBag { Text = command.SplitCase(), Value = command } );
+            }
+
+            return Ok( items );
         }
 
         #endregion
@@ -1475,6 +1503,41 @@ namespace Rock.Rest.v2
 
             // Chain to the v1 controller.
             return Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+        }
+
+        #endregion
+
+        #region Remote Auths Picker
+
+        /// <summary>
+        /// Gets the remote auths that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which remote auths to load.</param>
+        /// <returns>A collection of view models that represent the remote auths.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "RemoteAuthsPickerGetRemoteAuths" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "844D17E3-45FF-4A63-8BC7-32956A11CC94" )]
+        public IHttpActionResult RemoteAuthsPickerGetRemoteAuths()
+        {
+            var items = new List<ListItemBag>();
+
+            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+
+                if ( component.IsActive && component.RequiresRemoteAuthentication )
+                {
+                    var entityType = EntityTypeCache.Get( component.GetType() );
+                    if ( entityType != null )
+                    {
+                        items.Add( new ListItemBag { Text = entityType.FriendlyName, Value = entityType.Guid.ToString() } );
+                    }
+                }
+            }
+
+            return Ok( items );
         }
 
         #endregion

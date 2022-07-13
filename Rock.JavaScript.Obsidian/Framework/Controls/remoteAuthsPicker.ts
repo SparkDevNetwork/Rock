@@ -21,7 +21,7 @@ import { computed, defineComponent, PropType, ref } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
 
 export default defineComponent({
-    name: "InteractionChannelPicker",
+    name: "RemoteAuthsPicker",
 
     components: {
         BaseAsyncPicker
@@ -67,7 +67,7 @@ export default defineComponent({
          * Loads the items from the server.
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
-            const result = await post<ListItemBag[]>("/api/v2/Controls/InteractionChannelPickerGetInteractionChannels", undefined, {});
+            const result = await post<ListItemBag[]>("/api/v2/Controls/RemoteAuthsPickerGetRemoteAuths", undefined, {});
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;
