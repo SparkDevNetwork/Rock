@@ -16,12 +16,13 @@
 //
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { post } from "@Obsidian/Utility/http";
+import { InteractionComponentPickerGetInteractionComponentsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionComponentPickerGetInteractionComponentsOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { computed, defineComponent, PropType, ref } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
 
 export default defineComponent({
-    name: "InteractionChannelPicker",
+    name: "InteractionComponentPicker",
 
     components: {
         BaseAsyncPicker
@@ -31,6 +32,11 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
+        },
+
+        interactionChannelId: {
+            type: Number as PropType<number>,
+            default: null
         },
 
         ...standardAsyncPickerProps
@@ -67,7 +73,10 @@ export default defineComponent({
          * Loads the items from the server.
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
-            const result = await post<ListItemBag[]>("/api/v2/Controls/InteractionChannelPickerGetInteractionChannels", undefined, {});
+            const options: Partial<InteractionComponentPickerGetInteractionComponentsOptionsBag> = {
+                interactionChannelId: props.interactionChannelId
+            };
+            const result = await post<ListItemBag[]>("/api/v2/Controls/InteractionComponentPickerGetInteractionComponents", undefined, options);
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;
@@ -81,6 +90,12 @@ export default defineComponent({
         };
 
         // #endregion
+
+        // #region Watchers
+
+        watch(() => [props.interactionChannelId], () => {
+            loadedItems.value = null;
+        });
 
         // #endregion
 

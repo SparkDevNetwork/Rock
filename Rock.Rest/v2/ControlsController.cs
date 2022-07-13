@@ -1338,11 +1338,11 @@ namespace Rock.Rest.v2
         #region Interaction Component Picker
 
         /// <summary>
-        /// Gets the interaction channels that match the options sent in the request body.
+        /// Gets the interaction components that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a basic picker control.
         /// </summary>
-        /// <param name="options">The options that describe which interaction channels to load.</param>
-        /// <returns>A collection of view models that represent the interaction channels.</returns>
+        /// <param name="options">The options that describe which interaction components to load.</param>
+        /// <returns>A collection of view models that represent the interaction components.</returns>
         [HttpPost]
         [System.Web.Http.Route( "InteractionComponentPickerGetInteractionComponents" )]
         [Authenticate]

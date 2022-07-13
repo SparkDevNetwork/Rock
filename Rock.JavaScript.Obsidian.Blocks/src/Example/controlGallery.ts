@@ -102,6 +102,7 @@ import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
 import GradePicker from "@Obsidian/Controls/gradePicker";
 import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
 import InteractionChannelPicker from "@Obsidian/Controls/InteractionChannelPicker";
+import InteractionComponentPicker from "@Obsidian/Controls/InteractionComponentPicker";
 
 // #region Gallery Support
 
@@ -3878,6 +3879,75 @@ const interactionChannelPickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Interaction Component Picker */
+const interactionComponentPickerGallery = defineComponent({
+    name: "InteractionComponentPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        InteractionComponentPicker,
+        InteractionChannelPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            interactionChannelId: ref(null),
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("interactionComponentPicker"),
+            exampleCode: `<InteractionComponentPicker label="Interaction Component" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <InteractionComponentPicker label="Interaction Component"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :interactionChannelId="interactionChannelId?.value" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-4">
+                <InteractionChannelPicker label="Interaction Channel" v-model="interactionChannelId" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     attributeValuesContainerGallery,
@@ -3947,6 +4017,7 @@ const controlGalleryComponents: Record<string, Component> = [
     gradePickerGallery,
     groupMemberPickerGallery,
     interactionChannelPickerGallery,
+    interactionComponentPickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))
