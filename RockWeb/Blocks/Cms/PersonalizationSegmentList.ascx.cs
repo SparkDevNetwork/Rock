@@ -241,10 +241,10 @@ namespace RockWeb.Blocks.Cms
                 IsActive = a.IsActive,
                 AnonymousIndividualsCount =
                      personAliasPersonalizationsSegmentsQry
-                         .Where( p => p.PersonalizationTypeId == a.Id && p.PersonAlias.PersonId == anonymousVisitorPersonId ).Count(),
+                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId == anonymousVisitorPersonId ).Count(),
                 KnownIndividualsCount =
                      personAliasPersonalizationsSegmentsQry
-                         .Where( p => p.PersonalizationTypeId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count()
+                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count()
             } );
 
             // sort the query based on the column that was selected to be sorted

@@ -71,7 +71,7 @@ namespace Rock.Model
         /// <param name="personalizationSegment">The personalization segment.</param>
         public IQueryable<Rock.Model.PersonAliasPersonalization> GetPersonAliasPersonalizationSegmentQuery( PersonalizationSegmentCache personalizationSegment )
         {
-            return GetPersonAliasPersonalizationSegmentQuery().Where( a => a.PersonalizationTypeId == personalizationSegment.Id );
+            return GetPersonAliasPersonalizationSegmentQuery().Where( a => a.PersonalizationEntityId == personalizationSegment.Id );
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Rock.Model
         {
             var qry = GetPersonAliasPersonalizationSegmentQuery();
             var segmentIdsThatExist = this.Queryable().Select( a => a.Id );
-            var orphanedData = qry.Where( a => a.PersonalizationType == PersonalizationType.Segment && !segmentIdsThatExist.Contains( a.PersonalizationTypeId ) );
+            var orphanedData = qry.Where( a => a.PersonalizationType == PersonalizationType.Segment && !segmentIdsThatExist.Contains( a.PersonalizationEntityId ) );
             var deletedRows = ( this.Context as RockContext ).BulkDelete( orphanedData );
             return deletedRows;
         }
@@ -148,7 +148,7 @@ namespace Rock.Model
                 {
                     PersonAliasId = personAliasId,
                     PersonalizationType = PersonalizationType.Segment,
-                    PersonalizationTypeId = segment.Id
+                    PersonalizationEntityId = segment.Id
                 } ).ToList();
 
             var countAddedToSegment = personAliasPersonalizationsToInsert.Count();
@@ -182,7 +182,7 @@ namespace Rock.Model
             var qry = ( this.Context as RockContext ).PersonAliasPersonalizations
                 .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.PersonAliasId == personAliasId );
 
-            var segmentIds = qry.Select( a => a.PersonalizationTypeId ).ToArray();
+            var segmentIds = qry.Select( a => a.PersonalizationEntityId ).ToArray();
             var segmentIdKeys = segmentIds.Select( a => IdHasher.Instance.GetHash( a ) ).ToArray();
 
             return segmentIdKeys;

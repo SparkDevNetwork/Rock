@@ -56,10 +56,10 @@ namespace Rock.Client
         public int EntityTypeId { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.PersonalizationType PersonalizationType { get; set; }
+        public int PersonalizationEntityId { get; set; }
 
         /// <summary />
-        public int PersonalizationTypeId { get; set; }
+        public Rock.Client.Enums.PersonalizationType PersonalizationType { get; set; }
 
     }
 }
