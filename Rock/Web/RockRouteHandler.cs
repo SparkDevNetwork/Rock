@@ -184,6 +184,16 @@ namespace Rock.Web
                                             pageId = string.Empty;
                                             routeId = 0;
 
+                                            string visitorPersonAliasIdKey = null;
+
+                                            if ( site.EnableVisitorTracking )
+                                            {
+                                                if ( routeHttpRequest.Cookies.AllKeys.Contains( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY ) )
+                                                {
+                                                    visitorPersonAliasIdKey = routeHttpRequest.Cookies[Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY]?.Value;
+                                                }
+                                            }
+
                                             string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
 
                                             var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
@@ -194,9 +204,9 @@ namespace Rock.Web
                                                 DateViewed = RockDateTime.Now,
                                                 IPAddress = WebRequestHelper.GetClientIpAddress( routeHttpRequest ),
                                                 UserAgent = routeHttpRequest.UserAgent ?? string.Empty,
-                                                UserName = requestContext.HttpContext.User?.Identity.Name
+                                                UserName = requestContext.HttpContext.User?.Identity.Name,
+                                                VisitorPersonAliasIdKey = visitorPersonAliasIdKey
                                             };
-
 
                                             addShortLinkInteractionMsg.Send();
 
