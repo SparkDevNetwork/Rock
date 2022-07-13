@@ -1317,8 +1317,6 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "2F855DC7-7C20-4C09-9CB1-FFC1E022385B" )]
         public IHttpActionResult InteractionChannelPickerGetInteractionChannels( )
         {
-            //var list = new List<ListItemBag>();
-
             var rockContext = new RockContext();
             var interactionChannelService = new InteractionChannelService( rockContext );
             var channels = interactionChannelService.Queryable().AsNoTracking()
@@ -1333,6 +1331,43 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return Ok( channels );
+        }
+
+        #endregion
+
+        #region Interaction Component Picker
+
+        /// <summary>
+        /// Gets the interaction channels that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which interaction channels to load.</param>
+        /// <returns>A collection of view models that represent the interaction channels.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "InteractionComponentPickerGetInteractionComponents" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "BD61A390-39F9-4FDE-B9AD-02E53B5F2073" )]
+        public IHttpActionResult InteractionComponentPickerGetInteractionComponents( InteractionComponentPickerGetInteractionComponentsOptionsBag options)
+        {
+
+            if ( !options.InteractionChannelId.HasValue )
+            {
+                return NotFound();
+            }
+
+            var rockContext = new RockContext();
+            var interactionComponentService = new InteractionComponentService( rockContext );
+            var components = interactionComponentService.Queryable().AsNoTracking()
+                .Where( ic => ic.InteractionChannelId == options.InteractionChannelId.Value )
+                .OrderBy( ic => ic.Name )
+                .Select(ic => new ListItemBag
+                {
+                    Text = ic.Name,
+                    Value = ic.Id.ToString()
+                } )
+                .ToList();
+
+            return Ok( components );
         }
 
         #endregion
