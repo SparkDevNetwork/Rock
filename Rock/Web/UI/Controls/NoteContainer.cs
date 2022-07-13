@@ -485,8 +485,8 @@ namespace Rock.Web.UI.Controls
                 Debug.Assert( this.NoteOptions != null, "this.NoteOptions is null" );
             }
 
-            // If Both the title and Title Icon are not provided then don't show the heading.
-            if ( Title.IsNullOrWhiteSpace() && TitleIconCssClass.IsNullOrWhiteSpace() )
+            // If Both the title and Title Icon are not provided and the add button outside of the header is available then don't show the heading.
+            if ( Title.IsNullOrWhiteSpace() && TitleIconCssClass.IsNullOrWhiteSpace() && AddAlwaysVisible == true )
             {
                 ShowHeading = false;
             }
