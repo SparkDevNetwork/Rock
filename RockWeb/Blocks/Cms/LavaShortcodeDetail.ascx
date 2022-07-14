@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LavaShortcodeDetail.ascx.cs" Inherits="RockWeb.Blocks.Core.LavaShortcodeDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LavaShortcodeDetail.ascx.cs" Inherits="RockWeb.Blocks.Cms.LavaShortcodeDetail" %>
 
 <asp:UpdatePanel ID="upLavaShortcodeDetail" runat="server">
     <ContentTemplate>
@@ -57,10 +57,6 @@
                         </div>
 
                     </fieldset>
-                    <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-                    </div>
                 </div>
 
                 <fieldset id="fieldsetViewDetails" runat="server">
@@ -75,6 +71,8 @@
 
                             <asp:Literal ID="lblHeaderFields" runat="server" />
 
+                            <Rock:CategoryPicker ID="cpViewCategories" runat="server" AllowMultiSelect="true" Label="Categories" EntityTypeName="Rock.Model.LavaShortcodeCategory" />
+
                             <Rock:CodeEditor ID="ceView" runat="server" ReadOnly="true" Label="Shortcode Markup" EditorHeight="600" />
 
                             <strong>Parameters</strong>
@@ -86,6 +84,10 @@
                     </div>
 
                 </fieldset>
+                <div class="actions" runat="server" id="divActions">
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                </div>
             </div>
         </asp:Panel>
     </ContentTemplate>
