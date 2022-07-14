@@ -7,13 +7,13 @@
             <asp:Repeater ID="rptrGroups" runat="server" OnItemDataBound="rptrGroups_ItemDataBound" >
                 <ItemTemplate>
 
-                    <asp:Panel ID="pnlGroup" runat="server" CssClass="card card-profile group-hover card-family-member">
+                    <asp:Panel ID="pnlGroup" runat="server" CssClass="card card-profile group-hover card-family-member panel-widget">
                         <asp:HiddenField ID="hfGroupId" runat="server" Value='<%# Eval("Id") %>' />
                             <div class="card-header">
                                 <span class="card-title"><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></span>
 
                                 <div class="panel-labels group-hover-item group-hover-show">
-                                    <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
+                                    <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs js-stop-immediate-propagation panel-widget-reorder"><i class="fa fa-bars"></i></a>
                                     <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="btn btn-link btn-xs"><i class="fa fa-pencil"></i></asp:HyperLink>
                                 </div>
                             </div>
