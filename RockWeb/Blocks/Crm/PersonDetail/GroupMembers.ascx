@@ -30,10 +30,19 @@
                             </div>
                         </div>
 
-                        <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="card-section">
+                        <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="card-section js-group-attribute-section">
+                            <div class="pull-right">
+                                <a class="js-show-more-family-attributes"><i class="fa fa-chevron-down"></i></a>
+                            </div>
                             <dl class="m-0">
                                 <asp:Literal ID="litGroupAttributes" runat="server"></asp:Literal>
                             </dl>
+                            <div class="js-more-group-attributes" style="display:none">
+                                <br />
+                                <dl class="m-0">
+                                    <asp:Literal ID="litMoreGroupAttributes" runat="server"></asp:Literal>
+                                </dl>
+                            </div>
                         </asp:panel>
 
 
@@ -84,6 +93,18 @@
                             var postbackArg = 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex;
                             window.location = "javascript:__doPostBack('<%=upGroupMembers.ClientID %>', '" +  postbackArg + "')";
                         }
+                    }
+                });
+
+                $('.js-show-more-family-attributes').on('click', function (e) {
+                    var $pnl = $(this).closest('.js-group-attribute-section');
+                    var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
+                    if ($moreAttributes.is(':visible')) {
+                        $moreAttributes.slideUp();
+                        $(this).html('<i class="fa fa-chevron-down"></i>');
+                    } else {
+                        $moreAttributes.slideDown();
+                        $(this).html('<i class="fa fa-chevron-up"></i>');
                     }
                 });
             });

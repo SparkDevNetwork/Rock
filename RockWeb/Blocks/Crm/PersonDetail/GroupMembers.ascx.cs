@@ -599,13 +599,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
             var litGroupAttributes = e.Item.FindControl( "litGroupAttributes" ) as Literal;
+            var litMoreGroupAttributes = e.Item.FindControl( "litMoreGroupAttributes" ) as Literal;
 
-            if ( pnlGroupAttributes == null || litGroupAttributes == null )
+            if ( pnlGroupAttributes == null || litGroupAttributes == null || litMoreGroupAttributes == null )
             {
                 return;
             }
 
             litGroupAttributes.Text = string.Empty;
+            litMoreGroupAttributes.Text = string.Empty;
             pnlGroupAttributes.Visible = false;
 
             group.LoadAttributes();
@@ -621,10 +623,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
-                    pnlGroupAttributes.Visible = true;
-                    litGroupAttributes.Text += $@"
+                    var attributeHtml = $@"
                         <dt>{attribute.Name}</dt>
                         <dd>{value}</dd>";
+
+                    if ( attribute.IsGridColumn )
+                    {
+                        pnlGroupAttributes.Visible = true;
+                        litGroupAttributes.Text += attributeHtml;
+                    }
+                    else
+                    {
+                        litMoreGroupAttributes.Text += attributeHtml;
+                    }
                 }
             }
         }
