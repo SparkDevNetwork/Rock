@@ -13,6 +13,8 @@ declare
     @interactionsToAddCount int = 100000
     -- Days of spread for the interaction to occur. 30 means 30 days ago until today
     ,@daySpread int = 365
+    ,@maxPersonCount INT = 1000 -- limit to a count of X persons in the database
+    ,@forceIncludeAnonymousVisitors bit = 1 -- leave this true to add anonymous visitors to the set of PersonAliasIds
     -- Set this value to place a tag in the ForeignKey field of the sample data records for easier identification.
     ,@foreignKey nvarchar(100) = 'Interactions Sample Data'
 
@@ -32,23 +34,30 @@ declare @interactionCounter int = 0;
 declare @personAliasIds table ( id Int not null );
 declare @componentIds table ( id Int not null );
 
+
+-- Get a list of person alias ids
+insert into @personAliasIds
+select top (@maxPersonCount) pa.Id
+from 
+    PersonAlias pa
+    inner join Person p on pa.PersonId = p.Id
+where 
+    p.IsSystem = 0
+    and p.[Guid] not in ('802235dc-3ca5-94b0-4326-aace71180f48') -- Exclude Giver Anonymous
+
+if (@forceIncludeAnonymousVisitors = 1) BEGIN
+insert into @personAliasIds
+    select pa.Id
+    from 
+        PersonAlias pa
+        inner join Person p on pa.PersonId = p.Id
+        where p.Guid = '7ebc167b-512d-4683-9d80-98b6bb02e1b9'       
+end
+
 -- Loop for each interaction
 WHILE @interactionCounter < @interactionsToAddCount
 BEGIN
     SET @interactionCounter += 1;
-
-    IF(NOT EXISTS(SELECT 1 FROM @personAliasIds))
-    BEGIN
-        -- Get a list of person alias ids
-        insert into @personAliasIds
-        select pa.Id
-        from 
-            PersonAlias pa
-            inner join Person p on pa.PersonId = p.Id
-        where 
-            p.IsSystem = 0
-            and p.LastName <> 'Anonymous';
-    END
 
     IF(NOT EXISTS(SELECT 1 FROM @componentIds))
     BEGIN
