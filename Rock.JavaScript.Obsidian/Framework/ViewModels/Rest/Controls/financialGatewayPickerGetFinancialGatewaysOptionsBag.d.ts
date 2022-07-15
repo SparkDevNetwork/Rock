@@ -23,7 +23,7 @@
 
 /**
  * The options that can be passed to the GetFinancialGateways API action of
- * the inancialGatewayPicker control.
+ * the FinancialGatewayPicker control.
  */
 export type FinancialGatewayPickerGetFinancialGatewaysOptionsBag = {
     /**

@@ -54,7 +54,7 @@ namespace Rock.Rest.v2
         /// Gets the achievement types that can be displayed in the achievement type picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of view models that represent the tree items.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the achievement types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "AchievementTypePickerGetAchievementTypes" )]
         [Authenticate]
@@ -81,14 +81,14 @@ namespace Rock.Rest.v2
         #region Assessment Type Picker
 
         /// <summary>
-        /// Gets the achievement types that can be displayed in the achievement type picker.
+        /// Gets the assessment types that can be displayed in the assessment type picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of view models that represent the tree items.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the assessment types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "AssessmentTypePickerGetAssessmentTypes" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "B47DCE1B-89D7-4DD5-88A7-B3C393D49A7C  " )]
+        [Rock.SystemGuid.RestActionGuid( "B47DCE1B-89D7-4DD5-88A7-B3C393D49A7C" )]
         public IHttpActionResult AssessmentTypePickerGetEntityTypes( [FromBody] AssessmentTypePickerGetAssessmentTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -116,7 +116,7 @@ namespace Rock.Rest.v2
         /// Gets the asset storage providers that can be displayed in the asset storage provider picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of view models that represent the tree items.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the asset storage providers.</returns>
         [HttpPost]
         [System.Web.Http.Route( "AssetStorageProviderPickerGetAssetStorageProviders" )]
         [Authenticate]
@@ -198,7 +198,7 @@ namespace Rock.Rest.v2
         /// Gets the badge components that can be displayed in the badge component picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of list items that represent the badge components.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the badge components.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgeComponentPickerGetBadgeComponents" )]
         [Authenticate]
@@ -303,7 +303,7 @@ namespace Rock.Rest.v2
         /// Gets the binary files that can be displayed in the binary file picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of view models that represent the tree items.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the binary files.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BinaryFilePickerGetBinaryFiles" )]
         [Authenticate]
@@ -335,7 +335,7 @@ namespace Rock.Rest.v2
         /// Gets the binary file types that can be displayed in the binary file type picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of view models that represent the tree items.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the binary file types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BinaryFileTypePickerGetBinaryFileTypes" )]
         [Authenticate]
@@ -448,7 +448,7 @@ namespace Rock.Rest.v2
         /// Gets the components that can be displayed in the component picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of list items that represent the components.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the components.</returns>
         [HttpPost]
         [System.Web.Http.Route( "ComponentPickerGetComponents" )]
         [Authenticate]
@@ -465,11 +465,11 @@ namespace Rock.Rest.v2
         #region Data View Picker
 
         /// <summary>
-        /// Gets the child items that match the options sent in the request body.
+        /// Gets the data views and their categories that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a tree view control.
         /// </summary>
         /// <param name="options">The options that describe which data views to load.</param>
-        /// <returns>A collection of view models that represent the defined values.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of data views.</returns>
         [HttpPost]
         [System.Web.Http.Route( "DataViewPickerGetDataViews" )]
         [Authenticate]
@@ -504,11 +504,11 @@ namespace Rock.Rest.v2
         #region Defined Value Picker
 
         /// <summary>
-        /// Gets the child items that match the options sent in the request body.
+        /// Gets the defined values and their categories that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a tree view control.
         /// </summary>
         /// <param name="options">The options that describe which defined values to load.</param>
-        /// <returns>A collection of view models that represent the defined values.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of defined values.</returns>
         [HttpPost]
         [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
         [Authenticate]
@@ -818,7 +818,7 @@ namespace Rock.Rest.v2
         /// Gets the entity types that can be displayed in the entity type picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of view models that represent the tree items.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the entity types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "EntityTypePickerGetEntityTypes" )]
         [Authenticate]
@@ -851,7 +851,7 @@ namespace Rock.Rest.v2
         /// Gets the event items that can be displayed in the event item picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A collection of view models that represent the tree items.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the event items.</returns>
         [HttpPost]
         [System.Web.Http.Route( "EventItemPickerGetEventItems" )]
         [Authenticate]
@@ -958,7 +958,7 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the field types that can be displayed in the field type picker.
         /// </summary>
-        /// <returns>A List of view models that represent the field types.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the field types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "FieldTypePickerGetFieldTypes" )]
         [Authenticate]
@@ -982,7 +982,7 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the financial gateways that can be displayed in the financial gateway picker.
         /// </summary>
-        /// <returns>A List of view models that represent the financial gateways.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the financial gateways.</returns>
         [HttpPost]
         [System.Web.Http.Route( "FinancialGatewayPickerGetFinancialGateways" )]
         [Authenticate]
@@ -1021,7 +1021,7 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Gets the financial statement templates that can be displayed in the financial statement template picker.
         /// </summary>
-        /// <returns>A List of view models that represent the financial statement templates.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the financial statement templates.</returns>
         [HttpPost]
         [System.Web.Http.Route( "FinancialStatementTemplatePickerGetFinancialStatementTemplates" )]
         [Authenticate]
@@ -1217,11 +1217,10 @@ namespace Rock.Rest.v2
         #region Grade Picker
 
         /// <summary>
-        /// Gets the school grades that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the school grades that can be displayed in the grade picker.
         /// </summary>
-        /// <param name="options">The options that describe which grades to load.</param>
-        /// <returns>A collection of view models that represent the grades.</returns>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the grades.</returns>
         [HttpPost]
         [System.Web.Http.Route( "GradePickerGetGrades" )]
         [Authenticate]
@@ -1263,11 +1262,10 @@ namespace Rock.Rest.v2
         #region Group Member Picker
 
         /// <summary>
-        /// Gets the group members that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the group members that can be displayed in the group member picker.
         /// </summary>
-        /// <param name="options">The options that describe which group members to load.</param>
-        /// <returns>A collection of view models that represent the group members.</returns>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the group members.</returns>
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
@@ -1315,30 +1313,31 @@ namespace Rock.Rest.v2
         #region Interaction Channel Picker
 
         /// <summary>
-        /// Gets the interaction channels that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the interaction channels that can be displayed in the interaction channel picker.
         /// </summary>
-        /// <returns>A collection of view models that represent the interaction channels.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the interaction channels.</returns>
         [HttpPost]
         [System.Web.Http.Route( "InteractionChannelPickerGetInteractionChannels" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "2F855DC7-7C20-4C09-9CB1-FFC1E022385B" )]
         public IHttpActionResult InteractionChannelPickerGetInteractionChannels( )
         {
+            var items = new List<ListItemBag>();
             var rockContext = new RockContext();
             var interactionChannelService = new InteractionChannelService( rockContext );
             var channels = interactionChannelService.Queryable().AsNoTracking()
                 .Include( "ChannelTypeMediumValue" )
                 .Where( ic => ic.IsActive )
                 .OrderBy( ic => ic.Name )
-                .Select( ic => new ListItemBag
-                {
-                    Text = ic.Name,
-                    Value = ic.Guid.ToString()
-                } )
                 .ToList();
 
-            return Ok( channels );
+            foreach ( var channel in channels )
+            {
+                var li = new ListItemBag { Text = $"{channel.Name} ({( channel.ChannelTypeMediumValue != null ? channel.ChannelTypeMediumValue.Value : string.Empty )})", Value = channel.Guid.ToString() };
+                items.Add( li );
+            }
+
+            return Ok( items );
         }
 
         #endregion
@@ -1346,11 +1345,10 @@ namespace Rock.Rest.v2
         #region Interaction Component Picker
 
         /// <summary>
-        /// Gets the interaction components that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the interection components that can be displayed in the interection component picker.
         /// </summary>
-        /// <param name="options">The options that describe which interaction components to load.</param>
-        /// <returns>A collection of view models that represent the interaction components.</returns>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the interection components.</returns>
         [HttpPost]
         [System.Web.Http.Route( "InteractionComponentPickerGetInteractionComponents" )]
         [Authenticate]
@@ -1393,10 +1391,9 @@ namespace Rock.Rest.v2
         #region Lava Command Picker
 
         /// <summary>
-        /// Gets the lava commands that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the lava commands that can be displayed in the lava command picker.
         /// </summary>
-        /// <returns>A collection of view models that represent the lava commands.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the lava commands.</returns>
         [HttpPost]
         [System.Web.Http.Route( "LavaCommandPickerGetLavaCommands" )]
         [Authenticate]
@@ -1527,10 +1524,9 @@ namespace Rock.Rest.v2
         #region Remote Auths Picker
 
         /// <summary>
-        /// Gets the remote auths that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the remote auths that can be displayed in the remote auths picker.
         /// </summary>
-        /// <returns>A collection of view models that represent the remote auths.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the remote auths.</returns>
         [HttpPost]
         [System.Web.Http.Route( "RemoteAuthsPickerGetRemoteAuths" )]
         [Authenticate]
@@ -1729,10 +1725,9 @@ namespace Rock.Rest.v2
         #region Step Program Picker
 
         /// <summary>
-        /// Gets the step programs that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the step programs that can be displayed in the step program picker.
         /// </summary>
-        /// <returns>A collection of view models that represent the step programs.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the step programs.</returns>
         [HttpPost]
         [System.Web.Http.Route( "StepProgramPickerGetStepPrograms" )]
         [Authenticate]
@@ -1762,11 +1757,10 @@ namespace Rock.Rest.v2
         #region Step Status Picker
 
         /// <summary>
-        /// Gets the step statuses that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the step statuses that can be displayed in the step status picker.
         /// </summary>
-        /// <param name="options">The options that describe which step statuses to load.</param>
-        /// <returns>A collection of view models that represent the step statuses.</returns>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the step statuses.</returns>
         [HttpPost]
         [System.Web.Http.Route( "StepStatusPickerGetStepStatuses" )]
         [Authenticate]
@@ -1813,11 +1807,10 @@ namespace Rock.Rest.v2
         #region Step Type Picker
 
         /// <summary>
-        /// Gets the step types that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the step types that can be displayed in the step type picker.
         /// </summary>
-        /// <param name="options">The options that describe which step types to load.</param>
-        /// <returns>A collection of view models that represent the step types.</returns>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the step types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "StepTypePickerGetStepTypes" )]
         [Authenticate]
@@ -1864,10 +1857,9 @@ namespace Rock.Rest.v2
         #region Streak Type Picker
 
         /// <summary>
-        /// Gets the streak types that match the options sent in the request body.
-        /// This endpoint returns items formatted for use in a basic picker control.
+        /// Gets the streak types that can be displayed in the streak type picker.
         /// </summary>
-        /// <returns>A collection of view models that represent the streak types.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the streak types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "StreakTypePickerGetStreakTypes" )]
         [Authenticate]
@@ -1896,11 +1888,11 @@ namespace Rock.Rest.v2
         #region Workflow Type Picker
 
         /// <summary>
-        /// Gets the workflow type items that match the options sent in the request body.
+        /// Gets the workflow types and their categories that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a tree view control.
         /// </summary>
         /// <param name="options">The options that describe which workflow types to load.</param>
-        /// <returns>A collection of view models that represent the defined values.</returns>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of workflow types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "WorkflowTypePickerGetWorkflowTypes" )]
         [Authenticate]
@@ -1943,12 +1935,12 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// Retrieve a list of ListItems representing components for the given container type. Filters any components
+        /// Retrieve a list of ListItemBags representing components for the given container type. Filters any components
         /// out that don't pass the given validator
         /// </summary>
         /// <param name="containerType"></param>
         /// <param name="isValidComponentChecker"></param>
-        /// <returns>A list of ListItems representing components</returns>
+        /// <returns>A list of ListItemBags representing components</returns>
         private List<ListItemBag> GetComponentListItems( string containerType, Func<Component, bool> isValidComponentChecker )
         {
             if ( containerType.IsNullOrWhiteSpace() )

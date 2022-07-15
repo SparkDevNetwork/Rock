@@ -26,7 +26,7 @@ namespace Rock.ViewModels.Rest.Controls
     public class StepTypePickerGetStepTypesOptionsBag
     {
         /// <summary>
-        /// The ID of the step status that this step type is part of. The <see cref="StepProgramGuid"/>
+        /// The ID of the step program that this step type is part of. The <see cref="StepProgramGuid"/>
         /// takes precedence over this if present.
         /// </summary>
         public int? StepProgramId { get; set; }
