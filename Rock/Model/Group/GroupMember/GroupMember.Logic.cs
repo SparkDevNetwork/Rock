@@ -458,25 +458,34 @@ namespace Rock.Model
                 GroupMemberRequirementId = a.Id
             } );
 
-            // get all the group requirements that apply the group member's role
+            // Get all the group requirements that apply the group member's role, ordered by requirement type name.
             var allGroupRequirements = this.Group.GetGroupRequirements( rockContext ).Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name ).ToList();
 
             // outer join on group requirements
             var result = from groupRequirement in allGroupRequirements
                          join metRequirement in metRequirements on groupRequirement.Id equals metRequirement.GroupRequirementId into j
                          from metRequirement in j.DefaultIfEmpty()
-                         select new GroupRequirementStatus
-                         {
-                             GroupRequirement = groupRequirement,
-                             MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement : MeetsGroupRequirement.NotMet,
-                             RequirementWarningDateTime = metRequirement != null ? metRequirement.RequirementWarningDateTime : null,
-                             RequirementDueDate = groupRequirement.CalculateGroupMemberRequirementDueDate(
+                         let requirementDueDate = groupRequirement.CalculateGroupMemberRequirementDueDate(
                             groupRequirement.GroupRequirementType.DueDateType,
                             groupRequirement.GroupRequirementType.DueDateOffsetInDays,
                             groupRequirement.DueDateStaticDate,
-                            groupRequirement.DueDateAttributeId.HasValue ? new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( groupRequirement.DueDateAttributeId.Value, this.GroupId ).Value.AsDateTime() : null,
-                this.DateTimeAdded ),
-                             LastRequirementCheckDateTime = metRequirement != null ? metRequirement.LastRequirementCheckDateTime : null,
+                            groupRequirement.DueDateAttributeId.HasValue ? new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( groupRequirement.DueDateAttributeId.Value, this.GroupId )?.Value.AsDateTime() ?? null : null,
+                this.DateTimeAdded )
+                         select new GroupRequirementStatus
+                         {
+                             GroupRequirement = groupRequirement,
+                             RequirementDueDate = requirementDueDate,
+                             // If metRequirement has a value, use that GroupMemberRequirement value to indicate
+                             // otherwise,
+                             // if there's a due date with a value
+                             // if that due date is in the future then WARNING
+                             // otherwise (implied past due date) NOTMET
+                             // otherwise NOTMET 
+                             MeetsGroupRequirement = metRequirement != null ? metRequirement.MeetsGroupRequirement :
+                              requirementDueDate.HasValue ? requirementDueDate.Value >= RockDateTime.Now ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.NotMet : MeetsGroupRequirement.NotMet,
+                             RequirementWarningDateTime = metRequirement?.RequirementWarningDateTime,
+
+                             LastRequirementCheckDateTime = metRequirement?.LastRequirementCheckDateTime,
                              GroupMemberRequirementId = metRequirement?.GroupMemberRequirementId,
                          };
 
@@ -526,14 +535,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Remoes any group requirements that are not eligible for the group member's role.  This is necessary
+        /// Removes any group requirements that are not eligible for the group member's role.  This is necessary
         /// if the group member has changed roles.
         /// </summary>
         /// <param name="rockContext">The <see cref="RockContext"/>.</param>
         private void ClearInapplicableGroupRequirements( RockContext rockContext )
         {
             var inapplicableGroupRequirements = GroupMemberRequirements
-                .Where( r => r.GroupRequirement.GroupRoleId != this.GroupRoleId )
+                .Where( r => r.GroupRequirement.GroupRoleId != this.GroupRoleId && !r.WasManuallyCompleted && !r.WasOverridden )
                 .ToList();
 
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
