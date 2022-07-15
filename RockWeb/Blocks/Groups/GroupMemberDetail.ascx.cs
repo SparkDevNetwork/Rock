@@ -63,29 +63,44 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 3 )]
 
+    [LinkedPage(
+        "Workflow Entry Page",
+        Description = "Page used to launch a new workflow of the selected type.",
+        Key = AttributeKey.WorkflowEntryPage,
+        DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY,
+        Order = 4 )]
+
     [BooleanField( "Enable Communications",
         Description = "Enables the capability to send quick communications from the block.",
         Key = AttributeKey.EnableCommunications,
         DefaultBooleanValue = true,
-        Order = 4 )]
+        Order = 5 )]
 
     [BooleanField( "Enable SMS",
         Description = "Allows SMS to be able to be sent from the communications if the individual has SMS enabled. Otherwise only email will be an option.",
         Key = AttributeKey.EnableSMS,
         DefaultBooleanValue = true,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField( "Append Organization Email Header/Footer",
         Description = "Will append the organization’s email header and footer to the email message.",
         Key = AttributeKey.AppendHeaderFooter,
         DefaultBooleanValue = true,
-        Order = 6 )]
+        Order = 7 )]
 
     [BooleanField( "Allow Selecting 'From'",
         Description = "Allows the 'from' of the communication to be changed to a different person.",
         Key = AttributeKey.AllowSelectingFrom,
         DefaultBooleanValue = true,
-        Order = 7 )]
+        Order = 8 )]
+
+    [DefinedValueField( "Allowed SMS Numbers",
+        Key = AttributeKey.AllowedSMSNumbers,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
+        Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ",
+        IsRequired = false,
+        AllowMultiple = true,
+        Order = 9 )]
 
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_DETAIL )]
     public partial class GroupMemberDetail : RockBlock
@@ -96,10 +111,12 @@ namespace RockWeb.Blocks.Groups
             public const string ShowMoveToOtherGroup = "ShowMoveToOtherGroup";
             public const string ShowRequirementsPublicly = "ShowRequirementsPublicly";
             public const string ShowPublicNotes = "ShowPublicNotes";
+            public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string EnableCommunications = "EnableCommunications";
             public const string EnableSMS = "EnableSMS";
             public const string AppendHeaderFooter = "AppendHeaderFooter";
             public const string AllowSelectingFrom = "AllowSelectingFrom";
+            public const string AllowedSMSNumbers = "AllowedSMSNumbers";
         }
 
         private static class PageParameterKey
@@ -120,7 +137,9 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
             gmrcRequirements.GroupMemberId = PageParameter( PageParameterKey.GroupMemberId ).AsInteger();
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            gmrcRequirements.WorkflowEntryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it.
             this.BlockUpdated += GroupMemberDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upDetail );
         }
@@ -150,6 +169,7 @@ namespace RockWeb.Blocks.Groups
             {
                 gmrcRequirements.GroupMemberId = groupMemberId;
             }
+
             gmrcRequirements.Visible = groupMemberId > 0;
 
             if ( !Page.IsPostBack )
@@ -213,6 +233,43 @@ namespace RockWeb.Blocks.Groups
             }
 
             return breadCrumbs;
+        }
+
+        /// <summary>
+        /// Loads the phone numbers.
+        /// </summary>
+        /// <returns></returns>
+        private bool LoadPhoneNumbers()
+        {
+            // First load up all of the available numbers
+            var smsNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) );
+
+            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+            if ( selectedNumberGuids.Any() )
+            {
+                smsNumbers = smsNumbers.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
+            }
+
+            if ( smsNumbers.Any() )
+            {
+                var smsDetails = smsNumbers.Select( v => new
+                {
+                    v.Id,
+                    Description = string.IsNullOrWhiteSpace( v.Description )
+                    ? PhoneNumber.FormattedNumber( string.Empty, v.Value.Replace( "+", string.Empty ) )
+                    : v.Description.LeftWithEllipsis( 25 ),
+                } );
+
+                ddlSmsNumbers.DataSource = smsDetails;
+                ddlSmsNumbers.Visible = smsNumbers.Count() > 1;
+                ddlSmsNumbers.DataValueField = "Id";
+                ddlSmsNumbers.DataTextField = "Description";
+                ddlSmsNumbers.DataBind();
+
+                return true;
+            }
+
+            return false;
         }
 
         #endregion
@@ -292,8 +349,8 @@ namespace RockWeb.Blocks.Groups
                 pnlEditDetails.Visible = false;
                 return;
             }
-            gmrcRequirements.GroupMemberId = groupMemberId;
 
+            gmrcRequirements.GroupMemberId = groupMemberId;
             pnlEditDetails.Visible = true;
 
             hfGroupId.Value = groupMember.GroupId.ToString();
@@ -560,7 +617,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Shows the group requirements statuses.
         /// </summary>
-        private void ShowGroupRequirementsStatuses( bool forceRecheckRequirements )
+        private void ShowGroupRequirementsStatuses( bool forceRefreshRequirements )
         {
             if ( !pnlRequirements.Visible )
             {
@@ -590,7 +647,6 @@ namespace RockWeb.Blocks.Groups
                     groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
                 }
             }
-            gmrcRequirements.DataBind();
 
             if ( groupMember == null )
             {
@@ -607,107 +663,8 @@ namespace RockWeb.Blocks.Groups
 
             gmrcRequirements.Visible = true;
 
-            IEnumerable<GroupRequirementStatus> requirementsResults;
-
-            if ( forceRecheckRequirements || groupMember.IsNewOrChangedGroupMember( rockContext ) )
-            {
-                requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
-            }
-            else
-            {
-                requirementsResults = groupMember.GetGroupRequirementsStatuses( rockContext ).ToList();
-            }
-
-            // Determine if requirementResults contain any categories.
-            var requirementsWithCategories = requirementsResults.Where( rr => rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue )
-                .Select( rr => rr.GroupRequirement.GroupRequirementType.Category ).Distinct().OrderBy( c => c.Order ).ThenBy( c => c.Name );
-            var hasRequirementsWithoutCategories = requirementsResults.Where( rr => !rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue )
-                .Select( rr => rr.GroupRequirement.GroupRequirementType.CategoryId ).Distinct().Count() > 0;
-
-            var requirementCategories = requirementsResults
-                .Select( rr => new GroupRequirementWithCategoryInfo
-                {
-                    CategoryId = rr.GroupRequirement.GroupRequirementType.CategoryId,
-                    Name = rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? rr.GroupRequirement.GroupRequirementType.Category.Name : "No name",
-                    RequirementResults = requirementsResults.Where( r => r.GroupRequirement.GroupRequirementType.CategoryId == rr.GroupRequirement.GroupRequirementType.CategoryId )
-                } ).DistinctBy( c => c.CategoryId );
-
-            // only show the requirements that apply to the GroupRole (or all Roles)
-            //foreach ( var requirementResult in requirementsResults.Where( a => a.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
-            //{
-            //    if ( requirementResult.GroupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
-            //    {
-            //        var checkboxItem = new ListItem( requirementResult.GroupRequirement.GroupRequirementType.CheckboxLabel, requirementResult.GroupRequirement.Id.ToString() );
-            //        if ( string.IsNullOrEmpty( checkboxItem.Text ) )
-            //        {
-            //            checkboxItem.Text = requirementResult.GroupRequirement.GroupRequirementType.Name;
-            //        }
-
-            //        checkboxItem.Selected = requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets;
-            //        cblManualRequirements.Items.Add( checkboxItem );
-            //    }
-            //    else
-            //    {
-            //        string labelText;
-            //        string labelType;
-            //        string labelTooltip;
-            //        if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.Meets )
-            //        {
-            //            labelText = requirementResult.GroupRequirement.GroupRequirementType.PositiveLabel;
-            //            labelType = "success";
-            //        }
-            //        else if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
-            //        {
-            //            labelText = requirementResult.GroupRequirement.GroupRequirementType.WarningLabel;
-            //            labelType = "warning";
-            //        }
-            //        else
-            //        {
-            //            labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
-            //            labelType = "danger";
-            //        }
-
-            //        if ( string.IsNullOrEmpty( labelText ) )
-            //        {
-            //            labelText = requirementResult.GroupRequirement.GroupRequirementType.Name;
-            //        }
-
-            //        if ( requirementResult.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning )
-            //        {
-            //            labelTooltip = requirementResult.RequirementWarningDateTime.HasValue
-            //                ? "Last Checked: " + requirementResult.RequirementWarningDateTime.Value.ToString( "g" )
-            //                : "Not calculated yet";
-            //        }
-            //        else
-            //        {
-            //            labelTooltip = requirementResult.LastRequirementCheckDateTime.HasValue
-            //                ? "Last Checked: " + requirementResult.LastRequirementCheckDateTime.Value.ToString( "g" )
-            //                : "Not calculated yet";
-            //        }
-
-            //        lRequirementsLabels.Text += string.Format(
-            //            @"<span class='label label-{1}' title='{2}'>{0}</span>
-            //            ",
-            //            labelText,
-            //            labelType,
-            //            labelTooltip );
-            //    }
-            //}
-
-            var requirementsWithErrors = requirementsResults.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
-            if ( requirementsWithErrors.Any() )
-            {
-                nbRequirementsErrors.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
-                nbRequirementsErrors.Visible = true;
-                nbRequirementsErrors.Text = string.Format(
-                    "An error occurred in one or more of the requirement calculations" );
-
-                nbRequirementsErrors.Details = requirementsWithErrors.Select( a => string.Format( "{0}: {1}", a.GroupRequirement.GroupRequirementType.Name, a.CalculationException.Message ) ).ToList().AsDelimited( Environment.NewLine );
-            }
-            else
-            {
-                nbRequirementsErrors.Visible = false;
-            }
+            // Force refreshing the requirements when loading the container.
+            gmrcRequirements.ForceRefreshRequirements = forceRefreshRequirements || groupMember.IsNewOrChangedGroupMember( rockContext );
         }
 
         /// <summary>
@@ -1292,40 +1249,6 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                //if ( pnlRequirements.Visible )
-                //{
-                //    foreach ( var checkboxItem in cblManualRequirements.Items.OfType<ListItem>() )
-                //    {
-                //        int groupRequirementId = checkboxItem.Value.AsInteger();
-                //        var groupMemberRequirement = groupMember.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == groupRequirementId );
-                //        bool metRequirement = checkboxItem.Selected;
-                //        if ( metRequirement )
-                //        {
-                //            if ( groupMemberRequirement == null )
-                //            {
-                //                groupMemberRequirement = new GroupMemberRequirement();
-                //                groupMemberRequirement.GroupRequirementId = groupRequirementId;
-
-                //                groupMember.GroupMemberRequirements.Add( groupMemberRequirement );
-                //            }
-
-                //            // set the RequirementMetDateTime if it hasn't been set already
-                //            groupMemberRequirement.RequirementMetDateTime = groupMemberRequirement.RequirementMetDateTime ?? RockDateTime.Now;
-
-                //            groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
-                //        }
-                //        else
-                //        {
-                //            if ( groupMemberRequirement != null )
-                //            {
-                //                // doesn't meets the requirement
-                //                groupMemberRequirement.RequirementMetDateTime = null;
-                //                groupMemberRequirement.LastRequirementCheckDateTime = RockDateTime.Now;
-                //            }
-                //        }
-                //    }
-                //}
-
                 if ( pnlScheduling.Visible )
                 {
                     groupMember.ScheduleTemplateId = ddlGroupMemberScheduleTemplate.SelectedValue.AsIntegerOrNull();
@@ -1419,8 +1342,6 @@ namespace RockWeb.Blocks.Groups
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
                 } );
-
-                groupMember.CalculateRequirements( rockContext, true );
             }
 
             return true;
@@ -1500,9 +1421,15 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRefreshRequirements_Click( object sender, EventArgs e )
         {
+            gmrcRequirements.Visible = false;
             CalculateRequirements( true );
             nbRecheckedNotification.Text = "Successfully refreshed requirements.";
-            nbRecheckedNotification.Visible = true;
+            gmrcRequirements.Visible = true;
+
+            // Reload the page to make sure that the container has updated cards.
+            var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
+            pageRef.Parameters.Add( "GroupMemberId", hfGroupMemberId.Value.ToString() );
+            NavigateToPage( pageRef );
         }
 
         /// <summary>
@@ -1700,51 +1627,15 @@ namespace RockWeb.Blocks.Groups
 
         #endregion Events
 
-        protected void rptRequirementCategories_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var categoryInfo = e.Item.DataItem as GroupRequirementWithCategoryInfo;
-
-            if ( categoryInfo == null )
-            {
-                return;
-            }
-
-            var rptGroupMemberRequirements = e.Item.FindControl( "rptGroupMemberRequirements" ) as Repeater;
-            rptGroupMemberRequirements.DataSource = categoryInfo.RequirementResults;
-            rptGroupMemberRequirements.DataBind();
-
-            //var lCheckinResultsCheckinMessage = e.Item.FindControl( "lCheckinResultsCheckinMessage" ) as Literal;
-            //var pnlCheckinResultsAchievementsScoreboard = e.Item.FindControl( "pnlCheckinResultsAchievementsScoreboard" ) as Panel;
-
-            //lCheckinResultsPersonName.Text = checkinResult.Person.ToString();
-            //lCheckinResultsCheckinMessage.Text = $"{checkinResult.Group} in {checkinResult.Location.Name} at {checkinResult.Schedule}";
-
-            //PersonAchievementType[] personAchievementTypes = checkinResult.GetPersonAchievementTypes( false );
-
-            //if ( personAchievementTypes.Any() == true )
-            //{
-            //    pnlCheckinResultsAchievementsScoreboard.Visible = true;
-            //    var rptCheckinResultsAchievementsScoreboard = e.Item.FindControl( "rptCheckinResultsAchievementsScoreboard" ) as Repeater;
-            //    rptCheckinResultsAchievementsScoreboard.DataSource = personAchievementTypes;
-            //    rptCheckinResultsAchievementsScoreboard.DataBind();
-            //}
-            //else
-            //{
-            //    pnlCheckinResultsAchievementsScoreboard.Visible = false;
-            //}
-        }
-
         protected void btnShowCommunicationDialog_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
             if ( groupMember != null )
             {
-                lCommunicationTo.Text = String.Format( "<strong>To: </strong>{0}", groupMember.Person.FullName );
+                lCommunicationTo.Text = string.Format( "<strong>To: </strong>{0}", groupMember.Person.FullName );
                 bool enableSMS = this.GetAttributeValue( AttributeKey.EnableSMS ).AsBooleanOrNull() ?? true;
                 tglCommunicationPreference.Visible = enableSMS;
-                //tglCommunicationPreference.Checked = enableSMS;
-
                 mdQuickCommunication.Visible = true;
                 mdQuickCommunication.Show();
             }
@@ -1759,39 +1650,46 @@ namespace RockWeb.Blocks.Groups
                 if ( tglCommunicationPreference.Checked )
                 {
                     // SMS was chosen.
+                    LoadPhoneNumbers();
                     pnlEmailControls.Visible = false;
                     pnlSMSControls.Visible = true;
                     var smsAvailablePhoneNumbers = groupMember.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled && p.IsValid );
+
+                    // Make sure the person has an SMS-enabled phone number.
                     if ( !smsAvailablePhoneNumbers.Any() )
                     {
                         pnlSMSControls.Visible = false;
                         tbCommunicationMessage.Visible = false;
                         nbSendGroupMemberCommunication.Visible = true;
-                        nbSendGroupMemberCommunication.Text = String.Format( "No SMS enabled phone number exists for {0}.", groupMember.Person.FullName );
+                        nbSendGroupMemberCommunication.Text = string.Format( "No SMS enabled phone number exists for {0}.", groupMember.Person.FullName );
 
                         return;
                     }
+
                     tbCommunicationMessage.Visible = true;
                     nbSendGroupMemberCommunication.Visible = false;
-                    lCommunicationTo.Text = String.Format( "<strong>To: </strong>{0} | {1}", groupMember.Person.FullName, smsAvailablePhoneNumbers.First().ToString() );
-                    hfSMSNumber.Value = smsAvailablePhoneNumbers.First().ToSmsNumber();
+                    lCommunicationTo.Text = string.Format( "<strong>To: </strong>{0} | {1}", groupMember.Person.FullName, smsAvailablePhoneNumbers.First().ToString() );
+                    hfToSMSNumber.Value = smsAvailablePhoneNumbers.First().ToSmsNumber();
                 }
                 else
                 {
                     // Email was chosen.
                     pnlEmailControls.Visible = true;
                     pnlSMSControls.Visible = false;
+
+                    // Make sure the person has an email address that's allowed.
                     if ( !groupMember.Person.IsEmailActive || !groupMember.Person.CanReceiveEmail() )
                     {
                         pnlEmailControls.Visible = false;
                         tbCommunicationMessage.Visible = false;
                         nbSendGroupMemberCommunication.Visible = true;
-                        nbSendGroupMemberCommunication.Text = String.Format( "No email address is available for {0}.", groupMember.Person.FullName );
+                        nbSendGroupMemberCommunication.Text = string.Format( "No email address is available for {0}.", groupMember.Person.FullName );
                         return;
                     }
+
                     tbCommunicationMessage.Visible = true;
                     nbSendGroupMemberCommunication.Visible = false;
-                    lCommunicationTo.Text = String.Format( "<strong>To: </strong>{0}", groupMember.Person.FullName );
+                    lCommunicationTo.Text = string.Format( "<strong>To: </strong>{0}", groupMember.Person.FullName );
                 }
             }
         }
@@ -1799,12 +1697,8 @@ namespace RockWeb.Blocks.Groups
         protected void mdQuickCommunication_SaveClick( object sender, EventArgs e )
         {
             var communicationType = tglCommunicationPreference.Checked ? CommunicationType.SMS : CommunicationType.Email;
-            // If Email, make sure the person has an email address that's allowed
-
-            // If SMS, make sure the person has an SMS-enabled phone number
-
             var communicationSuccessful = SendCommunication( communicationType );
-            if (communicationSuccessful)
+            if ( communicationSuccessful )
             {
                 mdQuickCommunication.Hide();
                 nbCommunicationSuccess.Visible = true;
@@ -1850,7 +1744,6 @@ namespace RockWeb.Blocks.Groups
             smsMessage.Send();
         }
 
-
         private bool SendCommunication( CommunicationType communicationType )
         {
             var rockContext = new RockContext();
@@ -1871,33 +1764,32 @@ namespace RockWeb.Blocks.Groups
                         string emailFooter = globalAttributes.GetValue( "EmailFooter" );
                         emailMessage = $"{emailHeader} {emailMessage} {emailFooter}";
                     }
+
                     SendEmail( rockEmailMessageRecipient, groupMember.Person.Email, groupMember.Person.FullName, tbEmailCommunicationSubject.Text, emailMessage, false );
                     return true;
                 }
-                else if ( communicationType == CommunicationType.SMS && hfSMSNumber.Value.IsNotNullOrWhiteSpace() )
+                else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
                 {
-                    // var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
                     var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
-                    var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).ToList();
-                    //if ( selectedNumberGuids.Any() )
-                    //{
-                    //    smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
-                    //}
-                    
+                    hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
+                    var smsDefinedValues = smsFromDefinedType.DefinedValues.Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && v.Id == hfFromSMSNumber.Value.AsInteger() ).ToList();
+
                     if ( !smsDefinedValues.Any() )
                     {
-                        //If there aren't any available SMS numbers to send from, set warning and return false.
-                        nbSendGroupMemberCommunication.Text = String.Format("Unable to send an SMS message, as you do not have an SMS-enabled phone number from which to send.");
+                        // If there aren't any available SMS numbers to send from, set warning and return false.
+                        nbSendGroupMemberCommunication.Text = string.Format( "Unable to send an SMS message, as you do not have an SMS-enabled phone number from which to send." );
                         return false;
                     }
-                    //This needs to change to be a specific SMS number
+
                     var selectedSMSFrom = smsDefinedValues.First();
-                    RockSMSMessageRecipient rockSMSMessageRecipient = new RockSMSMessageRecipient( groupMember.Person, hfSMSNumber.Value, new Dictionary<string, object>() );
+                    RockSMSMessageRecipient rockSMSMessageRecipient = new RockSMSMessageRecipient( groupMember.Person, hfToSMSNumber.Value, new Dictionary<string, object>() );
                     SendSMS( rockSMSMessageRecipient, selectedSMSFrom, tbCommunicationMessage.Text, false );
                     return true;
                 }
+
                 return false;
             }
+
             return false;
         }
     }
@@ -1905,7 +1797,9 @@ namespace RockWeb.Blocks.Groups
     internal class GroupRequirementWithCategoryInfo
     {
         public int? CategoryId { get; set; }
+
         public string Name { get; set; }
+
         public IEnumerable<GroupRequirementStatus> RequirementResults { get; set; }
     }
 }

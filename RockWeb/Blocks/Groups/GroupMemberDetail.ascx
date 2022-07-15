@@ -181,8 +181,10 @@
                             <Rock:RockTextBox ID="tbEmailCommunicationSubject" runat="server" Label="Subject" Required="true" ValidationGroup="vgEmailGroupMemberCommunication" />
                         </asp:Panel>
                         <asp:Panel ID="pnlSMSControls" runat="server">
+                            <asp:HiddenField ID="hfFromSMSNumber" runat="server" Visible="false" />
+                            <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="From" />
                             <Rock:PersonPicker ID="ppSMSCommunicationFrom" runat="server" Label="From" Required="true" Visible="false" ValidationGroup="vgSMSGroupMemberCommunication" />
-                            <asp:HiddenField ID="hfSMSNumber" runat="server" Visible="false" />
+                            <asp:HiddenField ID="hfToSMSNumber" runat="server" Visible="false" />
                         </asp:Panel>
                         <Rock:RockTextBox ID="tbCommunicationMessage" runat="server" Label="Message" Required="true" TextMode="MultiLine" Rows="4" ValidationGroup="vgSendGroupMemberCommunication"></Rock:RockTextBox>
 
