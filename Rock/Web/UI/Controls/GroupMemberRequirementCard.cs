@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -48,6 +49,26 @@ namespace Rock.Web.UI.Controls
         /// Link Button control for overriding requirements.
         /// </summary>
         private LinkButton _lbMarkAsMet;
+
+        /// <summary>
+        /// Link Button control for warning workflow.
+        /// </summary>
+        private LinkButton _lbWarningWorkflow;
+
+        /// <summary>
+        /// Link Button control for "not met" workflow.
+        /// </summary>
+        private LinkButton _lbDoesNotMeetWorkflow;
+
+        /// <summary>
+        /// Hyperlink control for warning workflow.
+        /// </summary>
+        private HyperLink _hlWarningWorkflow;
+
+        /// <summary>
+        /// Hyperlink control for "not met" workflow.
+        /// </summary>
+        private HyperLink _hlDoesNotMeetWorkflow;
 
         /// <summary>
         /// Modal Dialog control to permit an override.
@@ -91,6 +112,11 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets the calculated due date for this group member requirement.
         /// </summary>
         public DateTime? GroupMemberRequirementDueDate { get; set; }
+
+        /// <summary>
+        /// The workflow entry page for running workflows (set in <see cref="GroupMemberRequirementsContainer"/>).
+        /// </summary>
+        public string WorkflowEntryPage { get; set; }
 
         /// <summary>
         /// Gets or sets the CSS Class to use for the title icon of the requirement card.
@@ -313,28 +339,57 @@ namespace Rock.Web.UI.Controls
 
                         var qryParms = new Dictionary<string, string>();
                         qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
-                        var workflowLink = new PageReference( SystemGuid.Page.LAUNCHWORKFLOW, qryParms );
-
+                        var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
                         if ( workflowLink.PageId > 0 )
                         {
-                            bool showLinkToEntry = _groupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.HasValue ? _groupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.Value : false;
-                            if ( showLinkToEntry )
+                            _hlDoesNotMeetWorkflow = new HyperLink
                             {
-                                writer.AddAttribute( HtmlTextWriterAttribute.Href, workflowLink.BuildUrl() );
-                                writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
-                                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                                ID = "hlDoesNotMeetWorkflow" + this.ClientID,
+                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + _groupMemberRequirementType.DoesNotMeetWorkflowLinkText,
+                                Target="_blank",
+                                NavigateUrl = new PageReference( WorkflowEntryPage, qryParms ).BuildUrl()
+                            };
+                            _hlDoesNotMeetWorkflow.RenderControl( writer );
 
-                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
-                                writer.RenderBeginTag( HtmlTextWriterTag.I );
-
-                                // End the I tag.
-                                writer.RenderEndTag();
-                                writer.Write( _groupMemberRequirementType.DoesNotMeetWorkflowLinkText );
-
-                                // End the A tag.
-                                writer.RenderEndTag();
-                            }
+                            _lbDoesNotMeetWorkflow = new LinkButton
+                            {
+                                ID = "lblDoesNotMeetWorkflow" + this.ClientID,
+                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + _groupMemberRequirementType.DoesNotMeetWorkflowLinkText
+                            };
+                            _lbDoesNotMeetWorkflow.Click += lbDoesNotMeetWorkflow_Click;
+                            _lbDoesNotMeetWorkflow.RenderControl( writer );
                         }
+                        //RegisterWorkflowDetailPageScript( _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value, _groupMemberRequirementType.DoesNotMeetWorkflowType.Guid, _lbNotMetWorkflow, "This is a message to prompt before workflow." );
+                        
+                        //_lbNotMetWorkflow.RenderControl( writer );
+
+                        //writer.RenderBeginTag( HtmlTextWriterTag.Li );
+
+                        //var qryParms = new Dictionary<string, string>();
+                        //qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
+                        //var workflowLink = new PageReference( SystemGuid.Page.LAUNCHWORKFLOW, qryParms );
+
+                        //if ( workflowLink.PageId > 0 )
+                        //{
+                        //    bool showLinkToEntry = _groupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.HasValue ? _groupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.Value : false;
+                        //    if ( showLinkToEntry )
+                        //    {
+                        //        var doesNotMeet = new Control();
+                        //        writer.AddAttribute( HtmlTextWriterAttribute.Href, workflowLink.BuildUrl() );
+                        //        writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
+                        //        writer.RenderBeginTag( HtmlTextWriterTag.A );
+
+                        //        writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
+                        //        writer.RenderBeginTag( HtmlTextWriterTag.I );
+
+                        //        // End the I tag.
+                        //        writer.RenderEndTag();
+                        //        writer.Write( _groupMemberRequirementType.DoesNotMeetWorkflowLinkText );
+
+                        //        // End the A tag.
+                        //        writer.RenderEndTag();
+                        //    }
+                        //}
 
                         // End the Li tag.
                         writer.RenderEndTag();
@@ -346,27 +401,38 @@ namespace Rock.Web.UI.Controls
 
                         var qryParms = new Dictionary<string, string>();
                         qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
-                        var workflowLink = new PageReference( SystemGuid.Page.LAUNCHWORKFLOW, qryParms );
+                        var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
                         if ( workflowLink.PageId > 0 )
                         {
-                            bool showLinkToEntry = _groupMemberRequirementType.WarningWorkflowType.IsActive.HasValue ? _groupMemberRequirementType.WarningWorkflowType.IsActive.Value : false;
-                            if ( showLinkToEntry )
+                            _hlWarningWorkflow = new HyperLink
                             {
-                                writer.AddAttribute( HtmlTextWriterAttribute.Href, workflowLink.BuildUrl() );
-                                writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
-                                writer.RenderBeginTag( HtmlTextWriterTag.A );
-
-                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
-                                writer.RenderBeginTag( HtmlTextWriterTag.I );
-
-                                // End the I tag.
-                                writer.RenderEndTag();
-                                writer.Write( _groupMemberRequirementType.WarningWorkflowLinkText );
-
-                                // End the A tag.
-                                writer.RenderEndTag();
-                            }
+                                ID = "hlWarningWorkflow" + this.ClientID,
+                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + _groupMemberRequirementType.WarningWorkflowLinkText,
+                                Target="_blank",
+                                NavigateUrl = workflowLink.BuildUrl()
+                            };
+                            _hlWarningWorkflow.RenderControl( writer );
                         }
+                        //if ( workflowLink.PageId > 0 )
+                        //{
+                        //    bool showLinkToEntry = _groupMemberRequirementType.WarningWorkflowType.IsActive.HasValue ? _groupMemberRequirementType.WarningWorkflowType.IsActive.Value : false;
+                        //    if ( showLinkToEntry )
+                        //    {
+                        //        writer.AddAttribute( HtmlTextWriterAttribute.Href, workflowLink.BuildUrl() );
+                        //        writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
+                        //        writer.RenderBeginTag( HtmlTextWriterTag.A );
+
+                        //        writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
+                        //        writer.RenderBeginTag( HtmlTextWriterTag.I );
+
+                        //        // End the I tag.
+                        //        writer.RenderEndTag();
+                        //        writer.Write( _groupMemberRequirementType.WarningWorkflowLinkText );
+
+                        //        // End the A tag.
+                        //        writer.RenderEndTag();
+                        //    }
+                        //}
 
                         // End the Li tag.
                         writer.RenderEndTag();
@@ -480,9 +546,35 @@ namespace Rock.Web.UI.Controls
 
             rockContext.SaveChanges();
             _modalDialog.Hide();
-            //groupMemberRequirement.GroupMember.CalculateRequirements( rockContext, true );
-            // Rebind the card to make sure that the current status is reflected in the styling.
-            this.Page.DataBind();//.DataBind();
+
+            // Reload the page to make sure that the current status is reflected in the card styling.
+            var currentPageReference = this.RockBlock().CurrentPageReference;
+            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId );
+            pageRef.Parameters.Add( "GroupMemberId", GroupMemberId.ToString() );
+            this.RockBlock().NavigateToPage( pageRef );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbDoesNotMeetWorkflow_Click control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbDoesNotMeetWorkflow_Click( object sender, EventArgs e )
+        {
+            //trigger the workflow.
+            //new PageReference( WorkflowEntryPage, qryParms ).BuildUrl();
+            if ( _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
+            {
+                var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value );
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+
+                    List<string> workflowErrors;
+                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
+                    // = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
+                }
+            }
         }
     }
 }
