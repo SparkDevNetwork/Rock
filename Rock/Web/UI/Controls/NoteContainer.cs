@@ -426,7 +426,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the current display count. Only applies if notes are in descending order. 
+        /// Gets or sets the current display count. Only applies if notes are in descending order.
         /// If notes are displayed in ascending order, all notes will always be displayed
         /// </summary>
         public int DisplayCount
@@ -600,7 +600,7 @@ namespace Rock.Web.UI.Controls
             _lbReplyToNoteHidden.CausesValidation = false;
             Controls.Add( _lbReplyToNoteHidden );
 
-            
+
             _lbDeleteNote = new LinkButton();
             _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
             _lbDeleteNote.CssClass = "js-delete-postback";
@@ -842,7 +842,7 @@ namespace Rock.Web.UI.Controls
                     ( AllowAnonymousEntry || currentPerson != null );
 
                 string cssClass = "panel panel-note js-notecontainer" +
-                    ( this.NoteOptions.DisplayType == NoteDisplayType.Light ? " panel-note-light" : string.Empty );
+                    ( this.NoteOptions.DisplayType == NoteDisplayType.Light ? " panel-note-light" : string.Empty ) + ( NoteOptions.AddAlwaysVisible ? " panel-noteadd-visible" : string.Empty );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass );
                 writer.AddAttribute( "data-sortdirection", this.SortDirection.ConvertToString( false ) );
@@ -1040,11 +1040,11 @@ namespace Rock.Web.UI.Controls
 
                 /*
                  * 3-DEC-2021 DMV
-                 * 
+                 *
                  * Moved the viewable note types here because granting
                  * an individual rights to view an specific note gets lost
                  * if the viewable types are in the query above.
-                 * 
+                 *
                  */
                 // only get notes they have auth to VIEW
                 var viewableNoteList = noteList.Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) ).ToList();
