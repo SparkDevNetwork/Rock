@@ -373,7 +373,6 @@ namespace RockWeb.Blocks.Groups
         private HashSet<int> _groupMemberIdsThatLackGroupRequirements = new HashSet<int>();
         private List<int> _groupMemberIdsWithWarnings = new List<int>();
         private List<int> _groupMemberIdsPersonInMultipleRoles = new List<int>();
-        private List<int> _groupMemberIdsWithMetRequirements = new List<int>();
         private Dictionary<int, List<GroupRequirementStatus>> _memberRequirements = new Dictionary<int, List<GroupRequirementStatus>>();
         private bool _showDateAdded = false;
         private bool _showNoteColumn = false;
@@ -2191,7 +2190,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( meetsRequirementStates.Any() )
             {
-                // I need to select all the MeetsGroupRequirements that are in the list MemberRequirements where the Key values are in the qry.
+                // Select all the MeetsGroupRequirements that are in the list MemberRequirements where the Key values are in the qry.
                 HashSet<int> matchingMemberIds = new HashSet<int>();
                 foreach ( var requirement in _memberRequirements )
                 {
