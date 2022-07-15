@@ -57,6 +57,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public IEnumerable<GroupMemberRequirement> Requirements { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public string WorkflowEntryPage { get; set; }
+
         #endregion Properties
 
         ///// <summary>
@@ -97,23 +102,22 @@ namespace Rock.Web.UI.Controls
             var groupMember = new GroupMemberService( rockContext ).Get( GroupMemberId );
             var attributeValueService = new AttributeValueService( rockContext );
             var groupRequirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
-            //var groupMemberRequirement = groupMember.GroupMemberRequirements;
+
+            // This collects the statuses by their requirement type category with empty / no category requirement types first, then it is by category name.
             var requirementCategories = groupRequirementStatuses
-            .Select( rr => new
+            .Select( s => new
             {
-                CategoryId = rr.GroupRequirement.GroupRequirementType.CategoryId,
-                Name = rr.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? rr.GroupRequirement.GroupRequirementType.Category.Name : string.Empty,
-                RequirementResults = groupRequirementStatuses.Where( gr => gr.GroupRequirement.GroupRequirementType.CategoryId == rr.GroupRequirement.GroupRequirementType.CategoryId )
-            } ).DistinctBy( c => c.CategoryId );
+                CategoryId = s.GroupRequirement.GroupRequirementType.CategoryId,
+                Name = s.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? s.GroupRequirement.GroupRequirementType.Category.Name : string.Empty,
+                RequirementResults = groupRequirementStatuses.Where( gr => gr.GroupRequirement.GroupRequirementType.CategoryId == s.GroupRequirement.GroupRequirementType.CategoryId )
+            } ).OrderBy( a => a.CategoryId.HasValue ).ThenBy( a => a.Name ).DistinctBy( a => a.CategoryId );
 
             int index = 1;
-            foreach ( var requirementCategory in requirementCategories.OrderByDescending( a => a.Name ) )
+            foreach ( var requirementCategory in requirementCategories )
             {
                 HtmlGenericControl categoryControl = new HtmlGenericControl( "div" );
                 categoryControl.AddCssClass( "row" );
                 var categoryName = requirementCategory.Name;
-
-                //this.Controls.Add( categoryControl );
 
                 HtmlGenericControl columnControl = new HtmlGenericControl( "div" );
                 columnControl.AddCssClass( "col-xs-12" );
@@ -128,11 +132,9 @@ namespace Rock.Web.UI.Controls
                 //TO-DO set up security access here
                 var hasPermissionToOverride = false;
 
-                // Add the custom Cards here.
-
-                foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( rr => rr.MeetsGroupRequirement ) )
+                // Add the Group Member Requirement Cards here.
+                foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( rr => rr.MeetsGroupRequirement ).ThenBy( r => r.GroupRequirement.GroupRequirementType.Name ) )
                 {
-
                     var card = new GroupMemberRequirementCard( requirementStatus.GroupRequirement.GroupRequirementType, requirementStatus.GroupRequirement.AllowLeadersToOverride || hasPermissionToOverride )
                     {
                         Title = requirementStatus.GroupRequirement.GroupRequirementType.Name,
@@ -141,7 +143,8 @@ namespace Rock.Web.UI.Controls
                         GroupMemberRequirementId = requirementStatus.GroupMemberRequirementId,
                         GroupRequirementId = requirementStatus.GroupRequirement.Id,
                         GroupMemberId = GroupMemberId,
-                        GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate
+                        GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate,
+                        WorkflowEntryPage = WorkflowEntryPage
                     };
                     columnControl.Controls.Add( card );
 
@@ -151,38 +154,6 @@ namespace Rock.Web.UI.Controls
 
                 categoryControl.Controls.Add( columnControl );
                 this.Controls.Add( categoryControl );
-            }
-        }
-
-        private DateTime? CalculateGroupMemberRequirementDueDate( DueDateType dueDateType, int? dueDateOffsetInDays, DateTime? dueDateStaticDate, DateTime? dueDateFromGroupAttribute, DateTime? dueDateGroupMemberAdded )
-        {
-            switch ( dueDateType )
-            {
-                case DueDateType.ConfiguredDate:
-                    if ( dueDateStaticDate.HasValue )
-                    {
-                        return dueDateStaticDate.Value;
-                    }
-
-                    return null;
-                case DueDateType.GroupAttribute:
-                    if ( dueDateFromGroupAttribute.HasValue )
-                    {
-                        return dueDateFromGroupAttribute.Value.AddDays( dueDateOffsetInDays.HasValue ? dueDateOffsetInDays.Value : 0 );
-                    }
-
-                    return null;
-                case DueDateType.DaysAfterJoining:
-                    if ( dueDateGroupMemberAdded.HasValue )
-                    {
-                        return dueDateGroupMemberAdded.Value.AddDays( dueDateOffsetInDays.HasValue ? dueDateOffsetInDays.Value : 0 );
-                    }
-
-                    return null;
-
-                case DueDateType.Immediate:
-                default:
-                    return null;
             }
         }
     }
