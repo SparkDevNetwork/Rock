@@ -14,16 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-import { Guid } from "@Obsidian/Types";
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+import { Guid } from "@Obsidian/Types";
 import { post } from "@Obsidian/Utility/http";
-import { GroupMemberPickerGetGroupMembersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberPickerGetGroupMembersOptionsBag";
+import { StepTypePickerGetStepTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/stepTypePickerGetStepTypesOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
 
 export default defineComponent({
-    name: "GroupMemberPicker",
+    name: "StepTypePicker",
 
     components: {
         BaseAsyncPicker
@@ -35,12 +35,12 @@ export default defineComponent({
             required: false
         },
 
-        groupId: {
+        stepProgramId: {
             type: Number as PropType<number>,
             default: null
         },
 
-        groupGuid: {
+        stepProgramGuid: {
             type: String as PropType<Guid>,
             default: null
         },
@@ -79,11 +79,11 @@ export default defineComponent({
          * Loads the items from the server.
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
-            const options: Partial<GroupMemberPickerGetGroupMembersOptionsBag> = {
-                groupId: props.groupId,
-                groupGuid: props.groupGuid
+            const options: Partial<StepTypePickerGetStepTypesOptionsBag> = {
+                stepProgramId: props.stepProgramId,
+                stepProgramGuid: props.stepProgramGuid
             };
-            const result = await post<ListItemBag[]>("/api/v2/Controls/GroupMemberPickerGetGroupMembers", undefined, options);
+            const result = await post<ListItemBag[]>("/api/v2/Controls/StepTypePickerGetStepTypes", undefined, options);
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;
@@ -100,7 +100,7 @@ export default defineComponent({
 
         // #region Watchers
 
-        watch(() => [props.groupId], () => {
+        watch(() => [props.stepProgramId, props.stepProgramGuid], () => {
             loadedItems.value = null;
         });
 

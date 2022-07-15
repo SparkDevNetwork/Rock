@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+import { Guid } from "@Obsidian/Types";
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { post } from "@Obsidian/Utility/http";
 import { InteractionComponentPickerGetInteractionComponentsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionComponentPickerGetInteractionComponentsOptionsBag";
@@ -36,6 +37,11 @@ export default defineComponent({
 
         interactionChannelId: {
             type: Number as PropType<number>,
+            default: null
+        },
+
+        interactionChannelGuid: {
+            type: String as PropType<Guid>,
             default: null
         },
 
@@ -74,7 +80,8 @@ export default defineComponent({
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
             const options: Partial<InteractionComponentPickerGetInteractionComponentsOptionsBag> = {
-                interactionChannelId: props.interactionChannelId
+                interactionChannelId: props.interactionChannelId,
+                interactionChannelGuid: props.interactionChannelGuid
             };
             const result = await post<ListItemBag[]>("/api/v2/Controls/InteractionComponentPickerGetInteractionComponents", undefined, options);
 
@@ -93,7 +100,7 @@ export default defineComponent({
 
         // #region Watchers
 
-        watch(() => [props.interactionChannelId], () => {
+        watch(() => [props.interactionChannelId, props.interactionChannelGuid], () => {
             loadedItems.value = null;
         });
 

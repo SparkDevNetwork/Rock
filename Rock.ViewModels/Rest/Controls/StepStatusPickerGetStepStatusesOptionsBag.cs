@@ -20,21 +20,21 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the GetInteractionComponents API action of
-    /// the InteractionComponentPicker control.
+    /// The options that can be passed to the GetStepStatuses API action of
+    /// the StepStatusPicker control.
     /// </summary>
-    public class InteractionComponentPickerGetInteractionComponentsOptionsBag
+    public class StepStatusPickerGetStepStatusesOptionsBag
     {
         /// <summary>
-        /// ID of the container the components are within. The <see cref="InteractionChannelGuid"/>
+        /// The ID of the step status that this step status is part of. The <see cref="StepProgramGuid"/>
         /// takes precedence over this if present.
         /// </summary>
-        public int? InteractionChannelId { get; set; }
+        public int? StepProgramId { get; set; }
 
         /// <summary>
-        /// GUID of the container the components are within.  Can use <see cref="InteractionChannelId"/>
+        /// The GUID of the step program that this step status is part of. Can use <see cref="StepProgramId"/>
         /// instead if easier, but this takes precedence if present.
         /// </summary>
-        public Guid? InteractionChannelGuid { get; set; }
+        public Guid? StepProgramGuid { get; set; }
     }
 }

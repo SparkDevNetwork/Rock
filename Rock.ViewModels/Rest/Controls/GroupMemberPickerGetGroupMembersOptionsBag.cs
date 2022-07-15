@@ -26,8 +26,15 @@ namespace Rock.ViewModels.Rest.Controls
     public class GroupMemberPickerGetGroupMembersOptionsBag
     {
         /// <summary>
-        /// Type of the container the components are within
+        /// ID of the group the member is part of. The <see cref="GroupGuid"/>
+        /// takes precedence over this if present.
         /// </summary>
         public int? GroupId { get; set; }
+
+        /// <summary>
+        /// GUID of the group the member is part of.  Can use <see cref="GroupId"/>
+        /// instead if easier, but this takes precedence if present.
+        /// </summary>
+        public Guid? GroupGuid { get; set; }
     }
 }

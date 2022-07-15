@@ -24,19 +24,19 @@
 import { Guid } from "@Obsidian/Types";
 
 /**
- * The options that can be passed to the GetInteractionComponents API action of
- * the InteractionComponentPicker control.
+ * The options that can be passed to the GetStepTypes API action of
+ * the StepTypePicker control.
  */
-export type InteractionComponentPickerGetInteractionComponentsOptionsBag = {
+export type StepTypePickerGetStepTypesOptionsBag = {
     /**
-     * ID of the container the components are within. The Rock.ViewModels.Rest.Controls.InteractionComponentPickerGetInteractionComponentsOptionsBag.InteractionChannelGuid
+     * The ID of the step status that this step type is part of. The Rock.ViewModels.Rest.Controls.StepTypePickerGetStepTypesOptionsBag.StepProgramGuid
      * takes precedence over this if present.
      */
-    interactionChannelId?: number | null;
+    stepProgramId?: number | null;
 
     /**
-     * GUID of the container the components are within.  Can use Rock.ViewModels.Rest.Controls.InteractionComponentPickerGetInteractionComponentsOptionsBag.InteractionChannelId
+     * The GUID of the step program that this step type is part of. Can use Rock.ViewModels.Rest.Controls.StepTypePickerGetStepTypesOptionsBag.StepProgramId
      * instead if easier, but this takes precedence if present.
      */
-    interactionChannelGuid?: Guid | null;
+    stepProgramGuid?: Guid | null;
 };

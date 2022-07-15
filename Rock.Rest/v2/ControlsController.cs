@@ -866,7 +866,7 @@ namespace Rock.Rest.v2
                     .Select( i => new ListItemBag
                     {
                         Category = i.EventCalendar.Name,
-                        Value = i.EventItem.Id.ToString(),
+                        Value = i.EventItem.Guid.ToString(),
                         Text = i.EventItem.Name
                     } )
                     .OrderBy( i => i.Category )
@@ -969,7 +969,7 @@ namespace Rock.Rest.v2
 
             foreach ( var item in FieldTypeCache.All() )
             {
-                items.Add( new ListItemBag { Text = item.Name, Value = item.Id.ToString() } );
+                items.Add( new ListItemBag { Text = item.Name, Value = item.Guid.ToString() } );
             }
 
             return Ok( items );
@@ -1005,7 +1005,7 @@ namespace Rock.Rest.v2
 
                     if ( options.ShowAll || gateway.Id == options.SelectedItem || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
                     {
-                        items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Id.ToString() } );
+                        items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Guid.ToString() } );
                     }
                 }
 
@@ -1036,7 +1036,7 @@ namespace Rock.Rest.v2
                     .Where( s => s.IsActive == true )
                     .Select( i => new ListItemBag
                     {
-                        Value = i.Id.ToString(),
+                        Value = i.Guid.ToString(),
                         Text = i.Name
                     } )
                     .OrderBy( a => a.Text )
@@ -1274,12 +1274,21 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
         public IHttpActionResult GroupMemberPickerGetGroupMembers( GroupMemberPickerGetGroupMembersOptionsBag options )
         {
-            if ( !options.GroupId.HasValue )
+            Rock.Model.Group group;
+
+            if ( !options.GroupGuid.HasValue && !options.GroupId.HasValue )
             {
                 return NotFound();
             }
 
-            var group = new GroupService( new RockContext() ).Get( options.GroupId.Value );
+            if ( options.GroupGuid.HasValue )
+            {
+                group = new GroupService( new RockContext() ).Get( options.GroupGuid.Value );
+            }
+            else
+            {
+                group = new GroupService( new RockContext() ).Get( options.GroupId.Value );
+            }
 
             if ( group == null && !group.Members.Any() )
             {
@@ -1292,7 +1301,7 @@ namespace Rock.Rest.v2
             {
                 var li = new ListItemBag {
                     Text = groupMember.Person.FullName,
-                    Value = groupMember.Id.ToString()
+                    Value = groupMember.Guid.ToString()
                 };
 
                 list.Add( li );
@@ -1309,7 +1318,6 @@ namespace Rock.Rest.v2
         /// Gets the interaction channels that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a basic picker control.
         /// </summary>
-        /// <param name="options">The options that describe which interaction channels to load.</param>
         /// <returns>A collection of view models that represent the interaction channels.</returns>
         [HttpPost]
         [System.Web.Http.Route( "InteractionChannelPickerGetInteractionChannels" )]
@@ -1326,7 +1334,7 @@ namespace Rock.Rest.v2
                 .Select( ic => new ListItemBag
                 {
                     Text = ic.Name,
-                    Value = ic.Id.ToString()
+                    Value = ic.Guid.ToString()
                 } )
                 .ToList();
 
@@ -1347,23 +1355,33 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "InteractionComponentPickerGetInteractionComponents" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "BD61A390-39F9-4FDE-B9AD-02E53B5F2073" )]
-        public IHttpActionResult InteractionComponentPickerGetInteractionComponents( InteractionComponentPickerGetInteractionComponentsOptionsBag options)
+        public IHttpActionResult InteractionComponentPickerGetInteractionComponents( [FromBody] InteractionComponentPickerGetInteractionComponentsOptionsBag options)
         {
+            int interactionChannelId;
 
-            if ( !options.InteractionChannelId.HasValue )
+            if ( !options.InteractionChannelGuid.HasValue && !options.InteractionChannelId.HasValue )
             {
                 return NotFound();
+            }
+
+            if ( options.InteractionChannelGuid.HasValue )
+            {
+                interactionChannelId = InteractionChannelCache.GetId( options.InteractionChannelGuid.Value ) ?? 0;
+            }
+            else
+            {
+                interactionChannelId = options.InteractionChannelId.Value;
             }
 
             var rockContext = new RockContext();
             var interactionComponentService = new InteractionComponentService( rockContext );
             var components = interactionComponentService.Queryable().AsNoTracking()
-                .Where( ic => ic.InteractionChannelId == options.InteractionChannelId.Value )
+                .Where( ic => ic.InteractionChannelId == interactionChannelId )
                 .OrderBy( ic => ic.Name )
                 .Select(ic => new ListItemBag
                 {
                     Text = ic.Name,
-                    Value = ic.Id.ToString()
+                    Value = ic.Guid.ToString()
                 } )
                 .ToList();
 
@@ -1378,7 +1396,6 @@ namespace Rock.Rest.v2
         /// Gets the lava commands that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a basic picker control.
         /// </summary>
-        /// <param name="options">The options that describe which lava commands to load.</param>
         /// <returns>A collection of view models that represent the lava commands.</returns>
         [HttpPost]
         [System.Web.Http.Route( "LavaCommandPickerGetLavaCommands" )]
@@ -1513,7 +1530,6 @@ namespace Rock.Rest.v2
         /// Gets the remote auths that match the options sent in the request body.
         /// This endpoint returns items formatted for use in a basic picker control.
         /// </summary>
-        /// <param name="options">The options that describe which remote auths to load.</param>
         /// <returns>A collection of view models that represent the remote auths.</returns>
         [HttpPost]
         [System.Web.Http.Route( "RemoteAuthsPickerGetRemoteAuths" )]
@@ -1706,6 +1722,173 @@ namespace Rock.Rest.v2
                     IsSuccess = true
                 };
             }
+        }
+
+        #endregion
+
+        #region Step Program Picker
+
+        /// <summary>
+        /// Gets the step programs that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <returns>A collection of view models that represent the step programs.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "StepProgramPickerGetStepPrograms" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6C7816B0-D41D-4081-B998-0B42B542111F" )]
+        public IHttpActionResult StepProgramPickerGetStepPrograms()
+        {
+            var items = new List<ListItemBag>();
+
+            var stepProgramService = new StepProgramService( new RockContext() );
+            var stepPrograms = stepProgramService.Queryable().AsNoTracking()
+                .Where( sp => sp.IsActive )
+                .OrderBy( sp => sp.Order )
+                .ThenBy( sp => sp.Name )
+                .ToList();
+
+            foreach ( var stepProgram in stepPrograms )
+            {
+                var li = new ListItemBag { Text = stepProgram.Name, Value = stepProgram.Guid.ToString() };
+                items.Add( li );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Step Status Picker
+
+        /// <summary>
+        /// Gets the step statuses that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which step statuses to load.</param>
+        /// <returns>A collection of view models that represent the step statuses.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "StepStatusPickerGetStepStatuses" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "5B4E7419-266C-4235-93B7-8D0DE0E80D2B" )]
+        public IHttpActionResult StepStatusPickerGetStepStatuses( [FromBody] StepStatusPickerGetStepStatusesOptionsBag options )
+        {
+            var items = new List<ListItemBag>();
+            int stepProgramId;
+
+            if ( !options.StepProgramGuid.HasValue && !options.StepProgramId.HasValue )
+            {
+                return NotFound();
+            }
+
+            if ( options.StepProgramGuid.HasValue )
+            {
+                stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
+            }
+            else
+            {
+                stepProgramId = options.StepProgramId.Value;
+            }
+
+            var stepStatusService = new StepStatusService( new RockContext() );
+            var statuses = stepStatusService.Queryable().AsNoTracking()
+                .Where( ss =>
+                    ss.StepProgramId == stepProgramId &&
+                    ss.IsActive )
+                .OrderBy( ss => ss.Order )
+                .ThenBy( ss => ss.Name )
+                .ToList();
+
+            foreach ( var status in statuses )
+            {
+                var li = new ListItemBag { Text = status.Name, Value = status.Guid.ToString() };
+                items.Add( li );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Step Type Picker
+
+        /// <summary>
+        /// Gets the step types that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <param name="options">The options that describe which step types to load.</param>
+        /// <returns>A collection of view models that represent the step types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "StepTypePickerGetStepTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9BC4C3BA-573E-4FB4-A4FC-938D40BED2BE" )]
+        public IHttpActionResult StepTypePickerGetStepTypes( [FromBody] StepTypePickerGetStepTypesOptionsBag options )
+        {
+            var items = new List<ListItemBag>();
+            int stepProgramId;
+
+            if ( !options.StepProgramGuid.HasValue && !options.StepProgramId.HasValue )
+            {
+                return NotFound();
+            }
+
+            if ( options.StepProgramGuid.HasValue )
+            {
+                stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
+            }
+            else
+            {
+                stepProgramId = options.StepProgramId.Value;
+            }
+
+            var stepTypeService = new StepTypeService( new RockContext() );
+            var stepTypes = stepTypeService.Queryable().AsNoTracking()
+                .Where( st =>
+                    st.StepProgramId == stepProgramId &&
+                    st.IsActive )
+                .OrderBy( st => st.Order )
+                .ThenBy( st => st.Name )
+                .ToList();
+
+            foreach ( var stepType in stepTypes )
+            {
+                var li = new ListItemBag { Text = stepType.Name, Value = stepType.Guid.ToString() };
+                items.Add( li );
+            }
+
+            return Ok( items );
+        }
+
+        #endregion
+
+        #region Streak Type Picker
+
+        /// <summary>
+        /// Gets the streak types that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a basic picker control.
+        /// </summary>
+        /// <returns>A collection of view models that represent the streak types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "StreakTypePickerGetStreakTypes" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "78D0A6D1-317E-4CB7-98BB-AF9194AD3C94" )]
+        public IHttpActionResult StreakTypePickerGetStreakTypes()
+        {
+            var items = new List<ListItemBag>();
+
+            var streakTypes = StreakTypeCache.All()
+                .Where( st => st.IsActive )
+                .OrderBy( st => st.Name )
+                .ThenBy( st => st.Id )
+                .ToList();
+
+            foreach ( var streakType in streakTypes )
+            {
+                var li = new ListItemBag { Text = streakType.Name, Value = streakType.Guid.ToString() };
+                items.Add( li );
+            }
+
+            return Ok( items );
         }
 
         #endregion

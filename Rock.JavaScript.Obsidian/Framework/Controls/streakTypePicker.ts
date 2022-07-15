@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-import { Guid } from "@Obsidian/Types";
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { post } from "@Obsidian/Utility/http";
-import { GroupMemberPickerGetGroupMembersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberPickerGetGroupMembersOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
 
 export default defineComponent({
-    name: "GroupMemberPicker",
+    name: "StreakTypePicker",
 
     components: {
         BaseAsyncPicker
@@ -33,16 +31,6 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
-        },
-
-        groupId: {
-            type: Number as PropType<number>,
-            default: null
-        },
-
-        groupGuid: {
-            type: String as PropType<Guid>,
-            default: null
         },
 
         ...standardAsyncPickerProps
@@ -79,11 +67,7 @@ export default defineComponent({
          * Loads the items from the server.
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
-            const options: Partial<GroupMemberPickerGetGroupMembersOptionsBag> = {
-                groupId: props.groupId,
-                groupGuid: props.groupGuid
-            };
-            const result = await post<ListItemBag[]>("/api/v2/Controls/GroupMemberPickerGetGroupMembers", undefined, options);
+            const result = await post<ListItemBag[]>("/api/v2/Controls/StreakTypePickerGetStreakTypes", undefined, {});
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;
@@ -97,12 +81,6 @@ export default defineComponent({
         };
 
         // #endregion
-
-        // #region Watchers
-
-        watch(() => [props.groupId], () => {
-            loadedItems.value = null;
-        });
 
         // #endregion
 

@@ -21,11 +21,22 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /**
  * The options that can be passed to the GetGroupMembers API action of
  * the GroupMemberPicker control.
  */
 export type GroupMemberPickerGetGroupMembersOptionsBag = {
-    /** Type of the container the components are within */
+    /**
+     * ID of the group the member is part of. The Rock.ViewModels.Rest.Controls.GroupMemberPickerGetGroupMembersOptionsBag.GroupGuid
+     * takes precedence over this if present.
+     */
     groupId?: number | null;
+
+    /**
+     * GUID of the group the member is part of.  Can use Rock.ViewModels.Rest.Controls.GroupMemberPickerGetGroupMembersOptionsBag.GroupId
+     * instead if easier, but this takes precedence if present.
+     */
+    groupGuid?: Guid | null;
 };
