@@ -1349,15 +1349,12 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Pdf\PdfGenerator.cs" />
     <Compile Include="Pdf\PdfGeneratorException.cs" />
-    <Compile Include="Plugin\HotFixes\152_MigrationRolupsFor13_6_0.cs" />
-    <Compile Include="Plugin\HotFixes\151_LavaDashboardWidget.cs" />
-    <Compile Include="Plugin\HotFixes\150_MigrationRollupsFor13_5_2.cs" />
-    <Compile Include="Plugin\HotFixes\149_MigrationRollupsFor13_5_1.cs" />
-    <Compile Include="Plugin\HotFixes\148_MigrationRollupsFor13_5_0.cs" />
     <Compile Include="Plugin\HotFixes\147_MigrationRolupsFor13_1.cs" />
     <Compile Include="Plugin\HotFixes\146_UpdateStatementGeneratorDownloadLink.cs" />
     <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
     <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
+    <Compile Include="Plugin\HotFixes\154_Rollup_148_152.cs" />
+    <Compile Include="Plugin\HotFixes\153_FixERAStartDate.cs" />
     <Compile Include="Reporting\ComparisonValue.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ActivityFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\AttendanceInPlacementGroup.cs" />
@@ -3968,6 +3965,12 @@
     </Content>
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\153_FixERAStartDate_RecoverERAStartDate_Update.sql">
+      <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
