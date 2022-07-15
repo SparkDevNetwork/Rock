@@ -20,6 +20,30 @@
 
 @grid-height: 51px;
 
+.sticky-left {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.sticky-cell {
+  position: sticky;
+  left: 8px;
+  display: inline-block;
+}
+
+.schedule-status-board-header {
+  position: sticky;
+  inset-block-start: 0; /* "top" */
+  z-index: 1;
+
+  th {
+    background: @white;
+    border-bottom-color: transparent !important;
+    box-shadow: inset 0 -2px 0 @panel-default-border; // Emulate bottom-border for position sticky
+  }
+}
+
 .panel-body-parent {
   position: relative;
   height: 100%;
@@ -514,6 +538,10 @@
     padding: 0;
   }
 
+  .group-locations {
+    position: relative;
+  }
+
   .location-row {
     transition: max-height .3s;
   }
@@ -523,11 +551,16 @@
     overflow: hidden;
   }
 
-  td.location {
+  th.location {
+    position: sticky;
+    //left: 0;
+    inset-inline-start: 0; /* "left" */
+    background: @white;
     min-width: 100px;
     font-size: @font-size-sm;
     font-weight: @font-weight-semibold;
     text-align: right;
+    border-right: 1px solid @panel-default-border;
 
     > div {
       height: 100%;

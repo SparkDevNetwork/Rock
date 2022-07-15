@@ -449,15 +449,26 @@ namespace Rock.Reporting.DataFilter.Person
             if ( !cbChildGroups.Checked )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Disabled, "disabled" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "margin-l-md" );
+                cbIncludeSelectedGroup.Checked = false;
+                cbChildGroupsPlusDescendants.Checked = false;
+                cbIncludeInactiveGroups.Checked = false;
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             cbIncludeSelectedGroup.ContainerCssClass = "margin-l-md";
+            cbIncludeSelectedGroup.Enabled = cbChildGroups.Checked;
             cbIncludeSelectedGroup.RenderControl( writer );
+
             cbChildGroupsPlusDescendants.ContainerCssClass = "margin-l-md";
+            cbChildGroupsPlusDescendants.Enabled = cbChildGroups.Checked;
             cbChildGroupsPlusDescendants.RenderControl( writer );
+
             cbIncludeInactiveGroups.ContainerCssClass = "margin-l-md";
+            cbIncludeInactiveGroups.Enabled = cbChildGroups.Checked;
             cbIncludeInactiveGroups.RenderControl( writer );
+
             writer.RenderEndTag();
 
             writer.RenderEndTag();
