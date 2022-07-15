@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private List<GroupMember> GetGroupMembers()
         {
-            var groupTypId = GroupTypeCache.GetId( GetAttributeValue( AttributeKey.GroupType ).AsGuid() );
+            var groupTypeId = GroupTypeCache.GetId( GetAttributeValue( AttributeKey.GroupType ).AsGuid() );
             var showOnlyPrimaryGroup = GetAttributeValue( AttributeKey.ShowOnlyPrimaryGroupMembers ).AsBoolean();
 
             var rockContext = new RockContext();
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 groupIds.Add( new GroupMemberService( rockContext )
                     .Queryable( true )
-                    .Where( m => m.GroupTypeId == groupTypId && m.PersonId == this.Person.Id )
+                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == this.Person.Id )
                     .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                     .Select( m => m.GroupId )
                     .FirstOrDefault() );
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 groupIds = groupMemberService
                     .Queryable( true )
-                    .Where( m => m.GroupTypeId == groupTypId  && m.PersonId == this.Person.Id )
+                    .Where( m => m.GroupTypeId == groupTypeId  && m.PersonId == this.Person.Id )
                     .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                     .Select( m => m.GroupId )
                     .Distinct()
