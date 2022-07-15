@@ -25,6 +25,7 @@ using Quartz;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -120,13 +121,12 @@ namespace Rock.Jobs
                         }
                         else
                         {
-                            // shouldn't happen, but Group Requirement doesn't have a groupId or a GroupTypeId
+                            // Should not happen, but break if Group Requirement doesn't have a GroupId or a GroupTypeId.
                             break;
                         }
 
-
+                        var myGroupMemberQry = groupMemberQry.ToList();
                         var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
-
 
                         var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, group.Id, groupRequirement.GroupRoleId ).ToList();
 
@@ -135,16 +135,62 @@ namespace Rock.Jobs
                         {
                             try
                             {
-                                // use a fresh rockContext per result so that ChangeTracker doesn't get bogged down
+                                // Use a fresh rockContext per result so that ChangeTracker doesn't get bogged down.
                                 using ( var rockContextUpdate = new RockContext() )
                                 {
                                     groupRequirement.UpdateGroupMemberRequirementResult( rockContextUpdate, result.PersonId, group.Id, result.MeetsGroupRequirement );
+
+                                    bool shouldRunNotMetWorkflow = result.MeetsGroupRequirement == MeetsGroupRequirement.NotMet &&
+                                        groupRequirement.GroupRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow &&
+                                        groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.HasValue;
+                                    bool shouldRunWarningWorkflow = result.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning &&
+                                        groupRequirement.GroupRequirementType.ShouldAutoInitiateWarningWorkflow &&
+                                        groupRequirement.GroupRequirementType.WarningWorkflowTypeId.HasValue;
+                                    var workflowsToRun = new List<WorkflowTypeCache>();
+
+                                    if ( shouldRunNotMetWorkflow )
+                                    {
+                                        workflowsToRun.Add( WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.DoesNotMeetWorkflowTypeId.Value ) );
+                                    }
+
+                                    if ( shouldRunWarningWorkflow )
+                                    {
+                                        workflowsToRun.Add( WorkflowTypeCache.Get( groupRequirement.GroupRequirementType.WarningWorkflowTypeId.Value ) );
+                                    }
+
+                                    foreach ( var workflowType in workflowsToRun )
+                                    {
+                                        if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                                        {
+                                            try
+                                            {
+                                                // Create parameters for the workflow.
+                                                var parameters = new Dictionary<string, string>();
+                                                parameters.Add( "GroupRequirementId", groupRequirement.Id.ToString() );
+                                                parameters.Add( "PersonId", result.PersonId.ToString() );
+
+                                                // If the GroupMemberRequirement ID exists, include it in the parameters.
+                                                if ( result.GroupMemberRequirementId.HasValue )
+                                                {
+                                                    parameters.Add( "GroupMemberRequirementId", result.GroupMemberRequirementId.ToString() );
+                                                }
+
+                                                var workflowName = personQry.FirstOrDefault( p => p.Id == result.PersonId ).FullName + " (" + groupRequirement.GroupRequirementType.Name + ")";
+                                                result.GroupRequirement.LaunchWorkflow( workflowType.Guid, workflowName, parameters, null );
+                                            }
+                                            catch ( Exception ex )
+                                            {
+                                                calculationExceptions.Add( new Exception( $"Exception when launching workflow: {workflowType} with group requirement: {groupRequirement} for person.Id: { result.PersonId }", ex ) );
+                                            }
+                                        }
+                                    }
+
                                     rockContextUpdate.SaveChanges();
                                 }
                             }
                             catch ( Exception ex )
                             {
-                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id { result.PersonId }" , ex ) );
+                                calculationExceptions.Add( new Exception( $"Exception when updating group requirement result: {groupRequirement} for person.Id: { result.PersonId }", ex ) );
                             }
                         }
                     }
