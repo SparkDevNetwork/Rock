@@ -62,6 +62,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public string WorkflowEntryPage { get; set; }
 
+        /// <summary>
+        /// If true, recalculate the requirements of this group member, otherwise load existing requirements. 
+        /// </summary>
+        public bool ForceRefreshRequirements { get; set; }
+
         #endregion Properties
 
         ///// <summary>
@@ -101,8 +106,15 @@ namespace Rock.Web.UI.Controls
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( GroupMemberId );
             var attributeValueService = new AttributeValueService( rockContext );
-            var groupRequirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
-
+            IEnumerable<GroupRequirementStatus> groupRequirementStatuses;
+            if ( ForceRefreshRequirements )
+            {
+                groupRequirementStatuses = groupMember.Group.PersonMeetsGroupRequirements( rockContext, groupMember.PersonId, groupMember.GroupRoleId );
+            }
+            else
+            {
+                groupRequirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
+            }
             // This collects the statuses by their requirement type category with empty / no category requirement types first, then it is by category name.
             var requirementCategories = groupRequirementStatuses
             .Select( s => new
@@ -111,6 +123,20 @@ namespace Rock.Web.UI.Controls
                 Name = s.GroupRequirement.GroupRequirementType.CategoryId.HasValue ? s.GroupRequirement.GroupRequirementType.Category.Name : string.Empty,
                 RequirementResults = groupRequirementStatuses.Where( gr => gr.GroupRequirement.GroupRequirementType.CategoryId == s.GroupRequirement.GroupRequirementType.CategoryId )
             } ).OrderBy( a => a.CategoryId.HasValue ).ThenBy( a => a.Name ).DistinctBy( a => a.CategoryId );
+
+            var requirementsWithErrors = groupRequirementStatuses.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.Error ).ToList();
+
+            if ( requirementsWithErrors.Any() )
+            {
+                var nbRequirementErrors = new NotificationBox
+                {
+                    NotificationBoxType = NotificationBoxType.Danger,
+                    Visible = true,
+                    Text = string.Format( "An error occurred in one or more of the requirement calculations" ),
+                    Details = requirementsWithErrors.Select( a => string.Format( "{0}: {1}", a.GroupRequirement.GroupRequirementType.Name, a.CalculationException.Message ) ).ToList().AsDelimited( Environment.NewLine )
+                };
+                this.Controls.Add( nbRequirementErrors );
+            }
 
             int index = 1;
             foreach ( var requirementCategory in requirementCategories )
