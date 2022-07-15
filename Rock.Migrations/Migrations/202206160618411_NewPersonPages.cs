@@ -81,6 +81,19 @@ namespace Rock.Migrations
             UpdatePersonPageLayouts();
 
             Sql("UPDATE [Page] set PageTitle = 'Profile', InternalName = 'Person Profile', BrowserTitle = 'Profile' where [Guid] ='08DBD8A5-2C35-4146-B4A8-0F7652348B25'");
+
+            // Clear Notes Block Attribute Values for Heading and Heading Icon
+            //   Block: TimeLine
+            //   BlockType: Notes
+            //   Category: Core
+            //   Block Location: Page=Person Profile, Site=Rock RMS
+            //   Attribute: Heading
+            /*   Attribute Value:  */
+            RockMigrationHelper.AddBlockAttributeValue("0B2B550C-B0C9-420E-9CF3-BEC8979108F2","3CB0A7DF-996B-4D6C-B3B6-9BBCC40BDC69",@"");
+
+            //   Attribute: Heading Icon CSS Class
+            /*   Attribute Value:  */
+            RockMigrationHelper.AddBlockAttributeValue("0B2B550C-B0C9-420E-9CF3-BEC8979108F2","B69937BE-000A-4B94-852F-16DE92344392",@"");
         }
 
         /// <summary>
