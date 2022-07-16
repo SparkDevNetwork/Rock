@@ -152,6 +152,10 @@
     <Compile Include="Migrations\202207141800553_GroupMemberNavigation.designer.cs">
       <DependentUpon>202207141800553_GroupMemberNavigation.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202207152352391_Rollup_20220715.cs" />
+    <Compile Include="Migrations\202207152352391_Rollup_20220715.designer.cs">
+      <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1284,6 +1288,9 @@
     <EmbeddedResource Include="Migrations\202207141800553_GroupMemberNavigation.resx">
       <DependentUpon>202207141800553_GroupMemberNavigation.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207152352391_Rollup_20220715.resx">
+      <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
     </EmbeddedResource>
@@ -2096,6 +2103,12 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql">
+      <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 13.0\Version 1.13.3\202203152204281_Rollup_20220315_update-chartjs.sql">
       <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>

@@ -823,6 +823,11 @@
     <Compile Include="Model\Reporting\Metric\UnitType.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
+    </Compile>
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
@@ -2016,11 +2021,6 @@
     <Compile Include="Plugin\HotFixes\098_FixContributionStatementLava.cs" />
     <Compile Include="Plugin\HotFixes\097_FamilyAnalyticsProcChange.cs" />
     <Compile Include="Plugin\HotFixes\096_MigrationRollupsForV9_5.cs" />
-    <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
-    </Compile>
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\BenevolenceResultDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceResult\BenevolenceRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\AttendanceDataViewFilter.cs" />
@@ -3965,12 +3965,6 @@
     </Content>
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
-    </Content>
-    <Content Include="Plugin\HotFixes\153_FixERAStartDate_RecoverERAStartDate_Update.sql">
-      <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
-    </Content>
-    <Content Include="Plugin\HotFixes\153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset.sql">
-      <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
