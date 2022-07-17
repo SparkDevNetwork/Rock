@@ -927,10 +927,11 @@ namespace Rock.Model
                     .Where( m => m.Group.GroupLocations.Any( gl => gl.Location.Street1.Contains( street1 ) ) )
                     .Select( a => a.PersonId );
 
-                query = query.Where( a => personIdAddressQry.Contains( a.Id ) );
+                return query.Where( a => personIdAddressQry.Contains( a.Id ) ).FirstOrDefault();
+
             }
 
-            return query.FirstOrDefault();
+            return null;
         }
 
         /// <summary>
