@@ -12234,7 +12234,7 @@ BEGIN
         VALUES (
             @spousePersonId
             ,@spousePersonId
-            ,@personGuid
+            ,@spousePersonGuid
             ,NEWID()
             );
 
@@ -12326,6 +12326,7 @@ BEGIN
             ,[Guid]
             ,GroupMemberStatus
 			,DateTimeAdded
+            ,GroupTypeId
             )
         VALUES (
             0
@@ -12335,6 +12336,7 @@ BEGIN
             ,newid()
             ,1
 			,SYSDATETIME()
+            ,@familyGroupType
             )
 
         INSERT INTO [GroupMember] (
@@ -12345,6 +12347,7 @@ BEGIN
             ,[Guid]
             ,GroupMemberStatus
 			,DateTimeAdded
+            ,GroupTypeId
             )
         VALUES (
             0
@@ -12354,6 +12357,7 @@ BEGIN
             ,newid()
             ,1
 			,SYSDATETIME()
+            ,@familyGroupType
             )
 
 		-- Kids loop
@@ -12440,6 +12444,7 @@ BEGIN
 				,[Guid]
 				,GroupMemberStatus
 				,DateTimeAdded
+                ,GroupTypeId
 				)
 			VALUES (
 				0
@@ -12449,6 +12454,7 @@ BEGIN
 				,newid()
 				,1
 				,SYSDATETIME()
+                ,@familyGroupType
 				)
 
             -- have about 10% of kids in the same giving group as the other members in the family that are in a giving group

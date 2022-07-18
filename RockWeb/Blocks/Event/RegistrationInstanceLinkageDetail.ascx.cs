@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -107,6 +107,7 @@ namespace RockWeb.Blocks.Event
                 linkage.GroupId = gpLinkageGroup.SelectedValueAsInt();
                 linkage.PublicName = tbLinkagePublicName.Text;
                 linkage.UrlSlug = tbLinkageUrlSlug.Text;
+                linkage.CampusId = cpLinkageCampus.SelectedCampusId;
 
                 if ( !Page.IsValid || !linkage.IsValid )
                 {
@@ -380,6 +381,8 @@ namespace RockWeb.Blocks.Event
 
             gpLinkageGroup.SetValue( linkage.Group );
             gpLinkageGroup_SelectItem( null, null );
+
+            cpLinkageCampus.SetValue( linkage.Campus );
 
             tbLinkagePublicName.Text = linkage.PublicName;
             tbLinkageUrlSlug.Text = linkage.UrlSlug;

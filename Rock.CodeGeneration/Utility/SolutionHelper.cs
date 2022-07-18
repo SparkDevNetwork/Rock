@@ -105,7 +105,10 @@ namespace Rock.CodeGeneration.Utility
         /// </summary>
         public void Dispose()
         {
-            _offlineProjects.Dispose();
+            if ( _offlineProjects != null )
+            {
+                _offlineProjects.Dispose();
+            }
         }
 
         #endregion

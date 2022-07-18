@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -93,6 +96,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( BenevolenceType source )
         {
             this.Id = source.Id;
+            this.AdditionalSettingsJson = source.AdditionalSettingsJson;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

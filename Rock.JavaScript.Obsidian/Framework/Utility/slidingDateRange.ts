@@ -17,6 +17,8 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "./numberUtils";
+import { SlidingDateRangeType as RangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+import { TimeUnitType as TimeUnit } from "@Obsidian/Enums/Controls/timeUnitType";
 
 // This file contains helper functions and tooling required to work with sliding
 // date ranges. A sliding date range is one that, generally, is anchored to whatever
@@ -24,53 +26,13 @@ import { toNumber, toNumberOrNull } from "./numberUtils";
 // 5 days" would be the english equivalent of a sliding date range.
 
 /**
- * The possible enumeration values for the sliding date range type.
+ * The enums have been moved to separate files in order to share with the back end. We import them
+ * above (with the names used by the definitions that used to exist in this file) so they can be
+ * used below and we export them here so that any files previously importing them from here
+ * do not break.
  */
-export const enum RangeType {
-    /**
-     * The last X hours,days,etc (inclusive of current hour,day,etc) but
-     * cuts off so it doesn't include future dates.
-     */
-    Last = 0,
-
-    /** The current hour,day,etc. */
-    Current = 1,
-
-    /** A specific date range between two dates, inclusive of both dates. */
-    DateRange = 2,
-
-    /** The previous X hours,days,etc (excludes current hour,day,etc). */
-    Previous = 4,
-
-    /**
-     * The next X hours,days,etc (inclusive of current hour,day,etc), but
-     * cuts off so it doesn't include past dates.
-     */
-    Next = 8,
-
-    /** The upcoming X hours,days,etc (excludes current hour,day,etc). */
-    Upcoming = 16
-}
-
-/**
- * The unit of time a corresponding numeric value represents.
- */
-export const enum TimeUnit {
-    /** The numeric value represents a number of hours. */
-    Hour = 0,
-
-    /** The numeric value represents a number of days. */
-    Day = 1,
-
-    /** The numeric value represents a number of weeks. */
-    Week = 2,
-
-    /** The numeric value represents a number of months. */
-    Month = 3,
-
-    /** The numeric value represents a number of years. */
-    Year = 4
-}
+export { SlidingDateRangeType as RangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+export { TimeUnitType as TimeUnit } from "@Obsidian/Enums/Controls/timeUnitType";
 
 /**
  * Specifies the information required to track a sliding date range.
@@ -152,7 +114,7 @@ export const timeUnitOptions: ListItemBag[] = [
 
 /**
  * Helper function to get the text from a ListItemBag that matches the value.
- * 
+ *
  * @param value The value to be searched for.
  * @param options The ListItemBag options to be searched.
  *
@@ -166,7 +128,7 @@ function getTextForValue(value: string, options: ListItemBag[]): string {
 
 /**
  * Gets the user friendly text that represents the RangeType value.
- * 
+ *
  * @param rangeType The RangeType value to be represented.
  *
  * @returns A human readable string that represents the RangeType value.
@@ -193,7 +155,7 @@ export function getTimeUnitText(timeUnit: TimeUnit): string {
 /**
  * Parses a pipe delimited string into a SlidingDateRange native object. The
  * delimited string is a format used by attribute values and other places.
- * 
+ *
  * @param value The pipe delimited string that should be parsed.
  *
  * @returns A SlidingDaterange object or null if the string could not be parsed.
@@ -246,7 +208,7 @@ export function parseSlidingDateRangeString(value: string): SlidingDateRange | n
  * Convert a SlidingDateRange object into a pipe delimited string that represents
  * the object. This string representation is used in attribute values as well as
  * other places in Rock.
- * 
+ *
  * @param value The SlidingDateRange object to be represented as a string.
  *
  * @returns A string that represents the SlidingDateRange object.

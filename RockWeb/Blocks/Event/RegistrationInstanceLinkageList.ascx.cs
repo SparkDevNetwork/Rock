@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -275,11 +275,11 @@ namespace RockWeb.Blocks.Event
 
                                     if ( string.IsNullOrWhiteSpace( calendarEventUrl ) )
                                     {
-                                        calendarItems.Add( string.Format( "{0} ({1})", calendarItem.EventItem.Name, calendarItem.EventCalendar.Name ) );
+                                        calendarItems.Add( string.Format( "{0} ({1})", calendarItem.EventItem.Name, eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) );
                                     }
                                     else
                                     {
-                                        calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", calendarEventUrl, calendarItem.EventItem.Name, calendarItem.EventCalendar.Name ) );
+                                        calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", calendarEventUrl, calendarItem.EventItem.Name, eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) );
                                     }
                                 }
                             }
@@ -443,12 +443,7 @@ namespace RockWeb.Blocks.Event
                 if ( campusIds.Any() )
                 {
                     qry = qry
-                        .Where( l =>
-                            l.EventItemOccurrence != null &&
-                            (
-                                !l.EventItemOccurrence.CampusId.HasValue ||
-                                campusIds.Contains( l.EventItemOccurrence.CampusId.Value )
-                            ) );
+                        .Where( l => l.CampusId.HasValue && campusIds.Contains( l.CampusId.Value ) );
                 }
 
                 IOrderedQueryable<EventItemOccurrenceGroupMap> orderedQry = null;

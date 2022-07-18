@@ -34,7 +34,7 @@
 
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:CampusPicker ID="cpPersonEntryCampus" runat="server" Required="true" />
+                                        <Rock:CampusPicker ID="cpPersonEntryCampus" runat="server" Required="true" FormGroupCssClass="field-campus" />
                                     </div>
                                     <div class="col-md-6">
                                     </div>
@@ -44,17 +44,23 @@
                                 <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
                                 <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
 
-                                <asp:Panel ID="pnlPersonEntryRow1" runat="server" CssClass="row">
-                                    <%-- Person 1 --%>
-                                    <asp:Panel ID="pnlPersonEntryRow1Column1" runat="server" CssClass="col-md-6">
-                                        <Rock:PersonBasicEditor ID="pePerson1" runat="server" />
-                                    </asp:Panel>
+                                <div class="fieldgroup-personentry">
+                                    <asp:Panel ID="pnlPersonEntryRow1" runat="server" CssClass="row">
+                                        <%-- Person 1 --%>
+                                        <asp:Panel ID="pnlPersonEntryRow1Column1" runat="server" CssClass="col-md-6">
+                                            <div class="fieldgroup-person">
+                                                <Rock:PersonBasicEditor ID="pePerson1" runat="server" />
+                                            </div>
+                                        </asp:Panel>
 
-                                    <%-- Person 2 (Spouse) --%>
-                                    <asp:Panel ID="pnlPersonEntryRow1Column2" runat="server" CssClass="col-md-6">
-                                        <Rock:PersonBasicEditor ID="pePerson2" runat="server" />
+                                        <%-- Person 2 (Spouse) --%>
+                                        <asp:Panel ID="pnlPersonEntryRow1Column2" runat="server" CssClass="col-md-6">
+                                            <div class="fieldgroup-spouse">
+                                                <Rock:PersonBasicEditor ID="pePerson2" runat="server" />
+                                            </div>
+                                        </asp:Panel>
                                     </asp:Panel>
-                                </asp:Panel>
+                                </div>
 
                                 <Rock:RockCheckBox ID="cbShowPerson2" runat="server" Text="Show Person2" Checked="false" AutoPostBack="true" OnCheckedChanged="cbShowPerson2_CheckedChanged" />
 

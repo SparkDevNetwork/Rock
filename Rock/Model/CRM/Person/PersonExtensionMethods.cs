@@ -67,29 +67,25 @@ namespace Rock.Model
         /// <returns></returns>
         public static Location GetHomeLocation( this Person person, RockContext rockContext = null )
         {
-            Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
-            if ( homeAddressGuid.HasValue )
+            var homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+            if ( !homeAddressGuid.HasValue )
             {
-                var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
-                if ( homeAddressDv != null )
-                {
-                    foreach ( var family in person.GetFamilies( rockContext ) )
-                    {
-                        var loc = family.GroupLocations
-                            .Where( l =>
-                                l.GroupLocationTypeValueId == homeAddressDv.Id &&
-                                l.IsMappedLocation )
-                            .Select( l => l.Location )
-                            .FirstOrDefault();
-                        if ( loc != null )
-                        {
-                            return loc;
-                        }
-                    }
-                }
+                return null;
             }
 
-            return null;
+            var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+            if ( homeAddressDv == null )
+            {
+                return null;
+            }
+
+            // Get the most recent location for the primary family, preferring a mapped location if it exists.
+            return person.PrimaryFamily.GroupLocations
+            .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id )
+            .OrderByDescending( l => l.IsMappedLocation ? 1 : 0 )
+            .ThenByDescending( l => l.Id )
+            .Select( l => l.Location )
+            .FirstOrDefault();
         }
 
         /// <summary>

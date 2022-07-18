@@ -1,33 +1,34 @@
-<div id="locations">
-{[ swiper title:'Find a Location' subtitle:'Swipe to Discover More' ]}
+<section id="locations">
+
   <!-- Slides -->
   {% assign campuses = 'campuses' | PersistedDataset %}
-  {% for campus in campuses %}
-    [[ item data:'data-latlon="{{ campus.LocationLatitude }},{{ campus.LocationLongitude }}"' ]]
+  <div class="row" data-locations>
+    {% for campus in campuses %}<div class="col-md-4 col-sm-6 col-xs-12" data-latlon="{{ campus.LocationLatitude }},{{ campus.LocationLongitude }}">
 
-      {% assign nsImageUrl = campus.LandscapeImage %}
-      {% assign fuseImageUrl = campus.FuseLandscapeImage %}
-      {% capture campusImageUrl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
+        {% assign nsImageUrl = campus.LandscapeImage %}
+        {% assign fuseImageUrl = campus.FuseLandscapeImage %}
+        {% capture campusImageUrl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
 
-      {% capture content %}
-        <p class="push-half-bottom">{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'{{ servicetype }}' ]}</p>
-      {% endcapture %}
+        {% capture content %}
+          <p class="push-half-bottom">{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'{{ servicetype }}' ]}</p>
+        {% endcapture %}
 
-      {% capture directionsLink -%}
-        {%- if servicetype == 'Fuse' -%}
-          {{ campus.FuseGetDirectionsURL }}
-        {%- else -%}
-          {{ campus.GetDirectionsURL }}
-        {%- endif -%}
-      {%- endcapture %}
+        {% capture directionsLink -%}
+          {%- if servicetype == 'Fuse' -%}
+            {{ campus.FuseGetDirectionsURL }}
+          {%- else -%}
+            {{ campus.GetDirectionsURL }}
+          {%- endif -%}
+        {%- endcapture %}
 
-      {% capture lava %}
-        <p class="push-half-bottom"><a href="{{ directionsLink | Trim }}" target="_blank">Get Directions</a></p>
-      {% endcapture %}
+        {% capture lava %}
+          <p class="push-half-bottom"><a href="{{ directionsLink | Trim }}" target="_blank">Get Directions</a></p>
+        {% endcapture %}
 
-      {[ card type:'Location' title:'{{ campus.Name | Replace:'Eastlan','Greenville' }}' titlesize:'h3' linktext:'Campus Details' linkurl:'{% if servicetype == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase | Replace:'eastlan','greenville' }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' lava:'{{ lava }}' ]}
+        {[ card type:'Location' title:'{{ campus.Name | Replace:'Eastlan','Greenville' }}' titlesize:'h3' linktext:'Campus Details' linkurl:'{% if servicetype == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase | Replace:'eastlan','greenville' }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' lava:'{{ lava }}' ]}
 
-    [[ enditem ]]
-  {% endfor %}
-{[ endswiper ]}
+    </div>{% endfor %}
+  </div>
+
+
 </div>

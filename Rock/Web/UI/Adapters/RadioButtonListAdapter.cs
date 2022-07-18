@@ -109,16 +109,8 @@ namespace Rock.Web.UI.Adapters
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
         protected override void RenderContents( HtmlTextWriter writer )
         {
-            // make sure any special base attributes from the RadioButton get written
-            WebControl control = new WebControl( HtmlTextWriterTag.Span );
-            control.ID = this.Control.ClientID;
-            control.CopyBaseAttributes( this.Control );
-            control.RenderBeginTag( writer );
-
             // call ListControlAdaptor RenderContents
             base.RenderContents( writer );
-
-            control.RenderEndTag( writer );
         }
     }
 }

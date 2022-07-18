@@ -386,4 +386,6 @@ export const enum Attribute {
     StreakAchievementTimeSpanInDays = "80030537-ED8E-41BA-BF61-AF242B9073CC",
     /** The statement generator configuration */
     StatementGeneratorConfig = "3C6B81A5-63AB-4EA7-A671-836505B9E444",
+    /** The category treeview search results */
+    CategoryTreeviewSearchResults = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E",
 }

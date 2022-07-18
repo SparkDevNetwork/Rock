@@ -60,7 +60,7 @@
                                         </div>
                                         <div class="col-md-6">
                                              <Rock:RockCheckBox ID="cbAllowCheckoutInManager" runat="server" Label="Enable Check-out in Manager" Text="Yes"
-                                        Help="Allows check-out to be enabled in the check-in Manager." />
+                                        Help="Allows check-out to be enabled in the Check-in Manager." />
                                         </div>
                                     </div>
                                     <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes"

@@ -114,6 +114,10 @@
             const url = getStatusViewModelsApiUrl(options.connectionOpportunityId);
             // Update the query string with the opportunity id and parameter.
             updateConnectionQuerystringParameters("ConnectionOpportunityId", options.connectionOpportunityId, false);
+            if (options.connectionRequestId) {
+                updateConnectionQuerystringParameters("ConnectionRequestId", options.connectionRequestId, true);
+            }
+
             const data = {
                 sortProperty: options.sortProperty || 'Order',
                 maxRequestsPerStatus: options.maxCardsPerColumn,

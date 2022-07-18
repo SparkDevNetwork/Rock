@@ -399,6 +399,33 @@ namespace Rock.Model
             return interactionsCount;
         }
 
+        #region Queryables that return Page Views
+
+        /// <summary>
+        /// Gets a queryable of Page View Interactions, limited to the specified sites and pages on those sites.
+        /// </summary>
+        /// <param name="siteIds">The site ids.</param>
+        /// <param name="pageIds">The page ids.</param>
+        /// <returns>IQueryable&lt;Interaction&gt;.</returns>
+        public IQueryable<Interaction> GetPageViewsByPage( int[] siteIds, int[] pageIds )
+        {
+            var pageViewComponentIdsQry = new InteractionComponentService( this.Context as RockContext ).QueryByPages( siteIds, pageIds ).Select( a => a.Id );
+            return this.Queryable().Where( a => pageViewComponentIdsQry.Contains( a.InteractionComponentId ) && a.Operation == "View" );
+        }
+
+        /// <summary>
+        /// Gets a queryable of Page View Interactions, limited to the specified sites
+        /// </summary>
+        /// <param name="siteIds">The site ids.</param>
+        /// <returns>IQueryable&lt;Interaction&gt;.</returns>
+        public IQueryable<Interaction> GetPageViewsBySite( int[] siteIds )
+        {
+            var pageViewComponentIdsQry = new InteractionComponentService( this.Context as RockContext ).QueryBySites( siteIds ).Select( a => a.Id );
+            return this.Queryable().Where( a => pageViewComponentIdsQry.Contains( a.InteractionComponentId ) && a.Operation == "View" );
+        }
+
+        #endregion Queryables that return Page Views
+
         #region BulkImport related
 
         /// <summary>

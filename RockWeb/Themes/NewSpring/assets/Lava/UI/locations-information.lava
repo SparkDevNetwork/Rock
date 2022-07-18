@@ -1,8 +1,11 @@
 {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+{% assign getInvolvedOptions = 'All' | FromCache:'DefinedValue' | Where:'DefinedTypeId',getInvolvedDefinedTypeId | OrderBy:'Order' %}
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
+{% assign campusEntity = 'All' | FromCache:'Campus' | Where:'Id',campus.Id | First %}
 {% assign mailingAddress = campus.MailingAddress %}
 {% assign officeAddress = campus.OfficeAddress %}
 {% assign getDirections = campus.GetDirectionsURL %}
+{% assign fuseGetDirections = campus.FuseGetDirectionsURL %}
 
 {% capture serviceTimes %}{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'NewSpring' ]}{% endcapture %}
 {% capture fuseServiceTimes %}{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'Fuse' ]}{% endcapture %}
@@ -10,118 +13,107 @@
 {% assign serviceTimes = serviceTimes | Trim %}
 {% assign fuseServiceTimes = fuseServiceTimes | Trim %}
 
-    <div class="page-constrained mx-auto soft-sides xs-soft-half-sides">
-        <div class="bg-white soft-double-ends soft-sides hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
-            <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-hard-sides">
-                <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
-                    <h3 class="push-half-bottom">Sunday Gatherings</h3>
-                    <p class="push-half-bottom"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
-                    <p class="lead">{{ serviceTimes }}
-                    {% if getDirections != empty %}
-                        <a href="{{ getDirections }}" >Get Directions</a>
+
+<div class="panel" data-column="none">
+    <div class="panel-body">
+
+        <h2 class="h4">Sunday Gatherings</h2>
+        <ul class="list-icons">
+            <li>
+                <i class="fal fa-fw fa-clock"></i>
+                {{ campusEntity | Attribute:'SundayDetails' }}
+            </li>
+            <li>
+                <i class="fal fa-fw fa-map-marker-alt"></i>
+                {% if getDirections %}<a href="{{ getDirections }}">{% endif %}
+                    {{ campus.LocationStreet1 }}<br>
+                    {% if campus.LocationStreet2 != empty %}
+                        {{ campus.LocationStreet2 }}<br>
                     {% endif %}
-                    </p>
-                </div>{% if fuseServiceTimes != empty and fuseServiceTimes != '' %}<div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype == 'Fuse' %}push-bottom{% endif %}">
-                    <h3 class="push-half-bottom">Fuse Student Ministry</h3>
-                    <p class="push-half-bottom"><small>Fuse is happening in-person and online every Wednesday. Watch as a family or connect to a Fuse Group.<br><a href="/fuse?utm_source=newspring&utm_medium=text&utm_campaign=locations">Learn More</a></small></p>
-                    <p class="lead">{{ fuseServiceTimes }}</p>
-                </div>{% endif %}
-            </div>
+                    {{ campus.LocationCity }}, {{ campus.LocationState }} {{ campus.LocationPostalCode | Slice: 0, 5 }}
+                    {% if getDirections %}</a>{% endif %}
+            </li>
+            <li>
+                <i class="fal fa-fw fa-phone"></i>
+                {% assign phoneNumber = campus.PhoneNumber | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' %}
+                <a href="tel:+1{{ phoneNumber }}">({{ phoneNumber | Slice:0,3 }}) {{ phoneNumber | Slice:3,3 }}-{{ phoneNumber | Slice:6,4 }}</a>
+            </li>
+            <li>
+                <i class="fal fa-fw fa-inbox"></i>
+                <a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a>
+            </li>
+        </ul>
+
+        {% assign fuseDetails = campusEntity | Attribute:'FuseDetails' | Trim %}
+        {% if fuseDetails and fuseDetails != '' %}
+        <h2 class="h4 push-half-bottom">Students</h2>
+        <ul class="list-icons">
+            <li>
+                <i class="fal fa-fw fa-clock"></i>
+                {{ fuseDetails }}
+            </li>
+            {% if fuseGetDirections %}
+                <li>
+                    <i class="fal fa-fw fa-map-marker-alt"></i>
+                    <a href="{{ fuseGetDirections }}" target="_blank">Get Directions</a>
+                </li>
+            {% endif %}
+            <li>
+                <i class="fal fa-fw fa-link"></i>
+                <a href="/fuse">newspring.cc/fuse</a>
+            </li>
+        </ul>
+        {% endif %}
+
+        {% assign rallyDetails = campusEntity | Attribute:'RallyDetails' %}
+        {% if rallyDetails and rallyDetails != '' %}
+        <h2 class="h4 push-half-bottom">Young Adults</h2>
+        <ul class="list-icons">
+            <li>
+                <i class="fal fa-fw fa-clock"></i>
+                {{ campusEntity | Attribute:'RallyDetails' }}
+            </li>
+            <li>
+                <i class="fal fa-fw fa-link"></i>
+                <a href="/fuse">newspring.cc/rally</a>
+            </li>
+        </ul>
+        {% endif %}
+
+        <div class="dropdown">
+            <button class="btn btn-primary btn-block dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Get Involved
+                <i class="fas fa-caret-down push-quarter-left"></i>
+            </button>
+            <ul class="dropdown-menu bring-forward width-full" aria-labelledby="dropdownMenu1">
+                {% for option in getInvolvedOptions %}
+                    {% assign link = option | Attribute:'Link' %}
+                    <li><a href="{{ link }}"><i class="{{ option | Attribute:'IconCSSClass' }} fa-fw push-quarter-right"></i> {{ option.Description }}</a></li>
+                {% endfor %}
+            </ul>
         </div>
 
-
-        <div class="bg-white soft-double-ends soft-sides hard-bottom clearfix rounded-lg push-bottom xs-push-half-bottom">
-            <div class="row soft-double-sides xs-hard-sides">
-                <div class="col-xs-12 col-sm-12 col-md-4 push-bottom sm-flush-bottom xs-flush-bottom">
-                    {% if location != empty %}
-                        <h3 class="push-half-bottom">Campus Address</h3>
-                        <p class="lead">
-                            {{ campus.LocationStreet1 }}<br>
-                            {% if campus.LocationStreet2 != empty %}
-                                {{ campus.LocationStreet2 }}<br>
-                            {% endif %}
-                            {{ campus.LocationCity }}, {{ campus.LocationState }} {{ campus.LocationPostalCode | Slice: 0, 5 }}
-                        </p>
-                    {% endif %}
-
-                    {% if officeAddress.Street1 != null and officeAddress.Street1 != '' and officeAddress.Street1 != location.Street1 %}
-                        <h3 class="push-half-bottom">Office Address</h3>
-                        <p class="lead">
-                            {{ officeAddress.Street1 }}<br>
-                            {% if officeAddress.Street2 != empty %}
-                                {{ officeAddress.Street2 }}<br>
-                            {% endif %}
-                            {{ officeAddress.City }}, {{ officeAddress.State }} {{ officeAddress.PostalCode | Slice: 0, 5 }}
-                        </p>
-                    {% endif %}
-
-                    {% if mailingAddress.Street1 != null and mailingAddress.Street1 != '' and mailingAddress.Street1 != location.Street1 and mailingAddress.Street1 != officeAddress.Street1 %}
-                        <h3 class="push-half-bottom">Mailing Address</h3>
-                        <p class="lead">
-                            {{ mailingAddress.Street1 }}<br>
-                            {% if mailingAddress.Street2 != empty %}
-                                {{ mailingAddress.Street2 }}<br>
-                            {% endif %}
-                            {{ mailingAddress.City }}, {{ mailingAddress.State }} {{ mailingAddress.PostalCode | Slice: 0, 5 }}
-                        </p>
-                    {% endif %}
-
-                </div><div class="col-xs-12 col-sm-12 col-md-4">
-                    <h3 class="push-half-bottom">Phone</h3>
-                    {% assign phoneNumber = campus.PhoneNumber | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' %}
-                    <p class="lead"><a href="tel:+1{{ phoneNumber }}">({{ phoneNumber | Slice:0,3 }}) {{ phoneNumber | Slice:3,3 }}-{{ phoneNumber | Slice:6,4 }}</a></p>
-                </div><div class="col-xs-12 col-sm-12 col-md-4 push-bottom">
-                    <h3 class="push-half-bottom">Email</h3>
-                    <p class="lead"><a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a></p>
-                </div>
-            </div>
-        </div>
     </div>
+</div>
 
-{% if servicetype != 'Fuse' %}
-    {% assign placesId = campus.GooglePlacesId %}
-    {% assign markerImage = 'Global' | Attribute:'GoogleMapsMarkerImageActive','Url' %}
-    {% if placesId != null and placesId != '' %}
+<style>
+    .list-icons {
+        list-style: none;
+        padding-left: 0;
+    }
 
-        <script src="https://maps.googleapis.com/maps/api/js?v=3&key={{ 'Global' | Attribute:'GoogleAPIKey' }}&libraries=places"></script>
+    .list-icons li {
+        position: relative;
+        padding-left: 40px;
+        margin-bottom: 15px;
+    }
 
-        <div id="map-canvas" class="ratio ratio-landscape xs-ratio-square push-bottom xs-push-half-bottom overflow-hidden"></div>
-
-        <script>
-        function initialize() {
-            var map = new google.maps.Map(document.getElementById('map-canvas'), {
-                center: new google.maps.LatLng(0, 0),
-                zoom: 16,
-                disableDefaultUI: true
-            });
-
-            var service = new google.maps.places.PlacesService(map);
-
-            service.getDetails({
-                placeId: '{{ placesId }}'
-            }, function (place, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-
-                    // Create marker
-                    var marker = new google.maps.Marker({
-                        map: map,
-                        position: place.geometry.location,
-                        icon: '{{ markerImage }}'
-                    });
-
-                    // Center map on place location
-                    map.setCenter(place.geometry.location);
-
-                }
-            });
-        }
-
-        initialize();
-        </script>
-
-    {% endif %}
-{% endif %}
-
+    .list-icons li i {
+        position: absolute;
+        left: 0;
+        margin-top: 5px;
+    }
+</style>
 
 {% if servicetype == 'NewSpring' %}
     <script type="application/ld+json">

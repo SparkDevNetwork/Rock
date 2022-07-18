@@ -59,7 +59,7 @@ namespace Rock.Badge.Component
 
             if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "GroupType" ) ) )
             {
-                writer.Write( String.Format( "<div class='badge badge-ingroupoftype badge-id-{0}' data-html='true'  data-toggle='tooltip' data-original-title=''>", badge.Id ) );
+                writer.Write( String.Format( "<div class='rockbadge rockbadge-icon rockbadge-ingroupoftype rockbadge-id-{0}' data-html='true'  data-toggle='tooltip' data-original-title=''>", badge.Id ) );
 
                 writer.Write( "</div>" );
             }
@@ -89,15 +89,14 @@ $.ajax({{
     url: Rock.settings.get('baseUrl') + 'api/Badges/InGroupOfType/{0}/{1}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
-            var badgeHtml = '';
             var groupIcon = data.GroupTypeIconCss;
 
             if (groupIcon == '') {{
                 groupIcon = 'fa fa-times';
             }}
 
+            var badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\'></i>';
             if (data.PersonInGroup) {{
-                badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\' style=\'color: {2}\'></i>';
                 var labelText = data.NickName + ' is in a ' + data.GroupTypeName + '.';
                 var groupLength = data.GroupList.length;
                 if(groupLength>5){{
@@ -113,13 +112,11 @@ $.ajax({{
                     labelText = labelText + ' <br/> (...and ' + restGroup.toString() + ' more)';
                 }}
 
-
             }} else {{
-                badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\'></i>';
+                $('.rockbadge-ingroupoftype.rockbadge-id-{3}').addClass('rockbadge-disabled');
                 var labelText = data.NickName + ' is not in a ' + data.GroupTypeName + '.';
             }}
-            $('.badge-ingroupoftype.badge-id-{3}').html(badgeHtml);
-            $('.badge-ingroupoftype.badge-id-{3}').attr('data-original-title', labelText);
+            $('.rockbadge-ingroupoftype.rockbadge-id-{3}').css('color', '{2}').html(badgeHtml).attr('data-original-title', labelText);
         }}
     }},
 }});", person.Id.ToString(), groupTypeGuid.ToString(), badgeColor, badge.Id );

@@ -181,7 +181,8 @@ namespace Rock.Tests.Integration.Jobs
                 var financialScheduledTransaction = new FinancialScheduledTransaction
                 {
                     AuthorizedPersonAliasId = personWithFinancialScheduledTransaction.PrimaryAliasId.Value,
-                    TransactionFrequencyValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0
+                    TransactionFrequencyValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0,
+                    TransactionTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ),
                 };
 
                 var service = new FinancialScheduledTransactionService( rockContext );

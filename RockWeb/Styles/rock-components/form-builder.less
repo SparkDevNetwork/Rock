@@ -21,10 +21,6 @@
   --flex-col-gutter: 30px;
   --zone-border-radius: 6px;
 
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-
   .zone-body {
     .configurable-zone > .zone-content-container > .zone-content {
       pointer-events: none;
@@ -210,8 +206,15 @@
 }
 
 .form-builder-grow {
+  position: relative;
   display: flex;
   flex-grow: 1;
+  overflow: hidden;
+}
+
+.form-builder-container {
+  display: flex;
+  flex: 1 1 auto;
   overflow: hidden;
 }
 
@@ -223,6 +226,7 @@
 }
 
 .form-layout {
+  position: relative;
   display: flex;
   flex: 1 1 0;
   flex-direction: column;
@@ -237,6 +241,7 @@
 }
 
 .form-sidebar {
+  position: relative;
   z-index: 20;
   display: flex;
   flex: 1 0 auto;
@@ -252,8 +257,8 @@
   }
 
   .panel-title {
-    font-size: 16px;
     padding: 0 16px !important;
+    font-size: 16px;
   }
 }
 
@@ -272,6 +277,7 @@
 }
 
 .sidebar-header {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -295,6 +301,7 @@
 }
 
 .sidebar-body {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow-y: auto;

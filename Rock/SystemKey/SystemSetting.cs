@@ -116,6 +116,11 @@ namespace Rock.SystemKey
         public const string PDF_EXTERNAL_RENDER_ENDPOINT = "core_PDFExternalRenderEndpoint";
 
         /// <summary>
+        /// The number of days that a visitor cookie persists. Default is 365.
+        /// </summary>
+        public const string VISITOR_COOKIE_PERSISTENCE_DAYS = "core_VisitorCookiePersistenceDays";
+
+        /// <summary>
         /// The day of the week that is considered the 'Start Day' (First Day Of week). This is used to compute 'SundayDate'. Default is Monday.
         /// </summary>
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";

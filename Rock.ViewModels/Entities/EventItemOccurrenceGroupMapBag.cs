@@ -34,6 +34,14 @@ namespace Rock.ViewModels.Entities
     public partial class EventItemOccurrenceGroupMapBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets the Id of the Rock.Model.Campus the event will be tied to.
+        /// </summary>
+        /// <value>
+        /// A System.Int32 representing the Id of the Rock.Model.Campus the event occured
+        /// </value>
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Rock.Model.EventItemOccurrence identifier.
         /// </summary>
         /// <value>

@@ -371,8 +371,6 @@ namespace Rock.Model
 
             var failedPayments = new List<FinancialTransaction>();
 
-            var contributionTxnType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-
             int? defaultAccountId = null;
             using ( var rockContext2 = new RockContext() )
             {
@@ -463,6 +461,16 @@ namespace Rock.Model
                                 transaction.ScheduledTransactionId = scheduledTransaction.Id;
                                 transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
                                 transaction.SourceTypeValueId = scheduledTransaction.SourceTypeValueId;
+                                if ( scheduledTransaction.TransactionTypeValueId.HasValue )
+                                {
+                                    transaction.TransactionTypeValueId = scheduledTransaction.TransactionTypeValueId.Value;
+                                }
+                                else
+                                {
+                                    var defaultTransactionTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Value;
+                                    transaction.TransactionTypeValueId = defaultTransactionTypeId;
+                                }
+
                                 financialPaymentDetail = scheduledTransaction.FinancialPaymentDetail;
                                 scheduledTransaction.ScheduledTransactionDetails.ToList().ForEach( d => originalTxnDetails.Add( d ) );
                             }
@@ -470,12 +478,12 @@ namespace Rock.Model
                             {
                                 transaction.AuthorizedPersonAliasId = originalTxn.AuthorizedPersonAliasId;
                                 transaction.SourceTypeValueId = originalTxn.SourceTypeValueId;
+                                transaction.ScheduledTransactionId = originalTxn.TransactionTypeValueId;
                                 financialPaymentDetail = originalTxn.FinancialPaymentDetail;
                                 originalTxn.TransactionDetails.ToList().ForEach( d => originalTxnDetails.Add( d ) );
                             }
 
                             transaction.FinancialGatewayId = gateway.Id;
-                            transaction.TransactionTypeValueId = contributionTxnType.Id;
 
                             if ( txnAmount < 0.0M )
                             {

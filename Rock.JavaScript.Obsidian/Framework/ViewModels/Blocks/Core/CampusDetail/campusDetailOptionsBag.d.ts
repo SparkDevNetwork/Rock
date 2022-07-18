@@ -23,8 +23,11 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** Class CampusDetailOptionsBag. */
 export type CampusDetailOptionsBag = {
+    /** Gets or sets a value indicating whether this instance is multi time zone supported. */
     isMultiTimeZoneSupported: boolean;
 
+    /** Gets or sets the time zone options. */
     timeZoneOptions?: ListItemBag[] | null;
 };

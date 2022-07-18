@@ -116,13 +116,13 @@ namespace Rock.Jobs
                     // Dictionaries used to store information that will be used to create notification.
                     // Key: personId, Value: list of event type ids that person subscribes to
                     var personSubscriptions = new Dictionary<int, List<int>>();
-                    
+
                     // Key: personId, Value: list of following ids that person follows
                     var personFollowings = new Dictionary<int, List<int>>();
-                    
+
                     // Key: following event type id Value: Dictionary of entity id and formatted event notice for the entity
                     var eventsThatHappened = new Dictionary<int, Dictionary<int, string>>();
-                    
+
                     // Get the subscriptions for each eligible person.
                     foreach ( int personId in eligiblePersonIds )
                     {
@@ -205,85 +205,87 @@ namespace Rock.Jobs
 
                                         var entityList = entityQry.Where( q => entityTypeWithFollowedList.Value.Contains( q.Id ) ).ToList();
 
-                                        // If there are any followed entities of this type 
-                                        if ( entityList.Any() )
+                                        // Check if there are any followed entities of this type 
+                                        if ( entityList == null || !entityList.Any() )
                                         {
-                                            // Get the active event types for this entity type
-                                            foreach ( var eventType in followingEvents.Where( e => e.FollowedEntityTypeId == entityTypeWithFollowedList.Key ) )
+                                            return;
+                                        }
+
+                                        // Get the active event types for this entity type
+                                        foreach ( var eventType in followingEvents.Where( e => e.FollowedEntityTypeId == entityTypeWithFollowedList.Key ) )
+                                        {
+                                            try
                                             {
-                                                try
+                                                // Get the component
+                                                var eventComponent = eventType.GetEventComponent();
+                                                if ( eventComponent != null )
                                                 {
-                                                    // Get the component
-                                                    var eventComponent = eventType.GetEventComponent();
-                                                    if ( eventComponent != null )
+                                                    // Get the previous notifications for this event type
+                                                    var previousNotifications = followingEventNotificationService
+                                                        .Queryable()
+                                                        .Where( n => n.FollowingEventTypeId == eventType.Id )
+                                                        .ToList();
+
+                                                    // check each entity that is followed (by anyone)
+                                                    foreach ( IEntity entity in entityList )
                                                     {
-                                                        // Get the previous notifications for this event type
-                                                        var previousNotifications = followingEventNotificationService
-                                                            .Queryable()
-                                                            .Where( n => n.FollowingEventTypeId == eventType.Id )
-                                                            .ToList();
+                                                        var previousNotification = previousNotifications
+                                                            .Where( n => n.EntityId == entity.Id )
+                                                            .FirstOrDefault();
+                                                        DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : ( DateTime? ) null;
 
-                                                        // check each entity that is followed (by anyone)
-                                                        foreach ( IEntity entity in entityList )
+                                                        // If ok to send on this day
+                                                        var today = RockDateTime.Today;
+                                                        if ( eventType.SendOnWeekends || ( today.DayOfWeek != DayOfWeek.Saturday && today.DayOfWeek != DayOfWeek.Sunday ) )
                                                         {
-                                                            var previousNotification = previousNotifications
-                                                                .Where( n => n.EntityId == entity.Id )
-                                                                .FirstOrDefault();
-                                                            DateTime? lastNotification = previousNotification != null ? previousNotification.LastNotified : ( DateTime? ) null;
-
-                                                            // If ok to send on this day
-                                                            var today = RockDateTime.Today;
-                                                            if ( eventType.SendOnWeekends || ( today.DayOfWeek != DayOfWeek.Saturday && today.DayOfWeek != DayOfWeek.Sunday ) )
+                                                            // if the Event Component is one that implements the Additional Merge Fields interface, use that method.
+                                                            if ( eventComponent is IEventComponentAdditionalMergeFields eventComponentAdditionalMergeFields )
                                                             {
-                                                                // if the Event Component is one that implements the Additional Merge Fields interface, use that method.
-                                                                if ( eventComponent is IEventComponentAdditionalMergeFields eventComponentAdditionalMergeFields )
+                                                                var followedEventList = new Dictionary<string, List<object>>();
+                                                                if ( eventComponentAdditionalMergeFields.HasEventHappened( eventType, entity, lastNotification, out followedEventList ) )
                                                                 {
-                                                                    var followedEventList = new Dictionary<string, List<object>>();
-                                                                    if ( eventComponentAdditionalMergeFields.HasEventHappened( eventType, entity, lastNotification, out followedEventList ) )
-                                                                    {
-                                                                        // Store the event type id and the entity for later processing of notifications
-                                                                        eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
+                                                                    // Store the event type id and the entity for later processing of notifications
+                                                                    eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
 
-                                                                        eventsThatHappened[eventType.Id].Add(
-                                                                            entity.Id,
-                                                                            eventComponentAdditionalMergeFields.FormatEntityNotification( eventType, entity, followedEventList ) );
-                                                                    }
+                                                                    eventsThatHappened[eventType.Id].Add(
+                                                                        entity.Id,
+                                                                        eventComponentAdditionalMergeFields.FormatEntityNotification( eventType, entity, followedEventList ) );
                                                                 }
-                                                                else
-                                                                {
-                                                                    if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
-                                                                    {
-                                                                        // Store the event type id and the entity for later processing of notifications
-                                                                        eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
-
-                                                                        eventsThatHappened[eventType.Id].Add(
-                                                                            entity.Id,
-                                                                            eventComponent.FormatEntityNotification( eventType, entity ) );
-                                                                    }
-                                                                }
-
-                                                                if ( previousNotification == null )
-                                                                {
-                                                                    previousNotification = new FollowingEventNotification();
-                                                                    previousNotification.FollowingEventTypeId = eventType.Id;
-                                                                    previousNotification.EntityId = entity.Id;
-                                                                    followingEventNotificationService.Add( previousNotification );
-                                                                }
-
-                                                                previousNotification.LastNotified = timestamp;
                                                             }
-                                                        }
+                                                            else
+                                                            {
+                                                                if ( eventComponent.HasEventHappened( eventType, entity, lastNotification ) )
+                                                                {
+                                                                    // Store the event type id and the entity for later processing of notifications
+                                                                    eventsThatHappened.AddOrIgnore( eventType.Id, new Dictionary<int, string>() );
 
-                                                        rockContext.SaveChanges();
+                                                                    eventsThatHappened[eventType.Id].Add(
+                                                                        entity.Id,
+                                                                        eventComponent.FormatEntityNotification( eventType, entity ) );
+                                                                }
+                                                            }
+
+                                                            if ( previousNotification == null )
+                                                            {
+                                                                previousNotification = new FollowingEventNotification();
+                                                                previousNotification.FollowingEventTypeId = eventType.Id;
+                                                                previousNotification.EntityId = entity.Id;
+                                                                followingEventNotificationService.Add( previousNotification );
+                                                            }
+
+                                                            previousNotification.LastNotified = timestamp;
+                                                        }
                                                     }
 
-                                                    eventType.LastCheckDateTime = RockDateTime.Now;
+                                                    rockContext.SaveChanges();
                                                 }
-                                                catch ( Exception ex )
-                                                {
-                                                    exceptionMsgs.Add( string.Format( "An exception occurred calculating events for the '{0}' following type:{1}    {2}", eventType.Name, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
-                                                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
-                                                }
+
+                                                eventType.LastCheckDateTime = RockDateTime.Now;
+                                            }
+                                            catch ( Exception ex )
+                                            {
+                                                exceptionMsgs.Add( string.Format( "An exception occurred calculating events for the '{0}' following type:{1}    {2}", eventType.Name, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
+                                                ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                                             }
                                         }
                                     }

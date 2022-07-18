@@ -22,9 +22,9 @@
 
         <div class="personprofilebar-badge">
             <div class="row">
-                <Rock:Zone Name="Badge Bar Left" runat="server" CssClass="badge-group col-sm-4" />
-                <Rock:Zone Name="Badge Bar Middle" runat="server" CssClass="badge-group col-sm-4" />
-                <Rock:Zone Name="Badge Bar Right" runat="server" CssClass="badge-group col-sm-4" />
+                <Rock:Zone Name="Badge Bar Left" runat="server" CssClass="rockbadge-container col-sm-4" />
+                <Rock:Zone Name="Badge Bar Middle" runat="server" CssClass="rockbadge-container col-sm-4" />
+                <Rock:Zone Name="Badge Bar Right" runat="server" CssClass="rockbadge-container col-sm-4" />
             </div>
         </div>
 

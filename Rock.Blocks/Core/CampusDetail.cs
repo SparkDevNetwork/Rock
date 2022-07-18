@@ -46,6 +46,7 @@ namespace Rock.Blocks.Core
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( "A61EAF51-5DB4-451E-9F88-9D4C6ACCE73B")]
     public class CampusDetail : RockObsidianDetailBlockType
     {
         #region Keys
@@ -75,6 +76,7 @@ namespace Rock.Blocks.Core
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable );
+                box.QualifiedAttributeProperties = GetAttributeQualifiedColumns<Campus>();
 
                 return box;
             }
@@ -614,6 +616,54 @@ namespace Rock.Blocks.Core
                 .ToToken();
         }
 
+        /// <summary>
+        /// Attempts to load an entity to be used for an edit action.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the entity to load.</param>
+        /// <param name="rockContext">The database context to load the entity from.</param>
+        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
+        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
+        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Campus entity, out BlockActionResult error )
+        {
+            var entityService = new CampusService( rockContext );
+            error = null;
+
+            // Determine if we are editing an existing entity or creating a new one.
+            if ( idKey.IsNotNullOrWhiteSpace() )
+            {
+                // If editing an existing entity then load it and make sure it
+                // was found and can still be edited.
+                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            }
+            else
+            {
+                // Create a new entity.
+                entity = new Campus();
+                entityService.Add( entity );
+
+                var maxOrder = entityService.Queryable()
+                    .Select( t => ( int? ) t.Order )
+                    .Max();
+
+                entity.Order = maxOrder.HasValue ? maxOrder.Value + 1 : 0;
+            }
+
+            if ( entity == null )
+            {
+                error = ActionBadRequest( $"{Campus.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            if ( !entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit ${Campus.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region Block Actions
@@ -629,11 +679,9 @@ namespace Rock.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
-                var entity = new CampusService( rockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null || !entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
-                    return ActionBadRequest();
+                    return actionError;
                 }
 
                 entity.LoadAttributes( rockContext );
@@ -658,36 +706,10 @@ namespace Rock.Blocks.Core
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new CampusService( rockContext );
-                Campus entity;
 
-                // Determine if we are editing an existing entity or creating a new one.
-                if ( box.Entity.IdKey.IsNotNullOrWhiteSpace() )
+                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
-                    // If editing an existing entity then load it and make sure it
-                    // was found and can still be edited.
-                    entity = entityService.Get( box.Entity.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
-
-                    if ( entity == null )
-                    {
-                        return ActionBadRequest( $"{Campus.FriendlyTypeName} not found." );
-                    }
-
-                    if ( !entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        return ActionBadRequest( $"Not authorized to edit ${Campus.FriendlyTypeName}." );
-                    }
-                }
-                else
-                {
-                    // Create a new entity.
-                    entity = new Campus();
-                    entityService.Add( entity );
-
-                    var maxOrder = entityService.Queryable()
-                        .Select( t => ( int? ) t.Order )
-                        .Max();
-
-                    entity.Order = maxOrder.HasValue ? maxOrder.Value + 1 : 0;
+                    return actionError;
                 }
 
                 // Update the entity instance from the information in the bag.
@@ -737,16 +759,10 @@ namespace Rock.Blocks.Core
             using ( var rockContext = new RockContext() )
             {
                 var entityService = new CampusService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( entity == null )
+                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
-                    return ActionBadRequest( $"{Campus.FriendlyTypeName} was not found." );
-                }
-
-                if ( !entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete this ${Campus.FriendlyTypeName}." );
+                    return actionError;
                 }
 
                 // Don't allow deleting the last campus.
@@ -764,6 +780,59 @@ namespace Rock.Blocks.Core
                 rockContext.SaveChanges();
 
                 return ActionOk( this.GetParentPageUrl() );
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the list of attributes that can be displayed for editing
+        /// purposes based on any modified values on the entity.
+        /// </summary>
+        /// <param name="box">The box that contains all the information about the entity being edited.</param>
+        /// <returns>A box that contains the entity and attribute information.</returns>
+        [BlockAction]
+        public BlockActionResult RefreshAttributes( DetailBlockBox<CampusBag, CampusDetailOptionsBag> box )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                {
+                    return actionError;
+                }
+
+                // Update the entity instance from the information in the bag.
+                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid data." );
+                }
+
+                entity.LoadAttributes( rockContext );
+
+                var refreshedBox = new DetailBlockBox<CampusBag, CampusDetailOptionsBag>
+                {
+                    Entity = GetEntityBagForEdit( entity, true )
+                };
+
+                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
+                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
+
+                // If the attributes haven't changed then return a 204 status code.
+                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
+                }
+
+                // Replace any values for attributes that haven't changed with
+                // the value sent by the client. This ensures any unsaved attribute
+                // value changes are not lost.
+                foreach ( var kvp in refreshedBox.Entity.Attributes )
+                {
+                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
+                    {
+                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
+                    }
+                }
+
+                return ActionOk( refreshedBox );
             }
         }
 

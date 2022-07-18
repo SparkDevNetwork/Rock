@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// AuthAuditLogs REST API
     /// </summary>
-    [RestControllerGuid( "" )]
+    [RestControllerGuid( "9B91CE0A-A794-4B95-94CF-006F2986CBA3" )]
     public partial class AuthAuditLogsController : Rock.Rest.ApiController<Rock.Model.AuthAuditLog>
     {
         /// <summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -51,9 +51,12 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            var lavaShortcodeId = PageParameter( "LavaShortcodeId" ).AsInteger();
+
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "LavaShortcodeId" ).AsInteger() );
+                ShowDetail( lavaShortcodeId );
+                LoadCategories( lavaShortcodeId );
             }
         }
 
@@ -92,23 +95,24 @@ namespace RockWeb.Blocks.Core
             LavaShortcode lavaShortcode;
             var rockContext = new RockContext();
             var lavaShortCodeService = new LavaShortcodeService( rockContext );
+            var categoryService = new CategoryService( rockContext );
 
-            int lavaShortCode = hfLavaShortcodeId.ValueAsInt();
+            int lavaShortCodeId = hfLavaShortcodeId.ValueAsInt();
 
-            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text && a.Id != lavaShortCode ) )
+            if ( lavaShortCodeService.Queryable().Any( a => a.TagName == tbTagName.Text && a.Id != lavaShortCodeId ) )
             {
                 Page.ModelState.AddModelError( "DuplicateTag", "Tag with the same name is already in use." );
                 return;
             }
 
-            if ( lavaShortCode == 0 )
+            if ( lavaShortCodeId == 0 )
             {
                 lavaShortcode = new LavaShortcode();
                 lavaShortCodeService.Add( lavaShortcode );
             }
             else
             {
-                lavaShortcode = lavaShortCodeService.Get( lavaShortCode );
+                lavaShortcode = lavaShortCodeService.Get( lavaShortCodeId );
             }
 
             var oldTagName = hfOriginalTagName.Value;
@@ -123,6 +127,15 @@ namespace RockWeb.Blocks.Core
             lavaShortcode.Parameters = kvlParameters.Value;
             lavaShortcode.EnabledLavaCommands = String.Join( ",", lcpLavaCommands.SelectedLavaCommands );
 
+            lavaShortcode.Categories.Clear();
+            foreach ( var categoryId in cpShortCodeCat.SelectedValuesAsInt() )
+            {
+                lavaShortcode.Categories.Add( categoryService.Get( categoryId ) );
+            }
+
+            // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
+            lavaShortcode.ModifiedDateTime = RockDateTime.Now;
+                        
             rockContext.SaveChanges();
 
             if ( LavaService.RockLiquidIsEnabled )
@@ -315,6 +328,24 @@ namespace RockWeb.Blocks.Core
             fieldsetViewDetails.Visible = !editable;
 
             this.HideSecondaryBlocks( editable );
+        }
+
+        /// <summary>
+        /// Loads the categories.
+        /// </summary>
+        private void LoadCategories( int lavaShortcodeId )
+        {
+            var rockContext = new RockContext();
+            var lavaShortcodeService = new LavaShortcodeService( rockContext );
+                        
+            if ( lavaShortcodeId > 0 )
+            {
+                var categories = lavaShortcodeService.Queryable().SingleOrDefault( v => v.Id == lavaShortcodeId )?.Categories;
+                if ( categories?.Count > 0 )
+                {
+                    cpShortCodeCat.SetValues( categories.Select(v=>v.Id) );
+                }
+            }
         }
 
         #endregion

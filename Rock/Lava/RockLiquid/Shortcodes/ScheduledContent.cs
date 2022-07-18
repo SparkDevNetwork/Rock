@@ -34,39 +34,12 @@ namespace Rock.Lava.Shortcodes
     /// Lava shortcode for displaying content at scheduled times.
     /// </summary>
     [LavaShortcodeMetadata(
-        "Scheduled Content",
-        "scheduledcontent",
-        "The scheduled content shortcode will show/hide a block of content based on a provided Rock schedule.",
-        @"<p>Rock's schedules are a powerful tool in determining when certain events occur. The scheduled content
-            Lava shortcode allows you to extend the power of schedules to show/hide content. Below is a description
-            of how it works.
-            </p>
-
-            <pre>{[ scheduledcontent scheduleid:'15' ]}
-    {{ CurrentPerson.NickName }}, we're live!
- {[ endscheduledcontent ]}</pre>
-
-        <p>Let's take a look at some of the parameters and options that are available.</p>
-
-        <ul>
-            <li><strong>scheduleid</strong> - The schedule id to use for determining if the content should be displayed. This can be a single schedule or a comma-separated list of schedules.</li>
-            <li><strong>schedulecategoryid</strong> - The schedule category id to use for determining if the content should be displayed. All schedules in the category will be considered.</li>
-            <li><strong>showwhen</strong> (live) - Determines when the content should be displayed. Valid values are 'live', 'notlive' and 'both'.</li>
-            <li><strong>roleid</strong> - An optional parameter to limit the display to only people in a specified role (actually, any group id will work.)</li>
-            <li><strong>lookaheaddays</strong> (30)- The number of days to look ahead to find the next occurrence.</li>
-        </ul>
-
-        <p>The 'scheduleid' and 'schedulecategoryid' settings are meant to be either or. If you provide a value for one you don't need to provide a value for the other.</p>
-
-        <p>The following merge fields are available to the contents of your shortcode to help empower your user experience.</p>
-        <ul>
-            <li><strong>IsLive</strong> - Determines if the schedule is currently live. This is helpful when you set the 'showwhen' to 'both' as you can now display a different message by using this merge field in a simple if statement.</li>
-            <li><strong>OccurrenceEndDateTime</strong> - When a schedule is live this field will provide the date/time when the schedule will no longer be active. This helps assist you in creating a countdown to finish counter.</li>
-            <li><strong>NextOccurrenceDateTime</strong> - This is the date time of the next occurrence. This is provided to help you create a countdown to start counter. When a schedule is live this value will be the next active occurrence to help you craft messaging as to when you can see the next full occurrence.</li>
-            <li><strong>Schedule</strong> - This is the schedule object related to the request. If the event is live it will be the active schedule otherwise it will be the upcoming schedule.</li>
-        </ul>",
-        "scheduleid,showwhen,roleid",
-        "" )]
+        Name = "Scheduled Content",
+        TagName = "scheduledcontent",
+        Description = "The scheduled content shortcode will show/hide a block of content based on a provided Rock schedule.",
+        Documentation = ScheduledContentShortcode.DocumentationMetadata,
+        Parameters = "scheduleid,showwhen,roleid",
+        Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]
     public class ScheduledContent : RockLavaShortcodeBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
