@@ -3966,6 +3966,24 @@
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\153_FixERAStartDate_RecoverERAStartDate_Update.sql">
+      <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
+    <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
+    <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </Content>
+    <Content Include="Service References\MelissaData.AddressCheck\Service.disco" />
+    <Content Include="Service References\ServiceObjects.GeoCoder\configuration.svcinfo" />
+    <Content Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />
+    <Content Include="Service References\ServiceObjects.GeoCoder\GeoCoder.disco" />
+    <Content Include="Service References\ServiceObjects.GeoCoder\Reference.svcmap">
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </Content>
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
   <ItemGroup>
