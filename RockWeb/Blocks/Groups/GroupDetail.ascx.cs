@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1701,6 +1701,21 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        private string GetGroupCapacityHelpText( GroupCapacityRule groupCapacityRule )
+        {
+            if ( groupCapacityRule == GroupCapacityRule.Soft )
+            {
+                return "The number of people that can be added to the group.  Once the capacity is reached, a warning will appear in the Group Toolbox but additional group members can still be added.";
+            }
+
+            if ( groupCapacityRule == GroupCapacityRule.Hard )
+            {
+                return "The number of people that can be added to the group. Once the capacity is reached no additional group members can be added.";
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Shows the edit details.
         /// </summary>
@@ -1729,6 +1744,7 @@ namespace RockWeb.Blocks.Groups
             tbName.Text = group.Name;
             tbDescription.Text = group.Description;
             nbGroupCapacity.Text = group.GroupCapacity.ToString();
+            nbGroupCapacity.Required = group.GroupType != null && group.GroupType.IsCapacityRequired;
             cbIsSecurityRole.Checked = group.IsSecurityRole;
 
             LoadElevatedSecurityRadioList();
@@ -1843,6 +1859,7 @@ namespace RockWeb.Blocks.Groups
             var groupTypeCache = CurrentGroupTypeCache;
             BindAdministratorPerson( group, groupTypeCache );
             nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
+            nbGroupCapacity.Help = nbGroupCapacity.Visible ? GetGroupCapacityHelpText( groupTypeCache.GroupCapacityRule ) : string.Empty;
             SetRsvpControls( groupTypeCache, group );
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
@@ -1951,6 +1968,15 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupType != null )
             {
+                nbGroupCapacity.Visible = groupType.GroupCapacityRule != GroupCapacityRule.None;
+                nbGroupCapacity.Help = nbGroupCapacity.Visible ? GetGroupCapacityHelpText( groupType.GroupCapacityRule ) : string.Empty;
+
+                if ( setValues )
+                {
+                    nbGroupCapacity.Text = group.GroupCapacity.ToString();
+                    nbGroupCapacity.Required = groupType.IsCapacityRequired;
+                }
+
                 if ( cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
                 {
                     pnlElevatedSecurity.Visible = true;

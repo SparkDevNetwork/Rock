@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1343,16 +1343,20 @@ namespace RockWeb.Blocks.Cms
             var interactionQuery = new InteractionService( rockContext ).Queryable()
                 .Include( i => i.PersonAlias.Person )
                 .Include( i => i.InteractionSession )
+                .Include( i => i.InteractionSession.InteractionSessionLocation )
+                .Include( i => i.InteractionSession.DeviceType )
                 .Where( i => i.InteractionComponent.InteractionChannelId == interactionChannelId
                     && i.Operation == "WATCH"
                     && i.InteractionComponent.EntityId == mediaElementId );
+
+            var filteredQuery = interactionQuery;
 
             if ( context != null )
             {
                 // Query for the next page of results.
                 // If the dates are the same, then take only older Ids.
                 // If dates are not the same, then only take older dates.
-                interactionQuery = interactionQuery
+                filteredQuery = filteredQuery
                     .Where( i => ( i.InteractionDateTime == context.LastDate && i.Id < context.LastId ) || i.InteractionDateTime < context.LastDate );
             }
 
@@ -1361,7 +1365,7 @@ namespace RockWeb.Blocks.Cms
             // Load the next 25 results.
             DateTimeParameterInterceptor.UseWith( rockContext, () =>
             {
-                interactions = interactionQuery
+                interactions = filteredQuery
                     .OrderByDescending( i => i.InteractionDateTime )
                     .ThenByDescending( i => i.Id )
                     .Take( 25 )
@@ -1392,7 +1396,13 @@ namespace RockWeb.Blocks.Cms
                     FullName = i.PersonAlias?.Person?.FullName ?? "Unknown",
                     PhotoUrl = i.PersonAlias?.Person?.PhotoUrl ?? "/Assets/Images/person-no-photo-unknown.svg",
                     Platform = "Unknown",
-                    Data = i.InteractionData.FromJsonDynamicOrNull()
+                    Data = i.InteractionData.FromJsonDynamicOrNull(),
+                    Location = i.InteractionSession?.InteractionSessionLocation?.Location,
+                    ClientType = i.InteractionSession?.DeviceType.ClientType,
+                    Isp = i.InteractionSession?.InteractionSessionLocation?.ISP,
+                    OperatingSystem = i.InteractionSession?.DeviceType?.OperatingSystem,
+                    Application = i.InteractionSession?.DeviceType?.Application,
+                    InteractionsCount = interactionQuery.Where( m => m.PersonAliasId == i.PersonAliasId ).Count()
                 } );
 
             return new BlockActionResult( System.Net.HttpStatusCode.OK, new {

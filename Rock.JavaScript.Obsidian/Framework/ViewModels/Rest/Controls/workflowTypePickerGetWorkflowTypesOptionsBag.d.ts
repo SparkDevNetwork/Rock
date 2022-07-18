@@ -24,7 +24,7 @@
 import { Guid } from "@Obsidian/Types";
 
 /**
- * The options that can be passed to the ChildTreeItems API action of
+ * The options that can be passed to the GetWorkflowTypes API action of
  * the WorkflowTypePicker control.
  */
 export type WorkflowTypePickerGetWorkflowTypesOptionsBag = {

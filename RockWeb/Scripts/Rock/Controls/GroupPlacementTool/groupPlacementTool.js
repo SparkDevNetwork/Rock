@@ -165,8 +165,8 @@
                         var personId = $draggedRegistrant.attr('data-person-id');
 
                         /*
-                           GroupTypeId is purposely assigned default integer value to overpass the validation check in apiController. 
-                           However GroupMember PreSave Hook of SaveChanges takes care by asiigning the correct value to GroupTypeId. 
+                           GroupTypeId is purposely assigned default integer value to bypass the validation check in apiController. 
+                           However GroupMember PreSave Hook of SaveChanges takes care by assigning the correct value to GroupTypeId. 
                         */
 
                         var groupMember = {

@@ -71,19 +71,30 @@ namespace Rock.Web.Cache
         public static IEnumerable<PersonalizationSegmentCache> GetActiveSegments( bool includeSegmentsWithNonPersistedDataViews )
         {
             var activeSegments = All().Where( a => a.IsActive );
+            if ( includeSegmentsWithNonPersistedDataViews )
+            {
+                return activeSegments;
+            }
+
             var segmentFilterDataViewIds = activeSegments.Where( a => a.FilterDataViewId.HasValue ).Select( a => a.FilterDataViewId.Value ).ToList();
+            if ( !segmentFilterDataViewIds.Any() )
+            {
+                return activeSegments;
+            }
+
             var nonPersistedDataFilterDataViewIds = new DataViewService( new RockContext() ).GetByIds( segmentFilterDataViewIds )
                 .Where( a => a.PersistedScheduleIntervalMinutes == null ).Select( a => a.Id );
 
-            if ( nonPersistedDataFilterDataViewIds.Any() && !includeSegmentsWithNonPersistedDataViews )
+            if ( nonPersistedDataFilterDataViewIds.Any() )
             {
                 /* 06/22/2022 MP
 
                 Personalization Segments require that if it has a DataView, it must be a persisted DataView.
-                The UI tries prevents this, but in case the DataView is not persisted we'll treat
-                it as an Inactive Segment.
+                The UI will prevent saving the configurion if the the selected Dataview is not persisted,
+                but in case the DataView is changed to not persisted after they configured the segment filter,
+                we should treat the segment filter as inactive/disabled.
 
-                See https://app.asana.com/0/0/1202399967339503/f
+                See discussion at https://app.asana.com/0/0/1202399967339503/f
 
                 */
 

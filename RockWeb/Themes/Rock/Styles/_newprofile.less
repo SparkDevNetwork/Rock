@@ -1,7 +1,6 @@
-
 .btn-follow {
-  padding: 0.4em 0.6em;
   height: 24px;
+  padding: .4em .6em;
   font-size: 12px;
   line-height: 1;
   box-shadow: none;
@@ -9,9 +8,9 @@
 
 .profile-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
   margin: 16px -16px 0;
 }
 
@@ -29,7 +28,7 @@
   color: #737475 !important;
   background: #f8f9fa;
   border-color: #e9ecef !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .1) !important;
 
   &.btn-square {
     display: inline-flex;
@@ -38,7 +37,7 @@
   }
 
   &:hover {
-    color: #343A40 !important;
+    color: #343a40 !important;
     background: #fcfcfc !important;
   }
 }
@@ -97,16 +96,14 @@
     width: 40%;
   }
 
-  .profile-data {
-    flex: 1 1 0;
-  }
-
   .profile-notes {
     flex: 1 0 60%;
     width: auto;
   }
 
   .profile-data {
+    flex: 1 1 0;
+
     .profile-sidebar {
       flex: 1 0 25%;
       width: 25%;
@@ -184,8 +181,8 @@
       padding: 6px 12px;
       font-weight: 600;
       color: @gray-600;
-      background: #fff;
       white-space: nowrap;
+      background: #fff;
 
       &:hover {
         background: @gray-100;
@@ -224,10 +221,16 @@
     }
   }
 
+  .nav-scrolled-notransition & {
+    .hide-scroll {
+      transition-duration: 0s;
+    }
+  }
+
   .zone-nav {
-    overflow: hidden;
     order: 3;
     margin-top: 8px;
+    overflow: hidden;
 
     @media screen and (min-width: @screen-sm) {
       order: 0;
@@ -293,12 +296,26 @@
     padding: 16px;
 
     ~ .card-section {
-      border-top: 1px solid #DEE2E6;
+      border-top: 1px solid #dee2e6;
     }
   }
 
   .card-body {
     padding: 16px;
+  }
+}
+
+.card-profile-bio-condensed {
+  .profile-image {
+    position: relative;
+    flex-shrink: 0;
+    width: 25%;
+    height: 100%;
+  }
+
+  .profile-data {
+    width: 75%;
+    padding: .5rem 1rem;
   }
 }
 
@@ -340,10 +357,10 @@
 .zone-badgebar {
   .badges {
     min-height: 102px;
+    background: #fff;
     border: 1px solid @card-border-color;
     border-radius: 4px;
-    background: #fff;
-    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .06), 0 1px 3px rgba(0, 0, 0, .1);
   }
 
 
@@ -362,19 +379,22 @@
   .rockbadge-container {
     --badge-size: 36px;
     display: flex;
-    flex-wrap: wrap;
     flex: 1 1 auto;
-    row-gap: ~"calc(var(--badge-size) * .13333)";
-    min-height: 60px;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+    min-height: 60px;
     padding: 4px 12px;
     overflow: hidden;
-    border-right: 1px solid #e5e7eb;
     border-bottom: 1px solid #e5e7eb;
+    row-gap: ~"calc(var(--badge-size) * .13333)";
 
     &:empty {
       display: none;
+    }
+
+    &:first-child {
+      border-right: 1px solid #e5e7eb;
     }
 
     &:first-child,
@@ -396,6 +416,7 @@
   @media (min-width: @screen-lg) {
     .rockbadge-container {
       justify-content: start;
+      border-right: 1px solid #e5e7eb;
 
       &:first-child,
       &:last-child {
@@ -419,11 +440,12 @@
 
 .card-badge-bottom {
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   align-items: center;
   min-height: 40px;
   padding: 0 18px;
-  flex-direction: column;
+
   /* TODO FIX */
 
   @media (min-width: 576px) {
@@ -431,16 +453,16 @@
   }
 
   .rockbadge-container {
-    flex: 1 0 0;
     display: flex;
-    width: 100%;
+    flex: 1 0 0;
     justify-content: center;
+    width: 100%;
     padding: 6px 0;
 
     @media (min-width: 576px) {
-      padding: 0;
-      width: auto;
       justify-content: unset;
+      width: auto;
+      padding: 0;
     }
 
     &:empty {
@@ -458,13 +480,13 @@
 }
 
 .profile-notes .notes {
-  .panel-heading {
+  .panel-noteadd-visible .panel-heading {
     display: none;
   }
 
   .note-editor {
-    margin: 0;
     padding: 16px 24px;
+    margin: 0;
     border-bottom: 1px solid #dfe0e1;
 
     .meta-figure {
@@ -472,10 +494,10 @@
     }
 
     .meta-body {
-      overflow: hidden;
       height: @input-height;
+      overflow: hidden;
+      background: #f8f9fa;
       transition: height 250ms;
-      background: #F8F9FA;
 
       &:hover {
         background: #fff;

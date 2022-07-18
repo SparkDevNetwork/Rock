@@ -1,18 +1,18 @@
-﻿//
+//
 // Drop Down Lists - Override default styles of ANT select component
 // --------------------------------------------------
 
 .ant-select.form-control {
-  padding: 0px;
+  padding: 0;
 }
 
 .ant-select.form-control .ant-select-selector {
-  border: none;
-  background-color: initial;
-  box-shadow: none;
-  margin: 0px 0px 0px 0px;
   height: 38px;
   padding: 4px 12px;
+  margin: 0;
+  background-color: initial;
+  border: none;
+  box-shadow: none;
 }
 
 .ant-select.ant-select-multiple.form-control .ant-select-selector {
@@ -33,9 +33,9 @@
 
 .ant-select.form-control .ant-select-arrow,
 .ant-select.form-control .ant-select-clear {
-  font-size: 16px;
   width: 16px;
   height: 16px;
+  font-size: 16px;
 }
 
 /* Prevent clear button from overlapping chevron arrow. */
@@ -46,6 +46,6 @@
 /* Allow control height to grow in multi-select mode. */
 .ant-select.ant-select-multiple.form-control,
 .ant-select.ant-select-multiple.form-control .ant-select-selector {
-  min-height: 38px;
   height: initial;
+  min-height: 38px;
 }

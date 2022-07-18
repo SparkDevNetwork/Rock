@@ -270,8 +270,8 @@
 
   .meta-body {
     display: flex;
-    flex-direction: column;
     flex: 1;
+    flex-direction: column;
     min-width: 0;
 
     .flex {
@@ -306,19 +306,19 @@
 
 .note {
   + .note {
-    border-top: 1px solid #DEE2E6;
+    border-top: 1px solid #dee2e6;
   }
 
   .flag {
-    font-size: 12px;
     padding: 4px 8px 6px;
     margin: -16px -24px 12px;
+    font-size: 12px;
     color: @brand-danger;
     background: @state-danger-bg;
     border-top: 2px solid @brand-danger;
     @media @sm {
-      font-size: 14px;
       padding: 4px 23px 6px;
+      font-size: 14px;
     }
 
     &.warning {
@@ -435,9 +435,9 @@
 
 .note-editor {
   .meta-body {
+    background: @input-bg;
     border: 1px solid @input-border;
     border-radius: @input-border-radius;
-    background: @input-bg;
   }
 
   .settings {
@@ -522,8 +522,8 @@
 
   // Disable primary note field border and focus states
   .noteentry-control .form-control {
-    border: 0;
     background: transparent;
+    border: 0;
     box-shadow: none;
   }
 }

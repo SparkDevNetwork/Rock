@@ -248,10 +248,11 @@
                 var $date = $('<div class="individual-play-date"></div>');
                 var $bar = $('<div class="individual-play-bar"></div>');
                 var $person = $('<div class="individual-play-person"></div>');
+                var $interaction = $('<div class="individual-play-interaction"></div>');
                 var $chart = $('<div class="individual-play-chart"></div>');
                 var $percent = $('<div class="individual-play-percent"></div>');
                 $row.append($date, $bar);
-                $bar.append($person, $chart, $percent);
+                $bar.append($person, $interaction, $chart, $percent);
 
                 const date = new moment(item.DateTime);
 
@@ -267,14 +268,88 @@
 
                 $person.append(getPerson(item))
 
+                $interaction.append(getInteractionData(item));
+
                 $chart.append(getHeatMap(item.Data.WatchMap));
                 $percent.text(Math.floor(item.Data.WatchedPercentage) + "%");
 
                 $row.insertBefore($btnLoadMore);
             }
+
+            initializeExpanderHoverEventListener();
+        }
+
+        const getInteractionData = function (item) {
+            const clientTypeIcons = {
+                Mobile: "fa fa-mobile-alt",
+                Desktop: "fa fa-desktop",
+                Tablet: "fa fa-tablet-alt",
+            }
+
+            const clientType = document.createElement("span");
+            clientType.setAttribute("class", clientTypeIcons[item.ClientType]);
+
+            const interactions = document.createElement("div");
+            interactions.setAttribute("class", "info-badge");
+            interactions.textContent = item.InteractionsCount;
+
+            const sessionInfo = document.createElement("div");
+            sessionInfo.setAttribute("class", "sessionInfo");
+
+            const isp = document.createElement("span");
+            isp.textContent = item.Isp;
+            const operatingSystem = document.createElement("span");
+            operatingSystem.textContent = item.OperatingSystem;
+            const applciation = document.createElement("span");
+            applciation.textContent = item.Application;
+
+            sessionInfo.append(isp);
+            sessionInfo.append(operatingSystem);
+            sessionInfo.append(applciation);
+
+            const expander = document.createElement("div");
+            expander.setAttribute("class", "expander");
+            expander.setAttribute("name", "expander");
+            const expanderIcon = document.createElement("span");
+            expanderIcon.setAttribute("class", "fa fa-chevron-right");
+            expander.setAttribute("name", "expander");
+            expander.append(expanderIcon);
+
+            return [clientType, interactions, sessionInfo, expander];
+        }
+
+        const initializeExpanderHoverEventListener = function () {
+            let interactions = document.querySelectorAll(".individual-play-interaction");
+
+            interactions.forEach(interaction => interaction.addEventListener("mouseover", event => {
+                if (event.target.getAttribute("name") === "expander") {
+                    let icon = event.target.querySelector(".fa-chevron-right");
+                    icon?.classList.remove("fa", "fa-chevron-right");
+                    icon?.classList.add("fa", "fa-chevron-left");
+
+                    let sessionInfo = event.target.parentElement.querySelector(".sessionInfo");
+                    sessionInfo.classList.add("expanded");
+                    interaction.classList.add("expanded");
+                }
+            }));
+
+            interactions.forEach(interaction => interaction.addEventListener("mouseleave", event => {
+                if (interaction.querySelector(".fa-chevron-left")) {
+                    let icon = interaction.querySelector(".fa-chevron-left");
+                    icon.classList.remove("fa", "fa-chevron-left");
+                    icon.classList.add("fa", "fa-chevron-right");
+
+                    let sessionInfo = event.target.parentElement.querySelector(".sessionInfo");
+                    sessionInfo.classList.remove("expanded");
+                    interaction.classList.remove("expanded");
+                }
+            }));
         }
 
         const getPerson = function (item) {
+            const personInfo = document.createElement("div");
+            personInfo.setAttribute("class", "individual-play-person-info");
+
             const photo = document.createElement("div");
             const url = item.PhotoUrl + (item.PhotoUrl.indexOf("?") === -1 ? "?w=50" : "&w=50");
             photo.setAttribute("class", "photo-icon photo-round photo-round-xs pull-left margin-r-sm");
@@ -283,7 +358,14 @@
             const name = document.createElement("span");
             name.textContent = item.FullName;
 
-            return [photo, name];
+            personInfo.appendChild(photo);
+            personInfo.appendChild(name);
+
+            const location = document.createElement("span");
+            location.setAttribute("class", "individual-play-person-location");
+            location.textContent = item.Location;
+
+            return [personInfo, location];
         }
 
         const getHeatMap = function (watchMap) {

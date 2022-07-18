@@ -397,9 +397,65 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         <dl class=""m-0"">
                             <dt>{FormatAddressType( groupLocation.GroupLocationTypeValue.Value )}</dt>
                             <dd>{FormatAddress( groupLocation.Location )}</dd>
-                        </dl>
-                    </div>";
+                        </dl>";
             }
+
+            if ( e.Item.FindControl( "lbVerify" ) is LinkButton lbVerify )
+            {
+                if ( Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
+                {
+                    lbVerify.Visible = true;
+                    lbVerify.CommandArgument = groupLocation.Location.Id.ToString();
+                }
+                else
+                {
+                    lbVerify.Visible = false;
+                }
+            }
+
+            if ( e.Item.FindControl( "lbLocationSettings" ) is LinkButton lbLocationSettings )
+            {
+                if ( UserCanEdit )
+                {
+                    lbLocationSettings.Visible = true;
+                    lbLocationSettings.CommandArgument = groupLocation.Location.Id.ToString();
+                }
+                else
+                {
+                    lbLocationSettings.Visible = false;
+                }
+            }
+        }
+
+        protected void rptrAddresses_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            int locationId = int.MinValue;
+            if ( int.TryParse( e.CommandArgument.ToString(), out locationId ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new LocationService( rockContext );
+                    var location = service.Get( locationId );
+
+                    if ( location != null )
+                    {
+                        switch ( e.CommandName )
+                        {
+                            case "verify":
+                                service.Verify( location, true );
+                                rockContext.SaveChanges();
+                                break;
+
+                            case "settings":
+                                NavigateToLinkedPage( AttributeKey.LocationDetailPage,
+                                    new Dictionary<string, string> { { "LocationId", location.Id.ToString() }, { "PersonId", Person.Id.ToString() } } );
+                                break;
+                        }
+                    }
+                }
+            }
+
+            BindGroups();
         }
 
         #endregion Events
@@ -599,13 +655,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
             var litGroupAttributes = e.Item.FindControl( "litGroupAttributes" ) as Literal;
+            var litMoreGroupAttributes = e.Item.FindControl( "litMoreGroupAttributes" ) as Literal;
 
-            if ( pnlGroupAttributes == null || litGroupAttributes == null )
+            if ( pnlGroupAttributes == null || litGroupAttributes == null || litMoreGroupAttributes == null )
             {
                 return;
             }
 
             litGroupAttributes.Text = string.Empty;
+            litMoreGroupAttributes.Text = string.Empty;
             pnlGroupAttributes.Visible = false;
 
             group.LoadAttributes();
@@ -621,10 +679,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
-                    pnlGroupAttributes.Visible = true;
-                    litGroupAttributes.Text += $@"
+                    var attributeHtml = $@"
                         <dt>{attribute.Name}</dt>
                         <dd>{value}</dd>";
+
+                    if ( attribute.IsGridColumn )
+                    {
+                        pnlGroupAttributes.Visible = true;
+                        litGroupAttributes.Text += attributeHtml;
+                    }
+                    else
+                    {
+                        litMoreGroupAttributes.Text += attributeHtml;
+                    }
                 }
             }
         }

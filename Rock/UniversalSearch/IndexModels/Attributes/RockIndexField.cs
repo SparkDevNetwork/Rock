@@ -95,21 +95,21 @@ namespace Rock.UniversalSearch.IndexModels.Attributes
         /// Analyzed
         /// </summary>
         [Obsolete( "Use IndexType.Indexed instead" )]
-        Analyzed = 0, // default
+        Analyzed = 0,
 
         /// <summary>
         /// Not Analyzed
         /// </summary>
         [Obsolete("Use IndexType.Indexed instead")]
-        NotAnalyzed = 1, // means it's in the index (database) and available for queries but when added to the index it won't set a analyzer (should be queried as is)
+        NotAnalyzed = 1,
 
         /// <summary>
-        /// Not Indexed
+        /// Not Indexed. This means it's in the index (elasticsearch/lucene database) but it won't be considered for queries.
         /// </summary>
-        NotIndexed = 2, // means it's in the index (database) but it won't be considered for queries
+        NotIndexed = 2,
 
         /// <summary>
-        /// The indexed
+        /// Indexed. This means it is an indexed field in elasticsearch/lucene database and can be considered for queries.
         /// </summary>
         Indexed = 3, 
     }

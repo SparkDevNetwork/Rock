@@ -25,7 +25,8 @@ Sys.Application.add_load(function() {
 
         profileImageObserver.observe(profileImage);
     } else {
-        console.log("no profile image");
+        console.log("No Bio Block");
         header.classList.add("nav-scrolled");
+        header.classList.add("nav-scrolled-notransition");
     }
 });

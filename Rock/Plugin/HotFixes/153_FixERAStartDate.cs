@@ -20,9 +20,17 @@ namespace Rock.Plugin.HotFixes
     /// Plug-in migration
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 151, "1.13.4" )]
-    public class LavaDashboardWidget : Migration
+    [MigrationNumber( 153, "1.13.4" )]
+    public class FixERAStartDate : Migration
     {
+        /* 07/14/2022 MDP
+         
+         The migration number jumps from 147 to 153 because we had to add this hotfix migration
+         because 147-152 were moved to 154 so that 153 will run before those.
+         
+         */
+
+
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
@@ -39,7 +47,18 @@ namespace Rock.Plugin.HotFixes
 
         private void OldUp()
         {
-            RockMigrationHelper.UpdateBlockType( "Lava Dashboard Widget", "Dashboard Widget from Lava using YTD metric values", "~/Blocks/Reporting/Dashboard/LiquidDashboardWidget.ascx", "Reporting > Dashboard", Rock.SystemGuid.BlockType.REPORTING_LAVA_DASHBOARD_WIDGET );
+            Update_spCrm_FamilyAnalyticsEraDataset();
+            FixIncorrectERAStartDate();
+        }
+
+        private void FixIncorrectERAStartDate()
+        {
+            Sql( HotFixMigrationResource._153_FixERAStartDate_RecoverERAStartDate_Update );
+        }
+
+        private void Update_spCrm_FamilyAnalyticsEraDataset()
+        {
+            Sql( HotFixMigrationResource._153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset );
         }
 
         /// <summary>

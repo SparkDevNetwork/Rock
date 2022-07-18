@@ -823,6 +823,11 @@
     <Compile Include="Model\Reporting\Metric\UnitType.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
+    </Compile>
     <Compile Include="Reporting\DataFilter\GroupMembers\GroupMemberGroupTypeFilter.cs" />
     <Compile Include="SystemGuid\DuplicateSystemGuidException.cs" />
     <Compile Include="SystemGuid\BlockTypeGuidAttribute.cs" />
@@ -1349,15 +1354,12 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Pdf\PdfGenerator.cs" />
     <Compile Include="Pdf\PdfGeneratorException.cs" />
-    <Compile Include="Plugin\HotFixes\152_MigrationRolupsFor13_6_0.cs" />
-    <Compile Include="Plugin\HotFixes\151_LavaDashboardWidget.cs" />
-    <Compile Include="Plugin\HotFixes\150_MigrationRollupsFor13_5_2.cs" />
-    <Compile Include="Plugin\HotFixes\149_MigrationRollupsFor13_5_1.cs" />
-    <Compile Include="Plugin\HotFixes\148_MigrationRollupsFor13_5_0.cs" />
     <Compile Include="Plugin\HotFixes\147_MigrationRolupsFor13_1.cs" />
     <Compile Include="Plugin\HotFixes\146_UpdateStatementGeneratorDownloadLink.cs" />
     <Compile Include="Plugin\HotFixes\145_UpdateWistiaVideosToVimeo.cs" />
     <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
+    <Compile Include="Plugin\HotFixes\154_Rollup_148_152.cs" />
+    <Compile Include="Plugin\HotFixes\153_FixERAStartDate.cs" />
     <Compile Include="Reporting\ComparisonValue.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ActivityFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\AttendanceInPlacementGroup.cs" />
@@ -1445,6 +1447,7 @@
     <Compile Include="Utility\CodeGenFeature.cs" />
     <Compile Include="Plugin\HotFixes\143_ServerCheckinPrinterCutter2.cs" />
     <Compile Include="Plugin\HotFixes\142_AddMobileGroupFinderBlock.cs" />
+    <Compile Include="Utility\Container.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
@@ -2018,11 +2021,6 @@
     <Compile Include="Plugin\HotFixes\098_FixContributionStatementLava.cs" />
     <Compile Include="Plugin\HotFixes\097_FamilyAnalyticsProcChange.cs" />
     <Compile Include="Plugin\HotFixes\096_MigrationRollupsForV9_5.cs" />
-    <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>HotFixMigrationResource.resx</DependentUpon>
-    </Compile>
     <Compile Include="Reporting\DataFilter\BenevolenceRequest\BenevolenceResultDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\BenevolenceResult\BenevolenceRequestDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\AttendanceDataViewFilter.cs" />
@@ -3967,6 +3965,24 @@
     </Content>
     <Content Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>134_AddDocumentsToPersonMerge.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\153_FixERAStartDate_RecoverERAStartDate_Update.sql">
+      <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
+    <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
+    <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </Content>
+    <Content Include="Service References\MelissaData.AddressCheck\Service.disco" />
+    <Content Include="Service References\ServiceObjects.GeoCoder\configuration.svcinfo" />
+    <Content Include="Service References\ServiceObjects.GeoCoder\configuration91.svcinfo" />
+    <Content Include="Service References\ServiceObjects.GeoCoder\GeoCoder.disco" />
+    <Content Include="Service References\ServiceObjects.GeoCoder\Reference.svcmap">
+      <LastGenOutput>Reference.cs</LastGenOutput>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>

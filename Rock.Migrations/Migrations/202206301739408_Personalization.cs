@@ -495,7 +495,7 @@ WHERE [Guid] = '{SystemGuid.Person.ANONYMOUS_VISITOR}'
             //   Category: Cms
             //   Path: ~/Blocks/Cms/PersonalizationSegmentDetail.ascx
             //   EntityType: -
-            RockMigrationHelper.UpdateBlockType( "Personalization Segment Detail", "Displays the details of an personalization segment.", "~/Blocks/Cms/PersonalizationSegmentDetail.ascx", "Cms", "1F0A0A57-952D-4774-8760-52C6D56B9DB5" );
+            RockMigrationHelper.UpdateBlockType( "Personalization Segment Detail", "Displays the details of a personalization segment.", "~/Blocks/Cms/PersonalizationSegmentDetail.ascx", "Cms", "1F0A0A57-952D-4774-8760-52C6D56B9DB5" );
 
             // Add/Update BlockType 
             //   Name: Personalization Segment List
@@ -509,7 +509,7 @@ WHERE [Guid] = '{SystemGuid.Person.ANONYMOUS_VISITOR}'
             //   Category: Cms
             //   Path: ~/Blocks/Cms/RequestFilterDetails.ascx
             //   EntityType: -
-            RockMigrationHelper.UpdateBlockType( "Request Filter Detail", "Block that lists the existing request details", "~/Blocks/Cms/RequestFilterDetails.ascx", "Cms", "0CE221F6-EECE-46F9-A703-FCD09DEBC653" );
+            RockMigrationHelper.UpdateBlockType( "Request Filter Detail", "Displays the details of a request filter.", "~/Blocks/Cms/RequestFilterDetails.ascx", "Cms", "0CE221F6-EECE-46F9-A703-FCD09DEBC653" );
 
             // Add/Update BlockType 
             //   Name: Request Filter List

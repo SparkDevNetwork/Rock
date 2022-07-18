@@ -30,6 +30,8 @@ DECLARE
     , @maxInteractionCount INT = 150000
     , @avgInteractionsPerSession INT = 10
     , @personSampleSize INT = 2500 -- number of people to use when randomly assigning a person to each interaction. You might want to set this lower or higher depending on what type of data you want
+	,@forceIncludeAnonymousVisitors bit = 1 -- leave this true to add anonymous visitors to the set of PersonAliasIds
+    
     -- Parameters
 DECLARE
     -- Set this value to place a tag in the ForeignKey field of the sample data records for easier identification.
@@ -144,6 +146,15 @@ WHERE pa.PersonId NOT IN (
                 )
         )
 ORDER BY newid();
+
+IF (@forceIncludeAnonymousVisitors = 1)
+BEGIN
+	INSERT INTO @personAliasIdTable
+    SELECT pa.Id
+    FROM PersonAlias pa
+    INNER JOIN Person p on pa.PersonId = p.Id
+    WHERE p.[Guid] = '7ebc167b-512d-4683-9d80-98b6bb02e1b9'       
+END
 
 -- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each interaction
 DECLARE interactionPersonAliasIdCursor CURSOR LOCAL FAST_FORWARD

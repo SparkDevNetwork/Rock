@@ -7,13 +7,13 @@
             <asp:Repeater ID="rptrGroups" runat="server" OnItemDataBound="rptrGroups_ItemDataBound" >
                 <ItemTemplate>
 
-                    <asp:Panel ID="pnlGroup" runat="server" CssClass="card card-profile group-hover card-family-member">
+                    <asp:Panel ID="pnlGroup" runat="server" CssClass="card card-profile group-hover card-family-member panel-widget">
                         <asp:HiddenField ID="hfGroupId" runat="server" Value='<%# Eval("Id") %>' />
                             <div class="card-header">
                                 <span class="card-title"><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></span>
 
                                 <div class="panel-labels group-hover-item group-hover-show">
-                                    <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
+                                    <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs js-stop-immediate-propagation panel-widget-reorder"><i class="fa fa-bars"></i></a>
                                     <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="btn btn-link btn-xs"><i class="fa fa-pencil"></i></asp:HyperLink>
                                 </div>
                             </div>
@@ -30,24 +30,43 @@
                             </div>
                         </div>
 
-                        <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="card-section">
+                        <asp:panel ID="pnlGroupAttributes" runat="server" CssClass="card-section js-group-attribute-section">
+                            <div class="pull-right">
+                                <a class="js-show-more-family-attributes"><i class="fa fa-chevron-down"></i></a>
+                            </div>
                             <dl class="m-0">
                                 <asp:Literal ID="litGroupAttributes" runat="server"></asp:Literal>
                             </dl>
+                            <div class="js-more-group-attributes" style="display:none">
+                                <br />
+                                <dl class="m-0">
+                                    <asp:Literal ID="litMoreGroupAttributes" runat="server"></asp:Literal>
+                                </dl>
+                            </div>
                         </asp:panel>
 
+                        <asp:Repeater ID="rptrAddresses" runat="server" OnItemDataBound="rptrAddresses_ItemDataBound" OnItemCommand="rptrAddresses_ItemCommand">
+                            <HeaderTemplate>
+                                <div class="card-section">
+                            </HeaderTemplate>
+                            <ItemTemplate>
+                                <asp:Literal ID="litAddress" runat="server"></asp:Literal>
 
-                            <asp:Repeater ID="rptrAddresses" runat="server" OnItemDataBound="rptrAddresses_ItemDataBound">
-                                <HeaderTemplate>
-                                    <div class="card-section">
-                                </HeaderTemplate>
-                                <ItemTemplate>
-                                    <asp:Literal ID="litAddress" runat="server"></asp:Literal>
-                                </ItemTemplate>
-                                <FooterTemplate>
-                                    </div>
-                                </FooterTemplate>
-                            </asp:Repeater>
+                                <div class="pull-right">
+                                    <asp:LinkButton ID="lbVerify" runat="server" CommandName="verify" ToolTip="Verify Address">
+                                        <i class="fa fa-globe"></i>
+                                    </asp:LinkButton>
+                                    <asp:LinkButton ID="lbLocationSettings" runat="server" CommandName="settings" ToolTip="Configure Location">
+                                        <i class="fa fa-gear"></i>
+                                    </asp:LinkButton>
+                                </div>
+                                </div><%--This is the ending of the div that begins in litAddress--%>
+                            </ItemTemplate>
+                            <FooterTemplate>
+                                </div>
+                            </FooterTemplate>
+                        </asp:Repeater>
+
                         <asp:Literal ID="lGroupFooter" runat="server" />
 
                     </asp:Panel>
@@ -84,6 +103,18 @@
                             var postbackArg = 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex;
                             window.location = "javascript:__doPostBack('<%=upGroupMembers.ClientID %>', '" +  postbackArg + "')";
                         }
+                    }
+                });
+
+                $('.js-show-more-family-attributes').on('click', function (e) {
+                    var $pnl = $(this).closest('.js-group-attribute-section');
+                    var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
+                    if ($moreAttributes.is(':visible')) {
+                        $moreAttributes.slideUp();
+                        $(this).html('<i class="fa fa-chevron-down"></i>');
+                    } else {
+                        $moreAttributes.slideDown();
+                        $(this).html('<i class="fa fa-chevron-up"></i>');
                     }
                 });
             });

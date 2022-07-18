@@ -35,12 +35,8 @@ type FlowDiagramLevelNode = FlowNodeDiagramNodeBag & Rectangle & {
 type FlowDiagramLevel = FlowDiagramLevelNode[];
 type FlowDiagramData = FlowDiagramLevel[];
 
-type FlowNodeDiagramSettingsFull = {
-    nodeWidth: number;
-    nodeVerticalSpacing: number;
-    nodeHorizontalSpacing: number;
-    chartHeight: number;
-};
+type NonNullValues<T> = { [P in keyof T]: NonNullable<T[P]> };
+type FlowNodeDiagramSettingsFull = NonNullValues<Required<FlowNodeDiagramSettingsBag>>;
 
 const defaultSettings = {
     nodeWidth: 12,
@@ -207,7 +203,7 @@ export default defineComponent({
     setup(props) {
         const settings = computed<FlowNodeDiagramSettingsFull>(() => {
             const settings = { ...defaultSettings };
-            Object.entries((key, value) => {
+            Object.entries(props.settings).forEach(([key, value]) => {
                 if (value !== undefined && value !== null) {
                     settings[key] = value;
                 }

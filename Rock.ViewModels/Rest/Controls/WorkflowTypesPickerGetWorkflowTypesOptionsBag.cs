@@ -20,7 +20,7 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the ChildTreeItems API action of
+    /// The options that can be passed to the GetWorkflowTypes API action of
     /// the WorkflowTypePicker control.
     /// </summary>
     public class WorkflowTypePickerGetWorkflowTypesOptionsBag

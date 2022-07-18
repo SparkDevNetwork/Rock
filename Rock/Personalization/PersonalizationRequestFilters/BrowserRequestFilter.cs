@@ -76,7 +76,6 @@ namespace Rock.Personalization
             if ( !detectedFamily.Equals( filteredBrowserFamily, StringComparison.OrdinalIgnoreCase ) )
             {
                 // If the detected family doesn't match the BrowserFamily for this filter,
-                // and the selected BrowerFamily is not Other, then
                 // return false since both the BrowserFamily AND MajorVersion condition must be met.
                 return false;
             }
