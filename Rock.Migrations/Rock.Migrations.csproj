@@ -156,6 +156,10 @@
     <Compile Include="Migrations\202207152352391_Rollup_20220715.designer.cs">
       <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202207182110401_Rollup_20220718.cs" />
+    <Compile Include="Migrations\202207182110401_Rollup_20220718.designer.cs">
+      <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1291,6 +1295,9 @@
     <EmbeddedResource Include="Migrations\202207152352391_Rollup_20220715.resx">
       <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207182110401_Rollup_20220718.resx">
+      <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
     </EmbeddedResource>
@@ -2109,6 +2116,9 @@
     </Content>
     <Content Include="Migrations\202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202207182110401_Rollup_20220718_updatechart.sql">
+      <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 13.0\Version 1.13.3\202203152204281_Rollup_20220315_update-chartjs.sql">
       <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>

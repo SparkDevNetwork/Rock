@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -1042,6 +1042,25 @@ namespace Rock.Migrations.Migrations {
         public static string _202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset {
             get {
                 return ResourceManager.GetString("_202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{%- if type == &apos;&apos;gauge&apos;&apos; or type == &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {% javascript url:&apos;&apos;~/Scripts/Chartjs/Gauge.js&apos;&apos; id:&apos;&apos;gaugejs&apos;&apos;%}{% endjavascript %}
+        ///{%- endif -%}
+        ///
+        ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
+        ///    {%- assign xaxistype = &apos;&apos;stacked&apos;&apos; -% [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202207182110401_Rollup_20220718_updatechart {
+            get {
+                return ResourceManager.GetString("_202207182110401_Rollup_20220718_updatechart", resourceCulture);
             }
         }
     }
