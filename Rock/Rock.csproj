@@ -3739,6 +3739,7 @@
     <Compile Include="Workflow\Action\Groups\AddPersonToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\AddPersonToGroupAttribute.cs" />
     <Compile Include="Workflow\Action\Groups\GroupGetChildGroupForCampus.cs" />
+    <Compile Include="Workflow\Action\Groups\GroupMemberRequirementMet.cs" />
     <Compile Include="Workflow\Action\Groups\PostAttendanceToGroup.cs" />
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroup.cs" />
     <Compile Include="Workflow\Action\Groups\RemovePersonFromGroupAttribute.cs" />
