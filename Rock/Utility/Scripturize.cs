@@ -318,25 +318,27 @@ namespace Rock.Utility
             // Normalize the book name to match YouVersions requirements
             var bookConfig = _bibleBooks.Where( b => b.Name == book || b.Aliases.Contains( book ) ).FirstOrDefault();
 
-            // Fix references to 1 John / 2 John / 3 John, YouVersion has a different pattern for that... :(
-            if (bookConfig.Name == "John" && volume.IsNotNullOrWhiteSpace() )
-            {
-                bookConfig.YouVersionAbbreviation = "Jn";
-                bookConfig.HasVolume = true;
-            }
-
             // Return an empty string if we could not find the book
             if ( bookConfig == null )
             {
                 return string.Empty;
             }
 
-            var youVersionBook = bookConfig.YouVersionAbbreviation.ToUpper();
-
-            // Append the volume if needed
-            if ( bookConfig.HasVolume )
+            // Get the YouVersion book reference.
+            string youVersionBook;
+            if ( bookConfig.Name == "John" && volume.IsNotNullOrWhiteSpace() )
             {
-                youVersionBook = volume + youVersionBook;
+                // Fix references to 1 John / 2 John / 3 John, YouVersion has a different pattern for that... :(
+                youVersionBook = volume + "JN";
+            }
+            else
+            {
+                youVersionBook = bookConfig.YouVersionAbbreviation.ToUpper();
+                // Append the volume if needed
+                if ( bookConfig.HasVolume )
+                {
+                    youVersionBook = volume + youVersionBook;
+                }
             }
 
             return string.Format( "https://www.bible.com/bible/{0}/{1}.{2}.{3}.{4}",
