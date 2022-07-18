@@ -45,7 +45,7 @@
                                     <div class="example-toggle text-nowrap text-right d-none d-sm-block">
                                         <i class="fa fa-circle-o"></i> Show Details
                                     </div>
-                                    <div class="mb-2 mb-sm-0 mt-sm-2">
+                                    <div class="mb-2 mb-sm-0 mt-sm-2 text-right">
                                         <%# !Boolean.Parse(Eval("IsActive").ToString()) ? "<span class='label label-warning'>Inactive</span>" : "" %>
                                         <%# Boolean.Parse(Eval("IsSystem").ToString()) ? "<span class='label label-default'>System</span>" : "" %>
                                         <asp:Literal ID="litCategories" runat="server"></asp:Literal>
