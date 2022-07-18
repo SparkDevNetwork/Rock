@@ -1,0 +1,111 @@
+.panel.panel-flex {
+  display: flex;
+  flex-direction: column;
+
+  > .panel-heading {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0;
+    line-height: 1em;
+
+    > .panel-title {
+      flex-grow: 1;
+      padding: 0 24px;
+    }
+
+    > .panel-aside {
+      padding: 0 24px 0 0;
+    }
+
+    > .panel-action {
+      position: relative;
+      display: flex;
+      align-items: center;
+      align-self: stretch;
+      justify-content: center;
+      width: 48px;
+      cursor: pointer;
+      border-left: 1px solid #ccc;
+
+      .rock-fullscreen-toggle {
+        position: relative;
+        border-left: 0;
+      }
+    }
+  }
+
+  .panel-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0;
+    margin: 0;
+
+    > .action {
+      padding: 12px;
+      color: #616161;
+
+      &:hover {
+        color: #212121;
+      }
+    }
+  }
+
+  .footer-secondary-actions {
+    margin: 0 0 0 auto !important;
+  }
+}
+
+.panel.panel-fullscreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+
+  &,
+  > .panel-heading {
+    border-radius: 0;
+  }
+}
+
+
+.panel.panel-flex .panel-flex-fill-body {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  // width: 100%;
+  // height: 100%;
+  display: flex;
+  flex-direction: column;
+  //margin: -18px;
+}
+
+.panel.panel-flex.panel-fullscreen > .panel-body {
+  position: relative;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.page-fullscreen-capable .panel.panel-block.panel-flex {
+  overflow-y: hidden;
+
+  > .panel-body {
+    position: relative;
+
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+}
+
+// .page-fullscreen-capable .panel.panel-flex.panel-block .panel-flex-fill-body,
+// body.is-fullscreen .panel.panel-flex.panel-block .panel-flex-fill-body {
+
+//   margin: 0;
+// }

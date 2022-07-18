@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( ownerPersonAliasId.HasValue )
             {
-                cpBackground.Value = "#BCBCBD";
+                cpBackground.Value = "#F4F5F7";
             }
             else
             {

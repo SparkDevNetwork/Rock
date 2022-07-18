@@ -39,7 +39,7 @@ namespace Rock.Jobs
 
     [ComponentField(
         "Rock.IpAddress.IpAddressLookupContainer, Rock",
-        Name = "IP Address GeoCoding Component",
+        Name = "IP Address Geocoding Component",
         Description = "The service that will perform the IP GeoCoding lookup for any new IPs that have not been GeoCoded. Not required to be set here because the job will use the first active component if one is not configured here.",
         IsRequired = false,
         Order = 0,
@@ -53,7 +53,7 @@ namespace Rock.Jobs
         Key = AttributeKey.LookbackMaximumInDays )]
     [IntegerField(
         "Max Records To Process Per Run",
-        Description = "The number of interaction session records to process on each run of this job.",
+        Description = "The number of unique IP addresses to process on each run of this job.",
         IsRequired = false,
         DefaultIntegerValue = 50000,
         Order = 2,
@@ -100,7 +100,7 @@ namespace Rock.Jobs
         /// </summary>
         private static class AttributeDefaultValue
         {
-            public const int CommandTimeout = 60 * 60;
+            public const int CommandTimeout = 3600; // one hour in seconds
         }
 
         #endregion Keys
@@ -329,6 +329,12 @@ namespace Rock.Jobs
                     // Get next batch of Interaction Sessions
                     var interactionSessions = GetInteractionSessions( rockContext, maxRecordsToReturn, lookBackStartDate, minSessionId );
 
+                    // If there are no more sessions to process then exit the loop
+                    if ( interactionSessions.Count() == 0 )
+                    {
+                        break;
+                    }
+
                     // Update the min session id for the next batch run. This ensures we don't process the same batch of sessions over and over in the loop
                     minSessionId = interactionSessions.Max( s => s.Id );
 
@@ -386,12 +392,6 @@ namespace Rock.Jobs
 
                     rockContext.SaveChanges();
 
-                    // If there are no more sessions to process then exit
-                    if ( interactionSessions.Count() == 0 )
-                    {
-                        break;
-                    }
-
                     // If we processed the max number we're allowed per run exit
                     if ( ipAddressSessionKeyValue.Count() >= numberOfRecordsToProcess )
                     {
@@ -408,7 +408,7 @@ namespace Rock.Jobs
                     _exceptions.Add( exceptionWrapper );
                     ExceptionLogService.LogException( exceptionWrapper, null );
 
-                    continue;
+                    break;
                 }
             }
 
@@ -504,8 +504,8 @@ namespace Rock.Jobs
                     _errors.Add( string.Format( @"IP Lookup Component failed with batch of {0} IP with error message {1}.", ipAddressSessionKeyValue.Count, errorMessage ) );
                 }
 
-                // Return the number of IP addresses that we found locations for
-                return lookupResults.Where( l => l.IsValid ).Count();
+                // Return the number sessions that we're updated
+                return ipAddressSessionKeyValue.Values.Sum( v => v.Count());
             }
             catch ( Exception ex )
             {

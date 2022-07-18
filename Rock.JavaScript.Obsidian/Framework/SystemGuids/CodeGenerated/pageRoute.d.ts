@@ -50,4 +50,6 @@ export const enum PageRoute {
     FinancialAccountSearch = "76A96F05-5B89-407B-A72E-5CB4FA64A11A",
     /** The system communication preview route 'Admin/Communications/System/Preview' */
     SystemCommunicationPreview = "AAC42941-8B2C-4F20-923D-E74146D2E103",
+    /** The Step Program Flow route 'steps/program/{ProgramId}/flow' */
+    StepFlow = "4F75872B-EBE0-43FA-A8F3-ED716B45A1A6",
 }

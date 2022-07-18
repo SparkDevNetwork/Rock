@@ -56,7 +56,7 @@ namespace Rock.Badge.Component
 
             int duration = GetAttributeValue( badge, "Duration" ).AsIntegerOrNull() ?? 16;
 
-            writer.Write( string.Format( "<div class='badge badge-weeksattendanceduration badge-id-{0}' data-toggle='tooltip' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration ) );
+            writer.Write( string.Format( "<div class='rockbadge rockbadge-fraction rockbadge-weeksattendanceduration rockbadge-id-{0}' data-toggle='tooltip' data-original-title='Family attendance for the last {1} weeks.'>", badge.Id, duration ) );
 
             writer.Write( "</div>" );
         }
@@ -77,12 +77,9 @@ namespace Rock.Badge.Component
                     url: Rock.settings.get('baseUrl') + 'api/Badges/WeeksAttendedInDuration/{1}/{0}' ,
                     statusCode: {{
                         200: function (data, status, xhr) {{
-                            var badgeHtml = '<div class=\'weeks-metric\'>';
-                                            
-                            badgeHtml += '<span class=\'weeks-attended\'>' + data + '</span><span class=\'week-duration\'>/{0}</span>';                
-                            badgeHtml += '</div>';
-                                            
-                            $('.badge-weeksattendanceduration.badge-id-{2}').html(badgeHtml);
+                            var badgeHtml = '<span class=\'metric-value\'>' + data + '</span><span class=\'metric-unit\'>/{0}</span>';
+
+                            $('.rockbadge-weeksattendanceduration.rockbadge-id-{2}').html(badgeHtml);
                         }}
                     }},
                 }});", duration, person.Id.ToString(), badge.Id );

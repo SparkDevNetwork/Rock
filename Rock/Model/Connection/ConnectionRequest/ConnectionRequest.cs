@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -148,6 +148,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ConnectorPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The connection type identifier.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int ConnectionTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the order.

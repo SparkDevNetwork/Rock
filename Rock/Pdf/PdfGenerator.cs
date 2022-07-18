@@ -363,8 +363,8 @@ namespace Rock.Pdf
         /// </summary>
         public void Dispose()
         {
-            _puppeteerPage.Dispose();
-            _puppeteerBrowser.Dispose();
+            _puppeteerPage?.Dispose();
+            _puppeteerBrowser?.Dispose();
         }
     }
 }

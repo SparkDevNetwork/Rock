@@ -25,7 +25,9 @@ import PersonPicker from "@Obsidian/Controls/personPicker";
 import CheckBox from "@Obsidian/Controls/checkBox";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox";
 import TextBox from "@Obsidian/Controls/textBox";
-import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";import { updateRefValue } from "@Obsidian/Utility/component";
+import UrlLinkBox from "@Obsidian/Controls/urlLinkBox";
+import { watchPropertyChanges } from "@Obsidian/Utility/block";
+import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
 import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -60,7 +62,8 @@ export default defineComponent({
     },
 
     emits: {
-        "update:modelValue": (_value: CampusBag) => true
+        "update:modelValue": (_value: CampusBag) => true,
+        "propertyChanged": (_value: string) => true
     },
 
     setup(props, { emit }) {
@@ -68,18 +71,33 @@ export default defineComponent({
 
         const attributes = ref(props.modelValue.attributes ?? {});
         const attributeValues = ref(props.modelValue.attributeValues ?? {});
-        const campusStatusValue = ref(props.modelValue.campusStatusValue ?? null);
-        const campusTypeValue = ref(props.modelValue.campusTypeValue ?? null);
-        const description = ref(props.modelValue.description ?? "");
-        const isActive = ref(props.modelValue.isActive ?? false);
-        const leaderPersonAlias = ref(props.modelValue.leaderPersonAlias ?? null);
-        const location = ref(props.modelValue.location ?? null);
-        const name = ref(props.modelValue.name ?? "");
-        const phoneNumber = ref(props.modelValue.phoneNumber ?? "");
-        const serviceTimes = ref((props.modelValue.serviceTimes ?? []).map((s): KeyValueItem => ({ key: s.value, value: s.text })));
-        const shortCode = ref(props.modelValue.shortCode ?? "");
-        const timeZoneId = ref(props.modelValue.timeZoneId ?? "");
-        const url = ref(props.modelValue.url ?? "");
+        const campusStatusValue = propertyRef(props.modelValue.campusStatusValue ?? null, "CampusStatusValueId");
+        const campusTypeValue = propertyRef(props.modelValue.campusTypeValue ?? null, "CampusTypeValueId");
+        const description = propertyRef(props.modelValue.description ?? "", "Description");
+        const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+        const leaderPersonAlias = propertyRef(props.modelValue.leaderPersonAlias ?? null, "LeaderPersonAliasId");
+        const location = propertyRef(props.modelValue.location ?? null, "LocationId");
+        const name = propertyRef(props.modelValue.name ?? "", "Name");
+        const phoneNumber = propertyRef(props.modelValue.phoneNumber ?? "", "PhoneNumber");
+        const serviceTimes = propertyRef((props.modelValue.serviceTimes ?? []).map((s): KeyValueItem => ({ key: s.value, value: s.text })), "ServiceTimes");
+        const shortCode = propertyRef(props.modelValue.shortCode ?? "", "ShortCode");
+        const timeZoneId = propertyRef(props.modelValue.timeZoneId ?? "", "TimeZoneId");
+        const url = propertyRef(props.modelValue.url ?? "", "Url");
+
+        // The properties that are being edited. This should only contain
+        // objects returned by propertyRef().
+        const propRefs = [campusStatusValue,
+            campusTypeValue,
+            description,
+            isActive,
+            leaderPersonAlias,
+            location,
+            name,
+            phoneNumber,
+            serviceTimes,
+            shortCode,
+            timeZoneId,
+            url];
 
         // #endregion
 
@@ -124,7 +142,7 @@ export default defineComponent({
 
         // Determines which values we want to track changes on (defined in the
         // array) and then emit a new object defined as newValue.
-        watch([attributeValues, campusStatusValue, campusTypeValue, description, isActive, leaderPersonAlias, location, name, phoneNumber, serviceTimes, shortCode, timeZoneId, url], () => {
+        watch([attributeValues, ...propRefs], () => {
             const newValue: CampusBag = {
                 ...props.modelValue,
                 attributeValues: attributeValues.value,
@@ -144,6 +162,8 @@ export default defineComponent({
 
             emit("update:modelValue", newValue);
         });
+
+        watchPropertyChanges(propRefs, emit);
 
         return {
             attributes,

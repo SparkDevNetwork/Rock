@@ -88,6 +88,7 @@ namespace Rock.Model
             var viewModel = new BenevolenceTypeBag
             {
                 IdKey = model.IdKey,
+                AdditionalSettingsJson = model.AdditionalSettingsJson,
                 Description = model.Description,
                 IsActive = model.IsActive,
                 Name = model.Name,
@@ -162,6 +163,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this BenevolenceType target, BenevolenceType source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

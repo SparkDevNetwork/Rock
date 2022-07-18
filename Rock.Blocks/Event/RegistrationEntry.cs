@@ -127,6 +127,7 @@ namespace Rock.Blocks.Event
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
     public class RegistrationEntry : RockObsidianBlockType
     {
         #region Keys
@@ -455,7 +456,8 @@ namespace Rock.Blocks.Event
                 var registrarFamily = registrar?.GetFamily( rockContext );
 
                 // Process the Person so we have data for the Lava merge.
-                var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamily?.Guid ?? Guid.Empty, rockContext );
+                bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
+                var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamily?.Guid ?? Guid.Empty, isCreatedAsRegistrant, rockContext );
                 var (campusId, location, _) = UpdatePersonFromRegistrant( person, registrantInfo, new History.HistoryChangeList(), context.RegistrationSettings );
 
                 if ( person.Attributes == null )
@@ -659,6 +661,22 @@ namespace Rock.Blocks.Event
                     registrar = currentPerson;
                     context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
                 }
+                else if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant )
+                {
+                    var registrantInfo = args.Registrants.FirstOrDefault();
+
+                    var firstName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
+                    var lastName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
+                    var email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
+                    var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime();
+                    var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+                    bool forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+                    var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+
+                    registrar = new PersonService( rockContext ).FindPerson( personQuery, forceEmailUpdate );
+                    context.Registration.PersonAliasId = registrar?.PrimaryAliasId;
+                }
             }
             else
             {
@@ -820,6 +838,20 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            var registrationSlug = PageParameter( PageParameterKey.Slug );
+            var linkage = GetRegistrationLinkage( registrationSlug, rockContext );
+
+            if ( linkage?.CampusId.HasValue == true )
+            {
+                campusId = linkage.CampusId;
+            }
+
+            if ( campusId.HasValue )
+            {
+                context.Registration.CampusId = campusId;
+                History.EvaluateChange( registrationChanges, "Campus", string.Empty, linkage.Campus.Name );
+            }
+
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
             context.Registration.IsTemporary = false;
 
@@ -855,6 +887,7 @@ namespace Rock.Blocks.Event
                 foreach ( var registrantInfo in args.Registrants )
                 {
                     var forceWaitlist = context.SpotsRemaining < 1;
+                    bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
                     UpsertRegistrant(
                         rockContext,
@@ -866,6 +899,7 @@ namespace Rock.Blocks.Event
                         multipleFamilyGroupIds,
                         ref singleFamilyId,
                         forceWaitlist,
+                        isCreatedAsRegistrant,
                         isNewRegistration,
                         postSaveActions );
 
@@ -1022,6 +1056,32 @@ namespace Rock.Blocks.Event
             }
 
             return groupId;
+        }
+
+        /// <summary>
+        /// Gets the registration linkage.
+        /// </summary>
+        /// <param name="slug">The slug.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private EventItemOccurrenceGroupMap GetRegistrationLinkage( string slug, RockContext rockContext )
+        {
+            var dateTime = RockDateTime.Now;
+
+            var linkage = new EventItemOccurrenceGroupMapService( rockContext ?? new RockContext() )
+                .Queryable().AsNoTracking()
+                .Include( m => m.Campus )
+                .Where( l =>
+                    l.UrlSlug == slug &&
+                    l.RegistrationInstance != null &&
+                    l.RegistrationInstance.IsActive &&
+                    l.RegistrationInstance.RegistrationTemplate != null &&
+                    l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                    ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                    ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                .FirstOrDefault();
+
+            return linkage;
         }
 
         /// <summary>
@@ -1492,9 +1552,10 @@ namespace Rock.Blocks.Event
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="registrar">The registrar person that is performing the registering.</param>
         /// <param name="registrarFamilyGuid">The registrar family unique identifier.</param>
+        /// <param name="isCreatedAsRegistrant">if set to <c>true</c> [is created as registrant].</param>
         /// <param name="rockContext">The rock context for any database lookups.</param>
-        /// <returns>A tuple that contains the <see cref="Person"/> object and the optional <see cref="RegistrationRegistrant"/> object.</returns>
-        private (Person person, RegistrationRegistrant registrant) GetExistingOrCreatePerson( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, Person registrar, Guid registrarFamilyGuid, RockContext rockContext )
+        /// <returns>A tuple that contains the <see cref="Person" /> object and the optional <see cref="RegistrationRegistrant" /> object.</returns>
+        private (Person person, RegistrationRegistrant registrant) GetExistingOrCreatePerson( RegistrationContext context, ViewModels.Blocks.Event.RegistrationEntry.RegistrantInfo registrantInfo, Person registrar, Guid registrarFamilyGuid, bool isCreatedAsRegistrant, RockContext rockContext )
         {
             RegistrationRegistrant registrant = null;
             Person person = null;
@@ -1577,26 +1638,45 @@ namespace Rock.Blocks.Event
 
             if ( person == null )
             {
-                var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
-                var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
-
-                // If a match was not found, create a new person
-                person = new Person();
-                person.FirstName = firstName;
-                person.LastName = lastName;
-                person.IsEmailActive = true;
-                person.Email = email;
-                person.EmailPreference = EmailPreference.EmailAllowed;
-                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-
-                if ( dvcConnectionStatus != null )
+                /**
+                  * 06/07/2022 - KA
+                  * 
+                  * Logic is as follows. If the Template RegistrarOption was set to UseFirstRegistrant
+                  * then chances are a Person was created or found for the first Registrant and used
+                  * as the Registrar. In that case then we don't create a new Person for the first
+                  * Registrant. Otherwise we go ahead and create a new Person. This is of Particular
+                  * importance when the AccountProtectionProfilesForDuplicateDetectionToIgnore includes
+                  * AccountProtectionProfile.Low. That means the PersonMatch query will return a null
+                  * any time it is called. This prevents us from creating duplicate Person entities for
+                  * both the Registrar and first Registrant who are the same person in this scenario.
+                */
+                if ( isCreatedAsRegistrant )
                 {
-                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    person = registrar;
                 }
-
-                if ( dvcRecordStatus != null )
+                else
                 {
-                    person.RecordStatusValueId = dvcRecordStatus.Id;
+                    var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+                    var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
+
+                    // If a match was not found, create a new person
+                    person = new Person();
+                    person.FirstName = firstName;
+                    person.LastName = lastName;
+                    person.IsEmailActive = true;
+                    person.Email = email;
+                    person.EmailPreference = EmailPreference.EmailAllowed;
+                    person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
+                    if ( dvcConnectionStatus != null )
+                    {
+                        person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    }
+
+                    if ( dvcRecordStatus != null )
+                    {
+                        person.RecordStatusValueId = dvcRecordStatus.Id;
+                    }
                 }
             }
 
@@ -1810,6 +1890,7 @@ namespace Rock.Blocks.Event
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
         /// <param name="isWaitlist">if set to <c>true</c> then registrant is on the wait list.</param>
+        /// <param name="isCreatedAsRegistrant">if set to <c>true</c> [is created as registrant].</param>
         /// <param name="isNewRegistration"><c>true</c> if the registration is new; otherwise <c>false</c>.</param>
         /// <param name="postSaveActions">Additional post save actions that can be appended to.</param>
         private void UpsertRegistrant(
@@ -1822,6 +1903,7 @@ namespace Rock.Blocks.Event
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
             bool isWaitlist,
+            bool isCreatedAsRegistrant,
             bool isNewRegistration,
             List<Action> postSaveActions )
         {
@@ -1835,7 +1917,7 @@ namespace Rock.Blocks.Event
             var registrantChanges = new History.HistoryChangeList();
             var personChanges = new History.HistoryChangeList();
 
-            var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamilyGuid, rockContext );
+            var (person, registrant) = GetExistingOrCreatePerson( context, registrantInfo, registrar, registrarFamilyGuid, isCreatedAsRegistrant, rockContext );
 
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             var adultRoleId = familyGroupType.Roles

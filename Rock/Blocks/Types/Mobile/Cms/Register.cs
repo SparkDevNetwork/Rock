@@ -330,7 +330,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     // to work with then create a new account. We need at least an
                     // e-mail address so we can send the confirmation e-mail.
                     person = CreatePerson( account, rockContext );
-                    userLogin = CreateUser( person, account, true, rockContext );
+
+                    var isConfirmed = GetAttributeValue( AttributeKeys.ConfirmationWebPage ).IsNullOrWhiteSpace();
+                    userLogin = CreateUser( person, account, isConfirmed, rockContext );
                 }
                 else
                 {

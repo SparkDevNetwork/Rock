@@ -29,6 +29,7 @@ namespace Rock.Lava
             this.GetPageContext = true;
             this.GetPageParameters = true;
             this.GetCurrentPerson = true;
+            this.GetCurrentVisitor = true;
             this.GetCampuses = true;
             this.GetDeviceFamily = false;
             this.GetOSFamily = false;
@@ -51,6 +52,7 @@ namespace Rock.Lava
                     GetPageContext = false,
                     GetPageParameters = false,
                     GetCurrentPerson = false,
+                    GetCurrentVisitor = false,
                     GetCampuses = false,
                     GetDeviceFamily = false,
                     GetOSFamily = false,
@@ -83,6 +85,12 @@ namespace Rock.Lava
         ///   <c>true</c> if [get current person]; otherwise, <c>false</c>.
         /// </value>
         public bool GetCurrentPerson { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [get current visitor]. Defaults to True;
+        /// </summary>
+        /// <value><c>true</c> if [get current visitor]; otherwise, <c>false</c>.</value>
+        public bool GetCurrentVisitor { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [get campuses]. Defaults to True

@@ -272,6 +272,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring PersonalizedEntity,EntityTypeId
+
             if ( new Service<RelatedEntity>( Context ).Queryable().Any( a => a.SourceEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, RelatedEntity.FriendlyTypeName );

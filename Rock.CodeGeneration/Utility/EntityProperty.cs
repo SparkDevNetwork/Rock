@@ -47,7 +47,7 @@ namespace Rock.CodeGeneration.Utility
         /// Gets the property information.
         /// </summary>
         /// <value>The property information.</value>
-        protected PropertyInfo PropertyInfo { get; }
+        public PropertyInfo PropertyInfo { get; }
 
         /// <summary>
         /// Gets the type of the property.

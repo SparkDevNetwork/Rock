@@ -156,17 +156,15 @@ namespace Rock.Badge.Component
             if ( isCondensed )
             {
                 return
-$@"<div class=""badge"">
-    <div class=""badge-grid"" data-html=""true"" data-original-title=""<p>Loading...</p>"" data-tooltip-key=""{domElementKey}"">
-        <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
-        <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
-    </div>
+$@"<div class=""rockbadge rockbadge-grid"" data-html=""true"" data-original-title=""<p>Loading...</p>"" data-tooltip-key=""{domElementKey}"">
+    <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
+    <div class=""badge-row"" data-placeholder-key=""{domElementKey}""></div>
 </div>";
             }
             else
             {
                 return
-$@"<div class=""badge"" data-placeholder-key=""{domElementKey}""></div>";
+$@"<div class=""rockbadge"" data-placeholder-key=""{domElementKey}""></div>";
             }
         }
 
@@ -202,7 +200,7 @@ $@"$.ajax({{
                     var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
                     var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
 
-                    html.push('<div class=""badge"">');
+                    html.push('<div class=""rockbadge"">');
                     html.push('    <span class=""fa-stack"">');
                     html.push('        <i style=""color: ' + color + ';"" class=""fa fa-circle fa-stack-2x""></i>');
                     html.push('        <i class=""fa ' + iconClass + ' fa-stack-1x""></i>');
@@ -245,11 +243,11 @@ $@"$.ajax({{
                     var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
                     var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
 
-                    html.push('<div class=""badge badge-step"" data-tooltip-key=""{domElementKey}"" style=""color:' + color + '"" data-toggle=""tooltip"" data-original-title=""' + stepTypeData.StepTypeName + '"">');
+                    html.push('<div class=""rockbadge rockbadge-icon rockbadge-step"" data-tooltip-key=""{domElementKey}"" style=""color:' + color + '"" data-toggle=""tooltip"" data-original-title=""' + stepTypeData.StepTypeName + '"">');
                     html.push('    <i class=""badge-icon ' + iconClass + '""></i>');
 
                     if (stepTypeData.CompletionCount > 1 && stepTypeData.ShowCountOnBadge) {{
-                        html.push('    <span class=""badge-count"">' + stepTypeData.CompletionCount + '</span>');
+                        html.push('    <span class=""metric-value"">' + stepTypeData.CompletionCount + '</span>');
                     }}
 
                     html.push('</div>\n');

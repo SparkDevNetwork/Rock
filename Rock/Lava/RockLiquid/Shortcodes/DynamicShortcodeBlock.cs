@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -35,13 +36,9 @@ namespace Rock.Lava.Shortcodes
     /// </summary>
     public class DynamicShortcodeBlock : RockLavaShortcodeBlockBase
     {
-        private static readonly Regex Syntax = new Regex( @"(\w+)" );
-
         string _markup = string.Empty;
         string _tagName = string.Empty;
-        LavaShortcodeCache _shortcode;
-        Dictionary<string,object> _internalMergeFields;
-        string _enabledSecurityCommands = "";
+        int _shortcodeId;
 
         StringBuilder _blockMarkup = new StringBuilder();
 
@@ -55,7 +52,7 @@ namespace Rock.Lava.Shortcodes
             // get all the block dynamic shortcodes and register them
             var blockShortCodes = LavaShortcodeCache.All().Where( s => s.TagType == TagType.Block );
 
-            foreach(var shortcode in blockShortCodes )
+            foreach ( var shortcode in blockShortCodes )
             {
                 // register this shortcode
                 Template.RegisterShortcode<DynamicShortcodeBlock>( shortcode.TagName );
@@ -73,7 +70,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
-            _shortcode = LavaShortcodeCache.All().Where( c => c.TagName == tagName ).FirstOrDefault();
+            _shortcodeId = LavaShortcodeCache.All().Where( c => c.TagName == tagName ).FirstOrDefault()?.Id ?? 9;
 
             base.Initialize( tagName, markup, tokens );
         }
@@ -118,7 +115,7 @@ namespace Rock.Lava.Shortcodes
 
                     if ( endTagMatch.Success )
                     {
-                        if (childTags > 0 )
+                        if ( childTags > 0 )
                         {
                             childTags--; // decrement the child tag counter
                             _blockMarkup.Append( token );
@@ -150,16 +147,18 @@ namespace Rock.Lava.Shortcodes
         public override void Render( Context context, TextWriter result )
         {
             // get enabled security commands
+            string enabledSecurityCommands = string.Empty;
             if ( context.Registers.ContainsKey( "EnabledCommands" ) )
             {
-                _enabledSecurityCommands = context.Registers["EnabledCommands"].ToString();
+                enabledSecurityCommands = context.Registers["EnabledCommands"].ToString();
             }
 
-            var shortcode = LavaShortcodeCache.Get( _shortcode.Id );
+            var shortcode = LavaShortcodeCache.Get( _shortcodeId );
 
             if ( shortcode != null )
             {
-                var parms = ParseMarkup( _markup, context );
+                ReadOnlyDictionary<string, object> internalMergeFields;
+                var parms = ParseMarkup( _markup, context, shortcode, out internalMergeFields );
 
                 // add a unique id so shortcodes have easy access to one
                 parms.AddOrReplace( "uniqueid", "id-" + Guid.NewGuid().ToString() );
@@ -170,7 +169,7 @@ namespace Rock.Lava.Shortcodes
                 {
                     currentRecurrsionDepth = parms["RecursionDepth"].ToString().AsInteger() + 1;
 
-                    if (currentRecurrsionDepth > _maxRecursionDepth )
+                    if ( currentRecurrsionDepth > _maxRecursionDepth )
                     {
                         result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
                         return;
@@ -179,12 +178,12 @@ namespace Rock.Lava.Shortcodes
                 parms.AddOrReplace( "RecursionDepth", currentRecurrsionDepth );
 
                 var lavaTemplate = shortcode.Markup;
-                var blockMarkup = _blockMarkup.ToString().ResolveMergeFields( _internalMergeFields, _enabledSecurityCommands );
+                var blockMarkup = _blockMarkup.ToString().ResolveMergeFields( internalMergeFields, enabledSecurityCommands );
 
                 // pull child parameters from block content
                 Dictionary<string, object> childParamters;
                 blockMarkup = GetChildParameters( blockMarkup, out childParamters );
-                foreach(var item in childParamters )
+                foreach ( var item in childParamters )
                 {
                     parms.AddOrReplace( item.Key, item.Value );
                 }
@@ -209,9 +208,9 @@ namespace Rock.Lava.Shortcodes
                 // next ensure they did not use any entity commands in the block that are not allowed
                 // this is needed as the shortcode it configured to allow entities for processing that
                 // might allow more entities than the source block, template, action, etc allows
-                var securityCheck = blockMarkup.ResolveMergeFields(new Dictionary<string, object>(), _enabledSecurityCommands);
+                var securityCheck = blockMarkup.ResolveMergeFields( new Dictionary<string, object>(), enabledSecurityCommands );
 
-                Regex securityPattern = new Regex( String.Format(RockLavaBlockBase.NotAuthorizedMessage, ".*" ) );
+                Regex securityPattern = new Regex( String.Format( RockLavaBlockBase.NotAuthorizedMessage, ".*" ) );
                 Match securityMatch = securityPattern.Match( securityCheck );
 
                 if ( securityMatch.Success )
@@ -222,10 +221,10 @@ namespace Rock.Lava.Shortcodes
                 {
                     if ( shortcode.EnabledLavaCommands.IsNotNullOrWhiteSpace() )
                     {
-                        _enabledSecurityCommands = shortcode.EnabledLavaCommands;
+                        enabledSecurityCommands = shortcode.EnabledLavaCommands;
                     }
 
-                    var results = lavaTemplate.ResolveMergeFields( parms, _enabledSecurityCommands );
+                    var results = lavaTemplate.ResolveMergeFields( parms, enabledSecurityCommands );
                     result.Write( results.Trim() );
                     base.Render( context, result );
                 }
@@ -242,7 +241,7 @@ namespace Rock.Lava.Shortcodes
         /// <param name="blockContent">Content of the block.</param>
         /// <param name="childParameters">The child parameters.</param>
         /// <returns></returns>
-        private string GetChildParameters(string blockContent, out Dictionary<string, object> childParameters )
+        private string GetChildParameters( string blockContent, out Dictionary<string, object> childParameters )
         {
             childParameters = new Dictionary<string, object>();
 
@@ -301,9 +300,9 @@ namespace Rock.Lava.Shortcodes
                             }
 
                             // add new parm to a collection of parms and as a single parm id none exist
-                            if ( childParameters.ContainsKey(parmName + "s") )
+                            if ( childParameters.ContainsKey( parmName + "s" ) )
                             {
-                                var parmList = (List<object>)childParameters[parmName + "s"];
+                                var parmList = ( List<object> ) childParameters[parmName + "s"];
                                 parmList.Add( dynamicParm );
                             }
                             else
@@ -350,15 +349,18 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private Dictionary<string, object> ParseMarkup( string markup, Context context )
+        /// <param name="shortcode">The shortcode.</param>
+        /// <param name="internalMergeFields">The internal merge fields.</param>
+        /// <returns><br /></returns>
+        private Dictionary<string, object> ParseMarkup( string markup, Context context, LavaShortcodeCache shortcode, out ReadOnlyDictionary<string, object> internalMergeFields )
         {
             var parms = new Dictionary<string, object>();
 
-            LoadBlockMergeFields( context, parms );
+            // Populate 'out internalMergeFields' variable
+            internalMergeFields = GetBlockMergeFields( context, parms );
 
             // create all the parameters from the shortcode with their default values
-            var shortcodeParms = RockSerializableDictionary.FromUriEncodedString( _shortcode.Parameters );
+            var shortcodeParms = RockSerializableDictionary.FromUriEncodedString( shortcode.Parameters );
 
             foreach ( var shortcodeParm in shortcodeParms.Dictionary )
             {
@@ -366,7 +368,7 @@ namespace Rock.Lava.Shortcodes
             }
 
             // first run lava across the inputted markup
-            var resolvedMarkup = markup.ResolveMergeFields( _internalMergeFields );
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
@@ -413,20 +415,20 @@ namespace Rock.Lava.Shortcodes
         }
 
         /// <summary>
-        /// Loads the block merge fields.
+        /// Gets the block merge fields.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="parms">The parms.</param>
-        private void LoadBlockMergeFields( Context context, Dictionary<string, object> parms )
+        private ReadOnlyDictionary<string, object> GetBlockMergeFields( Context context, Dictionary<string, object> parms )
         {
-            _internalMergeFields = new Dictionary<string, object>();
+            var internalMergeFields = new Dictionary<string, object>();
 
             // get variables defined in the lava source
             foreach ( var scope in context.Scopes )
             {
                 foreach ( var item in scope )
                 {
-                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
                     //parms.AddOrReplace( item.Key, item.Value );
                 }
             }
@@ -436,10 +438,12 @@ namespace Rock.Lava.Shortcodes
             {
                 foreach ( var item in context.Environments[0] )
                 {
-                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
                     parms.AddOrReplace( item.Key, item.Value );
                 }
             }
+
+            return new ReadOnlyDictionary<string, object>( internalMergeFields );
         }
     }
 }

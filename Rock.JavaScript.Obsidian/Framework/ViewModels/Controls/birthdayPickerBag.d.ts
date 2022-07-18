@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** Address Control View Model */
+/** Birthday Picker View Model */
 export type BirthdayPickerBag = {
     /** Gets or sets the year. */
     year: number;

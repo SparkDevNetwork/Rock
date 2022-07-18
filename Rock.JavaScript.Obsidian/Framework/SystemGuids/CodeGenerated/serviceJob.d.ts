@@ -25,34 +25,6 @@
 export const enum ServiceJob {
     /** Gets the Job Pulse guid */
     JobPulse = "CB24FF2A-5AD3-4976-883F-DAF4EFC1D7C7",
-    /** The Job for migrating pre-v8.0 attendance records to occurrence records */
-    MigrateAttendanceOccurrence = "98A2DCA5-5E2E-482A-A7CA-15DAD5B4EA65",
-    /** The Job for migrating family check-in identifiers to person alternate ids */
-    MigrateFamilyCheckinIds = "E782C667-EF07-4AD2-86B7-01C1935AAF5B",
-    /** The Job to run Post v8.0 Data Migrations */
-    DataMigrations80 = "AF760EF9-66BD-4A4D-AF95-749AA789ACAA",
-    /** The Job to run Post v8.4 Data Migrations */
-    DataMigrations84 = "79FBDA04-ADFD-40D4-824F-E07D660F7858",
-    /** The Job to run Post v7.4 Data Migrations */
-    DataMigrations74 = "FF760EF9-66BD-4A4D-AF95-749AA789ACAF",
-    /** The Job to run Post v9 Data Migrations for DISC data */
-    DataMigrations90Disc = "A839DFEC-B1A3-499C-9BB3-03241E8E5305",
-    /** The Job to run Post v10.0 Data Migrations for AttributeValue.ValueAsNumeric */
-    DataMigrations100AttributevalueValueasnumeric = "0A7573C9-D977-4A7E-BDD6-66DD36CBF6F3",
-    /** The Job to run Post v10.0 Data Migrations for SundayDate */
-    DataMigrations100Sundaydate = "CC263453-B290-4393-BB91-1C1C87CAE291",
-    /** The Job to run Post v9 Data Migrations to convert Scheduled Transaction Notes to History */
-    DataMigrations90Scheduledtransactionnotestohistory = "6707AA98-7CF8-4258-A75A-0881CD68B0D9",
-    /** The Job to run Post v9 Data Migrations */
-    DataMigrations90 = "3F279016-C7D1-490F-835D-8FFE6D943A32",
-    /** The Job to run Post v10.3 Data Migrations for Spiritual Gifts Assessment updates */
-    DataMigrations103SpiritualGifts = "B16F889F-3349-4CA9-976D-7EF098DD8BC6",
-    /** The Job to run Post v11 Data Migrations to update Date Keys on several tables */
-    DataMigrations110PopulateDateKeys = "E56FD4FC-02F8-4A46-A91D-E86C2B635870",
-    /** The job to run Post V11 to create an index on Rock.Model.CommunicationRecipient.ResponseCode */
-    DataMigrations110CommunicationrecipientResponsecodeIndex = "131F9418-777B-4A34-A19B-EB9A65893602",
-    /** The Job to run Post v11 Data Migrations to update Related DataView Id in DataView Filter table. */
-    DataMigrations110PopulateRelatedDataviewId = "C3882742-714B-4E82-8894-4B944142CDC7",
     /** The Job to run Post v12 to update interaction indexes. */
     DataMigrations120UpdateInteractionIndexes = "090CB437-F74B-49B0-8B51-BF2A491DD36D",
     /** The data migrations 120 add communication recipient index */
@@ -75,12 +47,8 @@ export const enum ServiceJob {
     DataMigrations133AddInteractionSessionInteractionSessionLocationIdIndex = "219BF98C-C10C-4B19-86DB-C69D9B8705FC",
     /** The Job to run Post v14.0 Data Migrations for Add missing Media Element interactions */
     DataMigrations140AddMissingMediaElementInteractions = "3E6817DA-CEE0-42F8-A30E-FF787719493C",
-    /** The Job to Migrate pre-v8.0 History Summary Data */
-    MigrateHistorySummaryData = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14",
-    /** The Job to Migrate pre-v7.0 PageViews and Communication Recipient Activity to Interactions */
-    MigrateInteractionsData = "189AE3F1-92E9-4394-ACC5-0F244967F32E",
-    /** The job to migrate pre-v7.0 Communication Medium data from JSON to regular fields */
-    MigrateCommunicationMediumData = "E7C54AAB-451E-4E89-8083-CF398D37416E",
+    /** The Job to run Post v14.0 Data Migrations to update current sessions */
+    DataMigrations140UpdateCurrentSessions = "53A6804F-5895-4E19-907D-916B5CF175AB",
     /** The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields. */
     DataMigrations124DecryptFinancialPaymentDetails = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12",
     /** The Job to get NCOA */
@@ -108,4 +76,6 @@ export const enum ServiceJob {
     SyncMedia = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
     /** The Process Elevated Security Job. Rock.Jobs.ProcessElevatedSecurity */
     ProcessElevatedSecurity = "A1AF9D7D-E968-4AF6-B203-6BB4FD625714",
+    /** The Rock.Jobs.UpdatePersonalizationData job. */
+    UpdatePersonalizationData = "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
 }

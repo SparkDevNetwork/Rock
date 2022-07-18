@@ -99,6 +99,7 @@ namespace Rock.Model
                 ContentChannelTypeId = model.ContentChannelTypeId,
                 ContentControlType = ( int ) model.ContentControlType,
                 Description = model.Description,
+                EnablePersonalization = model.EnablePersonalization,
                 EnableRss = model.EnableRss,
                 IconCssClass = model.IconCssClass,
                 IsIndexEnabled = model.IsIndexEnabled,
@@ -186,6 +187,7 @@ namespace Rock.Model
             target.ContentChannelTypeId = source.ContentChannelTypeId;
             target.ContentControlType = source.ContentControlType;
             target.Description = source.Description;
+            target.EnablePersonalization = source.EnablePersonalization;
             target.EnableRss = source.EnableRss;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

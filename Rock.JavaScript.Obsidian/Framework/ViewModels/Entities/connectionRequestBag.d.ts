@@ -52,6 +52,9 @@ export type ConnectionRequestBag = {
     /** Gets or sets the Rock.Model.ConnectionStatus identifier. */
     connectionStatusId: number;
 
+    /** Gets or sets the Rock.Model.ConnectionType identifier. */
+    connectionTypeId: number;
+
     /** Gets or sets the connector Rock.Model.PersonAlias identifier. */
     connectorPersonAliasId?: number | null;
 

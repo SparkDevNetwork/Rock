@@ -5,6 +5,7 @@
 /* stylelint-enable */
 
 @enable-global-custom-controls: false;
+@enable-legacy-badges: false;
 
 @black: #000000;
 @white: #ffffff;
@@ -87,6 +88,8 @@
 @header-hambuger-color:             #fff; // The text color of the header minimizer.
 @header-hambuger-bg:                @brand-primary; // The background color of the header minimizer.
 @header-hamburger-border:           @brand-primary; // The border color of the header minimizer.
+
+@font-size-sm:                      @font-size-small;
 
 //// Main Navigation
 
@@ -411,9 +414,11 @@
 
 // Smart Search
 @smartsearch-bg:                          rgba(255, 255, 255, .1);
+@smartsearch-focus-bg:                    rgba(255, 255, 255, .12);
 @smartsearch-border-color:                #2c2c2c;
 @smartsearch-box-shadow:                  0 1px 2px rgba(0, 0, 0, .1) inset, 0 1px 0 rgba(255, 255, 255, .15);
 @smartsearch-input-text-color:            @header-text-color;
+@smartsearch-input-padding:               4px 4px 4px 25px;
 @smartsearch-input-selection-background:  #2e2e2e;
 @smartsearch-input-selection-text-color:  #fff;
 @smartsearch-text-color:                  @header-text-color;

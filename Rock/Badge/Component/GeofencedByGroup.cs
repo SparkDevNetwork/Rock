@@ -60,7 +60,7 @@ namespace Rock.Badge.Component
             if ( !badgeColor.IsNullOrWhiteSpace() )
             {
                 writer.Write( string.Format(
-                    "<span class='label badge-geofencing-group badge-id-{0}' style='background-color:{1};display:none' ></span>",
+                    "<span class='label badge-geofencing-group rockbadge-id-{0}' style='background-color:{1};display:none' ></span>",
                     badge.Id, badgeColor.EscapeQuotes() ) );
             }
         }
@@ -81,11 +81,11 @@ $.ajax({{
     url: Rock.settings.get('baseUrl') + 'api/Badges/GeofencingGroups/{0}/{1}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
-            var $badge = $('.badge-geofencing-group.badge-id-{2}');
+            var $badge = $('.rockbadge-geofencing-group.rockbadge-id-{2}');
             var badgeHtml = '';
 
             $.each(data, function() {{
-                if ( badgeHtml != '' ) {{ 
+                if ( badgeHtml != '' ) {{
                     badgeHtml += ' | ';
                 }}
                 badgeHtml += '<span title=""' + this.LeaderNames + '"" data-toggle=""tooltip"">' + this.GroupName + '</span>';

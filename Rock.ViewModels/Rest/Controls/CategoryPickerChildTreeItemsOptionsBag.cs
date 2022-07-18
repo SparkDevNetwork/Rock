@@ -98,6 +98,23 @@ namespace Rock.ViewModels.Rest.Controls
         public bool IncludeInactiveItems { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the item property to use for comparison
+        /// with <see cref="ItemFilterPropertyValue"/>. When set the item query
+        /// will attempt to filter on this property name. If it does not exist
+        /// then an exception will be thrown.
+        /// </summary>
+        /// <value>The name of the item property to use for custom filtering.</value>
+        public string ItemFilterPropertyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item property value to compare against. This should
+        /// be either an integer-string, Guid-string or plain string for
+        /// comparison. And must match the database property type.
+        /// </summary>
+        /// <value>The item property value to compare against.</value>
+        public string ItemFilterPropertyValue { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether child categories and items
         /// are loaded automatically. If <c>true</c> then all descendant categories
         /// will be loaded along with the items if <see cref="GetCategorizedItems"/>

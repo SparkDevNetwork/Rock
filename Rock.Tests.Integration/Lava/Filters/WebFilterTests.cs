@@ -14,10 +14,13 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Web;
+using System.Web.Http;
+using System.Web.Routing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava.DotLiquid;
@@ -27,6 +30,8 @@ using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Utility;
 using Rock.Utility.Settings;
+using Rock.Web;
+using Rock.Web.UI;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -36,6 +41,12 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class WebSiteFilterTests : LavaIntegrationTestBase
     {
+        [TestInitialize]
+        public void Class_Initialize()
+        {
+            Rock.Web.RockRouteHandler.ReregisterRoutes();
+        }
+
         #region AddResponseHeader
 
         [TestMethod]
@@ -531,11 +542,12 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         [TestMethod]
         public void PageRoute_ForPageNumber_EmitsUrl()
         {
+            var pageId = GetPageIdFromRouteName( "Admin" );
             var simulator = new Http.TestLibrary.HttpSimulator();
 
             using ( simulator.SimulateRequest() )
             {
-                TestHelper.AssertTemplateOutput( "/page/12", "{{ 12 | PageRoute }}" );
+                TestHelper.AssertTemplateOutput( "/Admin", "{{ " + pageId + " | PageRoute }}" );
             }
         }
 
@@ -548,6 +560,153 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
             {
                 TestHelper.AssertTemplateOutput( "/page/12?PersonID=10&GroupId=20", "{{ '12' | PageRoute:'PersonID=10^GroupId=20' }}" );
             }
+        }
+
+        #endregion
+
+        #region SetUrlParameter
+
+        [TestMethod]
+        public void SetUrlParameter_ModifyRockSiteUrlRoutePageParameterToNewRoute_RendersUrlWithUpdatedPageRoute()
+        {
+            // If the new page reference has a specific route, it should be returned in preference
+            // to the default "/page/{pageId}" route.
+            var pageId = GetPageIdFromRouteName( "Login" );
+
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/page/19",
+                "PageId",
+                pageId.ToString(),
+                "relative",
+                "/Login" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_AddRockSiteUrlQueryParameter_RendersUrlWithNewParameter()
+        {
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/reporting/reports/2",
+                "ResultLimit",
+                "50",
+                "relative",
+                "/reporting/reports/2?ResultLimit=50" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_ModifyRockSiteUrlRouteParameter_RendersUrlWithUpdatedRoute()
+        {
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/reporting/reports/2?Param1=1&Param2=2",
+                "ReportId",
+                "9",
+                "relative",
+                "/reporting/reports/9?Param1=1&Param2=2" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_SetRockSiteUrlRouteParameterToEmpty_RendersUrlWithParameterRemoved()
+        {
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/reporting/reports/2?Param1=1&Param2=2",
+                "ReportId",
+                string.Empty,
+                "relative",
+                "/reporting/reports?Param1=1&Param2=2" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_AddRockSiteUrlRouteParameter_RendersUrlWithUpdatedRoute()
+        {
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/reporting/reports?Param1=1&Param2=2",
+                "ReportId",
+                "9",
+                "relative",
+                "/reporting/reports/9?Param1=1&Param2=2" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_ModifyRockSiteUrlToAlternateRoute_RendersUrlWithUpdatedRoute()
+        {
+            var newPageId = GetPageIdFromRouteName( "person/{PersonId}/contributions" );
+
+            // Change PageId from "person/{PersonId}/groups" (Page 175)
+            // to "person/{PersonId}/contributions" (Page 177).
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/person/1/groups",
+                "PageId",
+                newPageId.ToString(),
+                "relative",
+                "/person/1/contributions" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_WithUrlTypeOption_RendersUrlOfSpecifiedType()
+        {
+            // URL Format: Full
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/reporting/reports?ReportId=1",
+                "ReportId",
+                "9",
+                "full",
+                "http://prealpha.rocksolidchurchdemo.com/reporting/reports/9" );
+            // URL Format: Relative
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/reporting/reports?ReportId=1",
+                "ReportId",
+                "9",
+                "relative",
+                "/reporting/reports/9" );
+            // URL Format: Unspecified
+            SetUrlParameterRenderTemplateAssert( "http://prealpha.rocksolidchurchdemo.com/reporting/reports?ReportId=1",
+                "ReportId",
+                "9",
+                string.Empty,
+                "http://prealpha.rocksolidchurchdemo.com/reporting/reports/9" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_ModifyExternalSiteUrlQueryParameter_RendersUrlWithUpdatedQueryParameter()
+        {
+            SetUrlParameterRenderTemplateAssert( "https://www.biblegateway.com/passage/?search=john%203%3A16&version=KJV",
+                "version",
+                "NIV",
+                "full",
+                "https://www.biblegateway.com/passage/?search=john%203:16&version=NIV" );
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_WithCurrentInputString_RendersCurrentUrl()
+        {
+            var inputUrl = "http://www.mysite.com/?Param1=1";
+            var simulator = new Http.TestLibrary.HttpSimulator();
+            using ( simulator.SimulateRequest( new Uri( inputUrl ) ) )
+            {
+                TestHelper.AssertTemplateOutput( "http://www.mysite.com/?Param1=2",
+                    "{{ 'current' | SetUrlParameter:'Param1','2','full' }}" );
+            }
+        }
+
+        [TestMethod]
+        public void SetUrlParameter_WithInvalidInputString_RendersInputUnchanged()
+        {
+            TestHelper.AssertTemplateOutput( "this_is_not_a_url!",
+                "{{ 'this_is_not_a_url!' | SetUrlParameter:'Param1','2','full' }}" );
+        }
+
+        private static void SetUrlParameterRenderTemplateAssert( string inputUrl, string parameterName, string newValue, string outputUrlFormat, string expectedOutput )
+        {
+            var simulator = new Http.TestLibrary.HttpSimulator();
+            using ( simulator.SimulateRequest( new Uri( inputUrl ) ) )
+            {
+                TestHelper.AssertTemplateOutput( expectedOutput,
+                    "{{ '" + inputUrl + "' | SetUrlParameter:'" + parameterName + "','" + newValue + "','" + outputUrlFormat + "' }}" );
+            }
+        }
+
+        private int GetPageIdFromRouteName( string routeName )
+        {
+            // If the new page reference has a specific route, it should be returned in preference
+            // to the default "/page/{pageId}" route.
+            var dataContext = new RockContext();
+            var routeService = new PageRouteService( dataContext );
+
+            var loginRoute = routeService.Queryable()
+                .FirstOrDefault( x => x.Route == routeName );
+
+            return loginRoute?.PageId ?? 0;
         }
 
         #endregion

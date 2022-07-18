@@ -20,11 +20,10 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Blocks
 {
     /// <summary>
-    /// Class DetailBlockBox.
-    /// Implements the <see cref="Rock.ViewModels.Blocks.IValidPropertiesBox" />
+    /// The information required to render a standard detail block.
     /// </summary>
-    /// <typeparam name="TEntityBag">The type of the t entity bag.</typeparam>
-    /// <typeparam name="TOptions">The type of the t options.</typeparam>
+    /// <typeparam name="TEntityBag">The type of the bag Entity.</typeparam>
+    /// <typeparam name="TOptions">The type of the bag options.</typeparam>
     /// <seealso cref="Rock.ViewModels.Blocks.IValidPropertiesBox" />
     public class DetailBlockBox<TEntityBag, TOptions> : IValidPropertiesBox
         where TOptions : new()
@@ -64,6 +63,13 @@ namespace Rock.ViewModels.Blocks
         /// </summary>
         /// <value>The valid properties.</value>
         public List<string> ValidProperties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the property names that are referenced by any attribute
+        /// qualifiers which might require that attributes be refreshed when they
+        /// are modified.
+        /// </summary>
+        public List<string> QualifiedAttributeProperties { get; set; }
 
         /// <summary>
         /// Gets or sets the security grant token.

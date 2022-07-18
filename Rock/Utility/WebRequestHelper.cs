@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+using System.Net;
 using System.Web;
 
 using Rock.Model;
@@ -145,6 +146,66 @@ namespace Rock.Utility
             var ipAddresses = headerValue.Split( new string[] { "," }, StringSplitOptions.RemoveEmptyEntries ).ToList().FirstOrDefault();
 
             return ipAddresses;
+        }
+
+        /// <summary>
+        /// Determines whether the Client's IP Address falls within a range.
+        /// Uses suggested method from https://stackoverflow.com/a/2138724.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="beginningIPAddress">The beginning ip address.</param>
+        /// <param name="endingIPAddress">The ending ip address.</param>
+        /// <returns><c>true</c> if [is ip address in range] [the specified request]; otherwise, <c>false</c>.</returns>
+        public static bool IsIPAddressInRange( HttpRequestBase request, string beginningIPAddress, string endingIPAddress )
+        {
+            var clientIPAddress = GetClientIpAddress( request );
+
+            // Using suggested method from https://stackoverflow.com/a/2138724
+            if ( !IPAddress.TryParse( clientIPAddress, out var parsedClientIPAddress ) )
+            {
+                return false;
+            }
+
+            if ( !IPAddress.TryParse( beginningIPAddress, out var parsedBeginningIPAddress ) )
+            {
+                return false;
+            }
+
+            if ( !IPAddress.TryParse( endingIPAddress, out var parsedEndingIPAddress ) )
+            {
+                return false;
+            }
+            
+            var rangeAddressFamily = parsedBeginningIPAddress.AddressFamily;
+
+            if ( parsedClientIPAddress.AddressFamily != rangeAddressFamily )
+            {
+                // IP AddressFamilies are different. IPv4 vs IPv6, etc,
+                // so return false;
+                return false;
+            }
+
+            byte[] addressBytes = parsedClientIPAddress.GetAddressBytes();
+            var lowerBytes = parsedBeginningIPAddress.GetAddressBytes();
+            var upperBytes = parsedEndingIPAddress.GetAddressBytes();
+
+            bool lowerBoundary = true;
+            bool upperBoundary = true;
+
+            for ( int i = 0; i < lowerBytes.Length &&
+                ( lowerBoundary || upperBoundary ); i++ )
+            {
+                if ( ( lowerBoundary && addressBytes[i] < lowerBytes[i] ) ||
+                    ( upperBoundary && addressBytes[i] > upperBytes[i] ) )
+                {
+                    return false;
+                }
+
+                lowerBoundary &= ( addressBytes[i] == lowerBytes[i] );
+                upperBoundary &= ( addressBytes[i] == upperBytes[i] );
+            }
+
+            return true;
         }
     }
 }

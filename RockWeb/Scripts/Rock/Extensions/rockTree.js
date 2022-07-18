@@ -684,12 +684,11 @@
                 $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);
 
-                    var id = $li.attr('data-id');
-
-                    var nodeToAdd = _findNodeById(id, self.nodes);
-                    if (nodeToAdd) {
-                       selectedNodes.push(nodeToAdd);
-                    }
+                    selectedNodes.push({
+                        id: $li.attr('data-id'),
+                        // get the li text excluding child text
+                        name: $li.contents(':not(ul)').text()
+                    });
                 });
 
                 self.selectedNodes = selectedNodes;

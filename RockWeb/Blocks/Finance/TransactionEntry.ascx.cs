@@ -2861,8 +2861,8 @@ namespace RockWeb.Blocks.Finance
             paymentInfo.PostalCode = acAddress.PostalCode;
             paymentInfo.Country = acAddress.Country;
 
-            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            paymentInfo.TransactionTypeValueId = txnType.Id;
+            var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = transactionType.Id;
 
             return paymentInfo;
         }
@@ -3229,6 +3229,9 @@ namespace RockWeb.Blocks.Finance
             scheduledTransaction.AuthorizedPersonAliasId = person.PrimaryAliasId.Value;
             scheduledTransaction.FinancialGatewayId = financialGateway.Id;
 
+            var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            scheduledTransaction.TransactionTypeValueId = transactionType.Id;
+
             if ( scheduledTransaction.FinancialPaymentDetail == null )
             {
                 scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
@@ -3312,8 +3315,8 @@ namespace RockWeb.Blocks.Finance
             transaction.TransactionDateTime = RockDateTime.Now;
             transaction.FinancialGatewayId = financialGateway.Id;
 
-            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            transaction.TransactionTypeValueId = txnType.Id;
+            var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            transaction.TransactionTypeValueId = transactionType.Id;
 
             transaction.Summary = paymentInfo.Comment1;
 

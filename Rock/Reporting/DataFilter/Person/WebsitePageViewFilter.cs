@@ -1,4 +1,20 @@
-﻿using Rock.Data;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -7,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -210,12 +227,14 @@ console.log(websiteNames);
 
         private List<ListItem> GetInteractionChannelListItems()
         {
-            var channels = InteractionChannelCache.All()
-                .Where( x => x.ChannelTypeMediumValue.Value == "Website" )
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var channels = new InteractionChannelService( new RockContext() )
+                .Queryable()
+                .Where( x => x.ChannelTypeMediumValue.Guid == websiteGuid )
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
                 .ToList();
 
-            return channels;
+            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -337,9 +356,10 @@ console.log(websiteNames);
         /// <exception cref="System.NotImplementedException"></exception>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
+            var rockContext = ( RockContext ) serviceInstance.Context;
             var selectionConfig = SelectionConfig.Parse( selection );
             var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
-            var rockContext = ( RockContext ) serviceInstance.Context;
+
             var interactionQry = new InteractionService( rockContext ).Queryable()
                 .Where( m => selectionConfig.WebsiteIds.Contains( m.InteractionComponent.InteractionChannelId ) && m.Operation == "View" );
 

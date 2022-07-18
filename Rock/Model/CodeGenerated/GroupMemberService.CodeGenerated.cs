@@ -100,6 +100,7 @@ namespace Rock.Model
                 GroupMemberStatus = ( int ) model.GroupMemberStatus,
                 GroupOrder = model.GroupOrder,
                 GroupRoleId = model.GroupRoleId,
+                GroupTypeId = model.GroupTypeId,
                 GuestCount = model.GuestCount,
                 InactiveDateTime = model.InactiveDateTime,
                 IsArchived = model.IsArchived,
@@ -189,6 +190,7 @@ namespace Rock.Model
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupOrder = source.GroupOrder;
             target.GroupRoleId = source.GroupRoleId;
+            target.GroupTypeId = source.GroupTypeId;
             target.GuestCount = source.GuestCount;
             target.InactiveDateTime = source.InactiveDateTime;
             target.IsArchived = source.IsArchived;

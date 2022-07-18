@@ -28,6 +28,12 @@ export type StepFlowInitializationBox = {
     /** Gets or sets the list of campuses */
     campuses?: ListItemBag[] | null;
 
+    /** Gets or sets the name of the step program */
+    programName?: string | null;
+
+    /** Gets or sets the step type count */
+    stepTypeCount?: number | null;
+
     /** Gets or sets the Node width */
     nodeWidth?: number | null;
 

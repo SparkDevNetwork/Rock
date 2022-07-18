@@ -40,6 +40,9 @@ export type ContentChannelBag = {
     /** Gets or sets the description. */
     description?: string | null;
 
+    /** Gets or sets a value indicating whether [enable personalization]. */
+    enablePersonalization: boolean;
+
     /** Gets or sets a value indicating whether [enable RSS]. */
     enableRss: boolean;
 

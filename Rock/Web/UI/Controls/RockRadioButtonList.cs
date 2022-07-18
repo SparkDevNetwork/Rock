@@ -346,6 +346,7 @@ namespace Rock.Web.UI.Controls
                 cssClassBuilder.Append( " rockradiobuttonlist-vertical" );
             }
 
+            writer.AddAttribute( "id", this.ClientID );
             writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

@@ -57,6 +57,7 @@
                         <div class="row">
 
                             <div class="col-md-6">
+                                <Rock:NumberBox ID="nbMaxFileSizeBytes" runat="server" Label="Max File Size" Help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed." NumberType="Integer" AppendText="Bytes" Required="false" MinimumValue="1"/>
                                 <Rock:NumberBox ID="nbMaxWidth" runat="server" Label="Maximum Width" />
                                 <Rock:NumberBox ID="nbMaxHeight" runat="server" Label="Maximum Height" />
                                 <Rock:RockDropDownList ID="ddlPreferredColorDepth" runat="server" Label="Preferred Color Depth" Required="true" />

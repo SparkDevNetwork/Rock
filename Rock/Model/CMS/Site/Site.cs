@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,7 +34,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually
-    /// associated with one or more <see cref="SiteDomain">SiteDomains </see>.
+    /// associated with one or more <see cref="SiteDomain">SiteDomains</see>.
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "Site" )]
@@ -513,6 +513,24 @@ namespace Rock.Model
             }
             private set { }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether /[enable visitor tracking].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable visitor tracking]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableVisitorTracking { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable personalization].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable personalization]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnablePersonalization { get; set; }
 
         #endregion
 

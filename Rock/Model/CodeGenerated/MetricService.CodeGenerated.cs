@@ -99,6 +99,7 @@ namespace Rock.Model
                 SourceValueTypeId = model.SourceValueTypeId,
                 Subtitle = model.Subtitle,
                 Title = model.Title,
+                UnitType = ( int ) model.UnitType,
                 XAxisLabel = model.XAxisLabel,
                 YAxisLabel = model.YAxisLabel,
                 CreatedDateTime = model.CreatedDateTime,
@@ -189,6 +190,7 @@ namespace Rock.Model
             target.SourceValueTypeId = source.SourceValueTypeId;
             target.Subtitle = source.Subtitle;
             target.Title = source.Title;
+            target.UnitType = source.UnitType;
             target.XAxisLabel = source.XAxisLabel;
             target.YAxisLabel = source.YAxisLabel;
             target.CreatedDateTime = source.CreatedDateTime;

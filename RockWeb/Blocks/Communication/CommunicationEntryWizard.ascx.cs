@@ -2461,12 +2461,12 @@ function onTaskCompleted( resultData )
                     imgSMSImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
-                    imgSMSImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgSMSImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
 
                     imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
-                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
                 }
                 else
                 {
@@ -2487,12 +2487,12 @@ function onTaskCompleted( resultData )
                     imgSMSImageAttachment.ImageUrl = virtualThumbnailFilePath.Replace( "~/", publicAppRoot );
                     divAttachmentLoadError.InnerText = "Unable to load preview icon from " + imgSMSImageAttachment.ImageUrl;
                     imgSMSImageAttachment.Visible = true;
-                    imgSMSImageAttachment.Width = new Unit( 10, UnitType.Percentage );
+                    imgSMSImageAttachment.Width = new Unit( 10, System.Web.UI.WebControls.UnitType.Percentage );
 
                     imgConfirmationSmsImageAttachment.ImageUrl = string.Format( "{0}GetImage.ashx?guid={1}", publicAppRoot, binaryFile.Guid );
                     divConfirmationSmsImageAttachmentLoadError.InnerText = "Unable to load attachment from " + imgSMSImageAttachment.ImageUrl;
                     imgConfirmationSmsImageAttachment.Visible = true;
-                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, UnitType.Percentage );
+                    imgConfirmationSmsImageAttachment.Width = new Unit( 50, System.Web.UI.WebControls.UnitType.Percentage );
                 }
 
                 if ( Rock.Communication.Transport.Twilio.SupportedMimeTypes.Any( a => binaryFile.MimeType.Equals( a, StringComparison.OrdinalIgnoreCase ) ) )

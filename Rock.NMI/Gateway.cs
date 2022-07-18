@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -129,6 +129,7 @@ namespace Rock.NMI
         IsRequired = false,
         DefaultValue = null,
         Order = 10 )]
+    [Rock.SystemGuid.EntityTypeGuid( "B8282486-7866-4ED5-9F24-093D25FF0820")]
     public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianHostedGatewayComponent
     {
         #region Attribute Keys

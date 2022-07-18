@@ -245,8 +245,9 @@
                     <Rock:NotificationBox ID="nbMessage" NotificationBoxType="Info" runat="server" Text="Please save the new Status before adding any Status Automations." Visible="false" />
                     <Rock:RockControlWrapper ID="rcwStatusAutomationsView" runat="server">
                         <div class="grid">
-                            <Rock:Grid ID="gStatusAutomations" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Status Automation">
+                            <Rock:Grid ID="gStatusAutomations" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Status Automation" OnGridReorder="gStatusAutomations_GridReorder">
                                 <Columns>
+                                    <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="AutomationName" HeaderText="Automation Name" />
                                     <Rock:RockBoundField DataField="DataViewName" HeaderText="Data View" />
                                     <Rock:EnumField DataField="GroupRequirementsFilter" HeaderText="Group Requirements Filter" />

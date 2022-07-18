@@ -376,6 +376,7 @@ namespace Rock.Web.UI.Controls
             _hfBinaryFileTypeGuid = new HiddenField();
             _hfOriginalBinaryFileId = new HiddenField();
             _hfCropBinaryFileId = new HiddenField();
+            _lbUploadImage = new LinkButton();
         }
 
         #endregion

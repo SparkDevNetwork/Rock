@@ -62,7 +62,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             // Set the test timezone.
             LavaTestHelper.SetRockDateTimeToAlternateTimezone();
-              
+
             // Initialize the test calendar data.
             _tzId = RockDateTime.OrgTimeZoneInfo.Id;
             _today = RockDateTime.Today;
@@ -947,6 +947,43 @@ namespace Rock.Tests.UnitTests.Lava
 
         #endregion
 
+        #region Filter Tests: IsDateBetween
+
+        /// <summary>
+        /// Verifies when no format string is provided, the start and end date ranges default to SOD and EOD respectively.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithoutFormatString_AdjustsStartAndEndTimes()
+        {
+            var template = "{{ '2022-05-01 09:00' | IsDateBetween:'2022-05-01 12:00','2022-05-01 07:00' }}";
+
+            TestHelper.AssertTemplateOutput( "true", template );
+        }
+
+        /// <summary>
+        /// Verifies when a format string if provided, the start and end date ranges maintain their given times.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithFormatString_DoesNotAdjustTimes()
+        {
+            var template = "{{ '2022-05-01 09:00' | IsDateBetween:'2022-05-01 12:00','2022-05-01 07:00','yyyy-MM-dd HH:mm' }}";
+
+            TestHelper.AssertTemplateOutput( "false", template );
+        }
+
+        /// <summary>
+        /// Verifies that filter works when DateTime or DateTimeOffset input is sent.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithDateTimeOrDateTimeOffsetAsInput()
+        {
+            var template = "{{ targetDate | IsDateBetween:startDate,endDate }}";
+            var mergeValues = new LavaDataDictionary() { { "targetDate", DateTime.Parse( "2022-05-02" ) }, { "startDate", DateTime.Parse( "2022-05-01" ) }, { "endDate", DateTime.Parse( "2022-05-03" ) } };
+            TestHelper.AssertTemplateOutput( "true", template, mergeValues );
+        }
+
+        #endregion
+
         /// <summary>
         /// Input keyword 'Now' should return number of days in current month.
         /// </summary>
@@ -1314,6 +1351,17 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30 PM',4 }}";
 
             TestHelper.AssertTemplateOutput( "17 weeks, 6 days, 1 hour, 30 minutes", template );
+        }
+
+        /// <summary>
+        /// Comparing an input date/time to a supplied reference that is the same, it should return "just now".
+        /// </summary>
+        [TestMethod]
+        public void HumanizeTimeSpan_CompareWithSame_YieldsJustNow()
+        {
+            var template = "{{ '3-Sep-2020 11:30:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30:00 PM' }}";
+
+            TestHelper.AssertTemplateOutput( "just now", template );
         }
 
         /// <summary>

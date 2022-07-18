@@ -62,6 +62,9 @@ namespace Rock.Client
         public int ConnectionStatusId { get; set; }
 
         /// <summary />
+        public int ConnectionTypeId { get; set; }
+
+        /// <summary />
         public int? ConnectorPersonAliasId { get; set; }
 
         /// <summary />
@@ -126,6 +129,7 @@ namespace Rock.Client
             this.ConnectionOpportunityId = source.ConnectionOpportunityId;
             this.ConnectionState = source.ConnectionState;
             this.ConnectionStatusId = source.ConnectionStatusId;
+            this.ConnectionTypeId = source.ConnectionTypeId;
             this.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
             this.FollowupDate = source.FollowupDate;
             this.ForeignGuid = source.ForeignGuid;

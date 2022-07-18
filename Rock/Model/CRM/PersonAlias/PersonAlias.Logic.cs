@@ -57,12 +57,28 @@ namespace Rock.Model
                 return Name;
             }
 
-            if ( this.Person != null )
+            try
             {
-                return this.Person.ToString();
+                if ( this.Person != null )
+                {
+                    return this.Person.ToString();
+                }
+            }
+            catch
+            {
+                // Ignore if we get an error lazyloading Person
             }
 
-            return string.Format( "{0}->{1}", this.AliasPersonId, this.PersonId );
+            // In case Person doesn't LazyLoad...
+            if ( this.AliasPersonId.HasValue )
+            {
+                // Not sure how useful this is
+                return string.Format( "{0}->{1}", this.AliasPersonId, this.PersonId );
+            }
+            else
+            {
+                return string.Format( "Anonymous PersonAliasId:{1}", this.Id );
+            }
         }
 
         #endregion
