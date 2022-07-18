@@ -1,0 +1,99 @@
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign group = 'Global' | PageParameter:'GroupId' | GroupById %}
+{% assign groupId = group.Id | AsString %}
+{% assign startDate = group | Attribute:'OpportunityDateRange','RawValue' | Split:',' | First %}
+{% assign endDate = group | Attribute:'OpportunityDateRange','RawValue' | Split:',' | Last %}
+{% assign groupMember = CurrentPerson | Group: groupId,'All' | First %}
+{% assign now = 'Now' | Date:'yyyyMMddHHmm' %}
+{% assign donationsEndDate = group | Attribute:'AllowDonationsUntil' | Date:'yyyyMMddHHmm' %}
+
+{% capture id %}{% endcapture %}
+{% capture title %}{{ group.Name | Replace:"'","’" }}{% endcapture %}
+{% capture content %}<p class="lead">{{ group | Attribute:'OpportunityLocation' }}<br>{[ formatDate date:'{{ startDate }}' ]} - {[ formatDate date:'{{ endDate }}' ]}</p>{% endcapture %}
+{% capture textalignment %}{% endcapture %}
+{% capture label %}{% endcapture %}
+{% capture subtitle %}{% endcapture %}
+{% capture imageurl %}{{ group | Attribute:'OpportunityImage','Url' }}{% endcapture %}
+{% capture imageoverlayurl %}{% endcapture %}
+{% capture imagealignment %}{% endcapture %}
+{% capture imageopacity %}.75{% endcapture %}
+{% capture imageflip %}{% endcapture %}
+{% capture imageblur %}{% endcapture %}
+{% capture grayscale %}{% endcapture %}
+{% capture backgroundvideourl %}{% endcapture %}
+{% capture lava %}{% endcapture %}
+{% capture video %}{{ group | Attribute:'OpportunityVideo' }}{% endcapture %}
+{% capture ratio %}{% endcapture %}
+{% capture trimcopy %}{% endcapture %}
+{% capture linkcolor %}{% endcapture %}
+{% capture backgroundcolor %}{% endcapture %}
+{% capture linkurl %}{% endcapture %}
+{% capture linktext %}{% endcapture %}
+{% capture hideforegroundelements %}{% endcapture %}
+
+{[ hero id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+
+
+{% if groupMember and groupMember != empty %}
+
+  {% sql return:'amounts' %}
+    SELECT SUM(ftd.Amount) 'AmountRaised'
+    FROM FinancialTransaction ft
+    JOIN FinancialTransactionDetail ftd
+    ON ftd.TransactionId = ft.Id
+    WHERE ftd.EntityTypeId = 90
+    AND ftd.EntityId = {{ groupMember.Id }}
+  {% endsql %}
+
+  {% assign groupFundraisingGoal = group | Attribute:'IndividualFundraisingGoal','RawValue' %}
+  {% assign individualFundraisingGoal = groupMember | Attribute:'IndividualFundraisingGoal','RawValue' %}
+  {% assign fundraisingGoal = individualFundraisingGoal | WithFallback:'',groupFundraisingGoal | AsInteger %}
+  {% assign amountRaised = amounts | First | Property:'AmountRaised' | WithFallback:'','0' | AsInteger %}
+  {% assign percentageRaised = amountRaised | DividedBy:fundraisingGoal,2 | Times:100 %}
+  <div class="bg-white soft hard-bottom push-bottom xs-push-half-bottom rounded shadowed">
+    <div class="row">
+      <div class="col-md-9 col-sm-8 col-xs-12">
+        <h2 class="h3 push-half-bottom">Your Fundraising Progress</h2>
+        <div class="row floating floating-left floating-bottom push-half-bottom">
+          <div class="col-md-3 col-xs-3 floating-item">
+            <img src="{{ CurrentPerson.PhotoUrl }}" alt="" class="circular" style="max-width: 50px">
+          </div><div class="col-md-9 col-xs-9 floating-item text-right">
+            <p class="lead flush">${{ amountRaised | Format:'###,###,###' | Replace:'.00','' | WithFallback:'','0' }}/<b class="letter-spacing-condensed">{{ fundraisingGoal | Format:'$###,###.##' }}</b></p>
+          </div>
+        </div>
+
+        {[ progressBar percent:'{{ percentageRaised }}' striped:'true' animated:'' ]}
+
+      </div><div class="col-md-3 col-sm-4 col-xs-12">
+        <p class="xs-push-top">
+          <a href="{{ currentUrl | Append:'/participant/' | Append:groupMember.Id }}" class="btn btn-primary btn-block">Participant Page</a>
+          {% if percentageRaised and percentageRaised < 100 %}
+            <a href="{{ currentUrl | Append:'/donate?GroupMemberId=' | Append:groupMember.Id }}" class="btn btn-primary btn-block">Make Payment</a>
+          {% endif %}
+        </p>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<div class="bg-white soft  hard-bottom push-bottom xs-push-half-bottom rounded shadowed">
+  <div class="row">
+    <div class="col-md-3 col-xs-12">
+      {% assign applyUrl = '/workflows/206?Trip=' | Append:group.Name | Append:'&TripType=' | Replace:"'","’" %}
+      <p>
+        <a href="{{ applyUrl }}" class="btn btn-primary btn-block">Apply Now</a>
+
+        {% if now < donationsEndDate %}
+          <a href="{{ currentUrl | Append:'/donate' }}" class="btn btn-default btn-block">Donate to a Participant</a>
+        {% endif %}
+
+        {% if groupMember.GroupRole.Id == 341 %}
+          <a href="{{ currentUrl | Append:'/leader' }}" class="btn btn-default btn-block">Leader Toolbox</a>
+        {% endif %}
+      </p>
+    </div><div class="col-md-9 col-xs-12">
+      {{ group | Attribute:'OpportunityDetails' }}
+    </div>
+  </div>
+</div>
