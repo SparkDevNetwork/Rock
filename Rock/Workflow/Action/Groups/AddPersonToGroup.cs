@@ -94,6 +94,11 @@ namespace Rock.Workflow.Action
                 errorMessages.Add( "No group was provided" );
             }
 
+            if ( group.IsArchived )
+            {
+                errorMessages.Add( "Group provided was archived." );
+            }
+
             if ( !groupRoleId.HasValue )
             {
                 errorMessages.Add( "No group role was provided and group doesn't have a default group role" );
@@ -143,7 +148,7 @@ namespace Rock.Workflow.Action
                 var status = this.GetAttributeValue( action, "GroupMemberStatus" ).ConvertToEnum<GroupMemberStatus>( GroupMemberStatus.Active );
 
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndPreferredGroupRoleId( group.Id, person.Id, groupRoleId.Value );
+                var groupMember = groupMemberService.GetByGroupIdAndPersonIdAndPreferredGroupRoleId( group.Id, person.Id, groupRoleId.Value, includeArchived: true );
                 bool isNew = false;
                 if ( groupMember == null )
                 {
@@ -156,11 +161,13 @@ namespace Rock.Workflow.Action
                 }
                 else
                 {
+                    groupMember.IsArchived = false;
                     if ( GetAttributeValue( action, "UpdateExisting" ).AsBoolean() )
                     {
                         groupMember.GroupRoleId = groupRoleId.Value;
                         groupMember.GroupMemberStatus = status;
                     }
+
                     action.AddLogEntry( $"{person.FullName} was already a member of the selected group.", true );
                 }
 
