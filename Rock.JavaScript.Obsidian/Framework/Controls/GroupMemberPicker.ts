@@ -35,11 +35,6 @@ export default defineComponent({
             required: false
         },
 
-        groupId: {
-            type: Number as PropType<number>,
-            default: null
-        },
-
         groupGuid: {
             type: String as PropType<Guid>,
             default: null
@@ -80,7 +75,6 @@ export default defineComponent({
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
             const options: Partial<GroupMemberPickerGetGroupMembersOptionsBag> = {
-                groupId: props.groupId,
                 groupGuid: props.groupGuid
             };
             const result = await post<ListItemBag[]>("/api/v2/Controls/GroupMemberPickerGetGroupMembers", undefined, options);
@@ -100,7 +94,7 @@ export default defineComponent({
 
         // #region Watchers
 
-        watch(() => [props.groupId], () => {
+        watch(() => [props.groupGuid], () => {
             loadedItems.value = null;
         });
 

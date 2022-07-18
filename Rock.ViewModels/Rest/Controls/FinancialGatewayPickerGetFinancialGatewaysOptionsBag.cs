@@ -33,12 +33,5 @@ namespace Rock.ViewModels.Rest.Controls
         /// <value>The option to include payment gateways that are inactive or
         /// don't support Rock-initiated transactions.</value>
         public bool ShowAll { get; set; } = false;
-
-        /// <summary>
-        /// The current selected payment gateway. By passing this in, we ensure
-        /// that this gateway is shown in the list even if it wouldn't normally.
-        /// </summary>
-        /// <value>The id of the current selected payment gateway.</value>
-        public int? SelectedItem { get; set; }
     }
 }

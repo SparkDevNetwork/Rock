@@ -31,10 +31,4 @@ export type FinancialGatewayPickerGetFinancialGatewaysOptionsBag = {
      * don't support Rock-initiated transactions.
      */
     showAll: boolean;
-
-    /**
-     * The current selected payment gateway. By passing this in, we ensure
-     * that this gateway is shown in the list even if it wouldn't normally.
-     */
-    selectedItem?: number | null;
 };

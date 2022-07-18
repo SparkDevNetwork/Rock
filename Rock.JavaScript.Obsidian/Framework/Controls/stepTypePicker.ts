@@ -35,11 +35,6 @@ export default defineComponent({
             required: false
         },
 
-        stepProgramId: {
-            type: Number as PropType<number>,
-            default: null
-        },
-
         stepProgramGuid: {
             type: String as PropType<Guid>,
             default: null
@@ -80,7 +75,6 @@ export default defineComponent({
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
             const options: Partial<StepTypePickerGetStepTypesOptionsBag> = {
-                stepProgramId: props.stepProgramId,
                 stepProgramGuid: props.stepProgramGuid
             };
             const result = await post<ListItemBag[]>("/api/v2/Controls/StepTypePickerGetStepTypes", undefined, options);
@@ -100,7 +94,7 @@ export default defineComponent({
 
         // #region Watchers
 
-        watch(() => [props.stepProgramId, props.stepProgramGuid], () => {
+        watch(() => props.stepProgramGuid, () => {
             loadedItems.value = null;
         });
 

@@ -17,6 +17,8 @@
 
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { post } from "@Obsidian/Utility/http";
+import { List } from "@Obsidian/Utility/linq";
+import { sleep } from "@Obsidian/Utility/promiseUtils";
 import { FinancialGatewayPickerGetFinancialGatewaysOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/financialGatewayPickerGetFinancialGatewaysOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
@@ -78,15 +80,24 @@ export default defineComponent({
                 showAll: props.showAll
             };
 
-            if (internalValue.value && !Array.isArray(internalValue.value) && internalValue.value.value) {
-                options.selectedItem = parseInt(internalValue.value.value, 10);
-            }
-
             const result = await post<ListItemBag[]>("/api/v2/Controls/FinancialGatewayPickerGetFinancialGateways", undefined, options);
 
             if (result.isSuccess && result.data) {
-                loadedItems.value = result.data;
-                return result.data;
+                let items = result.data;
+
+                // If we have some selected values, add them to the list if not already present.
+                if (internalValue.value && Array.isArray(internalValue.value)) {
+                    // Get the selected values that don't already exist in the list and add them
+                    items = internalValue.value.filter(gateway => !items.some(item => item.value === gateway.value)).concat(items);
+                }
+                // If we have a single selected value & isn't already in the list, add it to the list.
+                else if (internalValue.value && !Array.isArray(internalValue.value) && internalValue.value.value && !items.some(item => item.value === (internalValue.value as ListItemBag).value)) {
+                    // Add it in at the front if not already in the list
+                    items.unshift(internalValue.value);
+                }
+
+                loadedItems.value = items;
+                return items;
             }
             else {
                 console.error(result.errorMessage ?? "Unknown error while loading data.");
