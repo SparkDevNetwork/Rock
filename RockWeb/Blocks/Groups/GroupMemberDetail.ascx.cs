@@ -1341,6 +1341,7 @@ namespace RockWeb.Blocks.Groups
 
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
+                    groupMember.CalculateRequirements( rockContext, true );
                 } );
             }
 
