@@ -988,10 +988,10 @@ body.nav-open {
   }
 
   .navbar-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: @navbarside-width;
     height: @navbar-top-height;
     padding: 0;
@@ -1851,7 +1851,6 @@ body.navbar-side-open {
 }
 
 
-
 .rock-bookmark {
   display: inline-flex;
   align-items: center;
@@ -1861,12 +1860,12 @@ body.navbar-side-open {
   margin: @navbar-element-margin 8px @navbar-element-margin 0;
   font-size: 20px;
   color: fade(@white, 75%);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, .1);
   border-radius: @border-radius-base;
 
   &:hover,
   &:active {
-    color: fade(@white, 50%)
+    color: fade(@white, 50%);
   }
 }
 
