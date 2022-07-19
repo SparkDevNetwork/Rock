@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\CMS\MediaAccountDetail\MediaAccountBag.cs" />
+    <Compile Include="Blocks\CMS\MediaAccountDetail\MediaAccountDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />

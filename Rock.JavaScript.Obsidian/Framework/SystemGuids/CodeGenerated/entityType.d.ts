@@ -111,6 +111,8 @@ export const enum EntityType {
     HttpModuleComponent = "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
     /** The guid for Rock.Model.Interaction */
     Interaction = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7",
+    /** The guid for the Rock.Model.MediaAccount entity */
+    MediaAccount = "3723425F-6BB3-4F5C-8BD6-0B0B9D22EF70",
     /** The guid for the Rock.Model.MetricCategory entity */
     Metriccategory = "3D35C859-DF37-433F-A20A-0FFD0FCB9862",
     /** The guid for the Rock.Model.MergeTemplate entity */
