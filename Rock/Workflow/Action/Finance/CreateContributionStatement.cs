@@ -291,9 +291,12 @@ namespace Rock.Workflow.Action
                 finally
                 {
                     // Clean up stream.
-                    pdfStream.Close();
-                    pdfStream.Dispose();
-                    pdfStream = null;
+                    if ( pdfStream != null )
+                    {
+                        pdfStream.Close();
+                        pdfStream.Dispose();
+                        pdfStream = null;
+                    }
                 }
             }
 

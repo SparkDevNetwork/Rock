@@ -40,6 +40,11 @@ const treeItem = defineComponent({
         item: {
             type: Object as PropType<TreeItemBag>,
             default: {}
+        },
+
+        disableFolderSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -83,12 +88,17 @@ const treeItem = defineComponent({
 
         /** The CSS class value to use for the item name. */
         const itemNameClass = computed((): string => {
+            const classes = ["rocktree-name"];
+
             if (props.item.value && props.modelValue.includes(props.item.value)) {
-                return "rocktree-name selected";
+                classes.push("selected");
             }
-            else {
-                return "rocktree-name";
+
+            if (!props.item.isActive) {
+                classes.push("is-inactive");
             }
+
+            return classes.join(" ");
         });
 
         /**
@@ -104,7 +114,7 @@ const treeItem = defineComponent({
 
         /**
          * Event handler for when a child item is expanded.
-         * 
+         *
          * @param item The item that was expanded.
          */
         const onChildItemExpanded = (item: TreeItemBag): void => {
@@ -115,6 +125,10 @@ const treeItem = defineComponent({
          * Event handler for when this item is selected or deselected.
          */
         const onSelect = (): void => {
+            if (isFolder.value && props.disableFolderSelection) {
+                return;
+            }
+
             if (props.multiple) {
                 if (props.item.value && !props.modelValue.includes(props.item.value)) {
                     emit("update:modelValue", [...props.modelValue, props.item.value]);
@@ -135,7 +149,7 @@ const treeItem = defineComponent({
 
         /**
          * Event handler for when a child item has modified the selected values.
-         * 
+         *
          * @param values The new selected values.
          */
         const onUpdateSelectedValues = (values: string[]): void => {
@@ -167,7 +181,7 @@ const treeItem = defineComponent({
         {{ itemName }}
     </span>
     <ul v-if="hasChildren" v-show="showChildren" class="rocktree-children" v-for="child in children">
-        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" />
+        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" />
     </ul>
 </li>
 `
@@ -198,6 +212,11 @@ export default defineComponent({
 
         provider: {
             type: Object as PropType<ITreeItemProvider>
+        },
+
+        disableFolderSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -227,7 +246,7 @@ export default defineComponent({
 
         /**
          * Event handler for when a child item has updated the selected values.
-         * 
+         *
          * @param values The new selected values.
          */
         const onUpdateSelectedValues = (values: string[]): void => {
@@ -242,7 +261,7 @@ export default defineComponent({
 
         /**
          * Event handler for when an item has been expanded.
-         * 
+         *
          * @param item The item that was expanded.
          */
         const onItemExpanded = async (item: TreeItemBag): Promise<void> => {
@@ -278,6 +297,12 @@ export default defineComponent({
             getRootItems();
         }
 
+        watch(() => props.provider, () => {
+            if (props.provider) {
+                getRootItems();
+            }
+        });
+
         return {
             internalItems,
             onItemExpanded,
@@ -288,7 +313,7 @@ export default defineComponent({
     template: `
 <div>
     <ul class="rocktree">
-        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" />
+        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" />
     </ul>
 </div>
 `

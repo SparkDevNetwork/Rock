@@ -423,6 +423,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum Gender
+    {
+        Unknown = 0x0,
+        Male = 0x1,
+        Female = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum GroupCapacityRule
     {
         None = 0x0,
@@ -663,6 +672,14 @@ namespace Rock.Client.Enums
     {
         FromPersonAlias = 0x0,
         ToPersonAlias = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PersonalizationType
+    {
+        Segment = 0x0,
+        RequestFilter = 0x1,
     }
 
     /// <summary>
@@ -982,6 +999,15 @@ namespace Rock.Client.Enums
     {
         CpuUsagePercent = 0x0,
         MemoryUsageMegabytes = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UnitType
+    {
+        Numeric = 0x0,
+        Currency = 0x1,
+        Percentage = 0x2,
     }
 
     /// <summary>

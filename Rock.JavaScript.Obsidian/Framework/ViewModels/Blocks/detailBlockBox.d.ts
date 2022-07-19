@@ -21,18 +21,33 @@
 // </copyright>
 //
 
+/** The information required to render a standard detail block. */
 export type DetailBlockBox<TEntityBag, TOptions> = {
+    /** Gets or sets the entity. */
     entity?: TEntityBag | null;
 
+    /** Gets or sets the options. */
     options?: TOptions | null;
 
+    /** Gets or sets the error message. */
     errorMessage?: string | null;
 
+    /** Gets or sets a value indicating whether this instance is editable. */
     isEditable: boolean;
 
+    /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
+    /** Gets or sets the valid properties. */
     validProperties?: string[] | null;
 
+    /**
+     * Gets or sets the property names that are referenced by any attribute
+     * qualifiers which might require that attributes be refreshed when they
+     * are modified.
+     */
+    qualifiedAttributeProperties?: string[] | null;
+
+    /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 };

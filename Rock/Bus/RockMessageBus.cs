@@ -55,6 +55,8 @@ namespace Rock.Bus
         /// </summary>
         private static bool _isBusStarted = false;
 
+        private static TaskCompletionSource<bool> _busStartupCompleted = new TaskCompletionSource<bool>();
+
         /// <summary>
         /// The bus
         /// </summary>
@@ -211,17 +213,33 @@ namespace Rock.Bus
         public static Task PublishAsync<TQueue>( IEventMessage<TQueue> message, Type messageType )
             where TQueue : IPublishEventQueue, new()
         {
-            if ( !IsReady() )
-            {
-                ExceptionLogService.LogException( new BusException( $"A message was published before the message bus was ready: {RockMessage.GetLogString( message )}" ) );
-                return Task.CompletedTask;
-            }
-
             message.SenderNodeName = NodeName;
 
             // NOTE: Use Task.Run to wrap an async instead of directly using async, otherwise async will get an exception if it isn't done before the HttpContext is disposed.
             return Task.Run( async () =>
             {
+                if ( !IsReady() && _busStartupCompleted != null )
+                {
+                    /* 06/21/2022 MP
+                      
+                    If the bus is still in the process of starting, we'll wait
+                    for the bus to be started, and then do the publish. This can
+                    happen since CacheUpdateMessages can be published prior to
+                    the MessageBus getting started.
+                     
+                    */
+
+                    // Wait for up to 45 seconds.
+                    await Task.WhenAny( _busStartupCompleted.Task, Task.Delay( maxStartupWaitTimeSeconds * 1000 ) );
+                }
+
+                if ( !IsReady() )
+                {
+                    // Just in case it still isn't ready, log an exception.
+                    ExceptionLogService.LogException( new BusException( $"A message publish attempt could not be published before the message bus was able to be ready: {RockMessage.GetLogString( message )}" ) );
+                    return;
+                }
+
                 await _bus.Publish( message, messageType, context =>
                 {
                     context.TimeToLive = RockQueue.GetTimeToLive<TQueue>();
@@ -269,6 +287,7 @@ namespace Rock.Bus
             } );
         }
 
+        private const int maxStartupWaitTimeSeconds = 45;
 
         /// <summary>
         /// Configures and starts the bus.
@@ -289,8 +308,7 @@ namespace Rock.Bus
             var cancelToken = new CancellationTokenSource();
             var task = _bus.StartAsync( cancelToken.Token );
 
-            const int delaySeconds = 45;
-            var delay = Task.Delay( TimeSpan.FromSeconds( delaySeconds ) );
+            var delay = Task.Delay( TimeSpan.FromSeconds( maxStartupWaitTimeSeconds ) );
 
             if ( await Task.WhenAny( task, delay ) == task )
             {
@@ -304,10 +322,11 @@ namespace Rock.Bus
             {
                 // The bus did not connect after some seconds
                 cancelToken.Cancel();
-                throw new Exception( $"The bus failed to connect using {_transportComponent.GetType().Name} within {delaySeconds} seconds" );
+                throw new Exception( $"The bus failed to connect using {_transportComponent.GetType().Name} within {maxStartupWaitTimeSeconds} seconds" );
             }
 
             _isBusStarted = true;
+            _busStartupCompleted.SetResult( true );
         }
 
         /// <summary>

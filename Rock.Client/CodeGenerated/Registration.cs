@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public string ConfirmationEmail { get; set; }
 
         /// <summary />
@@ -111,6 +114,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Registration source )
         {
             this.Id = source.Id;
+            this.CampusId = source.CampusId;
             this.ConfirmationEmail = source.ConfirmationEmail;
             this.DiscountAmount = source.DiscountAmount;
             this.DiscountCode = source.DiscountCode;
@@ -140,6 +144,9 @@ namespace Rock.Client
     /// </summary>
     public partial class Registration : RegistrationEntity
     {
+        /// <summary />
+        public Campus Campus { get; set; }
+
         /// <summary />
         public int? CreatedDateKey { get; set; }
 

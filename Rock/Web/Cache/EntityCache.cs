@@ -56,6 +56,9 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <inheritdoc cref="IEntity.IdKey"/>
+        [DataMember]
+        public virtual string IdKey { get; protected set; }
 
         #region Lifespan
 
@@ -82,6 +85,7 @@ namespace Rock.Web.Cache
             ForeignId = entity.ForeignId;
             ForeignGuid = entity.ForeignGuid;
             ForeignKey = entity.ForeignKey;
+            IdKey = entity.IdKey;
         }
 
         /// <summary>

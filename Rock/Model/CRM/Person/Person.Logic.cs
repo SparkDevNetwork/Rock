@@ -557,7 +557,7 @@ namespace Rock.Model
 
                 if ( age > 0 )
                 {
-                    return age + ( age == 1 ? " yr" : " yrs" );
+                    return age + ( age == 1 ? " yr" : " years" );
                 }
                 else if ( age < -1 )
                 {

@@ -53,6 +53,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns true if this DataView is configured to be Persisted.
+        /// </summary>
+        /// <returns><c>true</c> if this instance is persisted; otherwise, <c>false</c>.</returns>
+        public bool IsPersisted()
+        {
+            return this.PersistedScheduleIntervalMinutes.HasValue;
+        }
+
+        /// <summary>
         /// Determines whether [is authorized for all data view components] [the specified data view].
         /// </summary>
         /// <param name="dataViewAction">The data view action.</param>

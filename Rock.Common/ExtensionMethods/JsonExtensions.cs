@@ -29,11 +29,36 @@ namespace Rock
     /// </summary>
     public static class JsonExtensions
     {
+        #region Fields
+
         /// <summary>
         /// Contains the singleton serialize settings that match the specified
         /// options key.
         /// </summary>
         private static readonly Dictionary<string, JsonSerializerSettings> _jsonSerializeSettingsCache = new Dictionary<string, JsonSerializerSettings>();
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Handles initialization of any data required by the <see cref="JsonExtensions"/> class.
+        /// </summary>
+        static JsonExtensions()
+        {
+            // This effectively forces the cache to be initialized under single
+            // threaded conditions so we don't have to worry about concurrency.
+            GetSerializeSettings( false, false, false );
+            GetSerializeSettings( false, false, true );
+            GetSerializeSettings( false, true, false );
+            GetSerializeSettings( false, true, true );
+            GetSerializeSettings( true, false, false );
+            GetSerializeSettings( true, false, true );
+            GetSerializeSettings( true, true, false );
+            GetSerializeSettings( true, true, true );
+        }
+
+        #endregion
 
         #region JSON Extensions
 
@@ -227,8 +252,10 @@ namespace Rock
         {
             var settingsKey = $"{indentOutput}_{ignoreErrors}_{camelCase}";
 
+            // Reading the dictionary is thread-safe.
             if ( !_jsonSerializeSettingsCache.TryGetValue( settingsKey, out var settings ) )
             {
+                // This is only the case during class initialization on a single thread.
                 settings = CreateSerializerSettings( indentOutput, ignoreErrors, camelCase );
 
                 _jsonSerializeSettingsCache[settingsKey] = settings;

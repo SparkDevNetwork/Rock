@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public DateTime? AliasedDateTime { get; set; }
+
+        /// <summary />
         public Guid? AliasPersonGuid { get; set; }
 
         /// <summary />
@@ -45,6 +48,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public DateTime? LastVisitDateTime { get; set; }
 
         /// <summary />
         public string Name { get; set; }
@@ -65,10 +71,12 @@ namespace Rock.Client
         public void CopyPropertiesFrom( PersonAlias source )
         {
             this.Id = source.Id;
+            this.AliasedDateTime = source.AliasedDateTime;
             this.AliasPersonGuid = source.AliasPersonGuid;
             this.AliasPersonId = source.AliasPersonId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.LastVisitDateTime = source.LastVisitDateTime;
             this.Name = source.Name;
             this.PersonId = source.PersonId;
             this.Guid = source.Guid;

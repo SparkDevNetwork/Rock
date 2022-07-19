@@ -80,6 +80,86 @@
     <Compile Include="Migrations\202206102113081_BinaryFileType_MaxFileSizeBytes.designer.cs">
       <DependentUpon>202206102113081_BinaryFileType_MaxFileSizeBytes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202206132026534_AddBenevolenceTypeAdditionalSettings.cs" />
+    <Compile Include="Migrations\202206132026534_AddBenevolenceTypeAdditionalSettings.designer.cs">
+      <DependentUpon>202206132026534_AddBenevolenceTypeAdditionalSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.cs" />
+    <Compile Include="Migrations\202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.designer.cs">
+      <DependentUpon>202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206141141599_AddUnitTypeToMetric.cs" />
+    <Compile Include="Migrations\202206141141599_AddUnitTypeToMetric.designer.cs">
+      <DependentUpon>202206141141599_AddUnitTypeToMetric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206141718224_AddPropertyForInheritedAttribute.cs" />
+    <Compile Include="Migrations\202206141718224_AddPropertyForInheritedAttribute.designer.cs">
+      <DependentUpon>202206141718224_AddPropertyForInheritedAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206142045160_CodeGenerated_20220614.cs" />
+    <Compile Include="Migrations\202206142045160_CodeGenerated_20220614.designer.cs">
+      <DependentUpon>202206142045160_CodeGenerated_20220614.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206152009216_AddPopulateSessionLocationJob.cs" />
+    <Compile Include="Migrations\202206152009216_AddPopulateSessionLocationJob.designer.cs">
+      <DependentUpon>202206152009216_AddPopulateSessionLocationJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206152318117_Rollup_20220615.cs" />
+    <Compile Include="Migrations\202206152318117_Rollup_20220615.designer.cs">
+      <DependentUpon>202206152318117_Rollup_20220615.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206152334189_CodeGenerated_20220615.cs" />
+    <Compile Include="Migrations\202206152334189_CodeGenerated_20220615.designer.cs">
+      <DependentUpon>202206152334189_CodeGenerated_20220615.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206160618411_NewPersonPages.cs" />
+    <Compile Include="Migrations\202206160618411_NewPersonPages.designer.cs">
+      <DependentUpon>202206160618411_NewPersonPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206171920483_RemoveNavigationProperties.cs" />
+    <Compile Include="Migrations\202206171920483_RemoveNavigationProperties.designer.cs">
+      <DependentUpon>202206171920483_RemoveNavigationProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206241516012_AddOrderToConnectionStatusAutomation.cs" />
+    <Compile Include="Migrations\202206241516012_AddOrderToConnectionStatusAutomation.designer.cs">
+      <DependentUpon>202206241516012_AddOrderToConnectionStatusAutomation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.cs" />
+    <Compile Include="Migrations\202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.designer.cs">
+      <DependentUpon>202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206301739408_Personalization.cs" />
+    <Compile Include="Migrations\202206301739408_Personalization.designer.cs">
+      <DependentUpon>202206301739408_Personalization.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207052234237_Rollup_20220705.cs" />
+    <Compile Include="Migrations\202207052234237_Rollup_20220705.designer.cs">
+      <DependentUpon>202207052234237_Rollup_20220705.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207052258541_CodeGenerated_20220705.cs" />
+    <Compile Include="Migrations\202207052258541_CodeGenerated_20220705.designer.cs">
+      <DependentUpon>202207052258541_CodeGenerated_20220705.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207121900210_CodeGenerated_20220712.cs" />
+    <Compile Include="Migrations\202207121900210_CodeGenerated_20220712.designer.cs">
+      <DependentUpon>202207121900210_CodeGenerated_20220712.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207130017208_PersonalizationEntityId.cs" />
+    <Compile Include="Migrations\202207130017208_PersonalizationEntityId.designer.cs">
+      <DependentUpon>202207130017208_PersonalizationEntityId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207141800553_GroupMemberNavigation.cs" />
+    <Compile Include="Migrations\202207141800553_GroupMemberNavigation.designer.cs">
+      <DependentUpon>202207141800553_GroupMemberNavigation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207152352391_Rollup_20220715.cs" />
+    <Compile Include="Migrations\202207152352391_Rollup_20220715.designer.cs">
+      <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207182110401_Rollup_20220718.cs" />
+    <Compile Include="Migrations\202207182110401_Rollup_20220718.designer.cs">
+      <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1158,6 +1238,66 @@
     <EmbeddedResource Include="Migrations\202206102113081_BinaryFileType_MaxFileSizeBytes.resx">
       <DependentUpon>202206102113081_BinaryFileType_MaxFileSizeBytes.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206132026534_AddBenevolenceTypeAdditionalSettings.resx">
+      <DependentUpon>202206132026534_AddBenevolenceTypeAdditionalSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.resx">
+      <DependentUpon>202206132117229_AddOrUpdateStepFlowPageBlockTypeAndRoute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206141141599_AddUnitTypeToMetric.resx">
+      <DependentUpon>202206141141599_AddUnitTypeToMetric.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206141718224_AddPropertyForInheritedAttribute.resx">
+      <DependentUpon>202206141718224_AddPropertyForInheritedAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206142045160_CodeGenerated_20220614.resx">
+      <DependentUpon>202206142045160_CodeGenerated_20220614.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206152009216_AddPopulateSessionLocationJob.resx">
+      <DependentUpon>202206152009216_AddPopulateSessionLocationJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206152318117_Rollup_20220615.resx">
+      <DependentUpon>202206152318117_Rollup_20220615.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206152334189_CodeGenerated_20220615.resx">
+      <DependentUpon>202206152334189_CodeGenerated_20220615.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206160618411_NewPersonPages.resx">
+      <DependentUpon>202206160618411_NewPersonPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206171920483_RemoveNavigationProperties.resx">
+      <DependentUpon>202206171920483_RemoveNavigationProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206241516012_AddOrderToConnectionStatusAutomation.resx">
+      <DependentUpon>202206241516012_AddOrderToConnectionStatusAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.resx">
+      <DependentUpon>202206280910413_AddCampusIdToRegistrationAndEventItemOccurrenceGroupMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206301739408_Personalization.resx">
+      <DependentUpon>202206301739408_Personalization.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207052234237_Rollup_20220705.resx">
+      <DependentUpon>202207052234237_Rollup_20220705.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207052258541_CodeGenerated_20220705.resx">
+      <DependentUpon>202207052258541_CodeGenerated_20220705.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207121900210_CodeGenerated_20220712.resx">
+      <DependentUpon>202207121900210_CodeGenerated_20220712.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207130017208_PersonalizationEntityId.resx">
+      <DependentUpon>202207130017208_PersonalizationEntityId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207141800553_GroupMemberNavigation.resx">
+      <DependentUpon>202207141800553_GroupMemberNavigation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207152352391_Rollup_20220715.resx">
+      <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207182110401_Rollup_20220718.resx">
+      <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
     </EmbeddedResource>
@@ -1970,6 +2110,15 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\202207152352391_Rollup_20220715_RecoverERAStartDate_Update.sql">
+      <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>202207152352391_Rollup_20220715.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202207182110401_Rollup_20220718_updatechart.sql">
+      <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 13.0\Version 1.13.3\202203152204281_Rollup_20220315_update-chartjs.sql">
       <DependentUpon>202203152204281_Rollup_20220315.cs</DependentUpon>

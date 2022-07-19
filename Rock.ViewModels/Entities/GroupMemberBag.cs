@@ -104,6 +104,14 @@ namespace Rock.ViewModels.Entities
         public int GroupRoleId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Id of the Rock.Model.GroupType that this Group member belongs to. This property is required.
+        /// </summary>
+        /// <value>
+        /// An System.Int32 representing the Id of the Rock.Model.GroupType that this group member part of.
+        /// </value>
+        public int GroupTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the number of additional guests that member will be bring to group.  Only applies when group has the 'AllowGuests' flag set to true.
         /// </summary>
         /// <value>

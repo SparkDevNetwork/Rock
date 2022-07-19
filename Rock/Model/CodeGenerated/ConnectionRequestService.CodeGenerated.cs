@@ -93,6 +93,7 @@ namespace Rock.Model
                 ConnectionOpportunityId = model.ConnectionOpportunityId,
                 ConnectionState = ( int ) model.ConnectionState,
                 ConnectionStatusId = model.ConnectionStatusId,
+                ConnectionTypeId = model.ConnectionTypeId,
                 ConnectorPersonAliasId = model.ConnectorPersonAliasId,
                 FollowupDate = model.FollowupDate,
                 Order = model.Order,
@@ -175,6 +176,7 @@ namespace Rock.Model
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ConnectionState = source.ConnectionState;
             target.ConnectionStatusId = source.ConnectionStatusId;
+            target.ConnectionTypeId = source.ConnectionTypeId;
             target.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
             target.FollowupDate = source.FollowupDate;
             target.ForeignGuid = source.ForeignGuid;

@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { Component, computed, defineComponent, getCurrentInstance, onMounted, onUnmounted, PropType, ref, useAttrs, watch } from "vue";
+import { Component, computed, defineComponent, getCurrentInstance, onMounted, onUnmounted, PropType, ref, watch } from "vue";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
@@ -91,6 +91,24 @@ import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilter
 import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle";
 import { useStore } from "@Obsidian/PageState";
 import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker";
+import ComponentPicker from "@Obsidian/Controls/componentPicker";
+import Modal from "@Obsidian/Controls/modal";
+import EventItemPicker from "@Obsidian/Controls/eventItemPicker";
+import DataViewPicker from "@Obsidian/Controls/dataViewPicker";
+import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker";
+import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker";
+import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker";
+import FieldTypePicker from "@Obsidian/Controls/fieldTypePicker";
+import GradePicker from "@Obsidian/Controls/gradePicker";
+import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker";
+import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker";
+import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker";
+import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker";
+import RemoteAuthsPicker from "@Obsidian/Controls/remoteAuthsPicker";
+import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
+import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
+import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
+import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
 
 // #region Gallery Support
 
@@ -2387,7 +2405,7 @@ const entityTypePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-3">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-3">
@@ -2456,7 +2474,7 @@ const achievementTypePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-3">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-3">
@@ -2521,7 +2539,7 @@ const badgeComponentPickerGallery = defineComponent({
         </div>
         <div class="row">
             <div class="col-md-4">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
             <div class="col-md-4">
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
@@ -2669,11 +2687,22 @@ const categoryPickerGallery = defineComponent({
         GalleryAndResult,
         CheckBox,
         CategoryPicker,
-        TextBox
+        TextBox,
+        EntityTypePicker
     },
     setup() {
+        const entityType = ref<ListItemBag | null>(null);
+        const entityTypeGuid = computed(() => {
+            if (entityType?.value?.value) {
+                return entityType.value.value;
+            }
+
+            return null;
+        });
+
         return {
-            entityTypeGuid: ref(EntityType.DefinedType),
+            entityType,
+            entityTypeGuid,
             multiple: ref(false),
             value: ref(null),
             importCode: getControlImportPath("categoryPicker"),
@@ -2690,8 +2719,15 @@ const categoryPickerGallery = defineComponent({
     <CategoryPicker label="Category Picker" v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" />
 
     <template #settings>
-        <CheckBox label="Multiple" v-model="multiple" />
-        <TextBox label="Entity Type Guid" v-model="entityTypeGuid" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-6">
+                <EntityTypePicker label="For Entity Type" v-model="entityType" enhanceForLongLists showBlankItem />
+            </div>
+        </div>
 
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
@@ -2893,30 +2929,30 @@ const assessmentTypePickerGallery = defineComponent({
 
     <template #settings>
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <CheckBox label="Multiple" v-model="multiple" />
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <CheckBox label="Show Blank Item" v-model="showBlankItem" />
-            </div>
-
-            <div class="col-md-3">
-                <CheckBox label="Include Inactive" v-model="isInactiveIncluded" help="When set, inactive assessments will be included in the list." />
             </div>
         </div>
 
         <div class="row">
-            <div class="col-md-3">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Include Inactive" v-model="isInactiveIncluded" help="When set, inactive assessments will be included in the list." />
             </div>
         </div>
 
@@ -2982,7 +3018,7 @@ const assetStorageProviderPickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-4">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-4">
@@ -3052,7 +3088,7 @@ const binaryFileTypePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-4">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-4">
@@ -3124,7 +3160,7 @@ const binaryFilePickerGallery = defineComponent({
 
         <div class="row">
             <div class="col-md-4">
-                <DropDownList label="Display Style" v-model="displayStyle" :items="displayStyleItems" />
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
             </div>
 
             <div class="col-md-4">
@@ -3133,6 +3169,375 @@ const binaryFilePickerGallery = defineComponent({
 
             <div class="col-md-4">
                 <BinaryFileTypePicker label="Binary File Type" v-model="binaryFileType" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Event Item picker */
+const eventItemPickerGallery = defineComponent({
+    name: "EventItemPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        EventItemPicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            includeInactive: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("eventItemPicker"),
+            exampleCode: `<EventItemPicker label="Event Item" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <EventItemPicker label="Event Item"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :includeInactive="includeInactive" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Include Inactive Items" v-model="includeInactive" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates data views picker */
+const dataViewPickerGallery = defineComponent({
+    name: "DataViewPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        DataViewPicker,
+        NumberUpDown,
+        EntityTypePicker
+    },
+    setup() {
+        return {
+            entityTypeGuid: ref(null),
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("dataViewPicker"),
+            exampleCode: `<DataViewPicker label="Data View" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <DataViewPicker label="Data Views"
+        v-model="value"
+        :multiple="multiple"
+        :showBlankItem="showBlankItem"
+        :entityTypeGuid="entityTypeGuid?.value" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <EntityTypePicker label="For Entity Type" v-model="entityTypeGuid" enhanceForLongLists showBlankItem />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
+/** Demonstrates workflow type picker */
+const workflowTypePickerGallery = defineComponent({
+    name: "WorkflowTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        WorkflowTypePicker,
+        NumberUpDown,
+        EntityTypePicker
+    },
+    setup() {
+        return {
+            includeInactiveItems: ref(false),
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("workflowTypePicker"),
+            exampleCode: `<WorkflowTypePicker label="Data View" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <WorkflowTypePicker label="Data Views"
+        v-model="value"
+        :multiple="multiple"
+        :showBlankItem="showBlankItem"
+        :includeInactiveItems="includeInactiveItems" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Include Inactive Items" v-model="includeInactiveItems" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Financial Gateway picker */
+const financialGatewayPickerGallery = defineComponent({
+    name: "FinancialGatewayPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        FinancialGatewayPicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            showAll: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("financialGatewayPicker"),
+            exampleCode: `<FinancialGatewayPicker label="Financial Gateway" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <FinancialGatewayPicker label="Financial Gateway"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :showAll="showAll" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show All Gateways" v-model="showAll" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Financial Statement Template picker */
+const financialStatementTemplatePickerGallery = defineComponent({
+    name: "FinancialStatementTemplatePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        FinancialStatementTemplatePicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("financialStatementTemplatePicker"),
+            exampleCode: `<FinancialStatementTemplatePicker label="Financial Statement Template" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <FinancialStatementTemplatePicker label="Financial Statement Template"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Field Type picker */
+const fieldTypePickerGallery = defineComponent({
+    name: "FieldTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        FieldTypePicker,
+        NumberUpDown
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("fieldTypePicker"),
+            exampleCode: `<FieldTypePicker label="Field Type" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <FieldTypePicker label="Field Type"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
         </div>
     </template>
@@ -3177,6 +3582,767 @@ const auditDetailGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates modal. */
+const modalGallery = defineComponent({
+    name: "ModalGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        Modal,
+        TextBox
+    },
+    setup() {
+        return {
+            isOpen: ref(false),
+            value: "",
+            importCode: getControlImportPath("modal"),
+            exampleCode: `<Modal title="Modal Dialog Title" saveText="Save" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+    <CheckBox label="Is Open" v-model="isOpen" />
+
+    <Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
+        <TextBox label="Required Value" v-model="value" rules="required" />
+    </Modal>
+
+    <template #settings>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates  Component picker */
+const componentPickerGallery = defineComponent({
+    name: "ComponentPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        ComponentPicker,
+        NumberUpDown,
+        TextBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            containerType: ref("Rock.Badge.BadgeContainer"),
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("componentPicker"),
+            exampleCode: `<ComponentPicker label="Component" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <ComponentPicker label="Component"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :containerType="containerType" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-5">
+                <TextBox label="Container Assembly Name" v-model="containerType" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Grade Picker */
+const gradePickerGallery = defineComponent({
+    name: "GradePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        GradePicker,
+        NumberUpDown,
+        TextBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            useAbbreviation: ref(false),
+            useGradeOffsetAsValue: ref(false),
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("gradePicker"),
+            exampleCode: `<GradePicker label="Grade" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <GradePicker label="Grade"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :useAbbreviation="useAbbreviation"
+        :useGradeOffsetAsValue="useGradeOffsetAsValue" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-3">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Use Abbreviations" v-model="useAbbreviation" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Use Grade Offset Value" v-model="useGradeOffsetAsValue" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Group Member Picker */
+const groupMemberPickerGallery = defineComponent({
+    name: "GroupMemberPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        GroupMemberPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            groupId: ref(175),
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("groupMemberPicker"),
+            exampleCode: `<GroupMemberPicker label="Group Member" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <GroupMemberPicker label="Group Member"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :groupId="groupId" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-4">
+                <NumberBox label="Group ID" v-model="groupId" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Interaction Channel Picker */
+const interactionChannelPickerGallery = defineComponent({
+    name: "InteractionChannelPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        InteractionChannelPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("interactionChannelPicker"),
+            exampleCode: `<InteractionChannelPicker label="Interaction Channel" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <InteractionChannelPicker label="Interaction Channel"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :groupId="groupId" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Interaction Component Picker */
+const interactionComponentPickerGallery = defineComponent({
+    name: "InteractionComponentPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        InteractionComponentPicker,
+        InteractionChannelPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            interactionChannelGuid: ref(null),
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("interactionComponentPicker"),
+            exampleCode: `<InteractionComponentPicker label="Interaction Component" v-model="value" :interactionChannelGuid="interactionChannelGuid" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <InteractionComponentPicker label="Interaction Component"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :interactionChannelGuid="interactionChannelGuid?.value" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-4">
+                <InteractionChannelPicker label="Interaction Channel" v-model="interactionChannelGuid" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Lava Command Picker */
+const lavaCommandPickerGallery = defineComponent({
+    name: "LavaCommandPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        LavaCommandPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("lavaCommandPicker"),
+            exampleCode: `<LavaCommandPicker label="Lava Command" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <LavaCommandPicker label="Lava Command"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Remote Auths Picker */
+const remoteAuthsPickerGallery = defineComponent({
+    name: "RemoteAuthsPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        RemoteAuthsPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("remoteAuthsPicker"),
+            exampleCode: `<RemoteAuthsPicker label="Remote Auths" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <RemoteAuthsPicker label="Remote Auths"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Step Program Picker */
+const stepProgramPickerGallery = defineComponent({
+    name: "StepProgramPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        StepProgramPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("stepProgramPicker"),
+            exampleCode: `<StepProgramPicker label="Step Program" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <StepProgramPicker label="Step Program"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Step Status Picker */
+const stepStatusPickerGallery = defineComponent({
+    name: "StepStatusPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        StepStatusPicker,
+        StepProgramPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            stepProgramGuid: ref(null),
+            value: ref({}),
+            importCode: getControlImportPath("stepStatusPicker"),
+            exampleCode: `<StepStatusPicker label="Step Status" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <StepStatusPicker label="Step Status"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :stepProgramGuid="stepProgramGuid?.value" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-4">
+                <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Step Type Picker */
+const stepTypePickerGallery = defineComponent({
+    name: "StepTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        StepTypePicker,
+        StepProgramPicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            stepProgramGuid: ref(null),
+            value: ref({}),
+            importCode: getControlImportPath("stepTypePicker"),
+            exampleCode: `<StepTypePicker label="Step Type" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <StepTypePicker label="Step Type"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem"
+        :stepProgramGuid="stepProgramGuid?.value" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+            <div class="col-md-4">
+                <StepProgramPicker label="Step Program" v-model="stepProgramGuid" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Streak Type Picker */
+const streakTypePickerGallery = defineComponent({
+    name: "StreakTypePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        StreakTypePicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("streakTypePicker"),
+            exampleCode: `<StreakTypePicker label="Streak Type" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection
+>
+    <StreakTypePicker label="Streak Type"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
 
 
 const controlGalleryComponents: Record<string, Component> = [
@@ -3235,7 +4401,25 @@ const controlGalleryComponents: Record<string, Component> = [
     assetStorageProviderPickerGallery,
     auditDetailGallery,
     binaryFileTypePickerGallery,
-    binaryFilePickerGallery
+    binaryFilePickerGallery,
+    modalGallery,
+    eventItemPickerGallery,
+    dataViewPickerGallery,
+    workflowTypePickerGallery,
+    componentPickerGallery,
+    financialGatewayPickerGallery,
+    financialStatementTemplatePickerGallery,
+    fieldTypePickerGallery,
+    gradePickerGallery,
+    groupMemberPickerGallery,
+    interactionChannelPickerGallery,
+    interactionComponentPickerGallery,
+    lavaCommandPickerGallery,
+    remoteAuthsPickerGallery,
+    stepProgramPickerGallery,
+    stepStatusPickerGallery,
+    stepTypePickerGallery,
+    streakTypePickerGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

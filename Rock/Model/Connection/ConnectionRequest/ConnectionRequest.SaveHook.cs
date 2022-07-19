@@ -18,7 +18,6 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
 using Rock.Data;
 using Rock.Tasks;
 
@@ -74,6 +73,12 @@ namespace Rock.Model
                 if ( connectionOpportunity == null )
                 {
                     connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionRequest.ConnectionOpportunityId );
+                }
+
+                //Just because connection opportunity is always loaded, we are populating ConnectionTypeId all the times except delete.
+                if ( this.State != EntityContextState.Deleted && connectionOpportunity != null )
+                {
+                    this.Entity.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                 }
 
                 switch ( State )
@@ -172,11 +177,17 @@ namespace Rock.Model
 
                 if ( this.Entity._runAutomationsInPostSaveChanges && connectionStatusAutomationsQuery.Any() )
                 {
-                    var connectionStatusAutomationsList = connectionStatusAutomationsQuery.AsNoTracking().OrderBy( a => a.AutomationName ).ToList();
+                    var connectionStatusAutomationsList = connectionStatusAutomationsQuery.AsNoTracking().OrderBy( a => a.Order ).ThenBy( a => a.AutomationName ).ToList();
                     var connectionStatusAutomations = connectionStatusAutomationsList;
                     int changedStatusCount = 0;
                     foreach ( var connectionStatusAutomation in connectionStatusAutomations )
                     {
+                        if ( changedStatusCount > 0 )
+                        {
+                            // Updated Connection Status Automation logic to process statuses in order. If there is a match, no other automations are considered for that status.
+                            break;
+                        }
+
                         if ( this.Entity.processedConnectionStatusAutomations.Contains( connectionStatusAutomation.Id ) )
                         {
                             // to avoid recursion, skip over automations that have already been processed in this thread.
@@ -191,7 +202,7 @@ namespace Rock.Model
                             continue;
                         }
 
-                        bool isAutomationValid = true;
+                        bool isAutomationMatched = true;
                         if ( connectionStatusAutomation.DataViewId.HasValue )
                         {
                             // Get the dataview configured for the connection request
@@ -201,16 +212,16 @@ namespace Rock.Model
                             if ( dataview != null )
                             {
                                 var dataViewQuery = new ConnectionRequestService( rockContext ).GetQueryUsingDataView( dataview );
-                                isAutomationValid = dataViewQuery.Any( a => a.Id == Entity.Id );
+                                isAutomationMatched = dataViewQuery.Any( a => a.Id == Entity.Id );
                             }
                         }
 
-                        if ( isAutomationValid && connectionStatusAutomation.GroupRequirementsFilter != GroupRequirementsFilter.Ignore )
+                        if ( isAutomationMatched && connectionStatusAutomation.GroupRequirementsFilter != GroupRequirementsFilter.Ignore )
                         {
                             // Group Requirement can't be meet when either placement group or placement group role id is missing
                             if ( !Entity.AssignedGroupId.HasValue || !Entity.AssignedGroupMemberRoleId.HasValue )
                             {
-                                isAutomationValid = false;
+                                isAutomationMatched = false;
                             }
                             else
                             {
@@ -235,12 +246,12 @@ namespace Rock.Model
                                 }
 
                                 // connection request based on if group requirement is meet or not is added to list for status update
-                                isAutomationValid = ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.DoesNotMeet && !isRequirementMeet ) ||
+                                isAutomationMatched = ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.DoesNotMeet && !isRequirementMeet ) ||
                                     ( connectionStatusAutomation.GroupRequirementsFilter == GroupRequirementsFilter.MustMeet && isRequirementMeet );
                             }
                         }
 
-                        if ( isAutomationValid )
+                        if ( isAutomationMatched )
                         {
                             if ( Entity.SetConnectionStatusFromAutomationLoop( connectionStatusAutomation ) )
                             {

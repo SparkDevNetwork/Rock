@@ -143,8 +143,7 @@ namespace Rock.Communication.Transport
             var methodRetry = new MethodRetry();
 
             // Call the API and get the response
-            Response = await methodRetry.ExecuteAsync( () => restClient.ExecuteAsync( restRequest ), ( response ) => !retriableStatusCode.Contains( response.StatusCode ) ).ConfigureAwait( false );
-
+            Response = await methodRetry.ExecuteAsync( () => restClient.ExecuteTaskAsync( restRequest ), ( response ) => !retriableStatusCode.Contains( response.StatusCode ) ).ConfigureAwait( false );
             if ( Response.StatusCode != HttpStatusCode.OK )
             {
                 throw new Exception( Response.ErrorMessage ?? Response.StatusDescription );

@@ -88,6 +88,7 @@ namespace Rock.Model
             var viewModel = new RegistrationBag
             {
                 IdKey = model.IdKey,
+                CampusId = model.CampusId,
                 ConfirmationEmail = model.ConfirmationEmail,
                 DiscountAmount = model.DiscountAmount,
                 DiscountCode = model.DiscountCode,
@@ -168,6 +169,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Registration target, Registration source )
         {
             target.Id = source.Id;
+            target.CampusId = source.CampusId;
             target.ConfirmationEmail = source.ConfirmationEmail;
             target.DiscountAmount = source.DiscountAmount;
             target.DiscountCode = source.DiscountCode;

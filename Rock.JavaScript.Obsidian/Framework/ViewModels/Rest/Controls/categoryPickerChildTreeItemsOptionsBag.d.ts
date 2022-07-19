@@ -88,6 +88,21 @@ export type CategoryPickerChildTreeItemsOptionsBag = {
     includeInactiveItems: boolean;
 
     /**
+     * Gets or sets the name of the item property to use for comparison
+     * with Rock.ViewModels.Rest.Controls.CategoryPickerChildTreeItemsOptionsBag.ItemFilterPropertyValue. When set the item query
+     * will attempt to filter on this property name. If it does not exist
+     * then an exception will be thrown.
+     */
+    itemFilterPropertyName?: string | null;
+
+    /**
+     * Gets or sets the item property value to compare against. This should
+     * be either an integer-string, Guid-string or plain string for
+     * comparison. And must match the database property type.
+     */
+    itemFilterPropertyValue?: string | null;
+
+    /**
      * Gets or sets a value indicating whether child categories and items
      * are loaded automatically. If true then all descendant categories
      * will be loaded along with the items if Rock.ViewModels.Rest.Controls.CategoryPickerChildTreeItemsOptionsBag.GetCategorizedItems

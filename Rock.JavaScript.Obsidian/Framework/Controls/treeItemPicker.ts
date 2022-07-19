@@ -27,7 +27,7 @@ import { updateRefValue } from "@Obsidian/Utility/component";
 /**
  * Helper function to flatten an array of items that contains child items
  * of the same type.
- * 
+ *
  * @param source The source array of items to the flattened.
  * @param childrenSource A callback function that retrieves the child items.
  *
@@ -51,7 +51,7 @@ function flatten<T>(source: T[], childrenSource: (value: T) => T[]): T[] {
 /**
  * Convert a single item to an array of one item. If the value is already an
  * array then it is just returned as is.
- * 
+ *
  * @param value The value from the parent component.
  *
  * @returns The value trimmed down to just the actual selection value.
@@ -104,6 +104,11 @@ export default defineComponent({
         iconCssClass: {
             type: String as PropType<string>,
             default: "fa fa-folder-open"
+        },
+
+        disableFolderSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -186,7 +191,7 @@ export default defineComponent({
         /**
          * Event handler for when the list of items in the tree list has been
          * updated.
-         * 
+         *
          * @param newItems The new root items being used by the tree list.
          */
         const onUpdateItems = (newItems: TreeItemBag[]): void => {
@@ -267,23 +272,23 @@ export default defineComponent({
                     background-color: #bbb;
                 }
             </v-style>
-    
+
             <div class="picker picker-select rollover-container">
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i :class="pickerIconClass"></i>
                     <span class="selected-names" v-text="selectedNames"></span>
                     <b class="fa fa-caret-down pull-right"></b>
                 </a>
-    
+
                 <a v-if="showClear" class="picker-select-none" @click.prevent.stop="onClear">
                     <i class="fa fa-times"></i>
                 </a>
-    
+
                 <div v-show="showPopup" class="picker-menu dropdown-menu" style="display: block;">
                     <div class="scrollbar-thin" style="height: 200px; overflow-y: scroll; overflow-x: hidden;">
-                        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" />
+                        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" />
                     </div>
-    
+
                     <div class="picker-actions">
                         <a class="btn btn-xs btn-primary picker-btn" @click.prevent.stop="onSelect">Select</a>
                         <a class="btn btn-xs btn-link picker-cancel" @click.prevent.stop="onCancel">Cancel</a>

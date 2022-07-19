@@ -106,6 +106,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<PersonalizationSegment>( Context ).Queryable().Any( a => a.FilterDataViewId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, PersonalizationSegment.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Report>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Report.FriendlyTypeName );

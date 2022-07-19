@@ -1008,5 +1008,60 @@ namespace Rock.Migrations.Migrations {
                         "ery_NonAttendees", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- Recover using History table
+        ///-- When a person enters era, the ERA Start Date attribute is set with current date time
+        ///-- then a History table gets &apos;ENTERED&apos; with a CreateDateTime of the ERA Start Date.
+        ///-- So we can recover the ERA Start Date by looking for when the most recent time that ENTERED history record was logged.
+        ///-- In the unlikely case there wasn&apos;t a ENTERED history record, but they have a Era StartDate, we can recover using the AttributeValue.CreatedDateTime.
+        ///-- That edge case would be for d [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202207152352391_Rollup_20220715_RecoverERAStartDate_Update {
+            get {
+                return ResourceManager.GetString("_202207152352391_Rollup_20220715_RecoverERAStartDate_Update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{%- if type == &apos;&apos;gauge&apos;&apos; or type == &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {% javascript url:&apos;&apos;~/Scripts/Chartjs/Gauge.js&apos;&apos; id:&apos;&apos;gaugejs&apos;&apos;%}{% endjavascript %}
+        ///{%- endif -%}
+        ///
+        ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
+        ///    {%- assign xaxistype = &apos;&apos;stacked&apos;&apos; -% [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202207182110401_Rollup_20220718_updatechart {
+            get {
+                return ResourceManager.GetString("_202207182110401_Rollup_20220718_updatechart", resourceCulture);
+            }
+        }
     }
 }

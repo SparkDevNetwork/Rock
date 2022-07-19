@@ -358,16 +358,10 @@ console.log(websiteNames);
         {
             var rockContext = ( RockContext ) serviceInstance.Context;
             var selectionConfig = SelectionConfig.Parse( selection );
-            rockContext.Database.Log = s => Debug.WriteLine( s );
-
-            var websiteInteractionChannel = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
-            var interactionComponentIds = new InteractionComponentService( rockContext )
-                .Queryable()
-                .Where( m => m.InteractionChannel.ChannelTypeMediumValueId == websiteInteractionChannel.Id && selectionConfig.WebsiteIds.Contains( m.InteractionChannelId ) )
-                .Select( m => m.Id );
-
-            var interactionQry = new InteractionService( rockContext ).Queryable().Where( m => interactionComponentIds.Contains( m.InteractionComponentId ) && m.Operation == "View" );
             var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
+
+            var interactionQry = new InteractionService( rockContext ).Queryable()
+                .Where( m => selectionConfig.WebsiteIds.Contains( m.InteractionComponent.InteractionChannelId ) && m.Operation == "View" );
 
             if ( selectionConfig.DelimitedDateRangeValues.IsNotNullOrWhiteSpace() )
             {

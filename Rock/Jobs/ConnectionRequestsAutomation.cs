@@ -123,7 +123,8 @@ namespace Rock.Jobs
             var groupViews = new List<GroupView>();
             foreach ( var connectionStatus in connectionTypeView.ConnectionStatuses )
             {
-                foreach ( var connectionStatusAutomation in connectionStatus.ConnectionStatusAutomations.OrderBy( a => a.AutomationName ) )
+                var matchedConnectionRequests = new List<int>();
+                foreach ( var connectionStatusAutomation in connectionStatus.ConnectionStatusAutomations.OrderBy( a => a.Order ).ThenBy( a => a.AutomationName ) )
                 {
                     var rockContext = new RockContext();
                     rockContext.Database.CommandTimeout = commandTimeout;
@@ -175,10 +176,23 @@ namespace Rock.Jobs
                         connectionRequestQry = connectionRequestQry.Where( a => dataviewQuery.Any( b => b.Id == a.Id ) );
                     }
 
+                    var connectionRequests = new List<ConnectionRequest>();
+
+                    //if matchedConnectionRequests list is too long, we prevent passing long list to EF rather filter out the matchedConnectionRequest in memory.
+                    if ( matchedConnectionRequests.Count < 100 )
+                    {
+                        //If the matched connection request list is Less than 100, we pass the list to EF and let SQL handle this.
+                        connectionRequests = connectionRequestQry.Where( a => !matchedConnectionRequests.Contains( a.Id ) ).ToList();
+                    }
+                    else
+                    {
+                        //If we have more than 100 matched connection request list, we put the connectionRequestQry into a List then apply the filter to avoid sql exception.
+                        connectionRequests = connectionRequestQry.ToList().Where(a=> !matchedConnectionRequests.Contains( a.Id ) ).ToList();
+                    }
+
                     var eligibleConnectionRequests = new List<ConnectionRequest>();
                     if ( connectionStatusAutomation.GroupRequirementsFilter != GroupRequirementsFilter.Ignore )
                     {
-                        var connectionRequests = connectionRequestQry.ToList();
                         foreach ( var connectionRequest in connectionRequests )
                         {
                             // Group Requirement can't be met when either placement group or placement group role id is missing
@@ -201,7 +215,7 @@ namespace Rock.Jobs
                     }
                     else
                     {
-                        eligibleConnectionRequests = connectionRequestQry.ToList();
+                        eligibleConnectionRequests = connectionRequests;
                     }
 
                     var updatedCount = 0;
@@ -213,6 +227,7 @@ namespace Rock.Jobs
                         }
 
                         connectionRequest.SetConnectionStatusFromAutomationLoop( connectionStatusAutomation );
+                        matchedConnectionRequests.Add( connectionRequest.Id );
                         updatedCount++;
                     }
 

@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// BenevolenceTypes REST API
     /// </summary>
-    [RestControllerGuid( "" )]
+    [RestControllerGuid( "2CA2807B-99D0-43FE-B339-65115A17E6D6" )]
     public partial class BenevolenceTypesController : Rock.Rest.ApiController<Rock.Model.BenevolenceType>
     {
         /// <summary>

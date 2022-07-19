@@ -20,6 +20,7 @@ import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
 import { ControlLazyMode, ControlLazyModeType } from "@Obsidian/Types/Controls/controlLazyMode";
 import { PickerDisplayStyle, PickerDisplayStyleType } from "@Obsidian/Types/Controls/pickerDisplayStyle";
+import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
 
 type Prop = { [key: string]: unknown };
@@ -313,3 +314,38 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
 }
 
 // #endregion
+
+// #region Extended References
+
+/**
+ * Creates a Ref that contains extended data to better identify this ref
+ * when you have multiple refs to work with.
+ * 
+ * @param value The initial value of the Ref.
+ * @param extendedData The additional context data to put on the Ref.
+ * 
+ * @returns An ExtendedRef object that can be used like a regular Ref object.
+ */
+export function extendedRef<T>(value: T, context: ExtendedRefContext): ExtendedRef<T> {
+    const refValue = ref(value) as ExtendedRef<T>;
+
+    refValue.context = context;
+
+    return refValue;
+}
+
+/**
+ * Creates an extended Ref with the specified property name in the context.
+ * 
+ * @param value The initial value of the Ref.
+ * @param propertyName The property name to use for the context.
+ *
+ * @returns An ExtendedRef object that can be used like a regular Ref object.
+ */
+export function propertyRef<T>(value: T, propertyName: string): ExtendedRef<T> {
+    return extendedRef(value, {
+        propertyName
+    });
+}
+
+// #endregion Extended Refs

@@ -43,6 +43,7 @@ namespace Rock.Web.UI.Controls
         private PlaceHolder _phAttributes;
         private RockRadioButtonList _rblCommunicationPreference;
         private LinkButton _lbDelete;
+        private ImageEditor _imgProfile;
 
         /// <summary>
         /// Gets or sets the caption.
@@ -293,6 +294,46 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _rblCommunicationPreference.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show profile photo].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show profile photo]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowProfilePhoto
+        {
+            get
+            {
+                EnsureChildControls();
+                return _imgProfile.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _imgProfile.Visible = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [require profile photo].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require profile photo]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireProfilePhoto
+        {
+            get
+            {
+                EnsureChildControls();
+                return _imgProfile.Required;
+            }
+            set
+            {
+                EnsureChildControls();
+                _imgProfile.Required = value;
             }
         }
 
@@ -608,6 +649,27 @@ namespace Rock.Web.UI.Controls
                 _rblCommunicationPreference.SelectedValue = value.ConvertToInt().ToString();
             }
         }
+
+        /// <summary>
+        /// Gets or sets the profile photo binary identifier.
+        /// </summary>
+        /// <value>
+        /// The profile photo binary identifier.
+        /// </value>
+        public int? ProfilePhotoId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _imgProfile.BinaryFileId;
+            }
+            set
+            {
+                EnsureChildControls();
+                _imgProfile.BinaryFileId = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the validation group.
         /// </summary>
@@ -713,6 +775,11 @@ namespace Rock.Web.UI.Controls
                     return false;
                 }
 
+                if ( _imgProfile.Required && _imgProfile.BinaryFileId == null )
+                {
+                    return false;
+                }
+
                 var communicationPreference = (CommunicationType)_rblCommunicationPreference.SelectedValue.AsInteger();
                 if (communicationPreference == CommunicationType.SMS && _pnbMobile.Visible && _pnbMobile.Number.IsNullOrWhiteSpace())
                 {
@@ -751,6 +818,7 @@ namespace Rock.Web.UI.Controls
             _phAttributes = new PlaceHolder();
             _lbDelete = new LinkButton();
             _rblCommunicationPreference = new RockRadioButtonList();
+            _imgProfile = new ImageEditor() { RequiredErrorMessage = "Profile photo is required for the child." };
         }
 
         /// <summary>
@@ -775,6 +843,7 @@ namespace Rock.Web.UI.Controls
             _phAttributes.ID = "_phAttributes";
             _lbDelete.ID = "_lbDelete";
             _rblCommunicationPreference.ID = "_rblCommunicationPreference";
+            _imgProfile.ID = "_imgProfile";
 
             Controls.Add( _lNickName );
             Controls.Add( _lLastName );
@@ -790,6 +859,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _ddlRelationshipType );
             Controls.Add( _phAttributes );
             Controls.Add( _lbDelete );
+            Controls.Add( _imgProfile );
 
             _lNickName.Label = "First Name";
 
@@ -983,6 +1053,28 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
+                writer.RenderEndTag();
+
+                if ( this.ShowProfilePhoto )
+                {
+                    // Create row for profile photo
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _imgProfile.RenderControl( writer );
+                    writer.RenderEndTag();
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) ); // filler/blocker column
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                    // end Relationship row
+                }
+
+                // Attributes row
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
                 foreach ( Control attributeCtrl in _phAttributes.Controls )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
@@ -991,7 +1083,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                writer.RenderEndTag();
+                writer.RenderEndTag(); // End Attributes row
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Hr );
                 writer.RenderEndTag();
@@ -1206,6 +1298,14 @@ namespace Rock.Web.UI.Controls
         public Dictionary<string, string> AttributeValues { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
+        /// Gets or sets the profile photo binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The profile photo binary file identifier.
+        /// </value>
+        public int? ProfilePhotoId { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PreRegistrationChild"/> class.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -1221,6 +1321,7 @@ namespace Rock.Web.UI.Controls
             GradeOffset = person.GradeOffset;
             Age = person.Age;
             CommunicationPreference = person.CommunicationPreference;
+            ProfilePhotoId = person.PhotoId;
 
             var mobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             MobilePhoneNumber = mobilePhone?.Number;

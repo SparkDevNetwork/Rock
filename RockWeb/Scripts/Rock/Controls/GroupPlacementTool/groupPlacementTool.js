@@ -164,9 +164,15 @@
                         var groupTypeRoleId = $groupRoleMembers.find('.js-grouptyperole-id').val()
                         var personId = $draggedRegistrant.attr('data-person-id');
 
+                        /*
+                           GroupTypeId is purposely assigned default integer value to bypass the validation check in apiController. 
+                           However GroupMember PreSave Hook of SaveChanges takes care by assigning the correct value to GroupTypeId. 
+                        */
+
                         var groupMember = {
                             IsSystem: false,
                             GroupId: groupId,
+                            GroupTypeId: 0,
                             PersonId: personId,
                             GroupRoleId: groupTypeRoleId,
                             GroupMemberStatus: 1

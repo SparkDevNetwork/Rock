@@ -23,7 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -409,19 +409,14 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
             var rockContext = ( RockContext ) serviceInstance.Context;
+            rockContext.Database.Log = s => Debug.WriteLine( s );
 
-            var websiteInteractionChannel = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
-            var interactionComponentIds = new InteractionComponentService( rockContext )
-                .Queryable()
-                .Where( m => m.InteractionChannel.ChannelTypeMediumValueId == websiteInteractionChannel.Id && selectionConfig.WebsiteIds.Contains( m.InteractionChannelId ) )
-                .Select( m => m.Id );
-
-            var interactionQry = new InteractionSessionService( rockContext ).Queryable()
-                .Where( m => m.Interactions.Any( x => ( interactionComponentIds.Contains( x.InteractionComponent.InteractionChannelId ) && x.Operation == "View" ) ) );
+            var interactionQry = new InteractionService( rockContext ).Queryable()
+                .Where( i => i.InteractionSessionId.HasValue && selectionConfig.WebsiteIds.Contains( i.InteractionComponent.InteractionChannelId ) && i.Operation == "View" );
 
             if ( selectionConfig.PageIds.Count > 0 )
             {
-                interactionQry = interactionQry.Where( x => x.Interactions.Any( m => selectionConfig.PageIds.Contains( m.InteractionComponent.EntityId.Value ) ) );
+                interactionQry = interactionQry.Where( x => selectionConfig.PageIds.Contains( x.InteractionComponent.EntityId.Value ) );
             }
 
             if ( selectionConfig.DelimitedDateRangeValues.IsNotNullOrWhiteSpace() )
@@ -438,6 +433,8 @@ function() {
                 }
             }
 
+            var groupedQry = interactionQry.GroupBy( x => x.InteractionSessionId );
+
             var personQry = new PersonService( rockContext ).Queryable();
 
             if ( comparisonType != null )
@@ -445,19 +442,19 @@ function() {
                 switch ( comparisonType )
                 {
                     case ComparisonType.EqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() == selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => groupedQry.Where( x => x.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() == selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.LessThan:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() < selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => groupedQry.Where( x => x.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() < selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.LessThanOrEqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() <= selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => groupedQry.Where( x => x.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() <= selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.GreaterThan:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() > selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => groupedQry.Where( x => x.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() > selectionConfig.ViewsCount );
                         break;
                     case ComparisonType.GreaterThanOrEqualTo:
-                        personQry = personQry.Where( p => interactionQry.Where( xx => xx.Interactions.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() >= selectionConfig.ViewsCount );
+                        personQry = personQry.Where( p => groupedQry.Where( x => x.Any( m => m.PersonAlias.PersonId == p.Id ) ).Count() >= selectionConfig.ViewsCount );
                         break;
                 }
             }

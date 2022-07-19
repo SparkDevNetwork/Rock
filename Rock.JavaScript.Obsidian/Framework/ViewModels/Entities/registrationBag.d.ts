@@ -25,6 +25,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Registration View Model */
 export type RegistrationBag = {
+    /** Gets or sets the Id of the Rock.Model.Campus the registration will be tied to */
+    campusId?: number | null;
+
     /** Gets or sets the confirmation email. */
     confirmationEmail?: string | null;
 

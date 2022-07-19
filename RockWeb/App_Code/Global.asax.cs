@@ -273,7 +273,14 @@ namespace RockWeb
                 /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
                 Thread.CurrentThread.IsBackground = true;
 
-                Rock.Pdf.PdfGenerator.EnsureChromeEngineInstalled();
+                try
+                {
+                    Rock.Pdf.PdfGenerator.EnsureChromeEngineInstalled();
+                }
+                catch ( Exception ex )
+                {
+                    LogError( ex, null );
+                }
             } ).Start();
         }
 

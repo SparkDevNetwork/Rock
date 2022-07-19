@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -402,6 +402,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         AttributeList.Add( attribute.Id );
                     }
                 }
+            }
+
+            if ( AttributeList.Count > 0 )
+            {
+                lbEdit.Visible = true;
+                lbOrder.Visible = true;
+            }
+            else
+            {
+                lbEdit.Visible = false;
+                lbOrder.Visible = false;
             }
 
             CreateControls( true );

@@ -102,3 +102,45 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
 
     return false;
 }
+
+
+/**
+ * Debounces the function so it will only be called once during the specified
+ * delay period. The returned function should be called to trigger the original
+ * function that is to be debounced.
+ * 
+ * @param fn The function to be called once per delay period.
+ * @param delay The period in milliseconds. If the returned function is called
+ * more than once during this period then fn will only be executed once for
+ * the period.
+ * @param eager If true then the fn function will be called immediately and
+ * then any subsequent calls will be debounced.
+ *
+ * @returns A function to be called when fn should be executed.
+ */
+export function debounce(fn: (() => void), delay: number = 250, eager: boolean = false): (() => void) {
+    let timeout: NodeJS.Timeout | null = null;
+
+    return (): void => {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        else if (eager) {
+            // If there was no previous timeout and we are configured for
+            // eager calls, then execute now.
+            fn();
+
+            // An eager call should not result in a final debounce call.
+            timeout = setTimeout(() => timeout = null, delay);
+
+            return;
+        }
+
+        // If we had a previous timeout or we are not set for eager calls
+        // then set a timeout to initiate the function after the delay.
+        timeout = setTimeout(() => {
+            timeout = null;
+            fn();
+        }, delay);
+    };
+}

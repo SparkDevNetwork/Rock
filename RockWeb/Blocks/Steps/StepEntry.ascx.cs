@@ -759,7 +759,7 @@ namespace RockWeb.Blocks.Steps
             if ( step.StepStatus != null )
             {
                 lStatus.Text = string.Format(
-                    "<span class='label label-default' style='background-color: {0};'>{1}</span>",
+                    "<span class='label label-default' style='background-color: {0};color:#fff;'>{1}</span>",
                     step.StepStatus.StatusColorOrDefault,
                     step.StepStatus.Name );
             }

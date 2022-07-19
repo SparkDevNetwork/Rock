@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Rock.Model;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Chart
 {
@@ -47,6 +50,11 @@ namespace Rock.Chart
             /// Display legend?
             /// </summary>
             public bool DisplayLegend { get; set; } = true;
+
+            /// <summary>
+            /// Unit Type
+            /// </summary>
+            public UnitType UnitType { get; set; } = UnitType.Numeric;
 
             /// <summary>
             /// Bezier curve tension of the line. Set to 0 to draw straightlines.
@@ -248,7 +256,28 @@ namespace Rock.Chart
             // The suggested scale is from 0 to the maximum value in the data set, +10% to allow for a top margin.
             var suggestedMax = Math.Ceiling( maxValue * 1.1M );
 
-            var optionsYaxes = new List<object>() { new { ticks = new { beginAtZero = true, suggestedMax, stepSize }, stacked = isStacked } };
+            var callbackStr = "";
+            if ( args.UnitType == UnitType.Currency )
+            {
+                var currencyCode = RockCurrencyCodeInfo.GetCurrencyCode();
+                callbackStr = string.Format( @"function(label, index, labels) {{
+                return Intl.NumberFormat( undefined, {{ maximumFractionDigits: 0, minimumFractionDigits: 0, style: 'currency', currency: '{0}' }}).format( label );
+                }}", currencyCode );
+            }
+            else if ( args.UnitType == UnitType.Percentage )
+            {
+                callbackStr = @"function (value, index, values) {
+                return value + '%';
+              }";
+            }
+            else
+            {
+                callbackStr = @"function(label, index, labels) {
+                return Intl.NumberFormat().format(label);
+                }";
+            }
+
+            var optionsYaxes = new List<object>() { new { ticks = new { callback = new JRaw( callbackStr ), beginAtZero = true, suggestedMax, stepSize }, stacked = isStacked } };
 
             var optionsLegend = new { position = "bottom", display = args.DisplayLegend };
 
@@ -263,6 +292,32 @@ namespace Rock.Chart
                 args.SizeToFitContainerWidth = true;
             }
 
+            var tooltipsCallbackStr = "";
+            if ( args.UnitType == UnitType.Currency )
+            {
+                var currencyCode = RockCurrencyCodeInfo.GetCurrencyCode();
+                tooltipsCallbackStr = string.Format( @"function (tooltipItem, data) {{
+                let label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+                if (label) {{
+                    label += ': ';
+                }}
+                return label + Intl.NumberFormat( undefined, {{ style: 'currency', currency: '{0}' }}).format( tooltipItem.yLabel );
+                }}", currencyCode );
+            }
+            else if ( args.UnitType == UnitType.Percentage )
+            {
+                tooltipsCallbackStr = @"function (tooltipItem, data) {
+                 return Chart.defaults.global.tooltips.callbacks.label(tooltipItem, data) + '%';
+              }";
+            }
+            else
+            {
+                tooltipsCallbackStr = @"function (tooltipItem, data) {
+                return Chart.defaults.global.tooltips.callbacks.label(tooltipItem, data);
+                }";
+            }
+
             var optionsData = new
             {
                 maintainAspectRatio = args.MaintainAspectRatio,
@@ -272,6 +327,13 @@ namespace Rock.Chart
                 {
                     xAxes = optionsXaxes,
                     yAxes = optionsYaxes
+                },
+                tooltips = new
+                {
+                    callbacks = new
+                    {
+                        label = new JRaw( tooltipsCallbackStr )
+                    }
                 }
             };
 

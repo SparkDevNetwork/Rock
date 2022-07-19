@@ -26,6 +26,9 @@
                                 <li>
                                     <asp:LinkButton ID="lbAddCategoryChild" OnClick="lbAddCategoryChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                             </ul>
+                            <asp:LinkButton ID="lbSearchCategories" runat="server" class="btn btn-link btn-xs" OnClientClick="$(this).closest('.js-categorytreeview').find('.js-category-search').slideToggle();$(this).closest('.js-categorytreeview').find('.js-categorytreeview-search').focus();">
+                                <i class="fa fa-search"></i>
+                            </asp:LinkButton>
                         </div>
 
                         <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.js-categorytreeview').find('.js-config-panel').slideToggle()" runat="server">
@@ -34,7 +37,15 @@
                     </div>
                 </div>
                 <div class="panel-body">
-
+                    <div class="rocktree-drawer form-group js-category-search" style="display: none">
+                        <asp:Label runat="server" AssociatedControlID="tbSearch" Text="Search" CssClass="control-label d-none" />
+                        <asp:Panel ID="pnlSearch" runat="server" DefaultButton="btnSearch" CssClass="input-group">
+                            <asp:TextBox ID="tbSearch" runat="server" placeholder="Quick Find" CssClass="form-control input-sm js-categorytreeview-search" />
+                            <span class="input-group-btn">
+                                <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnSearch_Click"><i class="fa fa-search"></i></asp:LinkButton>
+                            </span>
+                        </asp:Panel>
+                    </div>
                     <div class="rocktree-drawer js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
                         <Rock:Toggle ID="tglHideInactiveItems" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveItems_CheckedChanged" Label="Show" />
                     </div>

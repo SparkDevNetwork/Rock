@@ -2200,6 +2200,38 @@ namespace Rock.Data
         /// </value>
         public DbSet<WorkflowType> WorkflowTypes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the person alias personalizations.
+        /// </summary>
+        /// <value>
+        /// The person alias personalizations.
+        /// </value>
+        public DbSet<PersonAliasPersonalization> PersonAliasPersonalizations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personalized entities.
+        /// </summary>
+        /// <value>
+        /// The personalized entities.
+        /// </value>
+        public DbSet<PersonalizedEntity> PersonalizedEntities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request filters.
+        /// </summary>
+        /// <value>
+        /// The request filters.
+        /// </value>
+        public DbSet<RequestFilter> RequestFilters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the segments.
+        /// </summary>
+        /// <value>
+        /// The segments.
+        /// </value>
+        public DbSet<PersonalizationSegment> Segments { get; set; }
+
         #endregion
 
         /// <summary>
