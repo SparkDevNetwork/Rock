@@ -39,6 +39,7 @@ namespace Rock.Web.UI.Controls
             public const string RequirementNotMet = " Requirement Not Met";
             public const string RequirementMetWithWarning = "Requirement Met With Warning";
         }
+
         private GroupRequirementType _groupMemberRequirementType;
 
         private bool _canOverride;
@@ -314,10 +315,19 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                var hasDoesNotMeetWorkflow = _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue && !_groupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow;
-                var hasWarningWorkflow = _groupMemberRequirementType.WarningWorkflowTypeId.HasValue && !_groupMemberRequirementType.ShouldAutoInitiateWarningWorkflow;
+                // Add workflow link if:
+                // the Group Requirement Type has a workflow type ID,
+                // the workflow is NOT auto initiated, and
+                // the requirement status matches the workflow purpose (Meets with Warning or Not Met).
+                var hasDoesNotMeetWorkflow = _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue
+                    && !_groupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
+                    && MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
 
-                // If "Does Not Meet" has a workflow and it is not automatically initiated, it should be added as a control.
+                var hasWarningWorkflow = _groupMemberRequirementType.WarningWorkflowTypeId.HasValue
+                    && !_groupMemberRequirementType.ShouldAutoInitiateWarningWorkflow
+                    && MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
+
+                // If any workflows or if the requirement can be overridden, create the unordered list and list items.
                 if ( hasDoesNotMeetWorkflow || hasWarningWorkflow || _canOverride )
                 {
                     writer.AddStyleAttribute( "list-style-type", "none" );
