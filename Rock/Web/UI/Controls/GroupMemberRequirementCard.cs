@@ -342,11 +342,16 @@ namespace Rock.Web.UI.Controls
                         var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
                         if ( workflowLink.PageId > 0 )
                         {
+                            // If the link text has a value, use it, otherwise use the default label key value.
+                            var workflowLinkText = _groupMemberRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                                _groupMemberRequirementType.DoesNotMeetWorkflowLinkText :
+                                LabelKey.RequirementNotMet;
+
                             _hlDoesNotMeetWorkflow = new HyperLink
                             {
                                 ID = "hlDoesNotMeetWorkflow" + this.ClientID,
-                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + _groupMemberRequirementType.DoesNotMeetWorkflowLinkText,
-                                Target="_blank",
+                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                                Target = "_blank",
                                 NavigateUrl = new PageReference( WorkflowEntryPage, qryParms ).BuildUrl()
                             };
                             _hlDoesNotMeetWorkflow.RenderControl( writer );
@@ -354,13 +359,13 @@ namespace Rock.Web.UI.Controls
                             _lbDoesNotMeetWorkflow = new LinkButton
                             {
                                 ID = "lblDoesNotMeetWorkflow" + this.ClientID,
-                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + _groupMemberRequirementType.DoesNotMeetWorkflowLinkText
+                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
                             };
                             _lbDoesNotMeetWorkflow.Click += lbDoesNotMeetWorkflow_Click;
                             _lbDoesNotMeetWorkflow.RenderControl( writer );
                         }
                         //RegisterWorkflowDetailPageScript( _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value, _groupMemberRequirementType.DoesNotMeetWorkflowType.Guid, _lbNotMetWorkflow, "This is a message to prompt before workflow." );
-                        
+
                         //_lbNotMetWorkflow.RenderControl( writer );
 
                         //writer.RenderBeginTag( HtmlTextWriterTag.Li );
@@ -404,11 +409,16 @@ namespace Rock.Web.UI.Controls
                         var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
                         if ( workflowLink.PageId > 0 )
                         {
+                            // If the link text has a value, use it, otherwise use the default label key value.
+                            var workflowLinkText = _groupMemberRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                                _groupMemberRequirementType.WarningWorkflowLinkText :
+                                LabelKey.RequirementMetWithWarning;
+
                             _hlWarningWorkflow = new HyperLink
                             {
                                 ID = "hlWarningWorkflow" + this.ClientID,
-                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + _groupMemberRequirementType.WarningWorkflowLinkText,
-                                Target="_blank",
+                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                                Target = "_blank",
                                 NavigateUrl = workflowLink.BuildUrl()
                             };
                             _hlWarningWorkflow.RenderControl( writer );
