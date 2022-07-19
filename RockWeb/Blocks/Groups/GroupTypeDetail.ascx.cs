@@ -2583,9 +2583,15 @@ namespace RockWeb.Blocks.Groups
             groupTypeGroupRequirement.AppliesToDataViewId = dvpAppliesToDataView.SelectedValueAsId();
             groupTypeGroupRequirement.AllowLeadersToOverride = cbAllowLeadersToOverride.Checked;
             groupTypeGroupRequirement.DueDateStaticDate = dpDueDate.SelectedDate;
-            groupTypeGroupRequirement.DueDateAttributeId = AttributeCache.AllForEntityType<Group>().Where( a=> a.Key == ddlDueDateGroupAttribute.SelectedValue).FirstOrDefault().Id;
 
-            // make sure we aren't adding a duplicate group requirement (same group requirement type and role)
+            //Set this due date attribute if it exists.
+            var groupDueDateAttributes = AttributeCache.AllForEntityType<Group>().Where( a => a.Key == ddlDueDateGroupAttribute.SelectedValue );
+            if ( groupDueDateAttributes.Any() )
+            {
+                groupTypeGroupRequirement.DueDateAttributeId = groupDueDateAttributes.First().Id;
+            }
+
+            // Make sure we aren't adding a duplicate group requirement (same group requirement type and role).
             var duplicateGroupRequirement = this.GroupTypeGroupRequirementsState.Any( a =>
                 a.GroupRequirementTypeId == groupTypeGroupRequirement.GroupRequirementTypeId
                 && a.GroupRoleId == groupTypeGroupRequirement.GroupRoleId
