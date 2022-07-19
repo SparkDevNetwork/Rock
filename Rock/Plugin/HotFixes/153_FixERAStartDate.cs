@@ -42,7 +42,36 @@ namespace Rock.Plugin.HotFixes
 
         private void FixIncorrectERAStartDate()
         {
-            Sql( HotFixMigrationResource._153_FixERAStartDate_RecoverERAStartDate_Update );
+            // Instead of trying to fix all the data right now, we will add a Post Update ("run once") job to do the cleanup.
+            // This job will run immediately after startup (see DataMigrationsStartup.OnStartup()).
+            Sql( $@"
+            IF NOT EXISTS (
+                SELECT 1
+                FROM [ServiceJob]
+                WHERE [Class] = 'Rock.Jobs.PostV136FixIncorrectERAStartDate'
+                                AND [Guid] = '{SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE}'
+            )
+            BEGIN
+                INSERT INTO [ServiceJob] (
+                    [IsSystem]
+                    ,[IsActive]
+                    ,[Name]
+                    ,[Description]
+                    ,[Class]
+                    ,[CronExpression]
+                    ,[NotificationStatus]
+                    ,[Guid]
+                ) VALUES (
+                    1
+                    ,1
+                    ,'Rock Update Helper v13.6 - Fix Incorrect eRA Start Dates'
+                    ,'This job fixes eRA Start Dates (broken in v13.4) for people who are currently eRA.'
+                    ,'Rock.Jobs.PostV136FixIncorrectERAStartDate'
+                    ,'0 0 21 1/1 * ? *'
+                    ,1
+                    ,'{SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE}'
+                );
+            END" );
         }
 
         private void Update_spCrm_FamilyAnalyticsEraDataset()
