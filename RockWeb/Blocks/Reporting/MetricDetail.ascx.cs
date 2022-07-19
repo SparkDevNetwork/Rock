@@ -381,6 +381,13 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.UnitType = rblUnitType.SelectedValueAsEnum<Rock.Model.UnitType>();
             metric.IsCumulative = cbIsCumulative.Checked;
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
+            if (metric.Id == 0)
+            {
+                metricService.Add(metric);
+
+                // save to make sure we have a metricId
+                rockContext.SaveChanges();
+            }
 
             avcEditAttributeValues.GetEditValues( metric );
 
@@ -502,14 +509,6 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 else
                 {
                     metric.ScheduleId = null;
-                }
-
-                if ( metric.Id == 0 )
-                {
-                    metricService.Add( metric );
-
-                    // save to make sure we have a metricId
-                    rockContext.SaveChanges();
                 }
 
                 // update MetricCategories for Metric
