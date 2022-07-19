@@ -2651,7 +2651,7 @@ namespace RockWeb.Blocks.Groups
         protected string GroupRequirementHasDataView( object dataViewValue )
         {
             var dataViewId = dataViewValue.ToString().AsIntegerOrNull();
-            if (dataViewId.HasValue)
+            if ( dataViewId.HasValue )
             {
                 return "<i class=\"fa fa-check\"></i>";
             }
@@ -3129,10 +3129,17 @@ namespace RockWeb.Blocks.Groups
             switch ( groupRequirementType.DueDateType )
             {
                 case DueDateType.Immediate:
-                case DueDateType.ConfiguredDate:
+                case DueDateType.DaysAfterJoining:
                     {
                         ddlDueDateGroupAttribute.Visible = false;
                         dpDueDate.Visible = false;
+                        break;
+                    }
+
+                case DueDateType.ConfiguredDate:
+                    {
+                        ddlDueDateGroupAttribute.Visible = false;
+                        dpDueDate.Visible = true;
                         break;
                     }
 
@@ -3140,13 +3147,6 @@ namespace RockWeb.Blocks.Groups
                     {
                         ddlDueDateGroupAttribute.Visible = true;
                         dpDueDate.Visible = false;
-                        break;
-                    }
-
-                case DueDateType.DaysAfterJoining:
-                    {
-                        ddlDueDateGroupAttribute.Visible = false;
-                        dpDueDate.Visible = true;
                         break;
                     }
             }
