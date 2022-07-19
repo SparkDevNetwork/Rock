@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="pnlContent" runat="server" class="card card-profile card-profile-bio card-profile-bio-condensed overflow-hidden h-100 m-0 flex-row align-items-center">
     <ContentTemplate>
-        <div id="summary-profile-image" class="profile-image">
+        <div id="profile-image" class="profile-image">
             <asp:Literal ID="lImage" runat="server" />
         </div>
 
