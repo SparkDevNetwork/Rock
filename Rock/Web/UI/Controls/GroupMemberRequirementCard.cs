@@ -61,16 +61,6 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbDoesNotMeetWorkflow;
 
         /// <summary>
-        /// Hyperlink control for warning workflow.
-        /// </summary>
-        private HyperLink _hlWarningWorkflow;
-
-        /// <summary>
-        /// Hyperlink control for "not met" workflow.
-        /// </summary>
-        private HyperLink _hlDoesNotMeetWorkflow;
-
-        /// <summary>
         /// Modal Dialog control to permit an override.
         /// </summary>
         private ModalDialog _modalDialog;
@@ -331,6 +321,8 @@ namespace Rock.Web.UI.Controls
                 if ( hasDoesNotMeetWorkflow || hasWarningWorkflow || _canOverride )
                 {
                     writer.AddStyleAttribute( "list-style-type", "none" );
+                    writer.AddStyleAttribute( "margin", "0" );
+                    writer.AddStyleAttribute( "padding", "0" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
                     if ( hasDoesNotMeetWorkflow )
@@ -346,15 +338,6 @@ namespace Rock.Web.UI.Controls
                             var workflowLinkText = _groupMemberRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace() ?
                                 _groupMemberRequirementType.DoesNotMeetWorkflowLinkText :
                                 LabelKey.RequirementNotMet;
-
-                            _hlDoesNotMeetWorkflow = new HyperLink
-                            {
-                                ID = "hlDoesNotMeetWorkflow" + this.ClientID,
-                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
-                                Target = "_blank",
-                                NavigateUrl = new PageReference( WorkflowEntryPage, qryParms ).BuildUrl()
-                            };
-                            _hlDoesNotMeetWorkflow.RenderControl( writer );
 
                             _lbDoesNotMeetWorkflow = new LinkButton
                             {
@@ -413,15 +396,14 @@ namespace Rock.Web.UI.Controls
                             var workflowLinkText = _groupMemberRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
                                 _groupMemberRequirementType.WarningWorkflowLinkText :
                                 LabelKey.RequirementMetWithWarning;
-
-                            _hlWarningWorkflow = new HyperLink
+                            _lbWarningWorkflow = new LinkButton
                             {
-                                ID = "hlWarningWorkflow" + this.ClientID,
+                                ID = "lblWarningWorkflow" + this.ClientID,
                                 Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
-                                Target = "_blank",
-                                NavigateUrl = workflowLink.BuildUrl()
                             };
-                            _hlWarningWorkflow.RenderControl( writer );
+                            _lbWarningWorkflow.Click += lbWarningWorkflow_Click;
+                            _lbWarningWorkflow.RenderControl( writer );
+
                         }
                         //if ( workflowLink.PageId > 0 )
                         //{
@@ -583,6 +565,57 @@ namespace Rock.Web.UI.Controls
                     List<string> workflowErrors;
                     var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
                     // = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
+
+
+
+                    // Extra from render control -- keep the workflow NavigateURL
+                    //_hlDoesNotMeetWorkflow = new HyperLink
+                    //{
+                    //    ID = "hlDoesNotMeetWorkflow" + this.ClientID,
+                    //    Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                    //    Target = "_blank",
+                    //    NavigateUrl = new PageReference( WorkflowEntryPage, qryParms ).BuildUrl()
+                    //};
+                    //_hlDoesNotMeetWorkflow.RenderControl( writer );
+
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// Handles the Click event of the lbWarningWorkflow_Click control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbWarningWorkflow_Click( object sender, EventArgs e )
+        {
+            //trigger the workflow.
+            //new PageReference( WorkflowEntryPage, qryParms ).BuildUrl();
+            if ( _groupMemberRequirementType.WarningWorkflowTypeId.HasValue )
+            {
+                var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.WarningWorkflowTypeId.Value );
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+
+                    List<string> workflowErrors;
+                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
+                    // = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
+
+
+
+                    // Extra from render control -- keep the workflow NavigateURL
+                    //_hlDoesNotMeetWorkflow = new HyperLink
+                    //{
+                    //    ID = "hlDoesNotMeetWorkflow" + this.ClientID,
+                    //    Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                    //    Target = "_blank",
+                    //    NavigateUrl = new PageReference( WorkflowEntryPage, qryParms ).BuildUrl()
+                    //};
+                    //_hlDoesNotMeetWorkflow.RenderControl( writer );
+
                 }
             }
         }
