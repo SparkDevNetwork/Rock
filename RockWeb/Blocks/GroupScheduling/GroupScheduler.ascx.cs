@@ -1275,6 +1275,7 @@ btnCopyToClipboard.ClientID );
                 .Where( a => a.Attendees.Any( x => x.RequestedToAttend == true || x.ScheduledToAttend == true ) )
                 .Select( a => new AttendanceOccurrenceRowItem
                 {
+                    OccurrenceDisplayMode = occurrenceDisplayMode,
                     LocationName = "No Location Preference",
                     GroupLocationOrder = 0,
                     LocationId = null,
@@ -1700,6 +1701,11 @@ btnCopyToClipboard.ClientID );
             {
                 var lMultiGroupModeOccurrenceScheduledDate = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledDate" ) as Literal;
                 var lMultiGroupModeOccurrenceScheduledTime = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledTime" ) as Literal;
+
+                if ( !attendanceOccurrenceRowItem.LocationId.HasValue )
+                {
+                    lMultiGroupModeLocationTitle.Text = $"<span class=\"resource-no-location-preference\">{attendanceOccurrenceRowItem.LocationName}</span>";
+                }
 
                 // show date in 'Sunday, June 15' format
                 lMultiGroupModeOccurrenceScheduledDate.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
