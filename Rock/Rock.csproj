@@ -861,6 +861,7 @@
     <Compile Include="Field\Types\MobileNavigationActionFieldType.cs" />
     <Compile Include="Jobs\PopulateInteractionSessionData.cs" />
     <Compile Include="Jobs\PostV127DataMigrationsRebuildGroupSalutations.cs" />
+    <Compile Include="Jobs\PostV136FixIncorrectERAStartDate.cs" />
     <Compile Include="Jobs\PostV13DataMigrationsAddInteractionComponentIndexToInteraction.cs" />
     <Compile Include="Jobs\PostV14DataMigrationsAddMissingMediaElementInteractions.cs" />
     <Compile Include="Jobs\ProcessElevatedSecurity.cs" />
@@ -1360,6 +1361,7 @@
     <Compile Include="Plugin\HotFixes\144_AddRebuildGroupSalutationsJob.cs" />
     <Compile Include="Plugin\HotFixes\154_Rollup_148_152.cs" />
     <Compile Include="Plugin\HotFixes\153_FixERAStartDate.cs" />
+    <Compile Include="Plugin\HotFixes\155_BackgroundCheckPersonEmailValidFix.cs" />
     <Compile Include="Reporting\ComparisonValue.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\ActivityFilter.cs" />
     <Compile Include="Reporting\DataFilter\ConnectionRequest\AttendanceInPlacementGroup.cs" />

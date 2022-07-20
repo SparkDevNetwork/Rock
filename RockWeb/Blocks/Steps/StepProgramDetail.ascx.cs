@@ -1261,12 +1261,7 @@ namespace RockWeb.Blocks.Steps
             lReadOnlyTitle.Text = stepProgram.Name.FormatAsHtmlTitle();
             lStepProgramName.Text = stepProgram.Name;
 
-            // Create the read-only description text.
-            var descriptionListMain = new DescriptionList();
-
-            descriptionListMain.Add( "Description", stepProgram.Description );
-
-            lStepProgramDescription.Text = descriptionListMain.Html;
+            lStepProgramDescription.Text = stepProgram.Description.ScrubHtmlAndConvertCrLfToBr();
 
             // Configure Label: Inactive
             hlInactive.Visible = !stepProgram.IsActive;
