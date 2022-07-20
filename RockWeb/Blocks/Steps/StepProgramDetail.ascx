@@ -176,7 +176,7 @@
                         <Rock:DataTextBox ID="tbStepStatusName" SourceTypeName="Rock.Model.StepStatus, Rock" PropertyName="Name" Label="Name" runat="server" ValidationGroup="StepStatus" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Is Active" ValidationGroup="StepStatus" />
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" ValidationGroup="StepStatus" />
                         <Rock:RockCheckBox ID="cbIsCompleted"
                             runat="server"
                             Label="Is Complete"
