@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1041,9 +1041,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgEventOccurrenceAttribute_SaveClick( object sender, EventArgs e )
         {
-#pragma warning disable 0618 // Type or member is obsolete
-            var attribute = SaveChangesToStateCollection( edtEventOccurrenceAttributes, EventOccurrenceAttributesState );
-#pragma warning restore 0618 // Type or member is obsolete
+            var attribute = edtEventOccurrenceAttributes.SaveChangesToStateCollection( EventOccurrenceAttributesState );
 
             if ( !attribute.IsValid )
             {
@@ -1261,49 +1259,5 @@ namespace RockWeb.Blocks.Event
             EventItemAudience,
             EventOccurrenceAttributes
         }
-
-        #region Obsolete Code
-
-        /// <summary>
-        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
-        /// Non-editable system properties of the existing Attribute state are preserved.
-        /// </summary>
-        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
-        /// <param name="attributeStateCollection">The stored state collection.</param>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
-        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
-        {
-            // Load the editor values into a new Attribute instance.
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-
-            editor.GetAttributeProperties( attribute );
-
-            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
-            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
-
-            if ( attributeState != null )
-            {
-                attribute.Order = attributeState.Order;
-                attribute.CreatedDateTime = attributeState.CreatedDateTime;
-                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
-                attribute.ForeignGuid = attributeState.ForeignGuid;
-                attribute.ForeignId = attributeState.ForeignId;
-                attribute.ForeignKey = attributeState.ForeignKey;
-
-                attributeStateCollection.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                // Set the Order of the new entry as the last item in the collection.
-                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
-            }
-
-            attributeStateCollection.Add( attribute );
-
-            return attribute;
-        }
-
-        #endregion
     }
 }
