@@ -259,8 +259,13 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
 export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, options?: UploadOptions): Promise<ListItemBag> {
     let url = `${options?.baseUrl ?? "/FileUploader.ashx"}?isBinaryFile=True&fileTypeGuid=${binaryFileTypeGuid}`;
 
-    if (options?.isTemporary) {
+    // Assume file is temporary unless specified otherwise so that files
+    // that don't end up getting used will get cleaned up.
+    if (options?.isTemporary === false) {
         url += "&isTemporary=False";
+    }
+    else {
+        url += "&isTemporary=True";
     }
 
     const formData = new FormData();
