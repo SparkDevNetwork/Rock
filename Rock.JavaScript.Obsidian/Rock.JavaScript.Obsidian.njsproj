@@ -330,6 +330,7 @@
     <TypeScriptCompile Include="Framework\Types\Reporting\comparisonType.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\block.d.ts" />
     <TypeScriptCompile Include="Framework\Types\Utility\component.d.ts" />
+    <TypeScriptCompile Include="Framework\Types\Utility\http.d.ts" />
     <TypeScriptCompile Include="Framework\Types\validationRules.d.ts" />
     <TypeScriptCompile Include="Framework\Utility\fieldTypes.ts" />
     <TypeScriptCompile Include="Framework\Utility\popover.ts" />

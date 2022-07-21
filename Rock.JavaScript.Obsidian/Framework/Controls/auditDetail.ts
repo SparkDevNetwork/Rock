@@ -19,7 +19,7 @@ import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { EntityAuditBag } from "@Obsidian/ViewModels/Utility/entityAuditBag";
 import { AuditDetailGetAuditDetailsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/auditDetailGetAuditDetailsOptionsBag";
 import { Guid } from "@Obsidian/Types";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 
 export default defineComponent({
@@ -48,8 +48,9 @@ export default defineComponent({
     setup(props) {
         // #region Values
 
-        const auditBag = ref<EntityAuditBag | null>(null);
         const securityGrantToken = useSecurityGrantToken();
+        const http = useHttp();
+        const auditBag = ref<EntityAuditBag | null>(null);
 
         // #endregion
 
@@ -97,7 +98,7 @@ export default defineComponent({
                 securityGrantToken: securityGrantToken.value
             };
 
-            const result = await post<EntityAuditBag>("/api/v2/Controls/AuditDetailGetAuditDetails", undefined, data);
+            const result = await http.post<EntityAuditBag>("/api/v2/Controls/AuditDetailGetAuditDetails", undefined, data);
 
             auditBag.value = result.isSuccess && result.data ? result.data : null;
         };

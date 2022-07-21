@@ -16,17 +16,12 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { doApiCall, HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Utility/http";
-import { Component, defineComponent, PropType, provide, reactive } from "vue";
-import { BlockConfig, BlockHttp, InvokeBlockActionFunc } from "@Obsidian/Utility/block";
+import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
+import { Component, defineComponent, PropType, provide } from "vue";
 import { useStore } from "@Obsidian/PageState";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-
-type LogItem = {
-    date: RockDateTime;
-    method: HttpMethod;
-    url: string;
-};
+import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
+import { BlockConfig, InvokeBlockActionFunc } from "@Obsidian/Types/Utility/block";
 
 const store = useStore();
 
@@ -47,18 +42,7 @@ export default defineComponent({
         }
     },
     setup(props) {
-        const log: LogItem[] = reactive([]);
-
-        const writeLog = (method: HttpMethod, url: string): void => {
-            log.push({
-                date: RockDateTime.now(),
-                method,
-                url
-            });
-        };
-
         const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> => {
-            writeLog(method, url);
             return await doApiCall<T>(method, url, params, data);
         };
 
@@ -79,9 +63,12 @@ export default defineComponent({
             });
         };
 
-        const blockHttp: BlockHttp = { get, post };
+        provideHttp({
+            doApiCall,
+            get,
+            post
+        });
 
-        provide("http", blockHttp);
         provide("invokeBlockAction", invokeBlockAction);
         provide("configurationValues", props.config.configurationValues);
     },

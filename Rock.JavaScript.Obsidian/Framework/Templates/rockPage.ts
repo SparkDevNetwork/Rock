@@ -20,10 +20,10 @@ import { useStore } from "@Obsidian/PageState";
 import "@Obsidian/ValidationRules";
 import "@Obsidian/FieldTypes/index";
 import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
-import { BlockConfig } from "@Obsidian/Utility/block";
 import { PageConfig } from "@Obsidian/Utility/page";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
+import { BlockConfig } from "@Obsidian/Types/Utility/block";
 
 type DebugTimingConfig = {
     elementId: string;

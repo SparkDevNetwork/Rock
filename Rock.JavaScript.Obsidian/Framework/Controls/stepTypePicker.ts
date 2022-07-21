@@ -16,7 +16,7 @@
 //
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { Guid } from "@Obsidian/Types";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { StepTypePickerGetStepTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/stepTypePickerGetStepTypesOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
@@ -52,6 +52,7 @@ export default defineComponent({
 
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
         const standardProps = useStandardAsyncPickerProps(props);
+        const http = useHttp();
         const loadedItems = ref<ListItemBag[] | null>(null);
 
         // #endregion
@@ -77,7 +78,7 @@ export default defineComponent({
             const options: Partial<StepTypePickerGetStepTypesOptionsBag> = {
                 stepProgramGuid: props.stepProgramGuid
             };
-            const result = await post<ListItemBag[]>("/api/v2/Controls/StepTypePickerGetStepTypes", undefined, options);
+            const result = await http.post<ListItemBag[]>("/api/v2/Controls/StepTypePickerGetStepTypes", undefined, options);
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;

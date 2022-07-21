@@ -15,35 +15,11 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { SecurityGrant } from "@Obsidian/Types/Utility/block";
+import { InvokeBlockActionFunc, SecurityGrant } from "@Obsidian/Types/Utility/block";
 import { ExtendedRef } from "@Obsidian/Types/Utility/component";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-import { HttpBodyData, HttpResult, HttpUrlParams } from "./http";
 import { inject, provide, Ref, ref, watch } from "vue";
 import { RockDateTime } from "./rockDateTime";
-
-export type ConfigurationValues = Record<string, unknown>;
-
-export type BlockConfig = {
-    blockFileUrl: string;
-    rootElement: Element;
-    blockGuid: Guid;
-    configurationValues: ConfigurationValues;
-};
-
-export type InvokeBlockActionFunc = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
-
-export type BlockHttpGet = <T>(url: string, params?: HttpUrlParams) => Promise<HttpResult<T>>;
-
-export type BlockHttpPost = <T>(url: string, params?: HttpUrlParams, data?: HttpBodyData) => Promise<HttpResult<T>>;
-
-export type BlockHttp = {
-    get: BlockHttpGet;
-    post: BlockHttpPost;
-};
-
-
 
 // TODO: Change these to use symbols
 

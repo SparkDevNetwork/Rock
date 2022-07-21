@@ -16,7 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { popover } from "@Obsidian/Utility/popover";
 import { tooltip } from "@Obsidian/Utility/tooltip";
 import { BadgeListGetBadgesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/badgeListGetBadgesOptionsBag";
@@ -53,6 +53,7 @@ export default defineComponent({
     setup(props) {
         // #region Values
 
+        const http = useHttp();
         const badges = ref<string[]>([]);
         const containerRef = ref<HTMLElement | null>(null);
 
@@ -68,7 +69,7 @@ export default defineComponent({
                 entityKey: props.entityKey
             };
 
-            const result = await post<RenderedBadgeBag[]>("/api/v2/Controls/BadgeListGetBadges", undefined, data);
+            const result = await http.post<RenderedBadgeBag[]>("/api/v2/Controls/BadgeListGetBadges", undefined, data);
 
             if (result.isSuccess && result.data) {
                 // Get all the HTML content to be rendered.

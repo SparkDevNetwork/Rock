@@ -18,7 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
@@ -52,10 +52,11 @@ export default defineComponent({
     },
 
     setup(props, { emit }) {
-        const internalValue = useVModelPassthrough(props, "modelValue", emit);
-        const itemsSource = ref<(() => Promise<ListItemBag[]>) | null>(null);
         const standardProps = useStandardAsyncPickerProps(props);
         const securityGrantToken = useSecurityGrantToken();
+        const http = useHttp();
+        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+        const itemsSource = ref<(() => Promise<ListItemBag[]>) | null>(null);
 
         const loadItems = async (): Promise<ListItemBag[]> => {
             const options: Partial<DefinedValuePickerGetDefinedValuesOptionsBag> = {
@@ -63,7 +64,7 @@ export default defineComponent({
                 securityGrantToken: securityGrantToken.value
             };
             const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
-            const result = await post<ListItemBag[]>(url, undefined, options);
+            const result = await http.post<ListItemBag[]>(url, undefined, options);
 
             if (result.isSuccess && result.data) {
                 return result.data;
