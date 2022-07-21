@@ -1696,7 +1696,7 @@ btnCopyToClipboard.ClientID );
 
             var pnlMultiGroupModePanelHeading = e.Item.FindControl( "pnlMultiGroupModePanelHeading" ) as Panel;
             var lMultiGroupModeLocationTitle = e.Item.FindControl( "lMultiGroupModeLocationTitle" ) as Literal;
-            lMultiGroupModeLocationTitle.Text = attendanceOccurrenceRowItem.LocationName;
+            lMultiGroupModeLocationTitle.Text = $"<span class=\"location\">{attendanceOccurrenceRowItem.LocationName}</span>";
             if ( attendanceOccurrenceRowItem.ScheduledDateTime.HasValue )
             {
                 var lMultiGroupModeOccurrenceScheduledDate = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledDate" ) as Literal;
@@ -1704,7 +1704,7 @@ btnCopyToClipboard.ClientID );
 
                 if ( !attendanceOccurrenceRowItem.LocationId.HasValue )
                 {
-                    lMultiGroupModeLocationTitle.Text = $"<span class=\"resource-no-location-preference\">{attendanceOccurrenceRowItem.LocationName}</span>";
+                    lMultiGroupModeLocationTitle.Text = $"<span class=\"location resource-no-location-preference\">{attendanceOccurrenceRowItem.LocationName}</span>";
                 }
 
                 // show date in 'Sunday, June 15' format
