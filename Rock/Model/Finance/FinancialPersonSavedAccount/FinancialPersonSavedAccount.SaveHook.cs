@@ -60,7 +60,7 @@ namespace Rock.Model
                     RockLogger.Log.Error( ex, $"An exception occurred while attempting to add a reciprocal relationship to a FinancialPaymentDetail from FinancialPersonSavedAccount {Entity.Id}." );
                 }
 
-                base.PreSave();
+                base.PostSave();
             }
 
             /// <summary>
