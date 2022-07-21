@@ -36,12 +36,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />
-    <Folder Include="src\CMS\" />
-    <Folder Include="src\CMS\MediaAccountDetail\" />
+    <Folder Include="src\Cms\" />
+    <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\CampusDetail\" />
-    <Folder Include="src\CRM\" />
-    <Folder Include="src\CRM\PersonDetail\" />
+    <Folder Include="src\Crm\" />
+    <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Engagement\" />
     <Folder Include="src\Engagement\Steps\" />
     <Folder Include="src\Engagement\Steps\StepFlow\" />
@@ -59,17 +59,17 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="src\CMS\mediaAccountDetail.ts" />
-    <TypeScriptCompile Include="src\CMS\MediaAccountDetail\editPanel.ts" />
-    <TypeScriptCompile Include="src\CMS\MediaAccountDetail\types.d.ts" />
-    <TypeScriptCompile Include="src\CMS\MediaAccountDetail\viewPanel.ts" />
+    <TypeScriptCompile Include="src\Cms\mediaAccountDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.ts" />
+    <TypeScriptCompile Include="src\Cms\MediaAccountDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\MediaAccountDetail\viewPanel.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.ts" />
-    <TypeScriptCompile Include="src\CRM\attributeValues.ts" />
-    <TypeScriptCompile Include="src\CRM\PersonDetail\badges.ts" />
+    <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
+    <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\stepFlow.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\StepFlow\flowNodeDiagram.ts" />
     <TypeScriptCompile Include="src\Event\registrationEntry.ts" />

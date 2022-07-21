@@ -22,11 +22,11 @@ import TextBox from "@Obsidian/Controls/textBox";
 import ComponentPicker from "@Obsidian/Controls/componentPicker";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/CMS/MediaAccountDetail/mediaAccountBag";
-import { MediaAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CMS/MediaAccountDetail/mediaAccountDetailOptionsBag";
+import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountBag";
+import { MediaAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountDetailOptionsBag";
 
 export default defineComponent({
-    name: "CMS.MediaAccountDetail.EditPanel",
+    name: "Cms.MediaAccountDetail.EditPanel",
 
     props: {
         modelValue: {

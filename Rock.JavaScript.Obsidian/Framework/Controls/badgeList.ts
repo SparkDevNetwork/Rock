@@ -20,7 +20,7 @@ import { post } from "@Obsidian/Utility/http";
 import { popover } from "@Obsidian/Utility/popover";
 import { tooltip } from "@Obsidian/Utility/tooltip";
 import { BadgeListGetBadgesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/badgeListGetBadgesOptionsBag";
-import { RenderedBadgeBag } from "@Obsidian/ViewModels/CRM/renderedBadgeBag";
+import { RenderedBadgeBag } from "@Obsidian/ViewModels/Crm/renderedBadgeBag";
 import { defineComponent, nextTick, PropType, ref, watch } from "vue";
 
 /** Displays a collection of badges for the specified entity. */

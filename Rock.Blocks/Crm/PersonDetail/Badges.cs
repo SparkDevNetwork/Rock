@@ -24,11 +24,11 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModels.Blocks.CRM.PersonDetail.Badges;
-using Rock.ViewModels.CRM;
+using Rock.ViewModels.Blocks.Crm.PersonDetail.Badges;
+using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.CRM.PersonDetail
+namespace Rock.Blocks.Crm.PersonDetail
 {
     /// <summary>
     /// Handles displaying badges for a person.

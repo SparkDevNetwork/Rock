@@ -27,11 +27,11 @@ import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useCon
 import { debounce } from "@Obsidian/Utility/util";
 import { NavigationUrlKey } from "./MediaAccountDetail/types";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/CMS/MediaAccountDetail/mediaAccountBag";
-import { MediaAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CMS/MediaAccountDetail/mediaAccountDetailOptionsBag";
+import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountBag";
+import { MediaAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountDetailOptionsBag";
 
 export default defineComponent({
-    name: "CMS.MediaAccountDetail",
+    name: "Cms.MediaAccountDetail",
 
     components: {
         Alert,

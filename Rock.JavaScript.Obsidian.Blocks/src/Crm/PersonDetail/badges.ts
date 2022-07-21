@@ -19,12 +19,12 @@ import { computed, defineComponent, nextTick } from "vue";
 import Alert from "@Obsidian/Controls/alert";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import { EntityType } from "@Obsidian/SystemGuids";
-import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/CRM/PersonDetail/Badges/badgesConfigurationBox";
+import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";
 import { useConfigurationValues } from "@Obsidian/Utility/block";
 import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
 
 export default defineComponent({
-    name: "CRM.PersonDetail.Badges",
+    name: "Crm.PersonDetail.Badges",
 
     components: {
         Alert,

@@ -324,6 +324,21 @@ namespace Rock.Model
                 var entityTypeService = new EntityTypeService( rockContext );
 
                 var reflectedTypeNames = reflectedTypes.Select( a => a.FullName ).ToArray();
+                var reflectedTypeGuids = entityTypesFromReflection.Values.Select( a => a.Guid ).ToArray();
+
+                var duplicateGuids = reflectedTypeGuids
+                    .GroupBy( g => g )
+                    .Where( g => g.Count() > 1 )
+                    .Select( g => g.Key.ToString() )
+                    .ToList();
+
+                // Throw an error if duplicate guids were detected in the code.
+                // This will intentionally prevent Rock from starting so the
+                // developer can quickly find and fix the error.
+                if ( duplicateGuids.Any() )
+                {
+                    throw new Exception( $"Duplicate EntityType system guids detected: {duplicateGuids.JoinStrings( ", " )}" );
+                }
 
                 // Get all the EntityType records from the Database without filtering them (we'll have to deal with them all)
                 // Then we'll split them into a list of ones that don't exist and ones that still exist
@@ -334,7 +349,7 @@ namespace Rock.Model
                 var reflectedEntityTypesThatNoLongerExist = entityTypeInDatabaseList
                     .Where( e => !string.IsNullOrEmpty( e.AssemblyName ) )
                     .ToList()
-                    .Where( e => !reflectedTypeNames.Contains( e.Name ) )
+                    .Where( e => !reflectedTypeNames.Contains( e.Name ) && !reflectedTypeGuids.Contains( e.Guid ) )
                     .OrderBy( a => a.Name )
                     .ToList();
 
@@ -382,7 +397,7 @@ namespace Rock.Model
                 // Now get the entityType records that are still in the list of types we found thru reflection
                 // but we'll have C# narrow it down to ones that aren't in the reflectedTypeNames list
                 var reflectedEntityTypesThatStillExist = entityTypeInDatabaseList
-                    .Where( e => reflectedTypeNames.Contains( e.Name ) )
+                    .Where( e => reflectedTypeNames.Contains( e.Name ) || reflectedTypeGuids.Contains( e.Guid ) )
                     .ToList();
 
                 // Update any existing entities
@@ -391,7 +406,14 @@ namespace Rock.Model
                     var entityTypeFromReflection = entityTypesFromReflection.GetValueOrNull( existingEntityType.Name );
                     if ( entityTypeFromReflection == null )
                     {
-                        continue;
+                        // Check if the entity type had its class name change by
+                        // seeing if we already have one with the same guid.
+                        entityTypeFromReflection = entityTypesFromReflection.Values.FirstOrDefault( e => e.Guid == existingEntityType.Guid );
+
+                        if ( entityTypeFromReflection == null )
+                        {
+                            continue;
+                        }
                     }
 
                     if ( existingEntityType.Name != entityTypeFromReflection.Name ||

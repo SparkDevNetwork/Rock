@@ -25,9 +25,9 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.CMS.MediaAccountDetail;
+using Rock.ViewModels.Blocks.Cms.MediaAccountDetail;
 
-namespace Rock.Blocks.CMS
+namespace Rock.Blocks.Cms
 {
     /// <summary>
     /// Displays the details of a particular media account.

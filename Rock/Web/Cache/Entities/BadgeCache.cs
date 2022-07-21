@@ -22,7 +22,7 @@ using System.Runtime.Serialization;
 using Rock.Badge;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.CRM;
+using Rock.ViewModels.Crm;
 
 namespace Rock.Web.Cache
 {

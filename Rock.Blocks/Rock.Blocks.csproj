@@ -59,10 +59,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="CMS\MediaAccountDetail.cs" />
+    <Compile Include="Cms\MediaAccountDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
-    <Compile Include="CRM\PersonDetail\Badges.cs" />
+    <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />

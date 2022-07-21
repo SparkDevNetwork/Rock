@@ -17,7 +17,7 @@
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.CMS.MediaAccountDetail
+namespace Rock.ViewModels.Blocks.Cms.MediaAccountDetail
 {
     /// <summary>
     /// Class MediaAccountBag.

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-using Rock.ViewModels.CRM;
+using Rock.ViewModels.Crm;
 
-namespace Rock.ViewModels.Blocks.CRM.PersonDetail.Badges
+namespace Rock.ViewModels.Blocks.Crm.PersonDetail.Badges
 {
     /// <summary>
     /// Contains all the initial configuration data required to render the

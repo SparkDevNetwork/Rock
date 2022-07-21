@@ -20,11 +20,11 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
 import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/CMS/MediaAccountDetail/mediaAccountBag";
-import { MediaAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CMS/MediaAccountDetail/mediaAccountDetailOptionsBag";
+import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountBag";
+import { MediaAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountDetailOptionsBag";
 
 export default defineComponent({
-    name: "CMS.MediaAccountDetail.ViewPanel",
+    name: "Cms.MediaAccountDetail.ViewPanel",
 
     props: {
         modelValue: {

@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { RenderedBadgeBag } from "@Obsidian/ViewModels/CRM/renderedBadgeBag";
+import { RenderedBadgeBag } from "@Obsidian/ViewModels/Crm/renderedBadgeBag";
 
 /**
  * Contains all the initial configuration data required to render the

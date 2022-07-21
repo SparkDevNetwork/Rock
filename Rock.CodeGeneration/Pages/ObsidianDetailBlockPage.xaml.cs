@@ -167,10 +167,11 @@ namespace Rock.CodeGeneration.Pages
         {
             var files = new List<GeneratedFile>();
             var domain = options.EntityType.GetCustomAttribute<Data.RockDomainAttribute>()?.Name ?? "Unknown";
-            var bagPath = $"Rock.ViewModels\\Blocks\\{domain}\\{options.EntityType.Name}Detail";
-            var blockPath = $"Rock.Blocks\\{domain}";
-            var typeScriptBlockPath = $"Rock.JavaScript.Obsidian.Blocks\\src\\{domain}";
-            var bagNamespace = $"Rock.ViewModels.Blocks.{domain}.{options.EntityType.Name}Detail";
+            var domainNamespace = SupportTools.GetDomainFolderName( domain );
+            var bagPath = $"Rock.ViewModels\\Blocks\\{domainNamespace}\\{options.EntityType.Name}Detail";
+            var blockPath = $"Rock.Blocks\\{domainNamespace}";
+            var typeScriptBlockPath = $"Rock.JavaScript.Obsidian.Blocks\\src\\{domainNamespace}";
+            var bagNamespace = $"Rock.ViewModels.Blocks.{domainNamespace}.{options.EntityType.Name}Detail";
             var generator = new CSharpViewModelGenerator();
             var tsGenerator = new TypeScriptViewModelGenerator();
 
@@ -181,6 +182,7 @@ namespace Rock.CodeGeneration.Pages
                 ["EntityName"] = options.EntityType.Name,
                 ["ServiceName"] = options.ServiceType.Name,
                 ["Domain"] = domain,
+                ["DomainNamespace"] = domainNamespace,
                 ["Properties"] = options.Properties,
                 ["UseAttributeValues"] = options.UseAttributeValues,
                 ["UseDescription"] = options.Properties.Any( p => p.Name == "Description" ),
