@@ -542,7 +542,8 @@ namespace Rock.Model
         private void ClearInapplicableGroupRequirements( RockContext rockContext )
         {
             var inapplicableGroupRequirements = GroupMemberRequirements
-                .Where( r => r.GroupRequirement.GroupRoleId != this.GroupRoleId && !r.WasManuallyCompleted && !r.WasOverridden )
+                .Where( r => r.GroupRequirement.GroupRoleId != this.GroupRoleId && !r.WasManuallyCompleted && !r.WasOverridden
+                && !r.DoesNotMeetWorkflowId.HasValue && !r.WarningWorkflowId.HasValue )
                 .ToList();
 
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
