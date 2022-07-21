@@ -44,6 +44,10 @@ namespace Rock.Web.UI.Controls
 
         private bool _canOverride;
 
+        private bool _hasDoesNotMeetWorkflow;
+
+        private bool _hasWarningWorkflow;
+
         private GroupMemberRequirement _groupMemberRequirement;
 
         /// <summary>
@@ -210,6 +214,63 @@ namespace Rock.Web.UI.Controls
                 _modalDialog.SaveClick += btnMarkRequirementAsMet_Click;
                 Controls.Add( _modalDialog );
             }
+
+            // Workflow linkbutton controls
+
+            // Add workflow link if:
+            // the Group Requirement Type has a workflow type ID,
+            // the workflow is NOT auto initiated, and
+            // the requirement status matches the workflow purpose (Meets with Warning or Not Met).
+
+            _hasDoesNotMeetWorkflow = _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue
+                && !_groupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
+                && MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
+
+            _hasWarningWorkflow = _groupMemberRequirementType.WarningWorkflowTypeId.HasValue
+                && !_groupMemberRequirementType.ShouldAutoInitiateWarningWorkflow
+                && MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
+
+            if ( _hasDoesNotMeetWorkflow )
+            {
+                var qryParms = new Dictionary<string, string>();
+                qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
+                var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
+                if ( workflowLink.PageId > 0 )
+                {
+                    // If the link text has a value, use it, otherwise use the default label key value.
+                    var workflowLinkText = _groupMemberRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                        _groupMemberRequirementType.DoesNotMeetWorkflowLinkText :
+                        LabelKey.RequirementNotMet;
+                    _lbDoesNotMeetWorkflow = new LinkButton
+                    {
+                        ID = "lbDoesNotMeetWorkflow" + this.ClientID,
+                        Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                    };
+                    _lbDoesNotMeetWorkflow.Click += lbDoesNotMeetWorkflow_Click;
+                    Controls.Add( _lbDoesNotMeetWorkflow );
+                }
+            }
+
+            if ( _hasWarningWorkflow )
+            {
+                var qryParms = new Dictionary<string, string>();
+                qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
+                var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
+                if ( workflowLink.PageId > 0 )
+                {
+                    // If the link text has a value, use it, otherwise use the default label key value.
+                    var workflowLinkText = _groupMemberRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
+                        _groupMemberRequirementType.WarningWorkflowLinkText :
+                        LabelKey.RequirementMetWithWarning;
+                    _lbWarningWorkflow = new LinkButton
+                    {
+                        ID = "lblWarningWorkflow" + this.ClientID,
+                        Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
+                    };
+                    _lbWarningWorkflow.Click += lbWarningWorkflow_Click;
+                    Controls.Add( _lbWarningWorkflow );
+                }
+            }
         }
 
         /// <summary>
@@ -315,126 +376,29 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                // Add workflow link if:
-                // the Group Requirement Type has a workflow type ID,
-                // the workflow is NOT auto initiated, and
-                // the requirement status matches the workflow purpose (Meets with Warning or Not Met).
-                var hasDoesNotMeetWorkflow = _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue
-                    && !_groupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
-                    && MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
-
-                var hasWarningWorkflow = _groupMemberRequirementType.WarningWorkflowTypeId.HasValue
-                    && !_groupMemberRequirementType.ShouldAutoInitiateWarningWorkflow
-                    && MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning;
-
                 // If any workflows or if the requirement can be overridden, create the unordered list and list items.
-                if ( hasDoesNotMeetWorkflow || hasWarningWorkflow || _canOverride )
+                if ( _hasDoesNotMeetWorkflow || _hasWarningWorkflow || _canOverride )
                 {
                     writer.AddStyleAttribute( "list-style-type", "none" );
                     writer.AddStyleAttribute( "margin", "0" );
                     writer.AddStyleAttribute( "padding", "0" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
-                    if ( hasDoesNotMeetWorkflow )
+                    if ( _hasDoesNotMeetWorkflow )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
+                        _lbDoesNotMeetWorkflow.RenderControl( writer );
 
-                        var qryParms = new Dictionary<string, string>();
-                        qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
-                        var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
-                        if ( workflowLink.PageId > 0 )
-                        {
-                            // If the link text has a value, use it, otherwise use the default label key value.
-                            var workflowLinkText = _groupMemberRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace() ?
-                                _groupMemberRequirementType.DoesNotMeetWorkflowLinkText :
-                                LabelKey.RequirementNotMet;
-
-                            _lbDoesNotMeetWorkflow = new LinkButton
-                            {
-                                ID = "lblDoesNotMeetWorkflow" + this.ClientID,
-                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
-                            };
-                            _lbDoesNotMeetWorkflow.Click += lbDoesNotMeetWorkflow_Click;
-                            _lbDoesNotMeetWorkflow.RenderControl( writer );
-                        }
                         //RegisterWorkflowDetailPageScript( _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value, _groupMemberRequirementType.DoesNotMeetWorkflowType.Guid, _lbNotMetWorkflow, "This is a message to prompt before workflow." );
-
-                        //_lbNotMetWorkflow.RenderControl( writer );
-
-                        //writer.RenderBeginTag( HtmlTextWriterTag.Li );
-
-                        //var qryParms = new Dictionary<string, string>();
-                        //qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
-                        //var workflowLink = new PageReference( SystemGuid.Page.LAUNCHWORKFLOW, qryParms );
-
-                        //if ( workflowLink.PageId > 0 )
-                        //{
-                        //    bool showLinkToEntry = _groupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.HasValue ? _groupMemberRequirementType.DoesNotMeetWorkflowType.IsActive.Value : false;
-                        //    if ( showLinkToEntry )
-                        //    {
-                        //        var doesNotMeet = new Control();
-                        //        writer.AddAttribute( HtmlTextWriterAttribute.Href, workflowLink.BuildUrl() );
-                        //        writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
-                        //        writer.RenderBeginTag( HtmlTextWriterTag.A );
-
-                        //        writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
-                        //        writer.RenderBeginTag( HtmlTextWriterTag.I );
-
-                        //        // End the I tag.
-                        //        writer.RenderEndTag();
-                        //        writer.Write( _groupMemberRequirementType.DoesNotMeetWorkflowLinkText );
-
-                        //        // End the A tag.
-                        //        writer.RenderEndTag();
-                        //    }
-                        //}
-
                         // End the Li tag.
                         writer.RenderEndTag();
                     }
 
-                    if ( hasWarningWorkflow )
+                    if ( _hasWarningWorkflow )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
-                        var qryParms = new Dictionary<string, string>();
-                        qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
-                        var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
-                        if ( workflowLink.PageId > 0 )
-                        {
-                            // If the link text has a value, use it, otherwise use the default label key value.
-                            var workflowLinkText = _groupMemberRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
-                                _groupMemberRequirementType.WarningWorkflowLinkText :
-                                LabelKey.RequirementMetWithWarning;
-                            _lbWarningWorkflow = new LinkButton
-                            {
-                                ID = "lblWarningWorkflow" + this.ClientID,
-                                Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
-                            };
-                            _lbWarningWorkflow.Click += lbWarningWorkflow_Click;
-                            _lbWarningWorkflow.RenderControl( writer );
-
-                        }
-                        //if ( workflowLink.PageId > 0 )
-                        //{
-                        //    bool showLinkToEntry = _groupMemberRequirementType.WarningWorkflowType.IsActive.HasValue ? _groupMemberRequirementType.WarningWorkflowType.IsActive.Value : false;
-                        //    if ( showLinkToEntry )
-                        //    {
-                        //        writer.AddAttribute( HtmlTextWriterAttribute.Href, workflowLink.BuildUrl() );
-                        //        writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
-                        //        writer.RenderBeginTag( HtmlTextWriterTag.A );
-
-                        //        writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-play-circle-o fa-fw" );
-                        //        writer.RenderBeginTag( HtmlTextWriterTag.I );
-
-                        //        // End the I tag.
-                        //        writer.RenderEndTag();
-                        //        writer.Write( _groupMemberRequirementType.WarningWorkflowLinkText );
-
-                        //        // End the A tag.
-                        //        writer.RenderEndTag();
-                        //    }
-                        //}
+                        _lbWarningWorkflow.RenderControl( writer );
 
                         // End the Li tag.
                         writer.RenderEndTag();
@@ -570,24 +534,54 @@ namespace Rock.Web.UI.Controls
                 var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value );
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
-                    var workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                    var rockContext = new RockContext();
+                    GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                    var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                    Rock.Model.Workflow workflow;
+                    if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
+                    {
+                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.DoesNotMeetWorkflowId.Value );
+                        var qryParms = new Dictionary<string, string>();
+                        qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.ToString() );
+                        qryParms.Add( "WorkflowId", workflow.Id.ToString() );
+                        var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
 
-                    List<string> workflowErrors;
-                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
-                    // = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
+                        this.RockBlock().NavigateToPage( workflowLink );
+                    }
+                    else
+                    {
+                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
 
+                        List<string> workflowErrors;
+                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
 
+                        if ( processed )
+                        {
+                            // Update the group member requirement with the workflow ID.
 
-                    // Extra from render control -- keep the workflow NavigateURL
-                    //_hlDoesNotMeetWorkflow = new HyperLink
-                    //{
-                    //    ID = "hlDoesNotMeetWorkflow" + this.ClientID,
-                    //    Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
-                    //    Target = "_blank",
-                    //    NavigateUrl = new PageReference( WorkflowEntryPage, qryParms ).BuildUrl()
-                    //};
-                    //_hlDoesNotMeetWorkflow.RenderControl( writer );
+                            if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement
+                                {
+                                    GroupRequirementId = GroupRequirementId.Value,
+                                    GroupMemberId = GroupMemberId
+                                };
+                                groupMemberRequirementService.Add( groupMemberRequirement );
+                            }
 
+                            // Could potentially overwrite an existing workflow ID, but that is expected.
+                            groupMemberRequirement.DoesNotMeetWorkflowId = workflow.Id;
+                            groupMemberRequirement.RequirementFailDateTime = RockDateTime.Now;
+                            rockContext.SaveChanges();
+
+                            // Reload the page to make sure that the current status is reflected in the card styling.
+                            var currentPageReference = this.RockBlock().CurrentPageReference;
+                            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId );
+                            pageRef.Parameters.Add( "GroupMemberId", GroupMemberId.ToString() );
+                            this.RockBlock().NavigateToPage( pageRef );
+                        }
+                    }
                 }
             }
         }
@@ -608,24 +602,53 @@ namespace Rock.Web.UI.Controls
                 var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.WarningWorkflowTypeId.Value );
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
-                    var workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
+                    var rockContext = new RockContext();
+                    GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                    var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+                    // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
+                    Rock.Model.Workflow workflow;
+                    if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
+                    {
+                        workflow = new Rock.Model.WorkflowService( new RockContext() ).Get( groupMemberRequirement.WarningWorkflowId.Value );
+                        var qryParms = new Dictionary<string, string>();
+                        qryParms.Add( "WorkflowTypeId", _groupMemberRequirementType.WarningWorkflowTypeId.ToString() );
+                        qryParms.Add( "WorkflowId", workflow.Id.ToString() );
+                        var workflowLink = new PageReference( WorkflowEntryPage, qryParms );
 
-                    List<string> workflowErrors;
-                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
-                    // = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
+                        this.RockBlock().NavigateToPage( workflowLink );
+                    }
+                    else
+                    {
+                        workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
 
+                        List<string> workflowErrors;
+                        var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
 
+                        if ( processed )
+                        {
+                            // Update the group member requirement with the workflow ID.
+                            if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
+                            {
+                                groupMemberRequirement = new GroupMemberRequirement
+                                {
+                                    GroupRequirementId = GroupRequirementId.Value,
+                                    GroupMemberId = GroupMemberId
+                                };
+                                groupMemberRequirementService.Add( groupMemberRequirement );
+                            }
 
-                    // Extra from render control -- keep the workflow NavigateURL
-                    //_hlDoesNotMeetWorkflow = new HyperLink
-                    //{
-                    //    ID = "hlDoesNotMeetWorkflow" + this.ClientID,
-                    //    Text = "<i class='fa fa-play-circle-o fa-fw'></i>" + workflowLinkText,
-                    //    Target = "_blank",
-                    //    NavigateUrl = new PageReference( WorkflowEntryPage, qryParms ).BuildUrl()
-                    //};
-                    //_hlDoesNotMeetWorkflow.RenderControl( writer );
+                            // Could potentially overwrite an existing workflow ID, but that is expected.
+                            groupMemberRequirement.WarningWorkflowId = workflow.Id;
+                            groupMemberRequirement.RequirementWarningDateTime = RockDateTime.Now;
+                            rockContext.SaveChanges();
 
+                            // Reload the page to make sure that the current status is reflected in the card styling.
+                            var currentPageReference = this.RockBlock().CurrentPageReference;
+                            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId );
+                            pageRef.Parameters.Add( "GroupMemberId", GroupMemberId.ToString() );
+                            this.RockBlock().NavigateToPage( pageRef );
+                        }
+                    }
                 }
             }
         }
