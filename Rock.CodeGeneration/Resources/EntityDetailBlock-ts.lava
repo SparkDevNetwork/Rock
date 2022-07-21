@@ -21,8 +21,8 @@ import { EntityType } from "@Obsidian/SystemGuids";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-import EditPanel from "./{{ EntityName }}Detail/editPanel";
-import ViewPanel from "./{{ EntityName }}Detail/viewPanel";
+import EditPanel from "./{{ EntityName }}Detail/editPanel.partial";
+import ViewPanel from "./{{ EntityName }}Detail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant{% if UseAttributeValues == true %}, refreshDetailAttributes{% endif %}, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";{% if UseAttributeValues == true %}
 import { debounce } from "@Obsidian/Utility/util";{% endif %}
 import { NavigationUrlKey } from "./{{ EntityName }}Detail/types";

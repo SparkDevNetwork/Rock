@@ -228,7 +228,7 @@ namespace Rock.CodeGeneration.Pages
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"viewPanel.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
+                files.Add( new GeneratedFile( $"viewPanel.partial.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\editPanel.ts file.
@@ -238,7 +238,7 @@ namespace Rock.CodeGeneration.Pages
 
                 var result = LavaHelper.Render( lavaTemplate, mergeFields );
 
-                files.Add( new GeneratedFile( $"editPanel.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
+                files.Add( new GeneratedFile( $"editPanel.partial.ts", $"{typeScriptBlockPath}\\{options.EntityType.Name}Detail", result ) );
             }
 
             // Generate the Obsidian <Entity>Detail\types.d.ts file.
