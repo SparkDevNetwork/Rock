@@ -48,21 +48,12 @@ namespace Rock.Model
                 base.PreSave();
             }
 
-            /// <inheritdoc/>
-            protected override void PostSave()
-            {
-                try
-                {
-                    CreateReciprocalPaymentDetailRelationship();
-                }
-                catch ( Exception ex )
-                {
-                    RockLogger.Log.Error( ex, $"An exception occurred while attempting to add a reciprocal relationship to a FinancialPaymentDetail from FinancialPersonSavedAccount {Entity.Id}." );
-                }
-
-                base.PostSave();
-            }
-
+            /* 2022-07-22 ED
+             * Circular references will result in an error when trying to perform an operation on both items, such as delete.
+             * This can result in DependencyOrderingError, Unable to determine a valid ordering for dependent operations. Dependencies may exist dueo to foreign key constratints, model requirements, or store-generated values.
+             * Since FinancialPersonSavedAccount has a FinancialPaymentDetailId, we cannot also have a reverse relationship on FinancialPaymentDetail.
+             * So the logic below should not be applied.
+             * 
             /// <summary>
             /// If this FinancialPersonSavedAccount is associated with a FinancialPaymentDetail entity, and that
             /// FinancialPaymentDetail entity is not already associated with another FinancialPersonSavedAccount,
@@ -93,6 +84,7 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
             }
+            */
         }
     }
 }
