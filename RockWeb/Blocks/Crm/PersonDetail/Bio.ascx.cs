@@ -322,6 +322,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             base.OnLoad( e );
 
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
+            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
+
             if ( !Page.IsPostBack )
             {
                 // dont' show if there isn't a person, or if it is a 'Nameless" person record type
@@ -484,7 +488,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         private void ShowPersonImage()
         {
-            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-cover inset-0"">";
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-profile"">";
         }
 
         private void ShowProtectionLevel()

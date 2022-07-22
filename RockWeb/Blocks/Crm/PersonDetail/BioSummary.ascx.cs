@@ -75,7 +75,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
             RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -170,7 +172,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void ShowPersonImage()
         {
-            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-cover inset-0"">";
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-profile"">";
         }
 
         private void ShowPersonName()
