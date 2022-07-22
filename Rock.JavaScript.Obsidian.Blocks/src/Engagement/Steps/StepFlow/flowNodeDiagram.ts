@@ -215,7 +215,7 @@ export default defineComponent({
         const levelsCount = computed(() => props.flowEdges.reduce((count, edge) => Math.max(count, edge.level), 0));
         const chartWidth = computed(() => {
             // 24 is the left margin before the first level nodes so we have room for labels and a bit of padding.
-            const calculated = 24 + /* nodes */ (settings.value.nodeWidth * nodeCount.value) + /* flows */ (settings.value.nodeHorizontalSpacing * (levelsCount.value - 1));
+            const calculated = 24 + /* nodes */ (settings.value.nodeWidth * levelsCount.value) + /* flows */ (settings.value.nodeHorizontalSpacing * (levelsCount.value - 1));
 
             // Want to make sure it always has a minimum size so we can display "loading" while we have no data
             return Math.max(calculated, 200);
