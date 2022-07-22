@@ -108,7 +108,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person.IsDeceased )
             {
-                // pnlContent.AddCssClass( "deceased" );
+                pnlContent.Attributes.Add( "class","card card-profile card-profile-bio card-profile-bio-condensed deceased" );
+            }
+            else
+            {
+                pnlContent.Attributes.Add("class","card card-profile card-profile-bio card-profile-bio-condensed");
             }
 
             // Set the browser page title to include person's name

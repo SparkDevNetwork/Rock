@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BioSummary.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.BioSummary" %>
 
-<asp:UpdatePanel ID="pnlContent" runat="server" class="card card-profile card-profile-bio card-profile-bio-condensed">
+<asp:UpdatePanel ID="pnlContent" runat="server">
     <ContentTemplate>
         <script>
             $(function () {

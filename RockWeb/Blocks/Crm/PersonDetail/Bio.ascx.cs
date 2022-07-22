@@ -241,7 +241,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
             RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -286,7 +288,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person.IsDeceased )
             {
-                // divBio.AddCssClass( "deceased" );
+                pnlContent.Attributes.Add("class","card card-profile card-profile-bio deceased" );
+            }
+            else
+            {
+                pnlContent.Attributes.Add("class","card card-profile card-profile-bio");
             }
 
             // Set the browser page title to include person's name
@@ -321,10 +327,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
-            RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
-            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             if ( !Page.IsPostBack )
             {
