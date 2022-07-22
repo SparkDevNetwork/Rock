@@ -1,6 +1,6 @@
 // Fluidbox
 // Description: Replicating the seamless lightbox transition effect seen on Medium.com, with some improvements
-// Version: 1.3.1
+// Version: 1.3.1 + Rock Rescale Fix
 // Author: Terry Mun
 // Author URI: http://terrymun.com
 
@@ -134,10 +134,8 @@
                             data.natH       = $img[0].naturalHeight;
                             data.thumbRatio = data.natW / data.natH;
                             if (data.imgRatio > data.thumbRatio) {
-                                console.log('Greater');
                                 data.imgHeight = data.imgWidth * data.thumbRatio;
                             } else {
-                                console.log('Lesser');
                                 data.imgWidth = data.imgHeight * data.thumbRatio;
                             }
                         }
