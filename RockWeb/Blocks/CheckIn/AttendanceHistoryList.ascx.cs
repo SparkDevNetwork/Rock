@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Checkin
     /// Block for displaying the attendance history of a person or a group.
     /// </summary>
     [DisplayName( "Attendance History" )]
-    [Category( "Checkin" )]
+    [Category( "Check-in" )]
     [Description( "Block for displaying the attendance history of a person or a group." )]
     [BooleanField( "Filter Attendance By Default", "Sets the default display of Attended to Did Attend instead of [All]", false )]
     [ContextAware]
