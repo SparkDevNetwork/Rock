@@ -33,7 +33,7 @@
                             <Rock:DefinedValuePicker ID="dvpReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="dvpReason_SelectedIndexChanged"></Rock:DefinedValuePicker>
                             <Rock:DatePicker ID="dpDeceasedDate" runat="server" Visible="false" Label="Deceased Date" AllowFutureDateSelection="False" RequireYear="True" />
                             <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false" autocomplete="off"></Rock:RockTextBox>
-                            <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
+                            <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" EnableCrop="true" />
                         </div>
                     </div>
 

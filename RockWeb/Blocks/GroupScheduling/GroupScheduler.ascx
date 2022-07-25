@@ -420,8 +420,8 @@
                                                                             <%-- Occurrence Panel Heading when in Multi-Group mode --%>
                                                                             <asp:Panel ID="pnlMultiGroupModePanelHeading" runat="server" CssClass="d-flex justify-content-between align-items-center w-100">
                                                                                 <div class="d-flex flex-column">
-                                                                                <span class="location"><asp:Literal ID="lMultiGroupModeLocationTitle" runat="server" /></span>
-                                                                                <span class="date small text-muted"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduledDate" /></span>
+                                                                                    <asp:Literal ID="lMultiGroupModeLocationTitle" runat="server" />
+                                                                                    <span class="date small text-muted"><asp:Literal runat="server" ID="lMultiGroupModeOccurrenceScheduledDate" /></span>
                                                                                 </div>
 
                                                                                 <div>
