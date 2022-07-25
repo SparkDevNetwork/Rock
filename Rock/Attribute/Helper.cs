@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -334,6 +336,8 @@ This can be due to multiple threads updating the same attribute at the same time
             return true;
         }
 
+        #region Load Attributes
+
         /// <summary>
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
@@ -576,6 +580,441 @@ This can be due to multiple threads updating the same attribute at the same time
 
             entity.AttributeValues = attributeValues;
         }
+
+        /// <summary>
+        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// </summary>
+        /// <param name="entities">The entities whose attributes are to be loaded.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="limitToAttributes">The limit to attributes.</param>
+        internal static void LoadAttributes( IEnumerable<IHasAttributes> entities, RockContext rockContext, List<AttributeCache> limitToAttributes )
+        {
+            if ( limitToAttributes != null )
+            {
+                LoadFilteredAttributes( entities, rockContext, attribute => limitToAttributes.Any( a => a.Id == attribute.Id ) );
+            }
+            else
+            {
+                LoadFilteredAttributes( entities, rockContext, null );
+            }
+        }
+
+        /// <summary>
+        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// </summary>
+        /// <param name="entities">The entities whose attributes are to be loaded.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attributeFilter">The expression to use when filtering which attributes to load.</param>
+        internal static void LoadFilteredAttributes( IEnumerable<IHasAttributes> entities, RockContext rockContext, Func<AttributeCache, bool> attributeFilter )
+        {
+            if ( entities == null || !entities.Any() )
+            {
+                return;
+            }
+
+            // Get the entity type from the first entity. In the future, we might
+            // throw an exception if any entities do not inherit from this type, or
+            // possibly group by the type and load in chunks.
+            var entityType = entities.First().GetType();
+
+            if ( entityType.IsDynamicProxyType() )
+            {
+                entityType = entityType.BaseType;
+            }
+
+            // We can only operate on IEntity objects, but using both in the
+            // constraints confuses the compiler a bit.
+            if ( !typeof( IEntity ).IsAssignableFrom( entityType ) )
+            {
+                return;
+            }
+
+            var entityTypeCache = EntityTypeCache.Get( entityType );
+
+            // This shouldn't happen.
+            if ( entityTypeCache == null )
+            {
+                return;
+            }
+
+            // Get all the attributes that apply to this entity type.
+            var entityTypeId = entityTypeCache.Id;
+            var entityTypeAttributesList = AttributeCache.AllForEntityType( entityTypeId )
+                .Where( a => a.IsActive && ( attributeFilter == null || attributeFilter( a ) ) )
+                .ToList();
+
+            // Filter the attribute list by qualifiers.
+            entityTypeAttributesList = FilterAttributesByQualifiers( entities, entityTypeAttributesList );
+
+            // Initialize the list of attributes, more will be added later.
+            var allAttributes = new List<AttributeCache>( entityTypeAttributesList );
+
+            // Begin processing inherited attributes.
+            var allInheritedAttributes = new List<AttributeCache>();
+            var inheritedAttributes = new Dictionary<int, InheritedAttributeLookup>();
+
+            // If this entity can provide inherited attribute information then
+            // load that data now. If they don't provide any then generate empty lists.
+            if ( typeof( Rock.Attribute.IHasInheritedAttributes ).IsAssignableFrom( entityType ) )
+            {
+                rockContext = rockContext ?? new RockContext();
+
+                foreach ( var entity in entities )
+                {
+                    var entityWithInheritedAttributes = entity as Rock.Attribute.IHasInheritedAttributes;
+
+                    // Add in all inherited attributes we don't already know about.
+                    var entityInheritedAttributes = entityWithInheritedAttributes.GetInheritedAttributes( rockContext );
+
+                    if ( entityInheritedAttributes != null )
+                    {
+                        entityInheritedAttributes = entityInheritedAttributes
+                            .Where( a => a.IsActive && ( attributeFilter == null || attributeFilter( a ) ) )
+                            .ToList();
+
+                        allInheritedAttributes.AddRange( entityInheritedAttributes.Where( ia => !allInheritedAttributes.Any( a => a.Id == ia.Id ) ) );
+                    }
+
+                    var alternateIds = entityWithInheritedAttributes.GetAlternateEntityIdsByType( rockContext );
+
+                    // Set the alternate identifiers for the inherited attributes.
+                    // Since this information could be different for each entity we need
+                    // to track it per entity.
+                    if ( entityInheritedAttributes?.Any() == true || alternateIds?.Any() == true )
+                    {
+                        inheritedAttributes.Add( entity.Id, new InheritedAttributeLookup
+                        {
+                            Attributes = entityInheritedAttributes,
+                            AlternateIds = alternateIds
+                        } );
+                    }
+                }
+            }
+
+            // Add any inherited attributes to those that need to be loaded.
+            allAttributes.AddRange( allInheritedAttributes.Where( ia => !allAttributes.Any( a => a.Id == ia.Id ) ) );
+
+            // If we don't have any attributes then just initialize the entities
+            // with empty values and stop.
+            if ( !allAttributes.Any() )
+            {
+                foreach ( var entity in entities )
+                {
+                    entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
+                    entity.AttributeValues = new Dictionary<string, Rock.Web.Cache.AttributeValueCache>();
+                }
+
+                return;
+            }
+
+            rockContext = rockContext ?? new RockContext();
+
+            // Build the list of primary entity ids to load values for.
+            var valueEntityKeys = entities
+                .Select( e => new LoadAttributesKey
+                {
+                    EntityTypeId = entityTypeId,
+                    EntityId = e.Id,
+                    RealEntityId = e.Id
+                } )
+                .ToList();
+
+            // Add all the alternate identifiers to look for.
+            foreach ( var inheritedAttribute in inheritedAttributes )
+            {
+                if ( inheritedAttribute.Value.AlternateIds != null )
+                {
+                    valueEntityKeys.AddRange( inheritedAttribute.Value.AlternateIds.SelectMany( ai => ai.Value.Select( id => new LoadAttributesKey
+                    {
+                        EntityTypeId = ai.Key,
+                        EntityId = id,
+                        RealEntityId = inheritedAttribute.Key
+                    } ) ) );
+                }
+            }
+
+            // Load all the values from the database in one big query.
+            var allAttributeValues = LoadAttributeValues( valueEntityKeys, allAttributes, rockContext );
+
+            // Break up the entity attributes into those with and without qualifiers.
+            var unqualifiedEntityAttributes = entityTypeAttributesList.Where( a => a.EntityTypeQualifierColumn.IsNullOrWhiteSpace() ).ToList();
+            var qualifiedEntityAttributes = entityTypeAttributesList.Where( a => !a.EntityTypeQualifierColumn.IsNullOrWhiteSpace() ).ToList();
+
+            // Get all the property names we are interested in for those
+            // attributes that are qualified.
+            var entityTypeQualifierColumnPropertyNames = qualifiedEntityAttributes.Select( a => a.EntityTypeQualifierColumn )
+                .Distinct()
+                .Where( a => !string.IsNullOrWhiteSpace( a ) )
+                .ToList();
+
+            // Group the qualified attributes by the property they are checking.
+            var groupedQualifiedEntityAttributes = qualifiedEntityAttributes
+                .GroupBy( a => new Tuple<string, string>( a.EntityTypeQualifierColumn.ToLower(), a.EntityTypeQualifierValue ) )
+                .ToList();
+
+            // Loop over all the entities and populate their attributes and values.
+            foreach ( var entity in entities )
+            {
+                var attributeValues = new Dictionary<string, AttributeValueCache>();
+                var entityAttributes = unqualifiedEntityAttributes.ToList();
+                var inheritedAttributeLookup = inheritedAttributes.GetValueOrNull( entity.Id );
+
+                // Filter any entity attributes that have qualifiers.
+                if ( qualifiedEntityAttributes.Any() )
+                {
+                    var propertyValues = new Dictionary<string, string>();
+
+                    // Get all the qualified property values for this entity.
+                    foreach ( var propertyName in entityTypeQualifierColumnPropertyNames )
+                    {
+                        var propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                        if ( propertyInfo != null )
+                        {
+                            propertyValues.AddOrIgnore( propertyName.ToLower(), propertyInfo.GetValue( entity, null ).ToStringSafe() );
+                        }
+                    }
+
+                    // Loop over all the qualified attributes and see which ones match.
+                    for ( int gai = 0; gai < groupedQualifiedEntityAttributes.Count; gai++ )
+                    {
+                        var qualification = groupedQualifiedEntityAttributes[gai];
+                        var qualifierColumn = qualification.Key.Item1;
+                        var qualifierValue = qualification.Key.Item2;
+
+                        // If the entity doesn't contain the property being
+                        // qualified, then the attribute does not match.
+                        if ( !propertyValues.TryGetValue( qualifierColumn, out var value ) )
+                        {
+                            continue;
+                        }
+
+                        // If there is no qualifier value, then the check is to
+                        // ensure that the property exists, not any value check.
+                        if ( string.IsNullOrEmpty( qualifierValue ) )
+                        {
+                            entityAttributes.AddRange( qualification );
+                        }
+
+                        // If the entity property value matches the qualifier value
+                        // then this attribute should be included on the entity.
+                        if ( value == qualifierValue )
+                        {
+                            entityAttributes.AddRange( qualification );
+                        }
+                    }
+                }
+
+                // Add in any inherited attributes, these do not get the qualifier
+                // checks applied to them.
+                if ( inheritedAttributeLookup?.Attributes != null )
+                {
+                    entityAttributes.AddRange( inheritedAttributeLookup.Attributes.Where( ia => !entityAttributes.Any( a => a.Id == ia.Id ) ) );
+                }
+
+                // Add the value for each attribute defined on the entity type.
+                foreach ( var attribute in entityAttributes )
+                {
+                    if ( allAttributeValues.TryGetValue( ( entity.Id, attribute.Id ), out var value ) )
+                    {
+                        var attributeValueCache = new AttributeValueCache( attribute.Id, value.EntityId, value.Value );
+
+                        attributeValues[attribute.Key] = attributeValueCache;
+                    }
+                }
+
+                // Look for any attributes that don't have a value and create a
+                // default value entry.
+                foreach ( var attribute in entityAttributes )
+                {
+                    if ( !attributeValues.ContainsKey( attribute.Key ) )
+                    {
+                        var attributeValue = new AttributeValueCache
+                        {
+                            AttributeId = attribute.Id,
+                            EntityId = entity?.Id
+                        };
+
+                        var attributeValueDefaults = entity.AttributeValueDefaults;
+                        if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
+                        {
+                            attributeValue.Value = attributeValueDefaults[attribute.Key];
+                        }
+                        else
+                        {
+                            attributeValue.Value = attribute.DefaultValue;
+                        }
+
+                        attributeValues[attribute.Key] = attributeValue;
+                    }
+                    else if ( attributeValues[attribute.Key].Value.IsNullOrWhiteSpace() && !attribute.DefaultValue.IsNullOrWhiteSpace() )
+                    {
+                        attributeValues[attribute.Key].Value = attribute.DefaultValue;
+                    }
+                }
+
+                entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
+                entityAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
+
+                entity.AttributeValues = attributeValues;
+            }
+        }
+
+        /// <summary>
+        /// Filters the attributes by qualifiers. This is used to filter out
+        /// any attributes that could not possibly match any of the entities.
+        /// So if an attribute has a qualifier for EntityTypeId=3 but none of
+        /// the entities have that value, then the attribute is excluded.
+        /// </summary>
+        /// <param name="entities">The entities whose values will be loaded.</param>
+        /// <param name="attributes">The attributes that are up for consideration.</param>
+        /// <returns>A list of attributes that match or have no qualifications.</returns>
+        private static List<AttributeCache> FilterAttributesByQualifiers( IEnumerable<IHasAttributes> entities, List<AttributeCache> attributes )
+        {
+            var entityTypeQualifierColumnPropertyNames = attributes.Select( a => a.EntityTypeQualifierColumn )
+                .Distinct()
+                .Where( a => !string.IsNullOrWhiteSpace( a ) )
+                .ToList();
+
+            // If none of the attributes have any qualifiers then we have
+            // nothing to filter.
+            if ( !entityTypeQualifierColumnPropertyNames.Any() )
+            {
+                return attributes;
+            }
+
+            // Make sure it's a list since we will be materializing it many times.
+            var entityList = entities.ToList();
+            var entityQualifications = new HashSet<string>();
+            var innerType = entityList[0].GetType();
+            var entityType = innerType.IsDynamicProxyType() ? innerType.BaseType : innerType;
+
+            // Populate the entityQualifications hash set with all the combinations
+            // of qualifier columns and values. Use an actual for loop for
+            // performance reasons.
+            for ( int pi = 0; pi < entityTypeQualifierColumnPropertyNames.Count; pi++ )
+            {
+                var propertyName = entityTypeQualifierColumnPropertyNames[pi];
+                var propertyNameLower = propertyName.ToLower();
+                var propertyInfo = entityType.GetProperty( propertyName )
+                    ?? entityType.GetProperties()
+                        .Where( p => p.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault();
+
+                if ( propertyInfo != null )
+                {
+                    // Add a record saying "this property exists".
+                    entityQualifications.Add( propertyNameLower );
+
+                    var values = entityList.Select( e => propertyInfo.GetValue( e, null )?.ToString() ?? "" )
+                        .Distinct();
+
+                    // Add a record for each unique value.
+                    foreach ( var value in values )
+                    {
+                        entityQualifications.Add( string.Format( "{0}|{1}", propertyNameLower, value ) );
+                    }
+                }
+            }
+
+            return attributes
+                .Where( a =>
+                {
+                    if ( string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) )
+                    {
+                        return true;
+                    }
+
+                    // If the qualifier value is blank, that means the qualification
+                    // is simply "does this property exist".
+                    var needle = string.IsNullOrEmpty( a.EntityTypeQualifierValue )
+                        ? a.EntityTypeQualifierValue.ToLower()
+                        : string.Format( "{0}|{1}", a.EntityTypeQualifierColumn.ToLower(), a.EntityTypeQualifierValue );
+
+                    return entityQualifications.Contains( needle );
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Loads the attribute values from the database with a direct SQL query
+        /// to get optimal performance.
+        /// </summary>
+        /// <param name="entityKeys">The entity keys that identify all the entities whose values should be loaded.</param>
+        /// <param name="attributes">The attributes whose values we are interested in.</param>
+        /// <param name="rockContext">The rock context to use when accessing the database.</param>
+        /// <returns>A dictionary of all values loaded.</returns>
+        private static Dictionary<(int RealEntityId, int AttributeId), (int EntityId, string Value)> LoadAttributeValues( List<LoadAttributesKey> entityKeys, List<AttributeCache> attributes, RockContext rockContext )
+        {
+            // Initialize the EntityKey SQL parameter.
+            var entityIdsTable = new DataTable();
+            entityIdsTable.Columns.Add( "EntityTypeId", typeof( int ) );
+            entityIdsTable.Columns.Add( "EntityId", typeof( int ) );
+            entityIdsTable.Columns.Add( "RealTypeId", typeof( int ) );
+
+            for ( int i = 0; i < entityKeys.Count; i++ )
+            {
+                var key = entityKeys[i];
+
+                entityIdsTable.Rows.Add( key.EntityTypeId, key.EntityId, key.RealEntityId );
+            }
+
+            var entityIdsParameter = new SqlParameter( "@EntityKey", SqlDbType.Structured )
+            {
+                TypeName = "dbo.LoadAttributesKeyList",
+                Value = entityIdsTable
+            };
+
+            List<AttributeItemValue> items;
+
+            // When dealing with a lot of attributes, it actually slows down the query
+            // to specify the specific attributes. I think it's confusing the query
+            // plan optimizer. So it's actually about 8x faster to just get all the
+            // attribute values and then filter out what we don't want. If we are getting
+            // more than 25 attributes anyway then it probably means we are getting
+            // pretty much all attributes in the first place.
+            if ( attributes.Count > 25 )
+            {
+                items = rockContext.Database.SqlQuery<AttributeItemValue>(
+                        @"
+SELECT A.[EntityTypeId], AV.[EntityId], entityKey.[RealEntityId], AV.[AttributeId], AV.[Value]
+FROM [AttributeValue] AV
+INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
+INNER JOIN @EntityKey entityKey ON entityKey.[EntityTypeId] = A.[EntityTypeId] AND entityKey.[EntityId] = AV.[EntityId]",
+                        entityIdsParameter )
+                    .ToList();
+            }
+            else
+            {
+                // Initialize the AttributeId SQL parameter.
+                var attributeIdsTable = new DataTable();
+                attributeIdsTable.Columns.Add( "Id", typeof( int ) );
+
+                for ( int i = 0; i < attributes.Count; i++ )
+                {
+                    attributeIdsTable.Rows.Add( attributes[i].Id );
+                }
+
+                var attributeIdsParameter = new SqlParameter( "@AttributeId", SqlDbType.Structured )
+                {
+                    TypeName = "dbo.EntityIdList",
+                    Value = attributeIdsTable
+                };
+
+                items = rockContext.Database.SqlQuery<AttributeItemValue>(
+                        @"
+SELECT A.[EntityTypeId], AV.[EntityId], entityKey.[RealEntityId], AV.[AttributeId], AV.[Value]
+FROM [AttributeValue] AV
+INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
+INNER JOIN @EntityKey entityKey ON entityKey.[EntityTypeId] = A.[EntityTypeId] AND entityKey.[EntityId] = AV.[EntityId]
+INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
+                        entityIdsParameter, attributeIdsParameter )
+                .ToList();
+            }
+
+            return items.ToDictionary( i => ( i.RealEntityId, i.AttributeId ), i => ( i.EntityId, i.Value ) );
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets the attribute categories.
@@ -1631,6 +2070,96 @@ This can be due to multiple threads updating the same attribute at the same time
 
             return firstOrDefault;
         }
+
+        #region Support Classes
+
+        /// <summary>
+        /// Used by the attribute loading code to identify all the possible
+        /// entity types and identifier values to use when loading values
+        /// from the database.
+        /// </summary>
+        private class LoadAttributesKey
+        {
+            /// <summary>
+            /// Gets or sets the entity type identifier to match to the Attribute.
+            /// </summary>
+            /// <value>The entity type identifier to match to the Attribute.</value>
+            public int EntityTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the entity identifier to match to the AttributeValue.
+            /// </summary>
+            /// <value>The entity identifier to match to the AttributeValue.</value>
+            public int EntityId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the original entity whose values are being loaded.
+            /// </summary>
+            /// <value>The identifier of the original entity whose values are being loaded.</value>
+            public int RealEntityId { get; set; }
+        }
+
+        /// <summary>
+        /// Used by the attribute loading code to identify all the inherited
+        /// attributes and the alternate identifiers used to find the values.
+        /// One instance is associated with each entity whose attributes are
+        /// being loaded.
+        /// </summary>
+        private class InheritedAttributeLookup
+        {
+            /// <summary>
+            /// Gets or sets the attributes that are valid for the entity.
+            /// </summary>
+            /// <value>The attributes that are valid for the entity.</value>
+            public List<AttributeCache> Attributes { get; set; }
+
+            /// <summary>
+            /// Gets or sets the alternate identifiers that will be used to
+            /// load values. This is a dictionary of entity type identifiers and
+            /// the entity identifiers for that type.
+            /// </summary>
+            /// <value>The alternate identifiers that will be used to load values.</value>
+            public Dictionary<int, List<int>> AlternateIds { get; set; }
+        }
+
+        /// <summary>
+        /// Used by the attribute loading code to identify a single value that
+        /// has been loaded from the database by custom query.
+        /// </summary>
+        private class AttributeItemValue
+        {
+            /// <summary>
+            /// Gets or sets the entity type identifier of the matched Attribute.
+            /// </summary>
+            /// <value>The entity type identifier of the matched Attribute.</value>
+            public int EntityTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the entity identifier of the matched AttributeValue.
+            /// </summary>
+            /// <value>The entity identifier of the matched AttributeValue.</value>
+            public int EntityId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the entity this value will be provided to.
+            /// </summary>
+            /// <value>The identifier of the entity this value will be provided to.</value>
+            public int RealEntityId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the attribute identifier.
+            /// </summary>
+            /// <value>The attribute identifier.</value>
+            public int AttributeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value from AttributeValue.
+            /// </summary>
+            /// <value>The value from AttributeValue.</value>
+            public string Value { get; set; }
+        }
+
+        #endregion
     }
 
     /// <summary>
