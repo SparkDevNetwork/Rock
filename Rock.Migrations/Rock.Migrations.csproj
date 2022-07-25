@@ -112,6 +112,10 @@
     <Compile Include="Migrations\202206152334189_CodeGenerated_20220615.designer.cs">
       <DependentUpon>202206152334189_CodeGenerated_20220615.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202207190618411_CSVImportErrorNote.cs" />
+    <Compile Include="Migrations\202207190618411_CSVImportErrorNote.designer.cs">
+      <DependentUpon>202207190618411_CSVImportErrorNote.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\202206160618411_NewPersonPages.cs" />
     <Compile Include="Migrations\202206160618411_NewPersonPages.designer.cs">
       <DependentUpon>202206160618411_NewPersonPages.cs</DependentUpon>
@@ -1217,6 +1221,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202206152334189_CodeGenerated_20220615.resx">
       <DependentUpon>202206152334189_CodeGenerated_20220615.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207190618411_CSVImportErrorNote.resx">
+      <DependentUpon>202207190618411_CSVImportErrorNote.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202206160618411_NewPersonPages.resx">
       <DependentUpon>202206160618411_NewPersonPages.cs</DependentUpon>

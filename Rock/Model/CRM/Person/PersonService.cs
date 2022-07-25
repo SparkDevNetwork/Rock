@@ -4809,5 +4809,32 @@ FROM (
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets all the foreign keys in the person table in the database
+        /// </summary>
+        /// <returns></returns>
+        public string[] GetForeignKeys()
+        {
+            return Queryable()
+                .Select( person => person.ForeignKey )
+                .Where( foreignKey => foreignKey.Trim().Length > 0 )
+                .Distinct()
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Get the Person Entity with the given the Key of the Foreign System and the Person Id in the Foreign System.
+        /// </summary>
+        /// <param name="foreignSystemKey">The foreign system key.</param>
+        /// <param name="foreignSystemPersonId">The foreign system person identifier.</param>
+        /// <returns></returns>
+        public Person FromForeignSystem( string foreignSystemKey, int foreignSystemPersonId )
+        {
+            return Queryable()
+                .Where( person => person.ForeignKey == foreignSystemKey && person.ForeignId == foreignSystemPersonId )
+                .Single();
+   
+        }
     }
 }
