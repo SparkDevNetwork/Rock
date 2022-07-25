@@ -30,7 +30,7 @@ import EmailSource from "../Shared/emailSource";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
 import { FormGeneral } from "../Shared/types";
 import { FormTemplateListItem } from "./types";
-import { useFormSources } from "./utils";
+import { useFormSources } from "./utils.partial";
 
 /**
  * Displays the UI for the General Settings section of the Settings screen.

@@ -30,7 +30,7 @@ import PersonEntrySettings from "../Shared/personEntrySettings";
 import SectionContainer from "@Obsidian/Controls/sectionContainer";
 import { FormCompletionAction } from "../Shared/types";
 import { TemplateEditDetail } from "./types";
-import { useSources } from "./utils";
+import { useSources } from "./utils.partial";
 
 /**
  * The recipient options that are available for the individual to pick from.

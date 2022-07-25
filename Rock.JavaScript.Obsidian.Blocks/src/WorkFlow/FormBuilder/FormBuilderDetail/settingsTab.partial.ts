@@ -15,36 +15,35 @@
 // </copyright>
 //
 
-import { computed } from "vue";
-import { defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, ref, PropType, watch } from "vue";
 import RockForm from "@Obsidian/Controls/rockForm";
 import Alert from "@Obsidian/Controls/alert";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import CompletionSettings from "../Shared/completionSettings";
+import GeneralSettings from "./generalSettings.partial";
+import { FormCompletionAction, FormGeneral } from "../Shared/types";
+import { FormTemplateListItem } from "./types";
 import { FormError } from "@Obsidian/Utility/form";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import ConfirmationEmail from "../Shared/confirmationEmail";
-import NotificationEmail from "./notificationEmail";
-import { FormCommunication, FormTemplateListItem } from "./types";
-import { useFormSources } from "./utils";
 
 export default defineComponent({
-    name: "Workflow.FormBuilderDetail.CommunicationsTab",
+    name: "Workflow.FormBuilderDetail.SettingsTab",
 
     components: {
         Alert,
-        ConfirmationEmail,
-        NotificationEmail,
+        GeneralSettings,
+        CompletionSettings,
         RockForm
     },
 
     props: {
         modelValue: {
-            type: Object as PropType<FormCommunication>,
+            type: Object as PropType<FormGeneral>,
             required: true
         },
 
-        recipientOptions: {
-            type: Array as PropType<ListItemBag[]>,
-            default: []
+        completion: {
+            type: Object as PropType<FormCompletionAction>,
+            required: true
         },
 
         templateOverrides: {
@@ -59,22 +58,16 @@ export default defineComponent({
 
     emits: [
         "update:modelValue",
+        "update:completion",
         "validationChanged"
     ],
 
     setup(props, { emit }) {
-        const confirmationEmail = ref(props.modelValue.confirmationEmail ?? {});
-
-        const notificationEmail = ref(props.modelValue.notificationEmail ?? {});
-
+        const generalSettings = useVModelPassthrough(props, "modelValue", emit);
+        const completionSettings = useVModelPassthrough(props, "completion", emit);
         const formSubmit = ref(false);
 
-        const sources = useFormSources();
-
-        const sourceTemplateOptions = sources.emailTemplateOptions ?? [];
-        const campusTopicOptions = sources.campusTopicOptions ?? [];
-
-        const isConfirmationEmailForced = computed((): boolean => props.templateOverrides?.isConfirmationEmailConfigured ?? false);
+        const isConfirmationForced = computed((): boolean => props.templateOverrides?.isConfirmationEmailConfigured ?? false);
 
         /**
          * Event handler for when the validation state of the form has changed.
@@ -85,21 +78,6 @@ export default defineComponent({
             emit("validationChanged", errors);
         };
 
-        watch(() => props.modelValue, () => {
-            confirmationEmail.value = props.modelValue.confirmationEmail ?? {};
-            notificationEmail.value = props.modelValue.notificationEmail ?? {};
-        });
-
-        watch([confirmationEmail, notificationEmail], () => {
-            const newValue: FormCommunication = {
-                ...props.modelValue,
-                confirmationEmail: confirmationEmail.value,
-                notificationEmail: notificationEmail.value
-            };
-
-            emit("update:modelValue", newValue);
-        });
-
         // Any time the parent component tells us it has attempted to submit
         // then we trigger the submit on our form so it updates the validation.
         watch(() => props.submit, () => {
@@ -109,13 +87,11 @@ export default defineComponent({
         });
 
         return {
-            campusTopicOptions,
-            confirmationEmail,
+            completionSettings,
             formSubmit,
-            isConfirmationEmailForced,
-            notificationEmail,
-            onValidationChanged,
-            sourceTemplateOptions,
+            generalSettings,
+            isConfirmationForced,
+            onValidationChanged
         };
     },
 
@@ -123,15 +99,15 @@ export default defineComponent({
 <div class="form-builder-scroll">
     <div class="panel-body">
         <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
-            <ConfirmationEmail v-if="!isConfirmationEmailForced" v-model="confirmationEmail" :sourceTemplateOptions="sourceTemplateOptions" :recipientOptions="recipientOptions" />
+            <GeneralSettings v-model="generalSettings" :templateOverrides="templateOverrides" />
+
+            <CompletionSettings v-if="!isConfirmationForced" v-model="completionSettings" />
             <Alert v-else alertType="info">
                 <h4 class="alert-heading">Confirmation Email</h4>
                 <p>
-                    The confirmation e-mail is defined on the template and cannot be changed.
+                    The completion action is defined on the template and cannot be changed.
                 </p>
             </Alert>
-
-            <NotificationEmail v-model="notificationEmail" :sourceTemplateOptions="sourceTemplateOptions" :campusTopicOptions="campusTopicOptions" />
         </RockForm>
     </div>
 </div>

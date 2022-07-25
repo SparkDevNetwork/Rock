@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType } from "vue";
-import ConfigurableZone from "./configurableZone";
+import ConfigurableZone from "./configurableZone.partial";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.FormContentZone",

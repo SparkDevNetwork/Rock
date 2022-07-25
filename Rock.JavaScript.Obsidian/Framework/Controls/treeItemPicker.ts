@@ -276,7 +276,7 @@ export default defineComponent({
             <div class="picker picker-select rollover-container">
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i :class="pickerIconClass"></i>
-                    <span class="selected-names" v-text="selectedNames"></span>
+                    <span class="selected-names">{{ selectedNames }}</span>
                     <b class="fa fa-caret-down pull-right"></b>
                 </a>
 

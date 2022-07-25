@@ -16,7 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref, watch } from "vue";
-import ConfigurableZone from "./configurableZone";
+import ConfigurableZone from "./configurableZone.partial";
 import RockField from "@Obsidian/Controls/rockField";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
@@ -28,7 +28,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import Switch from "@Obsidian/Controls/switch";
 import TextBox from "@Obsidian/Controls/textBox";
 import { SectionAsideSettings } from "./types";
-import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutAsync } from "./utils";
+import { useFormSources, getFilterGroupTitle, getFilterRuleDescription, timeoutAsync } from "./utils.partial";
 import { FormError } from "@Obsidian/Utility/form";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";

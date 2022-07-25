@@ -22,7 +22,7 @@ import { DragSource, DragTarget, IDragSourceOptions } from "@Obsidian/Directives
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import ConfigurableZone from "./configurableZone";
+import ConfigurableZone from "./configurableZone.partial";
 import { FormField, FormSection } from "../Shared/types";
 
 function getAttributeFromField(field: FormField): PublicAttributeBag {

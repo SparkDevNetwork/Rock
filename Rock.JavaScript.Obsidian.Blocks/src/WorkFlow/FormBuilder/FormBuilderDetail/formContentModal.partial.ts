@@ -21,7 +21,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import RockButton from "@Obsidian/Controls/rockButton";
 import TextBox from "@Obsidian/Controls/textBox";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import ConfigurableZone from "./configurableZone";
+import ConfigurableZone from "./configurableZone.partial";
 
 export default defineComponent({
     name: "Workflow.FormBuilderDetail.FormContentModal",

@@ -38,7 +38,7 @@ import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterG
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { FormField, FormFieldType } from "../Shared/types";
-import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils";
+import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils.partial";
 
 /**
  * Check if the two records are equal. This makes sure all the key names match
