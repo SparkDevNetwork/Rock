@@ -1161,6 +1161,7 @@ namespace Rock.Slingshot
                             {
                                 GroupId = groupId.Value,
                                 GroupRoleId = groupRoleId.Value,
+                                GroupTypeId = groupWithMembers.GroupTypeId,
                                 PersonId = personId.Value,
                                 CreatedDateTime = importedDateTime,
                                 ModifiedDateTime = importedDateTime

@@ -362,10 +362,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// A static facade over the instance method <see cref="Rock.Model.LocationService.ValidateAddressRequirements(Location, out string)" /> 
+        /// Try to use this facade over the instance method.
+        /// </summary>
+        /// <param name="location"></param> 
+        /// <param name="errorMessage"></param> Currently it is of type object, can be converted to string once the instance method is replaced.
+        /// <returns></returns>
+        public static bool ValidateAddressRequirements( Location location, out object errorMessage )
+        {
+            bool isAddressValid = new LocationService( new RockContext() ) 
+                .ValidateAddressRequirements( location, out string message);
+            errorMessage = message;
+            return isAddressValid;
+        }
+
+        /// <summary>
         /// Validate the required parts of the Location Address according to the address requirement rules defined in the Defined Type "Countries".
         /// </summary>
         /// <param name="location"></param>
         /// <param name="errorMessage">An empty string if the validation is successful, or a message describing the validation failure.</param>
+        [Obsolete( "Please use the static method ValidateAddressRequirements( Location location, out object errorMessage )" )]
         public bool ValidateAddressRequirements( Location location, out string errorMessage )
         {
             errorMessage = string.Empty;
