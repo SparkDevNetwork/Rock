@@ -172,6 +172,10 @@
     <Compile Include="Migrations\202207251553026_AddCollectionFastLoadAttributes.designer.cs">
       <DependentUpon>202207251553026_AddCollectionFastLoadAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202207251804315_Rollup_20220725.cs" />
+    <Compile Include="Migrations\202207251804315_Rollup_20220725.designer.cs">
+      <DependentUpon>202207251804315_Rollup_20220725.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1318,6 +1322,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202207251553026_AddCollectionFastLoadAttributes.resx">
       <DependentUpon>202207251553026_AddCollectionFastLoadAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207251804315_Rollup_20220725.resx">
+      <DependentUpon>202207251804315_Rollup_20220725.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
