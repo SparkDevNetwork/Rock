@@ -259,6 +259,11 @@ namespace Rock.SystemGuid
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
 
         /// <summary>
+        /// The guid for the Rock.Model.MediaAccount entity
+        /// </summary>
+        public const string MEDIA_ACCOUNT = "3723425F-6BB3-4F5C-8BD6-0B0B9D22EF70";
+
+        /// <summary>
         /// The guid for the Rock.Model.MetricCategory entity
         /// </summary>
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
