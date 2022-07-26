@@ -844,6 +844,12 @@ namespace Rock.Web.Cache
         public static IEnumerable<AttributeCache> GetPersonAttributes( ICollection<string> desiredFieldTypeClassNames = null )
         {
             int entityTypeIdPerson = EntityTypeCache.GetId<Person>().Value;
+            bool shouldReturnAllPersonAttributes = desiredFieldTypeClassNames == null || desiredFieldTypeClassNames.Count == 0;
+            if ( shouldReturnAllPersonAttributes )
+            {
+                return GetByEntityType( entityTypeIdPerson );
+            }
+
             List<FieldTypeCache> fieldTypes = FieldTypeCache.All();
 
             return GetByEntityType( entityTypeIdPerson )

@@ -382,6 +382,7 @@ namespace Rock.Model
         /// <param name="location"></param>
         /// <param name="errorMessage">An empty string if the validation is successful, or a message describing the validation failure.</param>
         [Obsolete( "Please use the static method ValidateAddressRequirements( Location location, out object errorMessage )" )]
+        [RockObsolete( "1.14" )]
         public bool ValidateAddressRequirements( Location location, out string errorMessage )
         {
             errorMessage = string.Empty;

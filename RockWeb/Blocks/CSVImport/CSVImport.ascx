@@ -30,7 +30,7 @@
                     var $bar = $('#<%= pnlImportDataProgress.ClientID %> .js-progress-bar');
 
                     if (!isNaN(completedCount) && !isNaN(totalCount)) {
-                        let percentageComplete = (completedCount / totalCount * 100).toFixed(1);
+                        let percentageComplete = (completedCount / totalCount * 100).toFixed();
 
                         $bar.prop('aria-valuenow', completedCount);
                         $bar.prop('aria-valuemax', totalCount);
@@ -40,8 +40,6 @@
                 }
 
                 if (results) {
-                    $('#<%=lImportDataMessage.ClientID %>').html(""); // clear the message
-                    $('#import-data-result-container').show();
                     $("#import-data-message-container").hide();
 
                      <%-- show full progress bar - Motive: as of the writing the Slingshot does not call onProgress event handler
@@ -49,9 +47,7 @@
                     var $bar = $('#<%= pnlImportDataProgress.ClientID %> .js-progress-bar');
                     $bar.prop('aria-valuenow', totalCount);
                     $bar.css('width', '100%');
-                    $bar.text('100.0%');
-
-                    $('#<%=lImportDataResult.ClientID %>').html(results);
+                    $bar.text('100%');
 
                     if (hasErrors) {
                         $('#import-csv-error').show();
@@ -67,7 +63,7 @@
             if (name != '<%=this.SignalRNotificationKey %>') {
                 return;
             }
-            let percentageComplete = (readLineCount / totalCount * 100).toFixed(1);
+            let percentageComplete = (readLineCount / totalCount * 100).toFixed();
 
             var $bar = $('#<%= pnlImportPreaprationProgress.ClientID %> .js-progress-bar');
             $bar.prop('aria-valuenow', readLineCount);
@@ -178,6 +174,8 @@
                                     <Rock:BootstrapButton ID="btnStart" runat="server" CssClass="btn btn-primary" Text="Start" OnClick="btnStart_Click" />
                                 </div>
                             </div>
+                            <br />
+                            <br />
                         </div>
 
                         <%-- The description text on the right side of the page --%>
@@ -350,9 +348,6 @@
                         <br />
                         <br />
                         <br />
-                        <pre id="import-data-result-container" hidden>
-                            <asp:Label ID="lImportDataResult" CssClass="js-progressResults" runat="server" />
-                        </pre>
                     </asp:Panel>
                     <div id="import-csv-success" hidden>
                         <Rock:NotificationBox ID="nbImportSuccess"
