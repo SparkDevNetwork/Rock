@@ -292,35 +292,5 @@ namespace Rock.Model
 
             return null;
         }
-
-        /// <summary>
-        /// Gets the person attributes of given list of field types. If no Field types are specified, all the person attributes are retrieved.
-        /// </summary>
-        /// <returns>A queryable of the personAttributes</returns>
-        public static List<Attribute> GetPersonAttributes( ICollection<string> desiredFieldTypesNames = null )
-        {
-            int entityTypeIdPerson = Web.Cache.EntityTypeCache.GetId<Person>().Value;
-
-            using ( Data.RockContext rockContext = new Data.RockContext() )
-            {
-                AttributeService attributeService = new AttributeService( rockContext );
-                IQueryable<Attribute> personAtrributes = attributeService.GetByEntityTypeId( entityTypeIdPerson );
-                bool shouldFilterByFieldType = desiredFieldTypesNames != null && desiredFieldTypesNames.Count > 0;
-                if ( shouldFilterByFieldType )
-                {
-                    FieldTypeService fieldTypeService = new FieldTypeService( rockContext );
-                    var fieldTypes = fieldTypeService.Queryable();
-
-                    // should this be changed to use Include API in place of the join API?
-                    personAtrributes = personAtrributes.Join( fieldTypes,
-                        personAtrribute => personAtrribute.FieldTypeId,
-                        fieldType => fieldType.Id,
-                        ( personAtrribute, fieldType ) => new { PersonAtrribute = personAtrribute, FieldTypeName = fieldType.Name } )
-                        .Where( a => desiredFieldTypesNames.Contains( a.FieldTypeName ) )
-                        .Select( a => a.PersonAtrribute );
-                }
-                return personAtrributes.ToList();
-            }
-        }
     }
 }

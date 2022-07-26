@@ -75,7 +75,11 @@ namespace RockWeb.Blocks.CVSImport
             "Campus Name",
             "Give Individually" };
 
-        private static readonly string[] allowedPeronsAttributeFieldTypes = { "Text", "Boolean", "Integer", "Date" };
+        private static readonly string[] allowedPeronsAttributeFieldTypeClassNames = { "Rock.Field.Types.TextFieldType",
+            "Rock.Field.Types.BooleanFieldType",
+            "Rock.Field.Types.IntegerFieldType",
+            "Rock.Field.Types.DateFieldType"
+        };
 
         /// <summary>
         /// This holds the reference to the RockMessageHub SignalR Hub context.
@@ -294,7 +298,7 @@ namespace RockWeb.Blocks.CVSImport
 
         private ListItem[] CreateListItemsDropDown()
         {
-            ListItem[] rockAttributeArray = AttributeService.GetPersonAttributes( allowedPeronsAttributeFieldTypes )
+            ListItem[] rockAttributeArray = AttributeCache.GetPersonAttributes( allowedPeronsAttributeFieldTypeClassNames )
                 .Select( attribute => new ListItem( attribute.Name ) )
                 .ToArray();
             foreach ( ListItem rockAttribute in rockAttributeArray )

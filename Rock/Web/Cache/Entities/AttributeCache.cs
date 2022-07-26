@@ -837,6 +837,22 @@ namespace Rock.Web.Cache
             EntityAttributesCache.Remove();
         }
 
+        /// <summary>
+        /// Gets the person attributes of given list of field types class names. If no Field types are specified, all the person attributes are retrieved.
+        /// </summary>
+        /// <returns>A queryable of the personAttributes</returns>
+        public static IEnumerable<AttributeCache> GetPersonAttributes( ICollection<string> desiredFieldTypeClassNames = null )
+        {
+            int entityTypeIdPerson = EntityTypeCache.GetId<Person>().Value;
+            List<FieldTypeCache> fieldTypes = FieldTypeCache.All();
+
+            return GetByEntityType( entityTypeIdPerson )
+                .Join( fieldTypes, personAttribute => personAttribute.FieldTypeId, fieldType => fieldType.Id,
+                    ( personAtrribute, fieldType ) => new { PersonAttribute = personAtrribute, FieldTypeClassName = fieldType.Class } )
+                .Where( a => desiredFieldTypeClassNames.Contains( a.FieldTypeClassName ) )
+                .Select( a => a.PersonAttribute );
+        }
+
         #endregion
     }
 

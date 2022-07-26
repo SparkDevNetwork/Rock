@@ -14,18 +14,12 @@ public class PersonAttributeValueCSVMapper
         string csvColumnId = csvHeaderMapper["Id"];
         int personId = csvEntryLookup[csvColumnId].ToIntSafe();
 
-        // This is duplicated from CSVImport.ascx.cs
-        RockContext rockContext = new RockContext();
-        int entityTypeIdPerson = EntityTypeCache.GetId<Person>().Value;
-        AttributeService attributeService = new AttributeService( rockContext );
+        IEnumerable<string> rockPersonAttributeKeys = AttributeCache.GetPersonAttributes()
+            .Select( a => a.Name );
 
-        string[] rockAttributeKeys = attributeService.GetByEntityTypeId( entityTypeIdPerson )
-            .Select( a => a.Name )
-            .ToArray();
-
-        foreach ( var rockAttributeKey in rockAttributeKeys )
+        foreach ( var rockPersonAttributeKey in rockPersonAttributeKeys )
         {
-            if ( !csvHeaderMapper.TryGetValue( rockAttributeKey, out string csvColumnRockAttributeKey ) )
+            if ( !csvHeaderMapper.TryGetValue( rockPersonAttributeKey, out string csvColumnRockAttributeKey ) )
             {
                 continue;
             }
@@ -35,7 +29,7 @@ public class PersonAttributeValueCSVMapper
 
             var personAttributeValue = new Slingshot.Core.Model.PersonAttributeValue
             {
-                AttributeKey = rockAttributeKey,
+                AttributeKey = rockPersonAttributeKey,
                 AttributeValue = attributeValue,
                 PersonId = personId
             };
