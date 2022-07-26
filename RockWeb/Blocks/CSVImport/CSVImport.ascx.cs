@@ -118,22 +118,21 @@ namespace RockWeb.Blocks.CVSImport
                 ddlDataType.Items.Add( peopleDataTypeItem );
 
                 RockContext rockContext = new RockContext();
+
                 ListItem[] sourceDescriptionItems = new PersonService( new RockContext() )
                     .GetForeignKeys()
                     .Select( foreignKey => new ListItem( foreignKey ) )
                     .ToArray();
-                if ( sourceDescriptionItems.Count() == 0 )
+                rblpreviousSourceDescription.Items.AddRange( sourceDescriptionItems );
+
+                bool noPreviousForeignKeyPresent = sourceDescriptionItems.Count() == 0;
+                if ( noPreviousForeignKeyPresent )
                 {
-                    // switch to taking text input if no foreign key is present
-                    rblpreviousSourceDescription.Required = true;
+                    rblpreviousSourceDescription.Required = false;
                     rblpreviousSourceDescription.Visible = false;
                     lbToggleSourceDescription.Visible = false;
                     tbpreviousSourceDescription.Visible = true;
                     tbpreviousSourceDescription.Required = true;
-                }
-                else
-                {
-                    rblpreviousSourceDescription.Items.AddRange( sourceDescriptionItems );
                 }
 
                 Guid suffixGUID = Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid();
@@ -289,7 +288,7 @@ namespace RockWeb.Blocks.CVSImport
 
         protected void lbToggleSourceDescription_Click( object sender, EventArgs e )
         {
-            rblpreviousSourceDescription.Required = true;
+            rblpreviousSourceDescription.Required = false;
             rblpreviousSourceDescription.Visible = false;
             lbToggleSourceDescription.Visible = false;
             tbpreviousSourceDescription.Visible = true;

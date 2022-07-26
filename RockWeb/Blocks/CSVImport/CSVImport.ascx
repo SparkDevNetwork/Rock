@@ -132,7 +132,8 @@
                                     <asp:LinkButton ID="lbToggleSourceDescription"
                                         runat="server"
                                         Text="Add Additional Source Description"
-                                        OnClick="lbToggleSourceDescription_Click" />
+                                        OnClick="lbToggleSourceDescription_Click"
+                                        CausesValidation="false" />
                                     <Rock:RockTextBox
                                         ID="tbpreviousSourceDescription"
                                         runat="server"
