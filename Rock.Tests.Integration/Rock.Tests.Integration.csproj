@@ -169,6 +169,7 @@
     <Compile Include="Crm\CrmModuleTestHelper.cs" />
     <Compile Include="Crm\PersonAddressTests.cs" />
     <Compile Include="Field.Types\AddressFieldTypeTests.cs" />
+    <Compile Include="Field.Types\ContentChannelItemFieldTypeTests.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
     <Compile Include="Jobs\GivingAutomationClassificationTests.cs" />
     <Compile Include="Jobs\GivingJourneyHelperTests.cs" />
