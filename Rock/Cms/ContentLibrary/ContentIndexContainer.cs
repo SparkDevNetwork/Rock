@@ -88,6 +88,11 @@ namespace Rock.Cms.ContentLibrary
         {
             var usComponent = Rock.UniversalSearch.IndexContainer.GetActiveComponent();
 
+            if ( usComponent == null )
+            {
+                return null;
+            }
+
             if ( usComponent.GetType() == typeof( Rock.UniversalSearch.IndexComponents.Lucene ) )
             {
                 return Instance.Components.Values

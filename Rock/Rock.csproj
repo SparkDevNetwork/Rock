@@ -819,7 +819,7 @@
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
-    <Compile Include="Jobs\IndexContentLibrary.cs" />
+    <Compile Include="Jobs\IndexContentLibraries.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
     <Compile Include="Model\CMS\ContentLibrarySource\ContentLibrarySource.cs" />
     <Compile Include="Model\CMS\ContentLibrarySource\ContentLibrarySource.Logic.cs" />

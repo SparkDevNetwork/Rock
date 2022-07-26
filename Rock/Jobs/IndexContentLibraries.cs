@@ -23,17 +23,15 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Cms.ContentLibrary;
-using Rock.Data;
-using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
     /// <summary>
-    /// A job that updates the content library search index.
+    /// A job that updates the content libraries search index.
     /// </summary>
-    [DisplayName( "Index Content Library" )]
-    [Description( "A job that updates the content library search index." )]
+    [DisplayName( "Index Content Libraries" )]
+    [Description( "A job that updates the content libraries search index." )]
 
     #region Job Attributes
 
@@ -47,7 +45,7 @@ namespace Rock.Jobs
     #endregion
 
     [DisallowConcurrentExecution]
-    public class IndexContentLibrary : IJob
+    public class IndexContentLibraries : IJob
     {
         /// <summary>
         /// Keys to use for Attributes
@@ -64,7 +62,7 @@ namespace Rock.Jobs
         /// scheduler can instantiate the class whenever it needs.
         /// </para>
         /// </summary>
-        public IndexContentLibrary()
+        public IndexContentLibraries()
         {
         }
 
