@@ -1352,19 +1352,19 @@ namespace RockWeb.Blocks.Groups
 
             cblRequirementState.BindToEnum<MeetsGroupRequirement>();
 
-            string requirementRoleValue = rFilter.GetUserPreference( "RequirementRole" );
+            string requirementRoleValue = filterRequirements.GetUserPreference( "RequirementRole" );
             if ( !string.IsNullOrWhiteSpace( requirementRoleValue ) )
             {
                 cblRequirementsRole.SetValues( requirementRoleValue.Split( ';' ).ToList() );
             }
 
-            string requirementTypeValue = rFilter.GetUserPreference( "RequirementType" );
+            string requirementTypeValue = filterRequirements.GetUserPreference( "RequirementType" );
             if ( !string.IsNullOrWhiteSpace( requirementTypeValue ) )
             {
                 ddlRequirementType.SelectedValue = requirementTypeValue;
             }
 
-            string requirementStateValue = rFilter.GetUserPreference( "RequirementState" );
+            string requirementStateValue = filterRequirements.GetUserPreference( "RequirementState" );
             if ( !string.IsNullOrWhiteSpace( requirementStateValue ) )
             {
                 cblRequirementState.SetValues( requirementStateValue.Split( ';' ).ToList() );
