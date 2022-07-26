@@ -21,6 +21,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
+using Rock.Cms.ContentLibrary;
+using Rock.Cms.ContentLibrary.Attributes;
 using Rock.Data;
 using Rock.Model;
 
@@ -37,6 +39,15 @@ namespace Rock.Web.Cache
         #region Static Fields
 
         private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>( StringComparer.OrdinalIgnoreCase );
+
+        #endregion
+
+        #region Private Fields
+
+        /// <summary>
+        /// The cached type this EntityTypeCache refers to.
+        /// </summary>
+        private Type _entityType = null;
 
         #endregion
 
@@ -187,6 +198,32 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool IsIndexingEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this entity type supports content
+        /// library indexing.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this entity type supports content library indexing; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        internal bool IsContentLibraryIndexingEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets the type of the indexer used when storing in the content library index.
+        /// </summary>
+        /// <value>
+        /// The type of the indexer used when storing in the content library index.
+        /// </value>
+        internal Type ContentLibraryIndexerType { get; private set; }
+
+        /// <summary>
+        /// Gets the type of the document used when storing in the content library index.
+        /// </summary>
+        /// <value>
+        /// he type of the document used when storing in the content library index.
+        /// </value>
+        internal Type ContentLibraryDocumentType { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has achievements enabled.
@@ -419,7 +456,21 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Type GetEntityType()
         {
-            return !string.IsNullOrWhiteSpace( AssemblyName ) ? Type.GetType( AssemblyName ) : null;
+            /*
+             * 2022-06-24 - dsh
+             * 
+             * Constructing a type from the AssemblyName is fast, but still
+             * takes 0.0024ms. It can also be called extremely often. On the
+             * stock Rock instance this is called 86 times for the person
+             * profile extended attributes page. Caching it can save 0.2ms
+             * per page load on some pages.
+             */
+            if ( _entityType == null )
+            {
+                _entityType = !string.IsNullOrWhiteSpace( AssemblyName ) ? Type.GetType( AssemblyName ) : null;
+            }
+
+            return _entityType;
         }
 
         /// <summary>
@@ -451,6 +502,26 @@ namespace Rock.Web.Cache
             LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
 
             IndexModelType = entityType.IndexModelType;
+
+            // Detect support for content library.
+            var contentIndexableAttribute = GetEntityType()?.GetCustomAttribute<ContentLibraryIndexableAttribute>();
+            if ( contentIndexableAttribute != null )
+            {
+                ContentLibraryIndexerType = contentIndexableAttribute.IndexerType;
+                ContentLibraryDocumentType = contentIndexableAttribute.DocumentType;
+
+                if ( !typeof( IContentLibraryIndexer ).IsAssignableFrom( ContentLibraryIndexerType ) )
+                {
+                    ContentLibraryIndexerType = null;
+                }
+
+                if ( !typeof( Rock.Cms.ContentLibrary.IndexDocuments.IndexDocumentBase ).IsAssignableFrom( ContentLibraryDocumentType ) )
+                {
+                    ContentLibraryDocumentType = null;
+                }
+
+                IsContentLibraryIndexingEnabled = ContentLibraryIndexerType != null && ContentLibraryDocumentType != null;
+            }
 
             EntityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
         }

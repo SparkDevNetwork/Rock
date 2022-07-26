@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -29,6 +30,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -462,6 +464,13 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
                 } );
+
+                // Update the content library index.
+                new ProcessContentLibraryDocument.Message
+                {
+                    EntityTypeId = contentItem.TypeId,
+                    EntityId = contentItem.Id
+                }.Send();
 
                 ReturnToParentPage();
             }

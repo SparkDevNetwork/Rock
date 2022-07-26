@@ -32,7 +32,7 @@ export type FinancialTransactionDetailBag = {
     accountId: number;
 
     /** Gets or sets the total amount of the transaction detail. This total amount includes any associated fees. */
-    amount?: number;
+    amount: number;
 
     /** Gets or sets the entity id. */
     entityId?: number | null;

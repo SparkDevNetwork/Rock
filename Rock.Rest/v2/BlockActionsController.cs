@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Results;
@@ -57,9 +58,9 @@ namespace Rock.Rest.v2
         [HttpGet]
         [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
         [Rock.SystemGuid.RestActionGuid( "CC3DE0C2-8703-4925-A16C-F47A31FE9C69" )]
-        public IHttpActionResult BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
+        public async Task<IHttpActionResult> BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
         {
-            return ProcessAction( this, pageGuid, blockGuid, actionName, null );
+            return await ProcessAction( this, pageGuid, blockGuid, actionName, null );
         }
 
         /// <summary>
@@ -74,11 +75,11 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
         [Rock.SystemGuid.RestActionGuid( "05EAF919-0D36-496E-8924-88DC50A9CD8E" )]
-        public IHttpActionResult BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
+        public async Task<IHttpActionResult> BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )
             {
-                return ProcessAction( this, pageGuid, blockGuid, actionName, null );
+                return await ProcessAction( this, pageGuid, blockGuid, actionName, null );
             }
 
             //
@@ -94,7 +95,7 @@ namespace Rock.Rest.v2
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return ProcessAction( this, pageGuid, blockGuid, actionName, parameterToken );
+                    return await ProcessAction( this, pageGuid, blockGuid, actionName, parameterToken );
                 }
             }
         }
@@ -112,7 +113,7 @@ namespace Rock.Rest.v2
         /// <param name="actionName">Name of the action.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        internal static IHttpActionResult ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters )
+        internal static async Task<IHttpActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters )
         {
             try
             {
@@ -230,7 +231,7 @@ namespace Rock.Rest.v2
 
                 requestContext.AddContextEntitiesForPage( pageCache );
 
-                return InvokeAction( controller, rockBlock, actionName, actionParameters, parameters );
+                return await InvokeAction( controller, rockBlock, actionName, actionParameters, parameters );
             }
             catch ( Exception ex )
             {
@@ -250,7 +251,7 @@ namespace Rock.Rest.v2
         /// <exception cref="ArgumentNullException">actionName
         /// or
         /// actionData</exception>
-        internal static IHttpActionResult InvokeAction( ApiControllerBase controller, Blocks.IRockBlockType block, string actionName, Dictionary<string, JToken> actionParameters, JToken bodyParameters )
+        internal static async Task<IHttpActionResult> InvokeAction( ApiControllerBase controller, Blocks.IRockBlockType block, string actionName, Dictionary<string, JToken> actionParameters, JToken bodyParameters )
         {
             // Parse the body content into our normal parameters.
             if ( bodyParameters != null )
@@ -373,9 +374,23 @@ namespace Rock.Rest.v2
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 
-            //
+            // Check if the result type is a Task.
+            if ( result is Task resultTask )
+            {
+                await resultTask;
+
+                // Task<T> is not covariant, so we can't just cast to Task<object>.
+                if ( resultTask.GetType().GetProperty( "Result" ) != null )
+                {
+                    result = ( object ) ( ( dynamic ) resultTask ).Result;
+                }
+                else
+                {
+                    result = null;
+                }
+            }
+
             // Handle the result type.
-            //
             if ( result is IHttpActionResult httpActionResult )
             {
                 return httpActionResult;

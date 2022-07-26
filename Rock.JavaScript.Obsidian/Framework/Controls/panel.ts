@@ -169,6 +169,10 @@ export default defineComponent({
             }
         };
 
+        const getHeaderSecondaryActionItemClass = (action: PanelAction): string => {
+            return action.disabled ? "disabled" : "";
+        };
+
         const onIgnoreClick = (): void => { /* Intentionally blank to ignore click. */ };
 
         /** Event handler when the drawer expander is clicked. */
@@ -215,6 +219,10 @@ export default defineComponent({
 
         /** Event handler for when a secondary action is clicked. */
         const onActionClick = (action: PanelAction, event: Event): void => {
+            if (action.disabled) {
+                return;
+            }
+
             // Close the drop down since we are hijacking the click event.
             if (headerSecondaryActionMenu.value) {
                 $(headerSecondaryActionMenu.value).dropdown("toggle");
@@ -242,6 +250,7 @@ export default defineComponent({
 
         return {
             getHeaderSecondaryActionIconClass,
+            getHeaderSecondaryActionItemClass,
             hasCollapseAction,
             hasHeaderSecondaryActions,
             headerSecondaryActionMenu,
@@ -292,7 +301,7 @@ export default defineComponent({
                     <span class="action clickable" style="position: relative;">
                         <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
                         <ul class="dropdown-menu dropdown-menu-right">
-                            <li v-for="action in headerSecondaryActions">
+                            <li v-for="action in headerSecondaryActions" :class="getHeaderSecondaryActionItemClass(action)">
                                 <a href="#" @click.prevent.stop="onActionClick(action, $event)">
                                     <i :class="getHeaderSecondaryActionIconClass(action)"></i>
                                     {{ action.title }}

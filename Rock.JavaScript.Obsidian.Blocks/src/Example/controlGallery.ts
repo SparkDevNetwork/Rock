@@ -15,12 +15,13 @@
 // </copyright>
 //
 
-import { Component, computed, defineComponent, getCurrentInstance, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
 import EmailBox from "@Obsidian/Controls/emailBox";
+import CodeEditor from "@Obsidian/Controls/codeEditor";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import DatePicker from "@Obsidian/Controls/datePicker";
 import DateRangePicker from "@Obsidian/Controls/dateRangePicker";
@@ -140,6 +141,46 @@ function convertComponentName(name: string | undefined | null): string {
     }
 
     return name.replace(/[A-Z]/g, " $&").replace(/Gallery$/, "").trim();
+}
+
+/**
+ * Takes an element name and a collection of attribute keys and values and
+ * constructs the example code. This can be used inside a computed call to
+ * have the example code dynamically match the selected settings.
+ * 
+ * @param elementName The name of the element to use in the example code.
+ * @param attributes The attribute names and values to append to the element name.
+ * 
+ * @returns A string of valid HTML content for how to use the component.
+ */
+function buildExampleCode(elementName: string, attributes: Record<string, Ref<unknown> | unknown>): string {
+    const attrs: string[] = [];
+
+    for (const attr in attributes) {
+        let value = attributes[attr];
+        console.log("attributes", attr, value);
+
+        if (isRef(value)) {
+            value = value.value;
+        }
+
+        if (typeof value === "string") {
+            attrs.push(`${attr}="${value}"`);
+        }
+        else if (typeof value === "number") {
+            attrs.push(`:${attr}="${value}"`);
+        }
+        else if (typeof value === "boolean") {
+            attrs.push(`:${attr}="${value ? "true" : "false"}"`);
+        }
+        else if (value === undefined || value === null) {
+            /* Do nothing */
+        }
+    }
+
+    console.log(attrs);
+
+    return `<${elementName} ${attrs.join(" ")} />`;
 }
 
 /**
@@ -4268,6 +4309,111 @@ const streakTypePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates code editor. */
+const codeEditorGallery = defineComponent({
+    name: "CodeEditorGallery",
+    components: {
+        GalleryAndResult,
+        CodeEditor,
+        DropDownList,
+        NumberBox
+    },
+    setup() {
+        const themeItems: ListItemBag[] = [
+            { value: "rock", text: "rock" },
+            { value: "chrome", text: "chrome" },
+            { value: "crimson_editor", text: "crimson_editor" },
+            { value: "dawn", text: "dawn" },
+            { value: "dreamweaver", text: "dreamweaver" },
+            { value: "eclipse", text: "eclipse" },
+            { value: "solarized_light", text: "solarized_light" },
+            { value: "textmate", text: "textmate" },
+            { value: "tomorrow", text: "tomorrow" },
+            { value: "xcode", text: "xcode" },
+            { value: "github", text: "github" },
+            { value: "ambiance", text: "ambiance" },
+            { value: "chaos", text: "chaos" },
+            { value: "clouds_midnight", text: "clouds_midnight" },
+            { value: "cobalt", text: "cobalt" },
+            { value: "idle_fingers", text: "idle_fingers" },
+            { value: "kr_theme", text: "kr_theme" },
+            { value: "merbivore", text: "merbivore" },
+            { value: "merbivore_soft", text: "merbivore_soft" },
+            { value: "mono_industrial", text: "mono_industrial" },
+            { value: "monokai", text: "monokai" },
+            { value: "pastel_on_dark", text: "pastel_on_dark" },
+            { value: "solarized_on_dark", text: "solarized_on_dark" },
+            { value: "terminal", text: "terminal" },
+            { value: "tomorrow_night", text: "tomorrow_night" },
+            { value: "tomorrow_night_blue", text: "tomorrow_night_blue" },
+            { value: "tomorrow_night_bright", text: "tomorrow_night_bright" },
+            { value: "tomorrow_night_eighties", text: "tomorrow_night_eighties" },
+            { value: "twilight", text: "twilight" },
+            { value: "vibrant_ink", text: "vibrant_ink" }
+        ].sort((a, b) => a.text.localeCompare(b.text));
+
+        const modeItems: ListItemBag[] = [
+            { value: "text", text: "text" },
+            { value: "css", text: "css" },
+            { value: "html", text: "html" },
+            { value: "lava", text: "lava" },
+            { value: "javascript", text: "javascript" },
+            { value: "less", text: "less" },
+            { value: "powershell", text: "powershell" },
+            { value: "sql", text: "sql" },
+            { value: "typescript", text: "typescript" },
+            { value: "csharp", text: "csharp" },
+            { value: "markdown", text: "markdown" },
+            { value: "xml", text: "xml" },
+        ].sort((a, b) => a.text.localeCompare(b.text));
+
+        const theme = ref("rock");
+        const mode = ref("text");
+        const editorHeight = ref(200);
+
+        const exampleCode = computed((): string => {
+            return buildExampleCode("CodeEditor", {
+                theme,
+                mode,
+                editorHeight
+            });
+        });
+
+        return {
+            theme,
+            themeItems,
+            mode,
+            modeItems,
+            editorHeight,
+            importCode: getControlImportPath("codeEditor"),
+            exampleCode
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+    <CodeEditor :theme="theme" :mode="mode" :editorHeight="editorHeight" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Theme" v-model="theme" :items="themeItems" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList label="Mode" v-model="mode" :items="modeItems" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberBox label="Editor Height" v-model="editorHeight" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+
 
 const controlGalleryComponents: Record<string, Component> = [
     attributeValuesContainerGallery,
@@ -4326,6 +4472,7 @@ const controlGalleryComponents: Record<string, Component> = [
     auditDetailGallery,
     binaryFileTypePickerGallery,
     binaryFilePickerGallery,
+    codeEditorGallery,
     modalGallery,
     eventItemPickerGallery,
     dataViewPickerGallery,

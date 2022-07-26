@@ -32,10 +32,10 @@ export type RegistrationTemplateDiscountBag = {
     code?: string | null;
 
     /** Gets or sets the discount amount. */
-    discountAmount?: number;
+    discountAmount: number;
 
     /** Gets or sets the discount percentage. */
-    discountPercentage?: number;
+    discountPercentage: number;
 
     /** Gets or sets the last day that the discount code can be used */
     endDate?: string | null;

@@ -585,8 +585,8 @@ namespace Rock.Data
                 tcsPostSave.SetResult( true );
             }
 
-            var processEntityTypeIndexMsgs = new List<ProcessEntityTypeIndex.Message>();
-            var deleteEntityTypeIndexMsgs = new List<DeleteEntityTypeIndex.Message>();
+            var processIndexMsgs = new List<BusStartedTaskMessage>();
+            var deleteIndexMsgs = new List<BusStartedTaskMessage>();
             foreach ( var item in updatedItems )
             {
                 // check if this entity should be passed on for indexing
@@ -600,7 +600,7 @@ namespace Rock.Data
                             EntityId = item.Entity.Id
                         };
 
-                        deleteEntityTypeIndexMsgs.Add( deleteEntityTypeIndexMsg );
+                        deleteIndexMsgs.Add( deleteEntityTypeIndexMsg );
                     }
                     else
                     {
@@ -610,7 +610,27 @@ namespace Rock.Data
                             EntityId = item.Entity.Id
                         };
 
-                        processEntityTypeIndexMsgs.Add( processEntityTypeIndexMsg );
+                        processIndexMsgs.Add( processEntityTypeIndexMsg );
+                    }
+                }
+
+                // Check if this item should be processed by the content library.
+                var itemEntityTypeCache = EntityTypeCache.Get( item.Entity.TypeId );
+                if ( itemEntityTypeCache != null && itemEntityTypeCache.IsContentLibraryIndexingEnabled )
+                {
+                    // We only handle deleted states here. The detail blocks where
+                    // an entity is edited should send the bus message to update
+                    // the index when an item is saved. The job will catch anything
+                    // else that is missed.
+                    if ( item.State == EntityContextState.Detached || item.State == EntityContextState.Deleted )
+                    {
+                        var msg = new DeleteContentLibraryDocument.Message
+                        {
+                            EntityTypeId = item.Entity.TypeId,
+                            EntityId = item.Entity.Id
+                        };
+
+                        deleteIndexMsgs.Add( msg );
                     }
                 }
 
@@ -644,15 +664,15 @@ namespace Rock.Data
             }
 
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( processEntityTypeIndexMsgs.Any() || deleteEntityTypeIndexMsgs.Any() )
+            if ( processIndexMsgs.Any() || deleteIndexMsgs.Any() )
             {
                 System.Threading.Tasks.Task.Run( () =>
                 {
                     var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
                     if ( indexingEnabled )
                     {
-                        processEntityTypeIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
-                        deleteEntityTypeIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
+                        processIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
+                        deleteIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
                 } );
             }

@@ -59,6 +59,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Cms\ContentLibraryDetail.cs" />
+    <Compile Include="Cms\ContentLibraryView.cs" />
     <Compile Include="Cms\MediaAccountDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
@@ -67,6 +69,7 @@
     <Compile Include="Example\FieldTypeGallery.cs" />
     <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
     <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
+    <Compile Include="IHasCustomActions.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

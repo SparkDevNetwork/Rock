@@ -597,7 +597,7 @@ export default defineComponent({
          * @param event The DOM event that triggered the click.
          */
         const onActionClick = (action: PanelAction, event: Event): void => {
-            if (action.handler) {
+            if (action.handler && !action.disabled) {
                 action.handler(event);
             }
         };
@@ -737,7 +737,7 @@ export default defineComponent({
     </template>
 
     <template #footerSecondaryActions>
-        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)">
+        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)" :disabled="action.disabled">
             <i :class="getActionIconCssClass(action)"></i>
         </RockButton>
     </template>

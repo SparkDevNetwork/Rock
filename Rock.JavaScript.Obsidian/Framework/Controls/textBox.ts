@@ -65,8 +65,8 @@ export default defineComponent({
     emits: [
         "update:modelValue"
     ],
-    setup(props, { emit }) {
-        const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    setup(props, ctx) {
+        const internalValue = useVModelPassthrough(props, "modelValue", ctx.emit);
 
         const isTextarea = computed((): boolean => {
             return props.textMode?.toLowerCase() === "multiline";
@@ -88,7 +88,16 @@ export default defineComponent({
             return "badge-danger";
         });
 
+        const isInputGroup = computed((): boolean => {
+            return !!ctx.slots.prepend || !!ctx.slots.append;
+        });
+
+        const controlContainerClass = computed((): string => {
+            return isInputGroup.value ? "input-group" : "";
+        });
+
         return {
+            controlContainerClass,
             internalValue,
             isTextarea,
             charsRemaining,
@@ -107,8 +116,12 @@ export default defineComponent({
     </template>
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
-            <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
-            <input v-else v-model="internalValue" :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
+            <div :class="controlContainerClass">
+                <slot name="prepend" />
+                <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
+                <input v-else v-model="internalValue" :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
+                <slot name="append" />
+            </div>
         </div>
     </template>
 </RockFormField>`

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -533,7 +533,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    scriptBuilder.AppendLine( string.Format( "window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{0}');", blockId ) );
+                    scriptBuilder.AppendLine( $"window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{block.Id}:{block.Guid}');" );
                 }
 
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", scriptBuilder.ToString(), true );

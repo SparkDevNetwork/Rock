@@ -174,6 +174,16 @@ namespace Rock.SystemGuid
         public const string CONNECTION_WORKFLOW = "4EB8711F-7301-4699-A223-0505A7CEB20A";
 
         /// <summary>
+        /// The guid for the Rock.Model.ContentLibrary entity
+        /// </summary>
+        public const string CONTENT_LIBRARY = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8";
+
+        /// <summary>
+        /// The guid for the Rock.Model.ContentLibrarySource entity
+        /// </summary>
+        public const string CONTENT_LIBRARY_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
+
+        /// <summary>
         /// The guid for the Rock.Model.DataView entity.
         /// </summary>
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
@@ -192,6 +202,11 @@ namespace Rock.SystemGuid
         /// The guid for Rock.Model.EntityType entity.
         /// </summary>
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
+
+        /// <summary>
+        /// The guid for Rock.Model.EventCalendar entity.
+        /// </summary>
+        public const string EVENT_CALENDAR = "E67D8D6D-4FE6-48D5-A940-A39213047314";
 
         /// <summary>
         /// The guid for the Rock.Model.FinancialAccount entity.
