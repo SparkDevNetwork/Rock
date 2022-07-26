@@ -178,6 +178,7 @@
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
     <Compile Include="Jobs\RockCleanupJobTests.cs" />
+    <Compile Include="Lava\Blocks\PersonalizationTests.cs" />
     <Compile Include="Lava\Commands\RockEntityTests.cs" />
     <Compile Include="Lava\DotLiquid\RockLiquidTests.cs" />
     <Compile Include="Lava\Engine\EntityPropertyAccessTests.cs" />
