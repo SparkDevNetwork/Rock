@@ -93,6 +93,52 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a Queryable of Personalized Entity that meet the criteria of the Segment
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        public IQueryable<PersonalizedEntity> GetPersonalizedEntityQueryForSegment(int entityTypeId, int entityId)
+        {
+            return ( this.Context as RockContext ).PersonalizedEntities
+                .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.EntityTypeId == entityTypeId && a.EntityId == entityId );
+        }
+
+        /// <summary>
+        /// Updates the data in <see cref="Rock.Model.PersonalizedEntity"/> table based on the specified segments.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <param name="segmentIds">The segment ids.</param>
+        public void UpdatePersonalizedEntityForSegments( int entityTypeId, int entityId, List<int> segmentIds )
+        {
+            var rockContext = this.Context as RockContext;
+            var personalizedEntities = GetPersonalizedEntityQueryForSegment( entityTypeId, entityId );
+            // Delete personalizedEntities that are no longer in the segment Ids provided.
+            var personalizedEntitiesToDelete = personalizedEntities.Where( a => !segmentIds.Contains( a.PersonalizationEntityId ) );
+            var countRemovedFromPersonalizedEntities = rockContext.BulkDelete( personalizedEntitiesToDelete );
+
+            // Add personalizationEntityIds that are new.
+            var personAliasIdsToAddToSegment = segmentIds
+                .Where( segmentId => !personalizedEntities.Any( pe => pe.PersonalizationEntityId == segmentId ) )
+                .ToList();
+            var personalizedEntitiesToInsert = personAliasIdsToAddToSegment.Distinct().Select( personalizationEntityId => new PersonalizedEntity
+            {
+                EntityId = entityId,
+                EntityTypeId = entityTypeId,
+                PersonalizationType = PersonalizationType.Segment,
+                PersonalizationEntityId = personalizationEntityId
+            } ).ToList();
+
+            /*
+             SK - 07-27-2022
+             Please defer using BulkInsert here as it throws error Unexpected existing transaction.
+            */
+            rockContext.PersonalizedEntities.AddRange( personalizedEntitiesToInsert );
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Updates the data in <see cref="Rock.Model.PersonAliasPersonalization"/> table based on the specified segment's criteria.
         /// </summary>
         /// <param name="segment">The segment.</param>

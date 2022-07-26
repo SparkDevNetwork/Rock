@@ -164,6 +164,15 @@ namespace Rock.Web.Cache
         public bool IsIndexEnabled { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable personalization].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable personalization]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnablePersonalization { get; set; }
+
+        /// <summary>
         /// Gets or sets the category ids.
         /// </summary>
         /// <value>
@@ -352,6 +361,7 @@ namespace Rock.Web.Cache
             ContentControlType = contentChannel.ContentControlType;
             RootImageDirectory = contentChannel.RootImageDirectory;
             IsIndexEnabled = contentChannel.IsIndexEnabled;
+            EnablePersonalization = contentChannel.EnablePersonalization;
             CategoryIds = contentChannel.Categories.Select( c => c.Id ).ToList();
         }
 

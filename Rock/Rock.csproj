@@ -833,6 +833,7 @@
     <Compile Include="Jobs\UpdatePersonalizationData.cs" />
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegment.SaveHook.cs" />
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegmentService.cs" />
+    <Compile Include="Model\CMS\RequestFilter\RequestFilterService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
