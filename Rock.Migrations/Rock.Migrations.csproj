@@ -304,6 +304,10 @@
     <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205091654423_RemoveContentChannelViewDetail.Designer.cs">
       <DependentUpon>202205091654423_RemoveContentChannelViewDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205111947199_MobileGroupSchedulingBlockTemplates.cs" />
+    <Compile Include="Migrations\Version 13.0\Version 1.13.4\202205111947199_MobileGroupSchedulingBlockTemplates.Designer.cs">
+      <DependentUpon>202205111947199_MobileGroupSchedulingBlockTemplates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.Designer.cs">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
@@ -1421,6 +1425,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202205091654423_RemoveContentChannelViewDetail.resx">
       <DependentUpon>202205091654423_RemoveContentChannelViewDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.4\202205111947199_MobileGroupSchedulingBlockTemplates.resx">
+      <DependentUpon>202205111947199_MobileGroupSchedulingBlockTemplates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.2\202203041901063_PersonEntrySection.resx">
       <DependentUpon>202203041901063_PersonEntrySection.cs</DependentUpon>
