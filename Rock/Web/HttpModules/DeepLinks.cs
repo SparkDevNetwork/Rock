@@ -150,7 +150,7 @@ namespace Rock.Web.HttpModules
         }
 
         /// <summary>
-        /// Takes a query string Var1=ValueA&Var2=ValueB&Var3=ValueC and returns a Dictionary of parameters.
+        /// Takes a query string <![CDATA[Var1=ValueA&ampVar2=ValueB&Var3=ValueC]]> and returns a Dictionary of parameters.
         /// </summary>
         /// <param name="str">The querystring.</param>
         /// <returns></returns>
