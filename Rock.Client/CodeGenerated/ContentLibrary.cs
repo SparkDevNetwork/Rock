@@ -73,6 +73,9 @@ namespace Rock.Client
         public bool TrendingEnabled { get; set; }
 
         /// <summary />
+        public decimal TrendingGravity { get; set; }
+
+        /// <summary />
         public int TrendingMaxItems { get; set; }
 
         /// <summary />
@@ -123,6 +126,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.TrendingEnabled = source.TrendingEnabled;
+            this.TrendingGravity = source.TrendingGravity;
             this.TrendingMaxItems = source.TrendingMaxItems;
             this.TrendingWindowDay = source.TrendingWindowDay;
             this.CreatedDateTime = source.CreatedDateTime;

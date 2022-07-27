@@ -24,6 +24,7 @@
 import { ContentLibraryFilterControl } from "@Obsidian/Enums/Cms/contentLibraryFilterControl";
 import { AttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentLibraryDetail/attributeFilterBag";
 
+/** Class FilterSettingsBag. */
 export type FilterSettingsBag = {
     /** Gets or sets a value indicating whether full text search should be enabled. */
     fullTextSearchEnabled: boolean;

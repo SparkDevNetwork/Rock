@@ -60,6 +60,9 @@ namespace Rock.Client
         /// <summary />
         public int OccurrencesToShow { get; set; }
 
+        /// <summary />
+        public int Order { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -101,6 +104,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.OccurrencesToShow = source.OccurrencesToShow;
+            this.Order = source.Order;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -87,6 +87,7 @@ namespace Rock.Model
                 EntityId = model.EntityId,
                 EntityTypeId = model.EntityTypeId,
                 OccurrencesToShow = model.OccurrencesToShow,
+                Order = model.Order,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -163,6 +164,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.OccurrencesToShow = source.OccurrencesToShow;
+            target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

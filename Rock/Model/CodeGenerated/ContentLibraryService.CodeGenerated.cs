@@ -91,6 +91,7 @@ namespace Rock.Model
                 LibraryKey = model.LibraryKey,
                 Name = model.Name,
                 TrendingEnabled = model.TrendingEnabled,
+                TrendingGravity = model.TrendingGravity,
                 TrendingMaxItems = model.TrendingMaxItems,
                 TrendingWindowDay = model.TrendingWindowDay,
                 CreatedDateTime = model.CreatedDateTime,
@@ -173,6 +174,7 @@ namespace Rock.Model
             target.LibraryKey = source.LibraryKey;
             target.Name = source.Name;
             target.TrendingEnabled = source.TrendingEnabled;
+            target.TrendingGravity = source.TrendingGravity;
             target.TrendingMaxItems = source.TrendingMaxItems;
             target.TrendingWindowDay = source.TrendingWindowDay;
             target.CreatedDateTime = source.CreatedDateTime;

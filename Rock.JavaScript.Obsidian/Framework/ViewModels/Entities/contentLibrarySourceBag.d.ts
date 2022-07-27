@@ -40,6 +40,9 @@ export type ContentLibrarySourceBag = {
     /** Gets or sets the occurrences to show. */
     occurrencesToShow: number;
 
+    /** Gets or sets the Order. */
+    order: number;
+
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;
 

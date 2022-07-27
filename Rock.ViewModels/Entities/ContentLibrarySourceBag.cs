@@ -74,6 +74,14 @@ namespace Rock.ViewModels.Entities
         public int OccurrencesToShow { get; set; }
 
         /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// The Order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets or sets the created date time.
         /// </summary>
         /// <value>

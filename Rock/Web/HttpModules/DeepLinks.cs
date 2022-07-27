@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Web.HttpModules
     [Description( "A HTTP Module that handles deep link requests for mobile applications." )]
     [Export( typeof( HttpModuleComponent ) )]
     [ExportMetadata( "ComponentName", "Deep Links" )]
+    [Rock.SystemGuid.EntityTypeGuid( "F00E2239-9FBF-4752-9B17-1183A62DAD5B")]
     public class DeepLinks : HttpModuleComponent
     {
         /// <summary>

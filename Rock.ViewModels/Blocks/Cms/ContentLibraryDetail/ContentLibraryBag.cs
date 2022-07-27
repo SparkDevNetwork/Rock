@@ -22,6 +22,11 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.ContentLibraryDetail
 {
+    /// <summary>
+    /// Class ContentLibraryBag.
+    /// Implements the <see cref="Rock.ViewModels.Utility.EntityBagBase" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class ContentLibraryBag : EntityBagBase
     {
         /// <summary>

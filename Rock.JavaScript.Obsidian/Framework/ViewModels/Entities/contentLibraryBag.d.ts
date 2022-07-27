@@ -28,16 +28,22 @@ export type ContentLibraryBag = {
     /** Gets or sets the description. */
     description?: string | null;
 
-    /** Gets or sets a value indicating whether request filters should be enabled. */
+    /**
+     * Gets or sets a value indicating whether personalization request
+     * filters should be enabled.
+     */
     enableRequestFilters: boolean;
 
-    /** Gets or sets a value indicating whether segments should be enabled. */
+    /**
+     * Gets or sets a value indicating whether personalization segments
+     * should be enabled.
+     */
     enableSegments: boolean;
 
     /** Gets or sets the filter settings. */
     filterSettings?: string | null;
 
-    /** Gets or sets the last index date time. This property is required. */
+    /** Gets or sets the last index date time. */
     lastIndexDateTime?: string | null;
 
     /** Gets or sets the last index item count. */
@@ -46,16 +52,25 @@ export type ContentLibraryBag = {
     /** Gets or sets the library key. */
     libraryKey?: string | null;
 
-    /** Gets or sets the name of the ContentLibrary. This property is required. */
+    /** Gets or sets the name of the ContentLibrary. */
     name?: string | null;
 
-    /** Gets or sets a value indicating whether [trending enabled]. */
+    /**
+     * Gets or sets a value indicating whether trending is enabled for this
+     * content library.
+     */
     trendingEnabled: boolean;
 
-    /** Gets or sets the trending max items. This property is required. */
+    /**
+     * Gets or sets the trending gravity to apply more weight to items that
+     * are newer.
+     */
+    trendingGravity: number;
+
+    /** Gets or sets the trending max items. */
     trendingMaxItems: number;
 
-    /** Gets or sets the trending window day. This property is required. */
+    /** Gets or sets the trending window day. */
     trendingWindowDay: number;
 
     /** Gets or sets the created date time. */

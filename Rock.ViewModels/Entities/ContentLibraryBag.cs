@@ -42,18 +42,20 @@ namespace Rock.ViewModels.Entities
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether request filters should be enabled.
+        /// Gets or sets a value indicating whether personalization request
+        /// filters should be enabled.
         /// </summary>
         /// <value>
-        ///   true if [enable request filters]; otherwise, false.
+        ///   true if personalization request filters should be enabled; otherwise, false.
         /// </value>
         public bool EnableRequestFilters { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether segments should be enabled.
+        /// Gets or sets a value indicating whether personalization segments
+        /// should be enabled.
         /// </summary>
         /// <value>
-        ///   true if [enable segments]; otherwise, false.
+        ///   true if personalization segments should be enabled; otherwise, false.
         /// </value>
         public bool EnableSegments { get; set; }
 
@@ -66,7 +68,7 @@ namespace Rock.ViewModels.Entities
         public string FilterSettings { get; set; }
 
         /// <summary>
-        /// Gets or sets the last index date time. This property is required.
+        /// Gets or sets the last index date time.
         /// </summary>
         /// <value>
         /// The last index date time.
@@ -90,7 +92,7 @@ namespace Rock.ViewModels.Entities
         public string LibraryKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the ContentLibrary. This property is required.
+        /// Gets or sets the name of the ContentLibrary.
         /// </summary>
         /// <value>
         /// A System.String representing the name of the ContentLibrary.
@@ -98,15 +100,25 @@ namespace Rock.ViewModels.Entities
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [trending enabled].
+        /// Gets or sets a value indicating whether trending is enabled for this
+        /// content library.
         /// </summary>
         /// <value>
-        ///   true if [trending enabled]; otherwise, false.
+        ///   true if trending is enabled; otherwise, false.
         /// </value>
         public bool TrendingEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the trending max items. This property is required.
+        /// Gets or sets the trending gravity to apply more weight to items that
+        /// are newer.
+        /// </summary>
+        /// <value>
+        /// The trending gravity to apply more weight to items that are newer.
+        /// </value>
+        public decimal TrendingGravity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the trending max items.
         /// </summary>
         /// <value>
         /// The trending max items.
@@ -114,7 +126,7 @@ namespace Rock.ViewModels.Entities
         public int TrendingMaxItems { get; set; }
 
         /// <summary>
-        /// Gets or sets the trending window day. This property is required.
+        /// Gets or sets the trending window day.
         /// </summary>
         /// <value>
         /// The trending window day.

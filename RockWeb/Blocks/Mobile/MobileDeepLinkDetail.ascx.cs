@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Mobile
     [DisplayName( "Mobile Deep Link Detail" )]
     [Category( "Mobile" )]
     [Description( "Edits and configures the settings of mobile deep-link routes." )]
+    [Rock.SystemGuid.BlockTypeGuid( "5C157EBD-2482-4393-A309-A872F774E19F" )]
     public partial class MobileDeepLinkDetail : RockBlock
     {
         #region Fields

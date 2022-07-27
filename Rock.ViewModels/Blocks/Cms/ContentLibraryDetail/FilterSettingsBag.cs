@@ -21,6 +21,9 @@ using Rock.Enums.Cms;
 
 namespace Rock.ViewModels.Blocks.Cms.ContentLibraryDetail
 {
+    /// <summary>
+    /// Class FilterSettingsBag.
+    /// </summary>
     public class FilterSettingsBag
     {
         /// <summary>

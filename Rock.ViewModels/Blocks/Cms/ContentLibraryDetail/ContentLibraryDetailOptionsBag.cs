@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Cms.ContentLibraryDetail
 {
+    /// <summary>
+    /// Class ContentLibraryDetailOptionsBag.
+    /// </summary>
     public class ContentLibraryDetailOptionsBag
     {
     }

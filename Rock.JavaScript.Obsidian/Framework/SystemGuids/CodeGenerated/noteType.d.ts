@@ -45,4 +45,6 @@ export const enum NoteType {
     WorkflowChangeLogNote = "A297E854-5FAC-4A9E-9F77-F58F4D52B5A6",
     /** The pastoral note type. */
     PastoralNote = "5B7BE8F4-481B-4BA3-99A2-B26307A2BA42",
+    /** The Note to display the errors particular to the profile that occurred while importing the people CSV. */
+    PersonCsvImportErrorNote = "4E22E9DA-06A7-45DB-9EB3-BFCB7A2A7F21",
 }

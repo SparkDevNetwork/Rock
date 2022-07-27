@@ -25,6 +25,10 @@ import { ContentSourceBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentLibrary
 import { FilterSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentLibraryDetail/filterSettingsBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class ContentLibraryBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type ContentLibraryBag = {
     /** Gets or sets the description. */
     description?: string | null;

@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Class ContentLibraryDetailOptionsBag. */
 export type ContentLibraryDetailOptionsBag = {
 };
