@@ -562,6 +562,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFINED_VALUE_FUNDRAISING_DONATE_BUTTON_TEXT = "7ACD6580-0E5B-4407-BC8B-1BBBAF443B1E";
 
+        /// <summary>
+        /// The group attribute for the type of participation in a Fundraising Opportunity group.
+        /// </summary>
+        public const string PARTICIPATION_TYPE = "EFA9F0D0-54CE-4B88-BC91-8BD110DEE0FC";
+
         #endregion
 
         #region BIO Block

@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -29,99 +29,122 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.GroupRequirement", "AppliesToAgeClassification", c => c.Int(nullable: false));
-            AddColumn("dbo.GroupRequirement", "AppliesToDataViewId", c => c.Int());
-            AddColumn("dbo.GroupRequirement", "AllowLeadersToOverride", c => c.Boolean(nullable: false));
-            AddColumn("dbo.GroupRequirement", "DueDateAttributeId", c => c.Int());
-            AddColumn("dbo.GroupRequirement", "DueDateStaticDate", c => c.DateTime());
-            AddColumn("dbo.GroupRequirementType", "IconCssClass", c => c.String(maxLength: 100));
-            AddColumn("dbo.GroupRequirementType", "DueDateType", c => c.Int(nullable: false));
-            AddColumn("dbo.GroupRequirementType", "DueDateOffsetInDays", c => c.Int());
-            AddColumn("dbo.GroupRequirementType", "CategoryId", c => c.Int());
-            AddColumn("dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId", c => c.Int());
-            AddColumn("dbo.GroupRequirementType", "ShouldAutoInitiateDoesNotMeetWorkflow", c => c.Boolean(nullable: false));
-            AddColumn("dbo.GroupRequirementType", "DoesNotMeetWorkflowLinkText", c => c.String(maxLength: 50));
-            AddColumn("dbo.GroupRequirementType", "WarningWorkflowTypeId", c => c.Int());
-            AddColumn("dbo.GroupRequirementType", "ShouldAutoInitiateWarningWorkflow", c => c.Boolean(nullable: false));
-            AddColumn("dbo.GroupRequirementType", "WarningWorkflowLinkText", c => c.String(maxLength: 50));
-            AddColumn("dbo.GroupRequirementType", "Summary", c => c.String(maxLength: 2000));
-            AddColumn("dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId", c => c.Int());
-            AddColumn("dbo.GroupMemberRequirement", "WarningWorkflowId", c => c.Int());
-            AddColumn("dbo.GroupMemberRequirement", "WasManuallyCompleted", c => c.Boolean(nullable: false));
-            AddColumn("dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId", c => c.Int());
-            AddColumn("dbo.GroupMemberRequirement", "ManuallyCompletedDateTime", c => c.DateTime());
-            AddColumn("dbo.GroupMemberRequirement", "WasOverridden", c => c.Boolean(nullable: false));
-            AddColumn("dbo.GroupMemberRequirement", "OverriddenByPersonAliasId", c => c.Int());
-            AddColumn("dbo.GroupMemberRequirement", "OverriddenDateTime", c => c.DateTime());
-            AddColumn("dbo.GroupMemberRequirement", "DueDate", c => c.DateTime());
-            CreateIndex("dbo.GroupRequirement", "AppliesToDataViewId");
-            CreateIndex("dbo.GroupRequirement", "DueDateAttributeId");
-            CreateIndex("dbo.GroupRequirementType", "CategoryId");
-            CreateIndex("dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId");
-            CreateIndex("dbo.GroupRequirementType", "WarningWorkflowTypeId");
-            CreateIndex("dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId");
-            CreateIndex("dbo.GroupMemberRequirement", "WarningWorkflowId");
-            CreateIndex("dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId");
-            CreateIndex("dbo.GroupMemberRequirement", "OverriddenByPersonAliasId");
-            AddForeignKey("dbo.GroupRequirement", "AppliesToDataViewId", "dbo.DataView", "Id");
-            AddForeignKey("dbo.GroupRequirement", "DueDateAttributeId", "dbo.Attribute", "Id");
-            AddForeignKey("dbo.GroupRequirementType", "CategoryId", "dbo.Category", "Id");
-            AddForeignKey("dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId", "dbo.WorkflowType", "Id");
-            AddForeignKey("dbo.GroupRequirementType", "WarningWorkflowTypeId", "dbo.WorkflowType", "Id");
-            AddForeignKey("dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId", "dbo.Workflow", "Id");
-            AddForeignKey("dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId", "dbo.PersonAlias", "Id");
-            AddForeignKey("dbo.GroupMemberRequirement", "OverriddenByPersonAliasId", "dbo.PersonAlias", "Id");
-            AddForeignKey("dbo.GroupMemberRequirement", "WarningWorkflowId", "dbo.Workflow", "Id");
+            AddColumn( "dbo.GroupRequirement", "AppliesToAgeClassification", c => c.Int( nullable: false ) );
+            AddColumn( "dbo.GroupRequirement", "AppliesToDataViewId", c => c.Int() );
+            AddColumn( "dbo.GroupRequirement", "AllowLeadersToOverride", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.GroupRequirement", "DueDateAttributeId", c => c.Int() );
+            AddColumn( "dbo.GroupRequirement", "DueDateStaticDate", c => c.DateTime() );
+            AddColumn( "dbo.GroupRequirementType", "IconCssClass", c => c.String( maxLength: 100 ) );
+            AddColumn( "dbo.GroupRequirementType", "DueDateType", c => c.Int( nullable: false ) );
+            AddColumn( "dbo.GroupRequirementType", "DueDateOffsetInDays", c => c.Int() );
+            AddColumn( "dbo.GroupRequirementType", "CategoryId", c => c.Int() );
+            AddColumn( "dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId", c => c.Int() );
+            AddColumn( "dbo.GroupRequirementType", "ShouldAutoInitiateDoesNotMeetWorkflow", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.GroupRequirementType", "DoesNotMeetWorkflowLinkText", c => c.String( maxLength: 50 ) );
+            AddColumn( "dbo.GroupRequirementType", "WarningWorkflowTypeId", c => c.Int() );
+            AddColumn( "dbo.GroupRequirementType", "ShouldAutoInitiateWarningWorkflow", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.GroupRequirementType", "WarningWorkflowLinkText", c => c.String( maxLength: 50 ) );
+            AddColumn( "dbo.GroupRequirementType", "Summary", c => c.String( maxLength: 2000 ) );
+            AddColumn( "dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId", c => c.Int() );
+            AddColumn( "dbo.GroupMemberRequirement", "WarningWorkflowId", c => c.Int() );
+            AddColumn( "dbo.GroupMemberRequirement", "WasManuallyCompleted", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId", c => c.Int() );
+            AddColumn( "dbo.GroupMemberRequirement", "ManuallyCompletedDateTime", c => c.DateTime() );
+            AddColumn( "dbo.GroupMemberRequirement", "WasOverridden", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.GroupMemberRequirement", "OverriddenByPersonAliasId", c => c.Int() );
+            AddColumn( "dbo.GroupMemberRequirement", "OverriddenDateTime", c => c.DateTime() );
+            AddColumn( "dbo.GroupMemberRequirement", "DueDate", c => c.DateTime() );
+            CreateIndex( "dbo.GroupRequirement", "AppliesToDataViewId" );
+            CreateIndex( "dbo.GroupRequirement", "DueDateAttributeId" );
+            CreateIndex( "dbo.GroupRequirementType", "CategoryId" );
+            CreateIndex( "dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId" );
+            CreateIndex( "dbo.GroupRequirementType", "WarningWorkflowTypeId" );
+            CreateIndex( "dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId" );
+            CreateIndex( "dbo.GroupMemberRequirement", "WarningWorkflowId" );
+            CreateIndex( "dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId" );
+            CreateIndex( "dbo.GroupMemberRequirement", "OverriddenByPersonAliasId" );
+            AddForeignKey( "dbo.GroupRequirement", "AppliesToDataViewId", "dbo.DataView", "Id" );
+            AddForeignKey( "dbo.GroupRequirement", "DueDateAttributeId", "dbo.Attribute", "Id" );
+            AddForeignKey( "dbo.GroupRequirementType", "CategoryId", "dbo.Category", "Id" );
+            AddForeignKey( "dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId", "dbo.WorkflowType", "Id" );
+            AddForeignKey( "dbo.GroupRequirementType", "WarningWorkflowTypeId", "dbo.WorkflowType", "Id" );
+            AddForeignKey( "dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId", "dbo.Workflow", "Id" );
+            AddForeignKey( "dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId", "dbo.PersonAlias", "Id" );
+            AddForeignKey( "dbo.GroupMemberRequirement", "OverriddenByPersonAliasId", "dbo.PersonAlias", "Id" );
+            AddForeignKey( "dbo.GroupMemberRequirement", "WarningWorkflowId", "dbo.Workflow", "Id" );
+
+            // Get the GroupTypeId for Fundraising Opportunity.
+            var groupReq_GroupTypeIdSql = $"SELECT TOP 1 [Id] FROM GroupType WHERE [Guid] = '{SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY}'";
+            var groupReq_GroupTypeId = SqlScalar( groupReq_GroupTypeIdSql ).ToIntSafe();
+            if ( groupReq_GroupTypeId > 0 )
+            {
+                RockMigrationHelper.AddOrUpdateEntityAttribute(
+                    "Rock.Model.Group", SystemGuid.FieldType.SINGLE_SELECT, "GroupTypeId",
+                    groupReq_GroupTypeId.ToString(),
+                    "Participation Type",
+                    "Participation Type",
+                    @"The type of participation in this group.", 18, @"1", SystemGuid.Attribute.PARTICIPATION_TYPE, "ParticipationType" );
+
+                // Qualifier for attribute: ParticipationType
+                RockMigrationHelper.UpdateAttributeQualifier( SystemGuid.Attribute.PARTICIPATION_TYPE, "values", @"1^Individual,2^Family", "4B50E240-74D5-4953-B9B3-99DC4EEB5C84" );
+                // Qualifier for attribute: ParticipationType
+                RockMigrationHelper.UpdateAttributeQualifier( SystemGuid.Attribute.PARTICIPATION_TYPE, "fieldtype", @"ddl", "93A56DAE-2672-43F4-8AC9-C144B0AB84B3" );
+                // Qualifier for attribute: ParticipationType
+                RockMigrationHelper.UpdateAttributeQualifier( SystemGuid.Attribute.PARTICIPATION_TYPE, "repeatColumns", @"", "04D5573C-4671-45B7-A591-13EC6EA0FF99" );
+            }
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropForeignKey("dbo.GroupMemberRequirement", "WarningWorkflowId", "dbo.Workflow");
-            DropForeignKey("dbo.GroupMemberRequirement", "OverriddenByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId", "dbo.Workflow");
-            DropForeignKey("dbo.GroupRequirementType", "WarningWorkflowTypeId", "dbo.WorkflowType");
-            DropForeignKey("dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId", "dbo.WorkflowType");
-            DropForeignKey("dbo.GroupRequirementType", "CategoryId", "dbo.Category");
-            DropForeignKey("dbo.GroupRequirement", "DueDateAttributeId", "dbo.Attribute");
-            DropForeignKey("dbo.GroupRequirement", "AppliesToDataViewId", "dbo.DataView");
-            DropIndex("dbo.GroupMemberRequirement", new[] { "OverriddenByPersonAliasId" });
-            DropIndex("dbo.GroupMemberRequirement", new[] { "ManuallyCompletedByPersonAliasId" });
-            DropIndex("dbo.GroupMemberRequirement", new[] { "WarningWorkflowId" });
-            DropIndex("dbo.GroupMemberRequirement", new[] { "DoesNotMeetWorkflowId" });
-            DropIndex("dbo.GroupRequirementType", new[] { "WarningWorkflowTypeId" });
-            DropIndex("dbo.GroupRequirementType", new[] { "DoesNotMeetWorkflowTypeId" });
-            DropIndex("dbo.GroupRequirementType", new[] { "CategoryId" });
-            DropIndex("dbo.GroupRequirement", new[] { "DueDateAttributeId" });
-            DropIndex("dbo.GroupRequirement", new[] { "AppliesToDataViewId" });
-            DropColumn("dbo.GroupMemberRequirement", "DueDate");
-            DropColumn("dbo.GroupMemberRequirement", "OverriddenDateTime");
-            DropColumn("dbo.GroupMemberRequirement", "OverriddenByPersonAliasId");
-            DropColumn("dbo.GroupMemberRequirement", "WasOverridden");
-            DropColumn("dbo.GroupMemberRequirement", "ManuallyCompletedDateTime");
-            DropColumn("dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId");
-            DropColumn("dbo.GroupMemberRequirement", "WasManuallyCompleted");
-            DropColumn("dbo.GroupMemberRequirement", "WarningWorkflowId");
-            DropColumn("dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId");
-            DropColumn("dbo.GroupRequirementType", "Summary");
-            DropColumn("dbo.GroupRequirementType", "WarningWorkflowLinkText");
-            DropColumn("dbo.GroupRequirementType", "ShouldAutoInitiateWarningWorkflow");
-            DropColumn("dbo.GroupRequirementType", "WarningWorkflowTypeId");
-            DropColumn("dbo.GroupRequirementType", "DoesNotMeetWorkflowLinkText");
-            DropColumn("dbo.GroupRequirementType", "ShouldAutoInitiateDoesNotMeetWorkflow");
-            DropColumn("dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId");
-            DropColumn("dbo.GroupRequirementType", "CategoryId");
-            DropColumn("dbo.GroupRequirementType", "DueDateOffsetInDays");
-            DropColumn("dbo.GroupRequirementType", "DueDateType");
-            DropColumn("dbo.GroupRequirementType", "IconCssClass");
-            DropColumn("dbo.GroupRequirement", "DueDateStaticDate");
-            DropColumn("dbo.GroupRequirement", "DueDateAttributeId");
-            DropColumn("dbo.GroupRequirement", "AllowLeadersToOverride");
-            DropColumn("dbo.GroupRequirement", "AppliesToDataViewId");
-            DropColumn("dbo.GroupRequirement", "AppliesToAgeClassification");
+            // Rock.Model.Group: Participation Type.
+            RockMigrationHelper.DeleteAttribute( SystemGuid.Attribute.PARTICIPATION_TYPE );
+            DropForeignKey( "dbo.GroupMemberRequirement", "WarningWorkflowId", "dbo.Workflow" );
+            DropForeignKey( "dbo.GroupMemberRequirement", "OverriddenByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId", "dbo.Workflow" );
+            DropForeignKey( "dbo.GroupRequirementType", "WarningWorkflowTypeId", "dbo.WorkflowType" );
+            DropForeignKey( "dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId", "dbo.WorkflowType" );
+            DropForeignKey( "dbo.GroupRequirementType", "CategoryId", "dbo.Category" );
+            DropForeignKey( "dbo.GroupRequirement", "DueDateAttributeId", "dbo.Attribute" );
+            DropForeignKey( "dbo.GroupRequirement", "AppliesToDataViewId", "dbo.DataView" );
+            DropIndex( "dbo.GroupMemberRequirement", new[] { "OverriddenByPersonAliasId" } );
+            DropIndex( "dbo.GroupMemberRequirement", new[] { "ManuallyCompletedByPersonAliasId" } );
+            DropIndex( "dbo.GroupMemberRequirement", new[] { "WarningWorkflowId" } );
+            DropIndex( "dbo.GroupMemberRequirement", new[] { "DoesNotMeetWorkflowId" } );
+            DropIndex( "dbo.GroupRequirementType", new[] { "WarningWorkflowTypeId" } );
+            DropIndex( "dbo.GroupRequirementType", new[] { "DoesNotMeetWorkflowTypeId" } );
+            DropIndex( "dbo.GroupRequirementType", new[] { "CategoryId" } );
+            DropIndex( "dbo.GroupRequirement", new[] { "DueDateAttributeId" } );
+            DropIndex( "dbo.GroupRequirement", new[] { "AppliesToDataViewId" } );
+            DropColumn( "dbo.GroupMemberRequirement", "DueDate" );
+            DropColumn( "dbo.GroupMemberRequirement", "OverriddenDateTime" );
+            DropColumn( "dbo.GroupMemberRequirement", "OverriddenByPersonAliasId" );
+            DropColumn( "dbo.GroupMemberRequirement", "WasOverridden" );
+            DropColumn( "dbo.GroupMemberRequirement", "ManuallyCompletedDateTime" );
+            DropColumn( "dbo.GroupMemberRequirement", "ManuallyCompletedByPersonAliasId" );
+            DropColumn( "dbo.GroupMemberRequirement", "WasManuallyCompleted" );
+            DropColumn( "dbo.GroupMemberRequirement", "WarningWorkflowId" );
+            DropColumn( "dbo.GroupMemberRequirement", "DoesNotMeetWorkflowId" );
+            DropColumn( "dbo.GroupRequirementType", "Summary" );
+            DropColumn( "dbo.GroupRequirementType", "WarningWorkflowLinkText" );
+            DropColumn( "dbo.GroupRequirementType", "ShouldAutoInitiateWarningWorkflow" );
+            DropColumn( "dbo.GroupRequirementType", "WarningWorkflowTypeId" );
+            DropColumn( "dbo.GroupRequirementType", "DoesNotMeetWorkflowLinkText" );
+            DropColumn( "dbo.GroupRequirementType", "ShouldAutoInitiateDoesNotMeetWorkflow" );
+            DropColumn( "dbo.GroupRequirementType", "DoesNotMeetWorkflowTypeId" );
+            DropColumn( "dbo.GroupRequirementType", "CategoryId" );
+            DropColumn( "dbo.GroupRequirementType", "DueDateOffsetInDays" );
+            DropColumn( "dbo.GroupRequirementType", "DueDateType" );
+            DropColumn( "dbo.GroupRequirementType", "IconCssClass" );
+            DropColumn( "dbo.GroupRequirement", "DueDateStaticDate" );
+            DropColumn( "dbo.GroupRequirement", "DueDateAttributeId" );
+            DropColumn( "dbo.GroupRequirement", "AllowLeadersToOverride" );
+            DropColumn( "dbo.GroupRequirement", "AppliesToDataViewId" );
+            DropColumn( "dbo.GroupRequirement", "AppliesToAgeClassification" );
         }
     }
 }
