@@ -69,7 +69,7 @@ function updateUrl(query: string, sortOrder: string, filterValues: Record<string
     }
 
     // Add in the sort order if it isn't default.
-    if (sortOrder != SearchOrder.BestMatch.toString()) {
+    if (sortOrder != SearchOrder.Relevance.toString()) {
         qs.push(["s", sortOrder.toString()]);
     }
 
@@ -180,7 +180,7 @@ function getSortOrderItems(allowed: string[], trendingTerm: string): ListItemBag
 
     if (allowed.includes(SortOrdersKey.Relevance)) {
         sortOrderItems.push({
-            value: SearchOrder.BestMatch.toString(),
+            value: SearchOrder.Relevance.toString(),
             text: "Relevance"
         });
     }
@@ -242,7 +242,7 @@ export default defineComponent({
         const searchResultContainerElement = ref<HTMLElement | null>(null);
         const query = ref(urlSearchParams.get("q") || urlSearchParams.get("Q") || "");
         const filterValues = ref<Record<string, string>>(getQueryStringFilterValues(filters.map(f => f.label ?? "")));
-        const sortOrder = ref(urlSearchParams.get("s") || urlSearchParams.get("S") || SearchOrder.BestMatch.toString());
+        const sortOrder = ref(urlSearchParams.get("s") || urlSearchParams.get("S") || SearchOrder.Relevance.toString());
         const sortOrderItems = getSortOrderItems(config.enabledSortOrders ?? [], config.trendingTerm ?? "Trending");
 
         // #endregion

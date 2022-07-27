@@ -23,8 +23,8 @@
 
 /** The search order options available in the Content Library View block. */
 export const enum SearchOrder {
-    /** The best match will be displayed first, this is based on the score. */
-    BestMatch = 0,
+    /** The most relevant will be displayed first, this is based on the score. */
+    Relevance = 0,
 
     /** The document with the highest relevance date time will be displayed first. */
     Newest = 1,

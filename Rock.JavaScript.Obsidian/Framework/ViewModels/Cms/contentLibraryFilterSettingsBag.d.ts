@@ -61,6 +61,12 @@ export type ContentLibraryFilterSettingsBag = {
     attributeFilters?: Record<string, ContentLibraryAttributeFilterSettingsBag> | null;
 
     /**
+     * Gets or sets the field values that have been learned. These
+     * are used to display the known values in the filter panel.
+     */
+    fieldValues?: Record<string, ListItemBag[]> | null;
+
+    /**
      * Gets or sets the attribute values that have been learned. These
      * are used to display the known values in the filter panel.
      */
