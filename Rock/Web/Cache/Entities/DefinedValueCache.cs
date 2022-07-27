@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -163,6 +165,17 @@ namespace Rock.Web.Cache
         public static string GetName( int? id )
         {
             return GetValue( id );
+        }
+
+        /// <summary>
+        /// Gets the descriptions of the Defined Value Types Given the GUID of the Defined Type
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<string> GetDescriptions( Guid definedTypeGuid )
+        {
+            return DefinedTypeCache.Get( definedTypeGuid )
+                .DefinedValues
+                .Select( definedValue => definedValue.Description );
         }
 
         #endregion

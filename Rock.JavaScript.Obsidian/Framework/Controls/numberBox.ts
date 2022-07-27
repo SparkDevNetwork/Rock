@@ -14,16 +14,18 @@
 // limitations under the License.
 // </copyright>
 
-import { defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { normalizeRules, rulesPropType, ValidationRule } from "@Obsidian/ValidationRules";
 import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import RockFormField from "./rockFormField";
 
 export default defineComponent({
     name: "NumberBox",
+
     components: {
         RockFormField
     },
+
     props: {
         modelValue: {
             type: Number as PropType<number | null>,
@@ -55,71 +57,72 @@ export default defineComponent({
         },
         rules: rulesPropType
     },
-    emits: [
-        "update:modelValue"
-    ],
-    data: function () {
-        return {
-            internalValue: "" as number | string,
-        };
-    },
-    methods: {
-        onChange(): void {
-            this.internalValue = asFormattedString(this.modelValue, this.internalDecimalCount ?? undefined, { useGrouping: false });
-        }
-    },
-    computed: {
-        internalNumberValue(): number | null {
-            return toNumberOrNull(this.internalValue);
-        },
-        internalDecimalCount(): number | null {
-            return this.decimalCount;
-        },
-        internalStep(): string {
-            return this.internalDecimalCount === null ? "any" : (1 / Math.pow(10, this.internalDecimalCount)).toString();
-        },
-        computedRules(): ValidationRule[] {
-            const rules = normalizeRules(this.rules);
 
-            if (this.maximumValue !== null && this.maximumValue !== undefined) {
-                rules.push(`lte:${this.maximumValue}`);
+    emits: {
+        "update:modelValue": (_value: number | null) => true
+    },
+
+    setup(props, ctx) {
+        const internalValue = ref(asFormattedString(props.modelValue, props.decimalCount ?? undefined, { useGrouping: false }));
+
+        const internalNumberValue = computed((): number | null => {
+            return toNumberOrNull(internalValue.value);
+        });
+
+        const internalStep = computed((): string => {
+            return props.decimalCount === null ? "any" : (1 / Math.pow(10, props.decimalCount)).toString();
+        });
+
+        const isInputGroup = computed((): boolean => {
+            return !!ctx.slots.prepend || !!ctx.slots.append;
+        });
+
+        const controlContainerClass = computed((): string => {
+            return isInputGroup.value ? "input-group" : "";
+        });
+
+        const computedRules = computed((): ValidationRule[] => {
+            const rules = normalizeRules(props.rules);
+
+            if (props.maximumValue !== null && props.maximumValue !== undefined) {
+                rules.push(`lte:${props.maximumValue}`);
             }
 
-            if (this.minimumValue !== null && this.minimumValue !== undefined) {
-                rules.push(`gte:${this.minimumValue}`);
+            if (props.minimumValue !== null && props.minimumValue !== undefined) {
+                rules.push(`gte:${props.minimumValue}`);
             }
 
             return rules;
-        },
+        });
 
-        isGrouped(): boolean {
-            return this.$slots.prepend !== undefined || this.$slots.append !== undefined;
-        }
-    },
-    watch: {
-        internalNumberValue(): void {
-            this.$emit("update:modelValue", this.internalNumberValue);
-        },
-        modelValue: {
-            immediate: true,
-            handler(): void {
-                if (this.modelValue !== this.internalNumberValue) {
-                    this.internalValue = asFormattedString(this.modelValue, this.internalDecimalCount ?? undefined, { useGrouping: false });
-                }
+        watch(() => props.modelValue, () => {
+            if (props.modelValue !== internalNumberValue.value) {
+                internalValue.value = asFormattedString(props.modelValue, props.decimalCount ?? undefined, { useGrouping: false });
             }
-        }
+        });
+
+        watch(internalNumberValue, () => {
+            ctx.emit("update:modelValue", internalNumberValue.value);
+        });
+
+        return {
+            computedRules,
+            controlContainerClass,
+            internalStep,
+            internalValue
+        };
     },
+
     template: `
 <RockFormField
-    v-model="internalValue"
-    @change="onChange"
+    :modelValue="internalValue"
     formGroupClasses="rock-number-box"
     name="numberbox"
     :rules="computedRules">
     <template #default="{uniqueId, field}">
         <div class="control-wrapper">
-            <div class="input-group" :class="inputGroupClasses" v-if="isGrouped">
-                <slot name="prepend"></slot>
+            <div :class="controlContainerClass">
+                <slot name="prepend" />
                 <input
                     v-model="internalValue"
                     :id="uniqueId"
@@ -131,20 +134,8 @@ export default defineComponent({
                     :step="internalStep"
                     :min="minimumValue"
                     :max="maximumValue" />
-                <slot name="append"></slot>
+                <slot name="append" />
             </div>
-
-            <input v-else
-                v-model="internalValue"
-                :id="uniqueId"
-                type="number"
-                class="form-control"
-                :class="inputClasses"
-                v-bind="field"
-                :placeholder="placeholder"
-                :step="internalStep"
-                :min="minimumValue"
-                :max="maximumValue" />
         </div>
     </template>
 </RockFormField>`

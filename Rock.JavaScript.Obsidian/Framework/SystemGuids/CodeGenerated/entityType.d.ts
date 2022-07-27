@@ -83,6 +83,10 @@ export const enum EntityType {
     ConnectionType = "B1E52EAD-65BD-4C4D-BCCD-73368067621D",
     /** The guid for the Rock.Model.ConnectionWorkflow entity */
     ConnectionWorkflow = "4EB8711F-7301-4699-A223-0505A7CEB20A",
+    /** The guid for the Rock.Model.ContentLibrary entity */
+    ContentLibrary = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8",
+    /** The guid for the Rock.Model.ContentLibrarySource entity */
+    ContentLibrarySource = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733",
     /** The guid for the Rock.Model.DataView entity. */
     Dataview = "57F8FA29-DCF1-4F74-8553-87E90F234139",
     /** The guid for the Rock.Model.DefinedType entity. */
@@ -91,6 +95,8 @@ export const enum EntityType {
     DefinedValue = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E",
     /** The guid for Rock.Model.EntityType entity. */
     EntityType = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7",
+    /** The guid for Rock.Model.EventCalendar entity. */
+    EventCalendar = "E67D8D6D-4FE6-48D5-A940-A39213047314",
     /** The guid for the Rock.Model.FinancialAccount entity. */
     FinancialAccount = "798BCE48-6AA7-4983-9214-F9BCEFB4521D",
     /** The guid for the Rock.Model.FinancialBatch entity. */
@@ -111,6 +117,8 @@ export const enum EntityType {
     HttpModuleComponent = "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
     /** The guid for Rock.Model.Interaction */
     Interaction = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7",
+    /** The guid for the Rock.Model.MediaAccount entity */
+    MediaAccount = "3723425F-6BB3-4F5C-8BD6-0B0B9D22EF70",
     /** The guid for the Rock.Model.MetricCategory entity */
     Metriccategory = "3D35C859-DF37-433F-A20A-0FFD0FCB9862",
     /** The guid for the Rock.Model.MergeTemplate entity */

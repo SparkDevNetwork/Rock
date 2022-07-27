@@ -3589,10 +3589,16 @@ namespace Rock.Model
         /// <returns>Family Group</returns>
         public static Group SaveNewPerson( Person person, RockContext rockContext, int? campusId = null, bool savePersonAttributes = false )
         {
-            person.FirstName = person.FirstName.FixCase();
-            person.NickName = person.NickName.FixCase();
-            person.MiddleName = person.MiddleName.FixCase();
-            person.LastName = person.LastName.FixCase();
+            // Since business names can have unique casing as a part of their brands (IBM, asana) don't auto
+            // correct the casing of business names on add
+            var businessRecordTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS ).Id;
+            if ( person.RecordTypeValueId != businessRecordTypeValueId )
+            {
+                person.FirstName = person.FirstName.FixCase();
+                person.NickName = person.NickName.FixCase();
+                person.MiddleName = person.MiddleName.FixCase();
+                person.LastName = person.LastName.FixCase();
+            }
 
             // Create/Save Known Relationship Group
             var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
@@ -4982,5 +4988,32 @@ FROM (
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets all the foreign keys in the person table in the database
+        /// </summary>
+        /// <returns></returns>
+        public string[] GetForeignKeys()
+        {
+            return Queryable()
+                .Select( person => person.ForeignKey )
+                .Where( foreignKey => foreignKey.Trim().Length > 0 )
+                .Distinct()
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Get the Person Entity with the given the Key of the Foreign System and the Person Id in the Foreign System.
+        /// </summary>
+        /// <param name="foreignSystemKey">The foreign system key.</param>
+        /// <param name="foreignSystemPersonId">The foreign system person identifier.</param>
+        /// <returns></returns>
+        public Person FromForeignSystem( string foreignSystemKey, int foreignSystemPersonId )
+        {
+            return Queryable()
+                .Where( person => person.ForeignKey == foreignSystemKey && person.ForeignId == foreignSystemPersonId )
+                .Single();
+   
+        }
     }
 }

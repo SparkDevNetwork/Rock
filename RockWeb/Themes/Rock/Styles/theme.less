@@ -359,16 +359,14 @@ textarea,
 .tooltip-arrow {
   width: 10px;
   height: 10px;
-  background: @gray-darker;
+  background: @tooltip-arrow-color;
   border: 1px solid @ui-4;
   transform: rotate(45deg);
 }
 
 .tooltip-inner {
   padding: (@padding-base-horizontal / 2);
-  color: @white;
   text-align: left;
-  background-color: @gray-darker;
   border: 1px solid @ui-4;
   .box-shadow(@shadow-overlay);
 }
@@ -486,7 +484,7 @@ textarea,
 
     // Remove padding offset on center
     &[align="center"] {
-      padding: 18px 6px;
+      padding: @table-padding-vertical 6px;
     }
   }
 

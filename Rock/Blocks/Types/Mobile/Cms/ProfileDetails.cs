@@ -20,6 +20,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -435,10 +436,20 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             rockContext.SaveChanges();
 
-            var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
-            mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+            /*
+             * BC 7/26/2022
+             * We have to provide a new RockContext, since EF Core has a caching mechanism that will return the old person with
+             * the wrong primary campus.
+             */
+            using ( var rockContext2 = new RockContext() )
+            {
+                person = new PersonService( rockContext2 ).Get( person.Id );
 
-            return ActionOk( mobilePerson );
+                var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+
+                return ActionOk( mobilePerson );
+            }
         }
 
         #endregion

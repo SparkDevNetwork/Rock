@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -173,7 +173,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId:int}" )]
         [System.Web.Http.HttpPost]
         [Rock.SystemGuid.RestActionGuid( "1C1F80FE-2567-463E-8BFE-E49ECB8450C7" )]
         public virtual HttpResponseMessage Follow( int entityTypeId, int entityId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
@@ -226,7 +226,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityGuid">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid:guid}" )]
         [Rock.SystemGuid.RestActionGuid( "3D09FD68-06F9-4860-9110-60A015004071" )]
         [System.Web.Http.HttpPost]
         public virtual HttpResponseMessage Follow( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )

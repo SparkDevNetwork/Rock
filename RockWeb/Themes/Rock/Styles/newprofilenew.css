@@ -78,7 +78,9 @@
   width: 100%;
   padding-bottom: 60%;
   border-radius: 4px 4px 0 0;
-  overflow: hidden;
+}
+.profile-squish img {
+  border-radius: 4px 4px 0 0;
 }
 .card-section dl.reversed-label {
   display: flex;
@@ -257,7 +259,7 @@
   top: 0;
   right: 0;
   left: 0;
-  z-index: 100;
+  z-index: 1040;
   display: flex;
   justify-content: space-between;
   padding: 6px;

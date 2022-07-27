@@ -212,20 +212,18 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes the component ids.
         /// </summary>
-        private void InitComponentIds()
+        private void InitComponentIds(RockContext rockContext = null)
         {
             if ( InteractionComponentIds != null )
             {
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
-            {
-                InteractionComponentIds = new ConcurrentDictionary<int, int>( new InteractionComponentService( rockContext )
-                    .GetByChannelId( Id )
-                    .Select( v => v.Id )
-                    .ToList().ToDictionary( k => k, v => v ) );
-            }
+            rockContext = rockContext ?? new RockContext();
+            InteractionComponentIds = new ConcurrentDictionary<int, int>( new InteractionComponentService( rockContext )
+                .GetByChannelId( Id )
+                .Select( v => v.Id )
+                .ToList().ToDictionary( k => k, v => v ) );
         }
 
         /// <summary>
@@ -245,12 +243,47 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Adds the component identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public void AddComponentId( int id, RockContext rockContext )
+        {
+            InitComponentIds( rockContext );
+
+            if ( InteractionComponentIds == null )
+            {
+                return;
+            }
+
+            InteractionComponentIds.TryAdd( id, id );
+        }
+
+        /// <summary>
         /// Removes the component identifier.
         /// </summary>
         /// <param name="id">The identifier.</param>
         public void RemoveComponentId( int id )
         {
             InitComponentIds();
+
+            if ( InteractionComponentIds == null )
+            {
+                return;
+            }
+
+            int value;
+            InteractionComponentIds.TryRemove( id, out value );
+        }
+
+        /// <summary>
+        /// Removes the component identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public void RemoveComponentId( int id, RockContext rockContext )
+        {
+            InitComponentIds( rockContext );
 
             if ( InteractionComponentIds == null )
             {

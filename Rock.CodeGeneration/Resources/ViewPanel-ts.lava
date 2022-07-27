@@ -21,11 +21,11 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
 import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ Domain }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
-import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ Domain }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
+import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
 export default defineComponent({
-    name: "{{ Domain }}.{{ EntityName }}Detail.ViewPanel",
+    name: "{{ DomainNamespace }}.{{ EntityName }}Detail.ViewPanel",
 
     props: {
         modelValue: {

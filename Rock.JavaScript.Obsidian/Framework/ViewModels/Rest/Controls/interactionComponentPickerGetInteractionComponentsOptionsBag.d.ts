@@ -28,15 +28,6 @@ import { Guid } from "@Obsidian/Types";
  * the InteractionComponentPicker control.
  */
 export type InteractionComponentPickerGetInteractionComponentsOptionsBag = {
-    /**
-     * ID of the container the components are within. The Rock.ViewModels.Rest.Controls.InteractionComponentPickerGetInteractionComponentsOptionsBag.InteractionChannelGuid
-     * takes precedence over this if present.
-     */
-    interactionChannelId?: number | null;
-
-    /**
-     * GUID of the container the components are within.  Can use Rock.ViewModels.Rest.Controls.InteractionComponentPickerGetInteractionComponentsOptionsBag.InteractionChannelId
-     * instead if easier, but this takes precedence if present.
-     */
+    /** GUID of the container the components are within. */
     interactionChannelGuid?: Guid | null;
 };

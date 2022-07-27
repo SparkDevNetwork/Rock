@@ -655,7 +655,8 @@ export default defineComponent({
             <button type="button" style="display: none;" class="payment-button js-payment-button"></button>
         </div>
 
-        <div v-show="validationMessage" v-text="validationMessage" class="alert alert-validation">
+        <div v-show="validationMessage" class="alert alert-validation">
+            {{ validationMessage }}
         </div>
     </div>
 

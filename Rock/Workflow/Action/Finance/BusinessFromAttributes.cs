@@ -170,7 +170,7 @@ namespace Rock.Workflow.Action
             }
 
             // Business Name
-            business.LastName = businessName.FixCase();
+            business.LastName = businessName;
             business.Email = email;
 
             if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( phoneNumber ) ) )

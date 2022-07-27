@@ -134,6 +134,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     .Queryable( true )
                     .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == this.Person.Id )
                     .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ToList()
                     .Select( m => m.GroupId )
                     .FirstOrDefault() );
             }
@@ -141,8 +142,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 groupIds = groupMemberService
                     .Queryable( true )
-                    .Where( m => m.GroupTypeId == groupTypeId  && m.PersonId == this.Person.Id )
+                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == this.Person.Id )
                     .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ToList()
                     .Select( m => m.GroupId )
                     .Distinct()
                     .ToList();

@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var iconCssClass = groupLocation.GroupLocationTypeValue.GetAttributeValue( "IconCSSClass" ) ?? "fa fa-map-marker";
 
                 litAddress.Text = $@"
-                    <div class=""profile-row"">
+                    <div class=""profile-row group-hover"">
                         <span class=""profile-row-icon"">
                             <a href=""{groupLocation.Location.GoogleMapLink( Person.FullName )}"" title=""Map This Address"" class=""map"" target=""_blank"">
                                 <i class=""{iconCssClass}""></i>

@@ -518,18 +518,23 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Remoes any group requirements that are not eligible for the group member's role.  This is necessary
+        /// Removes any group requirements that are not eligible for the group member's role.  This is necessary
         /// if the group member has changed roles.
         /// </summary>
         /// <param name="rockContext">The <see cref="RockContext"/>.</param>
         private void ClearInapplicableGroupRequirements( RockContext rockContext )
         {
-            var inapplicableGroupRequirements = GroupMemberRequirements
-                .Where( r => r.GroupRequirement.GroupRoleId != this.GroupRoleId )
+            var groupRequirementIds = this.GroupMemberRequirements.Select( a => a.GroupRequirementId ).ToList();
+            var inapplicableGroupRequirementIds = new GroupRequirementService( rockContext )
+                .Queryable()
+                .Where( r => groupRequirementIds.Contains( r.Id ) && r.GroupRoleId != this.GroupRoleId )
+                .Select( a => a.Id )
                 .ToList();
 
+            var groupMemberRequirementsToBeDeleted = this.GroupMemberRequirements.Where( a => inapplicableGroupRequirementIds.Contains( a.GroupRequirementId ) ).ToList();
+
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
-            groupMemberRequirementsService.DeleteRange( inapplicableGroupRequirements );
+            groupMemberRequirementsService.DeleteRange( groupMemberRequirementsToBeDeleted );
         }
 
         /// <summary>
@@ -553,33 +558,28 @@ namespace Rock.Model
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            var group = this.Group;
-            if ( group == null && this.GroupId > 0 )
-            {
-                group = new GroupService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( g => g.Id == this.GroupId );
-            }
+            var groupTypeId = GroupTypeId;
 
-            if ( group != null )
+            // If this instance hasn't been saved yet, it might not have this
+            // auto generated value set yet.
+            if ( groupTypeId == 0 )
             {
-                var groupType = group.GroupType;
-                if ( groupType == null && group.GroupTypeId > 0 )
+                if ( Group == null )
                 {
-                    // Can't use GroupTypeCache here since it loads attributes and would
-                    // result in a recursive stack overflow situation.
-                    groupType = new GroupTypeService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .FirstOrDefault( t => t.Id == group.GroupTypeId );
+                    groupTypeId = new GroupService( rockContext ).Queryable()
+                        .Where( g => g.Id == GroupId )
+                        .Select( g => g.GroupTypeId )
+                        .FirstOrDefault();
                 }
-
-                if ( groupType != null )
+                else
                 {
-                    return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+                    groupTypeId = Group.GroupTypeId;
                 }
             }
 
-            return null;
+            var groupTypeCache = GroupTypeCache.Get( groupTypeId );
+
+            return groupTypeCache?.GetInheritedAttributesForQualifier( TypeId, "GroupTypeId" );
         }
 
         #endregion

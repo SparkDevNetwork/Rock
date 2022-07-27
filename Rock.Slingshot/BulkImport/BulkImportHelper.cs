@@ -1161,6 +1161,7 @@ namespace Rock.Slingshot
                             {
                                 GroupId = groupId.Value,
                                 GroupRoleId = groupRoleId.Value,
+                                GroupTypeId = groupWithMembers.GroupTypeId,
                                 PersonId = personId.Value,
                                 CreatedDateTime = importedDateTime,
                                 ModifiedDateTime = importedDateTime
@@ -1560,6 +1561,7 @@ WHERE gta.GroupTypeId IS NULL" );
                         groupMember = new GroupMember();
                         groupMember.GroupId = group.Id;
                         groupMember.GroupRoleId = groupRoleId.Value;
+                        groupMember.GroupTypeId = groupImport.GroupTypeId;
                         groupMember.PersonId = personId.Value;
                         groupMember.CreatedDateTime = importDateTime;
                         groupMember.ModifiedDateTime = importDateTime;
@@ -1978,6 +1980,7 @@ WHERE gta.GroupTypeId IS NULL" );
                                                         PersonId = ppi.PersonId,
                                                         GroupRoleId = ppi.PersonImport.GroupRoleId,
                                                         GroupId = ppi.FamilyId,
+                                                        GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id,
                                                         GroupMemberStatus = GroupMemberStatus.Active,
                                                         CreatedDateTime = ppi.PersonImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
                                                         ModifiedDateTime = ppi.PersonImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime,
@@ -2641,6 +2644,7 @@ WHERE gta.GroupTypeId IS NULL" );
                                                         PersonId = ppi.BusinessId,
                                                         GroupRoleId = ppi.BusinessImport.GroupRoleId,
                                                         GroupId = ppi.FamilyId,
+                                                        GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id,
                                                         GroupMemberStatus = GroupMemberStatus.Active,
                                                         CreatedDateTime = ppi.BusinessImport.CreatedDateTime.ToSQLSafeDate() ?? importDateTime,
                                                         ModifiedDateTime = ppi.BusinessImport.ModifiedDateTime.ToSQLSafeDate() ?? importDateTime,

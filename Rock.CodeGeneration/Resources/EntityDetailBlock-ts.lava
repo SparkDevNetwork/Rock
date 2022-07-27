@@ -21,17 +21,17 @@ import { EntityType } from "@Obsidian/SystemGuids";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
-import EditPanel from "./{{ EntityName }}Detail/editPanel";
-import ViewPanel from "./{{ EntityName }}Detail/viewPanel";
+import EditPanel from "./{{ EntityName }}Detail/editPanel.partial";
+import ViewPanel from "./{{ EntityName }}Detail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant{% if UseAttributeValues == true %}, refreshDetailAttributes{% endif %}, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";{% if UseAttributeValues == true %}
 import { debounce } from "@Obsidian/Utility/util";{% endif %}
 import { NavigationUrlKey } from "./{{ EntityName }}Detail/types";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ Domain }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
-import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ Domain }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
+import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
 
 export default defineComponent({
-    name: "{{ Domain }}.{{ EntityName }}Detail",
+    name: "{{ DomainNamespace }}.{{ EntityName }}Detail",
 
     components: {
         Alert,

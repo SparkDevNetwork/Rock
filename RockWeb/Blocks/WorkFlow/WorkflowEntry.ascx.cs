@@ -97,13 +97,13 @@ namespace RockWeb.Blocks.WorkFlow
     [BooleanField(
         "Log Interaction when Form is Viewed",
         Key = AttributeKey.LogInteractionOnView,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 6 )]
 
     [BooleanField(
         "Log Interaction when Form is Completed",
         Key = AttributeKey.LogInteractionOnCompletion,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 7 )]
 
     #endregion Block Attributes

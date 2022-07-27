@@ -16,7 +16,7 @@
 //
 import { Guid } from "@Obsidian/Types";
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { InteractionComponentPickerGetInteractionComponentsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionComponentPickerGetInteractionComponentsOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref, watch } from "vue";
@@ -33,11 +33,6 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
-        },
-
-        interactionChannelId: {
-            type: Number as PropType<number>,
-            default: null
         },
 
         interactionChannelGuid: {
@@ -57,6 +52,7 @@ export default defineComponent({
 
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
         const standardProps = useStandardAsyncPickerProps(props);
+        const http = useHttp();
         const loadedItems = ref<ListItemBag[] | null>(null);
 
         // #endregion
@@ -80,10 +76,9 @@ export default defineComponent({
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
             const options: Partial<InteractionComponentPickerGetInteractionComponentsOptionsBag> = {
-                interactionChannelId: props.interactionChannelId,
                 interactionChannelGuid: props.interactionChannelGuid
             };
-            const result = await post<ListItemBag[]>("/api/v2/Controls/InteractionComponentPickerGetInteractionComponents", undefined, options);
+            const result = await http.post<ListItemBag[]>("/api/v2/Controls/InteractionComponentPickerGetInteractionComponents", undefined, options);
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;
@@ -100,7 +95,7 @@ export default defineComponent({
 
         // #region Watchers
 
-        watch(() => [props.interactionChannelId, props.interactionChannelGuid], () => {
+        watch(() => props.interactionChannelGuid, () => {
             loadedItems.value = null;
         });
 

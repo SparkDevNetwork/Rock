@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.Lava;
+using Rock.Cms.ContentLibrary.Attributes;
 
 namespace Rock.Model
 {
@@ -35,6 +36,7 @@ namespace Rock.Model
     [Table( "EventItem" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "6A58AD11-3491-84AE-4896-8F39906EA65E")]
+    [ContentLibraryIndexable( typeof( Rock.Cms.ContentLibrary.Indexers.EventItemIndexer ), typeof( Rock.Cms.ContentLibrary.IndexDocuments.EventItemDocument ) )]
     public partial class EventItem : Model<EventItem>, IHasActiveFlag, IRockIndexable
     {
         #region Entity Properties

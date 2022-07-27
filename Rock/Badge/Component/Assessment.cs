@@ -247,18 +247,18 @@ namespace Rock.Badge.Component
 
                 string badgeToolTipColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};'" : string.Empty;
                 toolTipText.AppendLine( $@"
-                    <span class='mb-2'>
-                        <span class='d-flex align-items-center'>
-                        <span {badgeToolTipColorHtml} class='mr-1 {assessmentTypeClass}'>
+                    <div class='assessment-tooltip-item'>
+                        <span {badgeToolTipColorHtml} class='{assessmentTypeClass}'>
                             <span class='fa-stack'>
                                 <i class='fa fa-circle fa-stack-2x'></i>
                                 <i class='{assessmentType.IconCssClass} fa-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
                             </span>
                         </span>
-                        <strong>{assessmentTitle}</strong>
+                        <span class='assessment-tooltip-value'>
+                            <span class='assessment-name'>{assessmentTitle}</span>
+                            <span class='assessment-summary'>{mergedBadgeSummaryLava}</span>
                         </span>
-                        <span class='text-xs' style='padding-left:32px;'>{mergedBadgeSummaryLava}</span>
-                    </span>" );
+                    </div>" );
             }
 
             badgeRow1.AppendLine( $@"</div>" );

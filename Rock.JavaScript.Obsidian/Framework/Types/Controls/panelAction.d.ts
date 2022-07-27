@@ -39,4 +39,7 @@ export type PanelAction = {
 
     /** The callback function that will handle the action. */
     handler?: PanelActionCallback;
+
+    /** If true then the action will be disabled and not respond to clicks. */
+    disabled?: boolean;
 };

@@ -25,7 +25,7 @@ namespace Rock.Utility
     /// <summary>
     /// Provides utilities for working with Containers
     /// </summary>
-    class Container
+    internal class Container
     {
         /// <summary>
         /// Resolves the container name into a Type in a unified way.

@@ -7,9 +7,9 @@
             <asp:Repeater ID="rptrGroups" runat="server" OnItemDataBound="rptrGroups_ItemDataBound" >
                 <ItemTemplate>
 
-                    <asp:Panel ID="pnlGroup" runat="server" CssClass="card card-profile group-hover card-family-member panel-widget">
+                    <asp:Panel ID="pnlGroup" runat="server" CssClass="card card-profile card-family-member panel-widget">
                         <asp:HiddenField ID="hfGroupId" runat="server" Value='<%# Eval("Id") %>' />
-                            <div class="card-header">
+                            <div class="card-header group-hover">
                                 <span class="card-title"><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></span>
 
                                 <div class="panel-labels group-hover-item group-hover-show">
@@ -52,11 +52,11 @@
                             <ItemTemplate>
                                 <asp:Literal ID="litAddress" runat="server"></asp:Literal>
 
-                                <div class="pull-right">
-                                    <asp:LinkButton ID="lbVerify" runat="server" CommandName="verify" ToolTip="Verify Address">
+                                <div class="group-hover-item group-hover-show ml-auto">
+                                    <asp:LinkButton ID="lbVerify" runat="server" CssClass="btn btn-xs btn-square btn-default" CommandName="verify" ToolTip="Verify Address">
                                         <i class="fa fa-globe"></i>
                                     </asp:LinkButton>
-                                    <asp:LinkButton ID="lbLocationSettings" runat="server" CommandName="settings" ToolTip="Configure Location">
+                                    <asp:LinkButton ID="lbLocationSettings" runat="server" CssClass="btn btn-xs btn-square btn-default" CommandName="settings" ToolTip="Configure Location">
                                         <i class="fa fa-gear"></i>
                                     </asp:LinkButton>
                                 </div>

@@ -32,7 +32,7 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Controls;
-using Rock.ViewModels.CRM;
+using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -152,7 +152,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [System.Web.Http.Route( "AuditDetailGetAuditDetails" )]
-        [Rock.SystemGuid.RestActionGuid( "714d83c9-96e4-49d7-81af-2eed7d5ccd56" )]
+        [Rock.SystemGuid.RestActionGuid( "714D83C9-96E4-49D7-81AF-2EED7D5CCD56" )]
         public IHttpActionResult AuditDetailGetAuditDetails( [FromBody] AuditDetailGetAuditDetailsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -227,7 +227,7 @@ namespace Rock.Rest.v2
         /// <returns>A collection of <see cref="RenderedBadgeBag"/> objects.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgeListGetBadges" )]
-        [Rock.SystemGuid.RestActionGuid( "34387b98-bf7e-4000-a28a-24ea08605285" )]
+        [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
         public IHttpActionResult BadgeListGetBadges( [FromBody] BadgeListGetBadgesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -553,7 +553,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListGetEntityTags" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "7542d4b3-17dc-4640-acbd-f02784130401" )]
+        [Rock.SystemGuid.RestActionGuid( "7542D4B3-17DC-4640-ACBD-F02784130401" )]
         public IHttpActionResult EntityTagListGetEntityTags( [FromBody] EntityTagListGetEntityTagsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -588,7 +588,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListGetAvailableTags" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "91890d39-6e3e-4623-aad7-f32e686c784e" )]
+        [Rock.SystemGuid.RestActionGuid( "91890D39-6E3E-4623-AAD7-F32E686C784E" )]
         public IHttpActionResult EntityTagListGetAvailableTags( [FromBody] EntityTagListGetAvailableTagsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -623,7 +623,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListCreatePersonalTag" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "8ccb7b8d-5d5c-4aa6-a12c-ed062c7afa05" )]
+        [Rock.SystemGuid.RestActionGuid( "8CCB7B8D-5D5C-4AA6-A12C-ED062C7AFA05" )]
         public IHttpActionResult EntityTagListCreatePersonalTag( [FromBody] EntityTagListCreatePersonalTagOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
@@ -699,7 +699,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListAddEntityTag" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "c9cacc7f-68de-4765-8967-b50ee2949062" )]
+        [Rock.SystemGuid.RestActionGuid( "C9CACC7F-68DE-4765-8967-B50EE2949062" )]
         public IHttpActionResult EntityTagListAddEntityTag( [FromBody] EntityTagListAddEntityTagOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -751,7 +751,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListRemoveEntityTag" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "6a78d538-87db-43fe-9150-4e9a3f276afe" )]
+        [Rock.SystemGuid.RestActionGuid( "6A78D538-87DB-43FE-9150-4E9A3F276AFE" )]
         public IHttpActionResult EntityTagListRemoveEntityTag( [FromBody] EntityTagListRemoveEntityTagOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -1003,7 +1003,7 @@ namespace Rock.Rest.v2
                     var entityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
                     GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
 
-                    if ( options.ShowAll || gateway.Id == options.SelectedItem || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
+                    if ( options.ShowAll || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
                     {
                         items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Guid.ToString() } );
                     }
@@ -1058,7 +1058,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [System.Web.Http.Route( "FollowingGetFollowing" )]
-        [Rock.SystemGuid.RestActionGuid( "fa1cc136-a994-4870-9507-818ea7a70f01" )]
+        [Rock.SystemGuid.RestActionGuid( "FA1CC136-A994-4870-9507-818EA7A70F01" )]
         public IHttpActionResult FollowingGetFollowing( [FromBody] FollowingGetFollowingOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -1121,7 +1121,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [System.Web.Http.Route( "FollowingSetFollowing" )]
-        [Rock.SystemGuid.RestActionGuid( "8ca2eafb-e577-4f65-8d96-f42d8d5aae7a" )]
+        [Rock.SystemGuid.RestActionGuid( "8CA2EAFB-E577-4F65-8D96-F42D8D5AAE7A" )]
         public IHttpActionResult FollowingSetFollowing( [FromBody] FollowingSetFollowingOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
@@ -1274,19 +1274,12 @@ namespace Rock.Rest.v2
         {
             Rock.Model.Group group;
 
-            if ( !options.GroupGuid.HasValue && !options.GroupId.HasValue )
+            if ( !options.GroupGuid.HasValue)
             {
                 return NotFound();
             }
 
-            if ( options.GroupGuid.HasValue )
-            {
-                group = new GroupService( new RockContext() ).Get( options.GroupGuid.Value );
-            }
-            else
-            {
-                group = new GroupService( new RockContext() ).Get( options.GroupId.Value );
-            }
+            group = new GroupService( new RockContext() ).Get( options.GroupGuid.Value );
 
             if ( group == null && !group.Members.Any() )
             {
@@ -1329,11 +1322,27 @@ namespace Rock.Rest.v2
                 .Include( "ChannelTypeMediumValue" )
                 .Where( ic => ic.IsActive )
                 .OrderBy( ic => ic.Name )
+                .Select( ic => new
+                {
+                    ic.Name,
+                    ic.Guid,
+                    Medium = ic.ChannelTypeMediumValue.Value
+                } )
                 .ToList();
 
             foreach ( var channel in channels )
             {
-                var li = new ListItemBag { Text = $"{channel.Name} ({( channel.ChannelTypeMediumValue != null ? channel.ChannelTypeMediumValue.Value : string.Empty )})", Value = channel.Guid.ToString() };
+                ListItemBag li;
+
+                if ( channel.Medium.IsNullOrWhiteSpace() )
+                {
+                    li = new ListItemBag { Text = channel.Name, Value = channel.Guid.ToString() };
+                }
+                else
+                {
+                    li = new ListItemBag { Text = $"{channel.Name} ({ channel.Medium ?? string.Empty })", Value = channel.Guid.ToString() };
+                }
+
                 items.Add( li );
             }
 
@@ -1355,24 +1364,15 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "BD61A390-39F9-4FDE-B9AD-02E53B5F2073" )]
         public IHttpActionResult InteractionComponentPickerGetInteractionComponents( [FromBody] InteractionComponentPickerGetInteractionComponentsOptionsBag options)
         {
-            int interactionChannelId;
-
-            if ( !options.InteractionChannelGuid.HasValue && !options.InteractionChannelId.HasValue )
+            if ( !options.InteractionChannelGuid.HasValue )
             {
                 return NotFound();
             }
 
-            if ( options.InteractionChannelGuid.HasValue )
-            {
-                interactionChannelId = InteractionChannelCache.GetId( options.InteractionChannelGuid.Value ) ?? 0;
-            }
-            else
-            {
-                interactionChannelId = options.InteractionChannelId.Value;
-            }
-
+            int interactionChannelId = InteractionChannelCache.GetId( options.InteractionChannelGuid.Value ) ?? 0;
             var rockContext = new RockContext();
             var interactionComponentService = new InteractionComponentService( rockContext );
+
             var components = interactionComponentService.Queryable().AsNoTracking()
                 .Where( ic => ic.InteractionChannelId == interactionChannelId )
                 .OrderBy( ic => ic.Name )
@@ -1767,22 +1767,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "5B4E7419-266C-4235-93B7-8D0DE0E80D2B" )]
         public IHttpActionResult StepStatusPickerGetStepStatuses( [FromBody] StepStatusPickerGetStepStatusesOptionsBag options )
         {
-            var items = new List<ListItemBag>();
-            int stepProgramId;
-
-            if ( !options.StepProgramGuid.HasValue && !options.StepProgramId.HasValue )
+            if ( !options.StepProgramGuid.HasValue )
             {
                 return NotFound();
             }
 
-            if ( options.StepProgramGuid.HasValue )
-            {
-                stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
-            }
-            else
-            {
-                stepProgramId = options.StepProgramId.Value;
-            }
+            var items = new List<ListItemBag>();
+            int stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
 
             var stepStatusService = new StepStatusService( new RockContext() );
             var statuses = stepStatusService.Queryable().AsNoTracking()
@@ -1817,22 +1808,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "9BC4C3BA-573E-4FB4-A4FC-938D40BED2BE" )]
         public IHttpActionResult StepTypePickerGetStepTypes( [FromBody] StepTypePickerGetStepTypesOptionsBag options )
         {
-            var items = new List<ListItemBag>();
-            int stepProgramId;
-
-            if ( !options.StepProgramGuid.HasValue && !options.StepProgramId.HasValue )
+            if ( !options.StepProgramGuid.HasValue )
             {
                 return NotFound();
             }
 
-            if ( options.StepProgramGuid.HasValue )
-            {
-                stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
-            }
-            else
-            {
-                stepProgramId = options.StepProgramId.Value;
-            }
+            var items = new List<ListItemBag>();
+            int stepProgramId = StepProgramCache.GetId( options.StepProgramGuid.Value ) ?? 0;
 
             var stepTypeService = new StepTypeService( new RockContext() );
             var stepTypes = stepTypeService.Queryable().AsNoTracking()

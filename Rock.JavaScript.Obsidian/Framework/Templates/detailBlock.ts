@@ -32,7 +32,7 @@ import RockForm from "@Obsidian/Controls/rockForm";
 import RockSuspense from "@Obsidian/Controls/rockSuspense";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 
 // Define jQuery and Rock for showing security modal.
 declare function $(value: unknown): unknown;
@@ -234,6 +234,7 @@ export default defineComponent({
     setup(props, { emit }) {
         // #region Values
 
+        const http = useHttp();
         const internalMode = useVModelPassthrough(props, "mode", emit);
         const isFormSubmitting = ref(false);
         const isEditModeLoading = ref(false);
@@ -444,7 +445,7 @@ export default defineComponent({
                 entityKey: props.entityKey
             };
 
-            const response = await post<FollowingGetFollowingResponseBag>("/api/v2/Controls/FollowingGetFollowing", undefined, data);
+            const response = await http.post<FollowingGetFollowingResponseBag>("/api/v2/Controls/FollowingGetFollowing", undefined, data);
 
             isEntityFollowed.value = response.isSuccess && response.data && response.data.isFollowing;
         };
@@ -596,7 +597,7 @@ export default defineComponent({
          * @param event The DOM event that triggered the click.
          */
         const onActionClick = (action: PanelAction, event: Event): void => {
-            if (action.handler) {
+            if (action.handler && !action.disabled) {
                 action.handler(event);
             }
         };
@@ -617,7 +618,7 @@ export default defineComponent({
                 isFollowing: !isEntityFollowed.value
             };
 
-            const response = await post("/api/v2/Controls/FollowingSetFollowing", undefined, data);
+            const response = await http.post("/api/v2/Controls/FollowingSetFollowing", undefined, data);
 
             // If we got a 200 OK response then we can toggle our internal state.
             if (response.isSuccess) {
@@ -736,7 +737,7 @@ export default defineComponent({
     </template>
 
     <template #footerSecondaryActions>
-        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)">
+        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)" :disabled="action.disabled">
             <i :class="getActionIconCssClass(action)"></i>
         </RockButton>
     </template>

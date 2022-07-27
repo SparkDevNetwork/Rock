@@ -160,6 +160,42 @@
     <Compile Include="Migrations\202207182110401_Rollup_20220718.designer.cs">
       <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202207201613568_BackgroundCheckPersonEmailValidFix.cs" />
+    <Compile Include="Migrations\202207201613568_BackgroundCheckPersonEmailValidFix.designer.cs">
+      <DependentUpon>202207201613568_BackgroundCheckPersonEmailValidFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207221839527_DeleteFinancialPersonSavedAccountFix.cs" />
+    <Compile Include="Migrations\202207221839527_DeleteFinancialPersonSavedAccountFix.designer.cs">
+      <DependentUpon>202207221839527_DeleteFinancialPersonSavedAccountFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207251553026_AddCollectionFastLoadAttributes.cs" />
+    <Compile Include="Migrations\202207251553026_AddCollectionFastLoadAttributes.designer.cs">
+      <DependentUpon>202207251553026_AddCollectionFastLoadAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207251804315_Rollup_20220725.cs" />
+    <Compile Include="Migrations\202207251804315_Rollup_20220725.designer.cs">
+      <DependentUpon>202207251804315_Rollup_20220725.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207260013004_AddContentLibrary.cs" />
+    <Compile Include="Migrations\202207260013004_AddContentLibrary.designer.cs">
+      <DependentUpon>202207260013004_AddContentLibrary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207261710563_AddContentLibrarySystemPages.cs" />
+    <Compile Include="Migrations\202207261710563_AddContentLibrarySystemPages.designer.cs">
+      <DependentUpon>202207261710563_AddContentLibrarySystemPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207271521541_DeepLinking.cs" />
+    <Compile Include="Migrations\202207271521541_DeepLinking.designer.cs">
+      <DependentUpon>202207271521541_DeepLinking.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207271757361_CSVImportErrorNote.cs" />
+    <Compile Include="Migrations\202207271757361_CSVImportErrorNote.designer.cs">
+      <DependentUpon>202207271757361_CSVImportErrorNote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207271811590_CodeGenerated_20220727.cs" />
+    <Compile Include="Migrations\202207271811590_CodeGenerated_20220727.designer.cs">
+      <DependentUpon>202207271811590_CodeGenerated_20220727.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1297,6 +1333,33 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202207182110401_Rollup_20220718.resx">
       <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207201613568_BackgroundCheckPersonEmailValidFix.resx">
+      <DependentUpon>202207201613568_BackgroundCheckPersonEmailValidFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207221839527_DeleteFinancialPersonSavedAccountFix.resx">
+      <DependentUpon>202207221839527_DeleteFinancialPersonSavedAccountFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207251553026_AddCollectionFastLoadAttributes.resx">
+      <DependentUpon>202207251553026_AddCollectionFastLoadAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207251804315_Rollup_20220725.resx">
+      <DependentUpon>202207251804315_Rollup_20220725.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207260013004_AddContentLibrary.resx">
+      <DependentUpon>202207260013004_AddContentLibrary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207261710563_AddContentLibrarySystemPages.resx">
+      <DependentUpon>202207261710563_AddContentLibrarySystemPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207271521541_DeepLinking.resx">
+      <DependentUpon>202207271521541_DeepLinking.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207271757361_CSVImportErrorNote.resx">
+      <DependentUpon>202207271757361_CSVImportErrorNote.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207271811590_CodeGenerated_20220727.resx">
+      <DependentUpon>202207271811590_CodeGenerated_20220727.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>

@@ -601,7 +601,7 @@ namespace Rock.Tests.Integration.Lava
                 catch ( Exception ex )
                 {
                     // Write the error to debug output.
-                    Debug.Print( $"\n** ERROR:\n{ex.ToString()}" );
+                    Debug.Print( $"\n** ERROR: {engine.EngineName}\n** {ex.ToString()}" );
 
                     exceptions.Add( ex );
                 }

@@ -30,7 +30,6 @@
                         expandedIds: this.options.expandedIds,
                         expandedCategoryIds: this.options.expandedCategoryIds,
                         showSelectChildren: this.options.showSelectChildren,
-                        loadingHtml: null, //prevent a shaking effect when expanding lazy loaded nodes
                         id: this.options.startingId
                     },
 

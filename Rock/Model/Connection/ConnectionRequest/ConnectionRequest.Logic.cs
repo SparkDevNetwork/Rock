@@ -105,25 +105,33 @@ namespace Rock.Model
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            var connectionOpportunity = this.ConnectionOpportunity;
-            if ( connectionOpportunity == null && this.ConnectionOpportunityId > 0 )
-            {
-                connectionOpportunity = new ConnectionOpportunityService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( g => g.Id == this.ConnectionOpportunityId );
-            }
+            var connectionTypeId = ConnectionTypeId;
 
-            if ( connectionOpportunity != null )
+            // If this instance hasn't been saved yet, it might not have this
+            // auto generated value set yet.
+            if ( connectionTypeId == 0 )
             {
-                var connectionType = connectionOpportunity.ConnectionType;
-
-                if ( connectionType != null )
+                if ( ConnectionOpportunity == null )
                 {
-                    return connectionType.GetInheritedAttributesForQualifier( rockContext, TypeId, "ConnectionTypeId" );
+                    connectionTypeId = new ConnectionOpportunityService( rockContext ).Queryable()
+                        .Where( co => co.Id == ConnectionOpportunityId )
+                        .Select( co => co.ConnectionTypeId )
+                        .FirstOrDefault();
+                }
+                else
+                {
+                    connectionTypeId = ConnectionOpportunity.ConnectionTypeId;
                 }
             }
 
-            return null;
+            if ( connectionTypeId == 0 )
+            {
+                return null;
+            }
+
+            var connectionTypeCache = ConnectionTypeCache.Get( connectionTypeId );
+
+            return connectionTypeCache?.GetInheritedAttributesForQualifier( TypeId, "ConnectionTypeId" );
         }
 
         #endregion

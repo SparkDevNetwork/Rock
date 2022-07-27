@@ -197,7 +197,7 @@
                     <div class="row form-row d-flex flex-wrap align-items-center">
                         <div class="col flex-grow-0">
                             <div class="form-group">
-                                <span class="text-nowrap">Where the parameter</span>
+                                <span class="text-nowrap">Where the key</span>
                             </div>
                         </div>
                         <div class="col">
