@@ -43,13 +43,14 @@ namespace Rock.Model
                     var channel = InteractionChannelCache.Get( Entity.InteractionChannelId );
                     if ( channel != null )
                     {
+                        var rockContext = ( RockContext ) this.RockContext;
                         if ( this.PreSaveState == EntityContextState.Added )
                         {
-                            channel.AddComponentId( Entity.Id );
+                            channel.AddComponentId( Entity.Id, rockContext );
                         }
                         else
                         {
-                            channel.RemoveComponentId( Entity.Id );
+                            channel.RemoveComponentId( Entity.Id, rockContext );
                         }
                     }
                 }

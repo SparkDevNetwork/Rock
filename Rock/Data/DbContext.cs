@@ -694,11 +694,12 @@ namespace Rock.Data
                     {
                         hook.PostSave( contextItem );
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         // Intentionally ignored, this is cleanup so if one
                         // thing fails to clean up don't let that affect the
                         // rest of the cleanup.
+                        ExceptionLogService.LogException( ex, null );
                     }
                 }
             }
