@@ -217,7 +217,7 @@ namespace Rock.Slingshot
                     } );
                 }
             }
-            HasErrors = personImportErrorMessageStructs.Count > 0;
+            HasErrors = HasErrors || personImportErrorMessageStructs.Count > 0;
         }
 
         public void ClearRedundantFilesAfterImport()
