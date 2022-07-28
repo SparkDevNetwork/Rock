@@ -16,9 +16,7 @@
 //
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -27,13 +25,8 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Personalization;
-using Rock.Personalization.SegmentFilters;
+using Rock.Reporting;
 using Rock.Web.Cache;
-
-using static Rock.Personalization.BrowserRequestFilter;
-using static Rock.Personalization.DeviceTypeRequestFilter;
-using static Rock.Personalization.IPAddressRequestFilter;
-using static Rock.Personalization.PreviousActivityRequestFilter;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -190,9 +183,9 @@ namespace RockWeb.Blocks.Cms
 
             this.AdditionalFilterConfiguration = requestFilter.FilterConfiguration ?? new Rock.Personalization.PersonalizationRequestFilterConfiguration();
 
-            cblDeviceTypes.BindToEnum<DeviceType>();
+            cblDeviceTypes.BindToEnum<DeviceTypeRequestFilter.DeviceType>();
             cblDeviceTypes.SetValues( this.AdditionalFilterConfiguration.DeviceTypeRequestFilter.DeviceTypes.Select( a => a.ConvertToInt() ) );
-            cblPreviousActivity.BindToEnum<PreviousActivityType>();
+            cblPreviousActivity.BindToEnum<PreviousActivityRequestFilter.PreviousActivityType>();
             cblPreviousActivity.SetValues( this.AdditionalFilterConfiguration.PreviousActivityRequestFilter.PreviousActivityTypes.Select( a => a.ConvertToInt() ) );
 
             BindQueryStringFilterToGrid();
@@ -249,11 +242,11 @@ namespace RockWeb.Blocks.Cms
             requestFilter.IsActive = cbIsActive.Checked;
 
             AdditionalFilterConfiguration.PreviousActivityRequestFilter.PreviousActivityTypes = cblPreviousActivity.SelectedValues
-                .Select( v => v.ConvertToEnum<PreviousActivityType>() )
+                .Select( v => v.ConvertToEnum<PreviousActivityRequestFilter.PreviousActivityType>() )
                 .ToArray();
 
             AdditionalFilterConfiguration.DeviceTypeRequestFilter.DeviceTypes = cblDeviceTypes.SelectedValues
-                .Select( v => v.ConvertToEnum<DeviceType>() )
+                .Select( v => v.ConvertToEnum<DeviceTypeRequestFilter.DeviceType>() )
                 .ToArray();
 
             AdditionalFilterConfiguration.QueryStringRequestFilterExpressionType =
@@ -339,20 +332,12 @@ namespace RockWeb.Blocks.Cms
 
             hfQueryStringFilterGuid.Value = queryStringRequestFilter.Guid.ToString();
 
-            ComparisonType[] ignoreTypes = new ComparisonType[] { ComparisonType.GreaterThan,
-                ComparisonType.GreaterThanOrEqualTo,
-                ComparisonType.LessThan,
-                ComparisonType.LessThanOrEqualTo,
-                ComparisonType.Between,
-                ComparisonType.RegularExpression
-            };
-
-            ddlQueryStringFilterMatchOptions.BindToEnum( ignoreTypes: ignoreTypes );
+            ComparisonHelper.PopulateComparisonControl( ddlQueryStringFilterComparisonType, ComparisonHelper.StringFilterComparisonTypesRequired, true );
 
             // populate the modal
             tbQueryStringFilterParameter.Text = queryStringRequestFilter.Key;
-            ddlQueryStringFilterMatchOptions.SetValue( queryStringRequestFilter.ComparisonType.ConvertToInt() );
-            tbQueryStringFilterValue.Text = queryStringRequestFilter.ComparisonValue;
+            ddlQueryStringFilterComparisonType.SetValue( queryStringRequestFilter.ComparisonType.ConvertToInt() );
+            tbQueryStringFilterComparisonValue.Text = queryStringRequestFilter.ComparisonValue;
 
             mdQueryStringFilter.Show();
         }
@@ -373,8 +358,8 @@ namespace RockWeb.Blocks.Cms
             }
 
             queryStringFilter.Key = tbQueryStringFilterParameter.Text;
-            queryStringFilter.ComparisonType = ddlQueryStringFilterMatchOptions.SelectedValue.ConvertToEnum<ComparisonType>();
-            queryStringFilter.ComparisonValue = tbQueryStringFilterValue.Text;
+            queryStringFilter.ComparisonType = ddlQueryStringFilterComparisonType.SelectedValue.ConvertToEnum<ComparisonType>();
+            queryStringFilter.ComparisonValue = tbQueryStringFilterComparisonValue.Text;
 
             mdQueryStringFilter.Hide();
             BindQueryStringFilterToGrid();
@@ -448,21 +433,14 @@ namespace RockWeb.Blocks.Cms
                 mdCookie.Title = "Edit Cookie Filter";
             }
 
-            ComparisonType[] ignoreTypes = new ComparisonType[] { ComparisonType.GreaterThan,
-                ComparisonType.GreaterThanOrEqualTo,
-                ComparisonType.LessThan,
-                ComparisonType.LessThanOrEqualTo,
-                ComparisonType.Between,
-                ComparisonType.RegularExpression
-            };
 
-            ddlCookieMatchOptions.BindToEnum<ComparisonType>( ignoreTypes: ignoreTypes );
+            ComparisonHelper.PopulateComparisonControl( ddlCookieFilterComparisonType, ComparisonHelper.StringFilterComparisonTypesRequired, true );
 
             // populate the modal
             hfCookieFilterGuid.Value = cookieRequestFilter.Guid.ToString();
             tbCookieParameter.Text = cookieRequestFilter.Key;
-            ddlCookieMatchOptions.SetValue( cookieRequestFilter.ComparisonType.ConvertToInt() );
-            tbCookieValue.Text = cookieRequestFilter.ComparisonValue;
+            ddlCookieFilterComparisonType.SetValue( cookieRequestFilter.ComparisonType.ConvertToInt() );
+            tbCookieFilterComparisonValue.Text = cookieRequestFilter.ComparisonValue;
 
             mdCookie.Show();
         }
@@ -482,8 +460,8 @@ namespace RockWeb.Blocks.Cms
             }
 
             cookieFilter.Key = tbCookieParameter.Text;
-            cookieFilter.ComparisonType = ddlCookieMatchOptions.SelectedValue.ConvertToEnum<ComparisonType>();
-            cookieFilter.ComparisonValue = tbCookieValue.Text;
+            cookieFilter.ComparisonType = ddlCookieFilterComparisonType.SelectedValue.ConvertToEnum<ComparisonType>();
+            cookieFilter.ComparisonValue = tbCookieFilterComparisonValue.Text;
 
             mdCookie.Hide();
             BindCookieFilterToGrid();
@@ -555,22 +533,14 @@ namespace RockWeb.Blocks.Cms
                 mdBrowser.Title = "Edit Browser Filter";
             }
 
-            ComparisonType[] ignoreTypes = new ComparisonType[] { ComparisonType.GreaterThan,
-                ComparisonType.GreaterThanOrEqualTo,
-                ComparisonType.LessThan,
-                ComparisonType.LessThanOrEqualTo,
-                ComparisonType.Between,
-                ComparisonType.RegularExpression
-            };
-
-            ddlBrowserFamily.BindToEnum<BrowserFamilyEnum>();
-            ddlBrowserMatchOptions.BindToEnum( ignoreTypes: ignoreTypes );
+            ComparisonHelper.PopulateComparisonControl( ddlBrowserVersionComparisonType, ComparisonHelper.NumericFilterComparisonTypesRequired, true );
+            ddlBrowserFamily.BindToEnum<BrowserRequestFilter.BrowserFamilyEnum>();
 
             // populate the modal
             hfBrowserFilterGuid.Value = browserRequestFilter.Guid.ToString();
             ddlBrowserFamily.SetValue( browserRequestFilter.BrowserFamily.ConvertToInt() );
-            ddlBrowserMatchOptions.SetValue( browserRequestFilter.VersionComparisonType.ConvertToInt() );
-            tbBrowserVersion.Text = browserRequestFilter.MajorVersion.ToString();
+            ddlBrowserVersionComparisonType.SetValue( browserRequestFilter.VersionComparisonType.ConvertToInt() );
+            nbBrowserVersionCompareValue.Text = browserRequestFilter.MajorVersion.ToString();
 
             mdBrowser.Show();
         }
@@ -589,9 +559,9 @@ namespace RockWeb.Blocks.Cms
                 this.AdditionalFilterConfiguration.BrowserRequestFilters.Add( browserFilter );
             }
 
-            browserFilter.BrowserFamily = ddlBrowserFamily.SelectedValue.ConvertToEnum<BrowserFamilyEnum>();
-            browserFilter.VersionComparisonType = ddlBrowserMatchOptions.SelectedValue.ConvertToEnum<ComparisonType>();
-            browserFilter.MajorVersion = tbBrowserVersion.Text.AsInteger();
+            browserFilter.BrowserFamily = ddlBrowserFamily.SelectedValue.ConvertToEnum<BrowserRequestFilter.BrowserFamilyEnum>();
+            browserFilter.VersionComparisonType = ddlBrowserVersionComparisonType.SelectedValue.ConvertToEnum<ComparisonType>();
+            browserFilter.MajorVersion = nbBrowserVersionCompareValue.Text.AsInteger();
 
             mdBrowser.Hide();
             BindBrowserFilterToGrid();
@@ -668,7 +638,7 @@ namespace RockWeb.Blocks.Cms
             hfIPAddressFilterGuid.Value = ipAddressRequestFilter.Guid.ToString();
             tbIPAddressStartRange.Text = ipAddressRequestFilter.BeginningIPAddress;
             tbIPAddressEndRange.Text = ipAddressRequestFilter.EndingIPAddress;
-            tglIPAddressRange.Checked = ipAddressRequestFilter.MatchType == RangeType.NotInRange;
+            tglIPAddressRange.Checked = ipAddressRequestFilter.MatchType == IPAddressRequestFilter.RangeType.NotInRange;
 
             mdIPAddress.Show();
         }
@@ -689,7 +659,7 @@ namespace RockWeb.Blocks.Cms
 
             ipAddressFilter.BeginningIPAddress = tbIPAddressStartRange.Text;
             ipAddressFilter.EndingIPAddress = tbIPAddressEndRange.Text;
-            ipAddressFilter.MatchType = tglIPAddressRange.Checked ? RangeType.NotInRange : RangeType.InRange;
+            ipAddressFilter.MatchType = tglIPAddressRange.Checked ? IPAddressRequestFilter.RangeType.NotInRange : IPAddressRequestFilter.RangeType.InRange;
 
             mdIPAddress.Hide();
             BindIPAddressFilterToGrid();
