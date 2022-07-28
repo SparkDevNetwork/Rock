@@ -288,11 +288,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person.IsDeceased )
             {
-                pnlContent.Attributes.Add("class","card card-profile card-profile-bio deceased" );
+                pnlContent.Attributes.Add( "class", "card card-profile card-profile-bio deceased" );
             }
             else
             {
-                pnlContent.Attributes.Add("class","card card-profile card-profile-bio");
+                pnlContent.Attributes.Add( "class", "card card-profile card-profile-bio" );
             }
 
             // Set the browser page title to include person's name
@@ -316,7 +316,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 // Impersonate for anybody that has Token Usage Allowed. If this Person doesn't have TokenUsage allowed
                 // and the logged-in user would normally see an Impersonate button disabled the button.
                 lbImpersonate.Visible = true;
-                lbImpersonate.Enabled = Person.IsPersonTokenUsageAllowed() == true ;
+                lbImpersonate.Enabled = Person.IsPersonTokenUsageAllowed() == true;
             }
         }
 
@@ -474,10 +474,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
         protected void lbFollowing_Click( object sender, EventArgs e )
         {
-            using( var rockContext = new RockContext() )
+            var personAliasEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON_ALIAS ).Value;
+
+            using ( var rockContext = new RockContext() )
             {
                 var followingService = new FollowingService( rockContext );
-                followingService.ToggleFollowing( Person.TypeId, Person.Id, CurrentPerson.PrimaryAliasId.Value );
+                followingService.ToggleFollowing( personAliasEntityTypeId, Person.PrimaryAliasId.Value, CurrentPerson.PrimaryAliasId.Value );
                 rockContext.SaveChanges();
             }
 
@@ -553,7 +555,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 middleName = $" {Person.MiddleName}";
             }
 
-            string nameText =  $"{titleText}{Person.NickName}{middleName} {Person.LastName}{suffixText}";
+            string nameText = $"{titleText}{Person.NickName}{middleName} {Person.LastName}{suffixText}";
 
             // Add First Name if different from NickName.
             string firstName = string.Empty;
@@ -608,12 +610,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 return;
             }
 
+            var personAliasEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON_ALIAS );
+
             lbFollowing.Visible = true;
             using ( var rockContext = new RockContext() )
             {
                 var followingList = new FollowingService( rockContext )
                     .Queryable()
-                    .Where( f => f.EntityTypeId == Person.TypeId && f.EntityId == Person.Id)
+                    .Where( f => f.EntityTypeId == personAliasEntityTypeId && f.EntityId == Person.PrimaryAliasId )
                     .ToList();
 
                 if ( followingList.Where( f => f.PersonAlias.PersonId == CurrentPerson.Id ).Any() )
@@ -626,9 +630,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 else
                 {
                     lbFollowing.RemoveCssClass( "is-followed" );
-                    lbFollowing.Text = $@"
-                        <span class=""text-link"">Follow</span>
-                        <span class=""font-weight-normal"">{followingList.Count}</span>";
+                    lbFollowing.Text = $@"<span class=""text-link"">Follow</span>";
+
+                    if ( followingList.Any() )
+                    {
+                        lbFollowing.Text += $@"<span class=""font-weight-normal""> {followingList.Count}</span>";
+                    }
                 }
             }
         }
