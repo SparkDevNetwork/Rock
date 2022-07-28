@@ -26,8 +26,7 @@ public class PersonCSVMapper
 
         #region Required Fields
 
-        string csvColumnId = csvHeaderMapper["Id"];
-        person.Id = csvEntryLookup[csvColumnId].ToIntSafe();
+        person.Id = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe();
 
         string csvColumnFamilyId = csvHeaderMapper["Family Id"];
         person.FamilyId = csvEntryLookup[csvColumnFamilyId].ToIntSafe();

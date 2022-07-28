@@ -84,7 +84,6 @@
     <Compile Include="CSVMapper\PersonCSVMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\BulkImportController.cs" />
-    <Compile Include="CSVMapper\UploadedPersonCSVInvalidException.cs" />
     <Compile Include="SlingshotImport\CSVSlingshotImporter.cs" />
     <Compile Include="SlingshotImport\SlingshotDataValidator.cs" />
     <Compile Include="SlingshotImport\SlingshotExtensionMethods.cs" />

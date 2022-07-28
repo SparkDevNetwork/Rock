@@ -23,8 +23,7 @@ public class PersonPhoneCSVMapper
     {
         var personPhones = new List<Slingshot.Core.Model.PersonPhone>();
 
-        string csvColumnId = csvHeaderMapper["Id"];
-        int personId = csvEntryLookup[csvColumnId].ToIntSafe();
+        int personId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe();
 
 
         {

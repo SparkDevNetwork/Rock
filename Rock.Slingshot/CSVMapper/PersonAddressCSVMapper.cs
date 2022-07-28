@@ -23,8 +23,7 @@ class PersonAddressCSVMapper
     {
         var personAddress = new Slingshot.Core.Model.PersonAddress();
 
-        string csvColumnId = csvHeaderMapper["Id"];
-        personAddress.PersonId = csvEntryLookup[csvColumnId].ToIntSafe();
+        personAddress.PersonId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe();
 
         personAddress.AddressType = Slingshot.Core.Model.AddressType.Home;
 

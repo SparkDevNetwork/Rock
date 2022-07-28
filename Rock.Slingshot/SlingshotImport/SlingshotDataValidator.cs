@@ -26,32 +26,38 @@ namespace Rock.Slingshot
     class SlingshotDataValidator
     {
 
-        private Dictionary<int, string> campusIdToNameMapper = new Dictionary<int, string>();
+        private readonly Dictionary<int, string> campusIdToNameMapper = new Dictionary<int, string>();
 
-        internal void ValidatePerson( SlingshotCore.Model.Person person )
+        internal bool ValidatePerson( SlingshotCore.Model.Person person, out string errorMessage )
         {
             if ( person.Id == 0 )
             {
-                throw new UploadedPersonCSVInvalidException( $"Id Missing" );
+                errorMessage = $"Id Missing";
+                return false;
             }
 
             if ( person.FamilyId == 0 )
             {
-                throw new UploadedPersonCSVInvalidException( $"Family Id Missing" );
+                errorMessage = $"Family Id Missing";
+                return false;
             }
+            errorMessage = string.Empty;
+            return true;
         }
 
-        internal void ValidateCampus( SlingshotCore.Model.Person person )
+        internal bool ValidateCampus( SlingshotCore.Model.Person person, out string errorMessage )
         {
+            errorMessage = string.Empty;
             bool isCampusEmpty = person.Campus.CampusId == 0 && person.Campus.CampusName.IsNullOrWhiteSpace();
             if ( isCampusEmpty )
             {
-                return;
+                return true;
             }
 
             if ( person.Campus.CampusId == 0 || person.Campus.CampusName.IsNullOrWhiteSpace() )
             {
-                throw new UploadedPersonCSVInvalidException( $"Campus Data Incomplete: Please enter the value for both the Campus Id and the Campus Name " );
+                errorMessage = $"Campus Data Incomplete: Please enter the value for both the Campus Id and the Campus Name ";
+                return false;
             }
 
             // ensure campus id is unique to a campus
@@ -59,16 +65,19 @@ namespace Rock.Slingshot
             bool isCampusNameConsistent = existingCampusName == null || person.Campus.CampusName == existingCampusName;
             if ( !isCampusNameConsistent )
             {
-                throw new UploadedPersonCSVInvalidException( $"Campus Name Inconsistent: Campus ID: {person.Campus.CampusId} is assigned to multiple campuses." );
+                errorMessage = $"Campus Name Inconsistent: Campus ID: {person.Campus.CampusId} is assigned to multiple campuses.";
+                return false;
             }
             if ( existingCampusName == null )
             {
                 campusIdToNameMapper.Add( person.Campus.CampusId, person.Campus.CampusName );
             }
+            return true;
         }
 
-        internal void ValidateAddress( SlingshotCore.Model.PersonAddress personAddress )
+        internal bool ValidateAddress( SlingshotCore.Model.PersonAddress personAddress, out string addressInvalidErrorMessage )
         {
+            addressInvalidErrorMessage = string.Empty;
             bool isAddressBlank = personAddress.Street1.IsNullOrWhiteSpace()
                             && personAddress.Street2.IsNullOrWhiteSpace()
                             && personAddress.City.IsNullOrWhiteSpace()
@@ -78,7 +87,7 @@ namespace Rock.Slingshot
 
             if ( isAddressBlank )
             {
-                return;
+                return true;
             }
             Location location = new Location
             {
@@ -89,16 +98,20 @@ namespace Rock.Slingshot
                 PostalCode = personAddress.PostalCode,
                 Country = personAddress.Country
             };
+
+            // default the country to the Organization Country if not present
             if ( location.Country.IsNullOrWhiteSpace() )
             {
                 location.Country = GlobalAttributesCache.Get().OrganizationCountry;
             }
             bool isAddressValid = LocationService.ValidateAddressRequirements( location, out object errorMessage );
 
+
             if ( !isAddressValid )
             {
-                throw new UploadedPersonCSVInvalidException( $"{errorMessage} in Address: {location}" );
+                addressInvalidErrorMessage = $"{errorMessage} in Address: {location}";
             }
+            return isAddressValid;
         }
     }
 }

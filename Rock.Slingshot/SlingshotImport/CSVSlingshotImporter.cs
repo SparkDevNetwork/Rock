@@ -155,48 +155,42 @@ namespace Rock.Slingshot
                     # region Create Error CSV File
 
                     // check if basic data is present to add the person to the database
-                    try
                     {
-                        dataValidator.ValidatePerson( person );
-                    }
-                    catch ( UploadedPersonCSVInvalidException exception )
-                    {
-                        string errorMessage = exception.Message + $": The {headerMapper["Id"]} Column and the {headerMapper["Family Id"]} column should not contain 0 or empty values";
-                        csvEntryLookup.Values
-                            .ToList()
-                            .ForEach( field => uploadedPersonCsvErrorsWriter.WriteField( field ) );
-                        uploadedPersonCsvErrorsWriter.WriteField( false );
-                        uploadedPersonCsvErrorsWriter.WriteField( errorMessage );
-                        uploadedPersonCsvErrorsWriter.NextRecord();
-                        HasErrors = true;
-                        continue;
+                        if ( !dataValidator.ValidatePerson( person, out string errorMessage ) )
+                        {
+                            csvEntryLookup.Values
+                                .ToList()
+                                .ForEach( field => uploadedPersonCsvErrorsWriter.WriteField( field ) );
+                            uploadedPersonCsvErrorsWriter.WriteField( false );
+                            uploadedPersonCsvErrorsWriter.WriteField( errorMessage );
+                            uploadedPersonCsvErrorsWriter.NextRecord();
+                            HasErrors = true;
+                            continue;
+                        }
                     }
 
                     var errorMessages = new List<string>();
 
                     // check address is valid
-                    try
                     {
-                        dataValidator.ValidateAddress( personAddress );
-                    }
-                    catch ( UploadedPersonCSVInvalidException exception )
-                    {
-                        errorMessages.Add( exception.Message );
-                        personAddress = new SlingshotCore.Model.PersonAddress(); // nullify the entry for address to the slingshot
+                        var addressInvalidErrorMessage = string.Empty;
+                        if ( !dataValidator.ValidateAddress( personAddress, out addressInvalidErrorMessage ) )
+                        {
+                            errorMessages.Add( addressInvalidErrorMessage );
+                            personAddress = new SlingshotCore.Model.PersonAddress(); // nullify the entry for address to the slingshot
+                        }
                     }
 
                     // check campus is valid
-                    try
                     {
-                        dataValidator.ValidateCampus( person );
-                    }
-                    catch ( UploadedPersonCSVInvalidException exception )
-                    {
-                        errorMessages.Add( exception.Message );
+                        if ( !dataValidator.ValidateCampus( person, out string errorMessage ) )
+                        {
+                            errorMessages.Add( errorMessage );
 
-                        // pass no campus for the person to the slingshot if it is invalid
-                        person.Campus.CampusId = 0;
-                        person.Campus.CampusName = "";
+                            // pass no campus for the person to the slingshot if it is invalid
+                            person.Campus.CampusId = 0;
+                            person.Campus.CampusName = "";
+                        }
                     }
 
                     // Add the final message to the error column of errors.csv

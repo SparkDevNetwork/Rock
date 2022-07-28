@@ -27,8 +27,7 @@ public class PersonAttributeValueCSVMapper
     {
         var personAttributeValues = new List<Slingshot.Core.Model.PersonAttributeValue>();
 
-        string csvColumnId = csvHeaderMapper["Id"];
-        int personId = csvEntryLookup[csvColumnId].ToIntSafe();
+        int personId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe();
 
         IEnumerable<string> rockPersonAttributeKeys = AttributeCache.GetPersonAttributes()
             .Select( a => a.Name );
