@@ -40,7 +40,7 @@ namespace Rock.Rest.Controllers
         /// <param name="personId">The person identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}/{personId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}/{personId:int}" )]
         [Rock.SystemGuid.RestActionGuid( "386BCB43-5F2A-4034-9032-850440CBAB7F" )]
         public virtual void Delete( int entityTypeId, int entityId, int personId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
@@ -82,7 +82,7 @@ namespace Rock.Rest.Controllers
         /// <param name="personGuid">The person identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}/{personGuid}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}/{personGuid:guid}" )]
         [Rock.SystemGuid.RestActionGuid( "1071DB79-DB8D-4310-B11C-2637F1A6A630" )]
         public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, Guid personGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
@@ -107,7 +107,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId:int}" )]
         [System.Web.Http.HttpDelete]
         [Rock.SystemGuid.RestActionGuid( "AAB5800B-A429-40D2-A402-D3DE7E15776E" )]
         public virtual void Delete( int entityTypeId, int entityId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
@@ -151,7 +151,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityGuid">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid:guid}" )]
         [Rock.SystemGuid.RestActionGuid( "A3358897-942F-4332-B060-12718DC87CE6" )]
         public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
