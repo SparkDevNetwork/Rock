@@ -18,8 +18,8 @@
                 <%-- General Settings --%>
                 <div class="panel panel-section">
                     <div class="panel-heading">
-                        <h4>General Settings</h4>
-                        <span class="text-muted">The settings below help to configure the giving automation features within Rock.</span>
+                        <h4 class="panel-title">General Settings</h4>
+                        <span class="description">The settings below help to configure the giving automation features within Rock.</span>
                     </div>
 
 
@@ -48,8 +48,8 @@
                 <%-- Giving Journey Settings --%>
                 <div class="panel panel-section">
                     <div class="panel-heading">
-                        <h4>Giving Journey Settings</h4>
-                        <span class="text-muted">Settings to define the journey stage for an individual. The classification process works by looking at the criteria for each stage and selecting the first one that matches.</span>
+                        <h4 class="panel-title">Giving Journey Settings</h4>
+                        <span class="description">Settings to define the journey stage for an individual. The classification process works by looking at the criteria for each stage and selecting the first one that matches.</span>
                     </div>
 
                     <div class="panel-body">
@@ -157,8 +157,8 @@
                 <%-- Alerts Settings --%>
                 <div class="panel panel-section">
                     <div class="panel-heading">
-                        <h4>Giving Alerts</h4>
-                        <span class="text-muted">The configuration below will be used to generate alerts. An alert will be triggered for the first matching rule unless that rule is configured to continue matching other rules.</span>
+                        <h4 class="panel-title">Giving Alerts</h4>
+                        <span class="description">The configuration below will be used to generate alerts. An alert will be triggered for the first matching rule unless that rule is configured to continue matching other rules.</span>
                     </div>
                     <div class="panel-body">
                         <div class="row">
@@ -238,8 +238,8 @@
                 </div>
                 <div class="panel panel-section">
                     <div class="panel-heading">
-                        <h4>Match Criteria</h4>
-                        <span class="text-muted">The following criteria will be considered to determine if this alert should be fired.</span>
+                        <h4 class="panel-title">Match Criteria</h4>
+                        <span class="description">The following criteria will be considered to determine if this alert should be fired.</span>
                     </div>
 
                     <div class="panel-body">
@@ -249,7 +249,6 @@
                             </div>
                             <div class="col-md-7 text-sm">
                                 <asp:Literal ID="lAmountSensitivityScaleHelp" runat="server" />
-                               
                             </div>
                         </div>
                         <hr>
@@ -259,7 +258,6 @@
                             </div>
                             <div class="col-md-7 text-sm">
                                 <asp:Literal ID="lFrequencySensitivityScaleHelp" runat="server" />
-                                
                             </div>
                         </div>
                         <hr>
@@ -280,8 +278,8 @@
 
                 <div class="panel panel-section">
                     <div class="panel-heading">
-                        <h4>Alert Actions</h4>
-                        <span class="text-muted">If the criteria above is matched the following actions will be taken.</span>
+                        <h4 class="panel-title">Alert Actions</h4>
+                        <span class="description">If the criteria above is matched the following actions will be taken.</span>
                     </div>
 
                     <div class="panel-body">
