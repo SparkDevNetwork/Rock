@@ -235,7 +235,9 @@ namespace Rock.Rest.v2
             }
             catch ( Exception ex )
             {
-                return new BadRequestErrorMessageResult( ex.Message, controller );
+                ExceptionLogService.LogApiException( ex, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
+
+                return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, new HttpError( ex.Message ), controller );
             }
         }
 
@@ -362,6 +364,22 @@ namespace Rock.Rest.v2
             try
             {
                 result = action.Invoke( block, parameters.ToArray() );
+
+                // Check if the result type is a Task.
+                if ( result is Task resultTask )
+                {
+                    await resultTask;
+
+                    // Task<T> is not covariant, so we can't just cast to Task<object>.
+                    if ( resultTask.GetType().GetProperty( "Result" ) != null )
+                    {
+                        result = ( ( dynamic ) resultTask ).Result;
+                    }
+                    else
+                    {
+                        result = null;
+                    }
+                }
             }
             catch ( TargetInvocationException ex )
             {
@@ -372,22 +390,6 @@ namespace Rock.Rest.v2
             {
                 ExceptionLogService.LogApiException( ex, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
-            }
-
-            // Check if the result type is a Task.
-            if ( result is Task resultTask )
-            {
-                await resultTask;
-
-                // Task<T> is not covariant, so we can't just cast to Task<object>.
-                if ( resultTask.GetType().GetProperty( "Result" ) != null )
-                {
-                    result = ( object ) ( ( dynamic ) resultTask ).Result;
-                }
-                else
-                {
-                    result = null;
-                }
             }
 
             // Handle the result type.

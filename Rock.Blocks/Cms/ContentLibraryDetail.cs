@@ -1137,6 +1137,7 @@ namespace Rock.Blocks.Cms
                 }
 
                 var filterSettings = library.FilterSettings.FromJsonOrNull<ContentLibraryFilterSettingsBag>() ?? new ContentLibraryFilterSettingsBag();
+                filterSettings.AttributeFilters = filterSettings.AttributeFilters ?? new Dictionary<string, ContentLibraryAttributeFilterSettingsBag>();
                 var filters = GetAttributeFilters( library, filterSettings, rockContext );
 
                 // Update all the basic properties.
@@ -1181,11 +1182,6 @@ namespace Rock.Blocks.Cms
                             if ( filter.IsInconsistent )
                             {
                                 return;
-                            }
-
-                            if ( filterSettings.AttributeFilters == null )
-                            {
-                                filterSettings.AttributeFilters = new Dictionary<string, ContentLibraryAttributeFilterSettingsBag>();
                             }
 
                             // Get the existing settings or create a new one.
