@@ -104,7 +104,7 @@ namespace Rock.Slingshot
             {
                 location.Country = GlobalAttributesCache.Get().OrganizationCountry;
             }
-            bool isAddressValid = LocationService.ValidateAddressRequirements( location, out object errorMessage );
+            bool isAddressValid = LocationService.ValidateLocationAddressRequirements( location, out string errorMessage );
 
 
             if ( !isAddressValid )

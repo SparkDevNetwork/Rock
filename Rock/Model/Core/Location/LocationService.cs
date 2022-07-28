@@ -217,7 +217,7 @@ namespace Rock.Model
                     // Verify that the new location has all of the required fields.
                     string validationError;
 
-                    var isValid = ValidateAddressRequirements( newLocation, out validationError );
+                    var isValid = ValidateLocationAddressRequirements( newLocation, out validationError );
 
                     if ( !isValid )
                     {
@@ -368,7 +368,7 @@ namespace Rock.Model
         /// <param name="location"></param> 
         /// <param name="errorMessage"></param> Currently it is of type object, can be converted to string once the instance method is replaced.
         /// <returns></returns>
-        public static bool ValidateAddressRequirements( Location location, out object errorMessage )
+        public static bool ValidateLocationAddressRequirements( Location location, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -462,13 +462,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="location"></param>
         /// <param name="errorMessage">An empty string if the validation is successful, or a message describing the validation failure.</param>
-        [Obsolete( "Please use the static method ValidateAddressRequirements( Location location, out object errorMessage )" )]
+        [Obsolete( "Please use the static method ValidateLocationAddressRequirements( Location location, out string errorMessage )" )]
         [RockObsolete( "1.14" )]
         public bool ValidateAddressRequirements( Location location, out string errorMessage )
         {
-            bool isAddressValid = new LocationService( new RockContext() )
-                .ValidateAddressRequirements( location, out string message );
-            errorMessage = message;
+            bool isAddressValid = ValidateLocationAddressRequirements( location, out errorMessage );
             return isAddressValid;
         }
 

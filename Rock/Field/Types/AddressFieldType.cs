@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -187,7 +187,7 @@ namespace Rock.Field.Types
 
                 var editLocation = new Location();
                 addressControl.GetValues( editLocation );
-                var addressIsValid = locationService.ValidateAddressRequirements( editLocation, out _ );
+                var addressIsValid = LocationService.ValidateLocationAddressRequirements( editLocation, out _ );
 
                 // Only get a LocationGuid if the AddressControl has a value and has met the ValidateAddressRequirements rules
                 if ( addressIsValid )
