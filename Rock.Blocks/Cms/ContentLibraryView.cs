@@ -111,7 +111,7 @@ namespace Rock.Blocks.Cms
     [TextField( "Results Template",
         Description = "The lava template to use to render the results container. It must contain an element with the class 'result-items'.",
         DefaultValue = @"<div>
-    <h2><i class=""{{ SourceEntity.IconCssClass""></i> {{ SourceName }}</h2>
+    <h2><i class=""{{ SourceEntity.IconCssClass }}""></i> {{ SourceName }}</h2>
     <div class=""result-items""></div>
     <div class=""actions"">
        <a href=""#"" class=""btn btn-default show-more"">Show More</a>
@@ -123,7 +123,7 @@ namespace Rock.Blocks.Cms
     [TextField( "Item Template",
         Description = "The lava template to use to render a single result.",
         DefaultValue = @"<div class=""result-item"">
-    <div>{{ results.Title }}</div>
+    <div>{{ Item.Name }}</div>
 </div>",
         Category = "CustomSetting",
         Key = AttributeKey.ItemTemplate )]
@@ -808,7 +808,7 @@ namespace Rock.Blocks.Cms
                 }
 
                 // Find the attribute filter for this query filter.
-                var attributeFilterKey = contentLibrary.FilterSettings.AttributeFilters
+                var attributeFilterKey = contentLibrary.FilterSettings?.AttributeFilters
                     .Where( kvp => kvp.Value.Label.ToLower() == filterKey )
                     .Select( kvp => kvp.Key )
                     .FirstOrDefault();
@@ -910,20 +910,21 @@ namespace Rock.Blocks.Cms
             // Always include the source result template just in case something
             // weird happens and they start loading items past offset 0 first.
             var resultsTemplate = GetAttributeValue( AttributeKey.ResultsTemplate );
-            var sourceEntityType = source.EntityType.GetEntityType();
-            var sourceEntity = Reflection.GetIEntityForEntityType( sourceEntityType, source.EntityId );
             var mergeFields = RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "SourceType", sourceEntityType.Name );
-            mergeFields.Add( "SourceName", sourceEntity.ToString() );
-            mergeFields.Add( "SourceEntity", sourceEntity );
+
+            if ( source != null )
+            {
+                var sourceEntityType = source.EntityType.GetEntityType();
+                var sourceEntity = Reflection.GetIEntityForEntityType( sourceEntityType, source.EntityId );
+                mergeFields.Add( "SourceType", sourceEntityType.Name );
+                mergeFields.Add( "SourceName", sourceEntity.ToString() );
+                mergeFields.Add( "SourceEntity", sourceEntity );
+            }
+
             resultBag.Template = resultsTemplate.ResolveMergeFields( mergeFields );
 
             // Merge the results with the Lava template.
             var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
-            mergeFields = RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "SourceType", sourceEntityType.Name );
-            mergeFields.Add( "SourceName", sourceEntity.ToString() );
-            mergeFields.Add( "SourceEntity", sourceEntity );
 
             foreach ( var result in results.Documents )
             {
