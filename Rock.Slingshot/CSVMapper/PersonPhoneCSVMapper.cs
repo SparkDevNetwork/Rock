@@ -29,10 +29,12 @@ public class PersonPhoneCSVMapper
         {
             if ( csvHeaderMapper.TryGetValue( "Home Phone", out string csvColumnPhone ) )
             {
-                var personHomePhone = new Slingshot.Core.Model.PersonPhone();
-                personHomePhone.PersonId = personId;
-                personHomePhone.PhoneNumber = csvEntryLookup[csvColumnPhone].ToStringSafe();
-                personHomePhone.PhoneType = "Home";
+                var personHomePhone = new Slingshot.Core.Model.PersonPhone
+                {
+                    PersonId = personId,
+                    PhoneNumber = csvEntryLookup[csvColumnPhone].ToStringSafe(),
+                    PhoneType = "Home"
+                };
                 personPhones.Add( personHomePhone );
             }
         }
@@ -40,10 +42,12 @@ public class PersonPhoneCSVMapper
         {
             if ( csvHeaderMapper.TryGetValue( "Mobile Phone", out string csvColumnPhone ) )
             {
-                var personMobilePhone = new Slingshot.Core.Model.PersonPhone();
-                personMobilePhone.PersonId = personId;
-                personMobilePhone.PhoneNumber = csvEntryLookup[csvColumnPhone].ToStringSafe();
-                personMobilePhone.PhoneType = "Mobile";
+                var personMobilePhone = new Slingshot.Core.Model.PersonPhone
+                {
+                    PersonId = personId,
+                    PhoneNumber = csvEntryLookup[csvColumnPhone].ToStringSafe(),
+                    PhoneType = "Mobile"
+                };
                 personPhones.Add( personMobilePhone );
             }
         }

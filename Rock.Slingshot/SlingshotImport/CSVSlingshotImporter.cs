@@ -234,8 +234,7 @@ namespace Rock.Slingshot
         {
             File.Delete( SlingshotFileName );
             // delete all files except the errors.csv file
-            Array.ForEach( Directory.GetFiles( SlingshotDirectoryName ), delegate ( string path )
-            { File.Delete( path ); } );
+            Array.ForEach( Directory.GetFiles( SlingshotDirectoryName ), delegate ( string path ) { File.Delete( path ); } );
 
         }
 

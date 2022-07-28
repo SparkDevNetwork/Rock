@@ -370,21 +370,6 @@ namespace Rock.Model
         /// <returns></returns>
         public static bool ValidateAddressRequirements( Location location, out object errorMessage )
         {
-            bool isAddressValid = new LocationService( new RockContext() ) 
-                .ValidateAddressRequirements( location, out string message);
-            errorMessage = message;
-            return isAddressValid;
-        }
-
-        /// <summary>
-        /// Validate the required parts of the Location Address according to the address requirement rules defined in the Defined Type "Countries".
-        /// </summary>
-        /// <param name="location"></param>
-        /// <param name="errorMessage">An empty string if the validation is successful, or a message describing the validation failure.</param>
-        [Obsolete( "Please use the static method ValidateAddressRequirements( Location location, out object errorMessage )" )]
-        [RockObsolete( "1.14" )]
-        public bool ValidateAddressRequirements( Location location, out string errorMessage )
-        {
             errorMessage = string.Empty;
 
             if ( location == null
@@ -470,6 +455,21 @@ namespace Rock.Model
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Validate the required parts of the Location Address according to the address requirement rules defined in the Defined Type "Countries".
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="errorMessage">An empty string if the validation is successful, or a message describing the validation failure.</param>
+        [Obsolete( "Please use the static method ValidateAddressRequirements( Location location, out object errorMessage )" )]
+        [RockObsolete( "1.14" )]
+        public bool ValidateAddressRequirements( Location location, out string errorMessage )
+        {
+            bool isAddressValid = new LocationService( new RockContext() )
+                .ValidateAddressRequirements( location, out string message );
+            errorMessage = message;
+            return isAddressValid;
         }
 
         /// <summary>

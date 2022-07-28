@@ -21,11 +21,11 @@ class PersonAddressCSVMapper
 {
     public static Slingshot.Core.Model.PersonAddress Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
     {
-        var personAddress = new Slingshot.Core.Model.PersonAddress();
-
-        personAddress.PersonId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe();
-
-        personAddress.AddressType = Slingshot.Core.Model.AddressType.Home;
+        var personAddress = new Slingshot.Core.Model.PersonAddress
+        {
+            PersonId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe(),
+            AddressType = Slingshot.Core.Model.AddressType.Home
+        };
 
         {
             if ( csvHeaderMapper.TryGetValue( "Home Address Street 1", out string csvColumnStreet1 ) )

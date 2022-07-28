@@ -180,7 +180,7 @@
 
                         <%-- The description text on the right side of the page --%>
                         <div class="col-lg-4">
-                            <div id="description" class="description">
+                            <div class="description">
                                 <h4>Required Fields </h4>
                                 When uploading data about people you’ll need to include the following information. These should be separate columns on your CSV file. The name of the field doesn’t matter as you’ll be able to map it later.
                             <br />
