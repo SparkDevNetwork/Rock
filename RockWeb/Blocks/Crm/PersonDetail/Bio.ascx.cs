@@ -624,13 +624,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     lbFollowing.AddCssClass( "is-followed" );
                     lbFollowing.Text = $@"
-                        <span class=""text-link"">Following</span>
+                        <span class=""text"">Following</span>
                         <span class=""font-weight-normal"">{followingList.Count}</span>";
                 }
                 else
                 {
                     lbFollowing.RemoveCssClass( "is-followed" );
-                    lbFollowing.Text = $@"<span class=""text-link"">Follow</span>";
+                    lbFollowing.Text = $@"<span class=""text"">Follow</span>";
 
                     if ( followingList.Any() )
                     {
