@@ -1940,9 +1940,14 @@ namespace RockWeb.Blocks.Groups
                 using ( var rockContext = new RockContext() )
                 {
                     GroupType selectedGroupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
+
                     if ( selectedGroupType != null )
                     {
-                        wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && ( selectedGroupType.AllowGroupSync || GroupSyncState.Any() );
+                        if ( !wpGroupSync.Visible || group.Id == 0 )
+                        {
+                            wpGroupSync.Visible = selectedGroupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) && ( selectedGroupType.AllowGroupSync || GroupSyncState.Any() );
+                        }
+
                         wpMemberWorkflowTriggers.Visible = selectedGroupType.AllowSpecificGroupMemberWorkflows || group.GroupMemberWorkflowTriggers.Any();
                     }
                 }
