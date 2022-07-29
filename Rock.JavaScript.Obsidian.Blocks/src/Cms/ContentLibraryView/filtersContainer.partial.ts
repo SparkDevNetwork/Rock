@@ -212,7 +212,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="filters-container">
+<div class="collectionsearch-results">
     <h3 class="title">Filters</h3>
 
     <Filter v-for="item in filters"

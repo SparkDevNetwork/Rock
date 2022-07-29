@@ -391,62 +391,28 @@ export default defineComponent({
     template: `
 <Alert v-if="blockError" alertType="warning" v-text="blockError" />
 
-<v-style>
-/* Temporary styles!!! */
-.content-library-view .body-container {
-    display: flex;
-    flex-wrap: wrap;
-}
-.content-library-view .search-full-text {
-    flex: 1 0 100%;
-}
-.content-library-view .search-filters {
-    flex: 0 0 25%;
-    margin-right: 20px;
-}
-.content-library-view .search-results {
-    flex: 1 0;
-}
-.content-library-view .search-full-text, .content-library-view .filters-container {
-    min-height: 20px;
-    padding: 19px;
-    margin-bottom: 20px;
-    background-color: #f5f5f5;
-    border: 1px solid #dfe0e1;
-    border-radius: 4px;
-}
-.content-library-view .results-order {
-    max-width: 150px;
-    margin-left: auto;
-}
-</v-style>
-
-<div v-if="!blockError" class="body-container">
-    <div v-if="showFullTextSearch" class="search-full-text">
+<div v-if="!blockError" class="collectionsearch">
+    <div v-if="showFullTextSearch" class="collectionsearch-fulltext">
         <h3 class="title">Search</h3>
 
-        <div class="content">
-            <div class="row">
-                <div ref="searchContainerElement" class="col-md-8 col-md-push-2">
-                    <TextBox v-model="query">
-                        <template #prepend>
-                            <div class="input-group-addon">
-                                <i class="fa fa-search"></i>
-                            </div>
-                        </template>
-                    </TextBox>
-                </div>
+        <div ref="searchContainerElement" class="content">
+            <div class="search-fulltext">
+                <TextBox v-model="query">
+                    <template #prepend>
+                        <div class="input-group-addon">
+                            <i class="fa fa-search"></i>
+                        </div>
+                    </template>
+                </TextBox>
             </div>
         </div>
     </div>
 
-    <div v-if="showFiltersPanel" class="search-filters">
-        <FiltersContainer :filters="filters" v-model:filterValues="filterValues" />
-    </div>
+    <FiltersContainer v-if="showFiltersPanel" :filters="filters" v-model:filterValues="filterValues" />
 
-    <div class="search-results">
-        <div v-if="showSort" class="results-order">
-            <DropDownList v-model="sortOrder" :items="sortOrderItems" :showBlankItem="false" />
+    <div class="collectionsearch-results">
+        <div class="results-order">
+            <DropDownList v-if="showSort" v-model="sortOrder" :items="sortOrderItems" :showBlankItem="false" />
         </div>
 
         <div ref="searchResultContainerElement">
