@@ -38,19 +38,63 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [show all]; otherwise, <c>false</c>.
         /// </value>
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Use ShowInactive instead" )]
         public bool ShowAll
         {
             get
             {
-                return ViewState["ShowAll"] as bool? ?? false;
+                return ShowInactive;
             }
 
             set
             {
-                if ( ShowAll != value )
+                ShowInactive = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether inactive gateways should be included.
+        /// This checks both the FinancialGateway model and the GatewayComponent.
+        /// </summary>
+        /// <value><c>true</c> if [show inactive]; otherwise, <c>false</c>.</value>
+        public bool ShowInactive
+        {
+            get
+            {
+                return ViewState["ShowInactive"] as bool? ?? false;
+            }
+
+            set
+            {
+                if ( ShowInactive != value )
                 {
-                    ViewState["ShowAll"] = value;
-                    LoadItems( value );
+                    ViewState["ShowInactive"] = value;
+                    LoadItems();
+                }
+            }
+        }
+
+        /// <summary>
+        /// If set to true then gateways that do now support Rock initiated transactions will be included.
+        /// These GatewayComponents are used to download externally created transactions and do not allow Rock
+        /// to create the transaction.
+        /// THIS DOES NOT CONSIDER THE "IsActive" PROPERTY.
+        /// </summary>
+        /// <value><c>true</c> if [show all gateway components]; otherwise, <c>false</c>.</value>
+        public bool ShowAllGatewayComponents
+        {
+            get
+            {
+                return ViewState["ShowAllGatewayComponents"] as bool? ?? false;
+            }
+
+            set
+            {
+                if ( ShowAllGatewayComponents != value )
+                {
+                    ViewState["ShowAllGatewayComponents"] = value;
+                    LoadItems();
                 }
             }
         }
@@ -62,14 +106,13 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            LoadItems( ShowAll );
+            LoadItems();
         }
 
         /// <summary>
         /// Loads the items.
         /// </summary>
-        /// <param name="showAll">if set to <c>true</c> [show all].</param>
-        private void LoadItems( bool showAll )
+        private void LoadItems()
         {
             int? selectedItem = this.SelectedValueAsInt();
 
@@ -78,19 +121,38 @@ namespace Rock.Web.UI.Controls
 
             using ( var rockContext = new RockContext() )
             {
-                foreach ( var gateway in new FinancialGatewayService( rockContext )
-                    .Queryable().AsNoTracking()
+                var gateways = new FinancialGatewayService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
                     .Where( g => g.EntityTypeId.HasValue )
                     .OrderBy( g => g.Name )
-                    .ToList() )
+                    .ToList();
+
+                foreach ( var gateway in gateways )
                 {
                     var entityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
                     GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
 
-                    if ( showAll || gateway.Id == selectedItem || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
+                    // Add the gateway if was already selected or if the control is configured to show all of the gateways.
+                    if ( gateway.Id == selectedItem || ( ShowInactive && ShowAllGatewayComponents ) )
                     {
                         this.Items.Add( new ListItem( gateway.Name, gateway.Id.ToString() ) );
+                        continue;
                     }
+
+                    // Do not add if the component or gateway is not active and the controls has ShowInactive set to false.
+                    if ( ShowInactive == false && ( gateway.IsActive == false || component == null || component.IsActive == false ) )
+                    {
+                        continue;
+                    }
+
+                    if ( ShowAllGatewayComponents == false && ( component == null || component.SupportsRockInitiatedTransactions == false ) )
+                    {
+                        continue;
+                    }
+
+                    // If we get this far add the gateway.
+                    this.Items.Add( new ListItem( gateway.Name, gateway.Id.ToString() ) );
                 }
             }
 

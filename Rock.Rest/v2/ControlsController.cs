@@ -989,29 +989,46 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "DBF12D3D-09BF-419F-A315-E3B6C0206344" )]
         public IHttpActionResult FinancialGatewayPickerGetFinancialGateways( [FromBody] FinancialGatewayPickerGetFinancialGatewaysOptionsBag options )
         {
-
             using ( var rockContext = new RockContext() )
             {
                 List<ListItemBag> items = new List<ListItemBag> { };
 
-                foreach ( var gateway in new FinancialGatewayService( rockContext )
-                    .Queryable().AsNoTracking()
+                var gateways = new FinancialGatewayService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
                     .Where( g => g.EntityTypeId.HasValue )
                     .OrderBy( g => g.Name )
-                    .ToList() )
+                    .ToList();
+
+                foreach ( var gateway in gateways )
                 {
                     var entityType = EntityTypeCache.Get( gateway.EntityTypeId.Value );
                     GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
 
-                    if ( options.ShowAll || ( gateway.IsActive && component != null && component.IsActive && component.SupportsRockInitiatedTransactions ) )
+                    // TODO: Need to see if the gateway is selected e.g. gateway.Guid == options.selectedGuid
+                    // Add the gateway if the control is configured to show all of the gateways.
+                    if (  options.ShowInactive && options.ShowAllGatewayComponents )
                     {
                         items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Guid.ToString() } );
+                        continue;
                     }
+
+                    // Do not add if the component or gateway is not active and the controls has ShowInactive set to false.
+                    if ( options.ShowInactive == false && ( gateway.IsActive == false || component == null || component.IsActive == false ) )
+                    {
+                        continue;
+                    }
+
+                    if ( options.ShowAllGatewayComponents == false && ( component == null || component.SupportsRockInitiatedTransactions == false ) )
+                    {
+                        continue;
+                    }
+
+                    items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Guid.ToString() } );
                 }
 
                 return Ok( items );
             }
-
         }
 
         #endregion

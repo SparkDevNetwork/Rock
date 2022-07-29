@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,7 +79,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new FinancialGatewayPicker { ID = id, ShowAll = false };
+            return new FinancialGatewayPicker { ID = id, ShowInactive = false, ShowAllGatewayComponents = false };
         }
 
         /// <summary>
