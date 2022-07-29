@@ -20,8 +20,8 @@
                     $("#import-data-message-container").show();
 
 
-                    <%-- Motive: As of the writing there was no easy way to get the totalCount and the CompletedCount from
-    the server to display the progress bar. Thus, we decided to parse the message string to get the values ---%>
+                    // Motive: As of the writing there was no easy way to get the totalCount and the CompletedCount from
+                    // the server to display the progress bar. Thus, we decided to parse the message string to get the values
 
                     var messageCharArray = message.split(' ');
                     var completedCount = parseInt(messageCharArray[3]);
@@ -42,8 +42,8 @@
                 if (results) {
                     $("#import-data-message-container").hide();
 
-                     <%-- show full progress bar - Motive: as of the writing the Slingshot does not call onProgress event handler
-    when the import completes execution. ---%>
+                     // Show full progress bar - Motive: as of the writing the Slingshot does not call onProgress event handler
+                    // when the import completes execution.
                     var $bar = $('#<%= pnlImportDataProgress.ClientID %> .js-progress-bar');
                     $bar.prop('aria-valuenow', totalCount);
                     $bar.css('width', '100%');
