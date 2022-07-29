@@ -173,6 +173,19 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        public void PersonalizeBlock_WithNoParameters_IsHidden()
+        {
+            var input = @"
+{% personalize %}
+This content should not be visible to anyone, because this block is opt-in only.
+{% endpersonalize %}
+";
+            var expectedOutput = @"";
+
+            AssertOutputForPersonAndRequest( input, expectedOutput, TestGuids.TestPeople.TedDecker );
+        }
+
+        [TestMethod]
         public void PersonalizeBlock_ForSegmentsWithMatchAll_IsVisibleForPersonMatchingAllSegments()
         {
             var input = @"
@@ -190,7 +203,20 @@ Hello Ted!
         {
             var input = @"
 {% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
-Bill should not see this because he only matches the 'Small Group' segment.
+Bill should not see this because he only matches the 'ALL_MEN' segment.
+{% endpersonalize %}
+";
+            var expectedOutput = @"";
+
+            AssertOutputForPersonAndRequest( input, expectedOutput, TestGuids.TestPeople.BillMarble );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_ForSegmentsWithMatchAll_IsHiddenForInvalidSegmentKey()
+        {
+            var input = @"
+{% personalize segment:'ALL_MEN,INVALID_KEY' matchtype:'all' %}
+Bill should not see this because one of the personalize segments is invalid and cannot be matched.
 {% endpersonalize %}
 ";
             var expectedOutput = @"";
@@ -263,6 +289,21 @@ Request acknowledged!
             AssertOutputForPersonAndRequest( input,
                 expectedOutput,
                 inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true&parameter2=true" );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_ForRequestFiltersWithMatchAll_IsHiddenForUnmatchedQueryParameter()
+        {
+            var input = @"
+{% personalize requestfilter:'QUERY_1,QUERY_2' matchtype:'all' %}
+This content should be hidden because the query parameter 'parameter2' does not match the required value 'true'.
+{% endpersonalize %}
+";
+            var expectedOutput = @"";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true&parameter2=xyzzy" );
         }
 
         [TestMethod]
