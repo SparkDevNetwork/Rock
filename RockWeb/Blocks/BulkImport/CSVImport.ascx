@@ -78,14 +78,6 @@
     })
 </script>
 
-<style>
-    .description {
-        background-color: #efefef;
-        padding: 10px 55px;
-    }
-</style>
-
-
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
@@ -99,14 +91,20 @@
 
                 <%-- The very first page which accepts the csv file as the input ---%>
                 <asp:Panel ID="pnlLandingPage" runat="server" Visible="true">
-                    <h2>Comma Separated File Import </h2>
-                    The first step is to upload your comma delimited file. We’ll then allow you to map the columns to fields in Rock. The first row of your file must contain headers for each column.
 
-                  <hr>
+                    <div class="rock-header">
+                        <h3 class="title">Comma Separated File Import</h3>
+                        <span class="description">
+                            The first step is to upload your comma delimited file. We'll then allow you to map the columns to fields in Rock. The first
+                            row of your file must contain headers for each column.
+                        </span>
+                        <hr class="section-header-hr">
+                    </div>
+                    
                     <div class="row">
-                        <div class="col-lg-7">
+                        <div class="col-md-8">
                             <div class="row">
-                                <div class="col-lg-10">
+                                <div class="col-md-6">
                                     <Rock:RockDropDownList
                                         ID="ddlDataType"
                                         runat="server"
@@ -134,7 +132,7 @@
                                         ID="tbpreviousSourceDescription"
                                         runat="server"
                                         Label="Source Description"
-                                        Help="Describe where this data came from. We’ll store what you type as a setting so if you import data from this system again we’ll be able to match people you’ve already imported."
+                                        Help="Describe where this data came from. We'll store what you type as a setting so if you import data from this system again we'll be able to match people you've already imported. (e.g.: 'former-chms', 'mailchimp', etc.)"
                                         Visible="false" />
                                 </div>
                             </div>
@@ -165,7 +163,7 @@
                                         runat="server"
                                         Label="Allow Updating Existing Matched Records"
                                         Checked="true"
-                                        Help="When checked existing records that exist in the database that match date being imported (first name, last name and email match) will be updated. Otherwise only new records will be added to the database." />
+                                        Help="When checked, existing records that exist in the database that match date being imported (first name, last name and email match) will be updated. Otherwise only new records will be added to the database." />
                                 </div>
                             </div>
 
@@ -179,39 +177,37 @@
                         </div>
 
                         <%-- The description text on the right side of the page --%>
-                        <div class="col-lg-4">
-                            <div class="description">
-                                <h4>Required Fields </h4>
-                                When uploading data about people you’ll need to include the following information. These should be separate columns on your CSV file. The name of the field doesn’t matter as you’ll be able to map it later.
-                            <br />
-                                <br />
+                        <div class="col-md-4">
+                            <div class="well">
+                                <h4 class="mt-0 mb-1">Required Fields </h4>
+                                When uploading data about people you'll need to include the following information. These should be separate columns on your CSV
+                                file. The name of the field doesn't matter as you'll be able to map it later.
+
                                 <ol>
                                     <li>Id - Some form of unique identifier for the person. This should come from your former system.</li>
                                     <li>Family Id - This field should be an unique value for each family. This tells us who is in the same family.</li>
                                     <li>Family Role - This column should have the values of Adult or Child.</li>
-                                    <li>First Name - The individual’s first name.</li>
-                                    <li>Last Name - The individual’s last name.</li>
+                                    <li>First Name - The individual's first name.</li>
+                                    <li>Last Name - The individual's last name.</li>
                                 </ol>
-                                <br />
 
-                                <h4>Optional Fields</h4>
-                                You may optionally add the following fields.
-                            <br />
-                                <br />
+                                <h4 class="mt-4 mb-1">Optional Fields</h4>
+                                <p>You may optionally add the following fields.</p>
+
                                 <ol>
-                                    <li>Nick Name - The individual’s nick name.</li>
-                                    <li>Middle Name - The individual’s middle name.</li>
-                                    <li>Suffix - The person’s suffix.
+                                    <li>Nick Name - The individual's nick name.</li>
+                                    <li>Middle Name - The individual's middle name.</li>
+                                    <li>Suffix - The person's suffix.
                                     <br />
                                         <asp:Label ID="lsuffixlist" runat="server" /></li>
-                                    <li>Home Phone - The individual’s home phone number.
+                                    <li>Home Phone - The individual's home phone number.
                                     <br />
                                         (480-555-1234)</li>
-                                    <li>Mobile Phone - The individuals’s mobile phone number.
+                                    <li>Mobile Phone - The individuals's mobile phone number.
                                     <br />
                                         (480-555-1234)</li>
                                     <li>Is SMS Enabled - Whether the individual allows SMS messages to be sent to them.</li>
-                                    <li>Email - The individual’s email address.</li>
+                                    <li>Email - The individual's email address.</li>
                                     <li>Email Preference - The permissions you have been granted to email the individual. 
                                     <br />
                                         <asp:Label ID="lemailPreferenceList" runat="server" /></li>
@@ -221,7 +217,7 @@
                                     <li>Marital Status - The marital status of the individual.
                                     <br />
                                         <asp:Label ID="lmaritalStatusList" runat="server" /></li>
-                                    <li>Birthdate - The individual’s birthdate. </li>
+                                    <li>Birthdate - The individual's birthdate. </li>
                                     <li>Anniversary Date - The marriage anniversary date of the individual.</li>
                                     <li>Record Status - Whether the person is active or not.
                                     <br />
@@ -259,13 +255,16 @@
                                     <br />
                                         (True, False) </li>
                                 </ol>
-                                <br />
-                                <br />
-                                <h4>Additional Fields</h4>
-                                You can provide as many other additional fields as you’d like. We’ll allow you to match these to attributes in Rock. You’ll want to make sure that these Rock attributes exist.
-                            <br />
+
+                                <h4 class="mt-4 mb-1">Additional Fields</h4>
+                                <p>
+                                    You can provide as many other additional fields as you'd like. We'll allow you to match these to attributes in
+                                    Rock. You'll want to make sure that these Rock attributes exist.
+                                </p>
+                                <p>
+                                    You can also choose to ignore columns on your CSV file.
+                                </p>
                             </div>
-                            <p style="text-align: center">You can also choose to ignore columns on your CSV file.</p>
                         </div>
 
                         <%-- Pad some extra space to the right of the panel after the description text ---%>
@@ -276,7 +275,7 @@
                 <%-- The very second page which helps map the CSV fields to the database schema ---%>
                 <asp:Panel ID="pnlFieldMappingPage" runat="server" Visible="false">
                     <h2>Field Mapping</h2>
-                    We’ve uploaded your file to the server. Below is a listing of the fields you uploaded. You’ll need to map these fields to those in Rock.
+                    We've uploaded your file to the server. Below is a listing of the fields you uploaded. You'll need to map these fields to those in Rock.
                     <hr>
 
                     <Rock:TermDescription ID="tdRecordCount" runat="server" Term="Record Count" />
@@ -315,7 +314,7 @@
                 <%-- The third page that would display the progress bars ---%>
                 <asp:Panel ID="pnlProgress" runat="server" CssClass="js-messageContainer" Visible="false">
                     <h2>Import</h2>
-                    We’ll now start the import process with the data and mappings you have provided.
+                    We'll now start the import process with the data and mappings you have provided.
 
                 <hr>
                     <div>
@@ -327,7 +326,7 @@
 
                     <asp:Panel ID="pnlImportPreaprationProgress" runat="server">
                         <h4>Step 1: Import Preparation</h4>
-                        <div>First, we’ll arrange your data into a format we need to import. </div>
+                        <div>First, we'll arrange your data into a format we need to import. </div>
 
                         <div class="progress-bar js-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemax="0">0%</div>
                         <br />
@@ -338,7 +337,7 @@
                     <asp:Panel ID="pnlImportDataProgress" runat="server">
 
                         <h4>Step 2: Import Data</h4>
-                        Then, we’ll import the data into the database.
+                        Then, we'll import the data into the database.
 
                     <div id="import-data-message-container" class="alert alert-info" hidden>
                         <asp:Label ID="lImportDataMessage" CssClass="js-progressMessage" runat="server" />
