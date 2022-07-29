@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Cms
         private static class UserPreferenceKey
         {
             public const string SegmentName = "SegmentName";
+            public const string IncludeInactive = "Include Inactive";
         }
 
         #endregion UserPreference Keys
@@ -86,8 +87,9 @@ namespace RockWeb.Blocks.Cms
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gList.Actions.ShowAdd = canAddEditDelete;
             gList.Actions.AddClick += gList_AddClick;
-
             gList.IsDeleteEnabled = canAddEditDelete;
+
+            gFilter.DisplayFilterValue += gFilter_DisplayFilterValue;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -167,7 +169,27 @@ namespace RockWeb.Blocks.Cms
         protected void gfList_ApplyFilterClick( object sender, EventArgs e )
         {
             gFilter.SaveUserPreference( UserPreferenceKey.SegmentName, tbNameFilter.Text );
+            gFilter.SaveUserPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked ? cbShowInactive.Checked.ToString() : string.Empty );
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the DisplayFilterValue event of the gFilter control.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void gFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case UserPreferenceKey.IncludeInactive:
+                    var includeFilterValue = e.Value.AsBooleanOrNull();
+                    if ( includeFilterValue.HasValue && includeFilterValue.Value )
+                    {
+                        e.Value = includeFilterValue.Value.ToYesNo();
+                    }
+                    break;
+            }
         }
 
         /// <summary>
@@ -211,6 +233,7 @@ namespace RockWeb.Blocks.Cms
         private void BindFilter()
         {
             tbNameFilter.Text = gFilter.GetUserPreference( UserPreferenceKey.SegmentName );
+            cbShowInactive.Checked = gFilter.GetUserPreference( UserPreferenceKey.IncludeInactive ).AsBoolean();
         }
 
         /// <summary>
@@ -229,6 +252,11 @@ namespace RockWeb.Blocks.Cms
             if ( nameFilter.IsNotNullOrWhiteSpace() )
             {
                 segmentQuery = segmentQuery.Where( x => x.Name.Contains( nameFilter ) );
+            }
+
+            if ( !cbShowInactive.Checked )
+            {
+                segmentQuery = segmentQuery.Where( s => s.IsActive == true );
             }
 
             var anonymousVisitorPersonId = new PersonService( rockContext ).GetOrCreateAnonymousVisitorPersonId();
