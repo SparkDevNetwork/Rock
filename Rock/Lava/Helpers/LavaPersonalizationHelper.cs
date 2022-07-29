@@ -39,7 +39,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<int> GetPersonalizationSegmentIdListForRequest( Person currentPerson, RockContext rockContext, HttpRequest httpRequest )
         {
-            List<int> personSegmentIdList;
+            List<int> personSegmentIdList = null;
             RockPage rockPage = null;
 
             if ( httpRequest != null )
@@ -51,10 +51,11 @@ namespace Rock.Lava
             if ( rockPage != null )
             {
                 // If this block is executing in the context of a RockPage,
-                // get the personalization segments that have been previously determined.
-                personSegmentIdList = rockPage.PersonalizationSegmentIds.ToList();
+                // try to get the personalization segments that have been previously determined.
+                personSegmentIdList = rockPage.PersonalizationSegmentIds?.ToList();
             }
-            else
+
+            if ( personSegmentIdList == null )
             {
                 // Get the segments for the person in the current context.
                 if ( currentPerson == null )
@@ -63,7 +64,6 @@ namespace Rock.Lava
                 }
                 else
                 {
-                    // Get the segments associated with the current person.
                     personSegmentIdList = GetPersonalizationSegmentIdListForPerson( currentPerson, rockContext );
                 }
             }
