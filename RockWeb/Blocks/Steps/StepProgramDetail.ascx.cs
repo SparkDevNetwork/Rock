@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Steps
     [DisplayName( "Step Program Detail" )]
     [Category( "Steps" )]
     [Description( "Displays the details of the given Step Program for editing." )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
 
@@ -69,7 +70,7 @@ namespace RockWeb.Blocks.Steps
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "CF372F6E-7131-4FF7-8BCD-6053DBB67D34" )]
-    public partial class StepProgramDetail : RockBlock
+    public partial class StepProgramDetail : ContextEntityBlock
     {
         #region Attribute Keys
 
@@ -1353,6 +1354,12 @@ namespace RockWeb.Blocks.Steps
                     stepTypeIds.Contains( x.StepTypeId ) &&
                     x.CompletedDateKey != null );
 
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
             // Apply date range
             var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
             var dateRange = reportPeriod.GetDateRange();
@@ -1407,6 +1414,12 @@ namespace RockWeb.Blocks.Steps
                 query = query.Where( x => x.CompletedDateTime < compareDate );
             }
 
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
             return query;
         }
 
@@ -1431,6 +1444,12 @@ namespace RockWeb.Blocks.Steps
                 .Where( x =>
                     stepTypeIds.Contains( x.StepTypeId ) &&
                     x.StartDateKey != null );
+
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
 
             // Apply date range
             var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
@@ -1806,6 +1825,12 @@ namespace RockWeb.Blocks.Steps
                     x.StepType.StepProgramId == programId
                     && x.StepType.IsActive
                     && x.CompletedDateKey.HasValue );
+
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                stepsCompletedQuery = stepsCompletedQuery.Where( s => s.CampusId == campusContext.Id );
+            }
 
             return stepsCompletedQuery;
         }

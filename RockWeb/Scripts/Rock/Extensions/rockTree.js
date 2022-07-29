@@ -478,7 +478,7 @@
                     var nodeText = tmp.textContent || tmp.innerText || "";
 
                     var countInfoHtml = '';
-                    if (typeof (node.countInfo) !== 'undefined' && node.countInfo !== null && self.options.displayChildItemCountLabel) {
+                    if (typeof (node.countInfo) !== 'undefined' && node.countInfo !== null) {
                         countInfoHtml = '<span class="label label-tree">' + node.countInfo + '</span>';
                     }
 
@@ -683,11 +683,13 @@
                 $rockTree.find('.selected').parent('li[data-id="' + id + '"]').removeClass('selected');
                 $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);
+                    var nodeId = $li.attr('data-id');
 
                     selectedNodes.push({
-                        id: $li.attr('data-id'),
+                        id: nodeId,
                         // get the li text excluding child text
-                        name: $li.contents(':not(ul)').text()
+                        name: $li.contents(':not(ul)').text(),
+                        path: _findNodeById(nodeId, self.nodes)?.path
                     });
                 });
 

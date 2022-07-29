@@ -37,6 +37,7 @@
             <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
             <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
             <Rock:PageDescription ID="PageDescription" runat="server" />
+            <Rock:Zone Name="Context" runat="server" />
         </section>
 
         <section id="page-content">

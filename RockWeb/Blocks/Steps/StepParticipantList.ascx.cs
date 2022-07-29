@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Steps
     [DisplayName( "Step Participant List" )]
     [Category( "Steps" )]
     [Description( "Lists all the participants in a Step." )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
 
@@ -63,7 +64,7 @@ namespace RockWeb.Blocks.Steps
     #endregion
 
     [Rock.SystemGuid.BlockTypeGuid( "2E4A1578-145E-4052-9B56-1739F7366827" )]
-    public partial class StepParticipantList : RockBlock, ISecondaryBlock, ICustomGridColumns
+    public partial class StepParticipantList : ContextEntityBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Attribute Keys
 
@@ -722,6 +723,7 @@ namespace RockWeb.Blocks.Steps
             AddAttributeColumns();
             AddAttributeFilterFields();
             AddGridRowButtons();
+            ConditionallyHideCampusFilter();
         }
 
         /// <summary>
@@ -809,6 +811,18 @@ namespace RockWeb.Blocks.Steps
             foreach ( var column in gSteps.Columns.OfType<AttributeField>().ToList() )
             {
                 gSteps.Columns.Remove( column );
+            }
+        }
+
+        /// <summary>
+        /// Hides the campus filter, if a context campus has been selected
+        /// </summary>
+        private void ConditionallyHideCampusFilter()
+        {
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                cpCampusFilter.Visible = false;
             }
         }
 
@@ -1013,7 +1027,8 @@ namespace RockWeb.Blocks.Steps
                 qry = qry.Where( m => m.Note.Contains( note ) );
             }
 
-            var campusId = cpCampusFilter.SelectedCampusId;
+            var campusContext = ContextEntity<Campus>();
+            var campusId = campusContext == null ? cpCampusFilter.SelectedCampusId : campusContext.Id;
             if ( campusId != null )
             {
                 qry = qry.Where( m => m.CampusId == campusId );

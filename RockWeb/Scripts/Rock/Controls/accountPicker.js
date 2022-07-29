@@ -19,7 +19,6 @@
                     $tree = $control.find('.treeview'),
                     treeOptions = {
                         customDataItems: this.options.customDataItems,
-                        displayChildItemCountLabel: this.options.displayChildItemCountLabel,
                         enhanceForLongLists: this.options.enhanceForLongLists,
                         multiselect: this.options.allowMultiSelect,
                         categorySelection: this.options.allowCategorySelection,
@@ -882,7 +881,6 @@
                 expandedCategoryIds: null,
                 showSelectChildren: false,
                 enhanceForLongLists: false,
-                displayChildItemCountLabel: false,
                 customDataItems: []
             },
             controls: {},
