@@ -259,6 +259,16 @@ namespace Rock.SystemGuid
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LavaShortcode"/> (well known as of v14)
+        /// </summary>
+        public const string LAVA_SHORTCODE = "7574A473-3326-4973-8DF6-C7BF5F64EB36";
+
+        /// <summary>
+        /// The EntityType Guid for LavaShortcodeCategory 'joiner' table <see cref="Rock.Model.LavaShortcodeConfiguration"/>
+        /// </summary>
+        public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
+
+        /// <summary>
         /// The guid for the Rock.Model.MediaAccount entity
         /// </summary>
         public const string MEDIA_ACCOUNT = "3723425F-6BB3-4F5C-8BD6-0B0B9D22EF70";
@@ -719,10 +729,5 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement"/> 
         /// </summary>
         public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
-
-        /// <summary>
-        /// The lava shortcode category
-        /// </summary>
-        public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
     }
 }
