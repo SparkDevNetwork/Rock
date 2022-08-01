@@ -648,6 +648,28 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Saves the currently logged in <see cref="Rock.Model.Person">person's</see> user preference for the specified block
+        /// </summary>
+        /// <param name="blockGuid">The block identifier.</param>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <param name="value">The value.</param>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/SetBlockUserPreference/{blockGuid}" )]
+        [HttpPost]
+        public IHttpActionResult SetBlockUserPreference( Guid blockGuid, string userPreferenceKey, string value )
+        {
+            var blockId = BlockCache.Get( blockGuid )?.Id;
+
+            if ( blockId == null )
+            {
+                return BadRequest( "Unable to find the specific block." );
+            }
+
+            SetBlockUserPreference( blockId.Value, userPreferenceKey, value );
+            return Ok();
+        }
+
+        /// <summary>
         /// Gets the currently logged in <see cref="Rock.Model.Person">person's</see> user preference.
         /// Note: If the user preference is for a specific block, use ~/api/People/GetBlockUserPreference instead.
         /// </summary>
@@ -677,6 +699,26 @@ namespace Rock.Rest.Controllers
             var currentPerson = GetPerson();
             var userPreferenceValue = PersonService.GetUserPreference( currentPerson, PersonService.GetBlockUserPreferenceKeyPrefix( blockId ) + userPreferenceKey );
             return userPreferenceValue;
+        }
+
+        /// <summary>
+        /// Gets the currently logged in <see cref="Rock.Model.Person">person's</see> user preference for the specified block
+        /// </summary>
+        /// <param name="blockGuid">The block identifier.</param>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/GetBlockUserPreference/{blockGuid}" )]
+        [HttpGet]
+        public string GetBlockUserPreference( Guid blockGuid, string userPreferenceKey )
+        {
+            var blockId = BlockCache.Get( blockGuid )?.Id;
+            if ( blockId == null )
+            {
+                return string.Empty;
+            }
+
+            return GetBlockUserPreference( blockId.Value, userPreferenceKey );
         }
 
         #endregion
