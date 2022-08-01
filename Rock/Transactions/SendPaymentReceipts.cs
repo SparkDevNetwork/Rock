@@ -28,6 +28,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Sends payment receipts for scheduled transaction payments that got downloaded from the Financial Gateway.
     /// </summary>
+    [Obsolete( "Use ProcessSendPaymentReceiptEmails Task instead." )]
+    [RockObsolete( "1.14" )]
     public class SendPaymentReceipts : ITransaction
     {
         /// <summary>
