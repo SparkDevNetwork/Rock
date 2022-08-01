@@ -475,8 +475,8 @@ namespace RockWeb.Blocks.Cms
                     }
                 } );
 
-                // Update the content library index.
-                new ProcessContentLibraryDocument.Message
+                // Update the content collection index.
+                new ProcessContentCollectionDocument.Message
                 {
                     EntityTypeId = contentItem.TypeId,
                     EntityId = contentItem.Id
