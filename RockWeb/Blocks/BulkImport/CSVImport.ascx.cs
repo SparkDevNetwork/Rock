@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.CVSImport
     [DisplayName( "CSV Import" )]
     [Category( "CSV Import" )]
     [Description( "Block to import data into Rock using the CSV files." )]
-    [Rock.SystemGuid.BlockTypeGuid( "EDA8F90D-1201-4AFF-9E6D-A8F6D6F618D9" )]
+    [Rock.SystemGuid.BlockTypeGuid( "362C679C-9A7F-4A2B-9BB0-8683824BE892" )]
     public partial class CSVImport : Rock.Web.UI.RockBlock
     {
         private const string ROCK_ATTRIBUTES_OPTION_NAME = "Attributes";
