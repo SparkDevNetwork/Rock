@@ -614,9 +614,9 @@ namespace Rock.Data
                     }
                 }
 
-                // Check if this item should be processed by the content library.
+                // Check if this item should be processed by the content collection.
                 var itemEntityTypeCache = EntityTypeCache.Get( item.Entity.TypeId );
-                if ( itemEntityTypeCache != null && itemEntityTypeCache.IsContentLibraryIndexingEnabled )
+                if ( itemEntityTypeCache != null && itemEntityTypeCache.IsContentCollectionIndexingEnabled )
                 {
                     // We only handle deleted states here. The detail blocks where
                     // an entity is edited should send the bus message to update
@@ -624,7 +624,7 @@ namespace Rock.Data
                     // else that is missed.
                     if ( item.State == EntityContextState.Detached || item.State == EntityContextState.Deleted )
                     {
-                        var msg = new DeleteContentLibraryDocument.Message
+                        var msg = new DeleteContentCollectionDocument.Message
                         {
                             EntityTypeId = item.Entity.TypeId,
                             EntityId = item.Entity.Id

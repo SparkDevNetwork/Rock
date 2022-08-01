@@ -24,7 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Cms.ContentLibrary.Attributes;
+using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
 using Rock.Lava;
 using Rock.UniversalSearch;
@@ -39,7 +39,7 @@ namespace Rock.Model
     [Table( "ContentChannelItem" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM )]
-    [ContentLibraryIndexable( typeof( Rock.Cms.ContentLibrary.Indexers.ContentChannelItemIndexer ), typeof( Rock.Cms.ContentLibrary.IndexDocuments.ContentChannelItemDocument ) )]
+    [ContentCollectionIndexable( typeof( Rock.Cms.ContentCollection.Indexers.ContentChannelItemIndexer ), typeof( Rock.Cms.ContentCollection.IndexDocuments.ContentChannelItemDocument ) )]
     public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable
     {
         #region Entity Properties

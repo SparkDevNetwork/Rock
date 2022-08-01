@@ -83,10 +83,10 @@ export const enum EntityType {
     ConnectionType = "B1E52EAD-65BD-4C4D-BCCD-73368067621D",
     /** The guid for the Rock.Model.ConnectionWorkflow entity */
     ConnectionWorkflow = "4EB8711F-7301-4699-A223-0505A7CEB20A",
-    /** The guid for the Rock.Model.ContentLibrary entity */
-    ContentLibrary = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8",
-    /** The guid for the Rock.Model.ContentLibrarySource entity */
-    ContentLibrarySource = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733",
+    /** The guid for the Rock.Model.ContentCollection entity */
+    ContentCollection = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8",
+    /** The guid for the Rock.Model.ContentCollectionSource entity */
+    ContentCollectionSource = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733",
     /** The guid for the Rock.Model.DataView entity. */
     Dataview = "57F8FA29-DCF1-4F74-8553-87E90F234139",
     /** The guid for the Rock.Model.DefinedType entity. */

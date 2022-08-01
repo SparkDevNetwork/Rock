@@ -89,7 +89,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [Rock.SystemGuid.EntityTypeGuid( "97DACCE9-F397-4E7B-9596-783A233FCFCF" )]
     public class Elasticsearch : IndexComponent
     {
-        // These attribute keys are also used by the Elasticsearch content library
+        // These attribute keys are also used by the Elasticsearch content collection
         // index component. If any changes are made here, they need to be updated
         // in that class too.
         private static class AttributeKey
@@ -182,14 +182,14 @@ namespace Rock.UniversalSearch.IndexComponents
             // Reset the connection when the component settings are changed.
             ConnectToServer();
 
-            // Notify the content library index component that our settings
+            // Notify the content collection index component that our settings
             // have been updated, since they share settings with us.
-            Cms.ContentLibrary.ContentIndexContainer.Instance
+            Cms.ContentCollection.ContentIndexContainer.Instance
                 .Components
                 .Values
                 .Select( c => c.Value )
-                .Where( c => c.GetType() == typeof( Cms.ContentLibrary.IndexComponents.Elasticsearch ) )
-                .Cast<Cms.ContentLibrary.IndexComponents.Elasticsearch>()
+                .Where( c => c.GetType() == typeof( Cms.ContentCollection.IndexComponents.Elasticsearch ) )
+                .Cast<Cms.ContentCollection.IndexComponents.Elasticsearch>()
                 .FirstOrDefault()
                 ?.SettingsUpdated();
 

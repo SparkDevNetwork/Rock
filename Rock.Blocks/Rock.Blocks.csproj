@@ -59,8 +59,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Cms\ContentLibraryDetail.cs" />
-    <Compile Include="Cms\ContentLibraryView.cs" />
+    <Compile Include="Cms\ContentCollectionDetail.cs" />
+    <Compile Include="Cms\ContentCollectionView.cs" />
     <Compile Include="Cms\MediaAccountDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />

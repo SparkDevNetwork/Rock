@@ -37,8 +37,8 @@
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="src\Cms\" />
-    <Folder Include="src\Cms\ContentLibraryDetail\" />
-    <Folder Include="src\Cms\ContentLibraryView\" />
+    <Folder Include="src\Cms\ContentCollectionDetail\" />
+    <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\CampusDetail\" />
@@ -61,20 +61,20 @@
     <Folder Include="src\WorkFlow\FormBuilder\Shared\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="src\Cms\contentLibraryDetail.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryDetail\attributeSearchFilter.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryDetail\contentSources.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryDetail\editPanel.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryDetail\searchFilter.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryDetail\searchFilters.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryDetail\source.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryDetail\types.d.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryDetail\viewPanel.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\contentLibraryView.ts" />
-    <TypeScriptCompile Include="src\Cms\contentLibraryViewCustomSettings.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryView\filterGrid.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryView\filtersContainer.partial.ts" />
-    <TypeScriptCompile Include="src\Cms\ContentLibraryView\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\contentCollectionDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\attributeSearchFilter.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\contentSources.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\searchFilter.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\searchFilters.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\source.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\contentCollectionView.ts" />
+    <TypeScriptCompile Include="src\Cms\contentCollectionViewCustomSettings.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionView\filterGrid.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionView\filtersContainer.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\ContentCollectionView\types.d.ts" />
     <TypeScriptCompile Include="src\Cms\mediaAccountDetail.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\types.d.ts" />
