@@ -1303,14 +1303,26 @@ namespace Rock.Blocks.Cms
                 await ContentIndexContainer.DeleteMatchingDocumentsAsync( deleteQuery );
 
                 // Add new documents for each source.
+                int indexedCount = 0;
                 foreach ( var entityTypeCache in indexableEntityTypes )
                 {
                     var indexer = ( IContentCollectionIndexer ) Activator.CreateInstance( entityTypeCache.ContentCollectionIndexerType );
 
                     foreach ( var source in sources )
                     {
-                        await indexer.IndexAllContentCollectionSourceDocumentsAsync( source.Id, options );
+                        indexedCount += await indexer.IndexAllContentCollectionSourceDocumentsAsync( source.Id, options );
                     }
+                }
+
+                // Update the last index values.
+                using ( var rockContext2 = new RockContext() )
+                {
+                    var updateContentCollection = new ContentCollectionService( rockContext2 ).Get( contentCollectionId );
+
+                    updateContentCollection.LastIndexDateTime = RockDateTime.Now;
+                    updateContentCollection.LastIndexItemCount = indexedCount;
+
+                    rockContext2.SaveChanges();
                 }
             } );
 

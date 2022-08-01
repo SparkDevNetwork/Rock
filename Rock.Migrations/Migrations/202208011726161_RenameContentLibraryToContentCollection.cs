@@ -143,6 +143,12 @@ WHERE [Guid] = '427F428F-909C-48D0-9CC7-DD72D22DA557'" );
 UPDATE [Block]
 SET [Name] = 'Content Collection Detail'
 WHERE [Guid] = 'E2DC5066-E44D-48C1-B0B9-EBF98BF88BB6'" );
+
+            // Update service job.
+            Sql( @"
+UPDATE [ServiceJob]
+SET [Class] = 'Rock.Jobs.IndexContentCollections'
+WHERE [Guid] = '61F411F1-D77B-4FBD-B698-5EBA3A3AE14D'" );
         }
 
         /// <summary>
@@ -150,6 +156,12 @@ WHERE [Guid] = 'E2DC5066-E44D-48C1-B0B9-EBF98BF88BB6'" );
         /// </summary>
         public override void Down()
         {
+            // Update service job.
+            Sql( @"
+UPDATE [ServiceJob]
+SET [Class] = 'Rock.Jobs.IndexContentLibraries'
+WHERE [Guid] = '61F411F1-D77B-4FBD-B698-5EBA3A3AE14D'" );
+
             // Update Blocks.
             Sql( @"
 UPDATE [Block]

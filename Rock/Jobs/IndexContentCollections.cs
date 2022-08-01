@@ -23,6 +23,8 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Cms.ContentCollection;
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -88,7 +90,7 @@ namespace Rock.Jobs
         /// <param name="maxConcurrency">The maximum number of concurrent operations allowed.</param>
         private async Task<int> GenerateDocumentIndexAsync( int maxConcurrency )
         {
-            int documentsIndexed = 0;
+            var allDocumentsIndexed = 0;
             var indexableEntityTypes = EntityTypeCache.All().Where( et => et.IsContentCollectionIndexingEnabled );
             var options = new IndexDocumentOptions
             {
@@ -105,18 +107,48 @@ namespace Rock.Jobs
             // Next create all the indexes again.
             await ContentIndexContainer.CreateAllIndexesAsync();
 
-            // Then update all sources.
-            foreach ( var entityTypeCache in indexableEntityTypes )
+            // Index each content collection.
+            foreach ( var contentCollection in ContentCollectionCache.All() )
             {
-                var indexer = ( IContentCollectionIndexer ) Activator.CreateInstance( entityTypeCache.ContentCollectionIndexerType );
+                var collectionDocumentsIndexed = 0;
 
-                foreach ( var source in ContentCollectionSourceCache.All() )
+                // Update all sources in this collection.
+                foreach ( var entityTypeCache in indexableEntityTypes )
                 {
-                    documentsIndexed += await indexer.IndexAllContentCollectionSourceDocumentsAsync( source.Id, options );
+                    var indexer = ( IContentCollectionIndexer ) Activator.CreateInstance( entityTypeCache.ContentCollectionIndexerType );
+                    var sources = ContentCollectionSourceCache.All().Where( s => s.ContentCollectionId == contentCollection.Id );
+
+                    foreach ( var source in sources )
+                    {
+                        var count = await indexer.IndexAllContentCollectionSourceDocumentsAsync( source.Id, options );
+
+                        collectionDocumentsIndexed += count;
+                        allDocumentsIndexed += count;
+                    }
+                }
+
+                // Try to update the last index values.
+                try
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var updateContentCollection = new ContentCollectionService( rockContext ).Get( contentCollection.Id );
+
+                        updateContentCollection.LastIndexDateTime = RockDateTime.Now;
+                        updateContentCollection.LastIndexItemCount = collectionDocumentsIndexed;
+
+                        rockContext.SaveChanges();
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // Continue past exceptions updating the content collection,
+                    // but do log them.
+                    ExceptionLogService.LogException( ex );
                 }
             }
 
-            return documentsIndexed;
+            return allDocumentsIndexed;
         }
     }
 }

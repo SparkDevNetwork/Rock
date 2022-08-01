@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -477,6 +478,14 @@ namespace RockWeb.Blocks.Event
                         }
                     }
                 } );
+
+
+                // Update the content collection index.
+                new ProcessContentCollectionDocument.Message
+                {
+                    EntityTypeId = eventItem.TypeId,
+                    EntityId = eventItem.Id
+                }.Send();
 
                 // Redirect back to same page so that item grid will show any attributes that were selected to show on grid
                 var qryParams = new Dictionary<string, string>();
