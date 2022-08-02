@@ -19,7 +19,7 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System Email Templates
+    /// Guids for EntityTypes
     /// </summary>
     public static class EntityType
     {
@@ -272,6 +272,11 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for LavaShortcodeCategory 'joiner' table <see cref="Rock.Model.LavaShortcodeConfiguration"/>
         /// </summary>
         public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Layout"/>
+        /// </summary>
+        public const string LAYOUT = "9DACC861-FED4-47FC-946D-D6A120FF6D56";
 
         /// <summary>
         /// The guid for the Rock.Model.MediaAccount entity
