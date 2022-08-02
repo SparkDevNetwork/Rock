@@ -303,12 +303,14 @@
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>
-                    <Rock:BootstrapButton ID="btnImport"
-                        runat="server"
-                        CssClass="btn btn-primary"
-                        Text="Import"
-                        OnClick="btnImport_Click" />
 
+                    <div class="footer-actions">
+                        <Rock:BootstrapButton ID="btnImport"
+                            runat="server"
+                            CssClass="btn btn-primary"
+                            Text="Import"
+                            OnClick="btnImport_Click" />
+                    </div>
                 </asp:Panel>
 
                 <%-- The third page that would display the progress bars ---%>
@@ -324,29 +326,24 @@
                     <br />
                     <br />
 
-                    <asp:Panel ID="pnlImportPreaprationProgress" runat="server">
+                    <asp:Panel ID="pnlImportPreaprationProgress" runat="server" CssClass="mb-5">
                         <h4>Step 1: Import Preparation</h4>
                         <div>First, we'll arrange your data into a format we need to import. </div>
 
                         <div class="progress-bar js-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemax="0">0%</div>
-                        <br />
-                        <br />
-                        <br />
                     </asp:Panel>
 
-                    <asp:Panel ID="pnlImportDataProgress" runat="server">
+                    <asp:Panel ID="pnlImportDataProgress" runat="server" CssClass="mb-5">
 
                         <h4>Step 2: Import Data</h4>
                         Then, we'll import the data into the database.
 
-                    <div id="import-data-message-container" class="alert alert-info" hidden>
-                        <asp:Label ID="lImportDataMessage" CssClass="js-progressMessage" runat="server" />
-                    </div>
+                        <div id="import-data-message-container" class="alert alert-info" hidden>
+                            <asp:Label ID="lImportDataMessage" CssClass="js-progressMessage" runat="server" />
+                        </div>
 
                         <div class="progress-bar js-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemax="0">0%</div>
-                        <br />
-                        <br />
-                        <br />
+                        
                     </asp:Panel>
                     <div id="import-csv-success" hidden>
                         <Rock:NotificationBox ID="nbImportSuccess"
