@@ -113,6 +113,8 @@ export default defineComponent({
             emit("update:modelValue", newValue);
         });
 
+        watchPropertyChanges(propRefs, emit);
+
         return {
             attributes,
             attributeValues,
