@@ -190,6 +190,15 @@ namespace RockWeb.Blocks.Crm
         DefaultBooleanValue = true,
         Order = 17 )]
 
+    [TextField(
+        "Planned Visit Information Panel Title",
+        Key = AttributeKey.PlannedVisitInformationPanelTitle,
+        Description = "The title for the Planned Visit Information panel",
+        DefaultValue = "Visit Information",
+        IsRequired = false,
+        Order = 18
+        )]
+
     #region Adult Category
 
     [CustomDropdownListField(
@@ -447,6 +456,8 @@ namespace RockWeb.Blocks.Crm
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
             public const string CanCheckinRelationships = "CanCheckinRelationships";
+
+            public const string PlannedVisitInformationPanelTitle = "PlannedVisitInformationPanelTitle";
         }
 
         private static class CategoryKey
@@ -1305,7 +1316,6 @@ namespace RockWeb.Blocks.Crm
 
                 if ( campuses.Count >= 1 )
                 {
-                    cpCampus.ForceVisible = true;
                     cpCampus.SelectedCampusId = campuses.First().Id;
                     cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
                     pnlCampus.Visible = true;
@@ -1324,6 +1334,8 @@ namespace RockWeb.Blocks.Crm
 
             ShowHidePlannedDatePanels();
             SetScheduleDateControl();
+
+            pnlVisitTitle.InnerText = GetAttributeValue( AttributeKey.PlannedVisitInformationPanelTitle );
 
             // Visit Info
             pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible || pnlPlannedSchedule.Visible;
@@ -1444,10 +1456,16 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void SetCampusInfo()
         {
+            if ( !cpCampus.Visible )
+            {
+                pnlCampus.Visible = false;
+                return;
+            }
+
             var showCampusStatus = GetAttributeValue( AttributeKey.ShowCampusStatus ).AsBoolean();
             var showCampusType = GetAttributeValue( AttributeKey.ShowCampusType ).AsBoolean();
 
-            if ( !showCampusStatus && !showCampusType )
+            if ( !showCampusStatus && !showCampusType ) 
             {
                 pnlCampusInfo.Visible = false;
             }

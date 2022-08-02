@@ -15,7 +15,7 @@
 
                 <asp:Panel ID="pnlVisit" runat="server" CssClass="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">Visit Information</h3>
+                        <h3 ID="pnlVisitTitle" runat="server" class="panel-title">Visit Information</h3>
                     </div>
                     <div class="panel-body">
                         <div class="row">
