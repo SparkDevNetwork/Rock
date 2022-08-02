@@ -43,6 +43,7 @@
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Crm\" />
+    <Folder Include="src\Crm\AssessmentTypeDetail\" />
     <Folder Include="src\Crm\PersonDetail\" />
     <Folder Include="src\Engagement\" />
     <Folder Include="src\Engagement\Steps\" />
@@ -84,6 +85,12 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
+    <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
+    <TypeScriptCompile Include="src\Crm\assessmentTypeDetail.ts" />
+    <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Crm\AssessmentTypeDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Crm\attributeValues.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDetail\badges.ts" />
     <TypeScriptCompile Include="src\Engagement\Steps\stepFlow.ts" />

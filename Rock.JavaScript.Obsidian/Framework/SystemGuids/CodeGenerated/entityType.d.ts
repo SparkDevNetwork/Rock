@@ -37,6 +37,8 @@ export const enum EntityType {
     AuthenticationDatabase = "4E9B798F-BB68-4C0E-9707-0928D15AB020",
     /** The pin authentication provider */
     AuthenticationPin = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE",
+    /** The Assessment type */
+    AssessmentType = "D17A28AC-F529-4AB0-A790-C21F9E74AC89",
     /** The guid for the Rock.Model.Badge entity */
     Badge = "99300129-6F4C-45B2-B486-71123F046289",
     /** The benevolence request */

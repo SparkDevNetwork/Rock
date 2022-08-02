@@ -65,6 +65,8 @@
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
+    <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeBag.cs" />
+    <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonDetail\Badges\BadgesConfigurationBox.cs" />
     <Compile Include="Blocks\CustomSettingsBox.cs" />
     <Compile Include="Blocks\DetailBlockBox.cs" />
