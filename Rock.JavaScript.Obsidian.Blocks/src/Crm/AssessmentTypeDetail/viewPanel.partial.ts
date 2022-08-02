@@ -116,8 +116,7 @@ export default defineComponent({
         return {
             attributes,
             attributeValues,
-            leftSideV0
-            alues,
+            leftSideValues,
             rightSideValues,
             topValues
         };
