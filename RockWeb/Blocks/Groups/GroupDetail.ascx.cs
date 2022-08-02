@@ -208,6 +208,7 @@ namespace RockWeb.Blocks.Groups
             public const string GroupRSVPPage = "GroupRSVPPage";
             public const string EnableGroupTags = "EnableGroupTags";
             public const string AddAdministrateSecurityToGroupCreator = "AddAdministrateSecurityToGroupCreator";
+            public const string IsScheduleTabVisible = "IsScheduleTabVisible";
         }
 
         #endregion Attribute Keys
@@ -220,8 +221,6 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region Fields
-
-        private bool _isScheduleTabVisible = false;
 
         private readonly List<string> _tabs = new List<string> { MEMBER_LOCATION_TAB_TITLE, OTHER_LOCATION_TAB_TITLE };
 
@@ -274,6 +273,15 @@ namespace RockWeb.Blocks.Groups
             {
                 CurrentGroupTypeId = value != null ? value.Id : 0;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets if the Schedule Tab Visible.
+        /// </summary>
+        public bool IsScheduleTabVisible
+        {
+            get { return ViewState[AttributeKey.IsScheduleTabVisible] as bool? ?? false; }
+            set { ViewState[AttributeKey.IsScheduleTabVisible] = value; }
         }
 
         #endregion
@@ -1953,7 +1961,7 @@ namespace RockWeb.Blocks.Groups
             AllowMultipleLocations = groupType != null && groupType.AllowMultipleLocations;
 
             // Show/Hide different Panel based on permissions from the group type
-            if ( group.GroupTypeId != 0 )
+            if ( group.GroupTypeId != 0 && setValues )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -2021,7 +2029,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                wpMeetingDetails.Visible = _isScheduleTabVisible;
+                wpMeetingDetails.Visible = IsScheduleTabVisible;
                 gGroupLocations.Visible = false;
             }
 
@@ -2036,7 +2044,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                wpMeetingDetails.Visible = _isScheduleTabVisible;
+                wpMeetingDetails.Visible = IsScheduleTabVisible;
                 gGroupLocations.Visible = false;
             }
 
@@ -2072,6 +2080,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void SetScheduleControls( GroupTypeCache groupType, Group group )
         {
+            IsScheduleTabVisible = false;
             if ( group != null )
             {
                 dowWeekly.SelectedDayOfWeek = null;
@@ -2111,7 +2120,7 @@ namespace RockWeb.Blocks.Groups
                 ListItem li = new ListItem( "Weekly", "1" );
                 li.Selected = group != null && group.Schedule != null && group.Schedule.ScheduleType == ScheduleType.Weekly;
                 rblScheduleSelect.Items.Add( li );
-                pnlSchedule.Visible = _isScheduleTabVisible = true;
+                pnlSchedule.Visible = IsScheduleTabVisible = true;
             }
 
             if ( groupType != null && ( groupType.AllowedScheduleTypes & ScheduleType.Custom ) == ScheduleType.Custom )
@@ -2119,7 +2128,7 @@ namespace RockWeb.Blocks.Groups
                 ListItem li = new ListItem( "Custom", "2" );
                 li.Selected = group != null && group.Schedule != null && group.Schedule.ScheduleType == ScheduleType.Custom;
                 rblScheduleSelect.Items.Add( li );
-                pnlSchedule.Visible = _isScheduleTabVisible = true;
+                pnlSchedule.Visible = IsScheduleTabVisible = true;
             }
 
             if ( groupType != null && ( groupType.AllowedScheduleTypes & ScheduleType.Named ) == ScheduleType.Named )
@@ -2127,7 +2136,7 @@ namespace RockWeb.Blocks.Groups
                 ListItem li = new ListItem( "Named", "4" );
                 li.Selected = group != null && group.Schedule != null && group.Schedule.ScheduleType == ScheduleType.Named;
                 rblScheduleSelect.Items.Add( li );
-                pnlSchedule.Visible = _isScheduleTabVisible = true;
+                pnlSchedule.Visible = IsScheduleTabVisible = true;
             }
 
             SetScheduleDisplay();

@@ -676,9 +676,9 @@ namespace Rock.Rest.Controllers
         {
             var blockId = BlockCache.Get( blockGuid )?.Id;
 
-            if( blockId == null )
+            if ( blockId == null )
             {
-                return BadRequest("Unable to find the specific block.");
+                return BadRequest( "Unable to find the specific block." );
             }
 
             SetBlockUserPreference( blockId.Value, userPreferenceKey, value );
