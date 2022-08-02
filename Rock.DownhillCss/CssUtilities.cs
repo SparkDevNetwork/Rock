@@ -585,8 +585,8 @@ Resets
     background-color: transparent;
 }
 
-NavigationPage {
-    -rock-status-bar-text: dark;
+^Page {
+    -rock-status-bar-text: light;
 }
 
 ^contentpage {
