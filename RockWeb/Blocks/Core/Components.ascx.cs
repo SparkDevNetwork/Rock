@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -415,6 +415,17 @@ namespace RockWeb.Blocks.Core
             LoadEditControls( serviceId, true );
 
             mdEditComponent.Title = ( _container.Dictionary[serviceId].Key + " Properties" ).FormatAsHtmlTitle();
+
+            if ( _container.Dictionary[serviceId].Value is Rock.Communication.Transport.SMTP )
+            {
+                nbWarnings.Text = "This transport should only be used for development and testing.";
+                nbWarnings.Visible = true;
+            }
+            else
+            {
+                nbWarnings.Text = "";
+                nbWarnings.Visible = false;
+            }
 
             ShowDialog( "EditComponent" );
         }

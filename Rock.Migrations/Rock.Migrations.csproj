@@ -200,6 +200,10 @@
     <Compile Include="Migrations\202208011726161_RenameContentLibraryToContentCollection.designer.cs">
       <DependentUpon>202208011726161_RenameContentLibraryToContentCollection.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202208022324441_RemoveMailgunSmtp_Mandrill.cs" />
+    <Compile Include="Migrations\202208022324441_RemoveMailgunSmtp_Mandrill.designer.cs">
+      <DependentUpon>202208022324441_RemoveMailgunSmtp_Mandrill.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1367,6 +1371,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202208011726161_RenameContentLibraryToContentCollection.resx">
       <DependentUpon>202208011726161_RenameContentLibraryToContentCollection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202208022324441_RemoveMailgunSmtp_Mandrill.resx">
+      <DependentUpon>202208022324441_RemoveMailgunSmtp_Mandrill.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>

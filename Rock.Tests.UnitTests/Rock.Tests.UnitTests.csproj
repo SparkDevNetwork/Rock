@@ -195,10 +195,6 @@
       <Project>{d6b19c0d-da5e-4f75-8001-04ded86b741f}</Project>
       <Name>Rock.Mailgun</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.Mandrill\Rock.Mandrill.csproj">
-      <Project>{cf8c694a-55a0-434f-bc96-3450b96ec12a}</Project>
-      <Name>Rock.Mandrill</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock.Slingshot.Model\Rock.Slingshot.Model.csproj">
       <Project>{962944de-8bf4-4175-b55a-e75cf7918272}</Project>
       <Name>Rock.Slingshot.Model</Name>
