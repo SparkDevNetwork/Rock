@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Class AssessmentTypeDetailOptionsBag. */
 export type AssessmentTypeDetailOptionsBag = {
 };

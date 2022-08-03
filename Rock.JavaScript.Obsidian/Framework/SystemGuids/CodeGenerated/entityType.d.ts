@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** System Email Templates */
+/** Guids for EntityTypes */
 export const enum EntityType {
     /** The achievement attempt */
     AchievementAttempt = "5C144B51-3D2E-4BC2-B6C7-7E4CB890E15F",
@@ -29,6 +29,8 @@ export const enum EntityType {
     AchievementType = "0E99356C-0DEA-4F24-944E-21CD5FA83B9E",
     /** The achievement type prerequisite */
     AchievementTypePrerequisite = "5362DB19-B8E1-4378-A66A-FB097CE3AB90",
+    /** The  guid for the Rock.Model.AssessmentType entity. */
+    AssessmentType = "D17A28AC-F529-4AB0-A790-C21F9E74AC89",
     /** The guid for the Rock.Model.Attendance entity. */
     Attendance = "4CCB856F-51E0-4E48-B94A-1705EFBA6C9E",
     /** The guid for the Rock.Model.Attribute entity. */
@@ -37,8 +39,6 @@ export const enum EntityType {
     AuthenticationDatabase = "4E9B798F-BB68-4C0E-9707-0928D15AB020",
     /** The pin authentication provider */
     AuthenticationPin = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE",
-    /** The Assessment type */
-    AssessmentType = "D17A28AC-F529-4AB0-A790-C21F9E74AC89",
     /** The guid for the Rock.Model.Badge entity */
     Badge = "99300129-6F4C-45B2-B486-71123F046289",
     /** The benevolence request */
@@ -119,6 +119,12 @@ export const enum EntityType {
     HttpModuleComponent = "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
     /** The guid for Rock.Model.Interaction */
     Interaction = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7",
+    /** The EntityType Guid for Rock.Model.LavaShortcode (well known as of v14) */
+    LavaShortcode = "7574A473-3326-4973-8DF6-C7BF5F64EB36",
+    /** The EntityType Guid for LavaShortcodeCategory 'joiner' table Rock.Model.LavaShortcodeConfiguration */
+    LavaShortcodeCategory = "6CFE20AD-F883-4F53-A678-0D048406299D",
+    /** The EntityType Guid for Rock.Model.Layout */
+    Layout = "9DACC861-FED4-47FC-946D-D6A120FF6D56",
     /** The guid for the Rock.Model.MediaAccount entity */
     MediaAccount = "3723425F-6BB3-4F5C-8BD6-0B0B9D22EF70",
     /** The guid for the Rock.Model.MetricCategory entity */
@@ -303,6 +309,4 @@ export const enum EntityType {
     StepProgramAchievementComponent = "7140BAE3-89E9-423E-A691-6E13544203CA",
     /** The EntityType Guid for Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement  */
     InteractionSourcedAchievementComponent = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67",
-    /** The lava shortcode category */
-    LavaShortcodeCategory = "6CFE20AD-F883-4F53-A678-0D048406299D",
 }

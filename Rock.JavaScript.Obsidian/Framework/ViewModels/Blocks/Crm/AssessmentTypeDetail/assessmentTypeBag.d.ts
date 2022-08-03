@@ -23,6 +23,10 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class AssessmentTypeBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type AssessmentTypeBag = {
     /** Gets or sets the AssessmentPath of the Rock.Model.AssessmentType   */
     assessmentPath?: string | null;
@@ -48,7 +52,10 @@ export type AssessmentTypeBag = {
     /** Gets or sets the Title of the Rock.Model.AssessmentType   */
     title?: string | null;
 
-    /** Gets or sets the Valid Duration of the Rock.Model.AssessmentType   */
+    /**
+     * Gets or sets the number of days the assessment is valid for Rock.Model.AssessmentType.
+     * How long (in days) is this assessment valid before it must be taken again.
+     */
     validDuration: number;
 
     /** Gets or sets the identifier key of this entity. */
