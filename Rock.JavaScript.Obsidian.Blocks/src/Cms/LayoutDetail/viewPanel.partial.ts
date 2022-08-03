@@ -80,6 +80,10 @@ export default defineComponent({
                 return valueBuilder.build();
             }
 
+            if (props.modelValue.fileName) {
+                valueBuilder.addTextValue("Layout File", props.modelValue.fileName);
+            }
+
             return valueBuilder.build();
         });
 

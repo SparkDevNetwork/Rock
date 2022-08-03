@@ -15,13 +15,14 @@
 // </copyright>
 //
 
-import { defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { LayoutBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutDetail/layoutBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { LayoutDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutDetail/layoutDetailOptionsBag";
 
 export default defineComponent({
@@ -57,14 +58,19 @@ export default defineComponent({
         const attributeValues = ref(props.modelValue.attributeValues ?? {});
         const description = propertyRef(props.modelValue.description ?? "", "Description");
         const name = propertyRef(props.modelValue.name ?? "", "Name");
+        const fileName = propertyRef(props.modelValue.fileName ?? "", "FileName");
 
         // The properties that are being edited. This should only contain
         // objects returned by propertyRef().
-        const propRefs = [description, name];
+        const propRefs = [description, name, fileName];
 
         // #endregion
 
         // #region Computed Values
+
+        const layoutFileOptions = computed((): ListItemBag[] => {
+            return props.options.layoutFileOptions ?? [];
+        });
 
         // #endregion
 
@@ -82,6 +88,7 @@ export default defineComponent({
             updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
             updateRefValue(description, props.modelValue.description ?? "");
             updateRefValue(name, props.modelValue.name ?? "");
+            updateRefValue(fileName, props.modelValue.fileName ?? "");
         });
 
         // Determines which values we want to track changes on (defined in the
@@ -91,7 +98,8 @@ export default defineComponent({
                 ...props.modelValue,
                 attributeValues: attributeValues.value,
                 description: description.value,
-                name: name.value
+                name: name.value,
+                fileName: fileName.value
             };
 
             emit("update:modelValue", newValue);
@@ -104,6 +112,8 @@ export default defineComponent({
         return {
             attributes,
             attributeValues,
+            fileName,
+            layoutFileOptions,
             description,
             name
         };
@@ -124,11 +134,16 @@ export default defineComponent({
         label="Description"
         textMode="multiline" />
 
-    <DropDownList
-        v-model="fileName"
-        label="Layout File"
-        help="The layout file that this layout should use"
-        :items="layoutFileOptions" />
+    <div class="row">
+        <div class="col-md-6">
+            <DropDownList
+                    v-model="fileName"
+                    label="Layout File"
+                    rules="required"
+                    help="The layout file that this layout should use"
+                    :items="layoutFileOptions" />
+        </div>
+    </div>
 
     <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 </fieldset>
