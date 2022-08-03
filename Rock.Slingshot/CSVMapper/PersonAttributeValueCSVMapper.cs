@@ -21,7 +21,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-public class PersonAttributeValueCSVMapper
+public class PersonAttributeValueCsvMapper
 {
     public static List<Slingshot.Core.Model.PersonAttributeValue> Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
     {

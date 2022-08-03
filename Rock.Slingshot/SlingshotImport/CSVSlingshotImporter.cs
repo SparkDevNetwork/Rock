@@ -28,11 +28,21 @@ using SlingshotCore = global::Slingshot.Core;
 
 namespace Rock.Slingshot
 {
-    public class CSVSlingshotImporter : SlingshotImporter
+    public class CsvSlingshotImporter : SlingshotImporter
     {
         private const string CSV_IMPORT_ERROR_COLUMN_NAME = "CSV Import Errors";
         private readonly string CSV_IMPORT_SUCCESS_COLUMN_NAME = "CSV Import Success";
         private const string ERROR_CSV_FILENAME = "errors/errors.csv";
+
+        // variable to perform validation on the Grade field
+        private readonly IEnumerable<string> VALID_GRADE_DESCRIPTIONS = Web.Cache.DefinedTypeCache.Get( SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )
+            .DefinedValues.Select( definedValue => definedValue.Description );
+
+        private readonly IEnumerable<string> VALID_GRADES_ABBREVIATIONS = Web.Cache.DefinedTypeCache.Get( SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() )?.DefinedValues
+            .Select( a => a.AttributeValues["Abbreviation"]?.Value )
+            .Where( a => !string.IsNullOrWhiteSpace( a ) );
+
+        private readonly ICollection<string> VALID_GRADES;
 
         public string ErrorCSVfilename { get; private set; }
 
@@ -66,9 +76,10 @@ namespace Rock.Slingshot
 
         private readonly List<PersonImportErrorMessageStruct> personImportErrorMessageStructs = new List<PersonImportErrorMessageStruct>();
 
-        public CSVSlingshotImporter( string uploadedPersonCSVFileName, string foreignSystemKey, string csvDataType, BulkImporter.ImportUpdateType importUpdateType, EventHandler<object> onProgress = null ) : base()
+        public CsvSlingshotImporter( string uploadedPersonCSVFileName, string foreignSystemKey, string csvDataType, BulkImporter.ImportUpdateType importUpdateType, EventHandler<object> onProgress = null ) : base()
         {
             this.Results = new Dictionary<string, string>();
+            VALID_GRADES = VALID_GRADE_DESCRIPTIONS.Concat( VALID_GRADES_ABBREVIATIONS ).ToHashSet();
 
             if ( onProgress != null )
             {
@@ -116,6 +127,8 @@ namespace Rock.Slingshot
                 + ( new SlingshotCore.Model.PersonPhone() ).GetFileName();
             string personAttributeValueCsvFilePath = SlingshotDirectoryName.EnsureTrailingBackslash()
                 + ( new SlingshotCore.Model.PersonAttributeValue() ).GetFileName();
+            string personNotesCsvFilePath = SlingshotDirectoryName.EnsureTrailingBackslash()
+                + ( new SlingshotCore.Model.PersonNote() ).GetFileName();
 
             using ( StreamWriter personCSVFileStream = new StreamWriter( personCsvFilePath, false, Encoding.UTF8 ) )
             using ( CsvWriter personCSVWriter = new CsvWriter( personCSVFileStream ) )
@@ -125,6 +138,8 @@ namespace Rock.Slingshot
             using ( CsvWriter personPhoneCSVWriter = new CsvWriter( personPhoneCSVFileStream ) )
             using ( StreamWriter personAttributeValueCSVFileStream = new StreamWriter( personAttributeValueCsvFilePath, false, Encoding.UTF8 ) )
             using ( CsvWriter personAttributeValueCSVWriter = new CsvWriter( personAttributeValueCSVFileStream ) )
+            using ( StreamWriter personNotesCSVFileStream = new StreamWriter( personNotesCsvFilePath, false, Encoding.UTF8 ) )
+            using ( CsvWriter personNotesCSVWriter = new CsvWriter( personNotesCSVFileStream ) )
             using ( StreamWriter uploadedPersonCsvErrorsFileStream = new StreamWriter( File.Create( ErrorCSVfilename ), Encoding.UTF8 ) )
             using ( CsvWriter uploadedPersonCsvErrorsWriter = new CsvWriter( uploadedPersonCsvErrorsFileStream ) )
             using ( StreamReader uploadedCSVFileStream = File.OpenText( SlingshotFileName ) )
@@ -134,6 +149,7 @@ namespace Rock.Slingshot
                 personAddressCSVWriter.WriteHeader<SlingshotCore.Model.PersonAddress>();
                 personPhoneCSVWriter.WriteHeader<SlingshotCore.Model.PersonPhone>();
                 personAttributeValueCSVWriter.WriteHeader<SlingshotCore.Model.PersonAttributeValue>();
+                personNotesCSVWriter.WriteHeader<SlingshotCore.Model.PersonNote>();
                 long rowCount = uploadedCSVFileStream.BaseStream.Length;
 
                 // write the headers in the errors.csv file
@@ -146,11 +162,12 @@ namespace Rock.Slingshot
                 foreach ( var csvEntry in csvReader.GetRecords<dynamic>() )
                 {
                     IDictionary<string, object> csvEntryLookup = ( IDictionary<string, object> ) csvEntry;
-                    SlingshotCore.Model.Person person = PersonCSVMapper.Map( csvEntryLookup, headerMapper );
-                    SlingshotCore.Model.PersonAddress personAddress = PersonAddressCSVMapper.Map( csvEntryLookup, headerMapper );
-                    List<SlingshotCore.Model.PersonPhone> personPhones = PersonPhoneCSVMapper.Map( csvEntryLookup, headerMapper );
-                    List<SlingshotCore.Model.PersonAttributeValue> personAttributeValues = PersonAttributeValueCSVMapper
+                    SlingshotCore.Model.Person person = PersonCsvMapper.Map( csvEntryLookup, headerMapper, out HashSet<string> errorMessages );
+                    SlingshotCore.Model.PersonAddress personAddress = PersonAddressCsvMapper.Map( csvEntryLookup, headerMapper );
+                    List<SlingshotCore.Model.PersonPhone> personPhones = PersonPhoneCsvMapper.Map( csvEntryLookup, headerMapper, ref errorMessages );
+                    List<SlingshotCore.Model.PersonAttributeValue> personAttributeValues = PersonAttributeValueCsvMapper
                         .Map( csvEntryLookup, headerMapper );
+                    SlingshotCore.Model.PersonNote personNote = PersonNoteCsvMapper.Map( csvEntryLookup, headerMapper, ref errorMessages );
 
                     # region Create Error CSV File
 
@@ -168,8 +185,6 @@ namespace Rock.Slingshot
                             continue;
                         }
                     }
-
-                    var errorMessages = new List<string>();
 
                     // check address is valid
                     {
@@ -190,6 +205,30 @@ namespace Rock.Slingshot
                             // pass no campus for the person to the slingshot if it is invalid
                             person.Campus.CampusId = 0;
                             person.Campus.CampusName = "";
+                        }
+                    }
+
+                    // check if phone numbers are valid and eliminate the invalid ones
+                    {
+                        var invalidPhoneNumbers = new HashSet<SlingshotCore.Model.PersonPhone>();
+
+                        foreach ( SlingshotCore.Model.PersonPhone personPhone in personPhones )
+                        {
+                            if ( !dataValidator.ValidatePhoneNumber( personPhone, out string errorMessage ) )
+                            {
+                                errorMessages.Add( errorMessage );
+                                invalidPhoneNumbers.Add( personPhone );
+                            }
+                        }
+
+                        personPhones.RemoveAll( invalidPhoneNumbers );
+                    }
+
+                    // check if grade is valid
+                    {
+                        if ( !string.IsNullOrEmpty( person.Grade ) && !VALID_GRADES.Contains( person.Grade ) )
+                        {
+                            errorMessages.Add( $"Could not find the Grade {person.Grade}" );
                         }
                     }
 
@@ -225,6 +264,10 @@ namespace Rock.Slingshot
                     {
                         personAttributeValueCSVWriter.WriteRecord( personAttributeValue );
                     } );
+                    if ( personNote != null )
+                    {
+                        personNotesCSVWriter.WriteRecord( personNote );
+                    }
                 }
             }
             HasErrors = HasErrors || personImportErrorMessageStructs.Count > 0;
@@ -234,7 +277,8 @@ namespace Rock.Slingshot
         {
             File.Delete( SlingshotFileName );
             // delete all files except the errors.csv file
-            Array.ForEach( Directory.GetFiles( SlingshotDirectoryName ), delegate ( string path ) { File.Delete( path ); } );
+            Array.ForEach( Directory.GetFiles( SlingshotDirectoryName ), delegate ( string path )
+            { File.Delete( path ); } );
 
         }
 

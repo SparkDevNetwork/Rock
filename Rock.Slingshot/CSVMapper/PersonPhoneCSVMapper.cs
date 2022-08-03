@@ -14,17 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using Rock;
 
-public class PersonPhoneCSVMapper
+public class PersonPhoneCsvMapper
 {
-    public static List<Slingshot.Core.Model.PersonPhone> Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
+    public static List<Slingshot.Core.Model.PersonPhone> Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper, ref HashSet<string> parserErrors )
     {
         var personPhones = new List<Slingshot.Core.Model.PersonPhone>();
 
         int personId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe();
-
 
         {
             if ( csvHeaderMapper.TryGetValue( "Home Phone", out string csvColumnPhone ) )
@@ -42,11 +42,17 @@ public class PersonPhoneCSVMapper
         {
             if ( csvHeaderMapper.TryGetValue( "Mobile Phone", out string csvColumnPhone ) )
             {
+                bool isSMSEnabled = false;
+                if ( csvHeaderMapper.TryGetValue( "Is SMS Enabled", out string isSMSEnabledColumn ) )
+                {
+                    Boolean.TryParse( csvEntryLookup[isSMSEnabledColumn].ToStringSafe(), out isSMSEnabled );
+                }
                 var personMobilePhone = new Slingshot.Core.Model.PersonPhone
                 {
                     PersonId = personId,
                     PhoneNumber = csvEntryLookup[csvColumnPhone].ToStringSafe(),
-                    PhoneType = "Mobile"
+                    PhoneType = "Mobile",
+                    IsMessagingEnabled = isSMSEnabled
                 };
                 personPhones.Add( personMobilePhone );
             }

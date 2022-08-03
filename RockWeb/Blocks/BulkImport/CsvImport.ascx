@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CSVImport.ascx.cs" Inherits="RockWeb.Blocks.CVSImport.CSVImport" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CsvImport.ascx.cs" Inherits="RockWeb.Blocks.BulkImport.CsvImport" %>
 
 <script src="/SignalR/hubs"></script>
 <script type="text/javascript">
@@ -42,7 +42,7 @@
                 if (results) {
                     $("#import-data-message-container").hide();
 
-                     // Show full progress bar - Motive: as of the writing the Slingshot does not call onProgress event handler
+                    // Show full progress bar - Motive: as of the writing the Slingshot does not call onProgress event handler
                     // when the import completes execution.
                     var $bar = $('#<%= pnlImportDataProgress.ClientID %> .js-progress-bar');
                     $bar.prop('aria-valuenow', totalCount);
@@ -94,13 +94,12 @@
 
                     <div class="rock-header">
                         <h3 class="title">Comma Separated File Import</h3>
-                        <span class="description">
-                            The first step is to upload your comma delimited file. We'll then allow you to map the columns to fields in Rock. The first
+                        <span class="description">The first step is to upload your comma delimited file. We'll then allow you to map the columns to fields in Rock. The first
                             row of your file must contain headers for each column.
                         </span>
                         <hr class="section-header-hr">
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-8">
                             <div class="row">
@@ -123,10 +122,10 @@
                                         RepeatDirection="Horizontal"
                                         Required="true"
                                         Help="If you are importing data from a source that has already been run once, select the matching description below. Otherwise, if this is a different source than those shown, chose to add a new source description." />
-                                    <asp:LinkButton ID="lbToggleSourceDescription"
+                                    <asp:LinkButton ID="lbAddSourceDescription"
                                         runat="server"
                                         Text="Add Additional Source Description"
-                                        OnClick="lbToggleSourceDescription_Click"
+                                        OnClick="lbAddSourceDescription_Click"
                                         CausesValidation="false" />
                                     <Rock:RockTextBox
                                         ID="tbpreviousSourceDescription"
@@ -134,12 +133,22 @@
                                         Label="Source Description"
                                         Help="Describe where this data came from. We'll store what you type as a setting so if you import data from this system again we'll be able to match people you've already imported. (e.g.: 'former-chms', 'mailchimp', etc.)"
                                         Visible="false" />
+                                    <asp:LinkButton ID="lbChooseSourceDescription"
+                                        runat="server"
+                                        Text="Choose Previous Source Description"
+                                        OnClick="lbChooseSourceDescription_Click"
+                                        Visible="false"
+                                        CausesValidation="false" />
                                 </div>
                             </div>
 
                             <br />
 
                             <div class="row">
+                                <Rock:NotificationBox ID="nbDuplicateHeadersInFile"
+                                    runat="server"
+                                    NotificationBoxType="Danger"
+                                    Visible="false" />
                                 <div class="col-md-3">
                                     <Rock:FileUploader
                                         ID="fupCSVFile"
@@ -275,7 +284,11 @@
                 <%-- The very second page which helps map the CSV fields to the database schema ---%>
                 <asp:Panel ID="pnlFieldMappingPage" runat="server" Visible="false">
                     <h2>Field Mapping</h2>
-                    We've uploaded your file to the server. Below is a listing of the fields you uploaded. You'll need to map these fields to those in Rock.
+                    <p>We've uploaded your file to the server. Below is a listing of the fields you uploaded. You'll need to map these fields to those in Rock.</p>
+                    <Rock:NotificationBox ID="nbImportMappingWarning"
+                        runat="server"
+                        NotificationBoxType="Warning"
+                        Text="Please take your time on this screen and map the fields you want carefully.  There is no way to undo the import once you've finished." />
                     <hr>
 
                     <Rock:TermDescription ID="tdRecordCount" runat="server" Term="Record Count" />
@@ -321,10 +334,8 @@
                 <hr>
                     <div>
                         <span id="upload-csv-invalid-exception-notification"
-                            class="js-notification-text alert alert-danger" hidden></span>
+                            class="js-notification-text alert alert-danger mb-5" hidden></span>
                     </div>
-                    <br />
-                    <br />
 
                     <asp:Panel ID="pnlImportPreaprationProgress" runat="server" CssClass="mb-5">
                         <h4>Step 1: Import Preparation</h4>

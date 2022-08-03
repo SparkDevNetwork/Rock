@@ -17,12 +17,14 @@
 using System;
 using System.Collections.Generic;
 using Rock;
+using Rock.Communication;
 
-public class PersonCSVMapper
+public class PersonCsvMapper
 {
-    public static Slingshot.Core.Model.Person Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
+    public static Slingshot.Core.Model.Person Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper, out HashSet<string> parserErrors )
     {
         var person = new Slingshot.Core.Model.Person();
+        parserErrors = new HashSet<string>();
 
         #region Required Fields
 
@@ -71,6 +73,12 @@ public class PersonCSVMapper
             if ( csvHeaderMapper.TryGetValue( "Email", out string csvColumnEmail ) )
             {
                 person.Email = csvEntryLookup[csvColumnEmail].ToStringSafe();
+                bool isEmailValid = EmailAddressFieldValidator.Validate( person.Email, allowMultipleAddresses: false, allowLava: false ) == EmailFieldValidationResultSpecifier.Valid;
+                if ( !isEmailValid )
+                {
+                    parserErrors.Add( $"Email Address {person.Email} could not be read" );
+                    person.Email = string.Empty;
+                }
             }
         }
 
@@ -82,6 +90,10 @@ public class PersonCSVMapper
                 {
                     person.Gender = GenderEnum;
                 }
+                else
+                {
+                    parserErrors.Add( $"Gender {genderString} is invalid defaulting to {person.Gender}" );
+                }
             }
         }
 
@@ -92,6 +104,10 @@ public class PersonCSVMapper
                 if ( Enum.TryParse( emailPreferenceString, out Slingshot.Core.Model.EmailPreference EmailPreferenceEnum ) )
                 {
                     person.EmailPreference = EmailPreferenceEnum;
+                }
+                else
+                {
+                    parserErrors.Add( $"Email Preference {emailPreferenceString} is invalid defaulting to {person.EmailPreference}" );
                 }
             }
         }
@@ -112,6 +128,10 @@ public class PersonCSVMapper
                 {
                     person.MaritalStatus = maritalStatusEnum;
                 }
+                else
+                {
+                    parserErrors.Add( $"Marital Status {martialStatusString} is invalid defaulting to {person.MaritalStatus}" );
+                }
             }
         }
 
@@ -122,6 +142,10 @@ public class PersonCSVMapper
                 if ( DateTime.TryParse( birthdateString, out DateTime birthdateDateTime ) )
                 {
                     person.Birthdate = birthdateDateTime;
+                }
+                else
+                {
+                    parserErrors.Add( $"Birthdate {birthdateString} could not be read" );
                 }
             }
         }
@@ -134,6 +158,10 @@ public class PersonCSVMapper
                 {
                     person.AnniversaryDate = AnniversaryDateTime;
                 }
+                else
+                {
+                    parserErrors.Add( $"Anniversary Date {anniversaryDateString} could not be read" );
+                }
             }
         }
 
@@ -144,6 +172,10 @@ public class PersonCSVMapper
                 if ( Enum.TryParse( recordStatusString, out Slingshot.Core.Model.RecordStatus RecordStatusEnum ) )
                 {
                     person.RecordStatus = RecordStatusEnum;
+                }
+                else
+                {
+                    parserErrors.Add( $"Record Status {recordStatusString} is invalid defaulting to {person.RecordStatus}" );
                 }
             }
         }
@@ -158,9 +190,14 @@ public class PersonCSVMapper
         {
             if ( csvHeaderMapper.TryGetValue( "Is Deceased", out string csvColumnIsDeceased ) )
             {
-                if ( Boolean.TryParse( csvColumnIsDeceased, out bool isDeceasedBoolean ) )
+                string isDeceasedString = csvEntryLookup[csvColumnIsDeceased].ToStringSafe();
+                if ( Boolean.TryParse( isDeceasedString, out bool isDeceasedBoolean ) )
                 {
                     person.IsDeceased = isDeceasedBoolean;
+                }
+                else
+                {
+                    parserErrors.Add( $"Could not set Is Deceased to {isDeceasedString} defaulting to \'{person.IsDeceased}\'" );
                 }
             }
         }
@@ -176,13 +213,6 @@ public class PersonCSVMapper
             if ( csvHeaderMapper.TryGetValue( "Grade", out string csvColumnGrade ) )
             {
                 person.Grade = csvEntryLookup[csvColumnGrade].ToStringSafe();
-            }
-        }
-
-        {
-            if ( csvHeaderMapper.TryGetValue( "Note", out string csvColumnNote ) )
-            {
-                person.Note = csvEntryLookup[csvColumnNote].ToStringSafe();
             }
         }
 
@@ -203,9 +233,14 @@ public class PersonCSVMapper
         {
             if ( csvHeaderMapper.TryGetValue( "Give Individually", out string csvColumnGivingIndividually ) )
             {
-                if ( Boolean.TryParse( csvColumnGivingIndividually, out bool givingIndividuallyBoolean ) )
+                string givingIndividuallyString = csvEntryLookup[csvColumnGivingIndividually].ToStringSafe();
+                if ( Boolean.TryParse( givingIndividuallyString, out bool givingIndividuallyBoolean ) )
                 {
                     person.GiveIndividually = givingIndividuallyBoolean;
+                }
+                else
+                {
+                    parserErrors.Add( $"Could not set Give Individually to {givingIndividuallyString} defaulting to \'{person.GiveIndividually}\'" );
                 }
             }
         }
@@ -218,6 +253,10 @@ public class PersonCSVMapper
                 {
                     person.CreatedDateTime = createdDateTime;
                 }
+                else
+                {
+                    parserErrors.Add( $"Created Date Time {createdDateTimeString} could not be read" );
+                }
             }
         }
 
@@ -228,6 +267,10 @@ public class PersonCSVMapper
                 if ( DateTime.TryParse( modifiedDateTimeString, out DateTime modifiedDateTime ) )
                 {
                     person.ModifiedDateTime = modifiedDateTime;
+                }
+                else
+                {
+                    parserErrors.Add( $"Modified Date Time {modifiedDateTimeString} could not be read" );
                 }
             }
         }

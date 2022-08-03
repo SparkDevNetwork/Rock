@@ -89,6 +89,13 @@ namespace Rock.Slingshot
             {
                 return true;
             }
+            // default the country to the Organization Country if not present
+            if ( personAddress.Country.IsNullOrWhiteSpace() )
+            {
+                personAddress.Country = GlobalAttributesCache.Get().OrganizationCountry;
+            }
+
+
             Location location = new Location
             {
                 Street1 = personAddress.Street1,
@@ -99,19 +106,29 @@ namespace Rock.Slingshot
                 Country = personAddress.Country
             };
 
-            // default the country to the Organization Country if not present
-            if ( location.Country.IsNullOrWhiteSpace() )
-            {
-                location.Country = GlobalAttributesCache.Get().OrganizationCountry;
-            }
             bool isAddressValid = LocationService.ValidateLocationAddressRequirements( location, out string errorMessage );
-
 
             if ( !isAddressValid )
             {
                 addressInvalidErrorMessage = $"{errorMessage} in Address: {location}";
             }
             return isAddressValid;
+        }
+
+        internal bool ValidatePhoneNumber( SlingshotCore.Model.PersonPhone personPhone, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            if ( string.IsNullOrEmpty( personPhone.PhoneNumber ) )
+            {
+                errorMessage = $"{personPhone.PhoneType} : The Phone Number is Empty";
+                return false;
+            }
+            bool isPhoneNumberValid = !string.IsNullOrEmpty( PhoneNumber.CleanNumber( personPhone.PhoneNumber ) );
+            if ( !isPhoneNumberValid )
+            {
+                errorMessage = $"{personPhone.PhoneType} : The phone number {personPhone.PhoneNumber} is not valid";
+            }
+            return isPhoneNumberValid;
         }
     }
 }

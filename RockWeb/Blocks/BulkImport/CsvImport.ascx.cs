@@ -32,13 +32,13 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.CVSImport
+namespace RockWeb.Blocks.BulkImport
 {
     [DisplayName( "CSV Import" )]
     [Category( "CSV Import" )]
     [Description( "Block to import data into Rock using the CSV files." )]
     [Rock.SystemGuid.BlockTypeGuid( "362C679C-9A7F-4A2B-9BB0-8683824BE892" )]
-    public partial class CSVImport : Rock.Web.UI.RockBlock
+    public partial class CsvImport : Rock.Web.UI.RockBlock
     {
         private const string ROCK_ATTRIBUTES_OPTION_NAME = "Attributes";
         private const string FIELD_OPTION_NAME = "Field";
@@ -84,11 +84,11 @@ namespace RockWeb.Blocks.CVSImport
             "Middle Name",
             "Mobile Phone",
             "Modified Date Time",
+            "Nick Name",
             "Note",
             "Record Status",
             "Suffix",
-            "TitleValueId",
-            "Nick Name" };
+            "TitleValueId" };
 
         private static readonly HashSet<string> allowedPeronsAttributeFieldTypeClassNames = new HashSet<string> { "Rock.Field.Types.TextFieldType",
             "Rock.Field.Types.BooleanFieldType",
@@ -119,8 +119,6 @@ namespace RockWeb.Blocks.CVSImport
         {
             base.OnInit( e );
             RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
-            Array.Sort( requiredFields );
-            Array.Sort( optionalFields );
         }
 
         protected override void OnLoad( EventArgs e )
@@ -145,31 +143,33 @@ namespace RockWeb.Blocks.CVSImport
                 {
                     rblpreviousSourceDescription.Required = false;
                     rblpreviousSourceDescription.Visible = false;
-                    lbToggleSourceDescription.Visible = false;
+                    lbAddSourceDescription.Visible = false;
                     tbpreviousSourceDescription.Visible = true;
                     tbpreviousSourceDescription.Required = true;
                 }
 
                 Guid suffixGUID = Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid();
-                lsuffixlist.Text = DefinedTypeCache.Get( suffixGUID ).DefinedValues.Select( dv => dv.Value ).ToList().AsDelimited( ", " );
+                lsuffixlist.Text = $"({DefinedTypeCache.Get( suffixGUID ).DefinedValues.Take( 50 ).Select( dv => dv.Value ).ToList().AsDelimited( ", " )})";
 
                 Guid connectionStatusGUID = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid();
-                lconnectionStatusList.Text = DefinedTypeCache.Get( connectionStatusGUID ).DefinedValues.Select( dv => dv.Value ).ToList().AsDelimited( ", " );
+                lconnectionStatusList.Text = $"({DefinedTypeCache.Get( connectionStatusGUID ).DefinedValues.Take( 50 ).Select( dv => dv.Value ).ToList().AsDelimited( ", " )})";
 
                 Guid gradeGUID = Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid();
-                lgrade.Text = DefinedTypeCache.Get( gradeGUID ).DefinedValues.Select( definedValue => definedValue.Description ).ToList().AsDelimited( ", " );
+                var gradeAbbreviations = DefinedTypeCache.Get( gradeGUID ).DefinedValues.Take( 50 ).Select( a => a.AttributeValues["Abbreviation"]?.Value )
+                    .Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
+                lgrade.Text = $"({ gradeAbbreviations.AsDelimited( ", " ) })";
 
-                var emailPreferenceNames = Enum.GetNames( typeof( Slingshot.Core.Model.EmailPreference ) ).ToList();
-                lemailPreferenceList.Text = emailPreferenceNames.AsDelimited( ", " );
+                var emailPreferenceNames = Enum.GetNames( typeof( Slingshot.Core.Model.EmailPreference ) ).Take( 50 ).ToList();
+                lemailPreferenceList.Text = $"({emailPreferenceNames.AsDelimited( ", " )})";
 
-                var genderNames = Enum.GetNames( typeof( Slingshot.Core.Model.Gender ) ).ToList();
-                lgenderList.Text = genderNames.AsDelimited( ", " );
+                var genderNames = Enum.GetNames( typeof( Slingshot.Core.Model.Gender ) ).Take( 50 ).ToList();
+                lgenderList.Text = $"({genderNames.AsDelimited( ", " )})";
 
-                var maritalStatusNames = Enum.GetNames( typeof( Slingshot.Core.Model.MaritalStatus ) ).ToList();
-                lmaritalStatusList.Text = maritalStatusNames.AsDelimited( ", " );
+                var maritalStatusNames = Enum.GetNames( typeof( Slingshot.Core.Model.MaritalStatus ) ).Take( 50 ).ToList();
+                lmaritalStatusList.Text = $"({maritalStatusNames.AsDelimited( ", " )})";
 
-                var recordStatusNames = Enum.GetNames( typeof( Slingshot.Core.Model.RecordStatus ) ).ToList();
-                lrecordStatusList.Text = recordStatusNames.AsDelimited( ", " );
+                var recordStatusNames = Enum.GetNames( typeof( Slingshot.Core.Model.RecordStatus ) ).Take( 50 ).ToList();
+                lrecordStatusList.Text = $"({recordStatusNames.AsDelimited( ", " )})";
             }
         }
 
@@ -203,6 +203,18 @@ namespace RockWeb.Blocks.CVSImport
                 csvReader.Configuration.HasHeaderRecord = true;
                 csvReader.Read();
                 string[] fieldHeaders = csvReader.FieldHeaders;
+                string duplicateHeadersList = fieldHeaders.GroupBy( fh => fh )
+                    .Where( g => g.Count() > 1 )
+                    .Select( y => y.Key )
+                    .ToList()
+                    .AsDelimited( ", ", " and " );
+                bool headerContainsDuplicate = !string.IsNullOrEmpty( duplicateHeadersList );
+                if ( headerContainsDuplicate )
+                {
+                    nbDuplicateHeadersInFile.Text = $"The File has the duplicated headers: {duplicateHeadersList}. Please fix it and upload again.";
+                    nbDuplicateHeadersInFile.Visible = true;
+                    return;
+                }
                 rptCSVHeaders.DataSource = fieldHeaders;
                 rptCSVHeaders.DataBind();
             }
@@ -253,7 +265,7 @@ namespace RockWeb.Blocks.CVSImport
                 ? rblpreviousSourceDescription.SelectedValue
                 : tbpreviousSourceDescription.Text;
 
-            var csvSlingshotImporter = new CSVSlingshotImporter( personCSVFileName, sourceDescription, defaultDataType, bulkImportType, CSVSlingshotImporter_OnProgress );
+            var csvSlingshotImporter = new CsvSlingshotImporter( personCSVFileName, sourceDescription, defaultDataType, bulkImportType, CSVSlingshotImporter_OnProgress );
             ViewState["CSVImporterErrorsFilePath"] = csvSlingshotImporter.ErrorCSVfilename;
 
             var task = new Task( () =>
@@ -301,19 +313,32 @@ namespace RockWeb.Blocks.CVSImport
             ViewState["PropertiesMapping"] = propertiesMapping;
         }
 
-        protected void lbToggleSourceDescription_Click( object sender, EventArgs e )
+        protected void lbAddSourceDescription_Click( object sender, EventArgs e )
         {
             rblpreviousSourceDescription.Required = false;
             rblpreviousSourceDescription.Visible = false;
-            lbToggleSourceDescription.Visible = false;
+            lbAddSourceDescription.Visible = false;
             tbpreviousSourceDescription.Visible = true;
             tbpreviousSourceDescription.Required = true;
+            rblpreviousSourceDescription.Required = false;
+            lbChooseSourceDescription.Visible = true;
+        }
+
+        protected void lbChooseSourceDescription_Click( object sender, EventArgs e )
+        {
+            rblpreviousSourceDescription.Required = true;
+            rblpreviousSourceDescription.Visible = true;
+            lbAddSourceDescription.Visible = true;
+            tbpreviousSourceDescription.Visible = false;
+            tbpreviousSourceDescription.Required = false;
+            rblpreviousSourceDescription.Required = true;
+            lbChooseSourceDescription.Visible = false;
         }
 
         private ListItem[] CreateListItemsDropDown()
         {
             ListItem[] rockAttributeArray = AttributeCache.GetPersonAttributes( allowedPeronsAttributeFieldTypeClassNames )
-                .Select( attribute => new ListItem( attribute.Name ) )
+                .Select( attribute => new ListItem( attribute.Name, attribute.Key ) ) // attribute key is used by the Slingshot Importer to map the attributes.
                 .ToArray();
             foreach ( ListItem rockAttribute in rockAttributeArray )
             {
@@ -350,7 +375,7 @@ namespace RockWeb.Blocks.CVSImport
         /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
         private void CSVSlingshotImporter_OnProgress( object sender, object e )
         {
-            var csvSlingshotImporter = sender as CSVSlingshotImporter;
+            var csvSlingshotImporter = sender as CsvSlingshotImporter;
 
             bool isPersonImportMessage = e is string && e.ToString().StartsWith( "Bulk Importing Person" );
 

@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using Rock;
 
-class PersonAddressCSVMapper
+class PersonAddressCsvMapper
 {
     public static Slingshot.Core.Model.PersonAddress Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
     {
