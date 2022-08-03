@@ -223,4 +223,7 @@
   <data name="_153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>153_fixerastartdate_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>157_migrationrollupsfor13_7_0_chartshortcodeyaxislabelfix.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
