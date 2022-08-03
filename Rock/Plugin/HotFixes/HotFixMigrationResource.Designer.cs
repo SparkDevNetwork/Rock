@@ -366,8 +366,8 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to /*
-        ///
+        ///   Looks up a localized string similar to 
+        ////*
         ///&lt;doc&gt;
         /// &lt;summary&gt;
         ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
@@ -829,6 +829,25 @@ namespace Rock.Plugin.HotFixes {
         public static string _153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset {
             get {
                 return ResourceManager.GetString("_153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{%- if type == &apos;&apos;gauge&apos;&apos; or type == &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {% javascript url:&apos;&apos;~/Scripts/Chartjs/Gauge.js&apos;&apos; id:&apos;&apos;gaugejs&apos;&apos;%}{% endjavascript %}
+        ///{%- endif -%}
+        ///
+        ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
+        ///    {%- assign xaxistype = &apos;&apos;stacked&apos;&apos; -% [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix {
+            get {
+                return ResourceManager.GetString("_157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix", resourceCulture);
             }
         }
     }

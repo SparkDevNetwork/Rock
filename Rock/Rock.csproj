@@ -1183,6 +1183,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Plugin\HotFixes\155_BackgroundCheckPersonEmailValidFix.cs" />
+    <Compile Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0.cs" />
     <Compile Include="Plugin\HotFixes\156_CorrectBlockCategories.cs" />
     <Compile Include="Plugin\HotFixes\147_MigrationRolupsFor13_1.cs" />
     <Compile Include="Pdf\PdfGenerator.cs" />
@@ -3815,6 +3816,7 @@
     <Content Include="Plugin\HotFixes\153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
