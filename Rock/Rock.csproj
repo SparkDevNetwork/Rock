@@ -816,11 +816,16 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
+    <Compile Include="Field\IReferencedEntityFieldType.cs" />
+    <Compile Include="Field\PersistedValues.cs" />
+    <Compile Include="Field\ReferencedEntity.cs" />
+    <Compile Include="Field\ReferencedProperty.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
+    <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.Logic.cs" />
@@ -841,6 +846,9 @@
     <Compile Include="Model\CMS\RequestFilter\RequestFilterService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
+    <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
+    <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />

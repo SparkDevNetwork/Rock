@@ -1085,6 +1085,55 @@ namespace Rock.Field
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public virtual bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public virtual bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Rock native field types by default are not volatile, third
+            // party field types are volatile by default.
+            if ( GetType().Assembly == typeof( FieldType ).Assembly )
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetPersistedValuePlaceholder( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "Unsupported persisted value";
+        }
+
+        /// <inheritdoc/>
+        public virtual bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public virtual PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return new PersistedValues
+            {
+                TextValue = GetTextValue( privateValue, privateConfigurationValues ),
+                HtmlValue = GetHtmlValue( privateValue, privateConfigurationValues ),
+                CondensedTextValue = GetCondensedTextValue( privateValue, privateConfigurationValues ),
+                CondensedHtmlValue = GetCondensedHtmlValue( privateValue, privateConfigurationValues )
+            };
+        }
+
+        #endregion
+
         #region Event Handlers
 
         /// <summary>

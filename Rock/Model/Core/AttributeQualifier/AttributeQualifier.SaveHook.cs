@@ -22,27 +22,14 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    public partial class Attribute
+    public partial class AttributeQualifier
     {
         /// <summary>
-        /// Save hook implementation for <see cref="Attribute"/>.
+        /// Save hook implementation for <see cref="AttributeQualifier"/>.
         /// </summary>
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
-        internal class SaveHook : EntitySaveHook<Attribute>
+        internal class SaveHook : EntitySaveHook<AttributeQualifier>
         {
-            /// <summary>
-            /// Called before the save operation is executed.
-            /// </summary>
-            protected override void PreSave()
-            {
-                if ( State == EntityContextState.Modified || State == EntityContextState.Deleted )
-                {
-                    Entity.originalEntityTypeId = Entry.OriginalValues[nameof(Attribute.EntityTypeId)]?.ToString().AsIntegerOrNull();
-                    Entity.originalEntityTypeQualifierColumn = Entry.OriginalValues[nameof( Attribute.EntityTypeQualifierColumn )]?.ToString();
-                    Entity.originalEntityTypeQualifierValue = Entry.OriginalValues[nameof( Attribute.EntityTypeQualifierValue )]?.ToString();
-                }
-            }
-
             /// <inheritdoc/>
             protected override void PostSave()
             {

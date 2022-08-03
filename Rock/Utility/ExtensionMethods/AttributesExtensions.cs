@@ -539,6 +539,210 @@ namespace Rock
             return attributeValueQuery;
         }
 
+        /// <summary>
+        /// Gets the attribute value cache objects for the specified key.
+        /// </summary>
+        /// <param name="entity">The entity whose attributes are to be searched.</param>
+        /// <param name="key">The attribute key to search for.</param>
+        /// <returns>The <see cref="AttributeCache"/> and optionally the <see cref="AttributeValueCache"/> if it is valid.</returns>
+        private static (AttributeCache AttributeCache, AttributeValueCache ValueCache) GetAttributeValueCache( IHasAttributes entity, string key )
+        {
+            if ( entity == null )
+            {
+                return (null, null);
+            }
+
+            AttributeValueCache valueCache = null;
+
+            if ( entity.AttributeValues != null && entity.AttributeValues.ContainsKey( key ) )
+            {
+                valueCache = entity.AttributeValues[key];
+            }
+
+            if ( entity.Attributes != null && entity.Attributes.ContainsKey(key))
+            {
+                return (entity.Attributes[key], valueCache);
+            }
+
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Gets the attribute text value.
+        /// </summary>
+        /// <param name="entity">The entity whose attribute value is to being retrieved.</param>
+        /// <param name="key">The key that identifies the attribute.</param>
+        /// <param name="usePersistedOnly">if set to <c>true</c> then the persisted values will be used even if they are not valid.</param>
+        /// <returns>A <see cref="string"/> that represents the attribute text value.</returns>
+        internal static string GetAttributeTextValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
+        {
+            (var attributeCache, var valueCache) = GetAttributeValueCache( entity, key );
+
+            if ( attributeCache == null )
+            {
+                return null;
+            }
+
+            // Use the persisted value if it is forced or supported.
+            if ( usePersistedOnly || attributeCache.IsPersistedValueSupported )
+            {
+                if ( valueCache != null )
+                {
+                    if ( usePersistedOnly || !valueCache.IsPersistedValueDirty )
+                    {
+                        return valueCache.PersistedTextValue;
+                    }
+                }
+                else
+                {
+                    if ( usePersistedOnly || !attributeCache.IsDefaultPersistedValueDirty )
+                    {
+                        return attributeCache.DefaultPersistedTextValue;
+                    }
+                }
+            }
+
+            // No persisted value available and it isn't forced so calculate.
+            var rawValue = valueCache?.Value ?? attributeCache.DefaultValue;
+            var field = attributeCache.FieldType.Field;
+
+            return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
+        }
+
+        /// <summary>
+        /// Gets the attribute HTML value.
+        /// </summary>
+        /// <param name="entity">The entity whose attribute value is to being retrieved.</param>
+        /// <param name="key">The key that identifies the attribute.</param>
+        /// <param name="usePersistedOnly">if set to <c>true</c> then the persisted values will be used even if they are not valid.</param>
+        /// <returns>A <see cref="string"/> that represents the attribute HTML value.</returns>
+        internal static string GetAttributeHtmlValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
+        {
+            (var attributeCache, var valueCache) = GetAttributeValueCache( entity, key );
+
+            if ( attributeCache == null )
+            {
+                return null;
+            }
+
+            // Use the persisted value if it is forced or supported.
+            if ( usePersistedOnly || attributeCache.IsPersistedValueSupported )
+            {
+                if ( valueCache != null )
+                {
+                    if ( usePersistedOnly || !valueCache.IsPersistedValueDirty )
+                    {
+                        return valueCache.PersistedHtmlValue;
+                    }
+                }
+                else
+                {
+                    if ( usePersistedOnly || !attributeCache.IsDefaultPersistedValueDirty )
+                    {
+                        return attributeCache.DefaultPersistedHtmlValue;
+                    }
+                }
+            }
+
+            // No persisted value available and it isn't forced so calculate.
+            var rawValue = valueCache?.Value ?? attributeCache.DefaultValue;
+            var field = attributeCache.FieldType.Field;
+
+            return field?.GetHtmlValue( rawValue, attributeCache.ConfigurationValues );
+        }
+
+        /// <summary>
+        /// Gets the attribute condensed text value.
+        /// </summary>
+        /// <remarks>
+        /// The condensed text value should be used instead of the text value
+        /// when space is limited where it will be displayed.
+        /// </remarks>
+        /// <param name="entity">The entity whose attribute value is to being retrieved.</param>
+        /// <param name="key">The key that identifies the attribute.</param>
+        /// <param name="usePersistedOnly">if set to <c>true</c> then the persisted values will be used even if they are not valid.</param>
+        /// <returns>A <see cref="string"/> that represents the attribute condensed text value.</returns>
+        internal static string GetAttributeCondensedTextValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
+        {
+            (var attributeCache, var valueCache) = GetAttributeValueCache( entity, key );
+
+            if ( attributeCache == null )
+            {
+                return null;
+            }
+
+            // Use the persisted value if it is forced or supported.
+            if ( usePersistedOnly || attributeCache.IsPersistedValueSupported )
+            {
+                if ( valueCache != null )
+                {
+                    if ( usePersistedOnly || !valueCache.IsPersistedValueDirty )
+                    {
+                        return valueCache.PersistedCondensedTextValue;
+                    }
+                }
+                else
+                {
+                    if ( usePersistedOnly || !attributeCache.IsDefaultPersistedValueDirty )
+                    {
+                        return attributeCache.DefaultPersistedCondensedTextValue;
+                    }
+                }
+            }
+
+            // No persisted value available and it isn't forced so calculate.
+            var rawValue = valueCache?.Value ?? attributeCache.DefaultValue;
+            var field = attributeCache.FieldType.Field;
+
+            return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
+        }
+
+        /// <summary>
+        /// Gets the attribute condensed HTML value.
+        /// </summary>
+        /// <remarks>
+        /// The condensed HTML value should be used instead of the HTML value
+        /// when space is limited where it will be displayed.
+        /// </remarks>
+        /// <param name="entity">The entity whose attribute value is to being retrieved.</param>
+        /// <param name="key">The key that identifies the attribute.</param>
+        /// <param name="usePersistedOnly">if set to <c>true</c> then the persisted values will be used even if they are not valid.</param>
+        /// <returns>A <see cref="string"/> that represents the attribute condensed HTML value.</returns>
+        internal static string GetAttributeCondensedHtmlValue( this IHasAttributes entity, string key, bool usePersistedOnly = false )
+        {
+            (var attributeCache, var valueCache) = GetAttributeValueCache( entity, key );
+
+            if ( attributeCache == null )
+            {
+                return null;
+            }
+
+            // Use the persisted value if it is forced or supported.
+            if ( usePersistedOnly || attributeCache.IsPersistedValueSupported )
+            {
+                if ( valueCache != null )
+                {
+                    if ( usePersistedOnly || !valueCache.IsPersistedValueDirty )
+                    {
+                        return valueCache.PersistedCondensedHtmlValue;
+                    }
+                }
+                else
+                {
+                    if ( usePersistedOnly || !attributeCache.IsDefaultPersistedValueDirty )
+                    {
+                        return attributeCache.DefaultPersistedCondensedHtmlValue;
+                    }
+                }
+            }
+
+            // No persisted value available and it isn't forced so calculate.
+            var rawValue = valueCache?.Value ?? attributeCache.DefaultValue;
+            var field = attributeCache.FieldType.Field;
+
+            return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
+        }
+
         #endregion IHasAttributes extensions
     }
 }
