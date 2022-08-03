@@ -19,6 +19,11 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Crm.AssessmentTypeDetail
 {
+    /// <summary>
+    /// Class AssessmentTypeBag.
+    /// Implements the <see cref="Rock.ViewModels.Utility.EntityBagBase" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class AssessmentTypeBag : EntityBagBase
     {
         /// <summary>

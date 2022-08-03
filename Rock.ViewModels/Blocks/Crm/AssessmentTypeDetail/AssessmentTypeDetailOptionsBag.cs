@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Crm.AssessmentTypeDetail
 {
+    /// <summary>
+    /// Class AssessmentTypeDetailOptionsBag.
+    /// </summary>
     public class AssessmentTypeDetailOptionsBag
     {
     }
