@@ -57,9 +57,17 @@ namespace Rock.Lava.Blocks
         public static readonly string TagSourceName = "personalize";
 
         private string _attributesMarkup;
+        private List<string> _tokens;
         private bool _renderErrors = true;
-
+        private string matchContent = null;
+        private string elseContent = null;
+        //private static readonly string _tagElseText = "{%else"
         LavaElementAttributes _settings = new LavaElementAttributes();
+
+        public PersonalizeBlock()
+        {
+            this.IncludeClosingTokenInParseResult = false;
+        }
 
         /// <summary>
         /// Initializes the specified tag name.
@@ -70,6 +78,34 @@ namespace Rock.Lava.Blocks
         public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
             _attributesMarkup = markup;
+            _tokens = tokens;
+
+            // Get the internal content of the block. The list of tokens passed in to custom blocks includes the block closing tag,
+            // We need to remove the unmatched closing tag to get the valid internal markup for the block.
+            var elseFound = false;
+            foreach ( var token in tokens )
+            {
+                var scanToken = token.Replace( " ", "" ).Replace( "-", "" ).ToLower();
+                if ( scanToken == "{%else%}" )
+                {
+                    if ( elseFound )
+                    {
+                        // If more than one else tag exists, throw an error.
+                        throw new Exception( "Unexpected {% else %} encountered." );
+                    }
+                    elseFound = true;
+                    continue;
+                }
+
+                if ( elseFound )
+                {
+                    elseContent += token;
+                }
+                else
+                {
+                    matchContent += token;
+                }
+            }
 
             base.OnInitialize( tagName, markup, tokens );
         }
@@ -86,10 +122,20 @@ namespace Rock.Lava.Blocks
                 _settings.ParseFromMarkup( _attributesMarkup, context );
 
                 var showContent = ShowContentForCurrentRequest( context );
+
+                var content = ( showContent ) ? matchContent : elseContent;
                 if ( showContent )
                 {
-                    base.OnRender( context, result );
+                    // Show content prior to the {% else %} tag.
+                    content = matchContent;
                 }
+                else
+                {
+                    // Show content after the {% else %} tag.
+                    content = elseContent;
+                }
+
+                result.Write( content );
             }
             catch ( Exception ex )
             {

@@ -381,6 +381,40 @@ Request matches filter: QUERY_2.
                 inputUrl: "http://rock.rocksolidchurchdemo.com?parameter2=true" );
         }
 
+        [TestMethod]
+        public void PersonalizeBlock_WithElseClauseAndPositiveMatch_ShowsContentForMatch()
+        {
+            var input = @"
+{% personalize requestfilter:'QUERY_1' %}
+Match!
+{% else %}
+No match!
+{% endpersonalize %}
+";
+            var expectedOutput = @"Match!";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true" );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_WithElseClauseAndNegativeMatch_ShowsContentForNoMatch()
+        {
+            var input = @"
+{% personalize requestfilter:'QUERY_1' result:'' %}
+Match!
+{% else %}
+No match!
+{% endpersonalize %}
+";
+            var expectedOutput = @"No match!";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                inputUrl: "http://rock.rocksolidchurchdemo.com" );
+        }
+
         #endregion
 
         #region PersonalizationItems Filter
@@ -536,12 +570,12 @@ Request matches filter: QUERY_2.
                 var simulator = new HttpSimulator();
                 using ( var request = simulator.SimulateRequest( new Uri( inputUrl ) ) )
                 {
-                    TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
+                    TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, inputTemplate, options );
                 }
             }
             else
             {
-                TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
+                TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, inputTemplate, options );
             }
         }
     }

@@ -110,13 +110,17 @@ namespace Rock.Lava.Fluid
 
             // Custom Lava blocks expect to be passed a set of tokens for the block that excludes the opening tag and includes the closing tag.
             // This behavior needs to be preserved for compatibility with prior implementations of the Lava library.
-            if ( _tagFormat == LavaTagFormatSpecifier.LavaShortcode )
+            var blockBase = lavaBlock as LavaBlockBase;
+            if ( blockBase?.IncludeClosingTokenInParseResult ?? false )
             {
-                tokens.Add( $"{{[ end{_tagName} ]}}" );
-            }
-            else
-            {
-                tokens.Add( $"{{% end{_tagName} %}}" );
+                if ( _tagFormat == LavaTagFormatSpecifier.LavaShortcode )
+                {
+                    tokens.Add( $"{{[ end{_tagName} ]}}" );
+                }
+                else
+                {
+                    tokens.Add( $"{{% end{_tagName} %}}" );
+                }
             }
 
             // Initialize the block, then allow it to post-process the tokens parsed from the source template.
