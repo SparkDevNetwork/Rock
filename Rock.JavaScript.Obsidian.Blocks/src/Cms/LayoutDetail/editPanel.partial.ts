@@ -18,6 +18,7 @@
 import { defineComponent, PropType, ref, watch } from "vue";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import TextBox from "@Obsidian/Controls/textBox";
+import DropDownList from "@Obsidian/Controls/dropDownList";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { LayoutBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutDetail/layoutBag";
@@ -40,6 +41,7 @@ export default defineComponent({
 
     components: {
         AttributeValuesContainer,
+        DropDownList,
         TextBox
     },
 
@@ -121,6 +123,12 @@ export default defineComponent({
     <TextBox v-model="description"
         label="Description"
         textMode="multiline" />
+
+    <DropDownList
+        v-model="fileName"
+        label="Layout File"
+        help="The layout file that this layout should use"
+        :items="layoutFileOptions" />
 
     <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 </fieldset>

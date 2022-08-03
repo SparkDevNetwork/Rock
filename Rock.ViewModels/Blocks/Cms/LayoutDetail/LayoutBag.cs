@@ -33,6 +33,11 @@ namespace Rock.ViewModels.Blocks.Cms.LayoutDetail
         public string FileName { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if this Layout was created by and is a part of the Rock core system/framework. This property is required.
+        /// </summary>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
         /// Gets or sets the layout mobile phone.
         /// </summary>
         public string LayoutMobilePhone { get; set; }

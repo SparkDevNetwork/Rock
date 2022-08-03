@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -26,6 +27,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.LayoutDetail;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
 {
@@ -91,6 +94,29 @@ namespace Rock.Blocks.Cms
         private LayoutDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
             var options = new LayoutDetailOptionsBag();
+            options.LayoutFileOptions = new List<ViewModels.Utility.ListItemBag>();
+            var entity = GetInitialEntity( rockContext );
+
+            var site = SiteCache.Get( entity.SiteId );
+            if ( site != null )
+            {
+                var physicalRootFolder = AppDomain.CurrentDomain.BaseDirectory;
+                var virtualThemeLayoutFolder = $"~/Themes/{site.Theme}/Layouts";
+                string physicalFolder = Path.Combine( physicalRootFolder, $"Themes\\{site.Theme}\\Layouts" );
+
+                DirectoryInfo di = new DirectoryInfo( physicalFolder );
+                if ( di.Exists )
+                {
+                    foreach ( var file in di.GetFiles( "*.aspx", SearchOption.AllDirectories ) )
+                    {
+                        options.LayoutFileOptions.Add( new ListItemBag
+                        {
+                            Text = file.FullName.Replace( physicalFolder, virtualThemeLayoutFolder ).Replace( @"\", "/" ),
+                            Value = Path.GetFileNameWithoutExtension( file.Name )
+                        } );
+                    }
+                }
+            }
 
             return options;
         }
@@ -123,8 +149,8 @@ namespace Rock.Blocks.Cms
 
             if ( entity != null )
             {
-                var isViewable = entity.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = BlockCache.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -181,6 +207,7 @@ namespace Rock.Blocks.Cms
                 IdKey = entity.IdKey,
                 Description = entity.Description,
                 FileName = entity.FileName,
+                IsSystem = entity.IsSystem,
                 LayoutMobilePhone = entity.LayoutMobilePhone,
                 LayoutMobileTablet = entity.LayoutMobileTablet,
                 Name = entity.Name,
@@ -253,6 +280,9 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Entity.FileName ),
                 () => entity.FileName = box.Entity.FileName );
+
+            box.IfValidProperty( nameof( box.Entity.IsSystem ),
+                () => entity.IsSystem = box.Entity.IsSystem );
 
             box.IfValidProperty( nameof( box.Entity.LayoutMobilePhone ),
                 () => entity.LayoutMobilePhone = box.Entity.LayoutMobilePhone );
@@ -373,7 +403,7 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Layout.FriendlyTypeName}." );
                 return false;
@@ -454,7 +484,8 @@ namespace Rock.Blocks.Cms
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                     {
-                        [PageParameterKey.LayoutId] = entity.IdKey
+                        [PageParameterKey.LayoutId] = entity.IdKey,
+                        [PageParameterKey.SiteId] = entity.SiteId.ToString()
                     } ) );
                 }
 

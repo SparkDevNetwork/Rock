@@ -16,6 +16,7 @@
 //
 
 import { computed, defineComponent, PropType, ref } from "vue";
+import Alert from "@Obsidian/Controls/alert";
 import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
@@ -39,6 +40,7 @@ export default defineComponent({
     },
 
     components: {
+        Alert,
         AttributeValuesContainer,
         ValueDetailList
     },
@@ -52,6 +54,8 @@ export default defineComponent({
         // #endregion
 
         // #region Computed Values
+
+        const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
 
         /** The values to display full-width at the top of the block. */
         const topValues = computed((): ValueDetailListItem[] => {
@@ -103,6 +107,7 @@ export default defineComponent({
         return {
             attributes,
             attributeValues,
+            isSystem,
             leftSideValues,
             rightSideValues,
             topValues
@@ -111,6 +116,9 @@ export default defineComponent({
 
     template: `
 <fieldset>
+    <Alert v-if="isSystem" alertType="info">
+        <strong>Note</strong> Because this layout is used by Rock, editing is restricted.
+    </Alert>
 
     <ValueDetailList :modelValue="topValues" />
 
