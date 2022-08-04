@@ -398,7 +398,7 @@ namespace Rock.Field.Types
             // should have its persisted values updated when changed.
             return new List<ReferencedProperty>
             {
-                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.FirstName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<PersonAlias>().Value, nameof( PersonAlias.PersonId ) ),
             };
