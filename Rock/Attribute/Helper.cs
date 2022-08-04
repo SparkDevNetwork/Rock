@@ -1713,7 +1713,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             }
             else
             {
-                var placeholder = field?.GetPersistedValuePlaceholder( configuration ) ?? "Unsupported persisted value";
+                var placeholder = field?.GetPersistedValuePlaceholder( configuration ) ?? Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported;
 
                 attribute.DefaultPersistedTextValue = placeholder;
                 attribute.DefaultPersistedHtmlValue = placeholder;
@@ -2142,7 +2142,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
             else
             {
                 var placeholder = field.GetPersistedValuePlaceholder( attribute.ConfigurationValues )
-                    ?? "Unsupported persisted value";
+                    ?? Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported;
 
                 attributeValue.PersistedTextValue = placeholder;
                 attributeValue.PersistedHtmlValue = placeholder;

@@ -1111,7 +1111,7 @@ namespace Rock.Field
         /// <inheritdoc/>
         public virtual string GetPersistedValuePlaceholder( Dictionary<string, string> privateConfigurationValues )
         {
-            return "Unsupported persisted value";
+            return Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported;
         }
 
         /// <inheritdoc/>
