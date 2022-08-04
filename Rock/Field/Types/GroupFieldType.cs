@@ -212,7 +212,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            Guid? guid = privateValue.AsGuidOrNull();
+            var guid = privateValue.AsGuidOrNull();
 
             if ( !guid.HasValue )
             {
