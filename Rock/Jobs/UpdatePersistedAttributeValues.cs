@@ -241,7 +241,7 @@ namespace Rock.Jobs
             }
 
             // Check if this field type references other entities.
-            if ( !( field is Rock.Field.IReferencedEntityFieldType referencedField ) )
+            if ( !( field is Rock.Field.IEntityReferenceFieldType referencedField ) )
             {
                 return updatedCount;
             }
@@ -496,7 +496,7 @@ namespace Rock.Jobs
         private void UpdateDirtyAttributeValueReferences( int attributeId, string value, List<int> attributeValueIds, RockContext rockContext )
         {
             var attributeCache = AttributeCache.Get( attributeId );
-            var field = ( Field.IReferencedEntityFieldType ) AttributeCache.Get( attributeId ).FieldType.Field;
+            var field = ( Field.IEntityReferenceFieldType ) AttributeCache.Get( attributeId ).FieldType.Field;
             var referencedEntities = field.GetReferencedEntities( value, attributeCache.ConfigurationValues );
 
             while ( attributeValueIds.Any() )

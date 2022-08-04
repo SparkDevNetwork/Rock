@@ -23,7 +23,7 @@ namespace Rock.Field
     /// for changes. When a change is detected then the persisted values will
     /// automatically update.
     /// </summary>
-    internal interface IReferencedEntityFieldType
+    internal interface IEntityReferenceFieldType
     {
         /// <summary>
         /// Gets the referenced entities for the given raw value.

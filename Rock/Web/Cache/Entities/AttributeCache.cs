@@ -548,7 +548,7 @@ namespace Rock.Web.Cache
             CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
 
             IsPersistedValueSupported = FieldType.Field?.IsPersistedValueSupported( ConfigurationValues ) == true;
-            IsReferencedEntityFieldType = FieldType?.Field is IReferencedEntityFieldType;
+            IsReferencedEntityFieldType = FieldType?.Field is IEntityReferenceFieldType;
         }
 
         /// <summary>
@@ -850,11 +850,11 @@ namespace Rock.Web.Cache
         private static Dictionary<int, Dictionary<string, List<int>>> GetAttributePropertyDependencies()
         {
             var dependencies = new Dictionary<int, Dictionary<string, List<int>>>();
-            var attributes = All().Where( a => a.FieldType.Field is IReferencedEntityFieldType );
+            var attributes = All().Where( a => a.FieldType.Field is IEntityReferenceFieldType );
 
             foreach ( var attribute in attributes )
             {
-                var referencedProperties = ( ( IReferencedEntityFieldType ) attribute.FieldType.Field ).GetReferencedProperties( attribute.ConfigurationValues );
+                var referencedProperties = ( ( IEntityReferenceFieldType ) attribute.FieldType.Field ).GetReferencedProperties( attribute.ConfigurationValues );
 
                 foreach ( var referencedProperty in referencedProperties )
                 {

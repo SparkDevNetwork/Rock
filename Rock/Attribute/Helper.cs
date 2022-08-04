@@ -1929,7 +1929,7 @@ WHERE [AV].[AttributeId] = @AttributeId
                 .Where( re => re.AttributeValueId == attributeValue.Id )
                 .ToList();
 
-            var field = ( Rock.Field.IReferencedEntityFieldType ) attributeCache.FieldType.Field;
+            var field = ( Rock.Field.IEntityReferenceFieldType ) attributeCache.FieldType.Field;
             var referencedEntities = field.GetReferencedEntities( attributeValue.Value, attributeCache.ConfigurationValues ) ?? new List<Field.ReferencedEntity>();
 
             // Add references that don't already exist.
@@ -1980,7 +1980,7 @@ WHERE [AV].[AttributeId] = @AttributeId
                     continue;
                 }
 
-                var field = ( Rock.Field.IReferencedEntityFieldType ) attributeCache.FieldType.Field;
+                var field = ( Rock.Field.IEntityReferenceFieldType ) attributeCache.FieldType.Field;
                 var referencedEntities = field.GetReferencedEntities( attributeValue.Value, attributeCache.ConfigurationValues ) ?? new List<Field.ReferencedEntity>();
 
                 referenceDictionary.Add( attributeValue.Key, referencedEntities );
@@ -2075,7 +2075,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                 .Where( re => re.AttributeId == attribute.Id )
                 .ToList();
 
-            if ( !( FieldTypeCache.Get( attribute.FieldTypeId ).Field is Rock.Field.IReferencedEntityFieldType field ) )
+            if ( !( FieldTypeCache.Get( attribute.FieldTypeId ).Field is Rock.Field.IEntityReferenceFieldType field ) )
             {
                 return;
             }
