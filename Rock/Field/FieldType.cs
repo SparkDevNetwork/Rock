@@ -146,7 +146,7 @@ namespace Rock.Field
         [RockInternal]
         public virtual string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetCondensedTextValue( privateValue, privateConfigurationValues );
+            return GetHtmlValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>

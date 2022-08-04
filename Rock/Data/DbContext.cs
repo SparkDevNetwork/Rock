@@ -67,7 +67,7 @@ namespace Rock.Data
         /// A list of action delegates to execute once the data has been committed
         /// to the database.
         /// </summary>
-        private List<Action> _commitedActions;
+        private List<Action> _commitedActions = new List<Action>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
@@ -151,7 +151,6 @@ namespace Rock.Data
             {
                 _transactionInProgress = true;
                 _wrappedTransactionCompleted = new TaskCompletionSource<bool>();
-                _commitedActions = new List<Action>();
 
                 using ( var dbContextTransaction = this.Database.BeginTransaction() )
                 {
@@ -206,11 +205,6 @@ namespace Rock.Data
         /// <param name="action">The action delegate to execute after the changes have been committed.</param>
         internal void ExecuteAfterCommit( Action action )
         {
-            if ( _commitedActions == null )
-            {
-                throw new Exception( "Cannot add post-commit action when not in WrapTransaction or SaveChanges." );
-            }
-
             _commitedActions.Add( action );
         }
 
@@ -222,7 +216,7 @@ namespace Rock.Data
         {
             // Create a new array for committed actions. This is so that if
             // some action registers yet another action (not supported) then
-            // it will go into a void rather than cause an enumeration error.
+            // it will go into the next save rather than cause an enumeration error.
             var actions = _commitedActions;
             _commitedActions = new List<Action>();
 
@@ -290,11 +284,6 @@ namespace Rock.Data
             {
                 saveChangesResult.RecordsUpdated = base.SaveChanges();
                 return saveChangesResult;
-            }
-
-            if ( !_transactionInProgress )
-            {
-                _commitedActions = new List<Action>();
             }
 
             SaveErrorMessages = new List<string>();

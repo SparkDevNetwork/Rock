@@ -1478,8 +1478,6 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                         {
                             if ( attributeValues[attribute.Key].Value != model.AttributeValues[attribute.Key].Value )
                             {
-                                var attributeCache = AttributeCache.Get( attributeValues[attribute.Key].AttributeId );
-
                                 attributeValues[attribute.Key].Value = model.AttributeValues[attribute.Key].Value;
 
                                 attributeValuesThatWereChanged.Add( attributeValues[attribute.Key] );
@@ -1491,14 +1489,13 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                             var value = model.AttributeValues[attribute.Key].Value;
                             if ( value.IsNotNullOrWhiteSpace() )
                             {
-                                var attributeCache = AttributeCache.Get( model.AttributeValues[attribute.Key].AttributeId );
-
                                 var attributeValue = new AttributeValue();
                                 attributeValue.AttributeId = attribute.Id;
                                 attributeValue.EntityId = model.Id;
                                 attributeValue.Value = value;
 
                                 attributeValueService.Add( attributeValue );
+                                attributeValuesThatWereChanged.Add( attributeValue );
                             }
                         }
                     }
@@ -1604,7 +1601,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                             if ( attribute.IsReferencedEntityFieldType )
                             {
-                                UpdateAttributeValueEntityReferences( innerAttributeValue, rockContext );
+                                UpdateAttributeValueEntityReferences( innerAttributeValue, innerContext );
                             }
 
                             // Disable processing because this is a special update
@@ -1676,7 +1673,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                             if ( attribute.IsReferencedEntityFieldType )
                             {
-                                UpdateAttributeValueEntityReferences( innerAttributeValue, rockContext );
+                                UpdateAttributeValueEntityReferences( innerAttributeValue, innerContext );
                             }
 
                             // Disable processing because this is a special update
