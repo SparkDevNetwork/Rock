@@ -281,6 +281,19 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var personalizationSegmentId = hfPersonalizationSegmentId.Value.AsInteger();
+
+            // validate if request filter key unique
+            var isKeyDuplicate = PersonalizationSegmentCache.All()
+                .Where( ps => ps.Id != personalizationSegmentId && ps.SegmentKey == tbSegmentKey.Text )
+                .Any();
+            if ( isKeyDuplicate )
+            {
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Text = $"Key '{tbSegmentKey.Text}' is already present. Please choose a different key";
+                return;
+            }
+
             var rockContext = new RockContext();
 
             var filterDataViewId = dvpFilterDataView.SelectedValueAsId();
@@ -292,8 +305,6 @@ namespace RockWeb.Blocks.Cms
 
             var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
             PersonalizationSegment personalizationSegment;
-
-            var personalizationSegmentId = hfPersonalizationSegmentId.Value.AsInteger();
 
             if ( personalizationSegmentId == 0 )
             {
