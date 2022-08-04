@@ -147,7 +147,9 @@ WHERE [Guid] = 'E2DC5066-E44D-48C1-B0B9-EBF98BF88BB6'" );
             // Update service job.
             Sql( @"
 UPDATE [ServiceJob]
-SET [Class] = 'Rock.Jobs.IndexContentCollections'
+SET [Class] = 'Rock.Jobs.IndexContentCollections',
+    [Name] = 'Index Content Collections',
+    [Description] = 'A job that updates the content collections search index.'
 WHERE [Guid] = '61F411F1-D77B-4FBD-B698-5EBA3A3AE14D'" );
         }
 
