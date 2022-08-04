@@ -8,6 +8,9 @@
     <div class='row'>
         <div class='col-md-9'>
             <img src='{{ GroupMember.Person.PhotoUrl }}' width='75px' class='pull-left margin-r-md img-circle' />
+            <h4>
+                {{ ProgressTitle }}
+            </h4>
             <label>
                 Fundraising Progress
             </label>
