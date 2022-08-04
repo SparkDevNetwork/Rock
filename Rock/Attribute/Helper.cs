@@ -1411,6 +1411,8 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             {
                 using ( var innerContext = new RockContext() )
                 {
+                    // Don't use the cache because we aren't 100% confident it is
+                    // safe to hit the cache right now.
                     var innerAttribute = new AttributeService( innerContext ).Get( attribute.Id );
 
                     if ( innerAttribute == null )
@@ -1438,7 +1440,6 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                         Task.Run( () => BulkUpdateInvalidatedPersistedValues( attribute, newConfigurationValues ) );
                     }
                 }
-
             } );
 
             rockContext.SaveChanges();
