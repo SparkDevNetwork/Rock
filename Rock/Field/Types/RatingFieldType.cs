@@ -129,9 +129,46 @@ namespace Rock.Field.Types
             return 5;
         }
 
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldMax = oldPrivateConfigurationValues.GetValueOrNull( "max" ) ?? string.Empty;
+            var newMax = newPrivateConfigurationValues.GetValueOrNull( "max" ) ?? string.Empty;
+
+            if ( oldMax != newMax )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var rating = privateValue.AsInteger();
+            var maxRating = GetMaxRating( privateConfigurationValues );
+
+            return $"{rating} of {maxRating}";
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var rating = privateValue.AsInteger();
+            var sb = new StringBuilder();
+
+            for ( int i = 1; i <= GetMaxRating( privateConfigurationValues ); i++ )
+            {
+                sb.AppendFormat( "<i class='fa fa-rating{0}'></i>", i > rating ? "-unselected" : "-selected" );
+            }
+
+            return sb.ToString();
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -143,14 +180,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            int rating = value.AsInteger();
-            var sb = new StringBuilder();
-            for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
-            {
-                sb.AppendFormat( "<i class='fa fa-rating{0}'></i>", i > rating ? "-unselected" : "-selected" );
-            }
-
-            return sb.ToString();
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
