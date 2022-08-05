@@ -297,6 +297,35 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Badge Picker
+
+        /// <summary>
+        /// Get the list of Badge types for use in a Badge Picker.
+        /// </summary>
+        /// <returns>A list of badge types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BadgePickerGetBadges" )]
+        [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
+        public IHttpActionResult BadgePickerGetBadges( [FromBody] BadgePickerGetBadgesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var badges = BadgeCache.All().ToList();
+
+                // Filter out any badges that don't apply to the entity or are not
+                // authorized by the person to be viewed.
+                var badgeList = badges.Where( b => b.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( b, Authorization.VIEW ) == true )
+                    .Select(b => new ListItemBag { Text = b.Name, Value = b.Guid.ToString() } )
+                    .ToList();
+
+                return Ok( badgeList );
+            }
+        }
+
+        #endregion
+
         #region Binary File Picker
 
         /// <summary>
