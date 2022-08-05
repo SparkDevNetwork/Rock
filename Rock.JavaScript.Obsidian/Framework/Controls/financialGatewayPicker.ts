@@ -35,7 +35,7 @@ export default defineComponent({
             required: false
         },
 
-        showInactive: {
+        includeInactive: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -81,7 +81,7 @@ export default defineComponent({
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
             const options: Partial<FinancialGatewayPickerGetFinancialGatewaysOptionsBag> = {
-                showInactive: props.showInactive,
+                includeInactive: props.includeInactive,
                 showAllGatewayComponents: props.showAllGatewayComponents
             };
 
@@ -115,7 +115,7 @@ export default defineComponent({
 
         // #region Watchers
 
-        watch(() => props.showInactive, () => {
+        watch(() => props.includeInactive, () => {
             loadedItems.value = null;
         });
 

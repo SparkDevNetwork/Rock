@@ -3386,7 +3386,7 @@ const financialGatewayPickerGallery = defineComponent({
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            showInactive: ref(false),
+            includeInactive: ref(false),
             showAllGatewayComponents: ref(false),
             value: ref({}),
             importCode: getControlImportPath("financialGatewayPicker"),
@@ -3406,7 +3406,7 @@ const financialGatewayPickerGallery = defineComponent({
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
         :showBlankItem="showBlankItem"
-        :showInactive="showInactive"
+        :includeInactive="includeInactive"
         :showAllGatewayComponents="showAllGatewayComponents" />
 
     <template #settings>
@@ -3434,7 +3434,7 @@ const financialGatewayPickerGallery = defineComponent({
             </div>
 
             <div class="col-md-2">
-                <CheckBox label="Show Inactive Gateways" v-model="showInactive" />
+                <CheckBox label="Show Inactive Gateways" v-model="includeInactive" />
             </div>
 
             <div class="col-md-2">
