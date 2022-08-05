@@ -169,7 +169,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId:int}" )]
         [System.Web.Http.HttpPost]
         public virtual HttpResponseMessage Follow( int entityTypeId, int entityId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
@@ -221,7 +221,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityGuid">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid:guid}" )]
         [System.Web.Http.HttpPost]
         public virtual HttpResponseMessage Follow( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
