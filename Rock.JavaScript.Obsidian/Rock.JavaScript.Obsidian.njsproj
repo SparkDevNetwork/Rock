@@ -130,6 +130,7 @@
     <TypeScriptCompile Include="Framework\Controls\assetStorageProviderPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\badgeComponentPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\badgeList.ts" />
+    <TypeScriptCompile Include="Framework\Controls\badgePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\baseAsyncPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\codeEditor.ts" />
     <TypeScriptCompile Include="Framework\Controls\binaryFilePicker.ts" />
@@ -702,6 +703,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\achievementTypePickerGetAchievementTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgeComponentPickerGetBadgeComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgeListGetBadgesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgePickerGetBadgesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFilePickerGetBinaryFilesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
