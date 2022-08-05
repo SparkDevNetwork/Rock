@@ -34,6 +34,10 @@
 
                 <asp:Literal ID="lProgressHtml" runat="server" />
 
+                <%-- Participant Checklist --%>
+                <asp:Literal ID="lParticipantHtml" runat="server" />
+                <Rock:GroupMemberRequirementsContainer ID="gmrcRequirements" runat="server" Visible="false"></Rock:GroupMemberRequirementsContainer>
+
                 <br />
 
                 <ul id="tlTabList" runat="server" class="nav nav-pills margin-v-md">

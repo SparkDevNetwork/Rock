@@ -71,7 +71,6 @@ namespace RockWeb.Blocks.Fundraising
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -242,6 +241,7 @@ namespace RockWeb.Blocks.Fundraising
             //// Participant Actions 
             // only show if the current person is a group member
             var groupMember = group.Members.FirstOrDefault( a => a.PersonId == this.CurrentPersonId );
+            var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
             if ( groupMember != null )
             {
                 hfGroupMemberId.Value = groupMember.Id.ToString();
@@ -254,18 +254,14 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             mergeFields.Add( "GroupMember", groupMember );
-            var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
-
-            //To-Do what about pages where the donor isn't a group member.
-            string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : "issue";
             mergeFields.Add( "ParticipationMode", participationMode );
-            mergeFields.Add( "ProgressTitle", progressTitle );
 
             // Progress
             if ( groupMember != null && pnlParticipantActions.Visible )
             {
                 var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
-
+                string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : "issue";
+                mergeFields.Add( "ProgressTitle", progressTitle );
                 // Create the total and the goal variables before setting them.
                 decimal contributionTotal;
                 decimal? fundraisingGoal;

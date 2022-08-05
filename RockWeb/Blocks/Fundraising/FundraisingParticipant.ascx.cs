@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,9 @@ namespace RockWeb.Blocks.Fundraising
 
     [CodeEditorField( "Updates Lava Template", "Lava template for the Updates (Content Channel Items)", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
         @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}", order: 3 )]
+
+    [CodeEditorField( "Requirements Header", "Lava template for requirements header.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
+        @"{% include '~~/Assets/Lava/FundraisingParticipantRequirementsHeader.lava' %}", order: 4 )]
 
     [NoteTypeField( "Note Type", "Note Type to use for participant comments", false, "Rock.Model.GroupMember", defaultValue: "FFFC3644-60CD-4D14-A714-E8DCC202A0E1", order: 5 )]
     [LinkedPage( "Donation Page", "The page where a person can donate to the fundraising opportunity", required: false, order: 6 )]
@@ -441,6 +444,12 @@ namespace RockWeb.Blocks.Fundraising
 
                 nbProfileWarning.Text = "<strong>Tip!</strong> Edit your profile to add a " + warningItems.AsDelimited( ", ", " and " ) + ".";
                 nbProfileWarning.Visible = warningItems.Any();
+
+                gmrcRequirements.GroupMemberId = groupMember.Id;
+                gmrcRequirements.Visible = true;
+
+                var participantLavaTemplate = this.GetAttributeValue( "RequirementsHeader" );
+                lParticipantHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
             }
             else
             {
@@ -498,6 +507,7 @@ namespace RockWeb.Blocks.Fundraising
 
             var progressLavaTemplate = this.GetAttributeValue( "ProgressLavaTemplate" );
             lProgressHtml.Text = progressLavaTemplate.ResolveMergeFields( mergeFields );
+
 
             // set text on the return button
             btnMainPage.Text = opportunityType.Value + " Page";

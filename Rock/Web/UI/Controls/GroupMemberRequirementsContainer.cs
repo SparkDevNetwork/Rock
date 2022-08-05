@@ -50,7 +50,19 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// 
         /// </summary>
-        public int GroupMemberId { get; set; }
+        public int GroupMemberId
+        {
+            get
+            {
+                return _groupMemberId;
+            }
+
+            set
+            {
+                _groupMemberId = value;
+                ViewState[ViewStateKey.GroupMemberId] = _groupMemberId;
+            }
+        }
 
         /// <summary>
         /// 
@@ -69,15 +81,14 @@ namespace Rock.Web.UI.Controls
 
         #endregion Properties
 
-        ///// <summary>
-        ///// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        ///// </summary>
-        ///// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        //protected override void OnInit( System.EventArgs e )
-        //{
-        //    EnsureChildControls();
-        //    base.OnInit( e );
-        //}
+        #region ViewStateKeys
+        private static class ViewStateKey
+        {
+            public const string GroupMemberId = "GroupMemberId";
+        }
+        #endregion ViewStateKeys
+
+        private int _groupMemberId { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -99,7 +110,7 @@ namespace Rock.Web.UI.Controls
             {
                 return;
             }
-
+            //this._groupMemberId = ViewState[ViewStateKey.GroupMemberId] as int?;
             base.CreateChildControls();
             Controls.Clear();
 
@@ -181,6 +192,26 @@ namespace Rock.Web.UI.Controls
                 categoryControl.Controls.Add( columnControl );
                 this.Controls.Add( categoryControl );
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected override object SaveViewState()
+        {
+            ViewState[ViewStateKey.GroupMemberId] = this._groupMemberId;
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="savedState"></param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+            this._groupMemberId = Convert.ToInt32( ViewState[ViewStateKey.GroupMemberId] );
         }
     }
 }
