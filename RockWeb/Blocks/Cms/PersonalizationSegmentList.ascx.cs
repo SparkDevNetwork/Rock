@@ -272,7 +272,8 @@ namespace RockWeb.Blocks.Cms
                          .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId == anonymousVisitorPersonId ).Count(),
                 KnownIndividualsCount =
                      personAliasPersonalizationsSegmentsQry
-                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count()
+                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count(),
+                Guid = a.Guid
             } );
 
             // sort the query based on the column that was selected to be sorted
@@ -300,6 +301,7 @@ namespace RockWeb.Blocks.Cms
             public bool IsActive { get; set; }
             public int AnonymousIndividualsCount { get; set; }
             public int KnownIndividualsCount { get; set; }
+            public Guid Guid { get; set; }
         }
     }
 }

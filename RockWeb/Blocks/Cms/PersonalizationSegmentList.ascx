@@ -27,6 +27,11 @@
                             <Rock:RockBoundField DataField="KnownIndividualsCount" HeaderText="Known Individuals" SortExpression="KnownIndividualsCount" />
                             <Rock:RockBoundField DataField="AnonymousIndividualsCount" HeaderText="Anonymous Individuals" SortExpression="AnonymousIndividualsCount" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <asp:TemplateField>
+                                <ItemTemplate>
+                                    <a class="btn btn-default" href='<%# string.Format( "{0}{1}", ResolveRockUrl( "~/admin/cms/personalization-segments/" ), Eval("Guid") ) %>'><i class="fa fa-users"></i></a>
+                                </ItemTemplate>
+                            </asp:TemplateField>
                             <Rock:DeleteField OnClick="gList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>
