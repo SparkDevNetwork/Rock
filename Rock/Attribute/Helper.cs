@@ -20,6 +20,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -57,6 +58,10 @@ namespace Rock.Attribute
             return UpdateAttributes( type, entityTypeId, String.Empty, String.Empty, rockContext );
         }
 
+        private static long updateAttributesCount = 0;
+        private static long updateAttributeCount = 0;
+        private static double updateAttributesMS = 0.0;
+
         /// <summary>
         /// Uses reflection to find any <see cref="FieldAttribute" /> attributes for the specified type and will create and/or update
         /// a <see cref="Rock.Model.Attribute" /> record for each attribute defined.
@@ -66,14 +71,13 @@ namespace Rock.Attribute
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <remarks>If a rockContext value is included, this method will save any previous changes made to the context</remarks>
         public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
+            Stopwatch stopwatchUpdateAttributes = Stopwatch.StartNew();
+
             bool attributesUpdated = false;
-            bool attributesDeleted = false;
 
             if ( type == null )
             {
@@ -126,6 +130,7 @@ namespace Rock.Attribute
                 try
                 {
                     attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
+                    updateAttributeCount++;
                 }
                 catch ( Exception ex )
                 {
@@ -136,24 +141,28 @@ namespace Rock.Attribute
             // Remove any old attributes
             try
             {
-                var attributeService = new Model.AttributeService( rockContext );
+                List<int> attributeIdsToDelete = new List<int>();
 
                 // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
                 if ( !dynamicAttributesBlock )
                 {
                     var existingKeys = entityProperties.Select( a => a.Key ).ToList();
-                    foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
+                    
+                    var entityAttributes = EntityTypeAttributesCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true );
+                    foreach ( var a in entityAttributes )
                     {
                         if ( !existingKeys.Contains( a.Key ) )
                         {
-                            attributeService.Delete( a );
-                            attributesDeleted = true;
+                            attributeIdsToDelete.Add( a.Id );
                         }
                     }
                 }
 
-                if ( attributesDeleted )
+                if ( attributeIdsToDelete.Any() )
                 {
+                    var attributeService = new Model.AttributeService( rockContext );
+                    var attributesToDelete = attributeService.GetByIds( attributeIdsToDelete );
+                    attributeService.DeleteRange( attributesToDelete );
                     rockContext.SaveChanges();
                 }
             }
@@ -162,7 +171,14 @@ namespace Rock.Attribute
                 ExceptionLogService.LogException( new Exception( "Could not delete one or more old attributes.", ex ), null );
             }
 
+            updateAttributesCount++;
+            updateAttributesMS += stopwatchUpdateAttributes.Elapsed.TotalMilliseconds;
             return attributesUpdated;
+        }
+
+        public static void GetUpdateAttributesStats()
+        {
+            Debug.WriteLine( $"updateAttributesCount: {updateAttributesCount}, updateAttributeCount: {updateAttributeCount}, updateAttributesMS:{updateAttributesMS} ms, updateAttributesMS/updateAttributesCount: {updateAttributesMS / updateAttributesCount} ms/count" );
         }
 
         /// <summary>
@@ -184,63 +200,57 @@ namespace Rock.Attribute
 
             rockContext = rockContext ?? new RockContext();
 
-            var attributeService = new AttributeService( rockContext );
-            var attributeQualifierService = new AttributeQualifierService( rockContext );
-            var fieldTypeService = new FieldTypeService( rockContext );
-            var categoryService = new CategoryService( rockContext );
-
             var propertyCategories = property.Category.SplitDelimitedValues( false ).ToList();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
-            Model.Attribute attribute = attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key );
+            //Model.Attribute attribute = attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key );
 
-            if ( attribute == null )
-            {
-                // If an existing attribute record doesn't exist, create a new one
-                updated = true;
 
-                attribute = new Model.Attribute();
-                attribute.EntityTypeId = entityTypeId;
-                attribute.EntityTypeQualifierColumn = entityQualifierColumn;
-                attribute.EntityTypeQualifierValue = entityQualifierValue;
-                attribute.Key = property.Key;
-                attribute.IconCssClass = string.Empty;
-                attribute.IsGridColumn = false;
-            }
-            else
+
+            // Eager Load
+
+            var attributeCache = EntityTypeAttributesCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).Where( a => a.Key == property.Key ).FirstOrDefault();
+            //    .Include( a => a.FieldType )
+            //.Include( a => a.AttributeQualifiers )
+            //.Include( a => a.Categories )
+            //.FirstOrDefault();
+
+
+            if ( attributeCache != null )
             {
-                // Check to see if the existing attribute record needs to be updated
-                if ( attribute.Name != property.Name ||
-                    attribute.DefaultValue != property.DefaultValue ||
-                    attribute.Description != property.Description ||
-                    attribute.FieldType.Assembly != property.FieldTypeAssembly ||
-                    attribute.FieldType.Class != property.FieldTypeClass ||
-                    attribute.IsRequired != property.IsRequired )
+
+                // Check to see if the existing attributeCache record needs to be updated
+                if ( attributeCache.Name != property.Name ||
+                    attributeCache.DefaultValue != property.DefaultValue ||
+                    attributeCache.Description != property.Description ||
+                    attributeCache.FieldType.Assembly != property.FieldTypeAssembly ||
+                    attributeCache.FieldType.Class != property.FieldTypeClass ||
+                    attributeCache.IsRequired != property.IsRequired )
                 {
                     updated = true;
                 }
 
-                if ( attribute.Order != property.Order && !dynamicAttributesBlock )
+                if ( attributeCache.Order != property.Order && !dynamicAttributesBlock )
                 {
                     updated = true;
                 }
 
                 // Check category
-                else if ( attribute.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
-                    propertyCategories.Except( attribute.Categories.Select( c => c.Name ) ).Any() )
+                else if ( attributeCache.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
+                    propertyCategories.Except( attributeCache.Categories.Select( c => c.Name ) ).Any() )
                 {
                     updated = true;
                 }
 
                 // Check the qualifier values
-                else if ( attribute.AttributeQualifiers.Select( q => q.Key ).Except( property.FieldConfigurationValues.Select( c => c.Key ) ).Any() ||
-                    property.FieldConfigurationValues.Select( c => c.Key ).Except( attribute.AttributeQualifiers.Select( q => q.Key ) ).Any() )
+                else if ( attributeCache.ConfigurationValues.Select( q => q.Key ).Except( property.FieldConfigurationValues.Select( c => c.Key ) ).Any() ||
+                    property.FieldConfigurationValues.Select( c => c.Key ).Except( attributeCache.ConfigurationValues.Select( q => q.Key ) ).Any() )
                 {
                     updated = true;
                 }
                 else
                 {
-                    foreach ( var attributeQualifier in attribute.AttributeQualifiers )
+                    foreach ( var attributeQualifier in attributeCache.ConfigurationValues )
                     {
                         if ( !property.FieldConfigurationValues.ContainsKey( attributeQualifier.Key ) ||
                             property.FieldConfigurationValues[attributeQualifier.Key].Value != attributeQualifier.Value )
@@ -253,9 +263,28 @@ namespace Rock.Attribute
 
             }
 
-            if ( !updated )
+            if ( attributeCache != null && !updated )
             {
                 return false;
+            }
+
+            var attributeService = new AttributeService( rockContext );
+            Rock.Model.Attribute attribute = null;
+            if ( attributeCache != null )
+            {
+                attribute =  attributeService.Get( attributeCache.Id );
+            }
+
+            if ( attribute == null)
+            {
+                // If an existing attribute record doesn't exist, create a new one
+                attribute = new Model.Attribute();
+                attribute.EntityTypeId = entityTypeId;
+                attribute.EntityTypeQualifierColumn = entityQualifierColumn;
+                attribute.EntityTypeQualifierValue = entityQualifierValue;
+                attribute.Key = property.Key;
+                attribute.IconCssClass = string.Empty;
+                attribute.IsGridColumn = false;
             }
 
             // Update the attribute
@@ -274,6 +303,7 @@ namespace Rock.Attribute
             attribute.Categories.Clear();
             if ( propertyCategories.Any() )
             {
+                var categoryService = new CategoryService( rockContext );
                 foreach ( string propertyCategory in propertyCategories )
                 {
                     int attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
@@ -295,6 +325,7 @@ namespace Rock.Attribute
                 attribute.ModifiedDateTime = RockDateTime.Now;
             }
 
+            var attributeQualifierService = new AttributeQualifierService( rockContext );
             foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
             {
                 attributeQualifierService.Delete( qualifier );
@@ -313,6 +344,7 @@ namespace Rock.Attribute
             if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                 attribute.FieldType.Class != property.FieldTypeClass )
             {
+                var fieldTypeService = new FieldTypeService( rockContext );
                 attribute.FieldType = fieldTypeService.Queryable().FirstOrDefault( f =>
                     f.Assembly == property.FieldTypeAssembly &&
                     f.Class == property.FieldTypeClass );
@@ -816,7 +848,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 // Add the value for each attribute defined on the entity type.
                 foreach ( var attribute in entityAttributes )
                 {
-                    if ( allAttributeValues.TryGetValue( ( entity.Id, attribute.Id ), out var value ) )
+                    if ( allAttributeValues.TryGetValue( (entity.Id, attribute.Id), out var value ) )
                     {
                         var attributeValueCache = new AttributeValueCache( attribute.Id, value.EntityId, value.Value );
 
@@ -1013,7 +1045,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 .ToList();
             }
 
-            return items.ToDictionary( i => ( i.RealEntityId, i.AttributeId ), i => ( i.EntityId, i.Value ) );
+            return items.ToDictionary( i => (i.RealEntityId, i.AttributeId), i => (i.EntityId, i.Value) );
         }
 
         #endregion
@@ -2009,7 +2041,7 @@ WHERE [AV].[AttributeId] = @AttributeId
             // We only need to add rows if we have any referenced entities.
             if ( referenceDictionary.Any() )
             {
-                foreach (var kvpReference in referenceDictionary )
+                foreach ( var kvpReference in referenceDictionary )
                 {
                     var valueId = kvpReference.Key;
                     var referencedEntities = kvpReference.Value;

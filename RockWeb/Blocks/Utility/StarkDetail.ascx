@@ -18,6 +18,8 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
+                <asp:LinkButton ID="btnClickMe" runat="server" CssClass="btn btn-primary" Text="Click Me"  OnClick="btnClickMe_Click" />
+
                 <div class="alert alert-info">
                     <h4>Stark Template Block</h4>
                     <p>This block serves as a starting point for creating new blocks. After copy/pasting it and renaming the resulting file be sure to make the following changes:</p>

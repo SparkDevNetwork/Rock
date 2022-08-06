@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -136,5 +136,10 @@ namespace RockWeb.Blocks.Utility
         // helper functional methods (like BindGrid(), etc.)
 
         #endregion
+
+        protected void btnClickMe_Click( object sender, EventArgs e )
+        {
+            Rock.Attribute.Helper.GetUpdateAttributesStats();
+        }
     }
 }
