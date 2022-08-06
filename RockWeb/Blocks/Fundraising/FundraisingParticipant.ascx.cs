@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Fundraising
         @"{% include '~~/Assets/Lava/FundraisingParticipantProfile.lava' %}", order: 1 )]
 
     [CodeEditorField( "Progress Lava Template", "Lava template for how the progress bar should be displayed ", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingParticipantProgress.lava' %}", order: 2)]
+        @"{% include '~~/Assets/Lava/FundraisingParticipantProgress.lava' %}", order: 2 )]
 
     [CodeEditorField( "Updates Lava Template", "Lava template for the Updates (Content Channel Items)", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
         @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}", order: 3 )]
@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Fundraising
     [NoteTypeField( "Note Type", "Note Type to use for participant comments", false, "Rock.Model.GroupMember", defaultValue: "FFFC3644-60CD-4D14-A714-E8DCC202A0E1", order: 5 )]
     [LinkedPage( "Donation Page", "The page where a person can donate to the fundraising opportunity", required: false, order: 6 )]
     [LinkedPage( "Main Page", "The main page for the fundraising opportunity", required: false, order: 7 )]
-    [BooleanField( "Show Clipboard Icon", "Show a clipboard icon which will copy the page url to the users clipboard", true, order:8)]
+    [BooleanField( "Show Clipboard Icon", "Show a clipboard icon which will copy the page url to the users clipboard", true, order: 8 )]
     [TextField( "Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 9 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "PersonAttributes", "The Person Attributes that the participant can edit", false, true, order: 7 )]
     [BooleanField( "Show Amount", "Determines if the Amount column should be displayed in the Contributions List.", false, order: 8 )]
@@ -397,6 +397,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             var groupMember = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == groupId && a.Id == groupMemberId ).FirstOrDefault();
+            
             if ( groupMember == null )
             {
                 pnlView.Visible = false;
@@ -404,6 +405,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             group.LoadAttributes( rockContext );
+            var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
 
             // set page title to the trip name
             RockPage.Title = group.GetAttributeValue( "OpportunityTitle" );
@@ -432,12 +434,14 @@ namespace RockWeb.Blocks.Fundraising
             if ( groupMember.PersonId == this.CurrentPersonId )
             {
                 // show a warning about missing Photo or Intro if the current person is viewing their own profile
+                string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : "issue";
+                mergeFields.Add( "ProgressTitle", progressTitle );
                 var warningItems = new List<string>();
                 if ( !groupMember.Person.PhotoId.HasValue )
                 {
                     warningItems.Add( "photo" );
                 }
-                if ( groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ).IsNullOrWhiteSpace())
+                if ( groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ).IsNullOrWhiteSpace() )
                 {
                     warningItems.Add( "personal opportunity introduction" );
                 }
@@ -467,21 +471,43 @@ namespace RockWeb.Blocks.Fundraising
             btnContributionsTab.Visible = showContributions;
 
             // Progress
+            // Create the total and the goal variables before setting them.
+            decimal contributionTotal;
+            decimal? fundraisingGoal;
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
-
-            var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
-                        .Where( d => d.EntityTypeId == entityTypeIdGroupMember
-                                && d.EntityId == groupMemberId )
-                        .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
-
-            var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-            if ( !individualFundraisingGoal.HasValue )
+            // If this is a Family participation type, collect the number of family members that are on the team.
+            if ( participationMode == 2 )
             {
-                individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-            }
+                var groupMembers = group.Members.ToList();
+                // Create a list of group member Ids that are all the family members in the current group.
+                var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
+                var familyMemberGroupMemberIdsInCurrentGroup = groupMembers.Where( m => familyMembers.Contains( m.PersonId ) ).Select( m => m.Id ).ToList();
 
-            var amountLeft = individualFundraisingGoal - contributionTotal;
-            var percentMet = individualFundraisingGoal > 0 ? contributionTotal * 100 / individualFundraisingGoal : 100;
+                contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                        .Where( d => d.EntityTypeId == entityTypeIdGroupMember
+                                && d.EntityId.HasValue
+                                && familyMemberGroupMemberIdsInCurrentGroup.Contains( d.EntityId.Value ) )
+                        .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+
+                // Multiply the number of family members by the individual fundraising goals from the group (not any goals from the group members).
+                var groupFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                fundraisingGoal = groupFundraisingGoal.HasValue ? familyMemberGroupMemberIdsInCurrentGroup.Count * groupFundraisingGoal.Value : 0.00M;
+            }
+            else
+            {
+                contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                            .Where( d => d.EntityTypeId == entityTypeIdGroupMember
+                                    && d.EntityId == groupMemberId )
+                            .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+
+                fundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                if ( !fundraisingGoal.HasValue )
+                {
+                    fundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                }
+            }
+            var amountLeft = fundraisingGoal - contributionTotal;
+            var percentMet = fundraisingGoal > 0 ? contributionTotal * 100 / fundraisingGoal : 100;
 
             mergeFields.Add( "AmountLeft", amountLeft );
             mergeFields.Add( "PercentMet", percentMet );
@@ -489,7 +515,7 @@ namespace RockWeb.Blocks.Fundraising
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
             queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
-            mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", queryParams ));
+            mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", queryParams ) );
 
             var opportunityType = DefinedValueCache.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );
 
@@ -539,7 +565,7 @@ namespace RockWeb.Blocks.Fundraising
             {
                 SetActiveTab( "Updates" );
             }
-            else if (showContributions)
+            else if ( showContributions )
             {
                 SetActiveTab( "Contributions" );
             }
@@ -629,19 +655,19 @@ namespace RockWeb.Blocks.Fundraising
                 financialTransaction.AuthorizedPersonAlias != null &&
                 financialTransaction.AuthorizedPersonAlias.Person != null )
             {
-	            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
-	            if ( lAddress != null )
-	            {
-	                var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
+                Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
+                if ( lAddress != null )
+                {
+                    var location = financialTransaction.AuthorizedPersonAlias.Person.GetMailingLocation();
                     string streetAddress = location != null ? location.GetFullStreetAddress() : string.Empty;
                     lAddress.Text = financialTransaction.ShowAsAnonymous ? string.Empty : streetAddress;
                 }
 
-	            Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
-	            if ( lPersonName != null )
-	            {
-	                lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
-	            }
+                Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
+                if ( lPersonName != null )
+                {
+                    lPersonName.Text = financialTransaction.ShowAsAnonymous ? "Anonymous" : financialTransaction.AuthorizedPersonAlias.Person.FullName;
+                }
 
                 // The transaction may have been split with details for one contribution going to the person
                 // and the other details going elsewhere.  We only want to show details that match this group member.
@@ -667,12 +693,12 @@ namespace RockWeb.Blocks.Fundraising
             hfActiveTab.Value = tabName;
             pnlUpdatesComments.Visible = tabName == "Updates";
             pnlContributions.Visible = tabName == "Contributions";
-            if (tabName == "Updates")
+            if ( tabName == "Updates" )
             {
                 liUpdatesTab.AddCssClass( "active" );
                 liContributionsTab.RemoveCssClass( "active" );
             }
-            else if (tabName == "Contributions")
+            else if ( tabName == "Contributions" )
             {
                 liUpdatesTab.RemoveCssClass( "active" );
                 liContributionsTab.AddCssClass( "active" );

@@ -1,10 +1,12 @@
 ﻿{% assign percentWidth = PercentMet %}
+{% assign participationMode = ParticipationMode %}
 {% if percentWidth > 100 %}
   {% assign percentWidth = 100 %}
 {% endif %}
 {% assign percentRounded = PercentMet | Floor %}
 
 <div class='well margin-t-md'>
+{% if participationMode == 1 %}
     <div class='row'>
         <div class='col-md-9'>
             <img src='{{ GroupMember.Person.PhotoUrl }}' width='75px' class='pull-left margin-r-md img-circle' />
@@ -35,4 +37,51 @@
             </div>
         </div>
     </div>
+{% endif %}
+{% if participationMode == 2 %}
+    <div class='row'>
+        <div class='col-md-9'>
+            <h4>
+                {{ ProgressTitle }}
+            </h4>
+        </div>
+        <div class='col-md-3'>
+            <div class='pull-right'>
+                <a href='{{ MakeDonationUrl }}' class='btn btn-xs btn-block btn-default'>{{ MakeDonationButtonText }}</a>
+            </div>
+        </div>
+        <div class='col-md-12'>
+            <label>
+                Fundraising Progress
+            </label>
+            <label class='pull-right'>
+                {% if AmountLeft >= 0 %}
+                {{ AmountLeft | FormatAsCurrency }}
+                {% else %}
+                {{ percentRounded }}%
+                {% endif %}
+            </label>
+            <div class='progress'>
+                <div class='progress-bar' role='progressbar' aria-valuenow='{{ percentRounded }}' aria-valuemin='0' aria-valuemax='100' style='width: {{ percentWidth }}%;'>
+                    <span class='sr-only'>{{ percentRounded }}% Complete</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% for member in FamilyMemberGroupMembers %}
+        <div class='row'>
+            <div class='col-md-9'>
+                <img src='{{ member.PhotoUrl }}' width='42px' class='pull-left margin-r-md img-circle' />
+                <h5>
+                    {{ member.FullName }}
+                </h5>
+            </div>
+            <div class='col-md-3'>
+                <div class='pull-right'>
+                    <a href='{{ member.ParticipantPageUrl }}' class='btn btn-xs btn-block btn-primary'>Participant Page</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
 </div>

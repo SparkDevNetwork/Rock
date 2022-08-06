@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.Fundraising
     [CodeEditorField( "Updates Lava Template", "Lava template for the Updates (Content Channel Items)", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
         @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}", order: 3 )]
 
-
     [CodeEditorField( "Participant Lava Template", "Lava template for how the participant actions and progress bar should be displayed", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
         @"{% include '~~/Assets/Lava/FundraisingOpportunityParticipant.lava' %}", order: 4 )]
 
@@ -271,8 +270,8 @@ namespace RockWeb.Blocks.Fundraising
                 {
                     // Create a list of group member Ids that are all the family members in the current group.
                     var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
-                    var familyMemberGroupMemberIdsInCurrentGroup = groupMembers.Where( m => familyMembers.Contains( m.PersonId ) ).Select( m => m.Id ).ToList();
-
+                    var familyMemberGroupMembersInCurrentGroup = groupMembers.Where( m => familyMembers.Contains( m.PersonId ) );
+                    var familyMemberGroupMemberIdsInCurrentGroup = familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList();
                     contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                             .Where( d => d.EntityTypeId == entityTypeIdGroupMember
                                     && d.EntityId.HasValue
@@ -282,6 +281,23 @@ namespace RockWeb.Blocks.Fundraising
                     // Multiply the number of family members by the individual fundraising goals from the group (not any goals from the group members).
                     var groupFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
                     fundraisingGoal = groupFundraisingGoal.HasValue ? familyMemberGroupMemberIdsInCurrentGroup.Count * groupFundraisingGoal.Value : 0.00M;
+
+                    var familyMemberGroupMembers = new List<object>();
+                    foreach ( var member in familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender ).ToList() )
+                    {
+                        var familyMemberMergeFields = new Dictionary<string, object>();
+                        var familyMemberQueryParams = new Dictionary<string, string>();
+                        familyMemberQueryParams.Add( "GroupId", hfGroupId.Value );
+                        familyMemberQueryParams.Add( "GroupMemberId", member.Id.ToString() );
+                        familyMemberQueryParams.Add( "ParticipationMode", participationMode.ToString() );
+                        familyMemberMergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", familyMemberQueryParams ) );
+                        familyMemberMergeFields.Add( "ParticipantPageUrl", LinkedPageUrl( "ParticipantPage", familyMemberQueryParams ) );
+                        familyMemberMergeFields.Add( "FullName", member.Person.FullName );
+                        familyMemberMergeFields.Add( "PhotoUrl", member.Person.PhotoUrl );
+                        familyMemberGroupMembers.Add( familyMemberMergeFields );
+                    }
+
+                    mergeFields.Add( "FamilyMemberGroupMembers", familyMemberGroupMembers );
                 }
                 else
                 {
