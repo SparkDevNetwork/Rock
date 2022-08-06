@@ -40,7 +40,7 @@ namespace Rock.Rest.Controllers
         /// <param name="personId">The person identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}/{personId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}/{personId:int}" )]
         public virtual void Delete( int entityTypeId, int entityId, int personId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             /*
@@ -81,7 +81,7 @@ namespace Rock.Rest.Controllers
         /// <param name="personGuid">The person identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}/{personGuid}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}/{personGuid:guid}" )]
         public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, Guid personGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             // Convert and validate the input parameters.
@@ -105,7 +105,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeId}/{entityId:int}" )]
         [System.Web.Http.HttpDelete]
         public virtual void Delete( int entityTypeId, int entityId, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
@@ -148,7 +148,7 @@ namespace Rock.Rest.Controllers
         /// <param name="entityGuid">The entity identifier.</param>
         /// <param name="purposeKey">The custom purpose to identify the type of following.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid}" )]
+        [System.Web.Http.Route( "api/Followings/{entityTypeGuid}/{entityGuid:guid}" )]
         public virtual void Delete( Guid entityTypeGuid, Guid entityGuid, [FromUri( BinderType = typeof( TypeConverterModelBinder ) )] string purposeKey = null )
         {
             // Convert and validate the input parameters.
