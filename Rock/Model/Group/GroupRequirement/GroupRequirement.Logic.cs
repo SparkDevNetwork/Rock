@@ -88,6 +88,22 @@ namespace Rock.Model
                 return result;
             }
 
+            if ( this.AppliesToAgeClassification != AppliesToAgeClassification.All )
+            {
+                // If the requirement's Applies To Age Classification is not "All", filter the person query to the corresponding Age Classification.
+                personQry = personQry.Where( p => ( int ) p.AgeClassification == ( int ) this.AppliesToAgeClassification );
+            }
+
+            if ( this.AppliesToDataViewId.HasValue )
+            {
+                // If the Group Requirement has a Data View it applies to, apply it here.
+                var appliesToDataViewPersonService = new PersonService( rockContext );
+                var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
+                var appliesToDataViewWhereExpression = this.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
+                var appliesToDataViewPersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
+                personQry = personQry.Where( p => appliesToDataViewPersonIds.Contains( p.Id ) );
+            }
+
             var attributeValueService = new AttributeValueService( rockContext );
 
             if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
@@ -99,12 +115,6 @@ namespace Rock.Model
                 {
                     var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression );
                     warningDataViewPersonIdList = personService.Get( paramExpression, warningDataViewWhereExpression ).Where( a => personQry.Any( p => p.Id == a.Id ) ).Select( a => a.Id ).ToList();
-                }
-
-                if ( this.AppliesToAgeClassification != AppliesToAgeClassification.All )
-                {
-                    // If the requirement's Applies To Age Classification is not "All", filter the person query to the corresponding Age Classification.
-                    personQry = personQry.Where( p => ( int ) p.AgeClassification == ( int ) this.AppliesToAgeClassification );
                 }
 
                 if ( this.GroupRequirementType.DataViewId.HasValue )
@@ -146,6 +156,27 @@ namespace Rock.Model
                                 personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
                             }
 
+                            // Get the nullable group member requirement ID based on the PersonId, GroupRequirement and Role.
+
+                            GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                            var groupMemberRequirements = groupMemberRequirementService.GetActiveByPersonIdGroupIdGroupRoleId( personGroupRequirementStatus.PersonId, groupId, groupRoleId );
+                            //GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                            //GroupMember groupMember;
+                            //if ( groupRoleId.HasValue )
+                            //{
+                            //    groupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId( groupId, personGroupRequirementStatus.PersonId, groupRoleId.Value );
+                            //}
+                            //else
+                            //{
+                            //    groupMember = groupMemberService.GetByGroupIdAndPersonId( groupId, personGroupRequirementStatus.PersonId ).First();
+                            //}
+                            //var groupMemberRequirements = groupMemberRequirementService.Queryable().Where( r => r.GroupMemberId == groupMember.Id
+                            //&& r.GroupRequirementId == personGroupRequirementStatus.GroupRequirement.Id );
+
+                            if ( groupMemberRequirements.Any() )
+                            {
+                                personGroupRequirementStatus.GroupMemberRequirementId = groupMemberRequirements.First().Id;
+                            }
                             return personGroupRequirementStatus;
                         } );
 
@@ -161,7 +192,7 @@ namespace Rock.Model
                             {
                                 PersonId = a,
                                 GroupRequirement = this,
-                                MeetsGroupRequirement = warningDataViewPersonIdList.Contains( a ) == true ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets
+                                MeetsGroupRequirement = warningDataViewPersonIdList.Contains( a ) == true ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets,
                             } );
 
                     return result;

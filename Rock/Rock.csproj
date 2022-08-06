@@ -801,6 +801,7 @@
     <Compile Include="Model\CMS\PersonalizationSegment\PersonalizationSegmentService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirementService.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />
