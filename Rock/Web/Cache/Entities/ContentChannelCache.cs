@@ -170,7 +170,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [enable personalization]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnablePersonalization { get; set; }
+        public bool EnablePersonalization { get; private set; }
 
         /// <summary>
         /// Gets or sets the category ids.
