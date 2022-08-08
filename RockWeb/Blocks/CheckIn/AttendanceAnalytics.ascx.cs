@@ -305,16 +305,20 @@ namespace RockWeb.Blocks.CheckIn
             // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnLoad()
             BuildGroupTypesUI( false );
 
-            var chartStyleDefinedValueGuid = this.GetAttributeValue( AttributeKeys.ChartStyle ).AsGuidOrNull();
+            var chartStyle = GetChartStyle();
+            lcAttendance.SetChartStyle( chartStyle );
+            bcAttendance.SetChartStyle( chartStyle );
 
-            lcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
-            bcAttendance.Options.xaxis = new AxisOptions { mode = AxisMode.categories, tickLength = 0 };
-            bcAttendance.Options.series.bars.barWidth = 0.6;
-            bcAttendance.Options.series.bars.align = "center";
-            // Set chart style after setting options so they are not overwritten.
-            bcAttendance.Options.SetChartStyle( chartStyleDefinedValueGuid );
-
-            if ( !Page.IsPostBack )
+            if ( Page.IsPostBack )
+            {
+                // Assign event handlers to process the postback.
+                if ( this.DetailPageGuid.HasValue )
+                {
+                    lcAttendance.ChartClick += ChartClickEventHandler;
+                    bcAttendance.ChartClick += ChartClickEventHandler;
+                }
+            }
+            else
             {
                 lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now );
 
@@ -332,6 +336,40 @@ namespace RockWeb.Blocks.CheckIn
                     LogAndShowException( exception );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the chart style.
+        /// </summary>
+        /// <value>
+        /// The chart style.
+        /// </value>
+        private ChartStyle GetChartStyle()
+        {
+            var chartStyle = new ChartStyle();
+
+            var chartStyleDefinedValueGuid = GetAttributeValue( AttributeKeys.ChartStyle ).AsGuidOrNull();
+
+            if ( chartStyleDefinedValueGuid.HasValue )
+            {
+                var rockContext = new RockContext();
+                var definedValue = DefinedValueCache.Get( chartStyleDefinedValueGuid.Value );
+                if ( definedValue != null )
+                {
+                    try
+                    {
+                        definedValue.LoadAttributes( rockContext );
+
+                        chartStyle = ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( AttributeKeys.ChartStyle ) );
+                    }
+                    catch
+                    {
+                        // intentionally ignore and default to basic style
+                    }
+                }
+            }
+
+            return chartStyle;
         }
 
         #endregion
@@ -600,15 +638,11 @@ namespace RockWeb.Blocks.CheckIn
             pnlResults.Visible = true;
 
             lcAttendance.ShowTooltip = true;
-            if ( this.DetailPageGuid.HasValue )
-            {
-                lcAttendance.ChartClick += lcAttendance_ChartClick;
-            }
-
             bcAttendance.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )
             {
-                bcAttendance.ChartClick += lcAttendance_ChartClick;
+                lcAttendance.ChartClick += ChartClickEventHandler;
+                bcAttendance.ChartClick += ChartClickEventHandler;
             }
 
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
@@ -630,8 +664,10 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( pnlShowByChart.Visible )
             {
+                lcAttendance.StartDate = dateRange.Start;
+                lcAttendance.EndDate = dateRange.End;
+
                 var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<ChartGroupBy>() ?? ChartGroupBy.Week;
-                lcAttendance.TooltipFormatter = null;
                 double? chartDataWeekCount = null;
                 double? chartDataMonthCount = null;
                 int maxXLabelCount = 20;
@@ -641,96 +677,59 @@ namespace RockWeb.Blocks.CheckIn
                     chartDataMonthCount = ( dateRange.End.Value - dateRange.Start.Value ).TotalDays / 30;
                 }
 
+                lcAttendance.TooltipContentScript = GetChartTooltipScript( groupBy );
+
+                string intervalType = null;
+                string intervalSize = null;
                 switch ( groupBy )
                 {
                     case ChartGroupBy.Week:
                         {
                             if ( chartDataWeekCount < maxXLabelCount )
                             {
-                                lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
+                                intervalType = "day";
+                                intervalSize = "7";
                             }
-                            else
-                            {
-                                lcAttendance.Options.xaxis.tickSize = null;
-                            }
-
-                            lcAttendance.TooltipFormatter = @"
-function(item) {
-    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
-    var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
-    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
-    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
-    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
-}
-";
                         }
-
                         break;
 
                     case ChartGroupBy.Month:
                         {
                             if ( chartDataMonthCount < maxXLabelCount )
                             {
-                                lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
+                                intervalType = "month";
+                                intervalSize = "1";
                             }
-                            else
-                            {
-                                lcAttendance.Options.xaxis.tickSize = null;
-                            }
-
-                            lcAttendance.TooltipFormatter = @"
-function(item) {
-    var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
-    var dateText = month_names[itemDate.getMonth()] + ' ' + itemDate.getFullYear();
-    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
-    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
-    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
-}
-";
                         }
-
                         break;
 
                     case ChartGroupBy.Year:
                         {
-                            lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
-                            lcAttendance.TooltipFormatter = @"
-function(item) {
-    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
-    var dateText = itemDate.getFullYear();
-    var seriesLabel = item.series.label || ( item.series.labels ? item.series.labels[item.dataIndex] : null );
-    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '-';
-    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
-}
-";
+                            intervalType = "year";
+                            intervalSize = "1";
                         }
-
                         break;
                 }
+                lcAttendance.SeriesGroupIntervalType = intervalType;
+                lcAttendance.SeriesGroupIntervalSize = intervalSize;
 
                 string groupByTextPlural = groupBy.ConvertToString().ToLower().Pluralize();
                 lPatternXFor.Text = string.Format( " {0} for the selected date range", groupByTextPlural );
                 lPatternAndMissedXBetween.Text = string.Format( " {0} between", groupByTextPlural );
 
-                bcAttendance.TooltipFormatter = lcAttendance.TooltipFormatter;
+                bcAttendance.TooltipContentScript = lcAttendance.TooltipContentScript;
 
                 var chartData = this.GetAttendanceChartData().ToList();
-                var jsonSetting = new JsonSerializerSettings
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                    ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
-                };
-                string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
 
                 var singleDateTime = chartData.GroupBy( a => a.DateTimeStamp ).Count() == 1;
                 if ( singleDateTime )
                 {
-                    bcAttendance.ChartData = chartDataJson;
+                    var chartDataByCategory = bcAttendance.GetCategorySeriesFromChartData( chartData );
+                    bcAttendance.SetChartDataItems( chartDataByCategory );
                 }
                 else
                 {
-                    lcAttendance.ChartData = chartDataJson;
+                    lcAttendance.SetChartDataItems( chartData );
                 }
                 bcAttendance.Visible = singleDateTime;
                 lcAttendance.Visible = !singleDateTime;
@@ -747,6 +746,82 @@ function(item) {
             }
 
             SaveSettings();
+        }
+
+        private string GetChartTooltipScript( ChartGroupBy groupBy )
+        {
+            var tooltipScriptTemplate = @"
+function(tooltipModel)
+{
+    var colors = tooltipModel.labelColors[0];
+    var style = 'background:' + colors.backgroundColor;
+    style += '; border-color:' + colors.borderColor;
+    style += '; border-width: 2px';
+    style += '; width: 10px';
+    style += '; height: 10px';
+    style += '; margin-right: 10px';
+    style += '; display: inline-block';
+    var span = '<span style=""' + style + '""></span>';
+<assignContent>
+    var html = '<table><thead>';
+    html += '<tr><th style=""text-align:center"">' + headerText + '</th></tr>';
+    html += '</thead><tbody>';
+    html += '<tr><td>' + span + bodyText  + '</td></tr>';
+    html += '</tbody></table>';
+    return html;
+}
+";
+
+            string tooltipScript;
+            switch ( groupBy )
+            {
+                case ChartGroupBy.Week:
+                default:
+                    {
+                        var assignContentScript = @"
+var bodyText = tooltipModel.body[0].lines[0];
+var headerText = 'Weekend of <br />' + tooltipModel.title;
+";
+
+                        tooltipScript = tooltipScriptTemplate
+                            .Replace( "<assignContent>", assignContentScript );
+                    }
+                    break;
+
+                case ChartGroupBy.Month:
+                    {
+                        var assignContentScript = @"
+var bodyText = tooltipModel.body[0].lines[0];
+var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+var dp = tooltipModel.dataPoints[0];
+var dataValue = _chartData.data.datasets[dp.datasetIndex].data[dp.index];
+var itemDate = new Date( dataValue.x );
+var headerText = month_names[itemDate.getMonth()] + ' ' + itemDate.getFullYear();
+";
+
+                        tooltipScript = tooltipScriptTemplate
+                            .Replace( "<assignContent>", assignContentScript );
+
+                    }
+                    break;
+
+                case ChartGroupBy.Year:
+                    {
+                        var assignContentScript = @"
+var bodyText = tooltipModel.body[0].lines[0];
+var dp = tooltipModel.dataPoints[0];
+var dataValue = _chartData.data.datasets[dp.datasetIndex].data[dp.index];
+var itemDate = new Date( dataValue.x );
+var headerText = dp.label;
+";
+
+                        tooltipScript = tooltipScriptTemplate
+                            .Replace( "<assignContent>", assignContentScript );
+                    }
+                    break;
+            }
+
+            return tooltipScript;
         }
 
         /// <summary>
@@ -1019,11 +1094,11 @@ function(item) {
         }
 
         /// <summary>
-        /// Lcs the attendance_ chart click.
+        /// Handles the chart click event.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        protected void lcAttendance_ChartClick( object sender, ChartClickArgs e )
+        protected void ChartClickEventHandler( object sender, ChartClickArgs e )
         {
             if ( this.DetailPageGuid.HasValue )
             {

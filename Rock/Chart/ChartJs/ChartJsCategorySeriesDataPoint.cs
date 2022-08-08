@@ -14,50 +14,36 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Web.UI.Controls
+
+namespace Rock.Chart
 {
     /// <summary>
-    /// 
+    /// A chart data point that represents a value for a specific category, and allows sorting by a specified key.
     /// </summary>
-    public class PieChart : FlotChart
+    public class ChartJsCategorySeriesDataPoint : IChartJsCategorySeriesDataPoint
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PieChart"/> class.
-        /// </summary>
-        public PieChart()
-        {
-            this.Options.series = new SeriesOptions( false, false, false );
-
-            this.Options.series.pie = new Pie();
-            this.Options.legend = new Legend();
-        }
-
-        /// <summary>
-        /// Gets the pie options.
+        /// Gets or sets the category.
         /// </summary>
         /// <value>
-        /// The pie options.
+        /// The category.
         /// </value>
-        public Pie PieOptions
-        {
-            get
-            {
-                return this.Options.series.pie;
-            }
-        }
+        public string Category { get; set; }
 
         /// <summary>
-        /// Gets the legend.
+        /// Gets or sets the value.
         /// </summary>
         /// <value>
-        /// The legend.
+        /// The value.
         /// </value>
-        public Legend Legend
-        {
-            get
-            {
-                return this.Options.legend;
-            }
-        }
+        public decimal Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort key.
+        /// </summary>
+        /// <value>
+        /// The sort key.
+        /// </value>
+        public string SortKey { get; set; }
     }
 }

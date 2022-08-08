@@ -23,7 +23,7 @@ namespace Rock.Chart
     /// <summary>
     /// 
     /// </summary>
-    public class SummaryData : IChartData
+    public class SummaryData : IChartData, IChartJsTimeSeriesDataPoint
     {
         /// <summary>
         /// Gets the date time stamp.
@@ -76,5 +76,21 @@ namespace Rock.Chart
         /// </value>
         [Previewable]
         public string SeriesAddlInfo { get; set; }
+
+        #region IChartJsTimeSeriesDataPoint
+
+        DateTime IChartJsTimeSeriesDataPoint.DateTime
+        {
+            get => this.DateTime;
+            set => this.DateTime = value;
+        }
+
+        decimal IChartJsTimeSeriesDataPoint.Value
+        {
+            get => this.YValue ?? 0;
+            set => this.YValue = value;
+        }
+
+        #endregion
     }
 }
