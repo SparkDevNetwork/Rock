@@ -180,6 +180,8 @@ namespace Rock.Cms.ContentCollection.IndexComponents
             _certificateFingerprint = component.GetAttributeValue( AttributeKey.CertificateFingerprint );
             _shardCount = component.GetAttributeValue( AttributeKey.ShardCount ).AsInteger();
             _includeExplain = component.GetAttributeValue( AttributeKey.IncludeExplain ).AsBoolean();
+
+            ConnectToServer();
         }
 
         /// <summary>
@@ -373,11 +375,16 @@ namespace Rock.Cms.ContentCollection.IndexComponents
                     var qry = new QueryStringQuery
                     {
                         Query = searchField.Value,
-                        Analyzer = "whitespace_lowercase",
                         MinimumShouldMatch = "100%",
                         Rewrite = MultiTermQueryRewrite.ScoringBoolean,
                         Fields = new Nest.Field( searchField.Name, searchField.Boost )
                     };
+
+                    if (!searchField.IsPhrase)
+                    {
+                        // If this is enabled on attribute value searches they fail.
+                        qry.Analyzer = "whitespace_lowercase";
+                    }
 
                     if ( query.IsAllMatching )
                     {

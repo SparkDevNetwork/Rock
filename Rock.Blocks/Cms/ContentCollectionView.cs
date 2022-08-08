@@ -114,7 +114,7 @@ namespace Rock.Blocks.Cms
     <h2><i class=""{{ SourceEntity.IconCssClass }}""></i> {{ SourceName }}</h2>
     <div class=""result-items""></div>
     <div class=""actions"">
-       <a href=""#"" class=""btn btn-default show-more"">Show More</a>
+       <a href=""#"" class=""btn btn-default see-more js-more"">Show More</a>
     </div>
 </div>",
         Category = "CustomSetting",
@@ -835,7 +835,8 @@ namespace Rock.Blocks.Cms
                         valueQuery.Add( new SearchField
                         {
                             Name = $"{attributeFilterKey}ValueRaw",
-                            Value = value
+                            Value = value,
+                            IsPhrase = true
                         } );
                     }
 

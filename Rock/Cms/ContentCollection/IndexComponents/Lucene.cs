@@ -774,14 +774,14 @@ namespace Rock.Cms.ContentCollection.IndexComponents
                     {
                         foreach ( var collectionValue in collectionProperty )
                         {
-                            TextField textField = new TextField( dynamicProperty, collectionValue.ToStringSafe().ToLower(), global::Lucene.Net.Documents.Field.Store.YES );
-                            doc.Add( textField );
+                            var stringField = new StringField( dynamicProperty, collectionValue.ToStringSafe().ToLower(), global::Lucene.Net.Documents.Field.Store.YES );
+                            doc.Add( stringField );
                         }
                     }
                     else
                     {
-                        TextField textField = new TextField( dynamicProperty, propertyValue.ToStringSafe().ToLower(), global::Lucene.Net.Documents.Field.Store.YES );
-                        doc.Add( textField );
+                        var stringField = new StringField( dynamicProperty, propertyValue.ToStringSafe().ToLower(), global::Lucene.Net.Documents.Field.Store.YES );
+                        doc.Add( stringField );
                     }
                 }
 
@@ -794,8 +794,8 @@ namespace Rock.Cms.ContentCollection.IndexComponents
                 doc.AddStoredField( "JSON", document.ToJson() );
 
                 // Use the analyzer in fieldAnalyzers if that field is in
-                // that dictionary, otherwise use StandardAnalyzer.
-                var analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion, new CharArraySet( _matchVersion, 0, true ) ), fieldAnalyzers: index.FieldAnalyzers );
+                // that dictionary, otherwise use WhitespaceAnalyzer.
+                var analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new WhitespaceAnalyzer( _matchVersion ), fieldAnalyzers: index.FieldAnalyzers );
 
                 using ( var activeWriter = OpenWriter() )
                 {
