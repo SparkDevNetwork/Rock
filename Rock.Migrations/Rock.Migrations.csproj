@@ -160,10 +160,6 @@
     <Compile Include="Migrations\202207182110401_Rollup_20220718.designer.cs">
       <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202207191433252_UpdateGroupRequirementFeatures.cs" />
-    <Compile Include="Migrations\202207191433252_UpdateGroupRequirementFeatures.designer.cs">
-      <DependentUpon>202207191433252_UpdateGroupRequirementFeatures.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.cs" />
     <Compile Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.Designer.cs">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
@@ -1301,9 +1297,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202207182110401_Rollup_20220718.resx">
       <DependentUpon>202207182110401_Rollup_20220718.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202207191433252_UpdateGroupRequirementFeatures.resx">
-      <DependentUpon>202207191433252_UpdateGroupRequirementFeatures.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.3\202203101710039_AddFormBuilderBlocksAndPages.resx">
       <DependentUpon>202203101710039_AddFormBuilderBlocksAndPages.cs</DependentUpon>
