@@ -15,7 +15,7 @@
                 
                 <asp:Panel ID="pnlHeader" runat="server" class="bg-color padding-t-md padding-l-md padding-r-md padding-b-sm">
                     <div class="clearfix">
-                        <b>Total Individual Goals</b>
+                        <b>Total Goals</b>
                         <p class="pull-right"><strong>$<%=this.GroupContributionTotal%>/$<%=this.GroupIndividualFundraisingGoal%></strong></p>
                     </div>
 
@@ -36,7 +36,7 @@
 
                                 </div>
                                 <div class="col-md-4">
-                                    <%# Eval("FullName") %>
+                                    <%# Eval("ProgressTitle") %>
                                 </div>
                                 <div class="col-md-8 col-xs-12">
                                     <div class="progress">

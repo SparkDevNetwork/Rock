@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -153,6 +153,8 @@ namespace RockWeb.Blocks.Fundraising
 
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
+            var groupMembersGroupedByFamily = groupMembersQuery.Select( m => m.Person.GetFamily( rockContext ) ).ToList();
+
             var groupMemberList = groupMembersQuery.ToList().Select( a =>
             {
                 var groupMember = a;
@@ -189,9 +191,23 @@ namespace RockWeb.Blocks.Fundraising
                     individualFundraisingGoal = 0;
                 }
 
+                var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
+
+                string progressTitle = groupMember.Person.FullName;
+
+                if ( participationMode == 2 )
+                {
+                    var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
+                    var familyMemberGroupMembersInCurrentGroup = group.Members.Where( m => familyMembers.Contains( m.PersonId ) );
+                    progressTitle = String.Format( "{0} ({1})",
+                        groupMember.Person.GetFamily().Name,
+                    familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender ).Select( m => m.Person.NickName )
+                    .JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
+                }
+
                 return new
                 {
-                    FullName = groupMember.Person.FullName,
+                    ProgressTitle = progressTitle,
                     IndividualFundraisingGoal = ( individualFundraisingGoal ?? 0.00M ).ToString( "0.##" ),
                     ContributionTotal = contributionTotal.ToString( "0.##" ),
                     Percentage = percentageAchieved.ToString( "0.##" ),
