@@ -1807,10 +1807,13 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
             var valueParameter = new SqlParameter( "@Value", value );
 
-            // Because AttributeValue has a trigger on it, the extra where clause
+            // Because AttributeValue has a trigger on it, the extra where clause is
             // to prevent updates if no value actually changed is rather important.
             // Without it we might be doing a non-change update which still triggers
             // the database trigger.
+            // The custom COLLATE makes those value comparison case sensitive. This
+            // solves issues where the persisted value changed in case only, such as
+            // "Yes" to "YES" for a boolean field type.
             int updatedCount = rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [AttributeValue]
 SET [PersistedTextValue] = @TextValue,
@@ -1821,7 +1824,11 @@ SET [PersistedTextValue] = @TextValue,
 WHERE [AttributeId] = @AttributeId
   AND [ValueChecksum] = CHECKSUM(@Value)
   AND [Value] = @Value
-  AND ([IsPersistedValueDirty] = 1 OR [PersistedTextValue] != @TextValue OR [PersistedHtmlValue] != @HtmlValue OR [PersistedCondensedTextValue] != @CondensedTextValue OR [PersistedCondensedHtmlValue] != @CondensedHtmlValue)",
+  AND ([IsPersistedValueDirty] = 1
+       OR [PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
+       OR [PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
+       OR [PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
+       OR [PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
@@ -1871,10 +1878,13 @@ WHERE [AttributeId] = @AttributeId
                 Value = attributeIdsTable
             };
 
-            // Because AttributeValue has a trigger on it, the extra where clause
+            // Because AttributeValue has a trigger on it, the extra where clause is
             // to prevent updates if no value actually changed is rather important.
             // Without it we might be doing a non-change update which still triggers
             // the database trigger.
+            // The custom COLLATE makes those value comparison case sensitive. This
+            // solves issues where the persisted value changed in case only, such as
+            // "Yes" to "YES" for a boolean field type.
             var updatedCount = rockContext.Database.ExecuteSqlCommand( @"
 UPDATE AV
 SET [AV].[PersistedTextValue] = @TextValue,
@@ -1885,7 +1895,11 @@ SET [AV].[PersistedTextValue] = @TextValue,
 FROM [AttributeValue] AS [AV]
 INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
 WHERE [AV].[AttributeId] = @AttributeId
-  AND ([AV].[IsPersistedValueDirty] = 1 OR [AV].[PersistedTextValue] != @TextValue OR [AV].[PersistedHtmlValue] != @HtmlValue OR [AV].[PersistedCondensedTextValue] != @CondensedTextValue OR [AV].[PersistedCondensedHtmlValue] != @CondensedHtmlValue)",
+  AND ([AV].[IsPersistedValueDirty] = 1
+       OR [AV].[PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
+       OR [AV].[PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
+       OR [AV].[PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
+       OR [AV].[PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,

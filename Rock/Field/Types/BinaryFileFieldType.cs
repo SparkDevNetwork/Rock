@@ -38,6 +38,8 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BINARY_FILE )]
     public class BinaryFileFieldType : FieldType, IEntityFieldType
     {
+        // NOTE: We are not implemented IReferenceEntityFieldType interface because
+        // there is no UI support for the file name to change.
 
         #region Configuration
 
