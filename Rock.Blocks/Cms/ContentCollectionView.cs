@@ -218,6 +218,9 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        private IEnumerable<int> _blockInitPersonalizationSegmentIds = Array.Empty<int>();
+        private IEnumerable<int> _blockInitPersonalizationRequestFilterIds = Array.Empty<int>();
+
         #region Methods
 
         /// <inheritdoc/>
@@ -245,6 +248,9 @@ namespace Rock.Blocks.Cms
                 {
                     try
                     {
+                        _blockInitPersonalizationSegmentIds = RequestContext.GetPersonalizationSegmentIds();
+                        _blockInitPersonalizationRequestFilterIds = RequestContext.GetPersonalizationRequestFilterIds();
+
                         var searchTask = Task.Run( PerformInitialSearchAsync );
                         searchTask.Wait();
                         initialSearchResults = searchTask.Result;
@@ -696,30 +702,48 @@ namespace Rock.Blocks.Cms
             // Add a rule that always matches so that if none of the personalization
             // rules match we still get results.
             personalizationQuery.Add( new SearchAnyMatch() );
+            var hasPersonalization = false;
 
             // Add all the personalization segments this person matches.
             if ( contentCollection.EnableSegments )
             {
-                personalizationQuery.Add( new SearchField
+                var segmentIds = _blockInitPersonalizationSegmentIds ?? RequestContext.GetPersonalizationSegmentIds();
+
+                foreach ( var segmentId in segmentIds )
                 {
-                    Name = nameof( IndexDocumentBase.Segments ),
-                    Value = "1",
-                    Boost = GetAttributeValue( AttributeKey.SegmentBoostAmount ).AsDoubleOrNull() ?? 1.0d
-                } );
+                    personalizationQuery.Add( new SearchField
+                    {
+                        Name = nameof( IndexDocumentBase.Segments ),
+                        Value = segmentId.ToString(),
+                        Boost = GetAttributeValue( AttributeKey.SegmentBoostAmount ).AsDoubleOrNull() ?? 1.0d
+                    } );
+
+                    hasPersonalization = true;
+                }
             }
 
             // Add all the request filters this request matches.
             if ( contentCollection.EnableRequestFilters )
             {
-                personalizationQuery.Add( new SearchField
+                var filterIds = _blockInitPersonalizationRequestFilterIds ?? RequestContext.GetPersonalizationRequestFilterIds();
+
+                foreach ( var filterId in filterIds )
                 {
-                    Name = nameof( IndexDocumentBase.RequestFilters ),
-                    Value = "1",
-                    Boost = GetAttributeValue( AttributeKey.RequestFilterBoostAmount ).AsDoubleOrNull() ?? 1.0d
-                } );
+                    personalizationQuery.Add( new SearchField
+                    {
+                        Name = nameof( IndexDocumentBase.RequestFilters ),
+                        Value = filterId.ToString(),
+                        Boost = GetAttributeValue( AttributeKey.RequestFilterBoostAmount ).AsDoubleOrNull() ?? 1.0d
+                    } );
+
+                    hasPersonalization = true;
+                }
             }
 
-            searchQuery.Add( personalizationQuery );
+            if ( hasPersonalization )
+            {
+                searchQuery.Add( personalizationQuery );
+            }
         }
 
         /// <summary>
