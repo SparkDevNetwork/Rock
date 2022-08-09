@@ -53,6 +53,16 @@ namespace Rock.ViewModels.Entities
         public int? EntityId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the persisted values are
+        /// considered dirty. If the values are dirty then it should be assumed
+        /// that they are not in sync with the Rock.Model.AttributeValue.Value property.
+        /// </summary>
+        /// <value>
+        /// true if the persisted values are considered dirty; otherwise, false.
+        /// </value>
+        public bool IsPersistedValueDirty { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework.
         /// </summary>
         /// <value>
@@ -61,10 +71,42 @@ namespace Rock.ViewModels.Entities
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the value
+        /// Gets or sets the persisted condensed HTML value.
         /// </summary>
         /// <value>
-        /// A System.String representing the value.
+        /// The persisted condensed HTML value.
+        /// </value>
+        public string PersistedCondensedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted condensed text value.
+        /// </summary>
+        /// <value>
+        /// The persisted condensed text value.
+        /// </value>
+        public string PersistedCondensedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted HTML value.
+        /// </summary>
+        /// <value>
+        /// The persisted HTML value.
+        /// </value>
+        public string PersistedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted text value.
+        /// </summary>
+        /// <value>
+        /// The persisted text value.
+        /// </value>
+        public string PersistedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the raw value
+        /// </summary>
+        /// <value>
+        /// A System.String representing the raw value.
         /// </value>
         public string Value { get; set; }
 

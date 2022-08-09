@@ -82,6 +82,11 @@ namespace Rock.Model
             var viewModel = new GroupRequirementBag
             {
                 IdKey = model.IdKey,
+                AllowLeadersToOverride = model.AllowLeadersToOverride,
+                AppliesToAgeClassification = ( int ) model.AppliesToAgeClassification,
+                AppliesToDataViewId = model.AppliesToDataViewId,
+                DueDateAttributeId = model.DueDateAttributeId,
+                DueDateStaticDate = model.DueDateStaticDate,
                 GroupId = model.GroupId,
                 GroupRequirementTypeId = model.GroupRequirementTypeId,
                 GroupRoleId = model.GroupRoleId,
@@ -156,6 +161,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupRequirement target, GroupRequirement source )
         {
             target.Id = source.Id;
+            target.AllowLeadersToOverride = source.AllowLeadersToOverride;
+            target.AppliesToAgeClassification = source.AppliesToAgeClassification;
+            target.AppliesToDataViewId = source.AppliesToDataViewId;
+            target.DueDateAttributeId = source.DueDateAttributeId;
+            target.DueDateStaticDate = source.DueDateStaticDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
