@@ -277,7 +277,7 @@ namespace Rock.Field.Types
             var matchingRangeRule = conditionalScaleRangeRuleList.FirstOrDefault( a => ( a.HighValue ?? decimal.MaxValue ) >= rangeValue.Value && rangeValue.Value >= ( a.LowValue ?? decimal.MinValue ) );
             if ( matchingRangeRule != null )
             {
-                return $"<span class='label scale-label' style='background-color:{matchingRangeRule.Color}'>{matchingRangeRule.Label}</span>";
+                return $"<span class='label scale-label' style='background-color:{matchingRangeRule.Color}'>{matchingRangeRule.Label.EncodeHtml()}</span>";
             }
             else
             {

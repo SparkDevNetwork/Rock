@@ -169,7 +169,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetSelectedValues( privateValue, privateConfigurationValues );
+            return GetSelectedValues( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
@@ -425,7 +425,7 @@ namespace Rock.Field.Types
         #region Private
 
         /// <summary>
-        /// Gets the URL values.
+        /// Gets the selected values.
         /// </summary>
         /// <param name="privateValue">The private value.</param>
         /// <param name="privateConfigurationValues">The private configuration values.</param>

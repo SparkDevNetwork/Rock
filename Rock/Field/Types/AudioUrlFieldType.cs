@@ -72,7 +72,7 @@ namespace Rock.Field.Types
             string videoUrl = privateValue;
             if ( !string.IsNullOrEmpty( videoUrl ) )
             {
-                return videoUrl;
+                return videoUrl.EncodeHtml();
             }
 
             return string.Empty;

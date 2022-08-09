@@ -213,14 +213,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            // Default method tries to HTML encode which we don't want to do.
-            return GetTextValue( privateValue, privateConfigurationValues );
-        }
-
-        /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> privateConfigurationValues )
-        {
-            if ( string.IsNullOrWhiteSpace( value ) )
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
             {
                 return string.Empty;
             }
@@ -261,11 +254,12 @@ namespace Rock.Field.Types
                         mergeFields.Add( NAME_KEY, privateConfigurationValues[NAME_KEY] );
                     }
 
-                    mergeFields.Add( "value", value );
+                    mergeFields.Add( "value", privateValue );
 
                     return template.ResolveMergeFields( mergeFields );
                 }
-                return value;
+
+                return privateValue;
             }
         }
 

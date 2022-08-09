@@ -17,6 +17,8 @@
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +32,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "829803DB-7CA3-44F6-B1CB-669D61ED6E92")]
-    public class StepFieldType : FieldType, IEntityFieldType
+    public class StepFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -143,5 +145,63 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var ids = new StepService( rockContext )
+                    .Queryable()
+                    .Where( s => s.Guid == guid.Value )
+                    .Select( s => new
+                    {
+                        s.Id,
+                        s.PersonAliasId,
+                        s.PersonAlias.PersonId,
+                        s.StepTypeId
+                    } )
+                    .FirstOrDefault();
+
+                if ( ids == null )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<Step>().Value, ids.Id ),
+                    new ReferencedEntity( EntityTypeCache.GetId<PersonAlias>().Value, ids.PersonAliasId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, ids.PersonId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<StepType>().Value, ids.StepTypeId )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Step>().Value, nameof( Step.Id ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Step>().Value, nameof( Step.Order ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Step>().Value, nameof( Step.Id ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<PersonAlias>().Value, nameof( PersonAlias.PersonId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<StepType>().Value, nameof( StepType.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<StepType>().Value, nameof( StepType.AllowMultiple ) )
+            };
+        }
+
+        #endregion
     }
 }
