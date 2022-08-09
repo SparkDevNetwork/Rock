@@ -270,7 +270,7 @@ Hello Bill!
         public void PersonalizeBlock_ForSegmentsWithMatchAny_IsHiddenForPersonMatchingNoSegments()
         {
             var input = @"
-{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'all' %}
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' matchtype:'any' %}
 Alisha should not see this because she does not match any of the specified segments.
 {% endpersonalize %}
 ";
@@ -451,12 +451,59 @@ Request matches filter: QUERY_2.
         }
 
         [TestMethod]
+        public void PersonalizeBlock_ForMatchAnyWithFiltersAndSegments_IsVisibleForRequestMatchingOnlyOneFilter()
+        {
+            var input = @"
+{% personalize segment: 'ALL_MEN' requestfilter:'QUERY_1,QUERY_2' matchtype:'any' %}
+Segment Matches=None, Filter Matches=QUERY_2, Visible=True.
+{% endpersonalize %}
+";
+            var expectedOutput = @"Segment Matches=None, Filter Matches=QUERY_2, Visible=True.";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                personGuid: TestGuids.TestPeople.AlishaMarble,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?parameter2=true" );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_ForMatchAnyWithFiltersAndSegments_IsVisibleForRequestMatchingOnlyOneSegment()
+        {
+            var input = @"
+{% personalize segment:'ALL_MEN,IN_SMALL_GROUP' requestfilter:'QUERY_1,QUERY_2' matchtype:'any' %}
+Segment Matches=ALL_MEN, Filter Matches=None, Visible=True
+{% endpersonalize %}
+";
+            var expectedOutput = @"Segment Matches=ALL_MEN, Filter Matches=None, Visible=True";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                personGuid: TestGuids.TestPeople.BillMarble,
+                inputUrl: "http://rock.rocksolidchurchdemo.com" );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_WithMatchedInactiveRequestFilter_IgnoresInactiveRequestFilter()
+        {
+            var input = @"
+{% personalize requestfilter:'REQUEST_INACTIVE,QUERY_1,QUERY_2' matchtype:'any' %}
+Filter Matches=REQUEST_INACTIVE (inactive), QUERY_2, Visible=True.
+{% endpersonalize %}
+";
+            var expectedOutput = @"Filter Matches=REQUEST_INACTIVE (inactive), QUERY_2, Visible=True.";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?parameter2=true" );
+        }
+
+        [TestMethod]
         public void PersonalizeBlock_WithElseClauseAndPositiveMatch_ShowsContentForMatch()
         {
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
 Match!
-{% else %}
+{% otherwise %}
 No match!
 {% endpersonalize %}
 ";
@@ -471,9 +518,9 @@ No match!
         public void PersonalizeBlock_WithElseClauseAndNegativeMatch_ShowsContentForNoMatch()
         {
             var input = @"
-{% personalize requestfilter:'QUERY_1' result:'' %}
+{% personalize requestfilter:'QUERY_1' %}
 Match!
-{% else %}
+{% otherwise %}
 No match!
 {% endpersonalize %}
 ";
@@ -482,6 +529,26 @@ No match!
             AssertOutputForPersonAndRequest( input,
                 expectedOutput,
                 inputUrl: "http://rock.rocksolidchurchdemo.com" );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_WithOtherwiseClauseAndNestedTags_ProcessesNestedTagsCorrectly()
+        {
+            var input = @"
+{% personalize requestfilter:'QUERY_1' %}
+    {% assign isTrue = true %}
+    {% if isTrue %}}
+Match!
+    {% endif %}
+{% otherwise %}
+No match!
+{% endpersonalize %}
+";
+            var expectedOutput = @"Match!";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true" );
         }
 
         #endregion
@@ -639,12 +706,12 @@ No match!
                 var simulator = new HttpSimulator();
                 using ( var request = simulator.SimulateRequest( new Uri( inputUrl ) ) )
                 {
-                    TestHelper.AssertTemplateOutput( typeof( RockLiquidEngine ), expectedOutput, inputTemplate, options );
+                    TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, options );
                 }
             }
             else
             {
-                TestHelper.AssertTemplateOutput( typeof( RockLiquidEngine ), expectedOutput, inputTemplate, options );
+                TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, options );
             }
         }
     }
