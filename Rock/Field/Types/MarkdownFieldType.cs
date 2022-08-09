@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
+using Rock.Web.Utilities;
 
 namespace Rock.Field.Types
 {
@@ -153,9 +154,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return !condensed
+            var result = !condensed
                 ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+
+            result = HtmlSanitizer.SanitizeHtml( result );
+            return result;
         }
 
         #endregion
