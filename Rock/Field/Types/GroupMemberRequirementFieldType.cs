@@ -18,8 +18,10 @@
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 namespace Rock.Field.Types
@@ -29,7 +31,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "C0797A18-B489-46C7-8C30-F5E4F8246E23" )]
-    public class GroupMemberRequirementFieldType : FieldType, IEntityFieldType
+    public class GroupMemberRequirementFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -44,13 +46,21 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = privateValue;
 
             GroupMemberRequirement groupMemberRequirement = null;
 
             using ( var rockContext = new RockContext() )
             {
-                Guid? guid = value.AsGuidOrNull();
+                Guid? guid = privateValue.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
                     groupMemberRequirement = new GroupMemberRequirementService( rockContext ).GetNoTracking( guid.Value );
@@ -62,7 +72,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -136,5 +146,49 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupId = new GroupMemberRequirementService( rockContext ).GetId( guid.Value );
+
+                if ( !groupId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupMemberRequirement>().Value, groupId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Group Member Requirement and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupRequirementType>().Value, nameof( GroupRequirementType.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Group>().Value, nameof( Group.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupType>().Value, nameof( GroupType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }
