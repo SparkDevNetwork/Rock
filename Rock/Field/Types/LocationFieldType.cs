@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,7 +33,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LOCATION )]
-    public class LocationFieldType : FieldType, IEntityFieldType
+    public class LocationFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -161,6 +161,39 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return string.Empty;
+            }
+
+            var locGuid = privateValue.AsGuidOrNull();
+            if ( locGuid.HasValue )
+            {
+                // Check to see if this is the org address first (to avoid db read)
+                var globalAttributesCache = GlobalAttributesCache.Get();
+                var orgLocGuid = globalAttributesCache.GetValue( "OrganizationAddress" ).AsGuidOrNull();
+                if ( orgLocGuid.HasValue && orgLocGuid.Value == locGuid.Value )
+                {
+                    return globalAttributesCache.OrganizationLocationFormatted;
+                }
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new LocationService( rockContext );
+                    var location = service.GetNoTracking( locGuid.Value );
+                    if ( location != null )
+                    {
+                        return location.ToString();
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -171,34 +204,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                Guid? locGuid = value.AsGuidOrNull();
-                if ( locGuid.HasValue )
-                {
-                    // Check to see if this is the org address first (to avoid db read)
-                    var globalAttributesCache = GlobalAttributesCache.Get();
-                    var orgLocGuid = globalAttributesCache.GetValue( "OrganizationAddress" ).AsGuidOrNull();
-                    if ( orgLocGuid.HasValue && orgLocGuid.Value == locGuid.Value )
-                    {
-                        return globalAttributesCache.OrganizationLocationFormatted;
-                    }
-                }
-
-                using ( var rockContext = new RockContext() )
-                {
-                    var service = new LocationService( rockContext );
-                    var location = service.GetNoTracking( new Guid( value ) );
-                    if ( location != null )
-                    {
-                        formattedValue = location.ToString();
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -384,5 +392,88 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var textValue = string.Empty;
+
+            if ( privateValue.IsNotNullOrWhiteSpace() )
+            {
+                var locGuid = privateValue.AsGuidOrNull();
+                if ( locGuid.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var service = new LocationService( rockContext );
+                        var location = service.GetNoTracking( new Guid( privateValue ) );
+                        if ( location != null )
+                        {
+                            textValue = location.ToString();
+                        }
+                    }
+                }
+            }
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                CondensedTextValue = textValue.Truncate( 100 ),
+                HtmlValue = textValue.EncodeHtml(),
+                CondensedHtmlValue = textValue.Truncate( 100 ).EncodeHtml()
+            };
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var locationId = new LocationService( rockContext ).GetId( guid.Value );
+
+                if ( !locationId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<Location>().Value, locationId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references various properties of a Location and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.Street1 ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.Street2 ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.City ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.State ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.PostalCode ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.Country ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.GeoPoint ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.GeoFence ) )
+            };
+        }
+
+        #endregion
     }
 }
