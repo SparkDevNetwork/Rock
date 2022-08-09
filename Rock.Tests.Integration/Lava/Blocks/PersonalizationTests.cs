@@ -519,7 +519,7 @@ Segment Matches=ALL_MEN, Filter Matches=QUERY_2, Visible=True.
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
 Match!
-{% otherwise %}
+{% else %}
 No match!
 {% endpersonalize %}
 ";
@@ -536,7 +536,7 @@ No match!
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
 Match!
-{% otherwise %}
+{% else %}
 No match!
 {% endpersonalize %}
 ";
@@ -548,15 +548,32 @@ No match!
         }
 
         [TestMethod]
-        public void PersonalizeBlock_WithOtherwiseClauseAndNestedTags_ProcessesNestedTagsCorrectly()
+        public void PersonalizeBlock_WithNestedLavaTags_RendersLavaOutput()
         {
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
     {% assign isTrue = true %}
-    {% if isTrue %}}
+    {% if isTrue %}Lava template rendered.{% endif %}
+{% endpersonalize %}
+";
+            var expectedOutput = @"Lava template rendered.";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true" );
+        }
+
+        [TestMethod]
+        [Ignore("This extended use-case is not yet implemented.")]
+        public void PersonalizeBlock_WithElseClauseAndNestedTags_ProcessesNestedTagsCorrectly()
+        {
+            var input = @"
+{% personalize requestfilter:'QUERY_1' %}
+    {% assign isTrue = true %}
+    {% if isTrue %}
 Match!
     {% endif %}
-{% otherwise %}
+{% else %}
 No match!
 {% endpersonalize %}
 ";
@@ -715,19 +732,19 @@ No match!
                 mergeValues["CurrentPerson"] = person;
             }
 
-            var options = new LavaTestRenderOptions() { MergeFields = mergeValues };
+            var options = new LavaTestRenderOptions() { MergeFields = mergeValues, IgnoreWhiteSpace = true };
 
             if ( !string.IsNullOrWhiteSpace( inputUrl ) )
             {
                 var simulator = new HttpSimulator();
                 using ( var request = simulator.SimulateRequest( new Uri( inputUrl ) ) )
                 {
-                    TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, options );
+                    TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
                 }
             }
             else
             {
-                TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, options );
+                TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
             }
         }
     }

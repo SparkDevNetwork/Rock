@@ -57,7 +57,6 @@ namespace Rock.Lava.Blocks
         public static readonly string TagSourceName = "personalize";
 
         private string _attributesMarkup;
-        private List<string> _tokens;
         private bool _renderErrors = true;
         private string matchContent = null;
         private string elseContent = null;
@@ -84,7 +83,6 @@ namespace Rock.Lava.Blocks
         public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
             _attributesMarkup = markup;
-            _tokens = tokens;
 
             // Get the internal content of the block. The list of tokens passed in to custom blocks includes the block closing tag,
             // We need to remove the unmatched closing tag to get the valid internal markup for the block.
@@ -129,19 +127,16 @@ namespace Rock.Lava.Blocks
 
                 var showContent = ShowContentForCurrentRequest( context );
 
+                // Render the internal template, before or after the {% else %} tag if it exists.
                 var content = ( showContent ) ? matchContent : elseContent;
-                if ( showContent )
-                {
-                    // Show content prior to the {% else %} tag.
-                    content = matchContent;
-                }
-                else
-                {
-                    // Show content after the {% else %} tag.
-                    content = elseContent;
-                }
 
-                result.Write( content );
+                if ( !string.IsNullOrEmpty( content ) )
+                {
+                    var engine = context.GetService<ILavaEngine>();
+                    var render = engine.RenderTemplate( content );
+
+                    result.Write( render.Text );
+                }
             }
             catch ( Exception ex )
             {
@@ -175,7 +170,7 @@ namespace Rock.Lava.Blocks
             bool? requestFilterIsValid = null;
             var requestFilterParameterString = _settings.GetStringValue( ParameterRequestFilters )
                 ?? _settings.GetStringValue( "requestfilters" );
-                ;
+
             if ( !string.IsNullOrWhiteSpace( requestFilterParameterString ) )
             {
                 var currentFilterIdList = LavaPersonalizationHelper.GetPersonalizationRequestFilterIdList();
