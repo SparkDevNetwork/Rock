@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -413,6 +413,20 @@ namespace RockWeb.Blocks.Steps
             else if ( e.Key == FilterKey.FirstName || e.Key == FilterKey.LastName || e.Key == FilterKey.Note )
             {
                 // No change
+            }
+            else if ( e.Key == FilterKey.Campus )
+            {
+                var campus = CampusCache.Get( e.Value.ToIntSafe() );
+                var campusContext = ContextEntity<Campus>();
+
+                if ( campus != null && campusContext == null )
+                {
+                    e.Value = campus.Name;
+                }
+                else
+                {
+                    e.Value = string.Empty;
+                }
             }
             else
             {
