@@ -775,6 +775,10 @@ namespace RockWeb.Blocks.Mobile
                 var pageService = new PageService( context );
                 var page = pageService.Get( guid.Value );
 
+                if( page == null )
+                {
+                    return "No Page";
+                }
                 return page.PageTitle;
             }
         }
@@ -910,7 +914,7 @@ namespace RockWeb.Blocks.Mobile
 
                 var conflictingDeepLinkPathPrefix = new SiteService( rockContext ).Queryable()
                     .AsEnumerable()
-                    .Where( s => s.AdditionalSettings != null && s.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>().IsDeepLinkingEnabled )
+                    .Where( s => s.AdditionalSettings != null && s.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>().DeepLinkPathPrefix == deepLinkPrefix )
                     .Any();
 
                 if ( conflictingRoute || conflictingDeepLinkPathPrefix )
