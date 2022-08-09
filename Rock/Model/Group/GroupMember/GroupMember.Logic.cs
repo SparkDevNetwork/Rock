@@ -427,7 +427,7 @@ namespace Rock.Model
                     if ( entry != null && entry.State != EntityState.Detached )
                     {
                         var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues[nameof( this.GroupMemberStatus )];
-                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues[nameof (this.GroupMemberStatus )];
+                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues[nameof( this.GroupMemberStatus )];
 
                         hasChanged = rockContext.Entry( this ).Property( nameof( this.PersonId ) )?.IsModified == true
                         || rockContext.Entry( this ).Property( nameof( this.GroupRoleId ) )?.IsModified == true
@@ -450,7 +450,7 @@ namespace Rock.Model
             var metRequirements = this.GroupMemberRequirements.Select( a => new
             {
                 GroupRequirementId = a.GroupRequirement.Id,
-                MeetsGroupRequirement = a.RequirementMetDateTime.HasValue || a.WasManuallyCompleted  || a.WasOverridden
+                MeetsGroupRequirement = a.RequirementMetDateTime.HasValue || a.WasManuallyCompleted || a.WasOverridden
                     ? a.RequirementWarningDateTime.HasValue ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets
                     : MeetsGroupRequirement.NotMet,
                 a.RequirementWarningDateTime,
@@ -544,13 +544,14 @@ namespace Rock.Model
             var groupRequirementIds = this.GroupMemberRequirements.Select( a => a.GroupRequirementId ).ToList();
             var inapplicableGroupRequirementIds = new GroupRequirementService( rockContext )
                 .Queryable()
-                .Where( r => groupRequirementIds.Contains( r.Id ) && r.GroupRoleId.HasValue && r.GroupRoleId != this.GroupRoleId
-		&& !r.WasManuallyCompleted && !r.WasOverridden
-                && !r.DoesNotMeetWorkflowId.HasValue && !r.WarningWorkflowId.HasValue )
+                .Where( r => groupRequirementIds.Contains( r.Id ) && r.GroupRoleId.HasValue && r.GroupRoleId != this.GroupRoleId )
                 .Select( a => a.Id )
                 .ToList();
 
-            var groupMemberRequirementsToBeDeleted = this.GroupMemberRequirements.Where( a => inapplicableGroupRequirementIds.Contains( a.GroupRequirementId ) ).ToList();
+            var groupMemberRequirementsToBeDeleted = this.GroupMemberRequirements.Where( r =>
+                !r.WasManuallyCompleted && !r.WasOverridden
+                && !r.DoesNotMeetWorkflowId.HasValue && !r.WarningWorkflowId.HasValue
+                && inapplicableGroupRequirementIds.Contains( r.GroupRequirementId ) ).ToList();
 
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
             groupMemberRequirementsService.DeleteRange( groupMemberRequirementsToBeDeleted );
