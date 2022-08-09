@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,7 +37,7 @@ namespace Rock.Field.Types
     /// <seealso cref="Rock.Field.FieldType" />
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "1FD31CDC-E5E2-431B-8D53-72FC0430044D")]
-    public class DocumentTypeFieldType : FieldType
+    public class DocumentTypeFieldType : FieldType, IEntityReferenceFieldType
     {
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
 
@@ -121,6 +121,24 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            // This is a list of IDs, we'll want it to be document type names instead
+            var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( int.Parse ).ToList();
+
+            return DocumentTypeCache.All()
+                .Where( v => selectedValues.Contains( v.Id ) )
+                .Select( v => v.Name )
+                .ToList()
+                .AsDelimited( ", " );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -131,21 +149,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( value.IsNullOrWhiteSpace() )
-            {
-                return base.FormatValue( parentControl, value, configurationValues, condensed );
-
-            }
-
-            // This is a list of IDs, we'll want it to be document type names instead
-            var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( int.Parse ).ToList();
-
-            return DocumentTypeCache.All()
-                .Where( v => selectedValues.Contains( v.Id ) )
-                .Select( v => v.Name )
-                .ToList()
-                .AsDelimited( ", " );
-            ;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion Formatting
@@ -263,5 +269,41 @@ namespace Rock.Field.Types
 
         #endregion Filter Control
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var selectedValues = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( int.Parse ).ToList();
+
+            if ( selectedValues.Count == 0 )
+            {
+                return null;
+            }
+
+            var documentTypeIds = DocumentTypeCache.All()
+                .Where( v => selectedValues.Contains( v.Id ) )
+                .Select( v => v.Id )
+                .ToList();
+
+            var referencedEntities = new List<ReferencedEntity>();
+            foreach ( var documentTypeId in documentTypeIds )
+            {
+                referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<DocumentType>().Value, documentTypeId ) );
+            }
+
+            return referencedEntities;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DocumentType>().Value, nameof( DocumentType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

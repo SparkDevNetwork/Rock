@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -221,21 +221,23 @@ namespace Rock.Field.Types
             return values;
         }
 
+        /// <inheritdoc />
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldConfiguration = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ConfigurationJSON ) ?? string.Empty;
+            var newConfiguration = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ConfigurationJSON ) ?? string.Empty;
+
+            return oldConfiguration != newConfiguration;
+        }
+
         #endregion Configuration
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary> 
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            decimal? rangeValue = value.AsDecimalOrNull();
+            decimal? rangeValue = privateValue.AsDecimalOrNull();
             if ( rangeValue == null )
             {
                 return string.Empty;
@@ -243,7 +245,33 @@ namespace Rock.Field.Types
 
             rangeValue = decimal.Round( rangeValue.Value, 0 );
 
-            var configurationJSON = configurationValues.GetValueOrNull( ConfigurationKey.ConfigurationJSON );
+            var configurationJSON = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ConfigurationJSON );
+            List<ConditionalScaleRangeRule> conditionalScaleRangeRuleList = configurationJSON.FromJsonOrNull<List<ConditionalScaleRangeRule>>() ?? new List<ConditionalScaleRangeRule>();
+
+            var matchingRangeRule = conditionalScaleRangeRuleList.FirstOrDefault( a => ( a.HighValue ?? decimal.MaxValue ) >= rangeValue.Value && rangeValue.Value >= ( a.LowValue ?? decimal.MinValue ) );
+            if ( matchingRangeRule != null )
+            {
+                return matchingRangeRule.Label;
+            }
+            else
+            {
+                // if out-of-range, display nothing
+                return string.Empty;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            decimal? rangeValue = privateValue.AsDecimalOrNull();
+            if ( rangeValue == null )
+            {
+                return string.Empty;
+            }
+
+            rangeValue = decimal.Round( rangeValue.Value, 0 );
+
+            var configurationJSON = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ConfigurationJSON );
             List<ConditionalScaleRangeRule> conditionalScaleRangeRuleList = configurationJSON.FromJsonOrNull<List<ConditionalScaleRangeRule>>() ?? new List<ConditionalScaleRangeRule>();
 
             var matchingRangeRule = conditionalScaleRangeRuleList.FirstOrDefault( a => ( a.HighValue ?? decimal.MaxValue ) >= rangeValue.Value && rangeValue.Value >= ( a.LowValue ?? decimal.MinValue ) );
@@ -256,6 +284,21 @@ namespace Rock.Field.Types
                 // if out-of-range, display nothing
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary> 
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion

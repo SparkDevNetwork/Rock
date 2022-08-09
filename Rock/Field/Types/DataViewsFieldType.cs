@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DATAVIEWS )]
-    public class DataViewsFieldType : FieldType
+    public class DataViewsFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -284,6 +284,52 @@ namespace Rock.Field.Types
             }
 
             return AddQuotes( formattedValue );
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.SplitDelimitedValues();
+
+            if ( guids.Length == 0 )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var dataViewIds = new DataViewService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d => guids.Contains( d.Guid.ToString() ) )
+                    .Select( d => d.Id );
+
+                if ( !dataViewIds.Any() )
+                {
+                    return null;
+                }
+
+                var referencedEntities = new List<ReferencedEntity>();
+
+                foreach ( var dataViewId in dataViewIds )
+                {
+                    referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<DataView>().Value, dataViewId ) );
+                }
+
+                return referencedEntities;
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DataView>().Value, nameof( DataView.Name ) )
+            };
         }
 
         #endregion

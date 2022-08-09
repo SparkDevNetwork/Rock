@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,7 +34,7 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [Rock.SystemGuid.FieldTypeGuid( "3217C31F-85B6-4E0D-B6BE-2ADB0D28588D")]
-    public class CategorizedDefinedValueFieldType : FieldType
+    public class CategorizedDefinedValueFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -257,11 +257,33 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
         {
-            var settings = new Settings( configurationValues );
+            var oldDefinedType = oldPrivateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ) ?? string.Empty;
+            var newDefinedType = newPrivateConfigurationValues.GetValueOrNull( DEFINED_TYPE_KEY ) ?? string.Empty;
 
-            var values = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
+            if ( oldDefinedType != newDefinedType )
+            {
+                return true;
+            }
+
+            var oldSelectableValues = oldPrivateConfigurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY ) ?? string.Empty;
+            var newSelectableValues = newPrivateConfigurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY ) ?? string.Empty;
+
+            if ( oldSelectableValues != newSelectableValues )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var settings = new Settings( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
+
+            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
             values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
 
             if ( settings.DefinedTypeId != null )
@@ -277,6 +299,14 @@ namespace Rock.Field.Types
             }
 
             return values.ToList().AsDelimited( ", " );
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -643,6 +673,43 @@ namespace Rock.Field.Types
         private class DefinedValueTreeNode : CategorizedValuePickerItem
         {
             public string ParentKey { get; set; }
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var settings = new Settings( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
+
+            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
+            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+            var referencedEntities = new List<ReferencedEntity>();
+            if ( settings.DefinedTypeId != null )
+            {
+                for ( int i = 0; i < values.Length; i++ )
+                {
+                    var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
+                    if ( definedValue != null )
+                    {
+                        referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<DefinedValue>().Value, definedValue.Id ) );
+                    }
+                }
+            }
+
+            return referencedEntities;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
+            };
         }
 
         #endregion
