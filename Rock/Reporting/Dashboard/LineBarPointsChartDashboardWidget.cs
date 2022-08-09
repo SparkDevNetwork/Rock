@@ -102,6 +102,7 @@ namespace Rock.Reporting.Dashboard
             }
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private FlotChart flotChart
         {
             get
@@ -109,6 +110,7 @@ namespace Rock.Reporting.Dashboard
                 return this.ControlsOfTypeRecursive<FlotChart>().First( a => a.ID == "flotChart" );
             }
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private NotificationBox nbMetricWarning
         {

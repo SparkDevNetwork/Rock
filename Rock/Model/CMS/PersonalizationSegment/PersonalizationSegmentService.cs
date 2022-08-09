@@ -229,11 +229,20 @@ namespace Rock.Model
         /// <returns>System.String[].</returns>
         public string[] GetPersonalizationSegmentIdKeysForPersonAliasId( int personAliasId )
         {
-            var qry = ( this.Context as RockContext ).PersonAliasPersonalizations
-                .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.PersonAliasId == personAliasId );
+            var rockContext = ( RockContext ) this.Context;
 
-            var segmentIds = qry.Select( a => a.PersonalizationEntityId ).ToArray();
-            var segmentIdKeys = segmentIds.Select( a => IdHasher.Instance.GetHash( a ) ).ToArray();
+            // Get the list of Personalization Entity Ids associated with the specified person alias.
+            var qryEntityId = rockContext.PersonAliasPersonalizations
+                .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.PersonAliasId == personAliasId )
+                .Select( a => a.PersonalizationEntityId );
+            // Get the active Personalization Segments associated with the Entity Ids.
+            var qrySegmentId = rockContext.Segments
+                .Where( s => s.IsActive && qryEntityId.Contains( s.Id ) )
+                .Select(s => s.Id);
+            // Return a set of hashed Ids identifying the Personalization Segments.
+            var segmentIdKeys = qrySegmentId.ToList()
+                .Select( a => IdHasher.Instance.GetHash( a ) )
+                .ToArray();
 
             return segmentIdKeys;
         }

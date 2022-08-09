@@ -1769,9 +1769,26 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                     foreach ( var value in distinctValues )
                     {
-                        var persistedValues = field.GetPersistedValues( value, configurationValues );
+                        if ( field.IsPersistedValueSupported( configurationValues ) )
+                        {
+                            var persistedValues = field.GetPersistedValues( value, configurationValues );
 
-                        count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
+                            count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
+                        }
+                        else
+                        {
+                            var placeholderValue = field.GetPersistedValuePlaceholder( configurationValues );
+
+                            var persistedValues = new Field.PersistedValues
+                            {
+                                TextValue = placeholderValue,
+                                CondensedTextValue = placeholderValue,
+                                HtmlValue = placeholderValue,
+                                CondensedHtmlValue = placeholderValue
+                            };
+
+                            count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
+                        }
                     }
                 }
             }
@@ -1805,7 +1822,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
             var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
-            var valueParameter = new SqlParameter( "@Value", value );
+            var valueParameter = new SqlParameter( "@Value", ( object ) value ?? DBNull.Value );
 
             // Because AttributeValue has a trigger on it, the extra where clause is
             // to prevent updates if no value actually changed is rather important.
@@ -2195,7 +2212,24 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
             {
                 var attributeCache = AttributeCache.Get( attribute.Id );
                 var field = attributeCache.FieldType.Field;
-                var persistedValues = field.GetPersistedValues( attribute.DefaultValue, attributeCache.ConfigurationValues );
+                Field.PersistedValues persistedValues;
+
+                if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
+                {
+                    persistedValues = field.GetPersistedValues( attribute.DefaultValue, attributeCache.ConfigurationValues );
+                }
+                else
+                {
+                    var placeholderValue = field.GetPersistedValuePlaceholder( attributeCache.ConfigurationValues );
+
+                    persistedValues = new Field.PersistedValues
+                    {
+                        TextValue = placeholderValue,
+                        CondensedTextValue = placeholderValue,
+                        HtmlValue = placeholderValue,
+                        CondensedHtmlValue = placeholderValue
+                    };
+                }
 
                 attribute.DefaultPersistedTextValue = persistedValues.TextValue;
                 attribute.DefaultPersistedHtmlValue = persistedValues.HtmlValue;
@@ -2251,8 +2285,25 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                     var value = valueGroup.Key;
                     var attributeCache = AttributeCache.Get( attributeId );
                     var field = attributeCache.FieldType.Field;
-                    var persistedValues = field.GetPersistedValues( value, attributeCache.ConfigurationValues );
                     var attributeValueIds = valueGroup.Select( vg => vg.AttributeValueId );
+                    Field.PersistedValues persistedValues;
+
+                    if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
+                    {
+                        persistedValues = field.GetPersistedValues( value, attributeCache.ConfigurationValues );
+                    }
+                    else
+                    {
+                        var placeholderValue = field.GetPersistedValuePlaceholder( attributeCache.ConfigurationValues );
+
+                        persistedValues = new Field.PersistedValues
+                        {
+                            TextValue = placeholderValue,
+                            CondensedTextValue = placeholderValue,
+                            HtmlValue = placeholderValue,
+                            CondensedHtmlValue = placeholderValue
+                        };
+                    }
 
                     BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
                 }

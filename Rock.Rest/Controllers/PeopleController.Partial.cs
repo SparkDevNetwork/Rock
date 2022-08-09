@@ -770,7 +770,6 @@ namespace Rock.Rest.Controllers
         {
             // Enable Proxy Creation so that LazyLoading will work. 
             SetProxyCreation( true );
-
             return SearchForPeople( Service.Context as RockContext, name, address, phone, email, includeDetails, includeBusinesses, includeDeceased, true );
         }
 

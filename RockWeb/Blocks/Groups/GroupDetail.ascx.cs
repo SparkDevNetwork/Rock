@@ -727,17 +727,18 @@ namespace RockWeb.Blocks.Groups
             bool triggersUpdated = false;
             bool checkinDataUpdated = false;
 
-            RockContext rockContext = new RockContext();
+            var rockContext = new RockContext();
 
-            GroupService groupService = new GroupService( rockContext );
-            GroupLocationService groupLocationService = new GroupLocationService( rockContext );
-            GroupRequirementService groupRequirementService = new GroupRequirementService( rockContext );
-            GroupMemberWorkflowTriggerService groupMemberWorkflowTriggerService = new GroupMemberWorkflowTriggerService( rockContext );
-            ScheduleService scheduleService = new ScheduleService( rockContext );
-            AttributeService attributeService = new AttributeService( rockContext );
-            AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
-            CategoryService categoryService = new CategoryService( rockContext );
-            GroupSyncService groupSyncService = new GroupSyncService( rockContext );
+            var groupService = new GroupService( rockContext );
+            var groupLocationService = new GroupLocationService( rockContext );
+            var groupRequirementService = new GroupRequirementService( rockContext );
+            var groupMemberWorkflowTriggerService = new GroupMemberWorkflowTriggerService( rockContext );
+            var scheduleService = new ScheduleService( rockContext );
+            var attributeService = new AttributeService( rockContext );
+            var attributeQualifierService = new AttributeQualifierService( rockContext );
+            var categoryService = new CategoryService( rockContext );
+            var groupSyncService = new GroupSyncService( rockContext );
+            var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
 
             var roleGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
             int roleGroupTypeId = roleGroupType != null ? roleGroupType.Id : int.MinValue;
@@ -778,6 +779,16 @@ namespace RockWeb.Blocks.Groups
                     foreach ( var deleteConfig in accessModGroupLocationScheduleConfigsToRemove )
                     {
                         groupLocation.GroupLocationScheduleConfigs.Remove( deleteConfig );
+                    }
+
+                    // Remove GroupMember assignments for this location
+                    foreach ( var schedule in groupLocation.Schedules )
+                    {
+                        var configuredSchedules = groupMemberAssignmentService.Queryable()
+                            .Where( a => a.ScheduleId == schedule.Id && a.LocationId == groupLocation.LocationId && a.GroupMember.GroupId == groupLocation.GroupId )
+                            .ToList();
+
+                        groupMemberAssignmentService.DeleteRange( configuredSchedules );
                     }
 
                     // Remove the location.
@@ -846,6 +857,20 @@ namespace RockWeb.Blocks.Groups
                     groupLocationState.Guid = groupLocation.Guid;
 
                     var selectedSchedules = groupLocationState.Schedules.Select( s => s.Guid ).ToList();
+
+                    // If the location has changed for this groupLocation then any existing GroupAssignment is not longer valid so we delete them.
+                    if ( groupLocationState.LocationId != groupLocation.LocationId )
+                    {
+                        foreach ( var schedule in groupLocationState.Schedules )
+                        {
+                            var configuredSchedules = groupMemberAssignmentService.Queryable()
+                                .Where( a => a.ScheduleId == schedule.Id && a.LocationId == groupLocation.LocationId && a.GroupMember.GroupId == groupLocation.GroupId )
+                                .ToList();
+
+                            groupMemberAssignmentService.DeleteRange( configuredSchedules );
+                        }
+                    }
+
                     foreach ( var schedule in groupLocation.Schedules.Where( s => !selectedSchedules.Contains( s.Guid ) ).ToList() )
                     {
                         deletedSchedules.Add( schedule.Id );

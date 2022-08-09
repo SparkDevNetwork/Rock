@@ -21,6 +21,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
+    [RockObsolete( "1.14.0" )]
+    [Obsolete( "Use RockBarChart instead." )]
     public class BarChart : FlotChart
     {
         /// <summary>

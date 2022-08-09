@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M6.07,3.57a.39.39,0,0,1,.39-.4H7.65a.4.4,0,0,1,.39.4V4.75a.4.4,0,0,1-.39.4H6.46a.39.39,0,0,1-.39-.4Zm4.73-.4a.4.4,0,0,1,.4.4V4.75a.4.4,0,0,1-.4.4H9.62a.39.39,0,0,1-.39-.4V3.57a.39.39,0,0,1,.39-.4ZM6.07,6.73a.39.39,0,0,1,.39-.4H7.65a.4.4,0,0,1,.39.4V7.91a.4.4,0,0,1-.39.4H6.46a.39.39,0,0,1-.39-.4Zm4.73-.4a.4.4,0,0,1,.4.4V7.91a.4.4,0,0,1-.4.4H9.62a.39.39,0,0,1-.39-.4V6.73a.39.39,0,0,1,.39-.4ZM3.89,2.58A1.58,1.58,0,0,1,5.47,1h6.32a1.58,1.58,0,0,1,1.58,1.58v9.48a1.58,1.58,0,0,1-1.58,1.58H5.47a1.58,1.58,0,0,1-1.58-1.58Zm1.19,0v9.48a.4.4,0,0,0,.39.39h2V10.87a1.19,1.19,0,0,1,2.37,0v1.58h2a.4.4,0,0,0,.4-.39V2.58a.4.4,0,0,0-.4-.4H5.47A.4.4,0,0,0,5.08,2.58Z""/><path d=""M2.63,12.5A2.5,2.5,0,0,0,5.13,15H9.79a.4.4,0,0,0,.4-.4v-.11a.4.4,0,0,0-.4-.4H5.05a1.5,1.5,0,0,1-1.5-1.5V3.73a.4.4,0,0,0-.4-.4H3a.4.4,0,0,0-.4.4Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CAMPUSES )]
-    public class CampusesFieldType : SelectFromListFieldType, ICachedEntitiesFieldType
+    public class CampusesFieldType : SelectFromListFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -339,18 +340,7 @@ namespace Rock.Field.Types
 
         #endregion
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            return base.EditControl( configurationValues, id );
-        }
+        #region Methods
 
         /// <summary>
         /// Gets the list source.
@@ -398,5 +388,44 @@ namespace Rock.Field.Types
 
             return result;
         }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+            var ids = valueGuidList
+                .Select( guid => CampusCache.GetId( guid ) )
+                .Where( id => id.HasValue )
+                .ToList();
+
+            var campusEntityTypeId = EntityTypeCache.GetId<Campus>().Value;
+
+            return ids
+                .Select( id => new ReferencedEntity( campusEntityTypeId, id.Value ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Campus and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Campus>().Value, nameof( Campus.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

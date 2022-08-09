@@ -14,19 +14,28 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Web.UI.Controls
+
+namespace Rock.Chart
 {
     /// <summary>
-    /// 
+    /// A chart data point that represents a value for a specific category, suitable for use with a chart that represents a set of values summarised by categories.
     /// </summary>
-    public class LineChart : FlotChart
+    public interface IChartJsCategorySeriesDataPoint
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LineChart"/> class.
+        /// Gets or sets the category.
         /// </summary>
-        public LineChart()
-        {
-            this.Options.series = new SeriesOptions( false, true, false );
-        }
+        /// <value>
+        /// The category.
+        /// </value>
+        string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
+        decimal Value { get; set; }
     }
 }

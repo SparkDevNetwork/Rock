@@ -121,6 +121,10 @@ namespace Rock.Field
             get { return HorizontalAlign.Left; }
         }
 
+        /// <remarks>
+        ///     <inheritdoc/>
+        ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
+        /// </remarks>
         /// <inheritdoc/>
         [RockInternal]
         public virtual string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -128,6 +132,10 @@ namespace Rock.Field
             return privateValue;
         }
 
+        /// <remarks>
+        ///     <inheritdoc/>
+        ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
+        /// </remarks>
         /// <inheritdoc/>
         [RockInternal]
         public virtual string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -135,6 +143,10 @@ namespace Rock.Field
             return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
+        /// <remarks>
+        ///     <inheritdoc/>
+        ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
+        /// </remarks>
         /// <inheritdoc/>
         [RockInternal]
         public virtual string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -142,6 +154,10 @@ namespace Rock.Field
             return GetTextValue( privateValue, privateConfigurationValues ).Truncate( 100 );
         }
 
+        /// <remarks>
+        ///     <inheritdoc/>
+        ///     <para>Subclasses should not call the base implementation unless they have a specific reason to.</para>
+        /// </remarks>
         /// <inheritdoc/>
         [RockInternal]
         public virtual string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )

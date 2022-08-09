@@ -32,6 +32,8 @@ namespace Rock.Web.UI.Controls
     /// Abstract class for much of the Flot Charts Logic
     /// Subset of the spec at https://github.com/flot/flot/blob/master/API.md
     /// </summary>
+    [RockObsolete( "1.14.0" )]
+    [Obsolete( "Use ChartJsChart instead." )]
     public abstract class FlotChart : CompositeControl
     {
         /// <summary>
