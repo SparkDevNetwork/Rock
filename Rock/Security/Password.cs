@@ -149,11 +149,12 @@ namespace Rock.Security
 
         /// <summary>
         /// Gets a random 32-bit signed integer that is greater than or equal to minimumValue and less than exclusiveUpperBound
-        /// using the <see cref="RandomNumberGenerator"/> class.
+        /// using the <see cref="RandomNumberGenerator" /> class.
         /// </summary>
+        /// <param name="rng">The RNG.</param>
         /// <param name="minimumValue">The minimum value of the random number.</param>
         /// <param name="exclusiveUpperBound">The exclusive upper bound of the random number (must be greater than minimumValue).</param>
-        /// <returns></returns>
+        /// <returns>System.Int32.</returns>
         private static int GetRandomInteger( RandomNumberGenerator rng, int minimumValue, int exclusiveUpperBound )
         {
             if ( exclusiveUpperBound <= minimumValue )
