@@ -21,6 +21,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
+using Rock.Web.Utilities;
 
 namespace Rock.Field.Types
 {
@@ -104,7 +105,6 @@ namespace Rock.Field.Types
 
         #endregion
 
-
         #region Formatting
 
         /// <summary>
@@ -118,6 +118,7 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             var result = value.ConvertMarkdownToHtml();
+            result = HtmlSanitizer.SanitizeHtml( result );
 
             if ( condensed )
             {
