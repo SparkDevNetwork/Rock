@@ -160,27 +160,85 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                var groupId = new GroupMemberRequirementService( rockContext ).GetId( guid.Value );
+                // This is a complex reference. See below in the GetReferencedProperties()
+                // method for a more detailed description of the paths we need. This query
+                // will get us the identifiers of the entities making up those paths.
+                var ids = new GroupMemberRequirementService( rockContext )
+                    .Queryable()
+                    .Where( gmr => gmr.Guid == guid.Value )
+                    .Select( gmr => new
+                    {
+                        GroupMemberRequirementId = gmr.Id,
+                        gmr.GroupMemberId,
+                        gmr.GroupMember.PersonId,
+                        gmr.GroupRequirementId,
+                        gmr.GroupRequirement.GroupRequirementTypeId,
+                        gmr.GroupRequirement.GroupId,
+                        gmr.GroupRequirement.GroupTypeId
+                    } )
+                    .FirstOrDefault();
 
-                if ( !groupId.HasValue )
+                if ( ids == null )
                 {
                     return null;
                 }
 
-                return new List<ReferencedEntity>
+                var entityReferences = new List<ReferencedEntity>()
                 {
-                    new ReferencedEntity( EntityTypeCache.GetId<GroupMemberRequirement>().Value, groupId.Value )
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupMemberRequirement>().Value, ids.GroupMemberRequirementId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupMember>().Value, ids.GroupMemberRequirementId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, ids.PersonId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupRequirement>().Value, ids.GroupRequirementId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupRequirementType>().Value, ids.GroupRequirementTypeId )
                 };
+
+                if ( ids.GroupId.HasValue )
+                {
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Group>().Value, ids.GroupId.Value ) );
+                }
+
+                if ( ids.GroupTypeId.HasValue )
+                {
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<GroupType>().Value, ids.GroupTypeId.Value ) );
+                }
+
+                return entityReferences;
             }
         }
 
         /// <inheritdoc/>
         List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
         {
-            // This field type references the Name property of a Group Member Requirement and
-            // should have its persisted values updated when changed.
+            // This is a complex one. The following navigation paths are used
+            // to generate the formatted values (as seen from the GroupMemberRequirement object):
+            // - GroupMember.Person.NickName
+            // - GroupMember.Person.LastName
+            // - GroupRequirement.GroupRequirementType.Name
+            // - GroupRequirement.Group.Name
+            // - GroupRequirement.GroupType.Name
+            //
+            // This means we need all the navigation properties involved:
+            // - GroupMemberId
+            // - GroupRequirementId
+            // - GroupMember.PersonId
+            // - GroupRequirement.GroupRequirementTypeId
+            // - GroupRequirement.GroupId
+            // - GroupRequirement.GroupTypeId
+            //
+            // We also need the actual properties that contain the values we need:
+            // - Person.NickName
+            // - Person.LastName
+            // - GroupRequirementType.Name
+            // - Group.Name
+            // - GroupType.Name
             return new List<ReferencedProperty>
             {
+                new ReferencedProperty( EntityTypeCache.GetId<GroupMemberRequirement>().Value, nameof( GroupMemberRequirement.GroupMemberId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupMemberRequirement>().Value, nameof( GroupMemberRequirement.GroupRequirementId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupMember>().Value, nameof( GroupMember.PersonId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupRequirement>().Value, nameof( GroupRequirement.GroupRequirementTypeId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupRequirement>().Value, nameof( GroupRequirement.GroupId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupRequirement>().Value, nameof( GroupRequirement.GroupTypeId ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<GroupRequirementType>().Value, nameof( GroupRequirementType.Name ) ),

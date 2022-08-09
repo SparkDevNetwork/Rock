@@ -192,6 +192,7 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
         public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
         {
             var oldDisplayPublicName = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
