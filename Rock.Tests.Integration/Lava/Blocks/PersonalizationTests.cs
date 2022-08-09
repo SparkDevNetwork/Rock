@@ -22,6 +22,8 @@ using Http.TestLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Lava.Fluid;
+using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
 
@@ -37,7 +39,10 @@ namespace Rock.Tests.Integration.Lava
     {
         private const string SegmentAllMenGuid = "A8B006AF-1531-42B5-AD9A-570F97C8EFC1";
         private const string SegmentSmallGroupGuid = "F189099D-B1B7-4067-BD28-D354110AAB1D";
+        private const string SegmentTestInactiveGuid = "E5DBC839-1E16-4430-81A6-9EDEF9422B4F";
+        
         private const string FilterMobileDeviceGuid = "F4F31B2A-F525-4E52-8A6E-ECA1E1EBD75B";
+        private const string FilterQueryParameterInactiveGuid = "45AA8BAF-78F2-4220-93C7-0ADC7CB8CADD";
         private const string FilterQueryParameter1Guid = "674BD50E-DA57-495F-B2EC-B16BC34BE2FA";
         private const string FilterQueryParameter2Guid = "806079BE-768E-4707-9C86-47A73DB7A1C7";
         private const string FilterDesktopDeviceGuid = "58DEE912-6EF2-43C8-BE89-452A830BB7EF";
@@ -48,8 +53,8 @@ namespace Rock.Tests.Integration.Lava
             var rockContext = new RockContext();
 
             // Create Personalization Segments.
-            var personService = new PersonService( rockContext );
-            var person = personService.GetByGuids( new List<Guid> { TestGuids.TestPeople.TedDecker.AsGuid() } ).FirstOrDefault();
+            //var personService = new PersonService( rockContext );
+            //var person = personService.GetByGuids( new List<Guid> { TestGuids.TestPeople.TedDecker.AsGuid() } ).FirstOrDefault();
 
             var personalizationService = new PersonalizationSegmentService( rockContext );
 
@@ -76,9 +81,24 @@ namespace Rock.Tests.Integration.Lava
             segmentSmallGroup.Guid = SegmentSmallGroupGuid.AsGuid();
             rockContext.SaveChanges();
 
-            // Add Ted Decker to segments: ALL_MEN, SMALL_GROUP
+            var segmentTestInactive = personalizationService.Get( SegmentTestInactiveGuid.AsGuid() );
+            if ( segmentTestInactive == null )
+            {
+                segmentTestInactive = new PersonalizationSegment();
+                personalizationService.Add( segmentTestInactive );
+            }
+
+            segmentTestInactive.SegmentKey = "SEGMENT_INACTIVE";
+            segmentTestInactive.Name = "Inactive Segment";
+            segmentTestInactive.Guid = SegmentTestInactiveGuid.AsGuid();
+            segmentTestInactive.IsActive = false;
+            rockContext.SaveChanges();
+
+            // Add Ted Decker to segments: ALL_MEN, SMALL_GROUP, SEGMENT_INACTIVE
             AddOrUpdatePersonalizationSegmentForPerson( rockContext, SegmentAllMenGuid, TestGuids.TestPeople.TedDecker );
             AddOrUpdatePersonalizationSegmentForPerson( rockContext, SegmentSmallGroupGuid, TestGuids.TestPeople.TedDecker );
+            AddOrUpdatePersonalizationSegmentForPerson( rockContext, SegmentTestInactiveGuid, TestGuids.TestPeople.TedDecker );
+
             // Add Bill Marble to segments: ALL_MEN
             AddOrUpdatePersonalizationSegmentForPerson( rockContext, SegmentAllMenGuid, TestGuids.TestPeople.BillMarble );
 
@@ -115,12 +135,17 @@ namespace Rock.Tests.Integration.Lava
 
             // Create Request Filter: QueryStringParameter1.
             AddOrUpdateRequestFilterForQueryString( rockContext, FilterQueryParameter1Guid, "QUERY_1", "parameter1", "true" );
+
+            // Create Request Filter: QueryStringParameter2.
             AddOrUpdateRequestFilterForQueryString( rockContext, FilterQueryParameter2Guid, "QUERY_2", "parameter2", "true" );
 
+            // Create Request Filter: QueryStringParameter0, Inactive.
+            var inactiveFilter = AddOrUpdateRequestFilterForQueryString( rockContext, FilterQueryParameterInactiveGuid, "REQUEST_INACTIVE", "inactive", " true" );
+            inactiveFilter.IsActive = false;
             rockContext.SaveChanges();
         }
 
-        private void AddOrUpdateRequestFilterForQueryString( RockContext rockContext, string guid, string filterKey, string parameterName, string parameterValue )
+        private RequestFilter AddOrUpdateRequestFilterForQueryString( RockContext rockContext, string guid, string filterKey, string parameterName, string parameterValue )
         {
             var filterService = new RequestFilterService( rockContext );
 
@@ -146,9 +171,11 @@ namespace Rock.Tests.Integration.Lava
             filterConfig.QueryStringRequestFilters = new List<Personalization.QueryStringRequestFilter> { queryStringFilter };
 
             newFilter.FilterConfiguration = filterConfig;
+
+            return newFilter;
         }
 
-        private void AddOrUpdatePersonalizationSegmentForPerson( RockContext rockContext, string segmentGuid, string personGuid )
+        private PersonAliasPersonalization AddOrUpdatePersonalizationSegmentForPerson( RockContext rockContext, string segmentGuid, string personGuid )
         {
             var pap = new PersonAliasPersonalization();
             pap.PersonalizationType = PersonalizationType.Segment;
@@ -170,6 +197,8 @@ namespace Rock.Tests.Integration.Lava
             {
                 rockContext.PersonAliasPersonalizations.Add( pap );
             }
+
+            return pap;
         }
 
         [TestMethod]
@@ -289,6 +318,46 @@ Request acknowledged!
             AssertOutputForPersonAndRequest( input,
                 expectedOutput,
                 inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true&parameter2=true" );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_ForRequestFilterMarkedAsInactive_IsHidden()
+        {
+            var input = @"
+{% personalize requestfilter:'SEGMENT_INACTIVE' matchtype:'none' %}
+This content should be visible.
+//- Why? The request filter exists and is matched by the query parameter, but it is inactive and so it does not register as a match.
+{% endpersonalize %}
+{% personalize requestfilter:'SEGMENT_INACTIVE' %}
+This content should be hidden.
+//- Why? The request filter is inactive.
+{% endpersonalize %}
+";
+            var expectedOutput = @"This content should be visible.";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?inactive=true" );
+        }
+
+        [TestMethod]
+        public void PersonalizeBlock_ForSegmentMarkedAsInactive_IsHidden()
+        {
+            var input = @"
+{% personalize segment:'SEGMENT_INACTIVE' matchtype:'none' %}
+This content should be visible.
+//- Why? The segment exists, and it can't match because it is inactive.
+{% endpersonalize %}
+{% personalize segment:'SEGMENT_INACTIVE' %}
+This content should be hidden.
+//- Why? The segment is inactive.
+{% endpersonalize %}
+";
+            var expectedOutput = @"This content should be visible.";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true&parameter2=xyzzy" );
         }
 
         [TestMethod]
@@ -484,7 +553,7 @@ No match!
         }
 
         [TestMethod]
-        public void PersonalizationItemsFilter_WithNoActiveRequest_ReturnsSegmentsOnly()
+        public void PersonalizationItemsFilter_WithNoActiveRequest_ReturnsActiveSegmentsOnly()
         {
             var input = @"
 {% assign items = '<personGuid>' | PersonalizationItems:'Segments,RequestFilters' %}
@@ -570,12 +639,12 @@ No match!
                 var simulator = new HttpSimulator();
                 using ( var request = simulator.SimulateRequest( new Uri( inputUrl ) ) )
                 {
-                    TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, inputTemplate, options );
+                    TestHelper.AssertTemplateOutput( typeof( RockLiquidEngine ), expectedOutput, inputTemplate, options );
                 }
             }
             else
             {
-                TestHelper.AssertTemplateOutput( typeof(FluidEngine), expectedOutput, inputTemplate, options );
+                TestHelper.AssertTemplateOutput( typeof( RockLiquidEngine ), expectedOutput, inputTemplate, options );
             }
         }
     }

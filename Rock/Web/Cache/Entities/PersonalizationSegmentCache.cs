@@ -105,7 +105,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the segments having keys matching those in the specified list.
+        /// Gets the active segments having keys matching those in the specified list.
         /// </summary>
         /// <param name="segmentKeys">A delimited list of segment keys.</param>
         /// <param name="delimiter">The delimiter used to separate the keys in the list.</param>
@@ -120,7 +120,8 @@ namespace Rock.Web.Cache
             }
 
             var segmentKeyList = segmentKeys.SplitDelimitedValues( delimiter, StringSplitOptions.RemoveEmptyEntries );
-            var segments = PersonalizationSegmentCache.All();
+            var segments = PersonalizationSegmentCache.All()
+                .Where( ps => ps.IsActive );
 
             foreach ( var segmentKey in segmentKeyList )
             {
@@ -130,10 +131,11 @@ namespace Rock.Web.Cache
                 }
 
                 // Retrieve the segment by matching key, ignoring leading/trailing whitespace and case.
-                var segment = segments.FirstOrDefault( s => s.SegmentKey.Equals( segmentKey.Trim(), StringComparison.OrdinalIgnoreCase ) );
-                if ( segment != null )
+                var matchedSegments = segments.Where( s => s.SegmentKey.Equals( segmentKey.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                    .ToList();
+                if ( matchedSegments.Any() )
                 {
-                    results.Add( segment );
+                    results.AddRange( matchedSegments );
                 }
             }
 

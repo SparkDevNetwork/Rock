@@ -153,24 +153,21 @@ namespace Rock.Lava.RockLiquid.Blocks
                     var requiredRequestIdList = RequestFilterCache.GetByKeys( requestFilterParameterString )
                         .Select( ps => ps.Id )
                         .ToList();
-                    if ( requiredRequestIdList.Any() )
+                    if ( matchType == "all" )
                     {
-                        if ( matchType == "all" )
-                        {
-                            // All of the specified filters must be matched, so we need to fail for any invalid keys.
-                            var requestFilterParameterCount = requestFilterParameterString.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Count();
-                            isMatchForRequestFilters = ( requiredRequestIdList.Count == requestFilterParameterCount )
-                                && requiredRequestIdList.All( id => currentFilterIdList.Contains( id ) );
-                        }
-                        else if ( matchType == "none" )
-                        {
-                            isMatchForRequestFilters = !requiredRequestIdList.Any( id => currentFilterIdList.Contains( id ) );
-                        }
-                        else
-                        {
-                            // Apply default match type of "any".
-                            isMatchForRequestFilters = requiredRequestIdList.Any( id => currentFilterIdList.Contains( id ) );
-                        }
+                        // All of the specified filters must be matched, so we need to fail for any invalid keys.
+                        var requestFilterParameterCount = requestFilterParameterString.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Count();
+                        isMatchForRequestFilters = ( requiredRequestIdList.Count == requestFilterParameterCount )
+                            && requiredRequestIdList.All( id => currentFilterIdList.Contains( id ) );
+                    }
+                    else if ( matchType == "none" )
+                    {
+                        isMatchForRequestFilters = !requiredRequestIdList.Any( id => currentFilterIdList.Contains( id ) );
+                    }
+                    else
+                    {
+                        // Apply default match type of "any".
+                        isMatchForRequestFilters = requiredRequestIdList.Any( id => currentFilterIdList.Contains( id ) );
                     }
                 }
             }
@@ -214,24 +211,21 @@ namespace Rock.Lava.RockLiquid.Blocks
                 var requiredSegmentIdList = PersonalizationSegmentCache.GetByKeys( segmentParameterString )
                     .Select( ps => ps.Id )
                     .ToList();
-                if ( requiredSegmentIdList != null )
+                if ( matchType == "all" )
                 {
-                    if ( matchType == "all" )
-                    {
-                        // All of the specified segments must be matched, so we need to fail for any invalid keys.
-                        var segmentParameterCount = segmentParameterString.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Count();
-                        isMatchForSegments = ( requiredSegmentIdList.Count == segmentParameterCount )
-                            && requiredSegmentIdList.All( id => personSegmentIdList.Contains( id ) );
-                    }
-                    else if ( matchType == "none" )
-                    {
-                        isMatchForSegments = !requiredSegmentIdList.Any( id => personSegmentIdList.Contains( id ) );
-                    }
-                    else
-                    {
-                        // Apply default match type of "any".
-                        isMatchForSegments = requiredSegmentIdList.Any( id => personSegmentIdList.Contains( id ) );
-                    }
+                    // All of the specified segments must be matched, so we need to fail for any invalid keys.
+                    var segmentParameterCount = segmentParameterString.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Count();
+                    isMatchForSegments = ( requiredSegmentIdList.Count == segmentParameterCount )
+                        && requiredSegmentIdList.All( id => personSegmentIdList.Contains( id ) );
+                }
+                else if ( matchType == "none" )
+                {
+                    isMatchForSegments = !requiredSegmentIdList.Any( id => personSegmentIdList.Contains( id ) );
+                }
+                else
+                {
+                    // Apply default match type of "any".
+                    isMatchForSegments = requiredSegmentIdList.Any( id => personSegmentIdList.Contains( id ) );
                 }
             }
             // If segments exist and are not matched, do not show the content.
