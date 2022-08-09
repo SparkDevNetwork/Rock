@@ -996,7 +996,19 @@ namespace RockWeb.Blocks.Connection
             lRequestModalViewModeEmail.Text = GetEmailLinkMarkup( viewModel.PersonId, viewModel.PersonEmail );
             aRequestModalViewModeProfileLink.Attributes["href"] = string.Format( "/person/{0}", viewModel.PersonId );
             btnRequestModalViewModeTransfer.Visible = DoShowTransferButton();
-            btnRequestModalViewModeConnect.Visible = viewModel.CanConnect && CanUserEditConnectionRequest();
+
+            /* 
+                08/09/2022 - SK
+                This is special case where we are not using viewModel.CanConnect in order to make this align with older ConnectionRequestDetail block.
+                CanConnect() method use RequiresPlacementGroupToConnect and AssignedGroupId are also being used in calculation
+                which ultimately controlling btnRequestModalViewModeConnect Visibility.
+            */
+            //btnRequestModalViewModeConnect.Visible = viewModel.CanConnect && CanUserEditConnectionRequest();
+            btnRequestModalViewModeConnect.Visible =
+                viewModel.ConnectionState != ConnectionState.Inactive &&
+                viewModel.ConnectionState != ConnectionState.Connected &&
+                connectionRequest.ConnectionOpportunity.ShowConnectButton &&
+                CanUserEditConnectionRequest();
             btnRequestModalViewModeEdit.Visible = CanUserEditConnectionRequest();
             lbRequestModalViewModeAddActivity.Visible = CanUserEditConnectionRequest();
             rRequestModalViewModeConnectorSelect.Visible = CanUserEditConnectionRequest();
@@ -1971,16 +1983,21 @@ namespace RockWeb.Blocks.Connection
 
             BindConnectorOptions( ddlRequestModalAddEditModeConnector, true, campusId, connectorPersonAliasId );
 
-            ConnectionState[] ignoredConnectionTypes = { };
+            List<ConnectionState> ignoredConnectionTypes = new List<ConnectionState>();
 
             // If this Connection Type does not allow Future Follow-Up, ignore it from the ConnectionState types.
             if ( !connectionType.EnableFutureFollowup )
             {
-                ignoredConnectionTypes = new ConnectionState[] { ConnectionState.FutureFollowUp };
+                ignoredConnectionTypes.Add( ConnectionState.FutureFollowUp );
+            }
+
+            if ( viewModel == null || viewModel.ConnectionState != ConnectionState.Connected )
+            {
+                ignoredConnectionTypes.Add( ConnectionState.Connected );
             }
 
             // Ignore binding the Connection Types that are in the provided array.
-            rblRequestModalAddEditModeState.BindToEnum( ignoreTypes: ignoredConnectionTypes );
+            rblRequestModalAddEditModeState.BindToEnum( ignoreTypes: ignoredConnectionTypes.ToArray() );
 
             // Status
             rblRequestModalAddEditModeStatus.Items.Clear();

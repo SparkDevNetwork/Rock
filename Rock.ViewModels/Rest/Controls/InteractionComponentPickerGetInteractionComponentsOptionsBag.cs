@@ -26,14 +26,7 @@ namespace Rock.ViewModels.Rest.Controls
     public class InteractionComponentPickerGetInteractionComponentsOptionsBag
     {
         /// <summary>
-        /// ID of the container the components are within. The <see cref="InteractionChannelGuid"/>
-        /// takes precedence over this if present.
-        /// </summary>
-        public int? InteractionChannelId { get; set; }
-
-        /// <summary>
-        /// GUID of the container the components are within.  Can use <see cref="InteractionChannelId"/>
-        /// instead if easier, but this takes precedence if present.
+        /// GUID of the container the components are within.
         /// </summary>
         public Guid? InteractionChannelGuid { get; set; }
     }

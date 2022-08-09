@@ -188,7 +188,7 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 int? itemId = picker.ContentChannelItemId;
-                int? configurationChannelId = configurationValues[CONTENT_CHANNEL_KEY].Value.AsIntegerOrNull();
+                int? configurationChannelId = configurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) ? configurationValues[CONTENT_CHANNEL_KEY].Value.AsIntegerOrNull() : null;
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {

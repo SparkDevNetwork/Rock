@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { computed, defineComponent, PropType, ref } from "vue";
 import BaseAsyncPicker from "./baseAsyncPicker";
@@ -45,6 +45,7 @@ export default defineComponent({
 
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
         const standardProps = useStandardAsyncPickerProps(props);
+        const http = useHttp();
         const loadedItems = ref<ListItemBag[] | null>(null);
 
         // #endregion
@@ -67,7 +68,7 @@ export default defineComponent({
          * Loads the items from the server.
          */
         const loadOptions = async (): Promise<ListItemBag[]> => {
-            const result = await post<ListItemBag[]>("/api/v2/Controls/StreakTypePickerGetStreakTypes", undefined, {});
+            const result = await http.post<ListItemBag[]>("/api/v2/Controls/StreakTypePickerGetStreakTypes", undefined, {});
 
             if (result.isSuccess && result.data) {
                 loadedItems.value = result.data;

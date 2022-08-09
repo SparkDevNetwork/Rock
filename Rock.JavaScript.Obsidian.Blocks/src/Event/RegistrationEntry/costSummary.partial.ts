@@ -17,7 +17,7 @@
 
 import { defineComponent, inject } from "vue";
 import Loading from "@Obsidian/Controls/loading";
-import { InvokeBlockActionFunc } from "@Obsidian/Utility/block";
+import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 import CurrencyBox from "@Obsidian/Controls/currencyBox";
 import HelpBlock from "@Obsidian/Controls/helpBlock";
 import { ValidationRule } from "@Obsidian/ValidationRules";
@@ -57,7 +57,7 @@ export default defineComponent({
     setup() {
         return {
             getRegistrationEntryBlockArgs: inject("getRegistrationEntryBlockArgs") as () => RegistrationEntryBlockArgs,
-            invokeBlockAction: inject("invokeBlockAction") as InvokeBlockActionFunc,
+            invokeBlockAction: useInvokeBlockAction(),
             registrationEntryState: inject("registrationEntryState") as RegistrationEntryState
         };
     },

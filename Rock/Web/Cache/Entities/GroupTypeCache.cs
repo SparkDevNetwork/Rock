@@ -829,6 +829,80 @@ namespace Rock.Web.Cache
         #region Public Methods
 
         /// <summary>
+        /// Gets a list of all attributes defined for the GroupTypes specified that
+        /// match the entityTypeQualifierColumn and the GroupType Ids.
+        /// </summary>
+        /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
+        /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        internal List<AttributeCache> GetInheritedAttributesForQualifier( int entityTypeId, string entityTypeQualifierColumn )
+        {
+            var groupTypeIds = GetInheritedGroupTypeIds();
+
+            var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
+            groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
+
+            //
+            // Walk each group type and generate a list of matching attributes.
+            //
+            foreach ( var entityTypeAttribute in AttributeCache.GetByEntityType( entityTypeId ) )
+            {
+                // group type ids exist and qualifier is for a group type id
+                if ( string.Compare( entityTypeAttribute.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
+                {
+                    int groupTypeIdValue = int.MinValue;
+                    if ( int.TryParse( entityTypeAttribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+                    {
+                        inheritedAttributes[groupTypeIdValue].Add( entityTypeAttribute );
+                    }
+                }
+            }
+
+            //
+            // Walk the generated list of attribute groups and put them, ordered, into a list
+            // of inherited attributes.
+            //
+            var attributes = new List<AttributeCache>();
+            foreach ( var attributeGroup in inheritedAttributes )
+            {
+                foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
+                {
+                    attributes.Add( attribute );
+                }
+            }
+
+            return attributes;
+        }
+
+        /// <summary>
+        /// Gets a list of GroupType Ids, including our own Id, that identifies the
+        /// inheritance tree.
+        /// </summary>
+        /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritance tree.</returns>
+        internal List<int> GetInheritedGroupTypeIds()
+        {
+            //
+            // Can't use GroupTypeCache here since it loads attributes and could
+            // result in a recursive stack overflow situation when we are called
+            // from a GetInheritedAttributes() method.
+            //
+            var groupTypeIds = new List<int>();
+            var groupType = this;
+
+            //
+            // Loop until we find a recursive loop or run out of parent group types.
+            //
+            while ( groupType != null && !groupTypeIds.Contains( groupType.Id ) )
+            {
+                groupTypeIds.Insert( 0, groupType.Id );
+
+                groupType = groupType.InheritedGroupType;
+            }
+
+            return groupTypeIds;
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entity">The entity.</param>

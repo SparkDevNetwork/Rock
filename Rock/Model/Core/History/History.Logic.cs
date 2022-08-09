@@ -90,7 +90,6 @@ namespace Rock.Model
                                     {
                                         string summaryVerb = "Modified";
                                         string summaryValue = ChangeType;
-                                        ;
 
                                         if ( this.OldValue == null && this.NewValue != null )
                                         {

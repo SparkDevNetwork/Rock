@@ -40,7 +40,7 @@
                     </h3>
                     <div class="row">
                         <div class="col-sm-12 col-md-6 col-lg-7">
-                            <asp:Literal ID="lStepProgramDescription" runat="server" />
+                            <div class="description"><asp:Literal ID="lStepProgramDescription" runat="server" /></div>
                         </div>
                         <div class="col-sm-12 col-md-6 col-lg-5">
                             <div class="flex-grow-1 d-flex justify-content-end">
@@ -176,7 +176,7 @@
                         <Rock:DataTextBox ID="tbStepStatusName" SourceTypeName="Rock.Model.StepStatus, Rock" PropertyName="Name" Label="Name" runat="server" ValidationGroup="StepStatus" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Is Active" ValidationGroup="StepStatus" />
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" ValidationGroup="StepStatus" />
                         <Rock:RockCheckBox ID="cbIsCompleted"
                             runat="server"
                             Label="Is Complete"

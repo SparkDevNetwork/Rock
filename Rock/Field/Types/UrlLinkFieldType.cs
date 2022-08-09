@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
@@ -140,34 +141,39 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var shouldAlwaysShowCondensed = configurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
+            var shouldAlwaysShowCondensed = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
 
-            if ( string.IsNullOrWhiteSpace( value ) )
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
             {
                 return string.Empty;
             }
             else
             {
-                if ( condensed || shouldAlwaysShowCondensed )
+                if ( shouldAlwaysShowCondensed )
                 {
-                    return value;
+                    return privateValue;
                 }
                 else
                 {
-                    return string.Format( "<a href='{0}'>{0}</a>", value );
+                    return string.Format( "<a href='{0}'>{0}</a>", privateValue );
                 }
             }
         }
+
+        /// <inheritdoc/>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            var shouldAlwaysShowCondensed = configurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
+            var showCondensed = condensed || shouldAlwaysShowCondensed;
+
+            return !showCondensed
+               ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+               : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
 
         #endregion
 

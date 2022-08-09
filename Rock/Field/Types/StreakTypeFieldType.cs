@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System;
 using System.Web.UI.WebControls;
 using Rock.Web.Cache;
 using Rock.Attribute;
+using Rock.Data;
 
 namespace Rock.Field.Types
 {
@@ -29,7 +30,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "F1411F4A-BD4B-4F80-9A83-94026C009F4D")]
-    public class StreakTypeFieldType : EntitySingleSelectionListFieldTypeBase<StreakType>
+    public class StreakTypeFieldType : EntitySingleSelectionListFieldTypeBase<StreakType>, IEntityReferenceFieldType
     {
         /// <summary>
         /// Returns a user-friendly description of the entity.
@@ -58,5 +59,43 @@ namespace Rock.Field.Types
                 } )
                 .ToDictionary( s => s.Guid, s => s.Name );
         }
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var streakType = StreakTypeCache.Get( guid.Value );
+
+            if ( streakType == null )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<StreakType>().Value, streakType.Id )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a StreakType and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<StreakType>().Value, nameof( StreakType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

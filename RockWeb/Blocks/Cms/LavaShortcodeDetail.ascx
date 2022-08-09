@@ -39,7 +39,7 @@
                             </div>
                         </div>
 
-                        <Rock:CategoryPicker ID="cpShortCodeCat" runat="server" AllowMultiSelect="true" Label="Categories" EntityTypeName="Rock.Model.LavaShortcodeCategory" />
+                        <Rock:CategoryPicker ID="cpShortCodeCat" runat="server" AllowMultiSelect="true" Label="Categories" EntityTypeName="Rock.Model.LavaShortcode" />
 
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.LavaShortcode, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
@@ -71,7 +71,7 @@
 
                             <asp:Literal ID="lblHeaderFields" runat="server" />
 
-                            <Rock:CategoryPicker ID="cpViewCategories" runat="server" AllowMultiSelect="true" Label="Categories" EntityTypeName="Rock.Model.LavaShortcodeCategory" />
+                            <Rock:CategoryPicker ID="cpViewCategories" runat="server" AllowMultiSelect="true" Label="Categories" EntityTypeName="Rock.Model.LavaShortcode" />
 
                             <Rock:CodeEditor ID="ceView" runat="server" ReadOnly="true" Label="Shortcode Markup" EditorHeight="600" />
 

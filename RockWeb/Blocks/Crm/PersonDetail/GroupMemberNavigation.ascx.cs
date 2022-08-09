@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var sb = new StringBuilder(
             $@"<a href=""#"" id=""familyDropdownNav"" class=""profile-toggle"" data-toggle=""dropdown"" aria-haspopup=""true"" aria-expanded=""false"">
-                    <img src=""{Person.GetPersonPhotoUrl( this.Person )}"" class=""avatar mr-2 flex-shrink-0"" alt=""""></img>
+                    <img src=""{Person.GetPersonPhotoUrl( this.Person )}"" class=""avatar mr-2 flex-shrink-0"" alt="""" />
                     <span class=""d-none d-sm-inline text-nowrap font-weight-semibold"">{this.Person.FullName}<i class=""fa fa-chevron-down ml-2""></i></span>
                 </a>
 
@@ -134,6 +134,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     .Queryable( true )
                     .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == this.Person.Id )
                     .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ToList()
                     .Select( m => m.GroupId )
                     .FirstOrDefault() );
             }
@@ -141,8 +142,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 groupIds = groupMemberService
                     .Queryable( true )
-                    .Where( m => m.GroupTypeId == groupTypeId  && m.PersonId == this.Person.Id )
+                    .Where( m => m.GroupTypeId == groupTypeId && m.PersonId == this.Person.Id )
                     .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ToList()
                     .Select( m => m.GroupId )
                     .Distinct()
                     .ToList();

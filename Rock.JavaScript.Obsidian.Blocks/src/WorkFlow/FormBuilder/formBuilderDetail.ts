@@ -25,11 +25,11 @@ import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/
 import { FormError } from "@Obsidian/Utility/form";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import CommunicationsTab from "./FormBuilderDetail/communicationsTab";
-import FormBuilderTab from "./FormBuilderDetail/formBuilderTab";
-import SettingsTab from "./FormBuilderDetail/settingsTab";
+import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial";
+import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial";
+import SettingsTab from "./FormBuilderDetail/settingsTab.partial";
 import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types";
-import { provideFormSources } from "./FormBuilderDetail/utils";
+import { provideFormSources } from "./FormBuilderDetail/utils.partial";
 import { FormCompletionAction, FormGeneral } from "./Shared/types";
 
 export default defineComponent({

@@ -19,6 +19,7 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gFilter" runat="server" OnApplyFilterClick="gfList_ApplyFilterClick" OnClearFilterClick="gfList_ClearFilterClick" >
                         <Rock:RockTextBox ID="tbNameFilter" runat="server" Label="Name" />
+                        <Rock:RockCheckBox ID="cbShowInactive" runat="server" Checked="false" Label="Include Inactive" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_RowSelected">
                         <Columns>

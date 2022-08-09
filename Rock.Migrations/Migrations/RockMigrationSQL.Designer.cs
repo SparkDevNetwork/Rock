@@ -1056,11 +1056,30 @@ namespace Rock.Migrations.Migrations {
         ///
         ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
         ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
-        ///    {%- assign xaxistype = &apos;&apos;stacked&apos;&apos; -% [rest of string was truncated]&quot;;.
+        ///    {%- assign xaxistype = &apos;&apos;st [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202207182110401_Rollup_20220718_updatechart {
             get {
                 return ResourceManager.GetString("_202207182110401_Rollup_20220718_updatechart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{%- if type == &apos;&apos;gauge&apos;&apos; or type == &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;tsgauge&apos;&apos; -%}
+        ///    {% javascript url:&apos;&apos;~/Scripts/Chartjs/Gauge.js&apos;&apos; id:&apos;&apos;gaugejs&apos;&apos;%}{% endjavascript %}
+        ///{%- endif -%}
+        ///
+        ///{%- if type == &apos;&apos;stackedbar&apos;&apos; -%}
+        ///    {%- assign type = &apos;&apos;bar&apos;&apos; -%}
+        ///    {%- assign xaxistype = &apos;&apos;st [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202208031818446_Rollup_20220803_ChartShortcodeYAxisLabelFix {
+            get {
+                return ResourceManager.GetString("_202208031818446_Rollup_20220803_ChartShortcodeYAxisLabelFix", resourceCulture);
             }
         }
     }

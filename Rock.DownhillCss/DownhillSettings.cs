@@ -267,6 +267,12 @@ namespace Rock.DownhillCss
         /// The color of the background.
         /// </value>
         public string BackgroundColor { get; set; } = "#ffffff";
+
+        /// <summary>
+        /// Gets or sets the additional downhill colors.
+        /// </summary>
+        /// <value>The additional downhill colors.</value>
+        public Dictionary<string, string> AdditionalCssToParse { get; set; } = new Dictionary<string, string>();
     }
 
     public enum DownhillPlatform

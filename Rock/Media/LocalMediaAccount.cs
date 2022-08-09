@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Media
@@ -31,8 +31,28 @@ namespace Rock.Media
     [Export( typeof( MediaAccountComponent ) )]
     [ExportMetadata( "ComponentName", "LocalMediaAccount" )]
     [Rock.SystemGuid.EntityTypeGuid( "D551B9A7-70AA-4DDC-AF67-9360BFC296AA")]
+    [TextField(
+        "API Key",
+        Description = "The IpRegistry API Key.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.APIKey )]
     public class LocalMediaAccount : MediaAccountComponent
     {
+        #region Keys
+
+        /// <summary>
+        /// Keys to use for the attributes
+        /// </summary>
+        public static class AttributeKey
+        {
+            /// <summary>
+            /// The API Key
+            /// </summary>
+            public const string APIKey = "APIKey";
+        }
+
+        #endregion Keys
         #region Media Account Component Implementation
 
         /// <summary>

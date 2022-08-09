@@ -670,6 +670,29 @@
   }
 }
 
+.assessment-tooltip-item {
+  display: flex;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.assessment-tooltip-value {
+  margin: 2px 0 0 6px;
+
+  .assessment-name {
+    display: block;
+    font-weight: @font-weight-bold;
+  }
+
+  .assessment-summary {
+    display: block;
+    font-size: @font-size-xs;
+    color: fade(@tooltip-color, 60%);
+  }
+}
 
 .rockbadge-container {
   --badge-size: @badge-icon-height;

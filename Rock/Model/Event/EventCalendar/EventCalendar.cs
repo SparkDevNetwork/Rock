@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -141,6 +141,12 @@ namespace Rock.Model
         public override bool IsAllowedByDefault( string action )
         {
             return false;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return Name;
         }
 
         #endregion

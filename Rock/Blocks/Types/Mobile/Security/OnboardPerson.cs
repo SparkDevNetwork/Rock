@@ -1503,7 +1503,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     }
 
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                    groupMember.CommunicationPreference = CommunicationType.RecipientPreference;
+                    groupMember.CommunicationPreference = Model.CommunicationType.RecipientPreference;
 
                     if ( groupMember.IsValidGroupMember( rockContext ) )
                     {

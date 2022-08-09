@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -181,6 +183,32 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets a list of all attributes defined for the ConnectionTypes specified that
+        /// match the entityTypeQualifierColumn and the ConnectionRequest Ids.
+        /// </summary>
+        /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
+        /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        internal List<AttributeCache> GetInheritedAttributesForQualifier( int entityTypeId, string entityTypeQualifierColumn )
+        {
+            var attributes = new List<AttributeCache>();
+
+            // Generate a list of matching attributes.
+            foreach ( var attribute in AttributeCache.GetByEntityType( entityTypeId ) )
+            {
+                if ( string.Compare( attribute.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
+                {
+                    if ( int.TryParse( attribute.EntityTypeQualifierValue, out var connectionTypeIdValue ) && Id == connectionTypeIdValue )
+                    {
+                        attributes.Add( attribute );
+                    }
+                }
+            }
+
+            return attributes.OrderBy( a => a.Order ).ToList();
+        }
 
         /// <summary>
         /// Copies from model.

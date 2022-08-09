@@ -98,6 +98,7 @@ namespace Rock.CodeGeneration.Pages
                 }
 
                 var domain = ( string ) domainAttribute.GetType().GetProperty( "Domain" ).GetValue( domainAttribute );
+                domain = SupportTools.GetDomainFolderName( domain );
 
                 return Path.Combine( "Rock.JavaScript.Obsidian", "Framework", "Enums", domain );
             }

@@ -48,7 +48,7 @@ export type AchievementAttemptBag = {
     isSuccessful: boolean;
 
     /** Gets or sets the progress. This is a percentage so .25 is 25% and 1 is 100%. */
-    progress?: number;
+    progress: number;
 
     /** Gets or sets the created date time. */
     createdDateTime?: string | null;

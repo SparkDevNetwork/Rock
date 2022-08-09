@@ -145,10 +145,10 @@ namespace Rock.Tests.UnitTests.Lava
         /// </summary>
         public static void SetRockDateTimeToDaylightSavingTimezone()
         {
-            // Set to Mountain Standard Time (MST), a timezone that supports Daylight Saving Time (DST).
-            var tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
+            // Set to Central Standard Time (CST), a timezone that supports Daylight Saving Time (DST).
+            var tz = TimeZoneInfo.FindSystemTimeZoneById( "Central Standard Time" );
 
-            Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
+            Assert.That.IsNotNull( tz, "Timezone 'CST' is not available in this environment." );
 
             Assert.That.IsTrue( tz.SupportsDaylightSavingTime, "Test Timezone should be configured for Daylight Saving Time (DST)." );
 

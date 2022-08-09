@@ -2615,7 +2615,7 @@ namespace RockWeb.Blocks.Event
                             var parameters = new Dictionary<string, string>();
                             parameters.Add( "RegistrationId", item.RegistrationId.ToString() );
                             parameters.Add( "RegistrationRegistrantId", item.Id.ToString() );
-                            newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
+                            item.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), parameters, null );
                         }
 
                         newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString(), null, null );

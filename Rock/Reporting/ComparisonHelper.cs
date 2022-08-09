@@ -285,6 +285,19 @@ namespace Rock.Reporting
                         ComparisonType.StartsWith |
                         ComparisonType.EndsWith;
 
+
+        /// <summary>
+        /// Gets the comparison types typically used for string fields when a comparison value is required.
+        /// </summary>
+        public const ComparisonType StringFilterComparisonTypesRequired =
+                        ComparisonType.Contains |
+                        ComparisonType.DoesNotContain |
+                        ComparisonType.EqualTo |
+                        ComparisonType.NotEqualTo |
+                        ComparisonType.StartsWith |
+                        ComparisonType.EndsWith;
+
+
         /// <summary>
         /// Gets the comparison types typically used for select or boolean fields
         /// </summary>
@@ -307,6 +320,17 @@ namespace Rock.Reporting
                         ComparisonType.EqualTo |
                         ComparisonType.IsBlank |
                         ComparisonType.IsNotBlank |
+                        ComparisonType.NotEqualTo |
+                        ComparisonType.GreaterThan |
+                        ComparisonType.GreaterThanOrEqualTo |
+                        ComparisonType.LessThan |
+                        ComparisonType.LessThanOrEqualTo;
+
+        /// <summary>
+        /// Gets the comparison types typically used for numeric fields when a comparison value is required.
+        /// </summary>
+        public const ComparisonType NumericFilterComparisonTypesRequired =
+                        ComparisonType.EqualTo |
                         ComparisonType.NotEqualTo |
                         ComparisonType.GreaterThan |
                         ComparisonType.GreaterThanOrEqualTo |

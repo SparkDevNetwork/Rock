@@ -99,6 +99,99 @@ namespace Rock
             }
         }
 
+        /// <summary>
+        ///     <para>
+        ///     Changes the order of an entity in a list of entities by using its
+        ///     item key (Id, Guid, IdKey) and the item key of the item it should
+        ///     be placed before.
+        ///     </para>
+        ///     <para>
+        ///     If <typeparamref name="TEntity"/> is of type <see cref="IOrdered"/>
+        ///     then the <see cref="IOrdered.Order"/> property will be updated
+        ///     on all entities after the move is performed.
+        ///     </para>
+        /// </summary>
+        /// <typeparam name="TEntity">The type of entity to be moved.</typeparam>
+        /// <param name="entities">The list of entities containing the item to move.</param>
+        /// <param name="itemKey">The key that identifies the item to be moved.</param>
+        /// <param name="beforeItemKey">The key that identifies the item it should be placed before.</param>
+        /// <returns><c>true</c> if the reorder operation was successful or <c>false</c> if one of the items could not be found.</returns>
+        internal static bool ReorderEntity<TEntity>( this List<TEntity> entities, string itemKey, string beforeItemKey )
+            where TEntity : IEntity
+        {
+            if ( itemKey.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            TEntity item;
+
+            // Find the source entity to be moved.
+            if ( Guid.TryParse( itemKey, out var itemGuid ) )
+            {
+                item = entities.FirstOrDefault( s => s.Guid == itemGuid );
+            }
+            else if ( int.TryParse( itemKey, out var itemId ) )
+            {
+                item = entities.FirstOrDefault( s => s.Id == itemId );
+            }
+            else
+            {
+                item = entities.FirstOrDefault( s => s.IdKey == itemKey );
+            }
+
+            if ( item == null )
+            {
+                return false;
+            }
+
+            // If there is a before item key then find it.
+            if ( beforeItemKey.IsNotNullOrWhiteSpace() )
+            {
+                TEntity beforeItem;
+
+                if ( Guid.TryParse( beforeItemKey, out var beforeItemGuid ) )
+                {
+                    beforeItem = entities.FirstOrDefault( s => s.Guid == beforeItemGuid );
+                }
+                else if ( int.TryParse( beforeItemKey, out var beforeItemId ) )
+                {
+                    beforeItem = entities.FirstOrDefault( s => s.Id == beforeItemId );
+                }
+                else
+                {
+                    beforeItem = entities.FirstOrDefault( s => s.IdKey == beforeItemKey );
+                }
+
+                if ( beforeItem == null )
+                {
+                    return false;
+                }
+
+                entities.Remove( item );
+                entities.Insert( entities.IndexOf( beforeItem ), item );
+            }
+            else
+            {
+                // Otherwise just move it to the end.
+                entities.Remove( item );
+                entities.Add( item );
+            }
+
+            // If the TEntity type implements IOrdered then update the Order
+            // property of all the entities as well.
+            if ( typeof( IOrdered ).IsAssignableFrom( typeof( TEntity ) ) )
+            {
+                // Set all the Order properties.
+                for ( int i = 0; i < entities.Count; i++ )
+                {
+                    ( entities[i] as IOrdered ).Order = i;
+                }
+            }
+
+            return true;
+        }
+
         #endregion IEntity extensions
 
         #region IModel Extensions

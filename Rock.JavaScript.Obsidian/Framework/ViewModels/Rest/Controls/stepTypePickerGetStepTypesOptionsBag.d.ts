@@ -28,15 +28,6 @@ import { Guid } from "@Obsidian/Types";
  * the StepTypePicker control.
  */
 export type StepTypePickerGetStepTypesOptionsBag = {
-    /**
-     * The ID of the step program that this step type is part of. The Rock.ViewModels.Rest.Controls.StepTypePickerGetStepTypesOptionsBag.StepProgramGuid
-     * takes precedence over this if present.
-     */
-    stepProgramId?: number | null;
-
-    /**
-     * The GUID of the step program that this step type is part of. Can use Rock.ViewModels.Rest.Controls.StepTypePickerGetStepTypesOptionsBag.StepProgramId
-     * instead if easier, but this takes precedence if present.
-     */
+    /** The GUID of the step program that this step type is part of. */
     stepProgramGuid?: Guid | null;
 };

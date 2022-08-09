@@ -27,18 +27,20 @@ namespace Rock.ViewModels.Rest.Controls
     public class FinancialGatewayPickerGetFinancialGatewaysOptionsBag
     {
         /// <summary>
-        /// Whether or not to include payment gateways that are inactive or
-        /// don't support Rock-initiated transactions.
+        /// Gets or sets a value indicating whether inactive gateways should be included.
+        /// This checks both the FinancialGateway model and the GatewayComponent.
         /// </summary>
-        /// <value>The option to include payment gateways that are inactive or
-        /// don't support Rock-initiated transactions.</value>
-        public bool ShowAll { get; set; } = false;
+        /// <value><c>true</c> if [show inactive]; otherwise, <c>false</c>.</value>
+        public bool IncludeInactive { get; set; } = false;
 
         /// <summary>
-        /// The current selected payment gateway. By passing this in, we ensure
-        /// that this gateway is shown in the list even if it wouldn't normally.
+        /// If set to true then gateways that do not support Rock initiated transactions will be included.
+        /// These GatewayComponents are used to download externally created transactions and do not allow Rock
+        /// to create the transaction.
+        /// <strong>This property does not affect if inactive gateways are shown or not.</strong>
+        /// The inclusion or exclusion of inactive gateways is controlled exclusively by the "IncludeInactive" property.
         /// </summary>
-        /// <value>The id of the current selected payment gateway.</value>
-        public int? SelectedItem { get; set; }
+        /// <value><c>true</c> if [show all gateway components]; otherwise, <c>false</c>.</value>
+        public bool ShowAllGatewayComponents { get; set; } = false;
     }
 }

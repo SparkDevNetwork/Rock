@@ -248,11 +248,13 @@
                 var $date = $('<div class="individual-play-date"></div>');
                 var $bar = $('<div class="individual-play-bar"></div>');
                 var $person = $('<div class="individual-play-person"></div>');
+                var $additional = $('<div class="position-relative additional-data"></div>');
                 var $interaction = $('<div class="individual-play-interaction"></div>');
                 var $chart = $('<div class="individual-play-chart"></div>');
                 var $percent = $('<div class="individual-play-percent"></div>');
                 $row.append($date, $bar);
-                $bar.append($person, $interaction, $chart, $percent);
+                $bar.append($person, $additional, $chart, $percent);
+                $additional.append($interaction);
 
                 const date = new moment(item.DateTime);
 
@@ -268,7 +270,11 @@
 
                 $person.append(getPerson(item))
 
-                $interaction.append(getInteractionData(item));
+                if (item.Isp !== null || item.OperatingSystem !== null || item.Application !== null) {
+                    $interaction.append(getInteractionData(item));
+                } else {
+                    $interaction.addClass("no-details");
+                }
 
                 $chart.append(getHeatMap(item.Data.WatchMap));
                 $percent.text(Math.floor(item.Data.WatchedPercentage) + "%");
@@ -280,21 +286,8 @@
         }
 
         const getInteractionData = function (item) {
-            const clientTypeIcons = {
-                Mobile: "fa fa-mobile-alt",
-                Desktop: "fa fa-desktop",
-                Tablet: "fa fa-tablet-alt",
-            }
-
-            const clientType = document.createElement("span");
-            clientType.setAttribute("class", clientTypeIcons[item.ClientType]);
-
-            const interactions = document.createElement("div");
-            interactions.setAttribute("class", "info-badge");
-            interactions.textContent = item.InteractionsCount;
-
             const sessionInfo = document.createElement("div");
-            sessionInfo.setAttribute("class", "sessionInfo");
+            sessionInfo.setAttribute("class", "individual-play-interaction-session");
 
             const isp = document.createElement("span");
             isp.textContent = item.Isp;
@@ -310,43 +303,52 @@
             const expander = document.createElement("div");
             expander.setAttribute("class", "expander");
             expander.setAttribute("name", "expander");
-            const expanderIcon = document.createElement("span");
-            expanderIcon.setAttribute("class", "fa fa-chevron-right");
+            const expanderIcon = document.createElement("i");
+            expanderIcon.setAttribute("class", "fa fa-chevron-right text-muted o-50");
             expander.setAttribute("name", "expander");
             expander.append(expanderIcon);
 
-            return [clientType, interactions, sessionInfo, expander];
+            return [sessionInfo, expander];
         }
 
         const initializeExpanderHoverEventListener = function () {
-            let interactions = document.querySelectorAll(".individual-play-interaction");
+            let interactions = document.querySelectorAll(".individual-play-interaction:not(.no-details)");
 
             interactions.forEach(interaction => interaction.addEventListener("mouseover", event => {
                 if (event.target.getAttribute("name") === "expander") {
                     let icon = event.target.querySelector(".fa-chevron-right");
-                    icon?.classList.remove("fa", "fa-chevron-right");
-                    icon?.classList.add("fa", "fa-chevron-left");
+                    icon?.classList.add("fa-flip-horizontal");
 
-                    let sessionInfo = event.target.parentElement.querySelector(".sessionInfo");
-                    sessionInfo.classList.add("expanded");
                     interaction.classList.add("expanded");
                 }
             }));
 
             interactions.forEach(interaction => interaction.addEventListener("mouseleave", event => {
-                if (interaction.querySelector(".fa-chevron-left")) {
-                    let icon = interaction.querySelector(".fa-chevron-left");
-                    icon.classList.remove("fa", "fa-chevron-left");
-                    icon.classList.add("fa", "fa-chevron-right");
+                if (interaction.querySelector(".fa-chevron-right")) {
+                    let icon = interaction.querySelector(".fa-chevron-right");
+                    icon.classList.remove("fa-flip-horizontal");
 
-                    let sessionInfo = event.target.parentElement.querySelector(".sessionInfo");
-                    sessionInfo.classList.remove("expanded");
                     interaction.classList.remove("expanded");
                 }
             }));
         }
 
         const getPerson = function (item) {
+            const clientTypeIcons = {
+                Mobile: "fa fa-mobile-alt",
+                Desktop: "fa fa-desktop",
+                Tablet: "fa fa-tablet-alt",
+            }
+
+            const clientType = document.createElement("i");
+            clientType.setAttribute("class", clientTypeIcons[item.ClientType] + " fa-lg text-muted o-50 mx-2");
+            clientType.setAttribute("title", item.ClientType);
+
+            const interactions = document.createElement("span");
+            interactions.setAttribute("class", "badge-circle badge-info ml-1");
+            interactions.setAttribute("title", "Interactions");
+            interactions.textContent = item.InteractionsCount;
+
             const personInfo = document.createElement("div");
             personInfo.setAttribute("class", "individual-play-person-info");
 
@@ -358,14 +360,16 @@
             const name = document.createElement("span");
             name.textContent = item.FullName;
 
-            personInfo.appendChild(photo);
-            personInfo.appendChild(name);
-
             const location = document.createElement("span");
             location.setAttribute("class", "individual-play-person-location");
             location.textContent = item.Location;
 
-            return [personInfo, location];
+            personInfo.appendChild(photo);
+            personInfo.appendChild(name);
+            personInfo.appendChild(location);
+
+
+            return [personInfo, clientType, interactions];
         }
 
         const getHeatMap = function (watchMap) {

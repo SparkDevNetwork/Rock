@@ -21,12 +21,12 @@ import Alert from "./alert";
 import InlineCheckBox from "./inlineCheckBox";
 import RockButton from "./rockButton";
 import TextBox from "./textBox";
-import { BlockHttp } from "@Obsidian/Utility/block";
 import RockForm from "./rockForm";
 import { useStore } from "@Obsidian/PageState";
 import { SaveFinancialAccountFormSaveAccountOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountOptionsBag";
 import { SaveFinancialAccountFormSaveAccountResultBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountResultBag";
 import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { useHttp } from "@Obsidian/Utility/http";
 
 const store = useStore();
 
@@ -54,9 +54,11 @@ const SaveFinancialAccountForm = defineComponent({
             required: true
         }
     },
-    setup () {
+    setup() {
+        const http = useHttp();
+
         return {
-            http: inject("http") as BlockHttp
+            http
         };
     },
     data () {

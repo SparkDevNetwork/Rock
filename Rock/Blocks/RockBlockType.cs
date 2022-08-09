@@ -196,6 +196,26 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Creates a 409-Conflict response with an optional error message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A BlockActionResult instance.</returns>
+        protected BlockActionResult ActionConflict( string message = null )
+        {
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Conflict );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Conflict )
+                {
+                    Error = message
+                };
+            }
+        }
+
+        /// <summary>
         /// Creates a 401-Unauthorized response with an optional error message.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -236,12 +256,23 @@ namespace Rock.Blocks
         }
 
         /// <summary>
-        /// Creates a 404-Not Found response with no content.
+        /// Creates a 404-Not Found response with an optional error message.
         /// </summary>
+        /// <param name="message">The message.</param>
         /// <returns>A BlockActionResult instance.</returns>
-        protected virtual BlockActionResult ActionNotFound()
+        protected BlockActionResult ActionNotFound( string message = null )
         {
-            return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.NotFound )
+                {
+                    Error = message
+                };
+            }
         }
 
         /// <summary>

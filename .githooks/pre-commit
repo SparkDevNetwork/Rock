@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+
+# Redirect output to stderr.
+exec 1>&2
+
+##
+# Check for any newly added files with CMS or CRM in the pathname.
+# Exclude anything in Rock/Model/ directory.
+##
+badfiles=`git diff --staged --name-only --diff-filter=ACR | grep -v '^Rock/Model/' | grep -E '/(CMS|CRM)/'`
+
+if [ -n "$badfiles" ]; then
+    cat <<EOF
+Error: Attempt to commit incorrect filename casing.
+
+$badfiles
+EOF
+
+    exit 1
+fi

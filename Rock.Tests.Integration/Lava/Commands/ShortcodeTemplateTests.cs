@@ -859,7 +859,7 @@ This is a super simple panel.
 ";
 
             var expectedOutput = @"
-<div class=``panel panel-block``>
+<div class=``panel panel-default``>
   
       <div class=``panel-heading``>
         <h3 class=``panel-title``>

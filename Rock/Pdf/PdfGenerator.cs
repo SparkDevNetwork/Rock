@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Diagnostics;
 using System.IO;
 
 using PuppeteerSharp;
@@ -47,7 +48,6 @@ namespace Rock.Pdf
         private Page _puppeteerPage;
 
         private static int _lastProgressPercentage = 0;
-        private static bool alreadyTriedReDownloading = false;
 
         /// <summary>
         /// Ensures the chrome engine is downloaded and installed.
@@ -57,18 +57,18 @@ namespace Rock.Pdf
         {
             using ( var browserFetcher = GetBrowserFetcher() )
             {
-                EnsureChromeEngineInstalled( browserFetcher );
+                EnsureChromeEngineInstalled( browserFetcher, true );
             }
         }
 
         /// <inheritdoc cref="PdfGenerator.EnsureChromeEngineInstalled()"/>
-        private static void EnsureChromeEngineInstalled( BrowserFetcher browserFetcher )
+        private static void EnsureChromeEngineInstalled( BrowserFetcher browserFetcher, bool checkForIncompleteInstall )
         {
             var pdfExternalRenderEndpoint = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT );
 
             if ( pdfExternalRenderEndpoint.IsNotNullOrWhiteSpace() )
             {
-                // using a External Render Endpoint, so we don't need to install a chrome engine on this server.
+                // Using an External Render Endpoint, so we don't need to install a chrome engine on this server.
                 return;
             }
 
@@ -77,41 +77,63 @@ namespace Rock.Pdf
 
             try
             {
-                AsyncHelper.RunSync( () => browserFetcher.DownloadAsync() );
-
-                // double check it is actually downloaded (just in case files were deleted, but folders were not)
                 var executablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath;
-                if ( !File.Exists( executablePath ) && !alreadyTriedReDownloading )
+                var installingFlagFileName = Path.Combine( browserFetcher.DownloadsFolder, ".installing" );
+                var revisionInfo = AsyncHelper.RunSync( () => browserFetcher.GetRevisionInfoAsync() );
+                var localInstallExists = revisionInfo.Local;
+
+                // If checking for an incomplete install, check if there is an orphaned ".installing" file. Also make sure that the chrome.exe exists
+                // (just in case files were deleted, but folders were not).
+                bool reinstall = checkForIncompleteInstall && ( File.Exists( installingFlagFileName ) || ( localInstallExists && !File.Exists( executablePath ) ) );
+                try
                 {
-                    browserFetcher.Remove( BrowserFetcher.DefaultChromiumRevision );
-                    alreadyTriedReDownloading = true;
-                    AsyncHelper.RunSync( () => browserFetcher.DownloadAsync() );
+                    if ( reinstall )
+                    {
+                        // Attempt to kill any chrome.exe processes that are running in our ChromeEngine directory so that we can remove it.
+                        KillChromeProcesses();
+                        browserFetcher.Remove( BrowserFetcher.DefaultChromiumRevision );
+                        localInstallExists = false;
+                    }
                 }
+                catch ( Exception ex )
+                {
+                    // If we get an error when attempting to re-install, log the exception and continue on in case it'll work even if we got an exception.
+                    Rock.Model.ExceptionLogService.LogException( new PdfGeneratorException( "Error re-installing PDF Generator", ex ) );
+                }
+
+                if ( localInstallExists )
+                {
+                    // Already installed.
+                    return;
+                }
+
+                File.WriteAllText( installingFlagFileName, "If this file exists, either the chrome engine is currently installing, or was interrupted before the install completed." );
+                AsyncHelper.RunSync( () => browserFetcher.DownloadAsync() );
+                File.Delete( installingFlagFileName );
 
                 if ( _lastProgressPercentage > 99 )
                 {
-                    // if wasn't already downloaded, show a message that it downloaded successfully
-                    System.Diagnostics.Debug.WriteLine( $"PdfGenerator ChromeEngine downloaded successfully." );
+                    // If wasn't already downloaded, show a message that it downloaded successfully.
+                    Debug.WriteLine( $"PdfGenerator ChromeEngine downloaded successfully." );
                 }
             }
             catch ( IOException ioException )
             {
-                // could still be downloading and eventually work, so make exception a little friendlier
+                // Could still be downloading and eventually work, so make exception a little friendlier.
                 throw new PdfGeneratorException( "PDF Engine is not available. Please try again later.", ioException );
             }
             catch ( Exception ex )
             {
-                // The IO Exception be the inner exception, so check that too
+                // The IO Exception be the inner exception, so check that too.
                 if ( ex.InnerException is IOException ioException )
                 {
-                    // could still be downloading and eventually work, so make exception a little friendlier
+                    // Could still be downloading and eventually work, so make exception a little friendlier.
                     throw new PdfGeneratorException( "PDF Engine is not available. Please try again later.", ioException );
                 }
                 else
                 {
                     throw new PdfGeneratorException( "Error downloading PDF Chrome Engine.", ex );
                 }
-
             }
         }
 
@@ -131,6 +153,39 @@ namespace Rock.Pdf
             };
 
             return new BrowserFetcher( browserFetcherOptions );
+        }
+
+        /// <summary>
+        /// Kills the chrome processes.
+        /// </summary>
+        private static void KillChromeProcesses()
+        {
+            try
+            {
+                var browserFetcher = GetBrowserFetcher();
+
+                // Kill any chrome.exe's that got left running
+                var executablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath;
+                var chromeProcesses = Process.GetProcessesByName( "chrome" );
+                foreach ( var process in chromeProcesses )
+                {
+                    try
+                    {
+                        if ( process?.MainModule?.FileName == executablePath )
+                        {
+                            process.Kill();
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        Debug.WriteLine( $"INFO: Unable to cleanup orphaned chrome.exe processes, {ex}" );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                Debug.WriteLine( $"INFO: Unable to cleanup orphaned chrome.exe processes, {ex}" );
+            }
         }
 
         /// <summary>
@@ -191,7 +246,7 @@ namespace Rock.Pdf
                 using ( var browserFetcher = GetBrowserFetcher() )
                 {
                     // should have already been installed, but just in case it hasn't, download it now.
-                    EnsureChromeEngineInstalled( browserFetcher );
+                    EnsureChromeEngineInstalled( browserFetcher, false );
                     launchOptions.ExecutablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath;
                 }
 
@@ -212,7 +267,7 @@ namespace Rock.Pdf
             if ( e.ProgressPercentage != _lastProgressPercentage )
             {
                 _lastProgressPercentage = e.ProgressPercentage;
-                System.Diagnostics.Debug.WriteLine( $"Downloading PdfGenerator ChromeEngine:  {e.ProgressPercentage}%" );
+                Debug.WriteLine( $"Downloading PdfGenerator ChromeEngine: {e.ProgressPercentage}%" );
             }
         }
 
@@ -353,9 +408,19 @@ namespace Rock.Pdf
     <span class='pageNumber'></span>/<span class='totalPages'></span>
 </div>;";
 
-            var pdfStream = _puppeteerPage.PdfStreamAsync( pdfOptions ).Result;
+            var pdfStreamTask = _puppeteerPage.PdfStreamAsync( pdfOptions );
 
-            return pdfStream;
+            // It should only take a couple of seconds to create a PDF, even if it a big file. If it takes more than 30 seconds,
+            // chrome probably had a page crash ( an 'Aw, snap' error). So just give up.
+            TimeSpan maxWaitTime = TimeSpan.FromSeconds( 30 );
+            if ( !pdfStreamTask.Wait( maxWaitTime ) )
+            {
+                throw new PdfGeneratorException( "PDF Generator Time-Out" );
+            }
+            else
+            {
+                return pdfStreamTask.Result;
+            }
         }
 
         /// <summary>

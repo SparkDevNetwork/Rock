@@ -212,6 +212,36 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Attempts to get an item from the cache without adding it if it does
+        /// not already exist.
+        /// </summary>
+        /// <param name="id">The identifier of the cached item to be loaded.</param>
+        /// <param name="item">On return will contain the item.</param>
+        /// <returns><c>true</c> if the item was found in cache, <c>false</c> otherwise.</returns>
+        public static bool TryGet( int id, out T item )
+        {
+            return ItemCache<T>.TryGet( id.ToString(), out item );
+        }
+
+        /// <summary>
+        /// Attempts to get an item from the cache without adding it if it does
+        /// not already exist.
+        /// </summary>
+        /// <param name="guid">The unique identifier of the cached item to be loaded.</param>
+        /// <param name="item">On return will contain the item.</param>
+        /// <returns><c>true</c> if the item was found in cache, <c>false</c> otherwise.</returns>
+        public static bool TryGet( Guid guid, out T item )
+        {
+            if ( !IdFromGuidCache.TryGet( guid.ToString(), out var id ) )
+            {
+                item = default;
+                return false;
+            }
+
+            return ItemCache<T>.TryGet( id.Id.ToString(), out item );
+        }
+
+        /// <summary>
         /// Get the specified entity, or throw an Exception if it does not exist.
         /// </summary>
         /// <param name="entityDescription"></param>

@@ -29,7 +29,7 @@ export type WebFarmNodeMetricBag = {
     metricType: number;
 
     /** Gets or sets the metric value. */
-    metricValue?: number;
+    metricValue: number;
 
     /** Gets or sets the metric value date time. */
     metricValueDateTime?: string | null;

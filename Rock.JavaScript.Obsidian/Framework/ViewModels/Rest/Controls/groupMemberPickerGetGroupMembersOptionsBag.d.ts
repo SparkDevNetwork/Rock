@@ -28,15 +28,6 @@ import { Guid } from "@Obsidian/Types";
  * the GroupMemberPicker control.
  */
 export type GroupMemberPickerGetGroupMembersOptionsBag = {
-    /**
-     * ID of the group the member is part of. The Rock.ViewModels.Rest.Controls.GroupMemberPickerGetGroupMembersOptionsBag.GroupGuid
-     * takes precedence over this if present.
-     */
-    groupId?: number | null;
-
-    /**
-     * GUID of the group the member is part of.  Can use Rock.ViewModels.Rest.Controls.GroupMemberPickerGetGroupMembersOptionsBag.GroupId
-     * instead if easier, but this takes precedence if present.
-     */
+    /** GUID of the group the member is part of. */
     groupGuid?: Guid | null;
 };

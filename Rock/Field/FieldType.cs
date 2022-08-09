@@ -132,7 +132,7 @@ namespace Rock.Field
         [RockInternal]
         public virtual string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
@@ -146,7 +146,7 @@ namespace Rock.Field
         [RockInternal]
         public virtual string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetCondensedTextValue( privateValue, privateConfigurationValues );
+            return GetHtmlValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>
@@ -1081,6 +1081,55 @@ namespace Rock.Field
             {
                 return typeof( string );
             }
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public virtual bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public virtual bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Rock native field types by default are not volatile, third
+            // party field types are volatile by default.
+            if ( GetType().Assembly == typeof( FieldType ).Assembly )
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetPersistedValuePlaceholder( Dictionary<string, string> privateConfigurationValues )
+        {
+            return Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported;
+        }
+
+        /// <inheritdoc/>
+        public virtual bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public virtual PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return new PersistedValues
+            {
+                TextValue = GetTextValue( privateValue, privateConfigurationValues ),
+                HtmlValue = GetHtmlValue( privateValue, privateConfigurationValues ),
+                CondensedTextValue = GetCondensedTextValue( privateValue, privateConfigurationValues ),
+                CondensedHtmlValue = GetCondensedHtmlValue( privateValue, privateConfigurationValues )
+            };
         }
 
         #endregion

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -35,8 +36,10 @@ namespace Rock.Communication.Transport
     [IntegerField( "Port", "", false, 25, "", 3 )]
     [BooleanField( "Use SSL", "", false, "", 4 )]
     [BooleanField( "Inline CSS", "Enable Mandrill's CSS Inliner feature.", true, "", 5 )]
-    [IntegerField( "Concurrent Send Workers", "", false, 10, "", 5, key: "MaxParallelization" )]
+    [IntegerField( "Concurrent Send Workers", "", false, 1, "", 5, key: "MaxParallelization" )]
     [Rock.SystemGuid.EntityTypeGuid( "73158C6E-CE56-4CA8-9A52-7CBA58CA52F9")]
+    [RockObsolete( "1.13.4" )]
+    [Obsolete( "Starting in Rock v14.0 the SMTP transport is no longer supported. Use the newer HTTPS transports." )]
     public class MandrillSmtp : SMTPComponent
     {
         /// <summary>

@@ -52,7 +52,7 @@ export type FinancialBatchBag = {
      * Use Rock.Model.FinancialBatchService.IncrementControlAmount(System.Int32,System.Decimal,Rock.Model.History.HistoryChangeList) if you are incrementing the control amount
      * based on a transaction amount.
      */
-    controlAmount?: number;
+    controlAmount: number;
 
     /** Gets or sets the control item count. */
     controlItemCount?: number | null;

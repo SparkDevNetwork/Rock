@@ -75,7 +75,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
+            RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
             RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
+            RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -106,7 +108,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person.IsDeceased )
             {
-                // pnlContent.AddCssClass( "deceased" );
+                pnlContent.Attributes.Add( "class","card card-profile card-profile-bio card-profile-bio-condensed deceased" );
+            }
+            else
+            {
+                pnlContent.Attributes.Add("class","card card-profile card-profile-bio card-profile-bio-condensed");
             }
 
             // Set the browser page title to include person's name
@@ -170,7 +176,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void ShowPersonImage()
         {
-            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-cover inset-0"">";
+            lImage.Text = $@"<img src=""{Person.GetPersonPhotoUrl( Person, 400, 400 )}"" alt class=""img-profile"">";
         }
 
         private void ShowPersonName()
@@ -186,7 +192,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( isBusiness )
             {
-                lName.Text = $@"<h1 class=""text-truncate text-left"">{Person.LastName}</h1>";
+                lName.Text = $@"<h1 class=""person-name is-business"">{Person.LastName}</h1>";
                 return;
             }
 
@@ -203,7 +209,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             string nameText =  $"{titleText}{Person.NickName} {Person.LastName}";
 
-            lName.Text = $@"<h1 class=""text-truncate text-left"">{nameText}</h1>";
+            lName.Text = $@"<h1 class=""person-name"">{nameText}</h1>";
         }
 
         private void ShowBadgeList()

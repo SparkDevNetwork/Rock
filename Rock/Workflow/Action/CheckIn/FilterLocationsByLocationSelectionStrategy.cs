@@ -61,6 +61,12 @@ namespace Rock.Workflow.Action.CheckIn
                 return false;
             }
 
+            if ( checkInState.ManagerLoggedIn )
+            {
+                // If the manager is logged in don't filter or return an error. The manager should get an un-loadblanced list in order to choose the desired location.
+                return true;
+            }
+
             var family = checkInState.CheckIn.CurrentFamily;
             if ( family == null )
             {

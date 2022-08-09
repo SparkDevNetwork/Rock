@@ -328,5 +328,31 @@ namespace Rock.Model
                     return prayerRequests.OrderBy( a => a.PrayerCount );
             }
         }
+
+        /// <summary>
+        /// Orders the collection of <see cref="PrayerRequest"/> by a defined
+        /// set of possible orders.
+        /// </summary>
+        /// <param name="prayerRequests">The prayer requests.</param>
+        /// <param name="order">The order.</param>
+        /// <returns>The collection in the requested order.</returns>
+        public static IEnumerable<PrayerRequest> ThenBy( this IOrderedEnumerable<PrayerRequest> prayerRequests, PrayerRequestOrder order )
+        {
+            switch ( order )
+            {
+                case PrayerRequestOrder.Newest:
+                    return prayerRequests.ThenByDescending( a => a.EnteredDateTime );
+
+                case PrayerRequestOrder.Oldest:
+                    return prayerRequests.ThenBy( a => a.EnteredDateTime );
+
+                case PrayerRequestOrder.Random:
+                    return prayerRequests.ThenBy( a => Guid.NewGuid() );
+
+                case 0:
+                default:
+                    return prayerRequests.ThenBy( a => a.PrayerCount );
+            }
+        }
     }
 }

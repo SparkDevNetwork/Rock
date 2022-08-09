@@ -186,13 +186,12 @@ namespace Rock.Model
         /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Group"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c> 
         /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
-        /// <param name="includeArchived">if set to <c>true</c> [include archived].</param>
         /// <returns>
         /// A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to the specified group.
         /// </returns>
-        public IQueryable<GroupMember> GetByGroupId( int groupId, bool includeDeceased = false, bool includeArchived = false )
+        public IQueryable<GroupMember> GetByGroupId( int groupId, bool includeDeceased = false )
         {
-            return Queryable( "Person,GroupRole", includeDeceased, includeArchived )
+            return Queryable( "Person,GroupRole", includeDeceased )
                 .Where( t => t.GroupId == groupId )
                 .OrderBy( g => g.GroupRole.Order );
         }
@@ -220,11 +219,10 @@ namespace Rock.Model
         /// <param name="personId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c>
         /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
-        /// <param name="includeArchived">if set to <c>true</c> [include archived].</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who match the criteria.</returns>
-        public IQueryable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false, bool includeArchived = false )
+        public IQueryable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false )
         {
-            return GetByGroupId( groupId, includeDeceased, includeArchived ).Where( g => g.PersonId == personId ); 
+            return GetByGroupId( groupId, includeDeceased ).Where( g => g.PersonId == personId ); 
         }
 
         /// <summary>
@@ -255,11 +253,10 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
-        /// <param name="includeArchived">if set to <c>true</c> [include archived].</param>
         /// <returns></returns>
-        public GroupMember GetByGroupIdAndPersonIdAndPreferredGroupRoleId( int groupId, int personId, int groupRoleId, bool includeDeceased = false, bool includeArchived = false )
+        public GroupMember GetByGroupIdAndPersonIdAndPreferredGroupRoleId( int groupId, int personId, int groupRoleId, bool includeDeceased = false )
         {
-            var members = GetByGroupIdAndPersonId( groupId, personId, includeDeceased, includeArchived ).ToList();
+            var members = GetByGroupIdAndPersonId( groupId, personId, includeDeceased ).ToList();
             return members.Where( t => t.GroupRoleId == groupRoleId ).FirstOrDefault() ?? members.FirstOrDefault();
         }
 
