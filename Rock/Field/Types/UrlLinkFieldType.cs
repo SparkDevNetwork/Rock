@@ -236,5 +236,23 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldShouldAlwaysShowCondensed = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed )?.AsBoolean() ?? false;
+            var newShouldAlwaysShowCondensed = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed )?.AsBoolean() ?? false;
+
+            if ( oldShouldAlwaysShowCondensed != newShouldAlwaysShowCondensed )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
     }
 }
