@@ -32,15 +32,15 @@ namespace Rock.Lava.Blocks
         #region Filter Parameter Names
 
         /// <summary>
-        /// Parameter name for specifying maximum occurrences. If not specified, the default value is 100.
+        /// Parameter name for specifying the match type. If not specified, the default value is "any"
         /// </summary>
         public static readonly string ParameterMatchType = "matchtype";
         /// <summary>
-        /// Parameter name for specifying a filter for the intended audiences of the Event Occurrences. If not specified, all audiences are considered.
+        /// Parameter name for specifying a delimited list of personalization segments.
         /// </summary>
         public static readonly string ParameterSegments = "segment";
         /// <summary>
-        /// Parameter name for specifying a filter for the campus of the Event Occurrences. If not specified, all campuses are considered.
+        /// Parameter name for specifying a delimited list of request filters.
         /// </summary>
         public static readonly string ParameterRequestFilters = "requestfilter";
         /// <summary>
@@ -61,13 +61,19 @@ namespace Rock.Lava.Blocks
         private bool _renderErrors = true;
         private string matchContent = null;
         private string elseContent = null;
-        //private static readonly string _tagElseText = "{%else"
         LavaElementAttributes _settings = new LavaElementAttributes();
 
+        #region Constructors
+
+        /// <summary>
+        /// Initializes the <see cref="PersonalizeBlock"/> class.
+        /// </summary>
         public PersonalizeBlock()
         {
             this.IncludeClosingTokenInParseResult = false;
         }
+
+        #endregion
 
         /// <summary>
         /// Initializes the specified tag name.
@@ -167,7 +173,9 @@ namespace Rock.Lava.Blocks
             // Apply the request filters if we are processing a HTTP request.
             // Do this first because we may have the opportunity to exit early and avoid retrieving personalization segments.
             bool? requestFilterIsValid = null;
-            var requestFilterParameterString = _settings.GetStringValue( ParameterRequestFilters );
+            var requestFilterParameterString = _settings.GetStringValue( ParameterRequestFilters )
+                ?? _settings.GetStringValue( "requestfilters" );
+                ;
             if ( !string.IsNullOrWhiteSpace( requestFilterParameterString ) )
             {
                 var currentFilterIdList = LavaPersonalizationHelper.GetPersonalizationRequestFilterIdList();
@@ -217,7 +225,8 @@ namespace Rock.Lava.Blocks
 
             // Determine if the current block segments match the segments for the user in the current context.
             bool? segmentFilterIsValid = null;
-            var segmentParameterString = _settings.GetStringValue( ParameterSegments );
+            var segmentParameterString = _settings.GetStringValue( ParameterSegments )
+                ?? _settings.GetStringValue( "segments" );
             if ( !string.IsNullOrWhiteSpace( segmentParameterString ) )
             {
                 // Get personalization segments for the target person.

@@ -498,6 +498,22 @@ Filter Matches=REQUEST_INACTIVE (inactive), QUERY_2, Visible=True.
         }
 
         [TestMethod]
+        public void PersonalizeBlock_HavingPluralParameterNames_IsProcessedWithSpecifiedParameters()
+        {
+            var input = @"
+{% personalize segments:'ALL_MEN' requestfilters:'QUERY_1,QUERY_2' matchtype:'any' %}
+Segment Matches=ALL_MEN, Filter Matches=QUERY_2, Visible=True.
+{% endpersonalize %}
+";
+            var expectedOutput = @"Segment Matches=ALL_MEN, Filter Matches=QUERY_2, Visible=True.";
+
+            AssertOutputForPersonAndRequest( input,
+                expectedOutput,
+                personGuid: TestGuids.TestPeople.BillMarble,
+                inputUrl: "http://rock.rocksolidchurchdemo.com?parameter2=true" );
+        }
+
+        [TestMethod]
         public void PersonalizeBlock_WithElseClauseAndPositiveMatch_ShowsContentForMatch()
         {
             var input = @"
