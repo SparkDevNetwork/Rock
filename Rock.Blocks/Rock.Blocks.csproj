@@ -62,6 +62,7 @@
     <Compile Include="Cms\ContentCollectionDetail.cs" />
     <Compile Include="Cms\ContentCollectionView.cs" />
     <Compile Include="Cms\MediaAccountDetail.cs" />
+    <Compile Include="Cms\MediaFolderDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Crm\AssessmentTypeDetail.cs" />

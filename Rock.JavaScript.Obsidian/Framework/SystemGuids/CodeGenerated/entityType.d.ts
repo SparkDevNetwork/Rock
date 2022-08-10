@@ -309,4 +309,6 @@ export const enum EntityType {
     StepProgramAchievementComponent = "7140BAE3-89E9-423E-A691-6E13544203CA",
     /** The EntityType Guid for Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement  */
     InteractionSourcedAchievementComponent = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67",
+    /** The EntityType Guid for Rock.Model.MediaFolder  */
+    MediaFolder = "B28FC79F-9FEE-4BE4-801D-96B9246E6043",
 }

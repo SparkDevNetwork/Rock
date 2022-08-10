@@ -739,5 +739,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement"/> 
         /// </summary>
         public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.MediaFolder"/> 
+        /// </summary>
+        public const string MEDIA_FOLDER = "B28FC79F-9FEE-4BE4-801D-96B9246E6043";
     }
 }
