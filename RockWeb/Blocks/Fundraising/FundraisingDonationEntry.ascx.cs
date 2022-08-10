@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,12 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -41,7 +39,7 @@ namespace RockWeb.Blocks.Fundraising
     [BooleanField( "Show First Name Only", "Only show the First Name of each participant instead of Full Name", defaultValue: false, order: 2 )]
     [BooleanField( "Allow Automatic Selection", "If enabled and there is only one participant and registrations are not enabled then that participant will automatically be selected and this page will get bypassed.", defaultValue: false, order: 3 )]
     [GroupField( "Root Group", "Select the group that will be used as the base of the list.", required: false, order: 4 )]
-   
+
     [Rock.SystemGuid.BlockTypeGuid( "A24D68F2-C58B-4322-AED8-6556DBED1B76" )]
     public partial class FundraisingDonationEntry : RockBlock
     {
@@ -114,15 +112,13 @@ namespace RockWeb.Blocks.Fundraising
                 ddlFundraisingOpportunity.SetValue( group.Id );
                 ddlFundraisingOpportunity_SelectedIndexChanged( null, null );
 
-                //
                 // If they did not specify a group member in the query string AND there is only one
                 // participant AND that participant is Active AND a registration instance has not
                 // been configured. This allows for single-member projects that do not need the user
                 // to select a specific person before donating.
-                //
                 if ( GetAttributeValue( "AllowAutomaticSelection" ).AsBoolean( false ) && groupMember == null )
                 {
-                    var members = group.Members.Where( m => ! m.GroupRole.IsLeader ).ToList();
+                    var members = group.Members.Where( m => !m.GroupRole.IsLeader ).ToList();
                     if ( members.Count == 1 && members[0].GroupMemberStatus == GroupMemberStatus.Active )
                     {
                         group.LoadAttributes( rockContext );
@@ -144,7 +140,6 @@ namespace RockWeb.Blocks.Fundraising
 
         private IEnumerable<int> GetChildGroupIds( Guid? rootGroupGuid, RockContext context )
         {
-
             var service = new GroupService( context );
             var groupIds = new List<int>();
 
@@ -157,7 +152,6 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             return groupIds;
-
         }
 
         /// <summary>
@@ -221,30 +215,65 @@ namespace RockWeb.Blocks.Fundraising
             {
                 var rockContext = new RockContext();
 
+                // Look up the group and find if it has a participation type / mode.
+                var group = new GroupService( rockContext ).Get( groupId.Value );
+                group.LoadAttributes( rockContext );
+                var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
+
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupMemberList = groupMemberService.Queryable().Where( a => a.GroupId == groupId && a.GroupMemberStatus == GroupMemberStatus.Active )
                     .OrderBy( a => a.Person.NickName ).ThenBy( a => a.Person.LastName ).Include( a => a.Person ).ToList();
 
                 bool showOnlyFirstName = this.GetAttributeValue( "ShowFirstNameOnly" ).AsBoolean();
-                foreach ( var groupMember in groupMemberList )
+
+                if ( participationMode == 2 )
                 {
-                    groupMember.LoadAttributes( rockContext );
-
-                    // only include participants that have not disabled public contribution requests
-                    if ( !groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() )
+                    var groupMembersByFamily = groupMemberList.Select( g => g.Person.PrimaryFamily ).Distinct();
+                    foreach ( var familyGroup in groupMembersByFamily )
                     {
-                        var listItem = new ListItem();
-                        listItem.Value = groupMember.Id.ToString();
-                        if ( showOnlyFirstName )
+                        var familyMembers = familyGroup.Members.Select( m => m.PersonId ).ToList();
+                        var familyMemberGroupMembersInCurrentGroup = group.Members.Where( m => familyMembers.Contains( m.PersonId ) );
+                        if ( familyMemberGroupMembersInCurrentGroup.Any() )
                         {
-                            listItem.Text = groupMember.Person.NickName;
-                        }
-                        else
-                        {
-                            listItem.Text = groupMember.Person.FullName;
-                        }
+                            var sortedFamilyMembers = familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender );
+                            var listItem = new ListItem();
+                            listItem.Value = sortedFamilyMembers.First().Id.ToString();
 
-                        ddlParticipant.Items.Add( listItem );
+                            // If there is only one person in the fundraising group from the current family, just use that person's full name...
+                            listItem.Text = sortedFamilyMembers.Count() == 1 ? sortedFamilyMembers.First().Person.FullName :
+
+                            // Otherwise, use all the family members in the group to generate a list of their names.
+                            string.Format(
+                                "{0} ({1})",
+                                familyGroup.Name,
+                                sortedFamilyMembers.Select( m => m.Person.NickName ).JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
+
+                            ddlParticipant.Items.Add( listItem );
+                        }
+                    }
+                }
+                else
+                {
+                    foreach ( var groupMember in groupMemberList )
+                    {
+                        groupMember.LoadAttributes( rockContext );
+
+                        // only include participants that have not disabled public contribution requests
+                        if ( !groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() )
+                        {
+                            var listItem = new ListItem();
+                            listItem.Value = groupMember.Id.ToString();
+                            if ( showOnlyFirstName )
+                            {
+                                listItem.Text = groupMember.Person.NickName;
+                            }
+                            else
+                            {
+                                listItem.Text = groupMember.Person.FullName;
+                            }
+
+                            ddlParticipant.Items.Add( listItem );
+                        }
                     }
                 }
             }
@@ -269,6 +298,13 @@ namespace RockWeb.Blocks.Fundraising
 
                     groupMember.LoadAttributes( rockContext );
                     groupMember.Group.LoadAttributes( rockContext );
+
+                    var participationMode = groupMember.Group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
+                    if ( participationMode.HasValue )
+                    {
+                        queryParams.Add( "ParticipationMode", participationMode.ToString() );
+                    }
+
                     var financialAccount = new FinancialAccountService( rockContext ).Get( groupMember.Group.GetAttributeValue( "FinancialAccount" ).AsGuid() );
                     if ( financialAccount != null )
                     {
@@ -282,7 +318,7 @@ namespace RockWeb.Blocks.Fundraising
                         var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                                     .Where( d => d.EntityTypeId == entityTypeIdGroupMember
                                             && d.EntityId == groupMemberId )
-                                    .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
+                                    .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
 
                         var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
                         if ( !individualFundraisingGoal.HasValue )

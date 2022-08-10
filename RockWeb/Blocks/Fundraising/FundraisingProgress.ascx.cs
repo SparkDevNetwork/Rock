@@ -13,18 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -38,7 +35,6 @@ namespace RockWeb.Blocks.Fundraising
     [Rock.SystemGuid.BlockTypeGuid( "75D2BC14-34DF-42EA-8DBB-3F5294B290A9" )]
     public partial class FundraisingProgress : RockBlock
     {
-
         #region Fields
 
         public decimal PercentComplete = 0;
@@ -61,7 +57,6 @@ namespace RockWeb.Blocks.Fundraising
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-
         }
 
         /// <summary>
@@ -123,6 +118,7 @@ namespace RockWeb.Blocks.Fundraising
                 pnlView.Visible = false;
                 return;
             }
+
             lTitle.Text = group.Name.FormatAsHtmlTitle();
 
             BindGroupMembersProgressGrid( group, groupMember, rockContext );
@@ -167,7 +163,6 @@ namespace RockWeb.Blocks.Fundraising
                                         && d.EntityId.HasValue && familyGroupMemberIds.Contains( d.EntityId.Value ) )
                                 .Sum( d => ( decimal? ) d.Amount ) ?? 0;
 
-
                     var fundraisingGoal = familyGroupMemberIds.Count * group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
 
                     decimal percentageAchieved = 0;
@@ -183,7 +178,6 @@ namespace RockWeb.Blocks.Fundraising
                         progressBarWidth = 100;
                     }
 
-
                     if ( !fundraisingGoal.HasValue )
                     {
                         fundraisingGoal = 0;
@@ -191,14 +185,16 @@ namespace RockWeb.Blocks.Fundraising
 
                     var familyMembers = familyGroup.Members.Select( m => m.PersonId ).ToList();
                     var familyMemberGroupMembersInCurrentGroup = group.Members.Where( m => familyMembers.Contains( m.PersonId ) );
+                    var sortedFamilyMembers = familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender );
 
                     // If there is only one person in the fundraising group from the current family, just use that person's full name...
+                    string progressTitle = sortedFamilyMembers.Count() == 1 ? sortedFamilyMembers.First().Person.FullName :
+
                     // Otherwise, use all the family members in the group to generate a list of their names.
-                    string progressTitle = familyMemberGroupMembersInCurrentGroup.Count() == 1 ? familyMemberGroupMembersInCurrentGroup.First().Person.FullName :
-                    String.Format( "{0} ({1})",
+                    string.Format(
+                        "{0} ({1})",
                         familyGroup.Name,
-                    familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender ).Select( m => m.Person.NickName )
-                    .JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
+                        sortedFamilyMembers.Select( m => m.Person.NickName ).JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
 
                     return new
                     {
@@ -251,23 +247,12 @@ namespace RockWeb.Blocks.Fundraising
                         progressBarWidth = 100;
                     }
 
-
                     if ( !individualFundraisingGoal.HasValue )
                     {
                         individualFundraisingGoal = 0;
                     }
 
                     string progressTitle = groupMember.Person.FullName;
-
-                    if ( participationMode == 2 )
-                    {
-                        var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
-                        var familyMemberGroupMembersInCurrentGroup = group.Members.Where( m => familyMembers.Contains( m.PersonId ) );
-                        progressTitle = String.Format( "{0} ({1})",
-                            groupMember.Person.GetFamily().Name,
-                        familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender ).Select( m => m.Person.NickName )
-                        .JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
-                    }
 
                     return new
                     {
