@@ -1445,7 +1445,7 @@ usernameTextbox.blur(function () {{
                 {
                     cpCampus.SelectedCampusId = campuses.First().Id;
                     cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
-                    pnlCampus.Visible = true;
+                    pnlCampus.Visible = cpCampus.Visible;
                 }
                 else
                 {
