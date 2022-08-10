@@ -744,5 +744,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.MediaFolder"/> 
         /// </summary>
         public const string MEDIA_FOLDER = "B28FC79F-9FEE-4BE4-801D-96B9246E6043";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PersistedDataset"/> 
+        /// </summary>
+        public const string PERSISTED_DATASET = "9C3064C0-CF9C-4549-9A80-022514B7FF83";
     }
 }

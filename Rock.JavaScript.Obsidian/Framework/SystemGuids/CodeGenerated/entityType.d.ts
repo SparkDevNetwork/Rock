@@ -311,4 +311,6 @@ export const enum EntityType {
     InteractionSourcedAchievementComponent = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67",
     /** The EntityType Guid for Rock.Model.MediaFolder  */
     MediaFolder = "B28FC79F-9FEE-4BE4-801D-96B9246E6043",
+    /** The EntityType Guid for Rock.Model.PersistedDataset  */
+    PersistedDataset = "9C3064C0-CF9C-4549-9A80-022514B7FF83",
 }
