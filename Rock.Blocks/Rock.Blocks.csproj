@@ -60,6 +60,7 @@
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Cms\MediaAccountDetail.cs" />
+    <Compile Include="Cms\PageShortLinkDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />

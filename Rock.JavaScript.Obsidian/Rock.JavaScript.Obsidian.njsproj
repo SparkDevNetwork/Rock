@@ -87,6 +87,8 @@
     <Folder Include="Framework\ViewModels\Blocks\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\PageShortLinkDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
@@ -399,6 +401,8 @@
     <TypeScriptCompile Include="Framework\Core\Reporting\filterExpressionType.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PageShortLinkDetail\pageShortLinkBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PageShortLinkDetail\pageShortLinkDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />

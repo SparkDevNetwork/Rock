@@ -38,6 +38,8 @@
     <Folder Include="src\" />
     <Folder Include="src\Cms\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
+    <Folder Include="src\Cms\" />
+    <Folder Include="src\Cms\PageShortLinkDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Crm\" />
@@ -63,6 +65,10 @@
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\viewPanel.ts" />
+    <TypeScriptCompile Include="src\Cms\pageShortLinkDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\PageShortLinkDetail\editPanel.ts" />
+    <TypeScriptCompile Include="src\Cms\PageShortLinkDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\PageShortLinkDetail\viewPanel.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.ts" />

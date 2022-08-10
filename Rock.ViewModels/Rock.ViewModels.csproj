@@ -46,6 +46,8 @@
   <ItemGroup>
     <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PageShortLinkDetail\PageShortLinkBag.cs" />
+    <Compile Include="Blocks\Cms\PageShortLinkDetail\PageShortLinkDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
