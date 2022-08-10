@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Steps
     [DisplayName( "Step Type Detail" )]
     [Category( "Steps" )]
     [Description( "Displays the details of the given Step Type for editing." )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
 
@@ -94,7 +95,7 @@ namespace RockWeb.Blocks.Steps
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "84DEAB14-70B3-4DA4-9CC2-0E0A301EE0FD" )]
-    public partial class StepTypeDetail : RockBlock
+    public partial class StepTypeDetail : ContextEntityBlock
     {
         #region Attribute Keys
 
@@ -1796,6 +1797,12 @@ namespace RockWeb.Blocks.Steps
                     x.StepType.IsActive &&
                     x.CompletedDateKey != null );
 
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
             // Apply date range
             var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
             var dateRange = reportPeriod.GetDateRange();
@@ -1832,6 +1839,12 @@ namespace RockWeb.Blocks.Steps
                     x.StepTypeId == _stepTypeId &&
                     x.StepType.IsActive &&
                     x.StartDateKey != null );
+
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
 
             // Apply date range
             var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );

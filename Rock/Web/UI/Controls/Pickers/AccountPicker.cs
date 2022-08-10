@@ -200,7 +200,6 @@ $@"Rock.controls.accountPicker.initialize({{
     expandedCategoryIds: [{this.ExpandedCategoryIds}],
     showSelectChildren: {this.ShowSelectChildren.ToString().ToLower()},
     enhanceForLongLists: {this.EnhanceForLongLists.ToString().ToLower()},
-    displayChildItemCountLabel: {this.DisplayChildItemCountLabel.ToString().ToLower()},
     customDataItems: {customDataItems}
 }});
 
@@ -532,7 +531,7 @@ function doPostBack() {{
             }
 
             var extraParams = new System.Text.StringBuilder();
-            extraParams.Append( $"/{activeOnly}/{this.DisplayPublicName}" );
+            extraParams.Append( '/' ).Append( activeOnly ).Append( '/' ).Append( this.DisplayPublicName ).Append( "?countsType=" ).Append( DisplayChildItemCountLabel ? AccountTreeViewItem.GetCountsType.ChildGroups : AccountTreeViewItem.GetCountsType.None );
             ItemRestUrlExtraParams = extraParams.ToString();
         }
         #endregion Methods

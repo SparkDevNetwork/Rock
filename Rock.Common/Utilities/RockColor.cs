@@ -700,6 +700,18 @@ namespace Rock.Utility
         {
             Saturate( -100 );
         }
+
+        /// <summary>
+        /// Gets a map of Html 4 color names and hexadecimal color values.
+        /// </summary>
+        internal static Dictionary<string, int> Html4ColorNameMap
+        {
+            get
+            {
+                return Html4Colors;
+            }
+        }
+
         #endregion
 
         #region Private Methods

@@ -139,21 +139,32 @@
 
 
 
-.card-profile-bio h1 {
+.card-profile-bio .person-name {
   margin: 0;
   font-size: 32px;
   font-weight: 700;
   text-align: center;
   line-height: 1.4;
 }
-.card-profile-bio h1 small {
+.card-profile-bio .person-first-name {
   display: block;
   font-size: 14px;
   color: #6c757d;
 }
-.card-profile-bio-condensed h1 {
+
+.card-profile-bio.deceased .person-name::before {
+  font-size: 14px;
+  color: #d4442e;
+  content: "Deceased";
+  display: block;
+}
+
+.card-profile-bio-condensed .person-name {
   font-size: 24px;
-  line-height: 1.4;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* TODO RENAME and or Remove */
@@ -259,7 +270,7 @@
   top: 0;
   right: 0;
   left: 0;
-  z-index: 1040;
+  z-index: 1010;
   display: flex;
   justify-content: space-between;
   padding: 6px;

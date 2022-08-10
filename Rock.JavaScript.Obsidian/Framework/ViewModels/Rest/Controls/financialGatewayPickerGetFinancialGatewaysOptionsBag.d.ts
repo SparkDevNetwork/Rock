@@ -27,8 +27,17 @@
  */
 export type FinancialGatewayPickerGetFinancialGatewaysOptionsBag = {
     /**
-     * Whether or not to include payment gateways that are inactive or
-     * don't support Rock-initiated transactions.
+     * Gets or sets a value indicating whether inactive gateways should be included.
+     * This checks both the FinancialGateway model and the GatewayComponent.
      */
-    showAll: boolean;
+    includeInactive: boolean;
+
+    /**
+     * If set to true then gateways that do not support Rock initiated transactions will be included.
+     * These GatewayComponents are used to download externally created transactions and do not allow Rock
+     * to create the transaction.
+     * This property does not affect if inactive gateways are shown or not.
+     * The inclusion or exclusion of inactive gateways is controlled exclusively by the "IncludeInactive" property.
+     */
+    showAllGatewayComponents: boolean;
 };

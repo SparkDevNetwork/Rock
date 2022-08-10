@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "F8E85355-2780-4772-9B21-30B84741E6D1")]
-    public class StepProgramStepStatusFieldType : FieldType
+    public class StepProgramStepStatusFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Keys
 
@@ -127,18 +128,11 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var formattedValue = string.Empty;
-            GetModelsFromAttributeValue( value, out var stepProgram, out var stepStatus );
+            GetModelsFromAttributeValue( privateValue, out var stepProgram, out var stepStatus );
 
             if ( stepStatus != null )
             {
@@ -150,7 +144,22 @@ namespace Rock.Field.Types
                 formattedValue = "Step Program: " + stepProgram.Name;
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion Formatting
@@ -304,5 +313,66 @@ namespace Rock.Field.Types
         }
 
         #endregion Parse Helpers
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            ParseDelimitedGuids( privateValue, out var stepProgramGuid, out var stepStatusGuid );
+
+            if ( !stepProgramGuid.HasValue && !stepStatusGuid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                // These are intentionally out of order to maintain backward compatibility
+                // with the old FormatValue returning the wrong value. When that is fixed
+                // this should also be fixed.
+                if ( stepProgramGuid.HasValue )
+                {
+                    var stepProgramId = new StepProgramService( rockContext ).GetId( stepProgramGuid.Value );
+
+                    if ( stepProgramId.HasValue )
+                    {
+                        return new List<ReferencedEntity>
+                        {
+                            new ReferencedEntity( EntityTypeCache.GetId<StepProgram>().Value, stepProgramId.Value )
+                        };
+                    }
+                }
+
+                if ( stepStatusGuid.HasValue )
+                {
+                    var stepStatusId = new StepStatusService( rockContext ).GetId( stepStatusGuid.Value );
+
+                    if ( stepStatusId.HasValue )
+                    {
+                        return new List<ReferencedEntity>
+                        {
+                            new ReferencedEntity( EntityTypeCache.GetId<StepStatus>().Value, stepStatusId.Value )
+                        };
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of StepStatus and
+            // StepProgram and should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<StepStatus>().Value, nameof( StepStatus.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<StepProgram>().Value, nameof( StepProgram.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

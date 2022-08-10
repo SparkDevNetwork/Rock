@@ -268,22 +268,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-
-        #region Pure Functions
-
-        /// <summary>
-        /// Returns a enumerable of the values as string of the defined type given its GUID
-        /// </summary>
-        /// <returns>
-        /// A enumerable of type string which contains the values of the defined type
-        /// </returns>
-        public static IEnumerable<string> GetValues( Guid defineTypeGuid )
-        {
-            return Get( defineTypeGuid )
-                    .DefinedValues
-                    .Select( definedValue => definedValue.Value );
-        }
-
-        #endregion Pure Functions
     }
 }

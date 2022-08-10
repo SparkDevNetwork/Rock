@@ -47,12 +47,27 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool IsPersistedValueDirty { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string PersistedCondensedHtmlValue { get; set; } = @"";
+
+        /// <summary />
+        public string PersistedCondensedTextValue { get; set; } = @"";
+
+        /// <summary />
+        public string PersistedHtmlValue { get; set; } = @"";
+
+        /// <summary />
+        public string PersistedTextValue { get; set; } = @"";
 
         /// <summary />
         public string Value { get; set; } = @"";
@@ -97,8 +112,13 @@ namespace Rock.Client
             this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsPersistedValueDirty = source.IsPersistedValueDirty;
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.PersistedCondensedHtmlValue = source.PersistedCondensedHtmlValue;
+            this.PersistedCondensedTextValue = source.PersistedCondensedTextValue;
+            this.PersistedHtmlValue = source.PersistedHtmlValue;
+            this.PersistedTextValue = source.PersistedTextValue;
             this.Value = source.Value;
             this.ValueAsNumeric = source.ValueAsNumeric;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -130,6 +150,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? ValueAsPersonId { get; set; }
+
+        /// <summary />
+        public int ValueChecksum { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

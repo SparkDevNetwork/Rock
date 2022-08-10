@@ -21,8 +21,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-using Rock.Cms.ContentLibrary;
-using Rock.Cms.ContentLibrary.Attributes;
+using Rock.Cms.ContentCollection;
+using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
 using Rock.Model;
 
@@ -201,29 +201,29 @@ namespace Rock.Web.Cache
 
         /// <summary>
         /// Gets or sets a value indicating whether this entity type supports content
-        /// library indexing.
+        /// collection indexing.
         /// </summary>
         /// <value>
-        /// <c>true</c> if this entity type supports content library indexing; otherwise, <c>false</c>.
+        /// <c>true</c> if this entity type supports content collection indexing; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        internal bool IsContentLibraryIndexingEnabled { get; private set; }
+        internal bool IsContentCollectionIndexingEnabled { get; private set; }
 
         /// <summary>
-        /// Gets the type of the indexer used when storing in the content library index.
+        /// Gets the type of the indexer used when storing in the content collection index.
         /// </summary>
         /// <value>
-        /// The type of the indexer used when storing in the content library index.
+        /// The type of the indexer used when storing in the content collection index.
         /// </value>
-        internal Type ContentLibraryIndexerType { get; private set; }
+        internal Type ContentCollectionIndexerType { get; private set; }
 
         /// <summary>
-        /// Gets the type of the document used when storing in the content library index.
+        /// Gets the type of the document used when storing in the content collection index.
         /// </summary>
         /// <value>
-        /// he type of the document used when storing in the content library index.
+        /// he type of the document used when storing in the content collection index.
         /// </value>
-        internal Type ContentLibraryDocumentType { get; private set; }
+        internal Type ContentCollectionDocumentType { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has achievements enabled.
@@ -503,24 +503,24 @@ namespace Rock.Web.Cache
 
             IndexModelType = entityType.IndexModelType;
 
-            // Detect support for content library.
-            var contentIndexableAttribute = GetEntityType()?.GetCustomAttribute<ContentLibraryIndexableAttribute>();
+            // Detect support for content collection.
+            var contentIndexableAttribute = GetEntityType()?.GetCustomAttribute<ContentCollectionIndexableAttribute>();
             if ( contentIndexableAttribute != null )
             {
-                ContentLibraryIndexerType = contentIndexableAttribute.IndexerType;
-                ContentLibraryDocumentType = contentIndexableAttribute.DocumentType;
+                ContentCollectionIndexerType = contentIndexableAttribute.IndexerType;
+                ContentCollectionDocumentType = contentIndexableAttribute.DocumentType;
 
-                if ( !typeof( IContentLibraryIndexer ).IsAssignableFrom( ContentLibraryIndexerType ) )
+                if ( !typeof( IContentCollectionIndexer ).IsAssignableFrom( ContentCollectionIndexerType ) )
                 {
-                    ContentLibraryIndexerType = null;
+                    ContentCollectionIndexerType = null;
                 }
 
-                if ( !typeof( Rock.Cms.ContentLibrary.IndexDocuments.IndexDocumentBase ).IsAssignableFrom( ContentLibraryDocumentType ) )
+                if ( !typeof( Rock.Cms.ContentCollection.IndexDocuments.IndexDocumentBase ).IsAssignableFrom( ContentCollectionDocumentType ) )
                 {
-                    ContentLibraryDocumentType = null;
+                    ContentCollectionDocumentType = null;
                 }
 
-                IsContentLibraryIndexingEnabled = ContentLibraryIndexerType != null && ContentLibraryDocumentType != null;
+                IsContentCollectionIndexingEnabled = ContentCollectionIndexerType != null && ContentCollectionDocumentType != null;
             }
 
             EntityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );

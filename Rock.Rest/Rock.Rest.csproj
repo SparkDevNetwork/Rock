@@ -138,8 +138,8 @@
     <Compile Include="Controllers\CodeGenerated\BenevolenceWorkflowsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusTopicsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\ContentLibrariesController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\ContentLibrarySourcesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentCollectionsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonalizationSegmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\RemoteAuthenticationSessionsController.CodeGenerated.cs" />

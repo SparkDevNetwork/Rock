@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -131,21 +131,14 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             using ( var rockContext = new RockContext() )
             {
                 var attributeMatrixService = new AttributeMatrixService( rockContext );
                 AttributeMatrix attributeMatrix = null;
-                Guid? attributeMatrixGuid = value.AsGuidOrNull();
+                Guid? attributeMatrixGuid = privateValue.AsGuidOrNull();
                 if ( attributeMatrixGuid.HasValue )
                 {
                     attributeMatrix = attributeMatrixService.GetNoTracking( attributeMatrixGuid.Value );
@@ -153,10 +146,10 @@ namespace Rock.Field.Types
 
                 if ( attributeMatrix != null )
                 {
-                    if ( configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+                    if ( privateConfigurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
                     {
                         // set the AttributeMatrixTemplateId just in case it was changed since the last time the attributeMatrix was saved
-                        int attributeMatrixTemplateId = configurationValues[ATTRIBUTE_MATRIX_TEMPLATE].Value.AsInteger();
+                        int attributeMatrixTemplateId = privateConfigurationValues[ATTRIBUTE_MATRIX_TEMPLATE].AsInteger();
                         if ( attributeMatrix.AttributeMatrixTemplateId != attributeMatrixTemplateId )
                         {
                             attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId;
@@ -174,7 +167,7 @@ namespace Rock.Field.Types
                     tempAttributeMatrixItem.LoadAttributes();
 
                     var lavaTemplate = attributeMatrix.AttributeMatrixTemplate.FormattedLava;
-                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( parentControl?.RockBlock()?.RockPage, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
                     mergeFields.Add( "AttributeMatrix", attributeMatrix );
                     mergeFields.Add( "ItemAttributes", tempAttributeMatrixItem.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
                     mergeFields.Add( "AttributeMatrixItems", attributeMatrix.AttributeMatrixItems.OrderBy( a => a.Order ) );
@@ -182,7 +175,21 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // Never return a condensed value.
+            return GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -400,6 +407,17 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Matrix fields are far too complex for persistence logic.
+            return false;
         }
 
         #endregion

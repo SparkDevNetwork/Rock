@@ -14,7 +14,7 @@
 
             <div class="panel-body">
 
-                <Rock:FinancialGatewayPicker ID="gpGateway" runat="server" Label="Payment Gateway" Required="true" ShowAll="false" />
+                <Rock:FinancialGatewayPicker ID="gpGateway" runat="server" Label="Payment Gateway" Required="true" IncludeInactive="false" />
                 <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" Required="true" />
 
                 <div class="actions">

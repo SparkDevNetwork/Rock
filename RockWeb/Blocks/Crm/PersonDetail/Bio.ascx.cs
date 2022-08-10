@@ -579,7 +579,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            lName.Text = $"<h1>{nameText} <small>{firstName}</small></h1>{previousNameText}";
+            lName.Text = $"<h1 class='person-name'>{nameText} <small class='person-first-name'>{firstName}</small></h1>{previousNameText}";
         }
 
         private void ShowBadgeList()
@@ -624,13 +624,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     lbFollowing.AddCssClass( "is-followed" );
                     lbFollowing.Text = $@"
-                        <span class=""text-link"">Following</span>
+                        <span class=""text"">Following</span>
                         <span class=""font-weight-normal"">{followingList.Count}</span>";
                 }
                 else
                 {
                     lbFollowing.RemoveCssClass( "is-followed" );
-                    lbFollowing.Text = $@"<span class=""text-link"">Follow</span>";
+                    lbFollowing.Text = $@"<span class=""text"">Follow</span>";
 
                     if ( followingList.Any() )
                     {
@@ -886,7 +886,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 communicationPageReference = null;
             }
 
-            lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference, "d-block text-link text-truncate" );
+            lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference, "d-inline-block mw-100 text-link text-truncate" );
             if ( lEmail == null )
             {
                 lEmail.Visible = false;

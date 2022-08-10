@@ -15,6 +15,34 @@
 // </copyright>
 //
 
+/**
+ * The following controls are not included for various reasons (e.g. only used internally or are not finalized)
+ *
+ * - attributeEditor
+ * - blockActionSourceGrid
+ * - componentFromUrl
+ * - fieldFilterContainer
+ * - fieldFilterRuleRow
+ * - gatewayControl
+ * - grid
+ * - gridColumn
+ * - gridProfileLInkColumn
+ * - gridRow
+ * - gridSelectColumn
+ * - myWellGatewayControl
+ * - nmiGatewayControl
+ * - pageDebugTimings
+ * - primaryBlock
+ * - rockAttributeFilter
+ * - rockField
+ * - rockForm
+ * - rockFormField
+ * - rockSuspense
+ * - saveFinancialAccountForm
+ * - secondaryBlock
+ * - testGatewayControl
+ */
+
 import { Component, computed, defineComponent, getCurrentInstance, isRef, onMounted, onUnmounted, PropType, Ref, ref, watch } from "vue";
 import HighlightJs from "@Obsidian/Libs/highlightJs";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor";
@@ -37,7 +65,7 @@ import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from "@Obsidian/Contr
 import StaticFormControl from "@Obsidian/Controls/staticFormControl";
 import ProgressTracker, { ProgressTrackerItem } from "@Obsidian/Controls/progressTracker";
 import RockForm from "@Obsidian/Controls/rockForm";
-import RockButton from "@Obsidian/Controls/rockButton";
+import RockButton, { BtnSize, BtnType } from "@Obsidian/Controls/rockButton";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList";
 import DropDownList from "@Obsidian/Controls/dropDownList";
 import Dialog from "@Obsidian/Controls/dialog";
@@ -110,6 +138,26 @@ import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker";
 import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker";
 import StepTypePicker from "@Obsidian/Controls/stepTypePicker";
 import StreakTypePicker from "@Obsidian/Controls/streakTypePicker";
+import Alert, { AlertType } from "@Obsidian/Controls/alert";
+import BadgeList from "@Obsidian/Controls/badgeList";
+import BadgePicker from "@Obsidian/Controls/badgePicker";
+import BasicTimePicker from "@Obsidian/Controls/basicTimePicker";
+import CountdownTimer from "@Obsidian/Controls/countdownTimer";
+import ElectronicSignature from "@Obsidian/Controls/electronicSignature";
+import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor";
+import InlineSlider from "@Obsidian/Controls/inlineSlider";
+import Slider from "@Obsidian/Controls/slider";
+import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor";
+import KeyValueList from "@Obsidian/Controls/keyValueList";
+import Loading from "@Obsidian/Controls/loading";
+import LoadingIndicator from "@Obsidian/Controls/loadingIndicator";
+import NumberUpDownGroup, { NumberUpDownGroupOption } from "@Obsidian/Controls/numberUpDownGroup";
+import PanelWidget from "@Obsidian/Controls/panelWidget";
+import ProgressBar from "@Obsidian/Controls/progressBar";
+import RockLabel from "@Obsidian/Controls/rockLabel";
+import RockValidation from "@Obsidian/Controls/rockValidation";
+import TabbedContent from "@Obsidian/Controls/tabbedContent";
+import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 
 // #region Gallery Support
 
@@ -324,8 +372,8 @@ export const GalleryAndResult = defineComponent({
 </v-style>
 
 <SectionHeader :title="componentName" :description="description" />
-<div class="galleryContent-mainRow mb-4 row">
-    <div v-if="$slots.default" class="mb-4" :class="value === void 0 ? 'col-sm-12' : 'col-sm-6'">
+<div class="galleryContent-mainRow mb-5 row">
+    <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-sm-6'">
         <h4 class="mt-0">Test Control</h4>
         <slot name="default" />
 
@@ -341,20 +389,22 @@ export const GalleryAndResult = defineComponent({
             </TransitionVerticalCollapse>
         </div>
     </div>
-    <div v-if="value !== void 0" class="well mb-4 col-sm-6">
-        <h4>Current Value</h4>
-        <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
-            <h5><code>{{ key }}</code></h5>
-            <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
-        </template>
-        <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
+    <div v-if="value !== void 0" class="col-sm-6">
+        <div class="well">
+            <h4>Current Value</h4>
+            <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
+                <h5><code>{{ key }}</code></h5>
+                <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
+            </template>
+            <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
+        </div>
     </div>
 </div>
-<div v-if="$slots.settings" class="mb-4">
+<div v-if="$slots.settings" class="mb-5">
     <h4 class="mt-0">Settings</h4>
     <slot name="settings" />
 </div>
-<div v-if="importCode || exampleCode || $slots.usage" class="mb-4">
+<div v-if="importCode || exampleCode || $slots.usage" class="mb-5">
     <h4 class="mt-0 mb-3">Usage Notes</h4>
     <slot name="usage">
         <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
@@ -1290,7 +1340,6 @@ const datePartsPickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         Toggle,
-        BirthdayPicker,
         DatePartsPicker
     },
     setup() {
@@ -1315,6 +1364,7 @@ const datePartsPickerGallery = defineComponent({
 
     <template #settings>
         <Toggle label="Show Year" v-model="showYear" />
+        <p class="mt-4 mb-4">The <a href="#BirthdayPickerGallery">Birthday Picker</a> simply wraps this control and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
         <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
@@ -1908,8 +1958,6 @@ const urlLinkBoxGallery = defineComponent({
     name: "UrlLinkBoxGallery",
     components: {
         UrlLinkBox,
-        RockForm,
-        RockButton,
         GalleryAndResult
     },
     setup() {
@@ -2007,7 +2055,7 @@ const panelGallery = defineComponent({
 
         return {
             colors: Array.apply(0, Array(256)).map((_: unknown, index: number) => `rgb(${index}, ${index}, ${index})`),
-            collapsableValue: ref(true),
+            collapsibleValue: ref(true),
             drawerValue: ref(false),
             hasFullscreen: ref(false),
             headerSecondaryActions,
@@ -2078,7 +2126,7 @@ const panelGallery = defineComponent({
 <GalleryAndResult
     :importCode="importCode"
     :exampleCode="exampleCode" >
-    <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsableValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
+    <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsibleValue" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
         <template v-if="simulateHelp" #helpContent>
             This is some help text.
         </template>
@@ -2136,7 +2184,7 @@ const panelGallery = defineComponent({
 
     <template #settings>
         <div class="row">
-            <CheckBox formGroupClasses="col-sm-3" v-model="collapsableValue" label="Collapsable" />
+            <CheckBox formGroupClasses="col-sm-3" v-model="collapsibleValue" label="Collapsible" />
             <CheckBox formGroupClasses="col-sm-3" v-model="value" label="Panel Open" />
             <CheckBox formGroupClasses="col-sm-3" v-model="hasFullscreen" label="Has Fullscreen" />
             <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
@@ -3338,7 +3386,8 @@ const financialGatewayPickerGallery = defineComponent({
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
-            showAll: ref(false),
+            includeInactive: ref(false),
+            showAllGatewayComponents: ref(false),
             value: ref({}),
             importCode: getControlImportPath("financialGatewayPicker"),
             exampleCode: `<FinancialGatewayPicker label="Financial Gateway" v-model="value" :multiple="false" />`
@@ -3357,7 +3406,8 @@ const financialGatewayPickerGallery = defineComponent({
         :enhanceForLongLists="enhanceForLongLists"
         :displayStyle="displayStyle"
         :showBlankItem="showBlankItem"
-        :showAll="showAll" />
+        :includeInactive="includeInactive"
+        :showAllGatewayComponents="showAllGatewayComponents" />
 
     <template #settings>
         <div class="row">
@@ -3383,8 +3433,12 @@ const financialGatewayPickerGallery = defineComponent({
                 <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
             </div>
 
-            <div class="col-md-4">
-                <CheckBox label="Show All Gateways" v-model="showAll" />
+            <div class="col-md-2">
+                <CheckBox label="Show Inactive Gateways" v-model="includeInactive" />
+            </div>
+
+            <div class="col-md-2">
+                <CheckBox label="Show All Gateway Components" v-model="showAllGatewayComponents" />
             </div>
         </div>
     </template>
@@ -4309,6 +4363,872 @@ const streakTypePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates Badge Picker */
+const badgePickerGallery = defineComponent({
+    name: "BadgePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        DropDownList,
+        BadgePicker,
+        NumberUpDown,
+        TextBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            columnCount: ref(0),
+            displayStyle: ref(PickerDisplayStyle.Auto),
+            displayStyleItems,
+            enhanceForLongLists: ref(false),
+            multiple: ref(false),
+            showBlankItem: ref(false),
+            value: ref({}),
+            importCode: getControlImportPath("badgePicker"),
+            exampleCode: `<BadgePicker label="Badge" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <BadgePicker label="Badge"
+        v-model="value"
+        :multiple="multiple"
+        :columnCount="columnCount"
+        :enhanceForLongLists="enhanceForLongLists"
+        :displayStyle="displayStyle"
+        :showBlankItem="showBlankItem" />
+
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+            </div>
+            <div class="col-md-4">
+                <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates an alert list */
+const alertGallery = defineComponent({
+    name: "AlertGallery",
+    components: {
+        GalleryAndResult,
+        Alert,
+        DropDownList,
+        CheckBox
+    },
+    setup() {
+        const options: ListItemBag[] = Object.keys(AlertType).map(key => ({ text: key, value: AlertType[key] }));
+        return {
+            isDismissible: ref(false),
+            onDismiss: () => alert('"dismiss" event fired.'),
+            options,
+            alertType: ref(AlertType.Default),
+            importCode: getControlImportPath("alert"),
+            exampleCode: `<Alert :dismissable="false" alertType="default" @dismiss="onDismiss">This is an alert!</Alert>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <Alert :dismissible="isDismissible" :alertType="alertType" @dismiss="onDismiss">This is an alert!</Alert>
+
+    <template #settings>
+        <div class="row">
+            <DropDownList formGroupClasses="col-md-4" label="Alert Type" v-model="alertType" :items="options" :showBlankItem="false" />
+            <CheckBox formGroupClasses="col-md-4" label="Dismissable" v-model="isDismissible" />
+        </div>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a badge list */
+const badgeListGallery = defineComponent({
+    name: "BadgeListGallery",
+    components: {
+        GalleryAndResult,
+        BadgeList,
+        EntityTypePicker,
+        TextBox,
+        CheckBox,
+        BadgePicker
+    },
+    setup() {
+        const entityType = ref({ text: "Person", value: EntityType.Person });
+        const entityTypeGuid = computed(() => entityType?.value);
+
+        const badgeTypes = ref<ListItemBag[]>([]);
+        const badgeTypeGuids = computed(() => badgeTypes.value.map(b => b.value));
+
+        const store = useStore();
+
+        return {
+            entityType,
+            entityTypeGuid,
+            badgeTypes,
+            badgeTypeGuids,
+            entityKey: ref(store.state.currentPerson?.idKey ?? ""),
+            importCode: getControlImportPath("badgeList"),
+            exampleCode: `<BadgeList :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <BadgeList :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />
+
+    <template #settings>
+        <div class="row">
+            <EntityTypePicker formGroupClasses="col-md-4" label="Entity Type" v-model="entityType" enhanceForLongLists />
+            <TextBox formGroupClasses="col-md-4" label="Entity Key" v-model="entityKey" />
+            <BadgePicker formGroupClasses="col-md-4" label="Badge Type" v-model="badgeTypes" showBlankItem multiple />
+        </div>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a basic time picker */
+const basicTimePickerGallery = defineComponent({
+    name: "BasicTimePickerGallery",
+    components: {
+        GalleryAndResult,
+        BasicTimePicker
+    },
+    setup() {
+        return {
+            value: ref({}),
+            importCode: getControlImportPath("basicTimePicker"),
+            exampleCode: `<BasicTimePicker label="Time" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <BasicTimePicker label="Time" v-model="value" />
+
+    <template #settings>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates birthday picker */
+const birthdayPickerGallery = defineComponent({
+    name: "BirthdayPickerGallery",
+    components: {
+        GalleryAndResult,
+        Toggle,
+        BirthdayPicker
+    },
+    setup() {
+        return {
+            showYear: ref(true),
+            datePartsModel: ref<Partial<DatePartsPickerValue>>({
+                month: 1,
+                day: 1,
+                year: 1970
+            }),
+            importCode: getControlImportPath("birthdayPicker"),
+            exampleCode: `<BirthdayPicker label="Birthday" v-model="date" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="datePartsModel"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection>
+
+    <BirthdayPicker label="Birthday" v-model="datePartsModel" :showYear="showYear" />
+
+    <template #settings>
+        <Toggle label="Show Year" v-model="showYear" />
+        <p class="mt-4 mb-4">This simply wraps the <a href="#DatePartsPickerGallery">Date Parts Picker</a> and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates countdown timer */
+const countdownTimerGallery = defineComponent({
+    name: "CountdownTimerGallery",
+    components: {
+        GalleryAndResult,
+        CountdownTimer,
+        TextBox,
+        RockButton
+    },
+    setup() {
+        const seconds = ref(300);
+        const setToSeconds = ref(300);
+
+        return {
+            reset: () => seconds.value = setToSeconds.value,
+            setToSeconds,
+            seconds,
+            importCode: getControlImportPath("countdownTimer"),
+            exampleCode: `<CountdownTimer v-model="seconds" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="seconds"
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+
+    Counting down:
+    <CountdownTimer v-model="seconds" />
+
+    <template #settings>
+        <form class="form-inline" @submit.prevent="reset">
+            <TextBox label="Reset Timer to (seconds)" v-model="setToSeconds" />
+            <RockButton type="submit">Set Timer</RockButton>
+        </form>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates electronic signature */
+const electronicSignatureGallery = defineComponent({
+    name: "ElectronicSignatureGallery",
+    components: {
+        GalleryAndResult,
+        ElectronicSignature,
+        Toggle,
+        TextBox
+    },
+    setup() {
+        return {
+            signature: ref(null),
+            isDrawn: ref(false),
+            term: ref("document"),
+            importCode: getControlImportPath("electronicSignature"),
+            exampleCode: `<ElectronicSignature v-model="signature" :isDrawn="isDrawn" documentTerm="document" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="signature"
+    :importCode="importCode"
+    :exampleCode="exampleCode">
+
+    <ElectronicSignature v-model="signature" :isDrawn="isDrawn" :documentTerm="term" />
+
+    <template #settings>
+        <div class="row">
+            <Toggle formGroupClasses="col-md-4" label="Signature Type" trueText="Drawn" falseText="Typed" v-model="isDrawn" />
+            <TextBox formGroupClasses="col-md-4" label="Document Type Term" v-model="term" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates field type editor */
+const fieldTypeEditorGallery = defineComponent({
+    name: "FieldTypeEditorGallery",
+    components: {
+        GalleryAndResult,
+        FieldTypeEditor,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        return {
+            value: ref({}),
+            readOnly: ref(false),
+            importCode: getControlImportPath("fieldTypeEditor"),
+            exampleCode: `<FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-md-4" label="Read Only Field Type" v-model="readOnly" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates inline slider */
+const inlineSliderGallery = defineComponent({
+    name: "InlineSliderGallery",
+    components: {
+        GalleryAndResult,
+        InlineSlider,
+        CheckBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            value: ref(10),
+            intOnly: ref(false),
+            min: ref(0),
+            max: ref(100),
+            showValue: ref(false),
+            importCode: getControlImportPath("inlineSlider"),
+            exampleCode: `<InlineSlider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <InlineSlider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
+            <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+            <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
+            <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates javascript anchor */
+const javaScriptAnchorGallery = defineComponent({
+    name: "JavascriptAnchorGallery",
+    components: {
+        GalleryAndResult,
+        JavaScriptAnchor,
+        CheckBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            onClick: () => alert("Link Clicked"),
+            importCode: getControlImportPath("javaScriptAnchor"),
+            exampleCode: `<JavaScriptAnchor @click="onClick">Link Text</JavaScriptAnchor>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <JavaScriptAnchor @click="onClick">This link can run code, but does not link to a page.</JavaScriptAnchor>
+</GalleryAndResult>`
+});
+
+/** Demonstrates javascript anchor */
+const keyValueListGallery = defineComponent({
+    name: "KeyValueListGallery",
+    components: {
+        GalleryAndResult,
+        KeyValueList,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        const limitValues = ref(false);
+        const displayValueFirst = ref(false);
+        const options: ListItemBag[] = [
+            {
+                text: "Option 1",
+                value: "1"
+            },
+            {
+                text: "Option 2",
+                value: "2"
+            },
+            {
+                text: "Option 3",
+                value: "3"
+            },
+        ];
+
+        const valueOptions = computed(() => limitValues.value ? options : null);
+
+        return {
+            limitValues,
+            displayValueFirst,
+            valueOptions,
+            value: ref(null),
+            keyPlaceholder: ref("Key"),
+            valuePlaceholder: ref("Value"),
+            importCode: getControlImportPath("keyValueList"),
+            exampleCode: `<KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{ 'output:modelValue':value, 'input:valueOptions':valueOptions }"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <KeyValueList label="Keys and Values" v-model="value" :valueOptions="valueOptions" :displayValueFirst="displayValueFirst" :keyPlaceholder="keyPlaceholder" :valuePlaceholder="valuePlaceholder" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-md-3" label="Limit Possible Values" v-model="limitValues" />
+            <CheckBox formGroupClasses="col-md-3" label="Show Value First" v-model="displayValueFirst" />
+            <TextBox formGroupClasses="col-md-3" label="Placeholder for Key Field" v-model="keyPlaceholder" />
+            <TextBox formGroupClasses="col-md-3" label="Placeholder for Value Field" v-model="valuePlaceholder" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates loading component */
+const loadingGallery = defineComponent({
+    name: "LoadingGallery",
+    components: {
+        GalleryAndResult,
+        Loading,
+        CheckBox
+    },
+    setup() {
+        return {
+            isLoading: ref(false),
+            importCode: getControlImportPath("loading"),
+            exampleCode: `<Loading :isLoading="isLoading">Content to show when not loading</Loading>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <Loading :isLoading="isLoading">Check the box below to start loading</Loading>
+
+    <template #settings>
+        <div class="row mb-3">
+            <CheckBox formGroupClasses="col-md-3" label="Is Loading" v-model="isLoading" />
+        </div>
+        <p>Internally, this uses the <a href="#LoadingIndicatorGallery">LoadingIndicator</a> component.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates loading indicator component */
+const loadingIndicatorGallery = defineComponent({
+    name: "LoadingIndicatorGallery",
+    components: {
+        GalleryAndResult,
+        LoadingIndicator
+    },
+    setup() {
+        return {
+            importCode: getControlImportPath("loadingIndicator"),
+            exampleCode: `<LoadingIndicator />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <LoadingIndicator />
+
+    <template #settings>
+        <p>It's best to use the <a href="#LoadingGallery">Loading</a> component instead of using this one directly.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates number up down group */
+const numberUpDownGroupGallery = defineComponent({
+    name: "NumberUpDownGroupGallery",
+    components: {
+        GalleryAndResult,
+        NumberUpDownGroup,
+        CheckBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            value: ref({ prop1: 30, prop2: 30, prop3: 30 }),
+            options: [
+                { key: "prop1", label: "Prop 1", min: 0, max: 50 },
+                { key: "prop2", label: "Prop 2", min: 10, max: 60 },
+                { key: "prop3", label: "Prop 3", min: 20, max: 70 }
+            ] as NumberUpDownGroupOption[],
+            importCode: getControlImportPath("numberUpDownGroup"),
+            exampleCode: `<NumberUpDownGroup v-model="value" :options="options" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="{ 'output:modelValue':value, 'input:options':options }"
+    hasMultipleValues
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <NumberUpDownGroup v-model="value" :options="options" />
+</GalleryAndResult>`
+});
+
+/** Demonstrates panel widget */
+const panelWidgetGallery = defineComponent({
+    name: "PanelWidgetGallery",
+    components: {
+        GalleryAndResult,
+        PanelWidget
+    },
+    setup() {
+        return {
+            importCode: getControlImportPath("panelWidget"),
+            exampleCode: `<PanelWidget :isDefaultOpen="false">
+    <template #header>Header</template>
+    Main Content...
+</PanelWidget>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <PanelWidget :isDefaultOpen="false">
+        <template #header>Panel Widget Header</template>
+        <h4>Romans 11:33-36</h4>
+        <p>
+            Oh, the depth of the riches<br />
+            and the wisdom and the knowledge of God!<br />
+            How unsearchable his judgments<br />
+            and untraceable his ways!<br />
+            For who has known the mind of the Lord?<br />
+            Or who has been his counselor?<br />
+            And who has ever given to God,<br />
+            that he should be repaid?<br />
+            For from him and through him<br />
+            and to him are all things.<br />
+            To him be the glory forever. Amen.
+        </p>
+    </PanelWidget>
+</GalleryAndResult>`
+});
+
+/** Demonstrates progress bar */
+const progressBarGallery = defineComponent({
+    name: "ProgressBarGallery",
+    components: {
+        GalleryAndResult,
+        ProgressBar,
+        InlineSlider
+    },
+    setup() {
+        return {
+            value: ref(10),
+            importCode: getControlImportPath("progressBar"),
+            exampleCode: `<ProgressBar :percent="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <ProgressBar :percent="value" />
+
+    <template #settings>
+        <div class="row">
+            <label>Percent Done</label>
+            <InlineSlider formGroupClasses="col-md-6" label="Integer Only" v-model="value" showValueBar isIntegerOnly />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates Rock Button */
+const rockButtonGallery = defineComponent({
+    name: "RockButtonGallery",
+    components: {
+        GalleryAndResult,
+        RockButton,
+        DropDownList,
+        CheckBox,
+        TextBox
+    },
+    setup() {
+        const sizeOptions: ListItemBag[] = Object.keys(BtnSize).map(key => ({ text: key, value: BtnSize[key] }));
+        const typeOptions: ListItemBag[] = Object.keys(BtnType).map(key => ({ text: key, value: BtnType[key] }));
+
+        return {
+            sizeOptions,
+            typeOptions,
+            btnSize: ref(BtnSize.Default),
+            btnType: ref(BtnType.Default),
+            value: ref(10),
+            onClick: () => new Promise((res) => setTimeout(() => {
+                res(true); alert("done");
+            }, 3000)),
+            autoLoading: ref(false),
+            autoDisable: ref(false),
+            isLoading: ref(false),
+            loadingText: ref("Loading..."),
+            importCode: `import RockButton, { BtnType, BtnSize } from "@Obsidian/Controls/rockButton";`,
+            exampleCode: `<RockButton
+    :btnSize="BtnSize.Default"
+    :btnType="BtnType.Default"
+    @click="onClick"
+    :isLoading="isLoading"
+    :autoLoading="autoLoading"
+    :autoDisable="autoDisable"
+    :loadingText="loadingText">
+    Button Text
+</RockButton>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText">Click Here to Fire Async Operation</RockButton>
+
+    <template #settings>
+        <div class="row">
+            <DropDownList formGroupClasses="col-md-3" label="Button Size" v-model="btnSize" :items="sizeOptions" :showBlankItem="false" />
+            <DropDownList formGroupClasses="col-md-3" label="Button Type" v-model="btnType" :items="typeOptions" :showBlankItem="false" />
+            <CheckBox formGroupClasses="col-md-3" label="Auto Loading Indicator" v-model="autoLoading" />
+            <CheckBox formGroupClasses="col-md-3" label="Auto Disable" v-model="autoDisable" />
+        </div>
+        <div class="row">
+            <CheckBox formGroupClasses="col-md-3" label="Force Loading" v-model="isLoading" />
+            <TextBox formGroupClasses="col-md-3" label="Loading Text" v-model="loadingText" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a rock form */
+const rockLabelGallery = defineComponent({
+    name: "RockLabelGallery",
+    components: {
+        GalleryAndResult,
+        RockLabel
+    },
+    setup() {
+        return {
+            importCode: getControlImportPath("rockLabel"),
+            exampleCode: `<RockLabel help="More Info">A Label</RockLabel>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <RockLabel help="This is the help message">This is a Rock Label. Hover icon for help.</RockLabel>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a rock validation */
+const rockValidationGallery = defineComponent({
+    name: "RockValidationGallery",
+    components: {
+        GalleryAndResult,
+        RockValidation
+    },
+    setup() {
+        return {
+            errors: [
+                { name: "Error Name", text: "Error text describing the validation error." },
+                { name: "Not Good", text: "This is invalid because it is sinful." },
+                { name: "Trust God", text: "Didn't trust God. Turn to Him." }
+            ],
+            importCode: getControlImportPath("rockValidation"),
+            exampleCode: `<RockValidation :errors="[{ name:'Error Name', text:'Error Description' }]" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <RockValidation :errors="errors" />
+
+    <template #settings>
+        <p>The <code>errors</code> parameter takes an array of <code>FormError</code> objects. <code>FormError</code> type is defined in <code>@Obsidian/Utility/form</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates slider */
+const sliderGallery = defineComponent({
+    name: "SliderGallery",
+    components: {
+        GalleryAndResult,
+        Slider,
+        CheckBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            value: ref(10),
+            intOnly: ref(false),
+            min: ref(0),
+            max: ref(100),
+            showValue: ref(false),
+            importCode: getControlImportPath("slider"),
+            exampleCode: `<Slider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <Slider v-model="value" :isIntegerOnly="intOnly" :min="min" :max="max" :showValueBar="showValue" />
+
+    <template #settings>
+        <div class="row">
+            <CheckBox formGroupClasses="col-md-3" label="Integer Only" v-model="intOnly" />
+            <CheckBox formGroupClasses="col-md-3" label="Show Value" v-model="showValue" />
+            <NumberBox formGroupClasses="col-md-3" label="Minimum Value" v-model="min" />
+            <NumberBox formGroupClasses="col-md-3" label="Maximum Value" v-model="max" />
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
+/** Demonstrates tabbed content */
+const tabbedContentGallery = defineComponent({
+    name: "TabbedContentGallery",
+    components: {
+        GalleryAndResult,
+        TabbedContent,
+        CheckBox,
+        NumberBox
+    },
+    setup() {
+        return {
+            list: ["Matthew", "Mark", "Luke", "John"],
+            importCode: getControlImportPath("tabbedContent"),
+            exampleCode: `<TabbedContent :tabList="arrayOfItems">
+    <template #tab="{item}">
+        {{ item }}
+    </template>
+    <template #tabpane="{item}">
+        This is the content for {{item}}.
+    </template>
+</TabbedContent>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+
+    <TabbedContent :tabList="list">
+        <template #tab="{item}">
+            {{ item }}
+        </template>
+        <template #tabpane="{item}">
+            This is the content for {{item}}.
+        </template>
+    </TabbedContent>
+</GalleryAndResult>`
+});
+
+/** Demonstrates vertical collapse transition */
+const transitionVerticalCollapseGallery = defineComponent({
+    name: "TransitionVerticalCollapseGallery",
+    components: {
+        GalleryAndResult,
+        TransitionVerticalCollapse,
+        RockButton
+    },
+    setup() {
+        return {
+            showContent: ref(false),
+            importCode: getControlImportPath("transitionVerticalCollapse"),
+            exampleCode: `<TransitionVerticalCollapse>
+    <div v-if="showContent">Content to transition in</div>
+</TransitionVerticalCollapse>`
+        };
+    },
+    template: `
+<GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+    <RockButton btnType="primary" class="mb-3" @click="showContent = !showContent">Show Content</RockButton>
+    <TransitionVerticalCollapse>
+        <div v-if="showContent">God so loved the world...</div>
+    </TransitionVerticalCollapse>
+</GalleryAndResult>`
+});
+
+/** Demonstrates a value detail list */
+const valueDetailListGallery = defineComponent({
+    name: "ValueDetailListGallery",
+    components: {
+        GalleryAndResult,
+        ValueDetailList
+    },
+    setup() {
+        return {
+            modelValue: [
+                { title: "Title", textValue: "A text description of this item." },
+                { title: "Something", htmlValue: "This description has <i>some</i> <code>HTML</code> mixed in." }
+            ],
+            importCode: getControlImportPath("valueDetailList"),
+            exampleCode: `<ValueDetailList :modelValue="[{ name:'Error Name', text:'Error Description' }]" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :importCode="importCode"
+    :exampleCode="exampleCode" >
+
+    <ValueDetailList :modelValue="modelValue" />
+
+    <template #settings>
+        <p>The <code>modelValue</code> parameter takes an array of <code>ValueDetailListItem</code> objects. <code>ValueDetailListItem</code> type is defined in <code>@Obsidian/Types/Controls/valueDetailListItem</code>.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 /** Demonstrates code editor. */
 const codeEditorGallery = defineComponent({
     name: "CodeEditorGallery",
@@ -4416,7 +5336,9 @@ const codeEditorGallery = defineComponent({
 
 
 const controlGalleryComponents: Record<string, Component> = [
+    alertGallery,
     attributeValuesContainerGallery,
+    badgeListGallery,
     fieldFilterEditorGallery,
     textBoxGallery,
     datePickerGallery,
@@ -4491,6 +5413,27 @@ const controlGalleryComponents: Record<string, Component> = [
     stepStatusPickerGallery,
     stepTypePickerGallery,
     streakTypePickerGallery,
+    badgePickerGallery,
+    basicTimePickerGallery,
+    birthdayPickerGallery,
+    countdownTimerGallery,
+    electronicSignatureGallery,
+    fieldTypeEditorGallery,
+    inlineSliderGallery,
+    javaScriptAnchorGallery,
+    keyValueListGallery,
+    loadingGallery,
+    loadingIndicatorGallery,
+    numberUpDownGroupGallery,
+    panelWidgetGallery,
+    progressBarGallery,
+    rockButtonGallery,
+    rockLabelGallery,
+    rockValidationGallery,
+    sliderGallery,
+    tabbedContentGallery,
+    transitionVerticalCollapseGallery,
+    valueDetailListGallery,
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

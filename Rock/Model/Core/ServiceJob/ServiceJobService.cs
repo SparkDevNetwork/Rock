@@ -203,6 +203,10 @@ namespace Rock.Model
         public IJobDetail BuildQuartzJob( ServiceJob job )
         {
             var type = job.GetCompiledType();
+            if ( type == null )
+            {
+                return null;
+            }
 
             UpdateAttributesIfNeeded( type );
 

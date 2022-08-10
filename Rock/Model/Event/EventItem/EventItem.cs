@@ -25,7 +25,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.Lava;
-using Rock.Cms.ContentLibrary.Attributes;
+using Rock.Cms.ContentCollection.Attributes;
 
 namespace Rock.Model
 {
@@ -36,7 +36,7 @@ namespace Rock.Model
     [Table( "EventItem" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "6A58AD11-3491-84AE-4896-8F39906EA65E")]
-    [ContentLibraryIndexable( typeof( Rock.Cms.ContentLibrary.Indexers.EventItemIndexer ), typeof( Rock.Cms.ContentLibrary.IndexDocuments.EventItemDocument ) )]
+    [ContentCollectionIndexable( typeof( Rock.Cms.ContentCollection.Indexers.EventItemIndexer ), typeof( Rock.Cms.ContentCollection.IndexDocuments.EventItemDocument ) )]
     public partial class EventItem : Model<EventItem>, IHasActiveFlag, IRockIndexable
     {
         #region Entity Properties

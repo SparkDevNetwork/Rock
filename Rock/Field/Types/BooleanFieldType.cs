@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -227,14 +227,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !condensed )
-            {
-                return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-            }
-            else
-            {
-                return GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-            }
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -729,5 +724,29 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldTrueText = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.TrueText ) ?? string.Empty;
+            var oldFalseText = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.FalseText ) ?? string.Empty;
+            var newTrueText = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.TrueText ) ?? string.Empty;
+            var newFalseText = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.FalseText ) ?? string.Empty;
+
+            if ( oldTrueText != newTrueText )
+            {
+                return true;
+            }
+
+            if ( oldFalseText != newFalseText )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }

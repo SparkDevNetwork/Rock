@@ -46,8 +46,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Blocks\Cms\ContentLibraryView\SearchOrder.cs" />
-    <Compile Include="Cms\ContentLibraryFilterControl.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\SearchOrder.cs" />
+    <Compile Include="Cms\ContentCollectionFilterControl.cs" />
     <Compile Include="Controls\SlidingDateRangePicker.cs" />
     <Compile Include="Crm\Gender.cs" />
     <Compile Include="EnumDomainAttribute.cs" />

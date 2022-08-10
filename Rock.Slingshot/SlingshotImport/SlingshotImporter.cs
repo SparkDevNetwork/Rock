@@ -44,7 +44,7 @@ namespace Rock.Slingshot
     /// </summary>
     public class SlingshotImporter
     {
-        /// <summary
+        /// <summary>
         /// Initializes a new instance of the <see cref="Importer"/> class and extracts the zip folder.
         /// </summary>
         /// <param name="slingshotFileName">Name of the slingshot file.</param>

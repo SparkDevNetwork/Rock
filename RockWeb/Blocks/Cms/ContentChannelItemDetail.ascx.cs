@@ -475,8 +475,8 @@ namespace RockWeb.Blocks.Cms
                     }
                 } );
 
-                // Update the content library index.
-                new ProcessContentLibraryDocument.Message
+                // Update the content collection index.
+                new ProcessContentCollectionDocument.Message
                 {
                     EntityTypeId = contentItem.TypeId,
                     EntityId = contentItem.Id
@@ -1177,7 +1177,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem.Id > 0 )
             {
                 var selectedRequestFilterIds = requestFilterService
-                    .GetPersonalizedEntityQueryForRequestFilter( EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id, contentItem.Id )
+                    .GetPersonalizedEntityRequestFilterQuery( EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id, contentItem.Id )
                     .Select( a => a.PersonalizationEntityId )
                     .ToList();
                 lbRequestFilters.SetValues( selectedRequestFilterIds );
@@ -1196,7 +1196,7 @@ namespace RockWeb.Blocks.Cms
             if ( contentItem.Id > 0 )
             {
                 var selectedSegmentIds = personalizationSegmentService
-                    .GetPersonalizedEntityQueryForSegment( EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id, contentItem.Id )
+                    .GetPersonalizedEntitySegmentQuery( EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id, contentItem.Id )
                     .Select( a => a.PersonalizationEntityId )
                     .ToList();
                 lbSegments.SetValues( selectedSegmentIds );

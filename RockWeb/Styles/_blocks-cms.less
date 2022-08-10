@@ -250,6 +250,17 @@
     }
   }
 
+  .individual-play-person-info {
+    flex: 1 1 auto;
+  }
+
+  .individual-play-person-location {
+    display: block;
+    font-size: 12px;
+    color: @text-muted;
+    font-weight: 400;
+  }
+
   .individual-play-bar {
     display: flex;
     flex: 1 1 auto;
@@ -273,7 +284,7 @@
   }
   @media (min-width: @screen-sm) {
     .individual-play-person {
-      width: 200px;
+      width: 280px;
     }
 
     .individual-play-percent {
@@ -292,5 +303,66 @@
       height: 60px;
       pointer-events: none;
     }
+  }
+
+  .badge-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: center;
+    overflow: hidden;
+  }
+}
+
+.individual-play-interaction {
+  position: absolute;
+  left: 0;
+  width: 0;
+  height: 100%;
+  padding-right: 20px;
+  background-color: @gray-200;
+  transition: width .2s ease-in-out;
+
+  &.expanded {
+    width: 150px;
+  }
+
+  .individual-play-interaction-session {
+    display: none;
+    height: 100%;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 12px;
+    color: @text-color;
+    opacity: 50%;
+    padding: 4px;
+    cursor: default;
+
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .expander {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 4px;
+  }
+}
+
+.expanded {
+  .individual-play-interaction-session {
+    display: flex;
   }
 }

@@ -17,11 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -336,7 +338,7 @@ This can be due to multiple threads updating the same attribute at the same time
             return true;
         }
 
-        #region Load Attributes
+        #region Load Attributes and Values
 
         /// <summary>
         /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
@@ -1101,6 +1103,8 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             attributeCategory.Attributes.Add( attribute );
         }
 
+        #region Save Attributes
+
         /// <summary>
         /// Saves any attribute edits made using an Attribute Editor control
         /// </summary>
@@ -1312,6 +1316,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             var internalAttributeService = new AttributeService( rockContext );
             var attributeQualifierService = new AttributeQualifierService( rockContext );
             var categoryService = new CategoryService( rockContext );
+            bool isNew;
 
             // If attribute is not valid, return null
             if ( !newAttribute.IsValid )
@@ -1344,16 +1349,21 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 // If the attribute didn't exist, create it
                 attribute = new Rock.Model.Attribute();
                 internalAttributeService.Add( attribute );
+                isNew = true;
             }
             else
             {
                 // If it did exist, set the new attribute ID and GUID since we're copying all properties in the next step
                 newAttribute.Id = attribute.Id;
                 newAttribute.Guid = attribute.Guid;
+                isNew = false;
             }
 
             // Copy all the properties from the new attribute to the attribute model
             attribute.CopyPropertiesFrom( newAttribute );
+
+            var oldConfigurationValues = existingQualifiers.ToDictionary( eq => eq.Key, eq => eq.Value );
+            var newConfigurationValues = newAttribute.AttributeQualifiers.ToDictionary( aq => aq.Key, aq => aq.Value );
 
             var addedQualifiers = newAttribute.AttributeQualifiers.Where( a => !existingQualifiers.Any( x => x.Key == a.Key ) );
             var deletedQualifiers = existingQualifiers.Where( a => !newAttribute.AttributeQualifiers.Any( x => x.Key == a.Key ) );
@@ -1397,10 +1407,49 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             attribute.EntityTypeQualifierColumn = entityTypeQualifierColumn;
             attribute.EntityTypeQualifierValue = entityTypeQualifierValue;
 
+            rockContext.ExecuteAfterCommit( () =>
+            {
+                using ( var innerContext = new RockContext() )
+                {
+                    // Don't use the cache because we aren't 100% confident it is
+                    // safe to hit the cache right now.
+                    var innerAttribute = new AttributeService( innerContext ).Get( attribute.Id );
+
+                    if ( innerAttribute == null )
+                    {
+                        return;
+                    }
+
+                    UpdateAttributeDefaultPersistedValues( innerAttribute );
+                    UpdateAttributeEntityReferences( innerAttribute, innerContext );
+
+                    // Disable pre-post processing because this is a special update.
+                    // We don't want to touch anything or trigger any special logic.
+                    innerContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+                }
+
+                // If we are updating an existing attribute then check if we need
+                // to recalculate all existing values.
+                if ( !isNew )
+                {
+                    var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
+
+                    if ( field != null && field.IsPersistedValueInvalidated( oldConfigurationValues, newConfigurationValues ) )
+                    {
+                        // Run on a task because this operation could take a while.
+                        Task.Run( () => BulkUpdateInvalidatedPersistedValues( attribute, newConfigurationValues ) );
+                    }
+                }
+            } );
+
             rockContext.SaveChanges();
 
             return attribute;
         }
+
+        #endregion
+
+        #region Save Attribute Values
 
         /// <summary>
         /// Saves the attribute values.
@@ -1419,7 +1468,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
                 var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
                 var valueQuery = attributeValueService.Queryable().WhereAttributeIds( attributeIds ).Where( x => x.EntityId == model.Id );
-                bool changesMade = false;
+                var attributeValuesThatWereChanged = new List<AttributeValue>();
 
                 var attributeValues = valueQuery.ToDictionary( x => x.AttributeKey );
                 foreach ( var attribute in model.Attributes.Values )
@@ -1431,7 +1480,8 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                             if ( attributeValues[attribute.Key].Value != model.AttributeValues[attribute.Key].Value )
                             {
                                 attributeValues[attribute.Key].Value = model.AttributeValues[attribute.Key].Value;
-                                changesMade = true;
+
+                                attributeValuesThatWereChanged.Add( attributeValues[attribute.Key] );
                             }
                         }
                         else
@@ -1444,20 +1494,61 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                                 attributeValue.AttributeId = attribute.Id;
                                 attributeValue.EntityId = model.Id;
                                 attributeValue.Value = value;
+
                                 attributeValueService.Add( attributeValue );
-                                changesMade = true;
+                                attributeValuesThatWereChanged.Add( attributeValue );
                             }
                         }
                     }
                 }
 
-                if ( changesMade )
+                // If nothing changed, we don't need to save anything.
+                if ( !attributeValuesThatWereChanged.Any() )
                 {
-                    rockContext.SaveChanges();
+                    return;
                 }
+
+                // Execute after the commit since getting the persisted values
+                // could cause deadlock inside a transaction.
+                rockContext.ExecuteAfterCommit( () =>
+                {
+                    var changedValueIds = attributeValuesThatWereChanged.Select( av => av.Id ).ToList();
+                    var attributeValueReferenceValues = new Dictionary<int, string>();
+
+                    using ( var innerContext = new RockContext() )
+                    {
+                        var changedAttributeValues = new AttributeValueService( innerContext )
+                            .Queryable()
+                            .Where( av => changedValueIds.Contains( av.Id ) )
+                            .ToList();
+
+                        foreach ( var changedAttributeValue in changedAttributeValues )
+                        {
+                            var attributeCache = AttributeCache.Get( changedAttributeValue.Id );
+
+                            if ( attributeCache != null )
+                            {
+                                UpdateAttributeValuePersistedValues( changedAttributeValue, attributeCache );
+
+                                if ( attributeCache.IsReferencedEntityFieldType )
+                                {
+                                    attributeValueReferenceValues.Add( changedAttributeValue.Id, changedAttributeValue.Value );
+                                }
+                            }
+                        }
+
+                        // Disable processing because this is a special update
+                        // that is only used by the persisted value system and should
+                        // not trigger any other logic.
+                        innerContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+
+                        BulkUpdateAttributeValueEntityReferences( attributeValueReferenceValues, innerContext );
+                    }
+                } );
+
+                rockContext.SaveChanges();
             }
         }
-
 
         /// <summary>
         /// Saves an attribute value.
@@ -1493,6 +1584,34 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 if ( attributeValue.Value != newValue )
                 {
                     attributeValue.Value = newValue;
+
+                    // Execute after the commit since getting the persisted values
+                    // could cause deadlock inside a transaction.
+                    rockContext.ExecuteAfterCommit( () =>
+                    {
+                        using ( var innerContext = new RockContext() )
+                        {
+                            var innerAttributeValue = new AttributeValueService( innerContext ).Get( attributeValue.Id );
+
+                            if ( innerAttributeValue == null )
+                            {
+                                return;
+                            }
+
+                            UpdateAttributeValuePersistedValues( innerAttributeValue, attribute );
+
+                            if ( attribute.IsReferencedEntityFieldType )
+                            {
+                                UpdateAttributeValueEntityReferences( innerAttributeValue, innerContext );
+                            }
+
+                            // Disable processing because this is a special update
+                            // that is only used by the persisted value system and should
+                            // not trigger any other logic.
+                            innerContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+                        }
+                    } );
+
                     rockContext.SaveChanges();
                 }
 
@@ -1534,11 +1653,664 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                     attributeValueService.Add( attributeValue );
                 }
 
-                attributeValue.Value = newValue;
+                if ( attributeValue.Value != newValue )
+                {
+                    attributeValue.Value = newValue;
+
+                    // Execute after the commit since getting the persisted values
+                    // could cause deadlock inside a transaction.
+                    rockContext.ExecuteAfterCommit( () =>
+                    {
+                        using ( var innerContext = new RockContext() )
+                        {
+                            var innerAttributeValue = new AttributeValueService( innerContext ).Get( attributeValue.Id );
+
+                            if ( innerAttributeValue == null )
+                            {
+                                return;
+                            }
+
+                            UpdateAttributeValuePersistedValues( innerAttributeValue, attribute );
+
+                            if ( attribute.IsReferencedEntityFieldType )
+                            {
+                                UpdateAttributeValueEntityReferences( innerAttributeValue, innerContext );
+                            }
+
+                            // Disable processing because this is a special update
+                            // that is only used by the persisted value system and should
+                            // not trigger any other logic.
+                            innerContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+                        }
+                    } );
+                }
 
                 rockContext.SaveChanges();
             }
         }
+
+        #endregion
+
+        #region Persisted Values
+
+        /// <summary>
+        /// Updates the attribute default persisted values to match the <see cref="Rock.Model.Attribute.DefaultValue"/>.
+        /// </summary>
+        /// <param name="attribute">The attribute whose persisted values need to be updated.</param>
+        internal static void UpdateAttributeDefaultPersistedValues( Rock.Model.Attribute attribute )
+        {
+            var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
+            var configuration = attribute.AttributeQualifiers.ToDictionary( aq => aq.Key, aq => aq.Value );
+
+            if ( field != null && field.IsPersistedValueSupported( configuration ) )
+            {
+                var persistedValues = field.GetPersistedValues( attribute.DefaultValue, configuration );
+
+                attribute.DefaultPersistedTextValue = persistedValues.TextValue;
+                attribute.DefaultPersistedHtmlValue = persistedValues.HtmlValue;
+                attribute.DefaultPersistedCondensedTextValue = persistedValues.CondensedTextValue;
+                attribute.DefaultPersistedCondensedHtmlValue = persistedValues.CondensedHtmlValue;
+                attribute.IsDefaultPersistedValueDirty = false;
+            }
+            else
+            {
+                var placeholder = field?.GetPersistedValuePlaceholder( configuration ) ?? Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported;
+
+                attribute.DefaultPersistedTextValue = placeholder;
+                attribute.DefaultPersistedHtmlValue = placeholder;
+                attribute.DefaultPersistedCondensedTextValue = placeholder;
+                attribute.DefaultPersistedCondensedHtmlValue = placeholder;
+                attribute.IsDefaultPersistedValueDirty = false;
+            }
+        }
+
+        /// <summary>
+        /// Bulk updates all the values for an attribute. This should be called
+        /// any time the configuration values have changed in a way that would
+        /// cause the persisted values to no longer be valid.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        ///     <para>
+        ///         This can be a very expensive method call, so it should not be called
+        ///         on a UI related thread.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attribute">The attribute that needs to be updated.</param>
+        /// <param name="configurationValues">The configuration values for the attribute.</param>
+        private static int BulkUpdateInvalidatedPersistedValues( Rock.Model.Attribute attribute, Dictionary<string, string> configurationValues )
+        {
+            var field = FieldTypeCache.Get( attribute.FieldType )?.Field;
+            var count = 0;
+
+            // Field is kind of required...
+            if ( field == null )
+            {
+                return 0;
+            }
+
+            try
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    // Make this 5 minutes because on large data sets this could take a while.
+                    // And by large I mean like 300,000 attribute values.
+                    rockContext.Database.CommandTimeout = 300;
+
+                    var distinctValues = new AttributeValueService( rockContext )
+                        .Queryable()
+                        .Where( av => av.AttributeId == attribute.Id )
+                        .Select( av => av.Value )
+                        .Distinct()
+                        .ToList();
+
+                    foreach ( var value in distinctValues )
+                    {
+                        if ( field.IsPersistedValueSupported( configurationValues ) )
+                        {
+                            var persistedValues = field.GetPersistedValues( value, configurationValues );
+
+                            count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
+                        }
+                        else
+                        {
+                            var placeholderValue = field.GetPersistedValuePlaceholder( configurationValues );
+
+                            var persistedValues = new Field.PersistedValues
+                            {
+                                TextValue = placeholderValue,
+                                CondensedTextValue = placeholderValue,
+                                HtmlValue = placeholderValue,
+                                CondensedHtmlValue = placeholderValue
+                            };
+
+                            count += BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
+                        }
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// Bulk updates the persisted values for all the values of an attribute
+        /// that have the specified value.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="value">The value that matches the <see cref="AttributeValue.Value"/> property.</param>
+        /// <param name="persistedValues">The persisted values to use during the update.</param>
+        /// <param name="rockContext">The database context to use when updating.</param>
+        /// <returns>The number of attribute value rows that were updated.</returns>
+        internal static int BulkUpdateAttributeValuePersistedValues( int attributeId, string value, Rock.Field.PersistedValues persistedValues, RockContext rockContext )
+        {
+            var textValueParameter = new SqlParameter( "@TextValue", ( object ) persistedValues.TextValue ?? DBNull.Value );
+            var htmlValueParameter = new SqlParameter( "@HtmlValue", ( object ) persistedValues.HtmlValue ?? DBNull.Value );
+            var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
+            var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
+            var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+            var valueParameter = new SqlParameter( "@Value", ( object ) value ?? DBNull.Value );
+
+            // Because AttributeValue has a trigger on it, the extra where clause is
+            // to prevent updates if no value actually changed is rather important.
+            // Without it we might be doing a non-change update which still triggers
+            // the database trigger.
+            // The custom COLLATE makes those value comparison case sensitive. This
+            // solves issues where the persisted value changed in case only, such as
+            // "Yes" to "YES" for a boolean field type.
+            int updatedCount = rockContext.Database.ExecuteSqlCommand( @"
+UPDATE [AttributeValue]
+SET [PersistedTextValue] = @TextValue,
+    [PersistedHtmlValue] = @HtmlValue,
+    [PersistedCondensedTextValue] = @CondensedTextValue,
+    [PersistedCondensedHtmlValue] = @CondensedHtmlValue,
+    [IsPersistedValueDirty] = 0
+WHERE [AttributeId] = @AttributeId
+  AND [ValueChecksum] = CHECKSUM(@Value)
+  AND [Value] = @Value
+  AND ([IsPersistedValueDirty] = 1
+       OR [PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
+       OR [PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
+       OR [PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
+       OR [PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
+                textValueParameter,
+                htmlValueParameter,
+                condensedTextValueParameter,
+                condensedHtmlValueParameter,
+                attributeIdParameter,
+                valueParameter );
+
+            // Bit of a hack, but because of the trigger on AttributeValue it doubles
+            // the number of rows updated.
+            return updatedCount / 2;
+        }
+
+        /// <summary>
+        /// Bulk updates the persisted values for the specified values of an attribute.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="valueIds">The value identifiers that should be updated.</param>
+        /// <param name="persistedValues">The persisted values to use during the update.</param>
+        /// <param name="rockContext">The database context to use when updating.</param>
+        /// <returns>The number of attribute value rows that were updated.</returns>
+        internal static int BulkUpdateAttributeValuePersistedValues( int attributeId, IEnumerable<int> valueIds, Rock.Field.PersistedValues persistedValues, RockContext rockContext )
+        {
+            var textValueParameter = new SqlParameter( "@TextValue", ( object ) persistedValues.TextValue ?? DBNull.Value );
+            var htmlValueParameter = new SqlParameter( "@HtmlValue", ( object ) persistedValues.HtmlValue ?? DBNull.Value );
+            var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
+            var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
+            var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+
+            // Initialize the ValueId SQL parameter.
+            var attributeIdsTable = new DataTable();
+            attributeIdsTable.Columns.Add( "Id", typeof( int ) );
+
+            foreach ( var valueId in valueIds )
+            {
+                attributeIdsTable.Rows.Add( valueId );
+            }
+
+            var valueIdParameter = new SqlParameter( "@ValueId", SqlDbType.Structured )
+            {
+                TypeName = "dbo.EntityIdList",
+                Value = attributeIdsTable
+            };
+
+            // Because AttributeValue has a trigger on it, the extra where clause is
+            // to prevent updates if no value actually changed is rather important.
+            // Without it we might be doing a non-change update which still triggers
+            // the database trigger.
+            // The custom COLLATE makes those value comparison case sensitive. This
+            // solves issues where the persisted value changed in case only, such as
+            // "Yes" to "YES" for a boolean field type.
+            var updatedCount = rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AV
+SET [AV].[PersistedTextValue] = @TextValue,
+    [AV].[PersistedHtmlValue] = @HtmlValue,
+    [AV].[PersistedCondensedTextValue] = @CondensedTextValue,
+    [AV].[PersistedCondensedHtmlValue] = @CondensedHtmlValue,
+    [AV].[IsPersistedValueDirty] = 0
+FROM [AttributeValue] AS [AV]
+INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
+WHERE [AV].[AttributeId] = @AttributeId
+  AND ([AV].[IsPersistedValueDirty] = 1
+       OR [AV].[PersistedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @TextValue
+       OR [AV].[PersistedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @HtmlValue
+       OR [AV].[PersistedCondensedTextValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedTextValue
+       OR [AV].[PersistedCondensedHtmlValue] COLLATE SQL_Latin1_General_CP1_CS_AS != @CondensedHtmlValue)",
+                textValueParameter,
+                htmlValueParameter,
+                condensedTextValueParameter,
+                condensedHtmlValueParameter,
+                attributeIdParameter,
+                valueIdParameter );
+
+            // Bit of a hack, but because of the trigger on AttributeValue it doubles
+            // the number of rows updated.
+            return updatedCount / 2;
+        }
+
+        /// <summary>
+        /// Updates all entity references for the given attribute value.
+        /// </summary>
+        /// <param name="attributeValue">The attribute value that needs its references updated.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        public static void UpdateAttributeValueEntityReferences( AttributeValue attributeValue, RockContext rockContext )
+        {
+            var referencedEntitySet = rockContext.Set<AttributeValueReferencedEntity>();
+            var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
+
+            if ( attributeCache?.IsReferencedEntityFieldType != true )
+            {
+                return;
+            }
+
+            // Get all the existing referenced entities for those modified attribute values.
+            var previousReferencedEntities = referencedEntitySet
+                .Where( re => re.AttributeValueId == attributeValue.Id )
+                .ToList();
+
+            var field = ( Rock.Field.IEntityReferenceFieldType ) attributeCache.FieldType.Field;
+            var referencedEntities = field.GetReferencedEntities( attributeValue.Value, attributeCache.ConfigurationValues ) ?? new List<Field.ReferencedEntity>();
+
+            // Add references that don't already exist.
+            foreach ( var referencedEntity in referencedEntities )
+            {
+                if ( !previousReferencedEntities.Any( re => re.EntityTypeId == referencedEntity.EntityTypeId && re.EntityId == referencedEntity.EntityId ) )
+                {
+                    referencedEntitySet.Add( new AttributeValueReferencedEntity
+                    {
+                        AttributeValueId = attributeValue.Id,
+                        EntityTypeId = referencedEntity.EntityTypeId,
+                        EntityId = referencedEntity.EntityId
+                    } );
+                }
+            }
+
+            // Remove references that are no longer needed.
+            foreach ( var previousReferencedEntity in previousReferencedEntities )
+            {
+                if ( !referencedEntities.Any( re => re.EntityTypeId == previousReferencedEntity.EntityTypeId && re.EntityId == previousReferencedEntity.EntityId ) )
+                {
+                    referencedEntitySet.Remove( previousReferencedEntity );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates all entity references for the given attribute values.
+        /// </summary>
+        /// <param name="attributeValues">The dictionary of attribute value identifiers and their new value.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        /// </remarks>
+        private static void BulkUpdateAttributeValueEntityReferences( Dictionary<int, string> attributeValues, RockContext rockContext )
+        {
+            var referenceDictionary = new Dictionary<int, List<Field.ReferencedEntity>>();
+
+            foreach ( var attributeValue in attributeValues )
+            {
+                var attributeCache = AttributeCache.Get( attributeValue.Key );
+
+                if ( !attributeCache.IsReferencedEntityFieldType )
+                {
+                    continue;
+                }
+
+                var field = ( Rock.Field.IEntityReferenceFieldType ) attributeCache.FieldType.Field;
+                var referencedEntities = field.GetReferencedEntities( attributeValue.Value, attributeCache.ConfigurationValues ) ?? new List<Field.ReferencedEntity>();
+
+                referenceDictionary.Add( attributeValue.Key, referencedEntities );
+            }
+
+            BulkUpdateAttributeValueEntityReferences( referenceDictionary, rockContext );
+        }
+
+        /// <summary>
+        /// Updates all entity references for the given attribute values.
+        /// </summary>
+        /// <param name="referenceDictionary">A dictionary whose keys identify the attribute value and corresponding value is the list of referenced entities.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        /// </remarks>
+        internal static void BulkUpdateAttributeValueEntityReferences( Dictionary<int, List<Field.ReferencedEntity>> referenceDictionary, RockContext rockContext )
+        {
+            // Initialize the EntityKey SQL parameter.
+            var dataTable = new DataTable();
+            dataTable.Columns.Add( "ReferencedEntityTypeId", typeof( int ) );
+            dataTable.Columns.Add( "ReferencedEntityId", typeof( int ) );
+            dataTable.Columns.Add( "EntityId", typeof( int ) );
+
+            // We only need to add rows if we have any referenced entities.
+            if ( referenceDictionary.Any() )
+            {
+                foreach (var kvpReference in referenceDictionary )
+                {
+                    var valueId = kvpReference.Key;
+                    var referencedEntities = kvpReference.Value;
+
+                    for ( int referencedIndex = 0; referencedIndex < referencedEntities.Count; referencedIndex++ )
+                    {
+                        dataTable.Rows.Add( referencedEntities[referencedIndex].EntityTypeId, referencedEntities[referencedIndex].EntityId, valueId );
+                    }
+                }
+            }
+
+            var dataParameter = new SqlParameter( "@Data", SqlDbType.Structured )
+            {
+                TypeName = "dbo.AttributeReferencedEntityList",
+                Value = dataTable
+            };
+
+            // Doing direct SQL like this is nearly 4x faster than using EF. Since
+            // these are special use tables and not standard models that should be
+            // fine.
+
+            // Execute the raw SQL query to perform the update.
+            // This first deletes any references that are no longer valid for
+            // the attribute value. It then creates any new references
+            // that are missing from the database.
+            rockContext.Database.ExecuteSqlCommand( @"
+DELETE [AVRE]
+FROM [AttributeValueReferencedEntity] AS [AVRE]
+LEFT OUTER JOIN @Data AS [D] ON [D].[EntityId] = [AVRE].[AttributeValueId] AND [D].[ReferencedEntityTypeId] = [AVRE].[EntityTypeId] AND [D].[ReferencedEntityId] = [AVRE].[EntityId]
+WHERE [AVRE].[AttributeValueId] IN (SELECT [EntityId] FROM @Data)
+  AND [D].[EntityId] IS NULL
+
+INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId], [EntityId])
+	SELECT [D].[EntityId], [D].[ReferencedEntityTypeId], [D].[ReferencedEntityId]
+	FROM @Data AS [D]
+	LEFT OUTER JOIN [AttributeValueReferencedEntity] AS [AVRE] ON [AVRE].[AttributeValueId] = [D].[EntityId] AND [AVRE].[EntityTypeId] = [D].[ReferencedEntityTypeId] AND [AVRE].[EntityId] = [D].[ReferencedEntityId]
+	WHERE [AVRE].[AttributeValueId] IS NULL",
+                dataParameter );
+        }
+
+        /// <summary>
+        /// Updates all entity references for the given attribute values.
+        /// </summary>
+        /// <param name="attribute">The attribute that needs its references updated for the default value.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        public static void UpdateAttributeEntityReferences( Rock.Model.Attribute attribute, RockContext rockContext )
+        {
+            var referencedEntitySet = rockContext.Set<AttributeReferencedEntity>();
+
+            // Get all the existing referenced entities for those modified attribute values.
+            var previousReferencedEntities = referencedEntitySet
+                .Where( re => re.AttributeId == attribute.Id )
+                .ToList();
+
+            if ( !( FieldTypeCache.Get( attribute.FieldTypeId ).Field is Rock.Field.IEntityReferenceFieldType field ) )
+            {
+                return;
+            }
+
+            // Get the configuration values from the attribute instead of
+            // cache because it might not be saved yet.
+            var configurationValues = new Dictionary<string, string>();
+            foreach ( var qualifier in attribute.AttributeQualifiers )
+            {
+                configurationValues.AddOrReplace( qualifier.Key, qualifier.Value );
+            }
+
+            var referencedEntities = field.GetReferencedEntities( attribute.DefaultValue, configurationValues ) ?? new List<Field.ReferencedEntity>();
+
+            // Add references that don't already exist.
+            foreach ( var referencedEntity in referencedEntities )
+            {
+                if ( !previousReferencedEntities.Any( re => re.EntityTypeId == referencedEntity.EntityTypeId && re.EntityId == referencedEntity.EntityId ) )
+                {
+                    referencedEntitySet.Add( new AttributeReferencedEntity
+                    {
+                        AttributeId = attribute.Id,
+                        EntityTypeId = referencedEntity.EntityTypeId,
+                        EntityId = referencedEntity.EntityId
+                    } );
+                }
+            }
+
+            // Remove references that are no longer needed.
+            foreach ( var previousReferencedEntity in previousReferencedEntities )
+            {
+                if ( !referencedEntities.Any( re => re.EntityTypeId == previousReferencedEntity.EntityTypeId && re.EntityId == previousReferencedEntity.EntityId ) )
+                {
+                    referencedEntitySet.Remove( previousReferencedEntity );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the attribute value persisted values to match <see cref="AttributeValue.Value"/>.
+        /// </summary>
+        /// <param name="attributeValue">The attribute value to be updated.</param>
+        /// <param name="attribute">The attribute that contains the configuration.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal]
+        public static void UpdateAttributeValuePersistedValues( Rock.Model.AttributeValue attributeValue, AttributeCache attribute )
+        {
+            var field = attribute?.FieldType?.Field;
+
+            if ( attribute.IsPersistedValueSupported && field != null )
+            {
+                var persistedValues = field.GetPersistedValues( attributeValue.Value, attribute.ConfigurationValues );
+
+                attributeValue.PersistedTextValue = persistedValues.TextValue;
+                attributeValue.PersistedHtmlValue = persistedValues.HtmlValue;
+                attributeValue.PersistedCondensedTextValue = persistedValues.CondensedTextValue;
+                attributeValue.PersistedCondensedHtmlValue = persistedValues.CondensedHtmlValue;
+                attributeValue.IsPersistedValueDirty = false;
+            }
+            else
+            {
+                var placeholder = field.GetPersistedValuePlaceholder( attribute.ConfigurationValues )
+                    ?? Rock.Constants.DisplayStrings.PersistedValuesAreNotSupported;
+
+                attributeValue.PersistedTextValue = placeholder;
+                attributeValue.PersistedHtmlValue = placeholder;
+                attributeValue.PersistedCondensedTextValue = placeholder;
+                attributeValue.PersistedCondensedHtmlValue = placeholder;
+                attributeValue.IsPersistedValueDirty = false;
+            }
+        }
+
+        /// <summary>
+        /// Update the attributes that depend on the changes made to a specific entity.
+        /// </summary>
+        /// <param name="attributeIds">The attribute identifiers whose values should be updated; should be <c>null</c> or empty to update all attributes.</param>
+        /// <param name="entityTypeId">The identifier of the type of entity that was changed.</param>
+        /// <param name="entityId">The identifier of the entity that was changed.</param>
+        /// <param name="rockContext">The database context to use when accessing the database.</param>
+        internal static void UpdateDependantAttributesAndValues( IReadOnlyList<int> attributeIds, int entityTypeId, int entityId, RockContext rockContext )
+        {
+            var qry = rockContext.Set<AttributeReferencedEntity>()
+                .AsNoTracking()
+                .Where( re => re.EntityTypeId == entityTypeId && re.EntityId == entityId );
+
+            if ( attributeIds != null && attributeIds.Any() )
+            {
+                qry = qry.Where( re => attributeIds.Contains( re.AttributeId ) );
+            }
+
+            // Get all attributes that reference this entity.
+            var referencingAttributes = qry
+                .Select( re => re.Attribute )
+                .ToList();
+
+            // Loop through each reference attribute and update.
+            foreach ( var attribute in referencingAttributes )
+            {
+                var attributeCache = AttributeCache.Get( attribute.Id );
+                var field = attributeCache.FieldType.Field;
+                Field.PersistedValues persistedValues;
+
+                if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
+                {
+                    persistedValues = field.GetPersistedValues( attribute.DefaultValue, attributeCache.ConfigurationValues );
+                }
+                else
+                {
+                    var placeholderValue = field.GetPersistedValuePlaceholder( attributeCache.ConfigurationValues );
+
+                    persistedValues = new Field.PersistedValues
+                    {
+                        TextValue = placeholderValue,
+                        CondensedTextValue = placeholderValue,
+                        HtmlValue = placeholderValue,
+                        CondensedHtmlValue = placeholderValue
+                    };
+                }
+
+                attribute.DefaultPersistedTextValue = persistedValues.TextValue;
+                attribute.DefaultPersistedHtmlValue = persistedValues.HtmlValue;
+                attribute.DefaultPersistedCondensedTextValue = persistedValues.CondensedTextValue;
+                attribute.DefaultPersistedCondensedHtmlValue = persistedValues.CondensedHtmlValue;
+                attribute.IsDefaultPersistedValueDirty = false;
+            }
+
+            rockContext.SaveChanges();
+
+            // Now update all the values as well.
+            UpdateDependantAttributeValues( attributeIds, entityTypeId, entityId, rockContext );
+        }
+
+        /// <summary>
+        /// Update the attribute values that depend on the changes made to a specific entity.
+        /// </summary>
+        /// <param name="attributeIds">The attribute identifiers whose values should be updated; should be <c>null</c> or empty to update all attributes.</param>
+        /// <param name="entityTypeId">The identifier of the type of entity that was changed.</param>
+        /// <param name="entityId">The identifier of the entity that was changed.</param>
+        /// <param name="rockContext">The database context to use when accessing the database.</param>
+        private static void UpdateDependantAttributeValues( IReadOnlyList<int> attributeIds, int entityTypeId, int entityId, RockContext rockContext )
+        {
+            var qry = rockContext.Set<AttributeValueReferencedEntity>()
+                .AsNoTracking()
+                .Where( re => re.EntityTypeId == entityTypeId && re.EntityId == entityId );
+
+            if ( attributeIds != null && attributeIds.Any() )
+            {
+                qry = qry.Where( re => attributeIds.Contains( re.AttributeValue.AttributeId ) );
+            }
+
+            // Find all attribute values that reference this entity.
+            var referencingValues = qry
+                .Select( re => new
+                {
+                    re.AttributeValue.AttributeId,
+                    AttributeValueId = re.AttributeValueId,
+                    re.AttributeValue.Value
+                } )
+                .ToList()
+                .GroupBy( re => re.AttributeId );
+
+            // Loop through each reference value group, which is an attribute Id,
+            // and process all the values.
+            foreach ( var attributeGroup in referencingValues )
+            {
+                var attributeId = attributeGroup.Key;
+                var valueGroups = attributeGroup.GroupBy( ag => ag.Value );
+
+                foreach ( var valueGroup in valueGroups )
+                {
+                    var value = valueGroup.Key;
+                    var attributeCache = AttributeCache.Get( attributeId );
+                    var field = attributeCache.FieldType.Field;
+                    var attributeValueIds = valueGroup.Select( vg => vg.AttributeValueId );
+                    Field.PersistedValues persistedValues;
+
+                    if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
+                    {
+                        persistedValues = field.GetPersistedValues( value, attributeCache.ConfigurationValues );
+                    }
+                    else
+                    {
+                        var placeholderValue = field.GetPersistedValuePlaceholder( attributeCache.ConfigurationValues );
+
+                        persistedValues = new Field.PersistedValues
+                        {
+                            TextValue = placeholderValue,
+                            CondensedTextValue = placeholderValue,
+                            HtmlValue = placeholderValue,
+                            CondensedHtmlValue = placeholderValue
+                        };
+                    }
+
+                    BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
+                }
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Copies the attributes from one entity to another
@@ -1549,7 +2321,6 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
         {
             CopyAttributes( source, target, null );
         }
-
 
         /// <summary>
         /// Copies the attributes from one entity to another

@@ -55,6 +55,7 @@
 
                 <asp:ValidationSummary runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbValidationError" runat="server" Title="There is a problem with one or more of the values you entered" NotificationBoxType="Danger" Visible="false" />
+                <Rock:NotificationBox ID="nbWarnings" runat="server" NotificationBoxType="Warning" Visible="false" />
                 <fieldset>
                     <Rock:DynamicPlaceHolder ID="phProperties" runat="server" />
                 </fieldset>

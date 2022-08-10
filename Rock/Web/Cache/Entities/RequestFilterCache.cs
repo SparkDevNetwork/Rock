@@ -98,7 +98,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the filters having keys matching those in the specified list.
+        /// Gets the active filters having keys matching those in the specified list.
         /// </summary>
         /// <param name="filterKeys">A delimited list of filter keys.</param>
         /// <param name="delimiter">The delimiter used to separate the keys in the list.</param>
@@ -112,7 +112,8 @@ namespace Rock.Web.Cache
                 return results;
             }
 
-            var filters = RequestFilterCache.All();
+            var filters = RequestFilterCache.All()
+                .Where( rf => rf.IsActive );
 
             var filterKeyList = filterKeys.SplitDelimitedValues( delimiter, StringSplitOptions.RemoveEmptyEntries );
             foreach ( var filterKey in filterKeyList )
@@ -123,10 +124,11 @@ namespace Rock.Web.Cache
                 }
 
                 // Retrieve the filter by matching key, ignoring leading/trailing whitespace and case.
-                var filter = filters.FirstOrDefault( s => s.RequestFilterKey.Equals( filterKey.Trim(), StringComparison.OrdinalIgnoreCase ) );
-                if ( filter != null )
+                var matchedFilters = filters.Where( s => s.RequestFilterKey.Equals( filterKey.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                    .ToList();
+                if ( matchedFilters.Any() )
                 {
-                    results.Add( filter );
+                    results.AddRange( matchedFilters );
                 }
             }
 

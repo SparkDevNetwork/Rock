@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( isBusiness )
             {
-                lName.Text = $@"<h1 class=""text-truncate text-left"">{Person.LastName}</h1>";
+                lName.Text = $@"<h1 class=""person-name is-business"">{Person.LastName}</h1>";
                 return;
             }
 
@@ -209,7 +209,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             string nameText =  $"{titleText}{Person.NickName} {Person.LastName}";
 
-            lName.Text = $@"<h1 class=""text-truncate text-left"">{nameText}</h1>";
+            lName.Text = $@"<h1 class=""person-name"">{nameText}</h1>";
         }
 
         private void ShowBadgeList()

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,25 +32,24 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PAGE_REFERENCE )]
-    public class PageReferenceFieldType : FieldType
+    public class PageReferenceFieldType : FieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
 
         /// <summary>
-        /// Returns the field's current value(s)
+        /// Gets the text value.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <param name="privateValue">The private value.</param>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns>System.String.</returns>
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
                 //// Value is in format "Page.Guid,PageRoute.Guid"
-                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                string[] valuePair = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
                 if ( valuePair.Length > 0 )
                 {
                     Guid? pageGuid = valuePair[0].AsGuidOrNull();
@@ -78,7 +77,21 @@ namespace Rock.Field.Types
                 }
             }
 
-            return value;
+            return privateValue;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns>System.String.</returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // Note that the original FormatValue didn't call Base.FormatValue, so it wouldn't have done any condensing.
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -95,7 +108,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new PagePicker { ID = id }; 
+            return new PagePicker { ID = id };
         }
 
         /// <summary>
@@ -218,5 +231,59 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            List<ReferencedEntity> referencedEntities = new List<ReferencedEntity>();
+
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                //// Value is in format "Page.Guid,PageRoute.Guid"
+                string[] valuePair = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( valuePair.Length > 0 )
+                {
+                    Guid? pageGuid = valuePair[0].AsGuidOrNull();
+                    if ( pageGuid.HasValue )
+                    {
+                        var page = PageCache.Get( pageGuid.Value );
+                        if ( page != null )
+                        {
+                            referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<Rock.Model.Page>().Value, page.Id ) );
+                            if ( valuePair.Length > 1 )
+                            {
+                                Guid? routeGuid = valuePair[1].AsGuidOrNull();
+                                if ( routeGuid.HasValue )
+                                {
+                                    var route = page.PageRoutes.FirstOrDefault( r => r.Guid.Equals( routeGuid.Value ) );
+                                    
+                                    if ( route != null )
+                                    {
+                                        referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<Rock.Model.PageRoute>().Value, route.Id ) );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return referencedEntities;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Page.PageTitle and sometimes also PageRoute.Route and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Page>().Value, nameof( Page.PageTitle ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<PageRoute>().Value, nameof( PageRoute.Route ) )
+            };
+        }
+
+        #endregion
     }
 }

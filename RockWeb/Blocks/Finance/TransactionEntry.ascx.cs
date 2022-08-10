@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -32,12 +31,11 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Transactions;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -3489,10 +3487,14 @@ namespace RockWeb.Blocks.Finance
             Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
             if ( receiptEmail.HasValue )
             {
-                // Queue a transaction to send receipts
-                var transactionIds = new List<int> { transactionId };
-                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, transactionIds );
-                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                // Queue a bus message to send receipts
+                var sendPaymentReceiptsTask = new ProcessSendPaymentReceiptEmails.Message
+                {
+                    SystemEmailGuid = receiptEmail.Value,
+                    TransactionId = transactionId
+                };
+
+                sendPaymentReceiptsTask.Send();
             }
         }
 

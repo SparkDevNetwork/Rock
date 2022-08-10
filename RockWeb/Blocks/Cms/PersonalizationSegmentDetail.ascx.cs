@@ -281,6 +281,19 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var personalizationSegmentId = hfPersonalizationSegmentId.Value.AsInteger();
+
+            // validate if request filter key unique
+            var isKeyDuplicate = PersonalizationSegmentCache.All()
+                .Where( ps => ps.Id != personalizationSegmentId && ps.SegmentKey == tbSegmentKey.Text )
+                .Any();
+            if ( isKeyDuplicate )
+            {
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Text = $"Key '{tbSegmentKey.Text}' is already present. Please choose a different key";
+                return;
+            }
+
             var rockContext = new RockContext();
 
             var filterDataViewId = dvpFilterDataView.SelectedValueAsId();
@@ -292,8 +305,6 @@ namespace RockWeb.Blocks.Cms
 
             var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
             PersonalizationSegment personalizationSegment;
-
-            var personalizationSegmentId = hfPersonalizationSegmentId.Value.AsInteger();
 
             if ( personalizationSegmentId == 0 )
             {
@@ -445,7 +456,7 @@ namespace RockWeb.Blocks.Cms
                 lstSessionCountFilterWebSites.Items.Add( new ListItem( site.Name, site.Guid.ToString() ) );
             }
 
-            ComparisonHelper.PopulateComparisonControl( ddlSessionCountFilterComparisonType, ComparisonHelper.NumericFilterComparisonTypes, true );
+            ComparisonHelper.PopulateComparisonControl( ddlSessionCountFilterComparisonType, ComparisonHelper.NumericFilterComparisonTypesRequired, true );
             ddlSessionCountFilterComparisonType.SetValue( sessionCountSegmentFilter.ComparisonType.ConvertToInt() );
             nbSessionCountFilterCompareValue.Text = sessionCountSegmentFilter.ComparisonValue.ToString();
             drpSessionCountFilterSlidingDateRange.DelimitedValues = sessionCountSegmentFilter.SlidingDateRangeDelimitedValues;
@@ -574,7 +585,7 @@ namespace RockWeb.Blocks.Cms
                 lstPageViewFilterWebSites.Items.Add( new ListItem( site.Name, site.Guid.ToString() ) );
             }
 
-            ComparisonHelper.PopulateComparisonControl( ddlPageViewFilterComparisonType, ComparisonHelper.NumericFilterComparisonTypes, true );
+            ComparisonHelper.PopulateComparisonControl( ddlPageViewFilterComparisonType, ComparisonHelper.NumericFilterComparisonTypesRequired, true );
             ddlPageViewFilterComparisonType.SetValue( pageViewFilterSegmentFilter.ComparisonType.ConvertToInt() );
             nbPageViewFilterCompareValue.Text = pageViewFilterSegmentFilter.ComparisonValue.ToString();
             drpPageViewFilterSlidingDateRange.DelimitedValues = pageViewFilterSegmentFilter.SlidingDateRangeDelimitedValues;
@@ -710,7 +721,7 @@ namespace RockWeb.Blocks.Cms
 
             hfInteractionFilterGuid.Value = interactionSegmentFilter.Guid.ToString();
 
-            ComparisonHelper.PopulateComparisonControl( ddlInteractionFilterComparisonType, ComparisonHelper.NumericFilterComparisonTypes, true );
+            ComparisonHelper.PopulateComparisonControl( ddlInteractionFilterComparisonType, ComparisonHelper.NumericFilterComparisonTypesRequired, true );
             ddlInteractionFilterComparisonType.SetValue( interactionSegmentFilter.ComparisonType.ConvertToInt() );
             nbInteractionFilterCompareValue.Text = interactionSegmentFilter.ComparisonValue.ToString();
 

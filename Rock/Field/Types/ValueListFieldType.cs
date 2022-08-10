@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.VALUE_LIST )]
-    public class ValueListFieldType : FieldType
+    public class ValueListFieldType : FieldType, IEntityReferenceFieldType
     {
 
         #region Configuration
@@ -76,7 +77,7 @@ namespace Rock.Field.Types
             ddl.DataValueField = "Id";
             ddl.DataSource = new Rock.Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order ).ToList();
             ddl.DataBind();
-            ddl.Items.Insert(0, new ListItem(string.Empty, string.Empty));
+            ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             ddl.Label = "Defined Type";
             ddl.Help = "Optional Defined Type to select values from, otherwise values will be free-form text fields.";
 
@@ -115,17 +116,17 @@ namespace Rock.Field.Types
 
             if ( controls != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox  )
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox )
                 {
-                    configurationValues["valueprompt"].Value = ( (RockTextBox)controls[0] ).Text;
+                    configurationValues["valueprompt"].Value = ( ( RockTextBox ) controls[0] ).Text;
                 }
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockDropDownList  )
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockDropDownList )
                 {
-                    configurationValues["definedtype"].Value = ( (RockDropDownList)controls[1] ).SelectedValue;
+                    configurationValues["definedtype"].Value = ( ( RockDropDownList ) controls[1] ).SelectedValue;
                 }
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is RockTextBox )
                 {
-                    configurationValues["customvalues"].Value = ( (RockTextBox)controls[2] ).Text;
+                    configurationValues["customvalues"].Value = ( ( RockTextBox ) controls[2] ).Text;
                 }
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is RockCheckBox )
                 {
@@ -147,15 +148,15 @@ namespace Rock.Field.Types
             {
                 if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( "valueprompt" ) )
                 {
-                    ( (RockTextBox)controls[0] ).Text = configurationValues["valueprompt"].Value;
+                    ( ( RockTextBox ) controls[0] ).Text = configurationValues["valueprompt"].Value;
                 }
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is RockDropDownList && configurationValues.ContainsKey( "definedtype" ) )
                 {
-                    ( (RockDropDownList)controls[1] ).SelectedValue = configurationValues["definedtype"].Value;
+                    ( ( RockDropDownList ) controls[1] ).SelectedValue = configurationValues["definedtype"].Value;
                 }
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is RockTextBox && configurationValues.ContainsKey( "customvalues" ) )
                 {
-                   ( (RockTextBox)controls[2] ).Text = configurationValues["customvalues"].Value;
+                    ( ( RockTextBox ) controls[2] ).Text = configurationValues["customvalues"].Value;
                 }
                 if ( controls.Count > 3 && controls[3] != null && controls[3] is RockCheckBox && configurationValues.ContainsKey( "allowhtml" ) )
                 {
@@ -165,6 +166,14 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDefinedtype = oldPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+            var newDefinedtype = newPrivateConfigurationValues.GetValueOrNull( "definedtype" ) ?? string.Empty;
+            return oldDefinedtype != newDefinedtype;
+        }
 
         #region Formatting
 
@@ -178,18 +187,23 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var values = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
             values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
 
-            if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
+            if ( privateConfigurationValues != null && privateConfigurationValues.ContainsKey( "definedtype" ) )
             {
-                int definedTypeId = 0;
-                if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
+                if ( Int32.TryParse( privateConfigurationValues["definedtype"], out int definedTypeId ) )
                 {
-                    for( int i = 0; i < values.Length; i++)
+                    for ( int i = 0; i < values.Length; i++ )
                     {
                         var definedValue = DefinedValueCache.Get( values[i].AsInteger() );
-                        if ( definedValue != null)
+                        if ( definedValue != null )
                         {
                             values[i] = definedValue.Value;
                         }
@@ -209,7 +223,7 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public virtual ValueList EditControl( string id)
+        public virtual ValueList EditControl( string id )
         {
             return new ValueList { ID = id };
         }
@@ -243,10 +257,10 @@ namespace Rock.Field.Types
 
                 if ( configurationValues.ContainsKey( "customvalues" ) )
                 {
-                    control.CustomValues = Helper.GetConfiguredValues( configurationValues, "customvalues");
+                    control.CustomValues = Helper.GetConfiguredValues( configurationValues, "customvalues" );
                 }
 
-                if (control is ValueList && configurationValues.ContainsKey( "allowhtml" ) )
+                if ( control is ValueList && configurationValues.ContainsKey( "allowhtml" ) )
                 {
                     ( control as ValueList ).AllowHtmlValue = configurationValues["allowhtml"].Value.AsBoolean();
                 }
@@ -315,6 +329,43 @@ namespace Rock.Field.Types
         }
 
         #endregion
-      
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+            values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+            if ( privateConfigurationValues != null && privateConfigurationValues.ContainsKey( "definedtype" ) )
+            {
+                if ( Int32.TryParse( privateConfigurationValues["definedtype"], out int definedTypeId ) )
+                {
+                    return values.Select( v => v.AsIntegerOrNull() )
+                        .Where( id => id.HasValue )
+                        .Select( id => DefinedValueCache.Get( id.Value ) )
+                        .Where( dv => dv != null )
+                        .Select( dv => new ReferencedEntity( EntityTypeCache.GetId<DefinedValue>().Value, dv.Id ) )
+                        .ToList();
+                }
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Defined Value and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
+            };
+        }
+
+        #endregion
+
     }
 }

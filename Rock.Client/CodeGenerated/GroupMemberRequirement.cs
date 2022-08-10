@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? DoesNotMeetWorkflowId { get; set; }
+
+        /// <summary />
+        public DateTime? DueDate { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -49,10 +55,22 @@ namespace Rock.Client
         /// <summary />
         public DateTime? LastRequirementCheckDateTime { get; set; }
 
+        /// <summary />
+        public int? ManuallyCompletedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? ManuallyCompletedDateTime { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public int? OverriddenByPersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime? OverriddenDateTime { get; set; }
 
         /// <summary />
         public DateTime? RequirementFailDateTime { get; set; }
@@ -62,6 +80,15 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? RequirementWarningDateTime { get; set; }
+
+        /// <summary />
+        public int? WarningWorkflowId { get; set; }
+
+        /// <summary />
+        public bool WasManuallyCompleted { get; set; }
+
+        /// <summary />
+        public bool WasOverridden { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -96,15 +123,24 @@ namespace Rock.Client
         public void CopyPropertiesFrom( GroupMemberRequirement source )
         {
             this.Id = source.Id;
+            this.DoesNotMeetWorkflowId = source.DoesNotMeetWorkflowId;
+            this.DueDate = source.DueDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupMemberId = source.GroupMemberId;
             this.GroupRequirementId = source.GroupRequirementId;
             this.LastRequirementCheckDateTime = source.LastRequirementCheckDateTime;
+            this.ManuallyCompletedByPersonAliasId = source.ManuallyCompletedByPersonAliasId;
+            this.ManuallyCompletedDateTime = source.ManuallyCompletedDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.OverriddenByPersonAliasId = source.OverriddenByPersonAliasId;
+            this.OverriddenDateTime = source.OverriddenDateTime;
             this.RequirementFailDateTime = source.RequirementFailDateTime;
             this.RequirementMetDateTime = source.RequirementMetDateTime;
             this.RequirementWarningDateTime = source.RequirementWarningDateTime;
+            this.WarningWorkflowId = source.WarningWorkflowId;
+            this.WasManuallyCompleted = source.WasManuallyCompleted;
+            this.WasOverridden = source.WasOverridden;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

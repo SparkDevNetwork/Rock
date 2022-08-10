@@ -31,8 +31,8 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [LavaType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
-    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
+    [LavaType( "AttributeId", "EntityId", "Value", "ValueFormatted", "PersistedTextValue", "PersistedFormattedValue", "PersistedCondensedTextValue", "PersistedCondensedFormattedValue", "IsPersistedValueDirty", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
+    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "PersistedTextValue", "PersistedFormattedValue", "PersistedCondensedTextValue", "PersistedCondensedFormattedValue", "IsPersistedValueDirty", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
     public class AttributeValueCache
     {
         #region constructors
@@ -42,6 +42,27 @@ namespace Rock.Web.Cache
         /// </summary>
         public AttributeValueCache()
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueCache" /> class.
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="persistedTextValue">The persisted text value.</param>
+        /// <param name="persistedHtmlValue">The persisted HTML value.</param>
+        /// <param name="persistedCondensedTextValue">The persisted condensed text value.</param>
+        /// <param name="persistedCondensedHtmlValue">The persisted condensed HTML value.</param>
+        /// <param name="isPersistedValueDirty">if set to <c>true</c> the persisted values are considered dirty.</param>
+        public AttributeValueCache( int attributeId, int? entityId, string value, string persistedTextValue, string persistedHtmlValue, string persistedCondensedTextValue, string persistedCondensedHtmlValue, bool isPersistedValueDirty )
+            : this( attributeId, entityId, value )
+        {
+            PersistedTextValue = persistedTextValue;
+            PersistedHtmlValue = persistedHtmlValue;
+            PersistedCondensedTextValue = persistedCondensedTextValue;
+            PersistedCondensedHtmlValue = persistedCondensedHtmlValue;
+            IsPersistedValueDirty = isPersistedValueDirty;
         }
 
         /// <summary>
@@ -55,6 +76,7 @@ namespace Rock.Web.Cache
             AttributeId = attributeId;
             EntityId = entityId;
             Value = value;
+            IsPersistedValueDirty = true;
         }
 
         /// <summary>
@@ -62,7 +84,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="model">The model.</param>
         public AttributeValueCache( AttributeValue model )
-            : this( model.AttributeId, model.EntityId, model.Value )
+            : this( model.AttributeId, model.EntityId, model.Value, model.PersistedTextValue, model.PersistedHtmlValue, model.PersistedCondensedTextValue, model.PersistedCondensedHtmlValue, model.IsPersistedValueDirty )
         {
         }
 
@@ -143,6 +165,43 @@ namespace Rock.Web.Cache
                 return attribute != null ? attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, EntityId, Value, attribute.QualifierValues, false ) : Value;
             }
         }
+
+        /// <summary>
+        /// Gets the persisted text value.
+        /// </summary>
+        /// <value>The persisted text value.</value>
+        [DataMember]
+        public string PersistedTextValue { get; private set; }
+
+        /// <summary>
+        /// Gets the persisted HTML value.
+        /// </summary>
+        /// <value>The persisted HTML value.</value>
+        [DataMember]
+        public string PersistedHtmlValue { get; private set; }
+
+        /// <summary>
+        /// Gets the persisted condensed text value.
+        /// </summary>
+        /// <value>The persisted condensed text value.</value>
+        [DataMember]
+        public string PersistedCondensedTextValue { get; private set; }
+
+        /// <summary>
+        /// Gets the persisted condensed HTML value.
+        /// </summary>
+        /// <value>The persisted condensed HTML value.</value>
+        [DataMember]
+        public string PersistedCondensedHtmlValue { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the persisted values are
+        /// considered dirty. If the values are dirty then it should be assumed
+        /// that they are not in sync with the <see cref="Value"/> property.
+        /// </summary>
+        /// <value><c>true</c> if the persisted values are considered dirty; otherwise, <c>false</c>.</value>
+        [DataMember]
+        public bool IsPersistedValueDirty { get; private set; }
 
         /// <summary>
         /// Gets the name of the attribute 

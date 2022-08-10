@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-
+using System.Linq;
 using Rock.Attribute;
 using Rock.Mobile;
 using Rock.Web.Cache;
@@ -41,9 +41,9 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var navigationAction = value.FromJsonOrNull<MobileNavigationAction>();
+            var navigationAction = privateValue.FromJsonOrNull<MobileNavigationAction>();
 
             if ( navigationAction == null )
             {
@@ -75,6 +75,14 @@ namespace Rock.Field.Types
                 default:
                     return string.Empty;
             }
+        }
+
+        /// <inheritdoc/>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion

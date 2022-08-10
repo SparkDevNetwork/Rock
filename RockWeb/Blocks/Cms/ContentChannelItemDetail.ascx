@@ -51,117 +51,121 @@
             </div>
 
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
-
             <div class="panel-body">
-                <div class="row row-eq-height-md flex-wrap">
+
+                <% if ( pnlPersonalization.Visible ) { %>
+                <div class="panel-body-columns row row-eq-height-md flex-wrap">
                     <div class="col-md-9">
-                        <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
-                        <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                <% } %>
+                    <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                        <asp:Panel ID="pnlEditDetails" runat="server" CssClass="js-item-details">
+                    <asp:Panel ID="pnlEditDetails" runat="server" CssClass="js-item-details">
 
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" Placeholder="Enter a title..." Required="true" />
-                                    <asp:HiddenField ID="hfContentChannelItemUrl" runat="server" />
-                                    <div class="form-row">
-                                        <div class="col-sm-6">
-                                            <Rock:DatePicker ID="dpStart" runat="server" Label="Start" Required="true" Visible="false" />
-                                            <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <Rock:DatePicker ID="dpExpire" runat="server" Label="Expire" Required="false" Visible="false" />
-                                            <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
-                                        </div>
+                        <div class="row">
+                            <div class="col-md-7">
+                                <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.ContentChannelItem, Rock" PropertyName="Title" Placeholder="Enter a title..." Required="true" />
+                                <asp:HiddenField ID="hfContentChannelItemUrl" runat="server" />
+                                <div class="form-row">
+                                    <div class="col-sm-6">
+                                        <Rock:DatePicker ID="dpStart" runat="server" Label="Start" Required="true" Visible="false" />
+                                        <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Start" Required="true" />
                                     </div>
-                                    <Rock:RockControlWrapper ID="rcwSlugs" runat="server" Label="URL Slug" Help="While Rock generates URLs for your content channel items automatically, you can optionally create custom URLs for this post. Only lowercase alpha-numeric characters and dashes are allowed.">
-                                        <div class="js-slugs">
-                                            <asp:Repeater ID="rSlugs" runat="server" OnItemDataBound="rSlugs_ItemDataBound">
-                                                <ItemTemplate>
-                                                    <div class="form-group rollover-container js-slug-row">
-                                                        <asp:Literal ID="lChannelUrl" runat="server" />
-                                                        <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
-                                                        <span class="js-slug-literal"><%# Eval("Slug") %></span>
-                                                        <div class="rollover-item control-actions pull-right">
-                                                            <a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>
-                                                            <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
-                                                        </div>
-                                                    </div>
-                                                </ItemTemplate>
-                                            </asp:Repeater>
-                                            <a id="lbAdd" title="Add Slug" class="btn btn-xs btn-action btn-square">
-                                                <i class="fa fa-plus-circle"></i>
-                                            </a>
-                                        </div>
-                                    </Rock:RockControlWrapper>
-
+                                    <div class="col-sm-6">
+                                        <Rock:DatePicker ID="dpExpire" runat="server" Label="Expire" Required="false" Visible="false" />
+                                        <Rock:DateTimePicker ID="dtpExpire" runat="server" Label="Expire" />
+                                    </div>
                                 </div>
-                                <div class="col-md-5">
-                                    <div class="form-group" id="divStatus" runat="server">
-                                        <div class="form-control-static">
-                                            <asp:HiddenField ID="hfStatus" runat="server" />
-                                            <asp:Panel ID="pnlStatus" runat="server">
-                                                <label class="control-label">Status</label>
-
-                                                <div class="toggle-container">
-                                                    <div class="btn-group btn-toggle">
-                                                        <a class="btn btn-xs <%=PendingCss%>" data-status="1" data-active-css="btn-warning">Pending</a>
-                                                        <a class="btn btn-xs <%=ApprovedCss%>" data-status="2" data-active-css="btn-success">Approved</a>
-                                                        <a class="btn btn-xs <%=DeniedCss%>" data-status="3" data-active-css="btn-danger">Denied</a>
+                                <Rock:RockControlWrapper ID="rcwSlugs" runat="server" Label="URL Slug" Help="While Rock generates URLs for your content channel items automatically, you can optionally create custom URLs for this post. Only lowercase alpha-numeric characters and dashes are allowed.">
+                                    <div class="js-slugs">
+                                        <asp:Repeater ID="rSlugs" runat="server" OnItemDataBound="rSlugs_ItemDataBound">
+                                            <ItemTemplate>
+                                                <div class="form-group rollover-container js-slug-row">
+                                                    <asp:Literal ID="lChannelUrl" runat="server" />
+                                                    <input id="slugId" class="js-slug-id" type="hidden" value="<%# Eval("Id") %>" />
+                                                    <span class="js-slug-literal"><%# Eval("Slug") %></span>
+                                                    <div class="rollover-item control-actions pull-right">
+                                                        <a class="js-slug-edit margin-r-md" href="#"><i class="fa fa-pencil"></i></a>
+                                                        <a class="js-slug-remove" href="#"><i class="fa fa-close"></i></a>
                                                     </div>
                                                 </div>
-                                            </asp:Panel>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                        <a id="lbAdd" title="Add Slug" class="btn btn-xs btn-action btn-square">
+                                            <i class="fa fa-plus-circle"></i>
+                                        </a>
+                                    </div>
+                                </Rock:RockControlWrapper>
+
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-group" id="divStatus" runat="server">
+                                    <div class="form-control-static">
+                                        <asp:HiddenField ID="hfStatus" runat="server" />
+                                        <asp:Panel ID="pnlStatus" runat="server">
+                                            <label class="control-label">Status</label>
+
+                                            <div class="toggle-container">
+                                                <div class="btn-group btn-toggle">
+                                                    <a class="btn btn-xs <%=PendingCss%>" data-status="1" data-active-css="btn-warning">Pending</a>
+                                                    <a class="btn btn-xs <%=ApprovedCss%>" data-status="2" data-active-css="btn-success">Approved</a>
+                                                    <a class="btn btn-xs <%=DeniedCss%>" data-status="3" data-active-css="btn-danger">Denied</a>
+                                                </div>
+                                            </div>
+                                        </asp:Panel>
+                                    </div>
+                                </div>
+
+                                <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
+
+                                <Rock:RockControlWrapper ID="rcwItemGlobalKey" runat="server" Label="Item Global Key" Help="The item identifier is a system unique key to the content channel item">
+                                    <div class="form-group rollover-container">
+                                        <asp:Label ID="lblItemGlobalKey" runat="server"></asp:Label>
+                                        <div class="rollover-item control-actions pull-right">
+                                            <asp:LinkButton ID="lbRefreshItemGlobalKey" runat="server" CssClass="btn btn-default btn-sm" OnClick="lbRefreshItemGlobalKey_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to update the item identifier? If the current value is being used elsewhere it will break the link.');"><i class="fa fa-redo"></i></asp:LinkButton>
                                         </div>
                                     </div>
+                                </Rock:RockControlWrapper>
 
-                                    <Rock:NumberBox ID="nbPriority" runat="server" Label="Priority" />
-
-                                    <Rock:RockControlWrapper ID="rcwItemGlobalKey" runat="server" Label="Item Global Key" Help="The item identifier is a system unique key to the content channel item">
-                                        <div class="form-group rollover-container">
-                                            <asp:Label ID="lblItemGlobalKey" runat="server"></asp:Label>
-                                            <div class="rollover-item control-actions pull-right">
-                                                <asp:LinkButton ID="lbRefreshItemGlobalKey" runat="server" CssClass="btn btn-default btn-sm" OnClick="lbRefreshItemGlobalKey_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to update the item identifier? If the current value is being used elsewhere it will break the link.');"><i class="fa fa-redo"></i></asp:LinkButton>
-                                            </div>
-                                        </div>
-                                    </Rock:RockControlWrapper>
-
-                                </div>
                             </div>
+                        </div>
 
-                            <Rock:RockControlWrapper ID="rcwTags" runat="server" Label="Tags">
-                                <Rock:TagList ID="taglTags" runat="server" CssClass="clearfix" />
-                            </Rock:RockControlWrapper>
+                        <Rock:RockControlWrapper ID="rcwTags" runat="server" Label="Tags">
+                            <Rock:TagList ID="taglTags" runat="server" CssClass="clearfix" />
+                        </Rock:RockControlWrapper>
 
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:HtmlEditor ID="htmlContent" runat="server" Label="Content" ResizeMaxWidth="720" Height="300" />
-                                    <Rock:StructureContentEditor ID="sceContent" runat="server" Label="Content" />
-                                </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:HtmlEditor ID="htmlContent" runat="server" Label="Content" ResizeMaxWidth="720" Height="300" />
+                                <Rock:StructureContentEditor ID="sceContent" runat="server" Label="Content" />
                             </div>
+                        </div>
 
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
-                                </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
                             </div>
-
-                            <div class="actions">
-                                <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                                <asp:LinkButton ID="lbDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="lbDelete_Click" />
-                                <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
-                            </div>
-
-                        </asp:Panel>
+                        </div>
+                    </asp:Panel>
+                <% if ( pnlPersonalization.Visible ) { %>
                     </div>
-                    <asp:Panel ID="pnlPersonalization" runat="server" CssClass="col-md-3 well">
+                <% } %>
+                    <asp:Panel ID="pnlPersonalization" runat="server" CssClass="col-md-3 sidebar">
                         <h4>Personalization Profile</h4>
                         <Rock:RockListBox ID="lbSegments" runat="server" Label="Segments" DataTextField="Name" DataValueField="Id" />
                         <Rock:RockListBox ID="lbRequestFilters" runat="server" Label="Request Filters" DataTextField="Name" DataValueField="Id" />
                     </asp:Panel>
+                <% if ( pnlPersonalization.Visible ) { %>
                 </div>
-            </div>
+                <% } %>
+                <div class="actions">
+                    <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                    <asp:LinkButton ID="lbDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="lbDelete_Click" />
+                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                </div>
 
+            </div>
         </asp:Panel>
 
         <asp:Panel ID="pnlChildrenParents" runat="server" CssClass="panel panel-widget">

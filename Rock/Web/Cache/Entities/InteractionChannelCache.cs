@@ -212,7 +212,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes the component ids.
         /// </summary>
-        private void InitComponentIds(RockContext rockContext = null)
+        private void InitComponentIds( RockContext rockContext = null )
         {
             if ( InteractionComponentIds != null )
             {
@@ -272,8 +272,7 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            int value;
-            InteractionComponentIds.TryRemove( id, out value );
+            InteractionComponentIds.TryRemove( id, out _ );
         }
 
         /// <summary>
@@ -290,8 +289,7 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            int value;
-            InteractionComponentIds.TryRemove( id, out value );
+            InteractionComponentIds.TryRemove( id, out _ );
         }
 
         /// <summary>
@@ -442,8 +440,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">ForeignKey must be specified when using GetChannelIdByForeignKey</exception>
         [Obsolete( "Use GetCreateChannelIdByForeignKey instead." )]
-        [RockObsolete("1.11")]
-        public static int GetChannelIdByForeignKey( string foreignKey, string channelName)
+        [RockObsolete( "1.11" )]
+        public static int GetChannelIdByForeignKey( string foreignKey, string channelName )
         {
             return GetCreateChannelIdByForeignKey( foreignKey, channelName, null );
         }

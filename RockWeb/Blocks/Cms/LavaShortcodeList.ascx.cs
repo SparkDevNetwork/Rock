@@ -29,6 +29,7 @@ using Rock.Lava;
 using Rock.Lava.Shortcodes;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
@@ -337,17 +338,12 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadShortcodeCategories()
         {
-            var rockContext = new RockContext();
-            var categoryService = new CategoryService( rockContext );
-            var entityService = new EntityTypeService( rockContext );
-
-            var entityType = entityService.Get( Rock.SystemGuid.EntityType.LAVA_SHORTCODE_CATEGORY.AsGuid() );
-
             ddlCategoryFilter.Items.Add( new ListItem { Text = "All Shortcodes", Value = "0" } );
 
-            var lavaShortcodeCategories = categoryService.GetByEntityTypeId( entityType.Id )?
-                .OrderBy( v => v.Name )?
-                .ToList();
+            var lavaShortcodeCategories = CategoryCache.All()
+                .Where( t => t.EntityTypeId == EntityTypeCache.GetId<Rock.Model.LavaShortcode>() )
+                .OrderBy( t => t.Order )
+                .ThenBy( t => t.Name );
 
             if ( lavaShortcodeCategories != null )
             {

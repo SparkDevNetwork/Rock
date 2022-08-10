@@ -25,10 +25,10 @@
                 <div class="row mb-5">
                     <div class="col-md-6">
                         <Rock:HiddenFieldWithClass ID="hfExistingRequestFilterKeyNames" runat="server" CssClass="js-existing-key-names" />
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" PropertyName="Name" onblur="populateRequestFilterKey()"/>
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" PropertyName="Name" onblur="populateRequestFilterKey()" />
                         <Rock:DataTextBox ID="tbKey" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" Required="true" PropertyName="RequestFilterKey" Label="Key" />
                         <Rock:RockDropDownList ID="ddlSiteKey" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" PropertyName="SiteId"
-                            Label="Site" Help="Site - Optional site to limit the request filter to."/>
+                            Label="Site" Help="Site - Optional site to limit the request filter to." />
                     </div>
 
                     <div class="col-md-6">
@@ -71,8 +71,8 @@
                         <Rock:Grid ID="gQueryStringFilter" runat="server" DisplayType="Light" RowItemText="Query String Filter">
                             <Columns>
                                 <Rock:RockBoundField DataField="Key" HeaderText="Key" />
-                                <Rock:RockBoundField DataField="ComparisonType" HeaderText="Match Type"  />
-                                <Rock:RockBoundField DataField="ComparisonValue" HeaderText="Value"  />
+                                <Rock:EnumField DataField="ComparisonType" HeaderText="Match Type" />
+                                <Rock:RockBoundField DataField="ComparisonValue" HeaderText="Value" />
                                 <Rock:EditField OnClick="gQueryStringFilter_EditClick" />
                                 <Rock:DeleteField OnClick="gQueryStringFilter_DeleteClick" />
                             </Columns>
@@ -93,8 +93,8 @@
                         <Rock:Grid ID="gCookie" runat="server" DisplayType="Light" RowItemText="Cookie">
                             <Columns>
                                 <Rock:RockBoundField DataField="Key" HeaderText="Key" />
-                                <Rock:RockBoundField DataField="ComparisonType" HeaderText="Match Type"  />
-                                <Rock:RockBoundField DataField="ComparisonValue" HeaderText="Value"  />
+                                <Rock:EnumField DataField="ComparisonType" HeaderText="Match Type" />
+                                <Rock:RockBoundField DataField="ComparisonValue" HeaderText="Value" />
                                 <Rock:EditField OnClick="gCookie_EditClick" />
                                 <Rock:DeleteField OnClick="gCookie_DeleteClick" />
                             </Columns>
@@ -113,8 +113,8 @@
                         <Rock:Grid ID="gBrowser" runat="server" DisplayType="Light" RowItemText="Browser">
                             <Columns>
                                 <Rock:RockBoundField DataField="BrowserFamily" HeaderText="Browser Family" />
-                                <Rock:RockBoundField DataField="VersionComparisonType" HeaderText="Match Type"  />
-                                <Rock:RockBoundField DataField="MajorVersion" HeaderText="Major Version"  />
+                                <Rock:EnumField DataField="VersionComparisonType" HeaderText="Match Type" />
+                                <Rock:RockBoundField DataField="MajorVersion" HeaderText="Major Version" />
                                 <Rock:EditField OnClick="gBrowser_EditClick" />
                                 <Rock:DeleteField OnClick="gBrowser_DeleteClick" />
                             </Columns>
@@ -134,7 +134,7 @@
                             <Columns>
                                 <Rock:RockBoundField DataField="BeginningIPAddress" HeaderText="Beginning Address" />
                                 <Rock:RockBoundField DataField="EndingIPAddress" HeaderText="Ending Address" />
-                                <Rock:RockBoundField DataField="MatchType" HeaderText="Match Type"  />
+                                <Rock:EnumField DataField="MatchType" HeaderText="Match Type" />
                                 <Rock:EditField OnClick="gIpAddress_EditClick" />
                                 <Rock:DeleteField OnClick="gIpAddress_DeleteClick" />
                             </Columns>
@@ -168,7 +168,7 @@
                         </div>
                         <div class="col flex-grow-0">
                             <div class="form-group">
-                                <Rock:RockDropDownList ID="ddlQueryStringFilterMatchOptions" runat="server" CssClass="input-width-lg" ValidationGroup="vgQueryStringFilter" />
+                                <Rock:RockDropDownList ID="ddlQueryStringFilterComparisonType" runat="server" CssClass="input-width-lg js-filter-compare" ValidationGroup="vgQueryStringFilter" />
                             </div>
                         </div>
                     </div>
@@ -180,7 +180,7 @@
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <Rock:RockTextBox ID="tbQueryStringFilterValue" runat="server" ValidationGroup="vgQueryStringFilter" />
+                                <Rock:RockTextBox ID="tbQueryStringFilterComparisonValue" runat="server" CssClass="js-filter-control" ValidationGroup="vgQueryStringFilter" />
                             </div>
                         </div>
                     </div>
@@ -207,7 +207,7 @@
                         </div>
                         <div class="col flex-grow-0">
                             <div class="form-group">
-                                <Rock:RockDropDownList ID="ddlCookieMatchOptions" runat="server" CssClass="input-width-lg" ValidationGroup="vgCookie" />
+                                <Rock:RockDropDownList ID="ddlCookieFilterComparisonType" runat="server" CssClass="input-width-lg js-filter-compare" ValidationGroup="vgCookie" />
                             </div>
                         </div>
                     </div>
@@ -220,14 +220,14 @@
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <Rock:RockTextBox ID="tbCookieValue" runat="server" ValidationGroup="vgCookie" />
+                                <Rock:RockTextBox ID="tbCookieFilterComparisonValue" runat="server" ValidationGroup="vgCookie" CssClass="js-filter-control" />
                             </div>
                         </div>
                     </div>
                 </Content>
             </Rock:ModalDialog>
 
-            <%-- Modal  for Browser Filter --%>
+            <%-- Modal for Browser Filter --%>
             <Rock:ModalDialog ID="mdBrowser" runat="server" OnSaveClick="mdBrowser_SaveClick" ValidationGroup="vgBrowser">
                 <Content>
                     <asp:HiddenField ID="hfBrowserFilterGuid" runat="server" />
@@ -252,12 +252,12 @@
                         </div>
                         <div class="col flex-grow-0">
                             <div class="form-group">
-                                <Rock:RockDropDownList ID="ddlBrowserMatchOptions" runat="server" CssClass="input-width-lg" ValidationGroup="vgBrowser" />
+                                <Rock:RockDropDownList ID="ddlBrowserVersionComparisonType" runat="server" CssClass="input-width-lg js-filter-compare" ValidationGroup="vgBrowser" />
                             </div>
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <Rock:NumberBox ID="tbBrowserVersion" runat="server" CssClass="" ValidationGroup="vgBrowser" />
+                                <Rock:NumberBox ID="nbBrowserVersionCompareValue" runat="server" CssClass="js-filter-control" ValidationGroup="vgBrowser" Required="true" NumberType="Integer" />
                             </div>
                         </div>
                     </div>

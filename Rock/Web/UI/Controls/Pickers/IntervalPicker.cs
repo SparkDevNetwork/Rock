@@ -333,7 +333,6 @@ namespace Rock.Web.UI.Controls
 
             _scheduleUnit = new ButtonGroup()
             {
-                CssClass = "text-right margin-b-md",
                 UnselectedItemClass = "btn btn-xs btn-default",
                 SelectedItemClass = "btn btn-xs btn-primary",
                 AutoPostBack = true
@@ -375,7 +374,12 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Style, this.Style.Value );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _scheduleInterval.RenderControl( writer );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "text-right margin-b-md" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _scheduleUnit.RenderControl( writer );
+            writer.RenderEndTag();
+
             writer.RenderEndTag();
         }
         #endregion

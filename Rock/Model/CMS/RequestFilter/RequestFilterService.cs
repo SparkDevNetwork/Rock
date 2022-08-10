@@ -27,12 +27,13 @@ namespace Rock.Model
     public partial class RequestFilterService
     {
         /// <summary>
-        /// Gets a Queryable of Personalized Entity that meet the criteria of the Request Filter
+        /// Gets a Queryable of <see cref="PersonalizedEntity"/> that have a <see cref="PersonAliasPersonalization.PersonalizationType"/>
+        /// of <see cref="PersonalizationType.RequestFilter"/>
         /// </summary>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public IQueryable<PersonalizedEntity> GetPersonalizedEntityQueryForRequestFilter( int entityTypeId, int entityId)
+        public IQueryable<PersonalizedEntity> GetPersonalizedEntityRequestFilterQuery( int entityTypeId, int entityId )
         {
             return ( this.Context as RockContext ).PersonalizedEntities
                 .Where( a => a.PersonalizationType == PersonalizationType.RequestFilter && a.EntityTypeId == entityTypeId && a.EntityId == entityId );
@@ -47,14 +48,14 @@ namespace Rock.Model
         public void UpdatePersonalizedEntityForRequestFilters( int entityTypeId, int entityId, List<int> requestFilterIds )
         {
             var rockContext = this.Context as RockContext;
-            var personalizedEntities = GetPersonalizedEntityQueryForRequestFilter( entityTypeId, entityId );
+            var personalizedEntities = GetPersonalizedEntityRequestFilterQuery( entityTypeId, entityId );
             // Delete personalizedEntities that are no longer in the segment Ids provided.
             var personalizedEntitiesToDelete = personalizedEntities.Where( a => !requestFilterIds.Contains( a.PersonalizationEntityId ) );
             var countRemovedFromPersonalizedEntities = rockContext.BulkDelete( personalizedEntitiesToDelete );
 
             // Add personalizationEntityIds that are new.
             var personalizedEntityIdsToAdd = requestFilterIds
-                .Where( requestFilterId => !personalizedEntities.Any( pe=> pe.PersonalizationEntityId == requestFilterId ) )
+                .Where( requestFilterId => !personalizedEntities.Any( pe => pe.PersonalizationEntityId == requestFilterId ) )
                 .ToList();
             var personalizedEntitiesToInsert = personalizedEntityIdsToAdd.Distinct().Select( personalizationEntityId => new PersonalizedEntity
             {

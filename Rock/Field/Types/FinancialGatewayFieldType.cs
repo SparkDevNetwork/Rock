@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_GATEWAY )]
-    public class FinancialGatewayFieldType : FieldType, IEntityFieldType
+    public class FinancialGatewayFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -49,9 +50,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
             string formattedValue = string.Empty;
 
-            Guid? financialGatewayGuid = value.AsGuidOrNull();
+            Guid? financialGatewayGuid = privateValue.AsGuidOrNull();
             if ( financialGatewayGuid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -61,8 +70,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-
+            return formattedValue;
         }
 
         #endregion
@@ -79,7 +87,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new FinancialGatewayPicker { ID = id, ShowAll = false };
+            return new FinancialGatewayPicker { ID = id, IncludeInactive = false, ShowAllGatewayComponents = false };
         }
 
         /// <summary>
@@ -189,6 +197,43 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var financialGatewayId = new FinancialGatewayService( rockContext ).GetId( guid.Value );
+
+                if ( !financialGatewayId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<FinancialGateway>().Value, financialGatewayId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Financial Gateway and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialGateway>().Value, nameof( FinancialGateway.Name ) )
+            };
         }
         #endregion
     }

@@ -163,8 +163,8 @@
 
                                         </div>
                                     </div>
-                                    <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
-                                    <Rock:BarChart ID="bcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
+                                    <Rock:RockLineChart ID="lcAttendance" runat="server" Title="" Subtitle="" ChartHeight="300" />
+                                    <Rock:RockBarChart ID="bcAttendance" runat="server" Title="" Subtitle="" ChartHeight="300" />
                                     <div class="row margin-t-sm">
                                         <div class="col-md-12">
                                             <div class="pull-right">

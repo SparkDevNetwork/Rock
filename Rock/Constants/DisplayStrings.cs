@@ -17,6 +17,22 @@
 namespace Rock.Constants
 {
     /// <summary>
+    /// Constant strings that are used for display purposes in Rock.
+    /// </summary>
+    /// <remarks>
+    /// Make sure to use static instead of const so a rebuild of DLLs is not
+    /// required to pick up the new value.
+    /// </remarks>
+    internal static class DisplayStrings
+    {
+        /// <summary>
+        /// The string to use for persisted attribute values if the attribute
+        /// does not support them.
+        /// </summary>
+        public static string PersistedValuesAreNotSupported = "Attribute not supported";
+    }
+
+    /// <summary>
     /// 
     /// </summary>
     public static class WarningMessage

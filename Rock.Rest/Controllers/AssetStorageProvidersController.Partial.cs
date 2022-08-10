@@ -67,7 +67,13 @@ namespace Rock.Rest.Controllers
                     Asset asset = new Asset { Key = string.Empty, Type = AssetType.Folder };
                     if ( assetFolderIdParts.Length > 1 )
                     {
-                        asset.Key = assetFolderIdParts[1];
+                        var scrubbedFileName = System.Text.RegularExpressions.Regex.Replace( assetFolderIdParts[1], "[" + System.Text.RegularExpressions.Regex.Escape( string.Concat( System.IO.Path.GetInvalidPathChars() ) ) + "]", string.Empty, System.Text.RegularExpressions.RegexOptions.CultureInvariant );
+                        var scrubbedFilePath = System.IO.Path.GetDirectoryName( scrubbedFileName ).Replace( '\\', '/' );
+                        scrubbedFileName = System.IO.Path.GetFileName( scrubbedFileName );
+                        scrubbedFileName = System.Text.RegularExpressions.Regex.Replace( scrubbedFileName, "[" + System.Text.RegularExpressions.Regex.Escape( string.Concat( System.IO.Path.GetInvalidFileNameChars() ) ) + "]", string.Empty, System.Text.RegularExpressions.RegexOptions.CultureInvariant );
+
+                        var scrubbedFileNameAndPath = $"{scrubbedFilePath}/{scrubbedFileName}";
+                        asset.Key = scrubbedFileNameAndPath;
                     }
 
                     var component = assetStorageProvider.GetAssetStorageComponent();

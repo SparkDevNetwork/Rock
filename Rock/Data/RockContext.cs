@@ -751,20 +751,20 @@ namespace Rock.Data
         public DbSet<ContentChannelType> ContentChannelTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the content libraries.
+        /// Gets or sets the content collections.
         /// </summary>
         /// <value>
-        /// The ccontent libraries.
+        /// The ccontent collections.
         /// </value>
-        public DbSet<ContentLibrary> ContentLibraries { get; set; }
+        public DbSet<ContentCollection> ContentCollections { get; set; }
 
         /// <summary>
-        /// Gets or sets the content library sources.
+        /// Gets or sets the content collection sources.
         /// </summary>
         /// <value>
-        /// The content library sources.
+        /// The content collection sources.
         /// </value>
-        public DbSet<ContentLibrarySource> ContentLibrarySources { get; set; }
+        public DbSet<ContentCollectionSource> ContentCollectionSources { get; set; }
 
         /// <summary>
         /// Gets or sets the data views.

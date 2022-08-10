@@ -19,7 +19,7 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// System Email Templates
+    /// Guids for EntityTypes
     /// </summary>
     public static class EntityType
     {
@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         /// The achievement type prerequisite
         /// </summary>
         public const string ACHIEVEMENT_TYPE_PREREQUISITE = "5362DB19-B8E1-4378-A66A-FB097CE3AB90";
+
+        /// <summary>
+        /// The  guid for the Rock.Model.AssessmentType entity.
+        /// </summary>
+        public const string ASSESSMENT_TYPE = "D17A28AC-F529-4AB0-A790-C21F9E74AC89";
 
         /// <summary>
         /// The guid for the Rock.Model.Attendance entity.
@@ -174,14 +179,14 @@ namespace Rock.SystemGuid
         public const string CONNECTION_WORKFLOW = "4EB8711F-7301-4699-A223-0505A7CEB20A";
 
         /// <summary>
-        /// The guid for the Rock.Model.ContentLibrary entity
+        /// The guid for the Rock.Model.ContentCollection entity
         /// </summary>
-        public const string CONTENT_LIBRARY = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8";
+        public const string CONTENT_COLLECTION = "AD7B9219-1B47-4164-9DD1-90F0AF588CB8";
 
         /// <summary>
-        /// The guid for the Rock.Model.ContentLibrarySource entity
+        /// The guid for the Rock.Model.ContentCollectionSource entity
         /// </summary>
-        public const string CONTENT_LIBRARY_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
+        public const string CONTENT_COLLECTION_SOURCE = "46BD0E73-14B3-499D-B8BE-C0EF6BDCD733";
 
         /// <summary>
         /// The guid for the Rock.Model.DataView entity.
@@ -257,6 +262,21 @@ namespace Rock.SystemGuid
         /// The guid for <see cref="Rock.Model.Interaction"/>
         /// </summary>
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LavaShortcode"/> (well known as of v14)
+        /// </summary>
+        public const string LAVA_SHORTCODE = "7574A473-3326-4973-8DF6-C7BF5F64EB36";
+
+        /// <summary>
+        /// The EntityType Guid for LavaShortcodeCategory 'joiner' table <see cref="Rock.Model.LavaShortcodeConfiguration"/>
+        /// </summary>
+        public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Layout"/>
+        /// </summary>
+        public const string LAYOUT = "9DACC861-FED4-47FC-946D-D6A120FF6D56";
 
         /// <summary>
         /// The guid for the Rock.Model.MediaAccount entity
@@ -719,10 +739,5 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement"/> 
         /// </summary>
         public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
-
-        /// <summary>
-        /// The lava shortcode category
-        /// </summary>
-        public const string LAVA_SHORTCODE_CATEGORY = "6CFE20AD-F883-4F53-A678-0D048406299D";
     }
 }
