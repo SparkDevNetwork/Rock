@@ -21,45 +21,11 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-export type MediaFolderBag = {
-    /** Gets or sets the content channel. */
-    contentChannel?: ListItemBag | null;
-
-    /** Gets or sets the content channel item status. */
-    contentChannelItemStatus?: string | null;
-
-    /** Gets or sets the content channel attribute. */
-    contentChannelAttribute?: ListItemBag | null;
-
-    /** Gets or sets a description of the MediaFolder. */
-    description?: string | null;
-
-    /** Gets or sets a value indicating whether the content channel sync is enabled. */
-    isContentChannelSyncEnabled: boolean;
-
-    /** Gets or sets the Media Account that this MediaFolder belongs to. */
-    mediaAccount?: ListItemBag | null;
-
-    /**
-     * Gets or sets a collection containing the Elements that belong to this Folder.
-     * It is used to display the folder's attributes when in view mode.
-     */
-    contentChannelItemAttributes?: ListItemBag[] | null;
-
-    /** Gets or sets a value indicating if this Media Folder is public. */
-    isPublic?: boolean | null;
-
-    /** Gets or sets the Name of the MediaFolder. This property is required. */
+export type PersonalLinkSectionBag = {
+    /** Gets or sets the name. */
     name?: string | null;
-
-    /**
-     * Gets or sets the type of the workflow that will be launched when
-     * a new Rock.Model.MediaElement is added.
-     */
-    workflowType?: ListItemBag | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
@@ -69,4 +35,7 @@ export type MediaFolderBag = {
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets a flag indicating if this Link Section is shared. */
+    isShared: boolean;
 };

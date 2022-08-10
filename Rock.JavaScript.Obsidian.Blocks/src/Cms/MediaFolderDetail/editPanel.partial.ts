@@ -189,6 +189,8 @@ export default defineComponent({
             </div>
         </TransitionVerticalCollapse>
     </div>
+
+    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 </fieldset>
 `
 });

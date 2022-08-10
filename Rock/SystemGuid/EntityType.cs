@@ -749,5 +749,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.PersistedDataset"/> 
         /// </summary>
         public const string PERSISTED_DATASET = "9C3064C0-CF9C-4549-9A80-022514B7FF83";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PersonalLinkSection"/> 
+        /// </summary>
+        public const string PERSONAL_LINK_SECTION = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF";
     }
 }

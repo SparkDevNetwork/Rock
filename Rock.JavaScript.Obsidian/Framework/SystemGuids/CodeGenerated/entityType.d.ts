@@ -313,4 +313,6 @@ export const enum EntityType {
     MediaFolder = "B28FC79F-9FEE-4BE4-801D-96B9246E6043",
     /** The EntityType Guid for Rock.Model.PersistedDataset  */
     PersistedDataset = "9C3064C0-CF9C-4549-9A80-022514B7FF83",
+    /** The EntityType Guid for Rock.Model.PersonalLinkSection  */
+    PersonalLinkSection = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF",
 }

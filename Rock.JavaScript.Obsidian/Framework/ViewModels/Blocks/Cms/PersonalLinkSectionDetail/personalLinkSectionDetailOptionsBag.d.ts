@@ -21,13 +21,5 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
-export type MediaFolderDetailOptionsBag = {
-    /** Gets or sets the content channels. */
-    contentChannels?: ListItemBag[] | null;
-
-    /** Gets or sets the content channel attributes. */
-    contentChannelAttributes?: Record<Guid, ListItemBag[]> | null;
+export type PersonalLinkSectionDetailOptionsBag = {
 };
