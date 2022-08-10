@@ -78,6 +78,7 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="BulkImport\BulkImportHelper.cs" />
+    <Compile Include="Constant\CSVHeaders.cs" />
     <Compile Include="CSVMapper\PersonNoteCsvMapper.cs" />
     <Compile Include="CSVMapper\PersonAttributeValueCsvMapper.cs" />
     <Compile Include="CSVMapper\PersonPhoneCsvMapper.cs" />

@@ -53,42 +53,41 @@ namespace RockWeb.Blocks.BulkImport
         /// <summary>
         /// The properties that should be mapped to by fields in the csv. Not having one of these fields mapped to a csv column will result in an error
         /// </summary>
-        private static readonly string[] requiredFields = { "Family Id", "Family Role", "First Name", "Id", "Last Name" };
+        private static readonly string[] requiredFields = { CSVHeaders.FamilyId, CSVHeaders.FamilyRole, CSVHeaders.FirstName, CSVHeaders.Id, CSVHeaders.LastName };
 
         /// <summary>
         /// It is optional to map these properties to a column in the csv.
         /// </summary>
-        /// Is there a way to declare this as a global constant? They are in the Rock.Slingshot.PersonCSVMapper
-        private static readonly string[] optionalFields = { "Anniversary Date",
-            "Birthdate",
-            "Campus Id",
-            "Campus Name",
-            "Connection Status",
-            "Created Date Time",
-            "Email",
-            "Email Preference",
-            "Gender",
-            "Give Individually",
-            "Grade",
-            "Home Address City",
-            "Home Address Country",
-            "Home Address Postal Code",
-            "Home Address State",
-            "Home Address Street 1",
-            "Home Address Street 2",
-            "Home Phone",
-            "Inactive Reason",
-            "Is Deceased",
-            "Is SMS Enabled",
-            "Marital Status",
-            "Middle Name",
-            "Mobile Phone",
-            "Modified Date Time",
-            "Nick Name",
-            "Note",
-            "Record Status",
-            "Suffix",
-            "TitleValueId" };
+        private static readonly string[] optionalFields = { CSVHeaders.AnniversaryDate,
+           CSVHeaders.Birthdate,
+           CSVHeaders.CampusId,
+           CSVHeaders.CampusName,
+           CSVHeaders.ConnectionStatus,
+           CSVHeaders.CreatedDateTime,
+           CSVHeaders.Email,
+           CSVHeaders.EmailPreference,
+           CSVHeaders.Gender,
+           CSVHeaders.GiveIndividually,
+           CSVHeaders.Grade,
+           CSVHeaders.HomeAddressCity,
+           CSVHeaders.HomeAddressCountry,
+           CSVHeaders.HomeAddressPostalCode,
+           CSVHeaders.HomeAddressState,
+           CSVHeaders.HomeAddressStreet1,
+           CSVHeaders.HomeAddressStreet2,
+           CSVHeaders.HomePhone,
+           CSVHeaders.InactiveReason,
+           CSVHeaders.IsDeceased,
+           CSVHeaders.IsSMSEnabled,
+           CSVHeaders.MaritalStatus,
+           CSVHeaders.MiddleName,
+           CSVHeaders.MobilePhone,
+           CSVHeaders.ModifiedDateTime,
+           CSVHeaders.NickName,
+           CSVHeaders.Note,
+           CSVHeaders.RecordStatus,
+           CSVHeaders.TitleValueId,
+           CSVHeaders.Suffix };
 
         private static readonly HashSet<string> allowedPeronsAttributeFieldTypeClassNames = new HashSet<string> { "Rock.Field.Types.TextFieldType",
             "Rock.Field.Types.BooleanFieldType",
@@ -115,6 +114,16 @@ namespace RockWeb.Blocks.BulkImport
             }
         }
 
+        #region ViewState Keys
+        private static class ViewStateKey
+        {
+
+            public const string PropertiesMapping = "PropertiesMapping";
+            public const string RecordCount = "RecordCount";
+            public const string CSVImporterErrorsFilePath = "CSVImporterErrorsFilePath";
+        }
+        #endregion
+
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -123,7 +132,7 @@ namespace RockWeb.Blocks.BulkImport
 
         protected override void OnLoad( EventArgs e )
         {
-            propertiesMapping = ( Dictionary<string, string> ) ViewState["PropertiesMapping"] ?? new Dictionary<string, string>();
+            propertiesMapping = ( Dictionary<string, string> ) ViewState[ViewStateKey.PropertiesMapping] ?? new Dictionary<string, string>();
             base.OnLoad( e );
             if ( !Page.IsPostBack )
             {
@@ -231,7 +240,7 @@ namespace RockWeb.Blocks.BulkImport
                 {
                     recordsCount--;
                 }
-                ViewState["RecordCount"] = recordsCount.ToString();
+                ViewState[ViewStateKey.RecordCount] = recordsCount.ToString();
                 tdRecordCount.Description = recordsCount.ToString();
             }
 
@@ -266,7 +275,7 @@ namespace RockWeb.Blocks.BulkImport
                 : tbpreviousSourceDescription.Text;
 
             var csvSlingshotImporter = new CsvSlingshotImporter( personCSVFileName, sourceDescription, defaultDataType, bulkImportType, CSVSlingshotImporter_OnProgress );
-            ViewState["CSVImporterErrorsFilePath"] = csvSlingshotImporter.ErrorCSVfilename;
+            ViewState[ViewStateKey.CSVImporterErrorsFilePath] = csvSlingshotImporter.ErrorCSVfilename;
 
             var task = new Task( () =>
             {
@@ -310,7 +319,7 @@ namespace RockWeb.Blocks.BulkImport
             {
                 propertiesMapping.Add( rockDropDownList.SelectedValue, rockDropDownList.Label );
             }
-            ViewState["PropertiesMapping"] = propertiesMapping;
+            ViewState[ViewStateKey.PropertiesMapping] = propertiesMapping;
         }
 
         protected void lbAddSourceDescription_Click( object sender, EventArgs e )
@@ -413,7 +422,7 @@ namespace RockWeb.Blocks.BulkImport
 
         private void UploadedCSVOnLineRead( object sender, object readLineCount )
         {
-            _hubContext.Clients.All.receiveCSVLineReadNotification( this.SignalRNotificationKey, readLineCount, ViewState["RecordCount"] );
+            _hubContext.Clients.All.receiveCSVLineReadNotification( this.SignalRNotificationKey, readLineCount, ViewState[ViewStateKey.RecordCount] );
         }
 
         protected void btnDownloadErrorCSV_Click( object sender, EventArgs e )
@@ -426,7 +435,7 @@ namespace RockWeb.Blocks.BulkImport
             response.Charset = "";
             response.AddHeader( "content-disposition", "attachment; filename=errors.csv" );
 
-            string filePath = ViewState["CSVImporterErrorsFilePath"].ToString();
+            string filePath = ViewState[ViewStateKey.CSVImporterErrorsFilePath].ToString();
             if ( File.Exists( filePath ) )
             {
                 response.TransmitFile( filePath );

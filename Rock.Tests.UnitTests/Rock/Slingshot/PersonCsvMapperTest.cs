@@ -1,7 +1,7 @@
-﻿using System.Dynamic;
-using Slingshot.Core.Model;
+﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
+using Rock.Slingshot;
+using Slingshot.Core.Model;
 
 namespace Rock.Tests.UnitTests.Rock.Slingshot
 {
