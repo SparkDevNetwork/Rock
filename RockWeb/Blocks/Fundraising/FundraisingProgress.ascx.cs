@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Fundraising
                 group = groupMember.Group;
             }
 
-            if ( group == null || ( ! ( group.GroupTypeId == groupTypeIdFundraising || group.GroupType.InheritedGroupTypeId == groupTypeIdFundraising ) ) )
+            if ( group == null || ( !( group.GroupTypeId == groupTypeIdFundraising || group.GroupType.InheritedGroupTypeId == groupTypeIdFundraising ) ) )
             {
                 pnlView.Visible = false;
                 return;
@@ -152,77 +152,142 @@ namespace RockWeb.Blocks.Fundraising
             groupMembersQuery = groupMembersQuery.Sort( new SortProperty { Property = "Person.LastName, Person.NickName" } );
 
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+            var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
 
-            var groupMembersGroupedByFamily = groupMembersQuery.Select( m => m.Person.GetFamily( rockContext ) ).ToList();
-
-            var groupMemberList = groupMembersQuery.ToList().Select( a =>
+            if ( participationMode == 2 )
             {
-                var groupMember = a;
-                groupMember.LoadAttributes( rockContext );
-
-                var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
-                            .Where( d => d.EntityTypeId == entityTypeIdGroupMember
-                                    && d.EntityId == groupMember.Id )
-                            .Sum( d => (decimal?)d.Amount ) ?? 0;
-
-                var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-                bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();
-                if ( !individualFundraisingGoal.HasValue )
+                var groupMembersByFamily = groupMembersQuery.Select( g => g.Person.PrimaryFamily ).Distinct().ToList().Select( g =>
                 {
-                    individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-                }
+                    var familyGroup = g;
+                    var groupMembersList = groupMembersQuery.Where( m => m.Person.PrimaryFamilyId == familyGroup.Id );
+                    var familyGroupMemberIds = groupMembersList.Select( m => m.Id ).ToList();
 
-                decimal percentageAchieved = 0;
-                if ( individualFundraisingGoal != null )
-                {
-                    percentageAchieved = individualFundraisingGoal == 0 ? 100 : contributionTotal / ( 0.01M * individualFundraisingGoal.Value );
-                }
-
-                var progressBarWidth = percentageAchieved;
-
-                if ( percentageAchieved >= 100 )
-                {
-                    progressBarWidth = 100;
-                }
+                    var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                                .Where( d => d.EntityTypeId == entityTypeIdGroupMember
+                                        && d.EntityId.HasValue && familyGroupMemberIds.Contains( d.EntityId.Value ) )
+                                .Sum( d => ( decimal? ) d.Amount ) ?? 0;
 
 
-                if ( !individualFundraisingGoal.HasValue )
-                {
-                    individualFundraisingGoal = 0;
-                }
+                    var fundraisingGoal = familyGroupMemberIds.Count * group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
 
-                var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
+                    decimal percentageAchieved = 0;
+                    if ( fundraisingGoal != null )
+                    {
+                        percentageAchieved = fundraisingGoal == 0 ? 100 : contributionTotal / ( 0.01M * fundraisingGoal.Value );
+                    }
 
-                string progressTitle = groupMember.Person.FullName;
+                    var progressBarWidth = percentageAchieved;
 
-                if ( participationMode == 2 )
-                {
-                    var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
+                    if ( percentageAchieved >= 100 )
+                    {
+                        progressBarWidth = 100;
+                    }
+
+
+                    if ( !fundraisingGoal.HasValue )
+                    {
+                        fundraisingGoal = 0;
+                    }
+
+                    var familyMembers = familyGroup.Members.Select( m => m.PersonId ).ToList();
                     var familyMemberGroupMembersInCurrentGroup = group.Members.Where( m => familyMembers.Contains( m.PersonId ) );
-                    progressTitle = String.Format( "{0} ({1})",
-                        groupMember.Person.GetFamily().Name,
+
+                    // If there is only one person in the fundraising group from the current family, just use that person's full name...
+                    // Otherwise, use all the family members in the group to generate a list of their names.
+                    string progressTitle = familyMemberGroupMembersInCurrentGroup.Count() == 1 ? familyMemberGroupMembersInCurrentGroup.First().Person.FullName :
+                    String.Format( "{0} ({1})",
+                        familyGroup.Name,
                     familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender ).Select( m => m.Person.NickName )
                     .JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
-                }
 
-                return new
+                    return new
+                    {
+                        ProgressTitle = progressTitle,
+                        FundraisingGoal = ( fundraisingGoal ?? 0.00M ).ToString( "0.##" ),
+                        ContributionTotal = contributionTotal.ToString( "0.##" ),
+                        Percentage = percentageAchieved.ToString( "0.##" ),
+                        CssClass = GetProgressCssClass( percentageAchieved ),
+                        ProgressBarWidth = progressBarWidth
+                    };
+                } ).ToList();
+
+                this.GroupIndividualFundraisingGoal = groupMembersByFamily.Sum( a => decimal.Parse( a.FundraisingGoal ) );
+                this.GroupContributionTotal = groupMembersByFamily.Sum( a => decimal.Parse( a.ContributionTotal ) );
+                this.PercentComplete = decimal.Round( this.GroupIndividualFundraisingGoal == 0 ? 100 : this.GroupContributionTotal / ( this.GroupIndividualFundraisingGoal * 0.01M ), 2 );
+                this.ProgressCssClass = GetProgressCssClass( this.PercentComplete );
+
+                rptFundingProgress.DataSource = groupMembersByFamily;
+                rptFundingProgress.DataBind();
+            }
+            else
+            {
+                var groupMemberList = groupMembersQuery.ToList().Select( a =>
                 {
-                    ProgressTitle = progressTitle,
-                    IndividualFundraisingGoal = ( individualFundraisingGoal ?? 0.00M ).ToString( "0.##" ),
-                    ContributionTotal = contributionTotal.ToString( "0.##" ),
-                    Percentage = percentageAchieved.ToString( "0.##" ),
-                    CssClass = GetProgressCssClass( percentageAchieved ),
-                    ProgressBarWidth = progressBarWidth
-                };
-            } ).ToList();
+                    var groupMember = a;
+                    groupMember.LoadAttributes( rockContext );
 
-            this.GroupIndividualFundraisingGoal = groupMemberList.Sum( a => decimal.Parse( a.IndividualFundraisingGoal ) );
-            this.GroupContributionTotal = groupMemberList.Sum( a => decimal.Parse( a.ContributionTotal ) );
-            this.PercentComplete = decimal.Round( this.GroupIndividualFundraisingGoal == 0 ? 100 : this.GroupContributionTotal / ( this.GroupIndividualFundraisingGoal * 0.01M ), 2 );
-            this.ProgressCssClass = GetProgressCssClass( this.PercentComplete );
+                    var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                                .Where( d => d.EntityTypeId == entityTypeIdGroupMember
+                                        && d.EntityId == groupMember.Id )
+                                .Sum( d => ( decimal? ) d.Amount ) ?? 0;
 
-            rptFundingProgress.DataSource = groupMemberList;
-            rptFundingProgress.DataBind();
+                    var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                    bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();
+                    if ( !individualFundraisingGoal.HasValue )
+                    {
+                        individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                    }
+
+                    decimal percentageAchieved = 0;
+                    if ( individualFundraisingGoal != null )
+                    {
+                        percentageAchieved = individualFundraisingGoal == 0 ? 100 : contributionTotal / ( 0.01M * individualFundraisingGoal.Value );
+                    }
+
+                    var progressBarWidth = percentageAchieved;
+
+                    if ( percentageAchieved >= 100 )
+                    {
+                        progressBarWidth = 100;
+                    }
+
+
+                    if ( !individualFundraisingGoal.HasValue )
+                    {
+                        individualFundraisingGoal = 0;
+                    }
+
+                    string progressTitle = groupMember.Person.FullName;
+
+                    if ( participationMode == 2 )
+                    {
+                        var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
+                        var familyMemberGroupMembersInCurrentGroup = group.Members.Where( m => familyMembers.Contains( m.PersonId ) );
+                        progressTitle = String.Format( "{0} ({1})",
+                            groupMember.Person.GetFamily().Name,
+                        familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender ).Select( m => m.Person.NickName )
+                        .JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
+                    }
+
+                    return new
+                    {
+                        ProgressTitle = progressTitle,
+                        FundraisingGoal = ( individualFundraisingGoal ?? 0.00M ).ToString( "0.##" ),
+                        ContributionTotal = contributionTotal.ToString( "0.##" ),
+                        Percentage = percentageAchieved.ToString( "0.##" ),
+                        CssClass = GetProgressCssClass( percentageAchieved ),
+                        ProgressBarWidth = progressBarWidth
+                    };
+                } ).ToList();
+
+                this.GroupIndividualFundraisingGoal = groupMemberList.Sum( a => decimal.Parse( a.FundraisingGoal ) );
+                this.GroupContributionTotal = groupMemberList.Sum( a => decimal.Parse( a.ContributionTotal ) );
+                this.PercentComplete = decimal.Round( this.GroupIndividualFundraisingGoal == 0 ? 100 : this.GroupContributionTotal / ( this.GroupIndividualFundraisingGoal * 0.01M ), 2 );
+                this.ProgressCssClass = GetProgressCssClass( this.PercentComplete );
+
+                rptFundingProgress.DataSource = groupMemberList;
+                rptFundingProgress.DataBind();
+            }
         }
 
         #endregion

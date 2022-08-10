@@ -32,7 +32,7 @@
                             <li class="list-group-item">
                                 <div class="row">
                                 <div class="col-md-12">
-                                    <p class="pull-right">$<%#Eval("ContributionTotal") %>/$<%#Eval("IndividualFundraisingGoal") %></p>
+                                    <p class="pull-right">$<%#Eval("ContributionTotal") %>/$<%#Eval("FundraisingGoal") %></p>
 
                                 </div>
                                 <div class="col-md-4">

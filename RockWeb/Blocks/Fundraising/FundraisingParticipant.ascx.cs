@@ -449,11 +449,15 @@ namespace RockWeb.Blocks.Fundraising
                 nbProfileWarning.Text = "<strong>Tip!</strong> Edit your profile to add a " + warningItems.AsDelimited( ", ", " and " ) + ".";
                 nbProfileWarning.Visible = warningItems.Any();
 
-                gmrcRequirements.GroupMemberId = groupMember.Id;
-                gmrcRequirements.Visible = true;
+                // Set the requirements values only if there are requirements for this group / group type.
+                if ( group.GroupRequirements.Any() || group.GroupType.GroupRequirements.Any() )
+                {
+                    gmrcRequirements.GroupMemberId = groupMember.Id;
+                    gmrcRequirements.Visible = true;
 
-                var participantLavaTemplate = this.GetAttributeValue( "RequirementsHeader" );
-                lParticipantHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
+                    var participantLavaTemplate = this.GetAttributeValue( "RequirementsHeader" );
+                    lParticipantHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
+                }
             }
             else
             {
