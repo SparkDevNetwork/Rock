@@ -142,7 +142,7 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             var shouldAlwaysShowCondensed = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
 
@@ -169,9 +169,11 @@ namespace Rock.Field.Types
             var shouldAlwaysShowCondensed = configurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
             var showCondensed = condensed || shouldAlwaysShowCondensed;
 
+            // Original implementation returned HTML formatted string when not condensed
+            // and the plain text string when condensed.
             return !showCondensed
-               ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-               : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+               ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+               : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
 
@@ -253,6 +255,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }

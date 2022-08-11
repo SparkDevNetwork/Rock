@@ -212,29 +212,31 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var guids = privateValue.SplitDelimitedValues();
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
 
-            if ( guids.Length == 0 )
+            if ( !guids.Any() )
             {
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            var categoryIds = guids
+                .Select( g => CategoryCache.Get( g ) )
+                .Where( c => c != null )
+                .Select( c => c.Id )
+                .ToList();
+
+            if ( !categoryIds.Any() )
             {
-                var categoryIds = new CategoryService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) ).Select( c => c.Id );
-                if ( categoryIds.Any() )
-                {
-                    return null;
-                }
-
-                var referencedEntities = new List<ReferencedEntity>();
-                foreach ( var categoryId in categoryIds )
-                {
-                    referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<Category>().Value, categoryId ) );
-                }
-
-                return referencedEntities;
+                return null;
             }
+
+            var referencedEntities = new List<ReferencedEntity>();
+            foreach ( var categoryId in categoryIds )
+            {
+                referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<Category>().Value, categoryId ) );
+            }
+
+            return referencedEntities;
         }
 
         /// <inheritdoc/>

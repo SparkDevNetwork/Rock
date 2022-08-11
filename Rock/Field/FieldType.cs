@@ -140,7 +140,7 @@ namespace Rock.Field
         [RockInternal]
         public virtual string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
+            return GetTextValue( privateValue, privateConfigurationValues )?.EncodeHtml();
         }
 
         /// <remarks>
@@ -151,7 +151,7 @@ namespace Rock.Field
         [RockInternal]
         public virtual string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues ).Truncate( 100 );
+            return GetTextValue( privateValue, privateConfigurationValues )?.Truncate( 100 );
         }
 
         /// <remarks>

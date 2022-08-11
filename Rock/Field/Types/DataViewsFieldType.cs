@@ -125,6 +125,28 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var guids = privateValue.SplitDelimitedValues().AsGuidList();
+
+                var names = new DataViewService( rockContext )
+                    .Queryable()
+                    .Where( dv => guids.Contains( dv.Guid ) )
+                    .Select( dv => dv.Name )
+                    .ToList();
+
+                return names.JoinStrings( ", " );
+            }
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -135,22 +157,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var guids = value.SplitDelimitedValues();
-                    var dataviews = new DataViewService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
-                    if ( dataviews.Any() )
-                    {
-                        formattedValue = string.Join( ", ", ( from dataview in dataviews select dataview.Name ).ToArray() );
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -293,9 +302,9 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var guids = privateValue.SplitDelimitedValues();
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
 
-            if ( guids.Length == 0 )
+            if ( !guids.Any() )
             {
                 return null;
             }
@@ -304,8 +313,9 @@ namespace Rock.Field.Types
             {
                 var dataViewIds = new DataViewService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( d => guids.Contains( d.Guid.ToString() ) )
-                    .Select( d => d.Id );
+                    .Where( d => guids.Contains( d.Guid ) )
+                    .Select( d => d.Id )
+                    .ToList();
 
                 if ( !dataViewIds.Any() )
                 {

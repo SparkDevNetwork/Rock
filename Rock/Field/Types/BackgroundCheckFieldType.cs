@@ -188,7 +188,7 @@ namespace Rock.Field.Types
         /// <inheritdoc />
         public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return System.Web.HttpUtility.HtmlEncode( GetFileName( privateValue ) );
+            return GetHtmlValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>
@@ -230,9 +230,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            // For compatibility reasons condensed value is always the text value encoded for HTML.
             return !condensed
                 ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
         }
 
         #endregion

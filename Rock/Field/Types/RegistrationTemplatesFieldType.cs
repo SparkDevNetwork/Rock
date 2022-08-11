@@ -54,23 +54,13 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> privateConfigurationValues )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             string formattedValue = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                var names = new List<string>();
-                var guids = new List<Guid>();
-
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    Guid? guid = guidValue.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        guids.Add( guid.Value );
-                    }
-                }
+                var guids = privateValue.SplitDelimitedValues().AsGuidList();
 
                 if ( !guids.Any() )
                 {
@@ -79,14 +69,13 @@ namespace Rock.Field.Types
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var registrationTemplates = new RegistrationTemplateService( rockContext )
+                    var names = new RegistrationTemplateService( rockContext )
                         .Queryable()
-                        .AsNoTracking()
-                        .Where( a => guids.Contains( a.Guid ) );
-                    if ( registrationTemplates.Any() )
-                    {
-                        formattedValue = string.Join( ", ", ( from registrationTemplate in registrationTemplates select registrationTemplate.Name ) );
-                    }
+                        .Where( rt => guids.Contains( rt.Guid ) )
+                        .Select( rt => rt.Name )
+                        .ToList();
+
+                    return names.JoinStrings( ", " );
                 }
             }
 
@@ -204,21 +193,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                return null;
-            }
-
-            var guids = new List<Guid>();
-
-            foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-            {
-                Guid? guid = guidValue.AsGuidOrNull();
-                if ( guid.HasValue )
-                {
-                    guids.Add( guid.Value );
-                }
-            }
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
 
             if ( !guids.Any() )
             {
@@ -229,19 +204,19 @@ namespace Rock.Field.Types
             {
                 var registrationTemplateIds = new RegistrationTemplateService( rockContext )
                     .Queryable()
-                    .AsNoTracking()
                     .Where( rt => guids.Contains( rt.Guid ) )
-                    .Select( rt => rt.Id );
-                if ( registrationTemplateIds.Any() )
+                    .Select( rt => rt.Id )
+                    .ToList();
+
+                if ( !registrationTemplateIds.Any() )
                 {
-                    return registrationTemplateIds
-                        .Select( id => new ReferencedEntity( EntityTypeCache.GetId<RegistrationTemplate>().Value, id ) )
-                        .ToList();
+                    return null;
                 }
+
+                return registrationTemplateIds
+                    .Select( id => new ReferencedEntity( EntityTypeCache.GetId<RegistrationTemplate>().Value, id ) )
+                    .ToList();
             }
-
-
-            return null;
         }
 
         /// <inheritdoc/>

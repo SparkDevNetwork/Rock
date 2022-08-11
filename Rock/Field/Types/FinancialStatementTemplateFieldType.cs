@@ -236,8 +236,8 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<FinancialStatementTemplate>().Value, nameof( FinancialStatementTemplate.Name ) )
             };
-
-            #endregion
         }
+
+        #endregion
     }
 }
