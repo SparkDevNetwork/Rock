@@ -56,9 +56,19 @@ namespace RockWeb.Blocks.Fundraising
     [TextField( "Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 9 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "PersonAttributes", "The Person Attributes that the participant can edit", false, true, order: 7 )]
     [BooleanField( "Show Amount", "Determines if the Amount column should be displayed in the Contributions List.", false, order: 8 )]
+    [LinkedPage(
+        "Workflow Entry Page",
+        Description = "Page used to launch a new workflow of the selected type.",
+        Key = AttributeKey.WorkflowEntryPage,
+        DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY,
+        Order = 9 )]
     [Rock.SystemGuid.BlockTypeGuid( "1FEA697F-DD12-4FE0-BC58-EE896123E7F1" )]
     public partial class FundraisingParticipant : RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string WorkflowEntryPage = "WorkflowEntryPage";
+        }
         #region Base Control Methods
 
         /// <summary>
@@ -431,6 +441,8 @@ namespace RockWeb.Blocks.Fundraising
 
             // Top Main
             string profileLavaTemplate = this.GetAttributeValue( "ProfileLavaTemplate" );
+
+            //To-do - change this logic to allow families or leaders??
             if ( groupMember.PersonId == this.CurrentPersonId )
             {
                 // show a warning about missing Photo or Intro if the current person is viewing their own profile
@@ -453,8 +465,8 @@ namespace RockWeb.Blocks.Fundraising
                 if ( group.GroupRequirements.Any() || group.GroupType.GroupRequirements.Any() )
                 {
                     gmrcRequirements.GroupMemberId = groupMember.Id;
+                    gmrcRequirements.WorkflowEntryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
                     gmrcRequirements.Visible = true;
-
                     var participantLavaTemplate = this.GetAttributeValue( "RequirementsHeader" );
                     lParticipantHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
                 }
