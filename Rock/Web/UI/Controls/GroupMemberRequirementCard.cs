@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -515,8 +516,8 @@ namespace Rock.Web.UI.Controls
 
             // Reload the page to make sure that the current status is reflected in the card styling.
             var currentPageReference = this.RockBlock().CurrentPageReference;
-            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId );
-            pageRef.Parameters.Add( "GroupMemberId", GroupMemberId.ToString() );
+            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary(k => k.Key, k => k.Value.ToString());
+            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
             this.RockBlock().NavigateToPage( pageRef );
         }
 
@@ -577,8 +578,8 @@ namespace Rock.Web.UI.Controls
 
                             // Reload the page to make sure that the current status is reflected in the card styling.
                             var currentPageReference = this.RockBlock().CurrentPageReference;
-                            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId );
-                            pageRef.Parameters.Add( "GroupMemberId", GroupMemberId.ToString() );
+                            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
+                            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
                             this.RockBlock().NavigateToPage( pageRef );
                         }
                     }
@@ -644,8 +645,8 @@ namespace Rock.Web.UI.Controls
 
                             // Reload the page to make sure that the current status is reflected in the card styling.
                             var currentPageReference = this.RockBlock().CurrentPageReference;
-                            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId );
-                            pageRef.Parameters.Add( "GroupMemberId", GroupMemberId.ToString() );
+                            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
+                            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
                             this.RockBlock().NavigateToPage( pageRef );
                         }
                     }
