@@ -384,7 +384,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddStyleAttribute( "padding", "0" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
-                    if ( _hasDoesNotMeetWorkflow )
+                    if ( _hasDoesNotMeetWorkflow && _lbDoesNotMeetWorkflow != null )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
                         _lbDoesNotMeetWorkflow.RenderControl( writer );
@@ -394,7 +394,7 @@ namespace Rock.Web.UI.Controls
                         writer.RenderEndTag();
                     }
 
-                    if ( _hasWarningWorkflow )
+                    if ( _hasWarningWorkflow && _lbWarningWorkflow != null )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
