@@ -23,14 +23,19 @@ import { HttpBodyData, HttpResult } from "./http";
 export type SecurityGrant = {
     /** The token string that provides additional security access. */
     token: Ref<string | null>;
+
+    /** Manually updates the token with a new one received from the server. */
+    updateToken: (newToken: string | null | undefined) => void;
+};
+
+/** The data contained in a block event. */
+export type BlockEvent<T = Record<string, unknown> | undefined> = {
+    /** The unique identifier of the block that dispatched the event. */
+    guid: Guid,
+
+    /** The custom data that was attached to the event. */
+    data: T
 };
 
 /** A function that will invoke a block action. */
 export type InvokeBlockActionFunc = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
-
-export type BlockConfig = {
-    blockFileUrl: string;
-    rootElement: Element;
-    blockGuid: Guid;
-    configurationValues: Record<string, unknown>;
-};

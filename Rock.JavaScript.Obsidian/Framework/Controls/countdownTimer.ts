@@ -17,17 +17,6 @@
 
 import { defineComponent, PropType } from "vue";
 
-/** The type of the alert box to display. Ex: 'success' will appear green and as if something good happened. */
-export enum AlertType {
-    Default = "default",
-    Success = "success",
-    Info = "info",
-    Danger = "danger",
-    Warning = "warning",
-    Primary = "primary",
-    Validation = "validation"
-}
-
 /** Displays a countdown and decremements the seconds. */
 const CountdownTimer = defineComponent({
     name: "CountdownTimer",
@@ -38,20 +27,20 @@ const CountdownTimer = defineComponent({
             required: true
         }
     },
-    data () {
+    data() {
         return {
             handle: null as null | number
         };
     },
     computed: {
-        timeString (): string {
+        timeString(): string {
             const minutes = Math.floor(this.modelValue / 60);
             const seconds = Math.floor(this.modelValue % 60);
             return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
         },
     },
     methods: {
-        onInterval () {
+        onInterval() {
             if (this.modelValue <= 0) {
                 this.$emit("update:modelValue", 0);
                 return;
@@ -60,14 +49,14 @@ const CountdownTimer = defineComponent({
             this.$emit("update:modelValue", Math.floor(this.modelValue - 1));
         }
     },
-    mounted () {
+    mounted() {
         if (this.handle) {
             clearInterval(this.handle);
         }
 
         this.handle = setInterval(() => this.onInterval(), 1000) as unknown as number;
     },
-    unmounted () {
+    unmounted() {
         if (this.handle) {
             clearInterval(this.handle);
             this.handle = null;

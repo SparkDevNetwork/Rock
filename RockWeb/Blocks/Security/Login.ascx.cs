@@ -409,6 +409,12 @@ Thank you for logging in, however, we need to confirm the email associated with 
                 var userLogin = userLoginService.GetByUserName( tbUserName.Text );
                 if ( userLogin != null && userLogin.EntityType != null )
                 {
+                    // Check to see if this user is locked out.
+                    if ( CheckUserLockout( userLogin ) )
+                    {
+                        return;
+                    }
+
                     var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
                     if ( component != null && component.IsActive && !component.RequiresRemoteAuthentication )
                     {
@@ -419,14 +425,6 @@ Thank you for logging in, however, we need to confirm the email associated with 
                         {
                             CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
                             return;
-                        }
-                        else if ( component.Authenticate( userLogin, tbPassword.Text ) )
-                        {
-                            // If the password authenticates, check to see if this user is locked out.
-                            if ( CheckUserLockout( userLogin ) )
-                            {
-                                return;
-                            }
                         }
                     }
                 }
@@ -650,8 +648,12 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                string redirectUrl = returnUrl.ScrubEncodedStringForXSSObjects();
-                redirectUrl =  Server.UrlDecode( redirectUrl );
+                // Decode the return URL and remove the scheme from any provided values
+                var decodedUrl = returnUrl.GetFullyUrlDecodedValue().Replace( "https://", string.Empty ).Replace( "http://", string.Empty );
+
+                // Check the decoded schemeless Url for XSS characters and use "/" as the return URL if found, otherwise use the decoded return URL
+                var redirectUrl = decodedUrl.ScrubEncodedStringForXSSObjects() != "%2f" ? Server.UrlDecode( returnUrl ) : "/";
+
                 Response.Redirect( redirectUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
             }

@@ -48,7 +48,7 @@
 			overlayColor: 'rgba(255,255,255,.85)',
 			debounceResize: true,
             rescale: false,
-			stackIndex: 1040,
+			stackIndex: 1020,
 			stackIndexDelta: 10,
 			closeTrigger: [
 				{

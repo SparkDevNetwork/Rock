@@ -15,7 +15,10 @@
 // </copyright>
 //
 
+using System.Threading.Tasks;
+
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -38,8 +41,22 @@ namespace Rock.Model
                     Entity.originalEntityTypeQualifierColumn = Entry.OriginalValues[nameof( Attribute.EntityTypeQualifierColumn )]?.ToString();
                     Entity.originalEntityTypeQualifierValue = Entry.OriginalValues[nameof( Attribute.EntityTypeQualifierValue )]?.ToString();
                 }
+            }
 
-                base.PreSave();
+            /// <inheritdoc/>
+            protected override void PostSave()
+            {
+                var transactionTask = RockContext.WrappedTransactionCompletedTask;
+
+                Task.Run( async () =>
+                {
+                    if ( await transactionTask )
+                    {
+                        AttributeCache.ClearReferencedEntityDependencies();
+                    }
+                } );
+
+                base.PostSave();
             }
         }
     }

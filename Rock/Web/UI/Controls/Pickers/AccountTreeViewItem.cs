@@ -38,11 +38,6 @@ namespace Rock.Web.UI.Controls
             /// child groups
             /// </summary>
             ChildGroups = 1,
-
-            /// <summary>
-            /// group members
-            /// </summary>
-            GroupMembers = 2
         }
 
         /// <summary>

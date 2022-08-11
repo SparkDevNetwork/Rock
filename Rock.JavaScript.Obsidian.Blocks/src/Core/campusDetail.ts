@@ -20,8 +20,8 @@ import Alert from "@Obsidian/Controls/alert";
 import { EntityType } from "@Obsidian/SystemGuids";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
 import { DetailPanelMode } from "@Obsidian/Types/Controls/detailPanelMode";
-import EditPanel from "./CampusDetail/editPanel";
-import ViewPanel from "./CampusDetail/viewPanel";
+import EditPanel from "./CampusDetail/editPanel.partial";
+import ViewPanel from "./CampusDetail/viewPanel.partial";
 import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { NavigationUrlKey } from "./CampusDetail/types";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -290,9 +290,9 @@ export default defineComponent({
     },
 
     template: `
-<Alert v-if="blockError" alertType="warning" v-text="blockError" />
+<Alert v-if="blockError" alertType="warning">{{ blockError }}</Alert>
 
-<Alert v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+<Alert v-if="errorMessage" alertType="danger">{{ errorMessage }}</Alert>
 
 <DetailBlock v-if="!blockError"
     v-model:mode="panelMode"

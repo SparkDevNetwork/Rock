@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
@@ -264,6 +265,29 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue.StripHtml();
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The base method will encode for HTML which we don't want. The
+            // privateValue is the raw HTML we want to return.
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // We need to clean up the HTML right around the truncate length.
+            return privateValue.TruncateHtml( 100 );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -274,13 +298,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( condensed )
-            {
-                // If this is condensed, we need to clean up the HTML right around the truncate length.
-                return value.TruncateHtml( 100 );
-            }
-
-            return value;
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
+
+        #endregion
     }
 }

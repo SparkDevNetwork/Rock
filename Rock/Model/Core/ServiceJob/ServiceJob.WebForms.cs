@@ -25,7 +25,18 @@ namespace Rock.Model
         // if it can't be found in dlls, look in App_Code using BuildManager
         private Type GetCompiledTypeFromBuildManager()
         {
-            return BuildManager.GetType( this.Class, false );
+            try
+            {
+                // This is a long-shot, but it could be in the App_Code folder of RockWeb.
+                return BuildManager.GetType( this.Class, false );
+            }
+            catch
+            {
+                // We told BuildManager to not throw errors, but it could throw an error if RockWeb hasn't started yet.
+                // If so, ignore error.
+                return null;
+            }
+
         }
     }
 }

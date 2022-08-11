@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.DownhillCss;
 
@@ -283,5 +284,61 @@ namespace Rock.Mobile
         /// A value indicating a push token update has been requested.
         /// </value>
         public string PushTokenUpdateValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is deep linking enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is deep linking enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsDeepLinkingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the iOS bundle identifier.
+        /// </summary>
+        /// <value>
+        /// The iOS bundle identifier.
+        /// </value>
+        public string BundleIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the team identifier.
+        /// </summary>
+        /// <value>
+        /// The team identifier.
+        /// </value>
+        public string TeamIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the android package.
+        /// </summary>
+        /// <value>
+        /// The name of the android package.
+        /// </value>
+        public string PackageName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the android certificate fingerprint.
+        /// </summary>
+        /// <value>
+        /// The certificate fingerprint.
+        /// </value>
+        public string CertificateFingerprint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the deep link path prefix.
+        /// </summary>
+        /// <value>
+        /// The deep link path prefix.
+        /// </value>
+        public string DeepLinkPathPrefix { get; set; }
+
+        /// <summary>
+        /// Gets or sets the deep link routes.
+        /// </summary>
+        /// <value>
+        /// The deep link routes.
+        /// </value>
+        public List<DeepLinkRoute> DeepLinkRoutes { get; set; } = new List<DeepLinkRoute>();
     }
 }

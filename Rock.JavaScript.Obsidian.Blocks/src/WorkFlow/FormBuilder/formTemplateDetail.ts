@@ -24,10 +24,10 @@ import RockButton from "@Obsidian/Controls/rockButton";
 import { EntityType } from "@Obsidian/SystemGuids";
 import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
-import EditPanel from "./FormTemplateDetail/editPanel";
+import EditPanel from "./FormTemplateDetail/editPanel.partial";
 import { FormTemplateDetailConfiguration, TemplateDetail, TemplateEditDetail } from "./FormTemplateDetail/types";
-import { provideSources } from "./FormTemplateDetail/utils";
-import ViewPanel from "./FormTemplateDetail/viewPanel";
+import { provideSources } from "./FormTemplateDetail/utils.partial";
+import ViewPanel from "./FormTemplateDetail/viewPanel.partial";
 
 export default defineComponent({
     name: "WorkFlow.FormTemplateDetail",

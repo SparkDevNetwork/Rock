@@ -26,7 +26,7 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 /** RegistrationRegistrant View Model */
 export type RegistrationRegistrantBag = {
     /** Gets or sets the cost. */
-    cost?: number;
+    cost: number;
 
     /** Gets or sets a flag indicating if the registration's discount code applies to this registrant. */
     discountApplies: boolean;

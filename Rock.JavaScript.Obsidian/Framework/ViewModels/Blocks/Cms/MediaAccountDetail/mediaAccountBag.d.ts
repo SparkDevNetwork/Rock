@@ -24,6 +24,10 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class MediaAccountBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type MediaAccountBag = {
     /** Gets or sets the type of the component entity. */
     componentEntityType?: ListItemBag | null;

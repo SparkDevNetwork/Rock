@@ -229,6 +229,8 @@ export default defineComponent({
         // Perform final initialization once we are mounted.
         onMounted(() => {
             document.addEventListener("fullscreenchange", onFullscreenChange);
+            document.addEventListener("mozfullscreenchange", onFullscreenChange);
+            document.addEventListener("webkitfullscreenchange", onFullscreenChange);
 
             // Set initial full-screen state if requested.
             if (props.modelValue) {
@@ -247,6 +249,8 @@ export default defineComponent({
                 }
             }
 
+            document.removeEventListener("webkitfullscreenchange", onFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", onFullscreenChange);
             document.removeEventListener("fullscreenchange", onFullscreenChange);
         });
 

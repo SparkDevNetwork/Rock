@@ -62,11 +62,33 @@
   }
 }
 
+.section-header-hr {
+  margin-top: 16px;
+}
+
+.rock-header {
+  .title {
+    margin: 0;
+  }
+
+  .description {
+    margin: 0;
+    font-size: @font-size-small;
+    color: @text-muted;
+  }
+
+  hr {
+    &:extend(.section-header-hr);
+  }
+}
+
 .panel-section {
   border-color: @panel-section-border;
   box-shadow: none !important;
 
   > .panel-heading {
+    border-radius: @panel-border-radius @panel-border-radius 0 0;
+    padding: 18px;
     position: relative;
     background: @panel-section-heading-bg;
     &::after {
@@ -77,12 +99,24 @@
       content: "";
       border-bottom: 1px solid @input-border;
     }
+
+    .panel-title {
+      margin-bottom: 12px;
+    }
+
+    .description {
+      margin: 0;
+      color: @text-muted;
+    }
   }
 
   > .panel-body {
+    border-radius: 0 0 @panel-border-radius @panel-border-radius;
     background: @panel-section-body-bg;
   }
 }
+
+
 
 // Fancy Scrollbars
 

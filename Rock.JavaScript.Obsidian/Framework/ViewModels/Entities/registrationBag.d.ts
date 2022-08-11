@@ -32,13 +32,13 @@ export type RegistrationBag = {
     confirmationEmail?: string | null;
 
     /** Gets or sets the discount amount. */
-    discountAmount?: number;
+    discountAmount: number;
 
     /** Gets or sets the code. */
     discountCode?: string | null;
 
     /** Gets or sets the discount percentage. */
-    discountPercentage?: number;
+    discountPercentage: number;
 
     /** Gets or sets the first name. */
     firstName?: string | null;

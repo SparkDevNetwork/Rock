@@ -518,18 +518,23 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Remoes any group requirements that are not eligible for the group member's role.  This is necessary
+        /// Removes any group requirements that are not eligible for the group member's role.  This is necessary
         /// if the group member has changed roles.
         /// </summary>
         /// <param name="rockContext">The <see cref="RockContext"/>.</param>
         private void ClearInapplicableGroupRequirements( RockContext rockContext )
         {
-            var inapplicableGroupRequirements = GroupMemberRequirements
-                .Where( r => r.GroupRequirement.GroupRoleId != this.GroupRoleId )
+            var groupRequirementIds = this.GroupMemberRequirements.Select( a => a.GroupRequirementId ).ToList();
+            var inapplicableGroupRequirementIds = new GroupRequirementService( rockContext )
+                .Queryable()
+                .Where( r => groupRequirementIds.Contains( r.Id ) && r.GroupRoleId.HasValue && r.GroupRoleId != this.GroupRoleId )
+                .Select( a => a.Id )
                 .ToList();
 
+            var groupMemberRequirementsToBeDeleted = this.GroupMemberRequirements.Where( a => inapplicableGroupRequirementIds.Contains( a.GroupRequirementId ) ).ToList();
+
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
-            groupMemberRequirementsService.DeleteRange( inapplicableGroupRequirements );
+            groupMemberRequirementsService.DeleteRange( groupMemberRequirementsToBeDeleted );
         }
 
         /// <summary>

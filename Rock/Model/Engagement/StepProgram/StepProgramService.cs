@@ -55,7 +55,8 @@ namespace Rock.Model
                 {
                     PersonId = g.PersonAlias.PersonId,
                     StartedDateTime = g.StartDateTime,
-                    CompletedDateTime = g.EndDateTime
+                    CompletedDateTime = g.EndDateTime,
+                    CampusId = g.CampusId
                 } );
 
             return personQuery;
@@ -91,6 +92,14 @@ namespace Rock.Model
             /// The completed date time.
             /// </value>
             public DateTime? CompletedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the campus identifier.
+            /// </summary>
+            /// <value>
+            /// The campus identifier.
+            /// </value>
+            public int? CampusId { get; set; }
         }
 
         #endregion View Models

@@ -406,7 +406,7 @@ export default defineComponent({
             <div class="picker picker-select person-picker">
                 <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
                     <i class="fa fa-user fa-fw"></i>
-                    <span class="selected-name" v-text="selectedName"></span>
+                    <span class="selected-name">{{ selectedName }}</span>
                     <b class="fa fa-caret-down pull-right"></b>
                 </a>
 

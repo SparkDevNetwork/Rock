@@ -34,6 +34,19 @@ namespace Rock.ViewModels.Entities
     public partial class GroupMemberRequirementBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets the "Does Not Meet" Rock.Model.Workflow identifier for the group member's requirement.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier.
+        /// </value>
+        public int? DoesNotMeetWorkflowId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the due date for the group member requirement.
+        /// </summary>
+        public DateTime? DueDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the group member identifier.
         /// </summary>
         /// <value>
@@ -58,6 +71,38 @@ namespace Rock.ViewModels.Entities
         public DateTime? LastRequirementCheckDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the PersonAliasId that manually completed this member requirement.
+        /// </summary>
+        /// <value>
+        /// The manually completed by person alias identifier.
+        /// </value>
+        public int? ManuallyCompletedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the manually completed date for the group member requirement.
+        /// </summary>
+        /// <value>
+        /// The manually completed date time.
+        /// </value>
+        public DateTime? ManuallyCompletedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonAliasId that overrode this member requirement.
+        /// </summary>
+        /// <value>
+        /// The overridden by person alias identifier.
+        /// </value>
+        public int? OverriddenByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the overridden date for the group member requirement.
+        /// </summary>
+        /// <value>
+        /// The overridden date time.
+        /// </value>
+        public DateTime? OverriddenDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the requirement fail date time.
         /// </summary>
         /// <value>
@@ -80,6 +125,24 @@ namespace Rock.ViewModels.Entities
         /// The requirement warning date time.
         /// </value>
         public DateTime? RequirementWarningDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Warning" Rock.Model.Workflow identifier for the group member's requirement.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier.
+        /// </value>
+        public int? WarningWorkflowId { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the member requirement was manually completed.
+        /// </summary>
+        public bool WasManuallyCompleted { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the member requirement was overridden.
+        /// </summary>
+        public bool WasOverridden { get; set; }
 
         /// <summary>
         /// Gets or sets the created date time.

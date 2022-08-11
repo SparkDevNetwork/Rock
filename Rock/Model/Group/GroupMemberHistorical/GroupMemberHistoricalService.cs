@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Security;
@@ -55,13 +56,13 @@ namespace Rock.Model
         {
             var rockContext = this.Context as RockContext;
 
-            var personGroupMemberIdQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.PersonId == personId ).ToList()
+            var personGroupMemberIdList = new GroupMemberService( rockContext ).AsNoFilter().Include( a => a.Group ).Where( a => a.PersonId == personId ).ToList()
                 .Where( member => member.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 .Select( a => a.Id )
-                .AsQueryable();
+                .ToList();
 
             // get all GroupMemberHistorical records for the Person
-            var groupMemberHistoricalQuery = this.AsNoFilter().Where( a => personGroupMemberIdQuery.Contains( a.GroupMemberId ) );
+            var groupMemberHistoricalQuery = this.AsNoFilter().Where( a => personGroupMemberIdList.Contains( a.GroupMemberId ) );
 
             if ( startDateTime.HasValue )
             {

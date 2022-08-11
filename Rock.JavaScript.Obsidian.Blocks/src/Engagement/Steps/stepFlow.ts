@@ -26,7 +26,7 @@ import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker";
 import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 import NumberBox from "@Obsidian/Controls/numberBox";
 import DropDownList from "@Obsidian/Controls/dropDownList";
-import FlowNodeDiagram from "./StepFlow/flowNodeDiagram";
+import FlowNodeDiagram from "./StepFlow/flowNodeDiagram.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";

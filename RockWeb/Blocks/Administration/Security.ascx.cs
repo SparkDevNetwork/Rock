@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -104,7 +104,11 @@ namespace RockWeb.Blocks.Administration
             // Get object type
             if ( type != null )
             {
-                iSecured = Rock.Reflection.GetIEntityForEntityType( type, PageParameter( "EntityId" ) ) as ISecured;
+                var entityId = PageParameter( "EntityId" );
+                if ( entityId.IsNotNullOrWhiteSpace() && entityId != "0" )
+                {
+                    iSecured = Rock.Reflection.GetIEntityForEntityType( type, entityId ) as ISecured;
+                }
 
                 if ( iSecured == null )
                 {

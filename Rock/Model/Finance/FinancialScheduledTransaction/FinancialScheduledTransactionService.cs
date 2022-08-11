@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -718,10 +719,18 @@ namespace Rock.Model
 
             if ( receiptEmail.HasValue && newTransactionsForReceiptEmails.Any() )
             {
-                // Queue a transaction to send receipts
+                // Queue a bus tasks to send receipts
                 var newTransactionIds = newTransactionsForReceiptEmails.Select( t => t.Id ).ToList();
-                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
-                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                foreach ( int newTransactionId in newTransactionIds )
+                {
+                    var sendPaymentReceiptsTask = new ProcessSendPaymentReceiptEmails.Message
+                    {
+                        SystemEmailGuid = receiptEmail.Value,
+                        TransactionId = newTransactionId
+                    };
+
+                    sendPaymentReceiptsTask.Send();
+                }
             }
 
             // Queue transactions to launch failed payment workflow
@@ -730,9 +739,17 @@ namespace Rock.Model
                 if ( failedPaymentEmail.HasValue )
                 {
                     // Queue a transaction to send payment failure
-                    var newTransactionIds = failedPayments.Select( t => t.Id ).ToList();
-                    var sendPaymentFailureTxn = new SendPaymentReceipts( failedPaymentEmail.Value, newTransactionIds );
-                    RockQueue.TransactionQueue.Enqueue( sendPaymentFailureTxn );
+                    var failedPaymentTransactionIds = failedPayments.Select( t => t.Id ).ToList();
+                    foreach ( int failedPaymentTransactionId in failedPaymentTransactionIds )
+                    {
+                        var sendPaymentFailureTask = new ProcessSendPaymentReceiptEmails.Message
+                        {
+                            SystemEmailGuid = failedPaymentEmail.Value,
+                            TransactionId = failedPaymentTransactionId
+                        };
+
+                        sendPaymentFailureTask.Send();
+                    }
                 }
 
                 if ( failedPaymentWorkflowType.HasValue )

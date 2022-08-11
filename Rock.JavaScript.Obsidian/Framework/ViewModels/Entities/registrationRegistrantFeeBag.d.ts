@@ -26,7 +26,7 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 /** RegistrationRegistrantFee View Model */
 export type RegistrationRegistrantFeeBag = {
     /** Gets or sets the cost. */
-    cost?: number;
+    cost: number;
 
     /** Gets or sets the name of the FeeItem that was selected at the time of the registration. See also Rock.Model.RegistrationRegistrantFee.RegistrationTemplateFeeItem. */
     option?: string | null;

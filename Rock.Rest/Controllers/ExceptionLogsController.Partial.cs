@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ExceptionLogs/GetChartData" )]
         [Rock.SystemGuid.RestActionGuid( "403444AE-0267-408A-B9A8-7E5D70AA594F" )]
+        [RockObsolete( "1.14.0" )]
+        [Obsolete( "This method is no longer used by the Exception List block." )]
         public IEnumerable<IChartData> GetChartData()
         {
             // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it

@@ -477,7 +477,11 @@ namespace Rock.Model
                     // added by the audit on a previous save in this method.
                     if ( entityType.Name != "Rock.Model.EntityType" )
                     {
-                        entityTypeService.Add( entityType );
+                        // double check that another thread didn't add this EntityType.
+                        if ( !entityTypeService.AlreadyExists( entityType.Name ) )
+                        {
+                            entityTypeService.Add( entityType );
+                        }
                     }
                 }
 
@@ -523,5 +527,16 @@ namespace Rock.Model
             return null;
 
         }
+
+        /// <summary>
+        /// Returns true if an EntityType with the same Name already exists in the database.
+        /// This can be used this to help prevent duplicates.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        private bool AlreadyExists( string name )
+        {
+            return this.Queryable().Where( a => a.Name == name ).Any();
+        }
+
     }
 }

@@ -36,7 +36,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbApplicationName" runat="server" Label="Name" />
+                            <Rock:RockTextBox ID="tbApplicationName" runat="server" Label="Name" Required="true" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" Checked="true" />

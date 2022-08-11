@@ -59,8 +59,8 @@ export default defineComponent({
 
     template: `
 <div class="alert" :class="typeClass">
-    <button v-if="dismissible" type="button" class="close" @click="onDismiss">
-        <span>&times;</span>
+    <button v-if="dismissible" type="button" class="close" @click="onDismiss" aria-label="Hide Alert">
+        <span aria-hidden>&times;</span>
     </button>
     <slot />
 </div>

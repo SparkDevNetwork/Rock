@@ -735,6 +735,34 @@ th[align="right"] {
   }
 }
 
+.panel-body-columns {
+  padding: 0;
+  margin: -@panel-body-padding;
+
+  > [class*="col-"] {
+    padding: @panel-body-padding;
+  }
+
+  .sidebar {
+    background-color: @panel-drawer-bg;
+    border-bottom: 1px solid @panel-border;
+
+    &:last-child {
+      border-top: 1px solid @panel-border;
+    }
+
+    @media (min-width: @screen-md-min) {
+      border-bottom: 0;
+      border-right: 1px solid @panel-border;
+
+      &:last-child {
+        border-top: 0;
+        border-left: 1px solid @panel-border;
+      }
+    }
+  }
+}
+
 .panel-analytics {
   .panel-body {
     padding: 0 (@grid-gutter-width / 2);

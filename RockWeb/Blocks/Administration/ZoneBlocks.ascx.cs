@@ -560,11 +560,11 @@ namespace RockWeb.Blocks.Administration
                 var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '>' } );
                 if ( parts.Length > 1 )
                 {
-                    tbBlockName.Text = parts[parts.Length - 1].Trim();
+                    tbBlockName.Text = parts[parts.Length - 1].Trim().Replace( " \U0001f389", string.Empty );
                 }
                 else
                 {
-                    tbBlockName.Text = ddlBlockType.SelectedItem.Text;
+                    tbBlockName.Text = ddlBlockType.SelectedItem.Text.Replace( " \U0001f389", string.Empty );
                 }
             }
         }
@@ -677,7 +677,7 @@ namespace RockWeb.Blocks.Administration
                 // is an Obsidian block type so we can differentiate during rollout.
                 if ( blockType.IsObsidian )
                 {
-                    blockTypeName += $" \U0001f389";
+                    blockTypeName += " \U0001f389";
                 }
 
                 var li = new ListItem( blockTypeName, blockType.Id.ToString() );
@@ -695,7 +695,7 @@ namespace RockWeb.Blocks.Administration
                 // is an Obsidian block type so we can differentiate during rollout.
                 if ( blockType.IsObsidian )
                 {
-                    blockTypeName += $" \U0001f389";
+                    blockTypeName += " \U0001f389";
                 }
 
                 var li = new ListItem( blockTypeName, blockType.Id.ToString() );

@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Class MediaAccountDetailOptionsBag. */
 export type MediaAccountDetailOptionsBag = {
 };

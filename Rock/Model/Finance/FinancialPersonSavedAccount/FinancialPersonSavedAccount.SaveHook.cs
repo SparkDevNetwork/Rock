@@ -54,36 +54,36 @@ namespace Rock.Model
              * Since FinancialPersonSavedAccount has a FinancialPaymentDetailId, we cannot also have a reverse relationship on FinancialPaymentDetail.
              * So the logic below should not be applied.
              * 
-            /// <summary>
-            /// If this FinancialPersonSavedAccount is associated with a FinancialPaymentDetail entity, and that
-            /// FinancialPaymentDetail entity is not already associated with another FinancialPersonSavedAccount,
-            /// then we should create the reverse-association so that the payment detail points back to this
-            /// saved account.  Doing so creates more useful data if the FinancialPaymentDetail entity is cloned
-            /// in the future (i.e., because of tokenized payment methods being reused for new scheduled
-            /// transactions).
-            /// </summary>
-            private void CreateReciprocalPaymentDetailRelationship()
-            {
-                if ( State != EntityContextState.Added && State != EntityContextState.Modified )
-                {
-                    return; // Exit if this record is not being inserted or updated.
-                }
+             * /// <summary>
+             * /// If this FinancialPersonSavedAccount is associated with a FinancialPaymentDetail entity, and that
+             * /// FinancialPaymentDetail entity is not already associated with another FinancialPersonSavedAccount,
+             * /// then we should create the reverse-association so that the payment detail points back to this
+             * /// saved account.  Doing so creates more useful data if the FinancialPaymentDetail entity is cloned
+             * /// in the future (i.e., because of tokenized payment methods being reused for new scheduled
+             * /// transactions).
+             * /// </summary>
+             * private void CreateReciprocalPaymentDetailRelationship()
+             * {
+             *     if ( State != EntityContextState.Added && State != EntityContextState.Modified )
+             *     {
+             *         return; // Exit if this record is not being inserted or updated.
+             *     }
 
-                var rockContext = ( RockContext ) DbContext;
-                var paymentDetailId = Entity.FinancialPaymentDetailId;
-                FinancialPaymentDetail paymentDetail = null;
+             *     var rockContext = ( RockContext ) DbContext;
+             *     var paymentDetailId = Entity.FinancialPaymentDetailId;
+             *     FinancialPaymentDetail paymentDetail = null;
 
-                if ( paymentDetailId.HasValue )
-                {
-                    paymentDetail = new FinancialPaymentDetailService( rockContext ).Get( paymentDetailId.Value );
-                }
+             *     if ( paymentDetailId.HasValue )
+             *     {
+             *         paymentDetail = new FinancialPaymentDetailService( rockContext ).Get( paymentDetailId.Value );
+             *     }
 
-                if ( paymentDetail != null && paymentDetail.FinancialPersonSavedAccountId == null )
-                {
-                    paymentDetail.FinancialPersonSavedAccountId = Entity.Id;
-                    rockContext.SaveChanges();
-                }
-            }
+             *     if ( paymentDetail != null && paymentDetail.FinancialPersonSavedAccountId == null )
+             *     {
+             *         paymentDetail.FinancialPersonSavedAccountId = Entity.Id;
+             *         rockContext.SaveChanges();
+             *     }
+             * }
             */
         }
     }

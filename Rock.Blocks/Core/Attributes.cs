@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -460,9 +460,21 @@ namespace Rock.Blocks.Core
                     attributeValueService.Add( attributeValue );
                 }
 
-                attributeValue.Value = PublicAttributeHelper.GetPrivateValue( attribute, value );
+                var newValue = PublicAttributeHelper.GetPrivateValue( attribute, value );
 
-                rockContext.SaveChanges();
+                if ( attributeValue.Value != newValue )
+                {
+                    attributeValue.Value = newValue;
+
+                    Helper.UpdateAttributeValuePersistedValues( attributeValue, attribute );
+
+                    if ( attribute.IsReferencedEntityFieldType )
+                    {
+                        Helper.UpdateAttributeValueEntityReferences( attributeValue, rockContext );
+                    }
+
+                    rockContext.SaveChanges();
+                }
 
                 return ActionOk( GetAttributeRow( attribute, rockContext ) );
             }

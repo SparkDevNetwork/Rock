@@ -38,6 +38,9 @@ namespace Rock.Client
         public bool CanExpire { get; set; }
 
         /// <summary />
+        public int? CategoryId { get; set; }
+
+        /// <summary />
         public string CheckboxLabel { get; set; }
 
         /// <summary />
@@ -47,6 +50,18 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public string DoesNotMeetWorkflowLinkText { get; set; }
+
+        /// <summary />
+        public int? DoesNotMeetWorkflowTypeId { get; set; }
+
+        /// <summary />
+        public int? DueDateOffsetInDays { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.DueDateType DueDateType { get; set; }
+
+        /// <summary />
         public int? ExpireInDays { get; set; }
 
         /// <summary />
@@ -54,6 +69,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -73,7 +91,16 @@ namespace Rock.Client
         public Rock.Client.Enums.RequirementCheckType RequirementCheckType { get; set; }
 
         /// <summary />
+        public bool ShouldAutoInitiateDoesNotMeetWorkflow { get; set; }
+
+        /// <summary />
+        public bool ShouldAutoInitiateWarningWorkflow { get; set; }
+
+        /// <summary />
         public string SqlExpression { get; set; }
+
+        /// <summary />
+        public string Summary { get; set; }
 
         /// <summary />
         public int? WarningDataViewId { get; set; }
@@ -83,6 +110,12 @@ namespace Rock.Client
 
         /// <summary />
         public string WarningSqlExpression { get; set; }
+
+        /// <summary />
+        public string WarningWorkflowLinkText { get; set; }
+
+        /// <summary />
+        public int? WarningWorkflowTypeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -118,21 +151,32 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.CanExpire = source.CanExpire;
+            this.CategoryId = source.CategoryId;
             this.CheckboxLabel = source.CheckboxLabel;
             this.DataViewId = source.DataViewId;
             this.Description = source.Description;
+            this.DoesNotMeetWorkflowLinkText = source.DoesNotMeetWorkflowLinkText;
+            this.DoesNotMeetWorkflowTypeId = source.DoesNotMeetWorkflowTypeId;
+            this.DueDateOffsetInDays = source.DueDateOffsetInDays;
+            this.DueDateType = source.DueDateType;
             this.ExpireInDays = source.ExpireInDays;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IconCssClass = source.IconCssClass;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.NegativeLabel = source.NegativeLabel;
             this.PositiveLabel = source.PositiveLabel;
             this.RequirementCheckType = source.RequirementCheckType;
+            this.ShouldAutoInitiateDoesNotMeetWorkflow = source.ShouldAutoInitiateDoesNotMeetWorkflow;
+            this.ShouldAutoInitiateWarningWorkflow = source.ShouldAutoInitiateWarningWorkflow;
             this.SqlExpression = source.SqlExpression;
+            this.Summary = source.Summary;
             this.WarningDataViewId = source.WarningDataViewId;
             this.WarningLabel = source.WarningLabel;
             this.WarningSqlExpression = source.WarningSqlExpression;
+            this.WarningWorkflowLinkText = source.WarningWorkflowLinkText;
+            this.WarningWorkflowTypeId = source.WarningWorkflowTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -148,6 +192,15 @@ namespace Rock.Client
     /// </summary>
     public partial class GroupRequirementType : GroupRequirementTypeEntity
     {
+        /// <summary />
+        public Category Category { get; set; }
+
+        /// <summary />
+        public WorkflowType DoesNotMeetWorkflowType { get; set; }
+
+        /// <summary />
+        public WorkflowType WarningWorkflowType { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

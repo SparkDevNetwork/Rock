@@ -1347,16 +1347,8 @@ namespace Rock.Model
 
             if ( personSearchOptions.Address.IsNotNullOrWhiteSpace() )
             {
-                var rockContext = this.Context as RockContext;
-                var groupMemberService = new GroupMemberService( rockContext );
-                int groupTypeIdFamilyOrBusiness = GroupTypeCache.GetFamilyGroupType().Id;
-
-                var personIdAddressQry = groupMemberService.Queryable()
-                    .Where( m => m.Group.GroupTypeId == groupTypeIdFamilyOrBusiness )
-                    .Where( m => m.Group.GroupLocations.Any( gl => gl.Location.Street1.Contains( personSearchOptions.Address ) ) )
-                    .Select( a => a.PersonId );
-
-                personSearchQry = personSearchQry.Where( a => personIdAddressQry.Contains( a.Id ) );
+                // Only search for address on the Primary Family. This is significantly faster than searching for the address in all families that the person might be in.
+                personSearchQry = personSearchQry.Where( a => a.PrimaryFamily.GroupLocations.Any( gl => gl.Location.Street1.Contains( personSearchOptions.Address ) ) );
             }
 
             if ( sortByFullNameReversed )
@@ -4988,5 +4980,31 @@ FROM (
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets all the foreign keys in the person table in the database
+        /// </summary>
+        /// <returns></returns>
+        public string[] GetForeignKeys()
+        {
+            return Queryable()
+                .Select( person => person.ForeignKey )
+                .Where( foreignKey => foreignKey.Trim().Length > 0 )
+                .Distinct()
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Get the Person Entity with the given the Key of the Foreign System and the Person Id in the Foreign System.
+        /// </summary>
+        /// <param name="foreignSystemKey">The foreign system key.</param>
+        /// <param name="foreignSystemPersonId">The foreign system person identifier.</param>
+        /// <returns></returns>
+        public Person FromForeignSystem( string foreignSystemKey, int foreignSystemPersonId )
+        {
+            return Queryable()
+                .Where( person => person.ForeignKey == foreignSystemKey && person.ForeignId == foreignSystemPersonId )
+                .FirstOrDefault();
+        }
     }
 }

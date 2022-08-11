@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,10 +34,28 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BINARY_FILE_TYPE )]
-    public class BinaryFileTypeFieldType : FieldType, IEntityFieldType
+    public class BinaryFileTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? binaryFileTypeGuid = privateValue.AsGuidOrNull();
+            if ( binaryFileTypeGuid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var binaryFiletype = new BinaryFileTypeService( rockContext ).GetNoTracking( binaryFileTypeGuid.Value );
+                    if ( binaryFiletype != null )
+                    {
+                        return binaryFiletype.Name;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -48,23 +67,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid? binaryFileTypeGuid = value.AsGuidOrNull();
-            if ( binaryFileTypeGuid.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var binaryFiletype = new BinaryFileTypeService( rockContext ).GetNoTracking( binaryFileTypeGuid.Value );
-                    if ( binaryFiletype != null )
-                    {
-                        formattedValue = binaryFiletype.Name;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -192,6 +197,45 @@ namespace Rock.Field.Types
 
             return null;
         }
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var fileTypeId = new BinaryFileTypeService( rockContext ).GetId( guid.Value );
+
+                if ( !fileTypeId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<BinaryFileType>().Value, fileTypeId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<BinaryFileType>().Value, nameof( BinaryFileType.Name ) )
+            };
+        }
+
         #endregion
     }
 }

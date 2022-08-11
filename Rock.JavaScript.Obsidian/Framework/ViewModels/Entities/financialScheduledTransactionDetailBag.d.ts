@@ -29,7 +29,7 @@ export type FinancialScheduledTransactionDetailBag = {
     accountId: number;
 
     /** Gets or sets the purchase/gift amount. */
-    amount?: number;
+    amount: number;
 
     /** Gets or sets the entity id. */
     entityId?: number | null;

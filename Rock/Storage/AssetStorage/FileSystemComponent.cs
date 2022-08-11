@@ -122,6 +122,7 @@ namespace Rock.Storage.AssetStorage
             HasRequirementsFolder( asset );
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
+            VerifyPathFromRoot( asset.Key, rootFolder );
 
             string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
@@ -150,6 +151,8 @@ namespace Rock.Storage.AssetStorage
             {
                 string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
                 asset.Key = FixKey( asset, rootFolder );
+                VerifyPathFromRoot( asset.Key, rootFolder );
+
                 string physicalPath = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
                 if ( asset.Type == AssetType.File )
@@ -201,8 +204,9 @@ namespace Rock.Storage.AssetStorage
             try
             {
                 string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-
                 asset.Key = FixKey( asset, rootFolder );
+                VerifyPathFromRoot( asset.Key, rootFolder );
+
                 string physicalFile = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
                 FileInfo fileInfo = new FileInfo( physicalFile );
 
@@ -247,8 +251,9 @@ namespace Rock.Storage.AssetStorage
         public override List<Asset> ListFilesInFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-
             asset.Key = FixKey( asset, rootFolder );
+            VerifyPathFromRoot( asset.Key, rootFolder );
+
             string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
 
             return GetListOfObjects( assetStorageProvider, physicalFolder, SearchOption.TopDirectoryOnly, AssetType.File );
@@ -280,6 +285,8 @@ namespace Rock.Storage.AssetStorage
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
+            VerifyPathFromRoot( asset.Key, rootFolder );
+
             string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
             var assets = new List<Asset>();
             if ( !HiddenFolders.Any( a => physicalFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
@@ -315,8 +322,9 @@ namespace Rock.Storage.AssetStorage
         public override List<Asset> ListObjects( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-
             asset.Key = FixKey( asset, rootFolder );
+            VerifyPathFromRoot( asset.Key, rootFolder );
+
             var assets = new List<Asset>();
 
             string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
@@ -339,8 +347,9 @@ namespace Rock.Storage.AssetStorage
         public override List<Asset> ListObjectsInFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-
             asset.Key = FixKey( asset, rootFolder );
+            VerifyPathFromRoot( asset.Key, rootFolder );
+
             var assets = new List<Asset>();
 
             string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
@@ -372,6 +381,8 @@ namespace Rock.Storage.AssetStorage
             try
             {
                 asset.Key = FixKey( asset, rootFolder );
+                VerifyPathFromRoot( asset.Key, rootFolder );
+
                 string filePath = GetPathFromKey( asset.Key );
                 string physicalFolder = FileSystemComponentHttpContext.Server.MapPath( filePath );
                 string physicalFile = FileSystemComponentHttpContext.Server.MapPath( asset.Key );
@@ -399,8 +410,8 @@ namespace Rock.Storage.AssetStorage
         public override bool UploadObject( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-
             asset.Key = FixKey( asset, rootFolder );
+            VerifyPathFromRoot( asset.Key, rootFolder );
 
             if ( !IsFileTypeAllowedByBlackAndWhiteLists( asset.Key ) )
             {
@@ -482,6 +493,24 @@ namespace Rock.Storage.AssetStorage
         #endregion Abstract Methods
 
         #region Private Methods
+
+        /// <summary>
+        /// Verifies that the specified path exists within the root folder and throws an exception if it doesn't.
+        /// </summary>
+        /// <param name="assetPath">The asset path (i.e., <see cref="Asset.Key"/>).</param>
+        /// <param name="rootFolder">The root folder path (from the "RootFolder" attribute value).</param>
+        private void VerifyPathFromRoot( string assetPath, string rootFolder )
+        {
+            string physicalPath = FileSystemComponentHttpContext.Server.MapPath( assetPath );
+            string physicalRootFolder = FileSystemComponentHttpContext.Server.MapPath( rootFolder );
+
+            // Make sure the physical location is valid.
+            if ( !physicalPath.StartsWith( physicalRootFolder ) )
+            {
+                // If the untrusted folder is outside our trusted root folder, something's fishy.
+                throw new Rock.Web.FileUploadException( "Invalid path.", System.Net.HttpStatusCode.BadRequest );
+            }
+        }
 
         /// <summary>
         /// Takes a server path and returns a virtual path.

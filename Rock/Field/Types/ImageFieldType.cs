@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,11 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -34,6 +36,9 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.IMAGE )]
     public class ImageFieldType : BinaryFileFieldType
     {
+        // NOTE: We are not implemented IReferenceEntityFieldType interface because
+        // there is no UI support for the file name to change.
+
         #region Configuration
 
         /// <summary>
@@ -150,6 +155,50 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var imageName = new BinaryFileService( rockContext ).GetSelect( imageGuid.Value, bf => bf.FileName );
+
+                return imageName ?? string.Empty;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            return GetImageHtml( imageGuid.Value, null, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            return GetImageHtml( imageGuid.Value, 120, privateConfigurationValues );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -160,74 +209,58 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Gets the image HTML that should be used to display the image one
+        /// a web page.
+        /// </summary>
+        /// <param name="imageGuid">The image unique identifier.</param>
+        /// <param name="width">The width to force the image to.</param>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns>A string that contains the HTML used to render the image.</returns>
+        private static string GetImageHtml( Guid imageGuid, int? width, Dictionary<string, string> privateConfigurationValues )
+        {
+            var imagePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx" );
+            var queryParms = string.Empty;
+
+            // Determine image size parameters if they aren't already forced.
+            if ( width.HasValue )
             {
-                var imagePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx" );
-
-                // create querystring parms
-                string queryParms = string.Empty;
-                if ( condensed )
+                queryParms = $"&width={width}";
+            }
+            else
+            {
+                width = privateConfigurationValues.GetValueOrNull( "width" )?.AsIntegerOrNull();
+                if ( width.HasValue )
                 {
-                    queryParms = "&width=120"; // for grids hardcode to 100px wide
-                }
-                else
-                {
-                    // determine image size parameters
-                    // width
-                    if ( configurationValues != null &&
-                        configurationValues.ContainsKey( "width" ) &&
-                        !string.IsNullOrWhiteSpace( configurationValues["width"].Value ) )
-                    {
-                        queryParms = "&width=" + configurationValues["width"].Value;
-                    }
-
-                    // height
-                    if ( configurationValues != null &&
-                        configurationValues.ContainsKey( "height" ) &&
-                        !string.IsNullOrWhiteSpace( configurationValues["height"].Value ) )
-                    {
-                        queryParms += "&height=" + configurationValues["height"].Value;
-                    }
+                    queryParms = $"&width={width}";
                 }
 
-                Guid? imageGuid = value.AsGuidOrNull();
-                if ( imageGuid.HasValue )
+                var height = privateConfigurationValues.GetValueOrNull( "height" )?.AsIntegerOrNull();
+                if ( height.HasValue )
                 {
-                    string imageUrl = string.Format( "{0}?guid={1}", imagePath, imageGuid );
-                    string imageTagTemplate = DefaultImageTagTemplate;
-
-                    if ( configurationValues != null && configurationValues.ContainsKey( IMG_TAG_TEMPLATE ) )
-                    {
-                        imageTagTemplate = configurationValues[IMG_TAG_TEMPLATE].Value;
-                    }
-
-                    Dictionary<string, object> mergeFields = new Dictionary<string, object>()
-                    {
-                        { "ImageUrl", imageUrl + queryParms },
-                        { "ImageGuid", imageGuid }
-                    };
-
-                    if ( imageTagTemplate.IsNullOrWhiteSpace() )
-                    {
-                        imageTagTemplate = DefaultImageTagTemplate;
-                    }
-
-                    var imageTag = imageTagTemplate.ResolveMergeFields( mergeFields );
-
-                    if ( configurationValues != null &&
-                        configurationValues.ContainsKey( FORMAT_AS_LINK ) &&
-                        ( configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false ) )
-                    {
-                        return string.Format( "<a href='{0}'>{1}</a>", imageUrl, imageTag );
-                    }
-                    else
-                    {
-                        return imageTag;
-                    }
+                    queryParms += $"&height={height}";
                 }
             }
 
-            return string.Empty;
+            var imageUrl = $"{imagePath}?guid={imageGuid}";
+            var imageTagTemplate = privateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ).ToStringOrDefault( DefaultImageTagTemplate );
+            var formatAsLink = privateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ).AsBoolean();
+            var mergeFields = new Dictionary<string, object>()
+            {
+                ["ImageUrl"] = imageUrl + queryParms,
+                ["ImageGuid"] = imageGuid
+            };
+
+            var imageTag = imageTagTemplate.ResolveMergeFields( mergeFields );
+
+            return formatAsLink
+                ? $"<a href='{imageUrl}'>{imageTag}</a>"
+                : imageTag;
         }
 
         #endregion
@@ -307,6 +340,45 @@ namespace Rock.Field.Types
                 // set the picker's selected BinaryFileId (or set it to null if setting the value to null or emptystring)
                 picker.BinaryFileId = binaryFileId;
             }
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldWidth = oldPrivateConfigurationValues.GetValueOrNull( "width" ) ?? string.Empty;
+            var oldHeight = oldPrivateConfigurationValues.GetValueOrNull( "height" ) ?? string.Empty;
+            var oldImgTagTemplate = oldPrivateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ) ?? string.Empty;
+            var oldFormatAsLink = oldPrivateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ) ?? string.Empty;
+            var newWidth = newPrivateConfigurationValues.GetValueOrNull( "width" ) ?? string.Empty;
+            var newHeight = newPrivateConfigurationValues.GetValueOrNull( "height" ) ?? string.Empty;
+            var newImgTagTemplate = newPrivateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ) ?? string.Empty;
+            var newFormatAsLink = newPrivateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ) ?? string.Empty;
+
+            if ( oldWidth != newWidth )
+            {
+                return true;
+            }
+
+            if ( oldHeight != newHeight )
+            {
+                return true;
+            }
+
+            if ( oldImgTagTemplate != newImgTagTemplate )
+            {
+                return true;
+            }
+
+            if ( oldFormatAsLink != newFormatAsLink )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         #endregion

@@ -1152,8 +1152,8 @@ $('#{0}').tooltip();
             var currentDateTime = RockDateTime.Now.Date;
             var confirmedScheduledList = new AttendanceService( rockContext )
                 .GetConfirmedScheduled()
-                .Where( a => a.Occurrence.OccurrenceDate >= currentDateTime )
-                .Where( a => a.PersonAlias.PersonId == this.SelectedPersonId )
+                .Where( a => a.Occurrence.OccurrenceDate >= currentDateTime
+                        && a.PersonAlias.PersonId == this.SelectedPersonId )
                 .Select( a => new GroupScheduleRowInfo
                 {
                     Id = a.Id,
@@ -1175,8 +1175,8 @@ $('#{0}').tooltip();
             var personScheduleExclusions = personScheduleExclusionService
                 .Queryable( "PersonAlias.Person" )
                 .AsNoTracking()
-                .Where( e => familyMemberAliasIds.Contains( e.PersonAliasId.Value ) )
-                .Where( e => e.StartDate >= currentDateTime || e.EndDate >= currentDateTime )
+                .Where( e => familyMemberAliasIds.Contains( e.PersonAliasId.Value )
+                       && ( e.StartDate >= currentDateTime || e.EndDate >= currentDateTime ) )
                 .OrderBy( e => e.StartDate )
                 .ThenBy( e => e.EndDate )
                 .Select( e => new GroupScheduleRowInfo
@@ -1296,12 +1296,12 @@ $('#{0}').tooltip();
                 var groups = groupService
                     .Queryable()
                     .AsNoTracking()
-                    .Where( x => x.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) )
-                    .Where( x => x.IsActive == true && x.IsArchived == false
+                    .Where( x => x.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active )
+                        && x.IsActive == true && x.IsArchived == false
                         && x.GroupType.IsSchedulingEnabled == true
                         && x.DisableScheduling == false
-                        && ( overrideHideFromToolbox || x.DisableScheduleToolboxAccess == false ) )
-                    .Where( x => x.GroupLocations.Any( gl => gl.Schedules.Any() ) )
+                        && ( overrideHideFromToolbox || x.DisableScheduleToolboxAccess == false )
+                        && x.GroupLocations.Any( gl => gl.Schedules.Any() ) )
                     .OrderBy( x => new { x.Order, x.Name } )
                     .AsNoTracking()
                     .ToList();
@@ -1623,9 +1623,9 @@ $('#{0}').tooltip();
             var locations = new List<GroupScheduleSignupLocation>();
 
             var availableLocations = availableGroupLocationSchedules
-                .Where( x => x.GroupId == groupScheduleSignup.GroupId )
-                .Where( x => x.ScheduleId == groupScheduleSignup.ScheduleId )
-                .Where( x => x.ScheduledDateTime.Date == groupScheduleSignup.ScheduledDateTime.Date )
+                .Where( x => x.GroupId == groupScheduleSignup.GroupId
+                        && x.ScheduleId == groupScheduleSignup.ScheduleId
+                        && x.ScheduledDateTime.Date == groupScheduleSignup.ScheduledDateTime.Date )
                 .Select( x => x.Locations )
                 .ToList();
 

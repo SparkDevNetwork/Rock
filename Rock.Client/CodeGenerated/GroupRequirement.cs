@@ -35,6 +35,21 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AllowLeadersToOverride { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.AppliesToAgeClassification AppliesToAgeClassification { get; set; }
+
+        /// <summary />
+        public int? AppliesToDataViewId { get; set; }
+
+        /// <summary />
+        public int? DueDateAttributeId { get; set; }
+
+        /// <summary />
+        public DateTime? DueDateStaticDate { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -93,6 +108,11 @@ namespace Rock.Client
         public void CopyPropertiesFrom( GroupRequirement source )
         {
             this.Id = source.Id;
+            this.AllowLeadersToOverride = source.AllowLeadersToOverride;
+            this.AppliesToAgeClassification = source.AppliesToAgeClassification;
+            this.AppliesToDataViewId = source.AppliesToDataViewId;
+            this.DueDateAttributeId = source.DueDateAttributeId;
+            this.DueDateStaticDate = source.DueDateStaticDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
@@ -116,6 +136,9 @@ namespace Rock.Client
     /// </summary>
     public partial class GroupRequirement : GroupRequirementEntity
     {
+        /// <summary />
+        public Attribute DueDateAttribute { get; set; }
+
         /// <summary />
         public GroupRequirementType GroupRequirementType { get; set; }
 

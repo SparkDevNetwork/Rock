@@ -142,7 +142,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 return;
             }
 
-            comment = comment.Replace( "\r\n", $"\r\n{new string( ' ', indentationSize )} * " );
+            comment = comment.Replace( "\r\n", $"\r\n{new string( ' ', indentationSize )}/// " );
 
             sb.AppendLine( $"{new string( ' ', indentationSize )}/// <summary>" );
             sb.AppendLine( $"{new string( ' ', indentationSize )}/// {comment}" );

@@ -177,6 +177,15 @@ namespace RockWeb.Blocks.Crm
         DefaultValue = "4",
         Order = 15 )]
 
+    [TextField(
+        "Planned Visit Information Panel Title",
+        Key = AttributeKey.PlannedVisitInformationPanelTitle,
+        Description = "The title for the Planned Visit Information panel",
+        DefaultValue = "Visit Information",
+        IsRequired = false,
+        Order = 16
+        )]
+
     #region Adult Category
 
     [CustomDropdownListField(
@@ -485,6 +494,8 @@ namespace RockWeb.Blocks.Crm
             public const string Relationships = "Relationships";
             public const string FamilyRelationships = "FamilyRelationships";
             public const string CanCheckinRelationships = "CanCheckinRelationships";
+
+            public const string PlannedVisitInformationPanelTitle = "PlannedVisitInformationPanelTitle";
         }
 
         private static class CategoryKey
@@ -1432,10 +1443,9 @@ usernameTextbox.blur(function () {{
 
                 if ( campuses.Count >= 1 )
                 {
-                    cpCampus.ForceVisible = true;
                     cpCampus.SelectedCampusId = campuses.First().Id;
                     cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
-                    pnlCampus.Visible = true;
+                    pnlCampus.Visible = cpCampus.Visible;
                 }
                 else
                 {
@@ -1449,6 +1459,8 @@ usernameTextbox.blur(function () {{
 
             ShowHidePlannedDatePanels();
             SetScheduleDateControl();
+
+            pnlVisitTitle.InnerText = GetAttributeValue( AttributeKey.PlannedVisitInformationPanelTitle );
 
             // Visit Info
             pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible || pnlPlannedSchedule.Visible;

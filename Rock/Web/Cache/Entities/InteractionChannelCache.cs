@@ -212,20 +212,18 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes the component ids.
         /// </summary>
-        private void InitComponentIds()
+        private void InitComponentIds( RockContext rockContext = null )
         {
             if ( InteractionComponentIds != null )
             {
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
-            {
-                InteractionComponentIds = new ConcurrentDictionary<int, int>( new InteractionComponentService( rockContext )
-                    .GetByChannelId( Id )
-                    .Select( v => v.Id )
-                    .ToList().ToDictionary( k => k, v => v ) );
-            }
+            rockContext = rockContext ?? new RockContext();
+            InteractionComponentIds = new ConcurrentDictionary<int, int>( new InteractionComponentService( rockContext )
+                .GetByChannelId( Id )
+                .Select( v => v.Id )
+                .ToList().ToDictionary( k => k, v => v ) );
         }
 
         /// <summary>
@@ -235,6 +233,23 @@ namespace Rock.Web.Cache
         public void AddComponentId( int id )
         {
             InitComponentIds();
+
+            if ( InteractionComponentIds == null )
+            {
+                return;
+            }
+
+            InteractionComponentIds.TryAdd( id, id );
+        }
+
+        /// <summary>
+        /// Adds the component identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public void AddComponentId( int id, RockContext rockContext )
+        {
+            InitComponentIds( rockContext );
 
             if ( InteractionComponentIds == null )
             {
@@ -257,8 +272,24 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            int value;
-            InteractionComponentIds.TryRemove( id, out value );
+            InteractionComponentIds.TryRemove( id, out _ );
+        }
+
+        /// <summary>
+        /// Removes the component identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public void RemoveComponentId( int id, RockContext rockContext )
+        {
+            InitComponentIds( rockContext );
+
+            if ( InteractionComponentIds == null )
+            {
+                return;
+            }
+
+            InteractionComponentIds.TryRemove( id, out _ );
         }
 
         /// <summary>
@@ -409,8 +440,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">ForeignKey must be specified when using GetChannelIdByForeignKey</exception>
         [Obsolete( "Use GetCreateChannelIdByForeignKey instead." )]
-        [RockObsolete("1.11")]
-        public static int GetChannelIdByForeignKey( string foreignKey, string channelName)
+        [RockObsolete( "1.11" )]
+        public static int GetChannelIdByForeignKey( string foreignKey, string channelName )
         {
             return GetCreateChannelIdByForeignKey( foreignKey, channelName, null );
         }

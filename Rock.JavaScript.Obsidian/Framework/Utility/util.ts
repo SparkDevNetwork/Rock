@@ -112,7 +112,7 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
  * @param fn The function to be called once per delay period.
  * @param delay The period in milliseconds. If the returned function is called
  * more than once during this period then fn will only be executed once for
- * the period.
+ * the period. If not specified then it defaults to 250ms.
  * @param eager If true then the fn function will be called immediately and
  * then any subsequent calls will be debounced.
  *

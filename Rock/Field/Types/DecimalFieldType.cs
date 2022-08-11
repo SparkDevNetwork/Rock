@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Attribute;
@@ -34,8 +35,22 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DECIMAL )]
     public class DecimalFieldType : FieldType
     {
-
         #region Formatting
+
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            decimal? decimalValue = privateValue.AsDecimalOrNull();
+            if ( decimalValue.HasValue )
+            {
+                // from http://stackoverflow.com/a/216705/1755417 (to trim trailing zeros)
+                return decimalValue.Value.ToString( "G29" );
+            }
+            else
+            {
+                return privateValue;
+            }
+        }
 
         /// <summary>
         /// Formats the value.
@@ -47,16 +62,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            decimal? decimalValue = value.AsDecimalOrNull();
-            if ( decimalValue.HasValue )
-            {
-                // from http://stackoverflow.com/a/216705/1755417 (to trim trailing zeros)
-                return base.FormatValue( parentControl, decimalValue.Value.ToString("G29"), configurationValues, condensed );
-            }
-            else
-            {
-                return base.FormatValue( parentControl, value, configurationValues, condensed );
-            }
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -234,6 +242,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }
