@@ -4181,13 +4181,8 @@ if Exist "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll" del "$(ProjectDir)..\R
 if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>REM Check if the JavaScript projects have been built.
-If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian\node_modules" (
-    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj" -p:Configuration=$(ConfigurationName)
-)
-If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian.Blocks\node_modules" (
-    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian.Blocks\Rock.JavaScript.Obsidian.Blocks.njsproj" -p:Configuration=$(ConfigurationName)
-)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
