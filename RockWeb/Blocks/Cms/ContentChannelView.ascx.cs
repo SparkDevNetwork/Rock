@@ -1110,12 +1110,12 @@ $(document).ready(function() {
                         }
                     }
 
-                    IQueryable<ContentChannelItem> matchedContentChannelItemQuery, nonMatchedContentChannelItemQuery = null;
+                    IQueryable<ContentChannelItem> matchedContentChannelItemQry, nonMatchedContentChannelItemQry = null;
                     var isNonMatchedContentChannelItemExists = false;
                     if ( contentChannel.EnablePersonalization )
                     {
                         var segmentPersonalizationFilterType = GetAttributeValue( AttributeKey.PersonalizationSegments ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
-                        var filtersPersonalizationFilterType = GetAttributeValue( AttributeKey.RequestFilters ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
+                        var requestFiltersPersonalizationFilterType = GetAttributeValue( AttributeKey.RequestFilters ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
                         var personalizationSegmentIds = new List<int>();
                         if ( RockPage.PersonalizationSegmentIds != null )
                         {
@@ -1131,44 +1131,44 @@ $(document).ready(function() {
                         //Apply the PersonalizationFilterType Filter first for any  PersonalizationType first
                         if ( segmentPersonalizationFilterType == PersonalizationFilterType.Filter )
                         {
-                            var personalizedEntityQry = GetPersonalizedEntityQuery( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
-                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => personalizedEntityQry.Any( pe => cci.Id == pe.EntityId ) );
+                            var personalizedSegmentEntityQry = GetPersonalizedEntityQuery( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
+                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => personalizedSegmentEntityQry.Any( pe => cci.Id == pe.EntityId ) );
                         }
 
-                        if ( filtersPersonalizationFilterType == PersonalizationFilterType.Filter )
+                        if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Filter )
                         {
-                            var personalizedEntityQry = GetPersonalizedEntityQuery( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
-                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => personalizedEntityQry.Any( pe => cci.Id == pe.EntityId ) );
+                            var personalizedRequestFilterEntityQry = GetPersonalizedEntityQuery( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
+                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => personalizedRequestFilterEntityQry.Any( pe => cci.Id == pe.EntityId ) );
                         }
 
-                        matchedContentChannelItemQuery = contentChannelItemQuery;
-                        nonMatchedContentChannelItemQuery = contentChannelItemQuery;
+                        matchedContentChannelItemQry = contentChannelItemQuery;
+                        nonMatchedContentChannelItemQry = contentChannelItemQuery;
 
                         if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize )
                         {
-                            var personalizedEntityQry = GetPersonalizedEntityQuery( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
-                            matchedContentChannelItemQuery = matchedContentChannelItemQuery.Where( cci => personalizedEntityQry.Any( pe => cci.Id == pe.EntityId ) );
-                            nonMatchedContentChannelItemQuery = nonMatchedContentChannelItemQuery.Where( cci => !personalizedEntityQry.Any( pe => cci.Id == pe.EntityId ) );
+                            var personalizedSegmentEntityQry = GetPersonalizedEntityQuery( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
+                            matchedContentChannelItemQry = matchedContentChannelItemQry.Where( cci => personalizedSegmentEntityQry.Any( pe => cci.Id == pe.EntityId ) );
+                            nonMatchedContentChannelItemQry = nonMatchedContentChannelItemQry.Where( cci => !personalizedSegmentEntityQry.Any( pe => cci.Id == pe.EntityId ) );
                             isNonMatchedContentChannelItemExists = true;
                         }
 
-                        if ( filtersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
+                        if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
                         {
-                            var personalizedEntityQry = GetPersonalizedEntityQuery( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
-                            matchedContentChannelItemQuery = matchedContentChannelItemQuery.Where( cci => personalizedEntityQry.Any( pe => cci.Id == pe.EntityId ) );
-                            nonMatchedContentChannelItemQuery = nonMatchedContentChannelItemQuery.Where( cci => !personalizedEntityQry.Any( pe => cci.Id == pe.EntityId ) );
+                            var personalizedRequestFilterEntityQry = GetPersonalizedEntityQuery( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
+                            matchedContentChannelItemQry = matchedContentChannelItemQry.Where( cci => personalizedRequestFilterEntityQry.Any( pe => cci.Id == pe.EntityId ) );
+                            nonMatchedContentChannelItemQry = nonMatchedContentChannelItemQry.Where( cci => !personalizedRequestFilterEntityQry.Any( pe => cci.Id == pe.EntityId ) );
                             isNonMatchedContentChannelItemExists = true;
                         }
                     }
                     else
                     {
-                        matchedContentChannelItemQuery = contentChannelItemQuery;
+                        matchedContentChannelItemQry = contentChannelItemQuery;
                     }
 
-                    items = GetContentChannelItems( rockContext, matchedContentChannelItemQuery );
+                    items = GetContentChannelItems( rockContext, matchedContentChannelItemQry );
                     if ( isNonMatchedContentChannelItemExists )
                     {
-                        var nonMatchedContentChannelItems = GetContentChannelItems( rockContext, nonMatchedContentChannelItemQuery );
+                        var nonMatchedContentChannelItems = GetContentChannelItems( rockContext, nonMatchedContentChannelItemQry );
                         if ( nonMatchedContentChannelItems.Any() )
                         {
                             items.AddRange( nonMatchedContentChannelItems );
@@ -1188,6 +1188,9 @@ $(document).ready(function() {
             return new ItemContentResults { Items = items, Tags = tags, ArchiveSumaries = archiveSummaries };
         }
 
+        /// <summary>
+        /// Gets the content channel items from the content channel item query after checking authorization and ordering all the items. 
+        /// </summary>
         private List<ContentChannelItem> GetContentChannelItems( RockContext rockContext, IQueryable<ContentChannelItem> contentChannelItemQuery )
         {
             var items = new List<ContentChannelItem>( contentChannelItemQuery.Count() );
