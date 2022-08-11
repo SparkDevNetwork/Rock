@@ -47,6 +47,46 @@ namespace Rock.Migrations
                 RockMigrationHelper.UpdateAttributeQualifier( SystemGuid.Attribute.PARTICIPATION_TYPE, "fieldtype", @"ddl", "93A56DAE-2672-43F4-8AC9-C144B0AB84B3" );
                 // Qualifier for attribute: ParticipationType
                 RockMigrationHelper.UpdateAttributeQualifier( SystemGuid.Attribute.PARTICIPATION_TYPE, "repeatColumns", @"", "04D5573C-4671-45B7-A591-13EC6EA0FF99" );
+
+                // Update the Fundraising Entry Transaction Header
+                string oldAssignParticipantReference;
+                string newAssignParticipantReference;
+
+                string oldParticipantReference;
+                string newParticipantReference;
+
+                // This is for the Structured Content Editor Tools, and will update old class references.
+                oldAssignParticipantReference = "{% assign groupMember = TransactionEntity %}";
+                newAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
+{% assign participationType = PageParameter[''ParticipationMode''] %}";
+
+                Sql( $@"
+                    UPDATE [AttributeValue]
+                    SET [Value] = REPLACE([Value],'{oldAssignParticipantReference}','{newAssignParticipantReference}')
+                    WHERE [Id] IN (SELECT av.[Id]
+                            FROM [dbo].[AttributeValue] av
+                            INNER JOIN [Attribute] a ON a.[Id] = av.[AttributeId]
+                            WHERE a.[Guid] = '{SystemGuid.Attribute.FUNDRAISING_TRANSACTION_HEADER}')
+                " );
+
+
+                oldParticipantReference = "{{ groupMember.Person.FullName }}";
+                newParticipantReference = @"
+                 {% if participationType == ''2'' %}
+                   {{ groupMember.Person.PrimaryFamily.Name }}
+                 {% else %}
+                   {{ groupMember.Person.FullName }}
+                 {% endif  %}
+                    ";
+
+                Sql( $@"
+                    UPDATE [AttributeValue]
+                    SET [Value] = REPLACE([Value],'{oldParticipantReference}','{newParticipantReference}')
+                    WHERE [Id] IN (SELECT av.[Id]
+                            FROM [dbo].[AttributeValue] av
+                            INNER JOIN [Attribute] a ON a.[Id] = av.[AttributeId]
+                            WHERE a.[Guid] = '{SystemGuid.Attribute.FUNDRAISING_TRANSACTION_HEADER}')
+                " );
             }
         }
 
@@ -55,6 +95,45 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            string oldAssignParticipantReference;
+            string newAssignParticipantReference;
+
+            string oldParticipantReference;
+            string newParticipantReference;
+
+            // Reverse the changes that were made.
+            oldAssignParticipantReference = "{% assign groupMember = TransactionEntity %}";
+            newAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
+{% assign participationType = PageParameter[''ParticipationMode''] %}";
+
+            Sql( $@"
+                    UPDATE [AttributeValue]
+                    SET [Value] = REPLACE([Value],'{newAssignParticipantReference }','{oldAssignParticipantReference}')
+                    WHERE [Id] IN (SELECT av.[Id]
+                            FROM [dbo].[AttributeValue] av
+                            INNER JOIN [Attribute] a ON a.[Id] = av.[AttributeId]
+                            WHERE a.[Guid] = '{SystemGuid.Attribute.FUNDRAISING_TRANSACTION_HEADER}')
+                " );
+
+
+                oldParticipantReference = "{{ groupMember.Person.FullName }}";
+                newParticipantReference = @"
+                 {% if participationType == ''2'' %}
+                   {{ groupMember.Person.PrimaryFamily.Name }}
+                 {% else %}
+                   {{ groupMember.Person.FullName }}
+                 {% endif  %}
+                    ";
+
+                Sql( $@"
+                    UPDATE [AttributeValue]
+                    SET [Value] = REPLACE([Value],'{newParticipantReference}','{oldParticipantReference}')
+                    WHERE [Id] IN (SELECT av.[Id]
+                            FROM [dbo].[AttributeValue] av
+                            INNER JOIN [Attribute] a ON a.[Id] = av.[AttributeId]
+                            WHERE a.[Guid] = '{SystemGuid.Attribute.FUNDRAISING_TRANSACTION_HEADER}')
+                " );
+
             // Rock.Model.Group: Participation Type.
             RockMigrationHelper.DeleteAttribute( SystemGuid.Attribute.PARTICIPATION_TYPE );
         }

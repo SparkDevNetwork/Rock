@@ -160,5 +160,10 @@ namespace Rock.SystemGuid
         /// The report search results block type
         /// </summary>
         public const string REPORT_SEARCH_RESULTS = "2DA8AA89-0DAA-4A50-B65B-CA721932B8A9";
+
+        /// <summary>
+        /// The Fundraising Transaction Entry block.
+        /// </summary>
+        public const string FUNDRAISING_TRANSACTION_ENTRY = "1BAD904E-2F79-4488-B8BE-EECD67AE2925";
     }
 }

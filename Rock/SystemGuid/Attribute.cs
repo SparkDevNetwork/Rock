@@ -567,6 +567,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PARTICIPATION_TYPE = "EFA9F0D0-54CE-4B88-BC91-8BD110DEE0FC";
 
+        /// <summary>
+        /// The attribute for Transaction Header in the Fundraising Transaction Entry block.
+        /// </summary>
+        public const string FUNDRAISING_TRANSACTION_HEADER = "65FB0B9A-670E-4AB9-9666-77959B4B702E";
+
         #endregion
 
         #region BIO Block
