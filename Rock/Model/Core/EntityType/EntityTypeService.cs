@@ -459,7 +459,7 @@ namespace Rock.Model
                                 .ToList();
 
                             rockContext.Database.CommandTimeout = 150;
-                
+
                             foreach ( var attributeIdUsingFieldType in attributeIdsUsingFieldType )
                             {
                                 var attributeValues = attributeValueService.Queryable().Where( av => av.AttributeId == attributeIdUsingFieldType && av.Value.Contains( existingEntityTypeString ) ).ToList();
@@ -474,6 +474,7 @@ namespace Rock.Model
                         // Now update the Guid of the EntityType
                         existingEntityType.Guid = reflectedTypeGuid.Value;
                     }
+                }
 
                 // Add the newly discovered entities 
                 foreach ( var entityType in entityTypesFromReflection.Values )
