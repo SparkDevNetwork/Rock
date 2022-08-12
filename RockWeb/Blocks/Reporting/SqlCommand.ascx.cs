@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -113,7 +113,20 @@ FROM
             gReport.Visible = false;
             pQueryTime.Visible = false;
 
-            string query = tbQuery.Text;
+            string query;
+
+            var selectedText = hfSelectedText.Value;
+            if ( selectedText.IsNotNullOrWhiteSpace() )
+            {
+                // If text was selected in the text editor, use that. 
+                query = selectedText;
+            }
+            else
+            {
+                // If nothing is selected in the text editor, just use the full text.
+                query = tbQuery.Text;
+            }
+            
             if ( !string.IsNullOrWhiteSpace( query ) )
             {
                 try
