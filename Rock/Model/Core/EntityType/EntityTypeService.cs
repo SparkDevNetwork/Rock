@@ -474,6 +474,8 @@ namespace Rock.Model
                         // Now update the Guid of the EntityType
                         existingEntityType.Guid = reflectedTypeGuid.Value;
                     }
+
+                    entityTypesFromReflection.Remove( existingEntityType.Name );
                 }
 
                 // Add the newly discovered entities 
