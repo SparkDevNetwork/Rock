@@ -53,6 +53,7 @@ namespace Rock.Model
                     if ( await transactionTask )
                     {
                         AttributeCache.ClearReferencedEntityDependencies();
+                        Rock.Bus.Message.ClearReferencedEntityDependenciesMessage.Publish();
                     }
                 } );
 
