@@ -49,10 +49,10 @@ namespace Rock.Field.Types
             var persistedDatasetGuid = privateValue.AsGuidOrNull();
             if ( persistedDatasetGuid.HasValue )
             {
-                return PersistedDatasetCache.Get( persistedDatasetGuid.Value )?.Name;
+                return PersistedDatasetCache.Get( persistedDatasetGuid.Value )?.Name ?? string.Empty;
             }
 
-            return null;
+            return string.Empty;
         }
 
         /// <summary>

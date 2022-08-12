@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,8 +32,8 @@ namespace Rock.Field.Types
     /// Stored as a List of RegistrationTemplate Guids
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "F56DED5E-C135-42B2-A529-878CB30436B5")]
-    public class RegistrationTemplatesFieldType : FieldType
+    [Rock.SystemGuid.FieldTypeGuid( "F56DED5E-C135-42B2-A529-878CB30436B5" )]
+    public class RegistrationTemplatesFieldType : FieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -47,38 +48,38 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
             string formattedValue = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                var names = new List<string>();
-                var guids = new List<Guid>();
-
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    Guid? guid = guidValue.AsGuidOrNull();
-                    if ( guid.HasValue )
-                    {
-                        guids.Add( guid.Value );
-                    }
-                }
+                var guids = privateValue.SplitDelimitedValues().AsGuidList();
 
                 if ( !guids.Any() )
                 {
-                    return base.FormatValue( parentControl, formattedValue, null, condensed );
+                    return formattedValue;
                 }
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var registrationTemplates = new RegistrationTemplateService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid ) );
-                    if ( registrationTemplates.Any() )
-                    {
-                        formattedValue = string.Join( ", ", ( from registrationTemplate in registrationTemplates select registrationTemplate.Name ).ToArray() );
-                    }
+                    var names = new RegistrationTemplateService( rockContext )
+                        .Queryable()
+                        .Where( rt => guids.Contains( rt.Guid ) )
+                        .Select( rt => rt.Name )
+                        .ToList();
+
+                    return names.JoinStrings( ", " );
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -183,6 +184,50 @@ namespace Rock.Field.Types
         public override bool HasFilterControl()
         {
             return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
+
+            if ( !guids.Any() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationTemplateIds = new RegistrationTemplateService( rockContext )
+                    .Queryable()
+                    .Where( rt => guids.Contains( rt.Guid ) )
+                    .Select( rt => rt.Id )
+                    .ToList();
+
+                if ( !registrationTemplateIds.Any() )
+                {
+                    return null;
+                }
+
+                return registrationTemplateIds
+                    .Select( id => new ReferencedEntity( EntityTypeCache.GetId<RegistrationTemplate>().Value, id ) )
+                    .ToList();
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Registration Template and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<RegistrationTemplate>().Value, nameof( RegistrationTemplate.Name ) )
+            };
         }
 
         #endregion

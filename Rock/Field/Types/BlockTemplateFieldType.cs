@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,9 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -29,9 +32,8 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "CCD73456-C83B-4D6E-BD69-8133D2EB996D")]
-    public class BlockTemplateFieldType : FieldType
+    public class BlockTemplateFieldType : FieldType, IEntityReferenceFieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -131,6 +133,48 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( TryGetValueParts( privateValue, out Guid? templateGuid, out string templateValue ) )
+            {
+                if ( templateGuid.HasValue )
+                {
+                    if ( templateGuid.Value == _CustomGuid )
+                    {
+                        return "Template: Custom";
+                    }
+                    else
+                    {
+                        var definedValue = DefinedValueCache.Get( templateGuid.Value );
+                        if ( definedValue != null )
+                        {
+                            return "Template: " + definedValue.Value;
+                        }
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private bool TryGetValueParts( string privateValue, out Guid? templateGuid, out string templateValue )
+        {
+            string[] parts = ( privateValue ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( parts.Length > 0 )
+            {
+                templateGuid = parts[0].AsGuidOrNull();
+                templateValue = parts.Length > 1 ? parts[1] : null;
+            }
+            else
+            {
+                templateGuid = null;
+                templateValue = null;
+            }
+
+            return templateGuid.HasValue || !string.IsNullOrWhiteSpace( templateValue );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -141,39 +185,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid? templateGuid = null;
-            string templateValue = string.Empty;
-
-            string[] parts = ( value ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            if ( parts.Length > 0 )
-            {
-                templateGuid = parts[0].AsGuidOrNull();
-                if ( parts.Length > 1 )
-                {
-                    templateValue = parts[1];
-                }
-            }
-
-
-            if ( templateGuid.HasValue )
-            {
-                if ( templateGuid.Value == _CustomGuid )
-                {
-                    formattedValue = "Template: Custom";
-                }
-                else
-                {
-                    var definedValue = DefinedValueCache.Get( templateGuid.Value );
-                    if ( definedValue != null )
-                    {
-                        formattedValue = "Template: " + definedValue.Value;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -265,6 +279,41 @@ namespace Rock.Field.Types
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( TryGetValueParts( privateValue, out Guid? templateGuid, out string templateValue ) )
+            {
+                if ( templateGuid.HasValue && !templateGuid.Value.IsEmpty() )
+                {
+                    var definedValue = DefinedValueCache.Get( templateGuid.Value );
+
+                    if ( definedValue != null )
+                    {
+                        return new List<ReferencedEntity>
+                        {
+                            new ReferencedEntity( EntityTypeCache.GetId<DefinedValue>().Value, definedValue.Id )
+                        };
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) )
+            };
         }
 
         #endregion

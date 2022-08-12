@@ -5004,8 +5004,7 @@ FROM (
         {
             return Queryable()
                 .Where( person => person.ForeignKey == foreignSystemKey && person.ForeignId == foreignSystemPersonId )
-                .Single();
-   
+                .FirstOrDefault();
         }
     }
 }

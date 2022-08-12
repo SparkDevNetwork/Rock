@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TvPageList.ascx.cs" Inherits="RockWeb.Blocks.Tv.TvPageList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AppleTvPageList.ascx.cs" Inherits="RockWeb.Blocks.Tv.AppleTvPageList" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -18,6 +18,7 @@
                             <Rock:ReorderField />
                             <Rock:RockBoundField DataField="InternalName" SortExpression="Name" HeaderText="Name" />
                             <Rock:RockBoundField DataField="Description" SortExpression="Description" HeaderText="Description" />
+                            <Rock:RockLiteralField ID="lCacheSettings" HeaderText="Cache Settings" Visible="true" />
                             <Rock:BoolField DataField="DisplayInNav" SortExpression="DisplayInNav" HeaderText="Display In Nav" />
                             <Rock:SecurityField TitleField="InternalName" />
                             <Rock:DeleteField OnClick="gPages_DeleteClick" />

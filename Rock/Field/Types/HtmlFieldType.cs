@@ -276,6 +276,8 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
+            // The base method will encode for HTML which we don't want. The
+            // privateValue is the raw HTML we want to return.
             return privateValue;
         }
 

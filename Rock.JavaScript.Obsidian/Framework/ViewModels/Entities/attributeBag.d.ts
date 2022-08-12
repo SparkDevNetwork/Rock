@@ -41,6 +41,18 @@ export type AttributeBag = {
     /** The color to visually distinguish the attribute. For example, Rock.Model.Attribute.AttributeColor might be used to set the color for the Rock.Model.Attribute.IconCssClass of the icon. */
     attributeColor?: string | null;
 
+    /** Gets or sets the default persisted condensed HTML value. */
+    defaultPersistedCondensedHtmlValue?: string | null;
+
+    /** Gets or sets the default persisted condensed text value. */
+    defaultPersistedCondensedTextValue?: string | null;
+
+    /** Gets or sets the default persisted HTML value. */
+    defaultPersistedHtmlValue?: string | null;
+
+    /** Gets or sets the default persisted text value. */
+    defaultPersistedTextValue?: string | null;
+
     /** Gets or sets the Attribute's default value. */
     defaultValue?: string | null;
 
@@ -85,6 +97,13 @@ export type AttributeBag = {
      * to become CurrentRowIndicator=0, sets the ExpireDate, then a new row with CurrentRowIndicator=1 to be created
      */
     isAnalyticHistory: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the persisted values are
+     * considered dirty. If the values are dirty then it should be assumed
+     * that they are not in sync with the Rock.Model.Attribute.DefaultValue property.
+     */
+    isDefaultPersistedValueDirty: boolean;
 
     /** Gets or sets a flag indicating if this Attribute is a Grid Column? */
     isGridColumn: boolean;

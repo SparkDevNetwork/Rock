@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SECURITY_ROLE )]
-    public class SecurityRoleFieldType : FieldType
+    public class SecurityRoleFieldType : FieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -48,9 +49,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
-            Guid? guid = value.AsGuidOrNull();
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = privateValue;
+
+            Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -63,7 +72,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -83,7 +92,7 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var roles = new GroupService( new RockContext() ).Queryable().Where(g => g.IsSecurityRole).OrderBy( t => t.Name );
+            var roles = new GroupService( new RockContext() ).Queryable().Where( g => g.IsSecurityRole ).OrderBy( t => t.Name );
             if ( roles.Any() )
             {
                 foreach ( var role in roles )
@@ -127,6 +136,47 @@ namespace Rock.Field.Types
             {
                 editControl.SetValue( value );
             }
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupId = new GroupService( rockContext ).GetId( guid.Value );
+
+                if ( !groupId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<Group>().Value, groupId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Security Role and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Group>().Value, nameof( Group.Name ) )
+            };
         }
 
         #endregion

@@ -2,7 +2,8 @@
   "private": true,
   "description": "Project for all core blocks in Rock.",
   "scripts": {
-    "build": "tsc --build . && rollup --config rollup.config.js && npm run copy && echo DONE",
+    "build-fast": "node build/build-fast.js",
+    "build": "tsc --build . && rollup --config rollup.config.js && npm run copy && echo '' > dist/.buildstamp && echo DONE",
     "copy": "copyfiles -u 2 \"dist/BlocksBundled/**/*\" \"../RockWeb/Obsidian/Blocks\"",
     "watch": "echo \"Watch mode does not currently work.\" && exit 1 && rollup --config rollup.config.js --watch",
     "clean": "rimraf dist",

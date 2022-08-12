@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_ACCOUNTS )]
-    public class AccountsFieldType : FieldType
+    public class AccountsFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -191,6 +192,43 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDisplayPublicName = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
+            var newDisplayPublicName = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
+
+            return oldDisplayPublicName != newDisplayPublicName;
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                bool displayPublicName = true;
+
+                if ( privateConfigurationValues != null &&
+                     privateConfigurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
+                }
+
+                var guids = privateValue.SplitDelimitedValues();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
+                    if ( accounts.Any() )
+                    {
+                        return string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -201,31 +239,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                bool displayPublicName = true;
-
-                if ( configurationValues != null &&
-                     configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
-                {
-                    displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
-                }
-
-                var guids = value.SplitDelimitedValues();
-
-                using ( var rockContext = new RockContext() )
-                {
-                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
-                    if ( accounts.Any() )
-                    {
-                        formattedValue = string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -383,5 +399,44 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guids = privateValue.SplitDelimitedValues();
+
+            if ( guids.Length == 0 )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var accountIds = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) ).Select( a => a.Id );
+                if ( accountIds.Any() )
+                {
+                    var referencedEntities = new List<ReferencedEntity>();
+                    foreach ( var accountId in accountIds )
+                    {
+                        referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId ) );
+                    }
+
+                    return referencedEntities;
+                }
+            }
+
+            return null;
+        }
+
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.PublicName ) ),
+            };
+        }
+
+        #endregion
     }
 }

@@ -31,6 +31,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include=".eslintrc.js" />
+    <Content Include="Build\.eslintrc.js" />
+    <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\alert.ts" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Core\tsconfig.json" />
@@ -93,6 +95,9 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
@@ -429,6 +434,12 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\searchResultSourceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\mediaFolderBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\mediaFolderDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\persistedDatasetBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\persistedDatasetDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
@@ -784,7 +795,7 @@
     <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="AfterCompile">
-    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
+    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build-fast" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
   </Target>
   <ProjectExtensions>
     <VisualStudio>
