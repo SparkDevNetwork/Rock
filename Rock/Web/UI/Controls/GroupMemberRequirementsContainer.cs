@@ -38,17 +38,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// 
-        /// </summary>
-        public string RequirementsCategories { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string CategoryName { get; set; }
-
-        /// <summary>
-        /// 
+        /// The Group Member ID for the container.
         /// </summary>
         public int GroupMemberId
         {
@@ -65,12 +55,12 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        /// The enumerated collection of Group Member Requirements for the container.
         /// </summary>
         public IEnumerable<GroupMemberRequirement> Requirements { get; set; }
 
         /// <summary>
-        /// 
+        /// The workflow entry page for running workflows.
         /// </summary>
         public string WorkflowEntryPage { get; set; }
 
@@ -110,7 +100,7 @@ namespace Rock.Web.UI.Controls
             {
                 return;
             }
-            //this._groupMemberId = ViewState[ViewStateKey.GroupMemberId] as int?;
+
             base.CreateChildControls();
             Controls.Clear();
 
@@ -126,6 +116,7 @@ namespace Rock.Web.UI.Controls
             {
                 groupRequirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
             }
+
             // This collects the statuses by their requirement type category with empty / no category requirement types first, then it is by category name.
             var requirementCategories = groupRequirementStatuses
             .Select( s => new
@@ -166,13 +157,18 @@ namespace Rock.Web.UI.Controls
                     columnControl.Controls.Add( headerControl );
                 }
 
-                //TO-DO set up security access here
-                var hasPermissionToOverride = false;
+                var currentPerson = this.RockBlock().CurrentPerson;
 
                 // Add the Group Member Requirement Cards here.
                 foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( rr => rr.MeetsGroupRequirement ).ThenBy( r => r.GroupRequirement.GroupRequirementType.Name ) )
                 {
-                    var card = new GroupMemberRequirementCard( requirementStatus.GroupRequirement.GroupRequirementType, requirementStatus.GroupRequirement.AllowLeadersToOverride || hasPermissionToOverride )
+                    // Set up Security or Override access.
+                    var currentPersonIsLeaderOfCurrentGroup = groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( currentPerson.Id );
+                    bool leaderCanOverride = requirementStatus.GroupRequirement.AllowLeadersToOverride && currentPersonIsLeaderOfCurrentGroup;
+
+                    var hasPermissionToOverride = requirementStatus.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.OVERRIDE, currentPerson );
+
+                    var card = new GroupMemberRequirementCard( requirementStatus.GroupRequirement.GroupRequirementType, leaderCanOverride || hasPermissionToOverride )
                     {
                         Title = requirementStatus.GroupRequirement.GroupRequirementType.Name,
                         TypeIconCssClass = requirementStatus.GroupRequirement.GroupRequirementType.IconCssClass,
@@ -183,9 +179,8 @@ namespace Rock.Web.UI.Controls
                         GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate,
                         WorkflowEntryPage = WorkflowEntryPage
                     };
-                    columnControl.Controls.Add( card );
 
-                    //card.RenderControl( writer );
+                    columnControl.Controls.Add( card );
                     index++;
                 }
 
@@ -195,9 +190,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
         protected override object SaveViewState()
         {
             ViewState[ViewStateKey.GroupMemberId] = this._groupMemberId;
@@ -205,9 +202,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
-        /// <param name="savedState"></param>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
