@@ -108,6 +108,81 @@ namespace Rock.Tests.UnitTests.Rock.Slingshot
             Assert.IsTrue( parserErrors.Contains( "Email Address Invalid Email could not be read" ) );
         }
 
+        [TestMethod]
+        public void RecordStatusShouldBeDefaultedToActiveAndReturnMessageIfInValid()
+        {
+            const string invalidRecordStatus = "invalidRecordStatus";
+            Dictionary<string, object> csvEntry = BasicCSVEntry();
+            csvEntry["Record Status"] = invalidRecordStatus;
+            Dictionary<string, string> headerMapper = RequiredHeaderMapperDictionary();
+            headerMapper[CSVHeaders.RecordStatus] = "Record Status";
+
+            Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
+
+            Assert.AreEqual( RecordStatus.Active, person.RecordStatus );
+            Assert.IsTrue( parserErrors.Contains( "Record Status invalidRecordStatus is invalid defaulting to Active" ) );
+        }
+
+        [TestMethod]
+        public void RecordStatusActriveShouldBeValid()
+        {
+            const string activeRecordStatus = "Active";
+            Dictionary<string, object> csvEntry = BasicCSVEntry();
+            csvEntry["Record Status"] = activeRecordStatus;
+            Dictionary<string, string> headerMapper = RequiredHeaderMapperDictionary();
+            headerMapper[CSVHeaders.RecordStatus] = "Record Status";
+
+            Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
+
+            Assert.AreEqual( RecordStatus.Active, person.RecordStatus );
+            Assert.AreEqual( 0, parserErrors.Count );
+        }
+
+        [TestMethod]
+        public void EmailPreferenceShouldBeDefaultedToEmailAllowedAndReturnMessageIfInValid()
+        {
+            const string invalidemailPreference = "invalidemailPreference";
+            Dictionary<string, object> csvEntry = BasicCSVEntry();
+            csvEntry["Email Preference"] = invalidemailPreference;
+            Dictionary<string, string> headerMapper = RequiredHeaderMapperDictionary();
+            headerMapper[CSVHeaders.EmailPreference] = "Email Preference";
+
+            Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
+
+            Assert.AreEqual( EmailPreference.EmailAllowed, person.EmailPreference );
+            Assert.IsTrue( parserErrors.Contains( "Email Preference invalidemailPreference is invalid defaulting to EmailAllowed" ) );
+        }
+
+        [TestMethod]
+        public void FamilyRoleShouldBeDefaultedToAdultAndReturnMessageIfInValid()
+        {
+            const string invalidChild = "C";
+            Dictionary<string, object> csvEntry = BasicCSVEntry();
+            csvEntry["Family Role"] = invalidChild;
+            Dictionary<string, string> headerMapper = RequiredHeaderMapperDictionary();
+            headerMapper[CSVHeaders.FamilyRole] = "Family Role";
+
+            Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
+
+            Assert.AreEqual( FamilyRole.Adult, person.FamilyRole );
+            Assert.IsTrue( parserErrors.Contains( "Family Role C is invalid defaulting to Adult" ) );
+        }
+
+        [TestMethod]
+        public void GivingIndividuallyShouldBeDefaultedToFalseAndReturnMessageIfInValid()
+        {
+            const string invalidGiving = "Invalid";
+            Dictionary<string, object> csvEntry = BasicCSVEntry();
+            csvEntry["Is Deceased"] = invalidGiving;
+            Dictionary<string, string> headerMapper = RequiredHeaderMapperDictionary();
+            headerMapper[CSVHeaders.GiveIndividually] = "Is Deceased";
+
+            Person person = PersonCsvMapper.Map( csvEntry, headerMapper, out HashSet<string> parserErrors );
+
+            Assert.IsNull( person.GiveIndividually );
+            Assert.IsTrue( parserErrors.Contains( "Could not set Give Individually to Invalid defaulting to \'\'" ) );
+        }
+
         private static Dictionary<string, string> RequiredHeaderMapperDictionary()
         {
             Dictionary<string, string> headerMapper = new Dictionary<string, string>();

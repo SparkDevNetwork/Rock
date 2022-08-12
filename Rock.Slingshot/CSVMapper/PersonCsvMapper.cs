@@ -47,9 +47,20 @@ namespace Rock.Slingshot
             string csvColumnFamilyId = csvHeaderMapper[CSVHeaders.FamilyId];
             person.FamilyId = csvEntryLookup[csvColumnFamilyId].ToIntSafe();
 
-            string csvColumnFamilyRole = csvHeaderMapper[CSVHeaders.FamilyRole];
-            string familyRoleString = csvEntryLookup[csvColumnFamilyRole].ToStringSafe();
-            person.FamilyRole = ( SlingshotCore.Model.FamilyRole ) Enum.Parse( typeof( SlingshotCore.Model.FamilyRole ), familyRoleString );
+            var csvColumnFamilyRole = csvHeaderMapper.GetValueOrNull( CSVHeaders.FamilyRole );
+            if ( csvColumnFamilyRole != null )
+            {
+                string familyRoleString = csvEntryLookup[csvColumnFamilyRole].ToStringSafe();
+                var familyRoleEnum = familyRoleString.ConvertToEnumOrNull<SlingshotCore.Model.FamilyRole>();
+                if ( familyRoleEnum != null )
+                {
+                    person.FamilyRole = familyRoleEnum.Value;
+                }
+                else
+                {
+                    parserErrors.Add( $"Family Role {familyRoleString} is invalid defaulting to {person.FamilyRole}" );
+                }
+            }
 
             string csvColumnFirstName = csvHeaderMapper[CSVHeaders.FirstName];
             person.FirstName = csvEntryLookup[csvColumnFirstName].ToStringSafe();
@@ -175,9 +186,10 @@ namespace Rock.Slingshot
             if ( csvColumnRecordStatus != null )
             {
                 string recordStatusString = csvEntryLookup[csvColumnRecordStatus].ToStringSafe();
-                if ( Enum.TryParse( recordStatusString, out SlingshotCore.Model.RecordStatus RecordStatusEnum ) )
+                var recordStatusEnum = recordStatusString.ConvertToEnumOrNull<SlingshotCore.Model.RecordStatus>();
+                if ( recordStatusEnum != null )
                 {
-                    person.RecordStatus = RecordStatusEnum;
+                    person.RecordStatus = recordStatusEnum.Value;
                 }
                 else
                 {
