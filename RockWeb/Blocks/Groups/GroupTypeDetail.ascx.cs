@@ -2510,6 +2510,10 @@ namespace RockWeb.Blocks.Groups
             ddlDueDateGroupAttribute.DataSource = GroupAttributesState.Where( a => fieldTypeIds.Contains( a.FieldType.Id ) );
             ddlDueDateGroupAttribute.DataBind();
 
+            // Make sure that the Due Date controls are not visible unless the requirement has a due date.
+            ddlDueDateGroupAttribute.Visible = false;
+            dpDueDate.Visible = false;
+
             rblAppliesToAgeClassification.Items.Clear();
 
             foreach ( var ageClassification in Enum.GetValues( typeof( AppliesToAgeClassification ) ).Cast<AppliesToAgeClassification>() )
@@ -2531,6 +2535,15 @@ namespace RockWeb.Blocks.Groups
                 rblAppliesToAgeClassification.SelectedValue = selectedGroupTypeGroupRequirement.AppliesToAgeClassification.ToString();
                 dvpAppliesToDataView.SetValue( selectedGroupTypeGroupRequirement.AppliesToDataViewId );
                 cbAllowLeadersToOverride.Checked = selectedGroupTypeGroupRequirement.AllowLeadersToOverride;
+                if ( selectedGroupTypeGroupRequirement.DueDateAttributeId.HasValue )
+                {
+                    ddlDueDateGroupAttribute.Visible = true;
+                }
+                if ( selectedGroupTypeGroupRequirement.DueDateStaticDate.HasValue )
+                {
+                    dpDueDate.Visible = true;
+                }
+
                 ddlDueDateGroupAttribute.SetValue( selectedGroupTypeGroupRequirement.DueDateAttributeId.HasValue ? selectedGroupTypeGroupRequirement.DueDateAttributeId.ToString() : string.Empty );
             }
             else
@@ -2584,7 +2597,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeGroupRequirement.AllowLeadersToOverride = cbAllowLeadersToOverride.Checked;
             groupTypeGroupRequirement.DueDateStaticDate = dpDueDate.SelectedDate;
 
-            //Set this due date attribute if it exists.
+            // Set this due date attribute if it exists.
             var groupDueDateAttributes = AttributeCache.AllForEntityType<Group>().Where( a => a.Key == ddlDueDateGroupAttribute.SelectedValue );
             if ( groupDueDateAttributes.Any() )
             {
@@ -2655,7 +2668,8 @@ namespace RockWeb.Blocks.Groups
             {
                 return "<i class=\"fa fa-check\"></i>";
             }
-            return "";
+
+            return string.Empty;
         }
 
         #endregion
