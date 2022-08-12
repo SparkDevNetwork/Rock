@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW_TYPES )]
-    public class WorkflowTypesFieldType : FieldType
+    public class WorkflowTypesFieldType : FieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -49,14 +50,21 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
             string formattedValue = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                var names = new List<string>();
                 var guids = new List<Guid>();
 
-                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
                     Guid? guid = guidValue.AsGuidOrNull();
                     if ( guid.HasValue )
@@ -69,17 +77,19 @@ namespace Rock.Field.Types
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var workflowTypes = new WorkflowTypeService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid ) );
+                        var workflowTypes = new WorkflowTypeService( rockContext )
+                            .Queryable()
+                            .AsNoTracking()
+                            .Where( a => guids.Contains( a.Guid ) );
                         if ( workflowTypes.Any() )
                         {
-                            formattedValue = string.Join( ", ", ( from workflowType in workflowTypes select workflowType.Name ).ToArray() );
+                            formattedValue = string.Join( ", ", ( from workflowType in workflowTypes select workflowType.Name ) );
                         }
                     }
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
-
+            return formattedValue;
         }
 
         #endregion
@@ -168,8 +178,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            var control = base.FilterValueControl(configurationValues, id, required, filterMode );
-            WorkflowTypePicker workflowTypePicker = (WorkflowTypePicker)control;
+            var control = base.FilterValueControl( configurationValues, id, required, filterMode );
+            WorkflowTypePicker workflowTypePicker = ( WorkflowTypePicker ) control;
             workflowTypePicker.Required = required;
             workflowTypePicker.AllowMultiSelect = false;
             return control;
@@ -191,5 +201,59 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return null;
+            }
+
+            var guids = new List<Guid>();
+
+            foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                Guid? guid = guidValue.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    guids.Add( guid.Value );
+                }
+            }
+
+            if ( guids.Any() )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var workflowTypeIds = new WorkflowTypeService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( w => guids.Contains( w.Guid ) )
+                        .Select( w => w.Id )
+                        .ToList();
+                    if ( workflowTypeIds.Any() )
+                    {
+                        return workflowTypeIds.Select( w => new ReferencedEntity( EntityTypeCache.GetId<WorkflowType>().Value, w ) )
+                        .ToList();
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a WorkflowTypes and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<WorkflowType>().Value, nameof( WorkflowType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

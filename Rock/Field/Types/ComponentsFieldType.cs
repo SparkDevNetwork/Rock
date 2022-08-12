@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -103,6 +104,21 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            return privateValue.SplitDelimitedValues()
+                .AsGuidList()
+                .Select( g => EntityTypeCache.Get( g )?.FriendlyName )
+                .Where( n => n != null )
+                .JoinStrings( ", " );
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -113,25 +129,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            var names = new List<string>();
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                foreach ( Guid guid in value.SplitDelimitedValues().AsGuidList() )
-                {
-                    var entityType = EntityTypeCache.Get( guid );
-                    if ( entityType != null )
-                    {
-                        names.Add( entityType.FriendlyName );
-                    }
-                }
-            }
-
-            formattedValue = names.AsDelimited( ", " );
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion 

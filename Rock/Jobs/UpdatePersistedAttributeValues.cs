@@ -234,7 +234,24 @@ namespace Rock.Jobs
 
                 foreach ( var value in distinctValues )
                 {
-                    var persistedValues = field.GetPersistedValues( value, configurationValues );
+                    Field.PersistedValues persistedValues;
+
+                    if ( field.IsPersistedValueSupported( configurationValues ) )
+                    {
+                        persistedValues = field.GetPersistedValues( value, configurationValues );
+                    }
+                    else
+                    {
+                        var placeholderValue = field.GetPersistedValuePlaceholder( configurationValues );
+
+                        persistedValues = new Field.PersistedValues
+                        {
+                            TextValue = placeholderValue,
+                            CondensedTextValue = placeholderValue,
+                            HtmlValue = placeholderValue,
+                            CondensedHtmlValue = placeholderValue
+                        };
+                    }
 
                     updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
                 }
@@ -263,7 +280,7 @@ namespace Rock.Jobs
                         av.Value
                     } )
                     .ToList()
-                    .GroupBy( av => av.Value )
+                    .GroupBy( av => av.Value ?? string.Empty )
                     .ToDictionary( grp => grp.Key, grp => grp.Select( av => av.Id ).ToList() );
             }
 
@@ -271,7 +288,7 @@ namespace Rock.Jobs
             foreach ( var kvp in attributeValueList )
             {
                 var value = kvp.Key;
-                var referencedEntities = referencedField.GetReferencedEntities( value, configurationValues );
+                var referencedEntities = referencedField.GetReferencedEntities( value, configurationValues ) ?? new List<Field.ReferencedEntity>();
                 var attributeValueIds = kvp.Value;
 
                 // Update the referenced entities 1,000 at a time. This seems to be
@@ -467,7 +484,24 @@ namespace Rock.Jobs
                 {
                     var value = valueGroup.Key;
                     var attributeValueIds = valueGroup.Select( grp => grp.Id ).ToList();
-                    var persistedValues = field.GetPersistedValues( value, attributeCache.ConfigurationValues );
+                    Field.PersistedValues persistedValues;
+
+                    if ( field.IsPersistedValueSupported( attributeCache.ConfigurationValues ) )
+                    {
+                        persistedValues = field.GetPersistedValues( value, attributeCache.ConfigurationValues );
+                    }
+                    else
+                    {
+                        var placeholderValue = field.GetPersistedValuePlaceholder( attributeCache.ConfigurationValues );
+
+                        persistedValues = new Field.PersistedValues
+                        {
+                            TextValue = placeholderValue,
+                            CondensedTextValue = placeholderValue,
+                            HtmlValue = placeholderValue,
+                            CondensedHtmlValue = placeholderValue
+                        };
+                    }
 
                     using ( var rockContext = new RockContext() )
                     {
@@ -497,7 +531,7 @@ namespace Rock.Jobs
         {
             var attributeCache = AttributeCache.Get( attributeId );
             var field = ( Field.IEntityReferenceFieldType ) AttributeCache.Get( attributeId ).FieldType.Field;
-            var referencedEntities = field.GetReferencedEntities( value, attributeCache.ConfigurationValues );
+            var referencedEntities = field.GetReferencedEntities( value, attributeCache.ConfigurationValues ) ?? new List<Field.ReferencedEntity>();
 
             while ( attributeValueIds.Any() )
             {

@@ -14,19 +14,21 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Web.UI.Controls
+
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Cms.PersonalLinkSectionDetail
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class LineChart : FlotChart
+    public class PersonalLinkSectionBag : EntityBagBase
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LineChart"/> class.
+        /// Gets or sets the name.
         /// </summary>
-        public LineChart()
-        {
-            this.Options.series = new SeriesOptions( false, true, false );
-        }
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this Link Section is shared.
+        /// </summary>
+        public bool IsShared { get; set; }
     }
 }

@@ -25,8 +25,10 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Class that can be JSON'd and used for Flot Charts (properties are case sensitive)
+    /// A serializable set of configuration options that can be used to construct a chart control on a Rock page.
+    /// This class can be serialized to JSON, and properties are case sensitive.
     /// </summary>
+    [Obsolete( "These option settings are used by the superseded Flot Chart library implementation." )]
     public class ChartOptions
     {
         /// <summary>

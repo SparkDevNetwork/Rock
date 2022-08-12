@@ -62,6 +62,12 @@
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchResultSourceBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderDetail\MediaFolderBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderDetail\MediaFolderDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetBag.cs" />
+    <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />

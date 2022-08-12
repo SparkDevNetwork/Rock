@@ -19,20 +19,10 @@ using System;
 namespace Rock.Chart
 {
     /// <summary>
-    /// A chart data point that represents a value at a specific instant in time, suitable for use with a value-over-time chart.
-    /// </summary>
-    public interface IChartJsTimeSeriesDataPoint
-    {
-        DateTime DateTime { get; set; }
-        decimal Value { get; set; }
-    }
-
-    /// <summary>
-    /// A chart data point that represents a value at a specific instant in time, suitable for use with a value-over-time chart.
+    /// A chart data point that represents a value at a specific instant in time, and allows sorting by a specified key.
     /// </summary>
     public class ChartJsTimeSeriesDataPoint : IChartJsTimeSeriesDataPoint
     {
-        private DateTime _DateTime = DateTime.MinValue;
         private long _DateTimeStamp = 0;
 
         /// <summary>
@@ -42,22 +32,36 @@ namespace Rock.Chart
         {
             get
             {
-                return _DateTime;
+                return GetDateTimeFromJavascriptMilliseconds( _DateTimeStamp );
             }
             set
             {
-                _DateTime = value;
-
                 // Set the DateTimeStamp property as a JavaScript datetime stamp (number of milliseconds elapsed since 1/1/1970 00:00:00 UTC)
                 // This measure is required by the Chart.js component.
-                if ( _DateTime == null )
+                if ( value == null )
                 {
                     _DateTimeStamp = 0;
                 }
                 else
                 {
-                    _DateTimeStamp = _DateTime.Date.ToJavascriptMilliseconds();
+                    _DateTimeStamp = value.Date.ToJavascriptMilliseconds();
                 }
+            }
+        }
+
+        /// <summary>
+        /// A JavaScript datetime stamp, representing the number of milliseconds elapsed since the Unix epoch (1/1/1970 00:00:00 UTC).
+        /// This measure is required by the ChartJS component.
+        /// </summary>
+        public long DateTimeStamp
+        {
+            get
+            {
+                return _DateTimeStamp;
+            }
+            set
+            {
+                _DateTimeStamp = value;
             }
         }
 
@@ -70,5 +74,10 @@ namespace Rock.Chart
         /// Gets or sets an arbitrary sort key that can be used to sort this data point within the data set.
         /// </summary>
         public string SortKey { get; set; }
+
+        private static DateTime GetDateTimeFromJavascriptMilliseconds( long millisecondsAfterEpoch )
+        {
+            return new DateTime( 1970, 1, 1 ).AddTicks( millisecondsAfterEpoch * 10000 );
+        }
     }
 }

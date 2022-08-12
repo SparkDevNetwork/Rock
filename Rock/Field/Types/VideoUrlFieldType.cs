@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
@@ -32,26 +33,16 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string videoUrl = value;
-            if ( !string.IsNullOrEmpty( videoUrl ) )
+            if ( privateValue.IsNullOrWhiteSpace() )
             {
-                if ( condensed )
-                {
-                    return videoUrl;
-                }
-                else
-                {
-                    string htmlFormat = @"
+                return string.Empty;
+            }
+
+            var videoUrl = privateValue;
+            var htmlFormat = @"
 <video
     src='{0}'
     class='js-media-video'
@@ -69,20 +60,41 @@ namespace Rock.Field.Types
     Rock.controls.mediaPlayer.initialize();
 </script>
 ";
-                    string typeTag = string.Empty;
-                    if (videoUrl.Contains("youtube.com"))
-                    {
-                        typeTag = "type='video/youtube' width=640 height=480";
-                    }
-                    
-                    var html = string.Format( htmlFormat, videoUrl, typeTag );
-                    return html;
-                }
-
+            var typeTag = string.Empty;
+            if ( videoUrl.Contains( "youtube.com" ) )
+            {
+                typeTag = "type='video/youtube' width=640 height=480";
             }
 
-            // value was null
-            return null;
+            return string.Format( htmlFormat, videoUrl, typeTag );
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var encodedUrl = privateValue.EncodeHtml();
+            return $"<a href=\"{encodedUrl}\">{encodedUrl}</a>";
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // Original implementation simply returns the text value for condensed.
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion

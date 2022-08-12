@@ -1662,7 +1662,6 @@ namespace RockWeb.Blocks.Connection
                 w.ConnectionTypeId
             } )
             .OrderByDescending( w => w.Inherited )
-            .ThenBy( w => w.WorkflowTypeName )
             .ToList();
             gConnectionOpportunityWorkflows.DataBind();
         }

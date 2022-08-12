@@ -32,15 +32,15 @@ namespace Rock.Lava.Blocks
         #region Filter Parameter Names
 
         /// <summary>
-        /// Parameter name for specifying maximum occurrences. If not specified, the default value is 100.
+        /// Parameter name for specifying the match type. If not specified, the default value is "any"
         /// </summary>
         public static readonly string ParameterMatchType = "matchtype";
         /// <summary>
-        /// Parameter name for specifying a filter for the intended audiences of the Event Occurrences. If not specified, all audiences are considered.
+        /// Parameter name for specifying a delimited list of personalization segments.
         /// </summary>
         public static readonly string ParameterSegments = "segment";
         /// <summary>
-        /// Parameter name for specifying a filter for the campus of the Event Occurrences. If not specified, all campuses are considered.
+        /// Parameter name for specifying a delimited list of request filters.
         /// </summary>
         public static readonly string ParameterRequestFilters = "requestfilter";
         /// <summary>
@@ -58,8 +58,21 @@ namespace Rock.Lava.Blocks
 
         private string _attributesMarkup;
         private bool _renderErrors = true;
-
+        private string matchContent = null;
+        private string elseContent = null;
         LavaElementAttributes _settings = new LavaElementAttributes();
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes the <see cref="PersonalizeBlock"/> class.
+        /// </summary>
+        public PersonalizeBlock()
+        {
+            this.IncludeClosingTokenInParseResult = false;
+        }
+
+        #endregion
 
         /// <summary>
         /// Initializes the specified tag name.
@@ -70,6 +83,33 @@ namespace Rock.Lava.Blocks
         public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
             _attributesMarkup = markup;
+
+            // Get the internal content of the block. The list of tokens passed in to custom blocks includes the block closing tag,
+            // We need to remove the unmatched closing tag to get the valid internal markup for the block.
+            var elseFound = false;
+            foreach ( var token in tokens )
+            {
+                var scanToken = token.Replace( " ", "" ).Replace( "-", "" ).ToLower();
+                if ( scanToken == "{%else%}" )
+                {
+                    if ( elseFound )
+                    {
+                        // If more than one else tag exists, throw an error.
+                        throw new Exception( "Unexpected {% else %} encountered." );
+                    }
+                    elseFound = true;
+                    continue;
+                }
+
+                if ( elseFound )
+                {
+                    elseContent += token;
+                }
+                else
+                {
+                    matchContent += token;
+                }
+            }
 
             base.OnInitialize( tagName, markup, tokens );
         }
@@ -86,9 +126,16 @@ namespace Rock.Lava.Blocks
                 _settings.ParseFromMarkup( _attributesMarkup, context );
 
                 var showContent = ShowContentForCurrentRequest( context );
-                if ( showContent )
+
+                // Render the internal template, before or after the {% else %} tag if it exists.
+                var content = ( showContent ) ? matchContent : elseContent;
+
+                if ( !string.IsNullOrEmpty( content ) )
                 {
-                    base.OnRender( context, result );
+                    var engine = context.GetService<ILavaEngine>();
+                    var render = engine.RenderTemplate( content );
+
+                    result.Write( render.Text );
                 }
             }
             catch ( Exception ex )
@@ -120,47 +167,61 @@ namespace Rock.Lava.Blocks
 
             // Apply the request filters if we are processing a HTTP request.
             // Do this first because we may have the opportunity to exit early and avoid retrieving personalization segments.
-            bool? isMatchForRequestFilters = null;
-            var requestFilterParameterString = _settings.GetStringValue( ParameterRequestFilters );
+            bool? requestFilterIsValid = null;
+            var requestFilterParameterString = _settings.GetStringValue( ParameterRequestFilters )
+                ?? _settings.GetStringValue( "requestfilters" );
+
             if ( !string.IsNullOrWhiteSpace( requestFilterParameterString ) )
             {
                 var currentFilterIdList = LavaPersonalizationHelper.GetPersonalizationRequestFilterIdList();
                 if ( currentFilterIdList != null )
                 {
-
                     var requiredRequestIdList = RequestFilterCache.GetByKeys( requestFilterParameterString )
                         .Select( ps => ps.Id )
                         .ToList();
-                    if ( requiredRequestIdList.Any() )
+                    if ( matchType == "all" )
                     {
-                        if ( matchType == "all" )
-                        {
-                            // All of the specified filters must be matched, so we need to fail for any invalid keys.
-                            var requestFilterParameterCount = requestFilterParameterString.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Count();
-                            isMatchForRequestFilters = ( requiredRequestIdList.Count == requestFilterParameterCount )
-                                && requiredRequestIdList.All( id => currentFilterIdList.Contains( id ) );
-                        }
-                        else if ( matchType == "none" )
-                        {
-                            isMatchForRequestFilters = !requiredRequestIdList.Any( id => currentFilterIdList.Contains( id ) );
-                        }
-                        else
-                        {
-                            // Apply default match type of "any".
-                            isMatchForRequestFilters = requiredRequestIdList.Any( id => currentFilterIdList.Contains( id ) );
-                        }
+                        // All of the specified filters must be matched, so we need to fail for any invalid keys.
+                        var requestFilterParameterCount = requestFilterParameterString.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Count();
+                        requestFilterIsValid = ( requiredRequestIdList.Count == requestFilterParameterCount )
+                            && requiredRequestIdList.All( id => currentFilterIdList.Contains( id ) );
+                    }
+                    else if ( matchType == "none" )
+                    {
+                        requestFilterIsValid = !requiredRequestIdList.Any( id => currentFilterIdList.Contains( id ) );
+                    }
+                    else
+                    {
+                        // Apply default match type of "any".
+                        requestFilterIsValid = requiredRequestIdList.Any( id => currentFilterIdList.Contains( id ) );
                     }
                 }
             }
-            // If request filters exist and are not matched, do not show the content.
-            if ( isMatchForRequestFilters != null && !isMatchForRequestFilters.Value )
+
+            // Check for an early exit to avoid the overhead of processing segments.
+            if ( requestFilterIsValid != null )
             {
-                return false;
+                if ( requestFilterIsValid.Value )
+                {
+                    if ( requestFilterIsValid.Value && matchType == "any" )
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if ( matchType != "any" )
+                    {
+                        // If request filters exist and the match conditions are not satisfied, do not show the content.
+                        return false;
+                    }
+                }
             }
 
             // Determine if the current block segments match the segments for the user in the current context.
-            bool? isMatchForSegments = null;
-            var segmentParameterString = _settings.GetStringValue( ParameterSegments );
+            bool? segmentFilterIsValid = null;
+            var segmentParameterString = _settings.GetStringValue( ParameterSegments )
+                ?? _settings.GetStringValue( "segments" );
             if ( !string.IsNullOrWhiteSpace( segmentParameterString ) )
             {
                 // Get personalization segments for the target person.
@@ -192,38 +253,45 @@ namespace Rock.Lava.Blocks
                 var requiredSegmentIdList = PersonalizationSegmentCache.GetByKeys( segmentParameterString )
                     .Select( ps => ps.Id )
                     .ToList();
-                if ( requiredSegmentIdList != null )
+                if ( matchType == "all" )
                 {
-                    if ( matchType == "all" )
-                    {
-                        // All of the specified segments must be matched, so we need to fail for any invalid keys.
-                        var segmentParameterCount = segmentParameterString.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Count();
-                        isMatchForSegments = ( requiredSegmentIdList.Count == segmentParameterCount )
-                            && requiredSegmentIdList.All( id => personSegmentIdList.Contains( id ) );
-                    }
-                    else if ( matchType == "none" )
-                    {
-                        isMatchForSegments = !requiredSegmentIdList.Any( id => personSegmentIdList.Contains( id ) );
-                    }
-                    else
-                    {
-                        // Apply default match type of "any".
-                        isMatchForSegments = requiredSegmentIdList.Any( id => personSegmentIdList.Contains( id ) );
-                    }
+                    // All of the specified segments must be matched, so we need to fail for any invalid keys.
+                    var segmentParameterCount = segmentParameterString.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).Count();
+                    segmentFilterIsValid = ( requiredSegmentIdList.Count == segmentParameterCount )
+                        && requiredSegmentIdList.All( id => personSegmentIdList.Contains( id ) );
+                }
+                else if ( matchType == "none" )
+                {
+                    segmentFilterIsValid = !requiredSegmentIdList.Any( id => personSegmentIdList.Contains( id ) );
+                }
+                else
+                {
+                    // Apply default match type of "any".
+                    segmentFilterIsValid = requiredSegmentIdList.Any( id => personSegmentIdList.Contains( id ) );
                 }
             }
-            // If segments exist and are not matched, do not show the content.
-            if ( isMatchForSegments != null && !isMatchForSegments.Value )
+
+            // If no parameters are specified for the block, do not show the content.
+            if ( requestFilterIsValid == null && segmentFilterIsValid == null )
             {
                 return false;
             }
 
-            // If no parameters are specified for the block, do not show the content.
-            if ( isMatchForRequestFilters == null && isMatchForSegments == null )
+            bool showContent = false;
+            if ( matchType == "all" )
             {
-                return false;
+                showContent = requestFilterIsValid.GetValueOrDefault( true ) && segmentFilterIsValid.GetValueOrDefault( true );
             }
-            return true;
+            else if ( matchType == "any" )
+            {
+                showContent = requestFilterIsValid.GetValueOrDefault( false ) || segmentFilterIsValid.GetValueOrDefault( false );
+            }
+            else if ( matchType == "none" )
+            {
+                showContent = requestFilterIsValid.GetValueOrDefault( true ) && segmentFilterIsValid.GetValueOrDefault( true );
+            }
+
+            return showContent;
         }
     }
 }

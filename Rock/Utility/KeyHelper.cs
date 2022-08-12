@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Rock.Data;
@@ -54,16 +55,39 @@ namespace Rock.Utility
         public static string GenerateKey()
         {
             var sb = new StringBuilder();
-            var rnd = new Random();
             var codeCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
             var poolSize = codeCharacters.Length;
 
             for ( int i = 0; i < 24; i++ )
             {
-                sb.Append( codeCharacters[rnd.Next( poolSize )] );
+                int next = GetRandomInteger( 0, poolSize );
+                sb.Append( codeCharacters[next] );
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets a random 32-bit signed integer that is greater than or equal to minimumValue and less than exclusiveUpperBound
+        /// using the <see cref="RandomNumberGenerator"/> class.
+        /// </summary>
+        /// <param name="minimumValue">The minimum value of the random number.</param>
+        /// <param name="exclusiveUpperBound">The exclusive upper bound of the random number (must be greater than minimumValue).</param>
+        /// <returns></returns>
+        private static int GetRandomInteger( int minimumValue, int exclusiveUpperBound )
+        {
+            if ( exclusiveUpperBound <= minimumValue )
+            {
+                exclusiveUpperBound = minimumValue + 1;
+            }
+
+            // Generate four random bytes to convert into a 32-bit integer.
+            var bytes = new byte[4];
+            RandomNumberGenerator.Create().GetBytes( bytes );
+            var random = BitConverter.ToUInt32( bytes, 0 );
+
+            // Convert our random value to a signed integer >= minimumValue and < exclusiveUpperBound.
+            return ( int ) ( minimumValue + ( exclusiveUpperBound - minimumValue ) * ( random / ( uint.MaxValue + 1.0 ) ) );
         }
     }
 }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
@@ -100,6 +101,18 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            bool? boolValue = privateValue.AsBooleanOrNull();
+
+            if ( boolValue == true )
+            {
+                return "Verified";
+            }
+
+            return string.Empty;
+        }
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -110,16 +123,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            bool? boolValue = value.AsBooleanOrNull();
-
-            if ( boolValue.HasValue && boolValue.Value )
-            {
-                var formattedValue = "Verified";
-
-                return base.FormatValue( parentControl, formattedValue, null, condensed );
-            }
-
-            return string.Empty;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>

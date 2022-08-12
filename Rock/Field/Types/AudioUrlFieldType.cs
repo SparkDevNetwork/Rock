@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
@@ -30,29 +32,21 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.AUDIO_URL )]
     public class AudioUrlFieldType : FieldType
     {
-
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string videoUrl = value;
+            return privateValue;
+        }
+
+        /// <inheritdoc />
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string videoUrl = privateValue;
             if ( !string.IsNullOrEmpty( videoUrl ) )
             {
-                if ( condensed )
-                {
-                    return videoUrl;
-                }
-                else
-                {
-                    string htmlFormat = @"
+                string htmlFormat = @"
 <audio
     src='{0}'
     class='img img-responsive js-media-audio' 
@@ -64,14 +58,39 @@ namespace Rock.Field.Types
     Rock.controls.mediaPlayer.initialize();
 </script>
 ";
-                    var html = string.Format( htmlFormat, videoUrl );
-                    return html;
-                }
-
+                var html = string.Format( htmlFormat, videoUrl );
+                return html;
             }
 
             // value was null
-            return null;
+            return string.Empty;
+        }
+
+        /// <inheritdoc />
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            return $"<a href=\"{privateValue.EncodeXml( true )}\">{privateValue.Truncate( 100 ).EncodeHtml()}</a>";
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            // For compatability reasons, condensed value is the plain URL text encoded for HTML.
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
         }
 
         #endregion
@@ -93,6 +112,5 @@ namespace Rock.Field.Types
         }
 
         #endregion
-
     }
 }

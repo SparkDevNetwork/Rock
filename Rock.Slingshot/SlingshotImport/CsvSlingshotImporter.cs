@@ -297,16 +297,19 @@ namespace Rock.Slingshot
 
                 foreach ( PersonImportErrorMessageStruct personImportErrorMessage in personImportErrorMessageStructs )
                 {
-                    int personId = personService
-                        .FromForeignSystem( ForeignSystemKey, personImportErrorMessage.Id )
-                        .Id;
+                    Person person = personService.FromForeignSystem( ForeignSystemKey, personImportErrorMessage.Id );
+                    if ( person == null )
+                    {
+                        continue;
+                    }
+
                     Note note = new Note
                     {
                         NoteTypeId = personCSVImportErrorNoteTypeId,
                         IsAlert = true,
                         IsSystem = true,
                         Text = personImportErrorMessage.Message,
-                        EntityId = personId
+                        EntityId = person.Id
                     };
                     noteService.Add( note );
                 }

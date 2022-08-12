@@ -29,13 +29,13 @@
                                 SortExpression="Gender"
                                 ColumnPriority="Desktop" />
                             <Rock:RockBoundField
-                                HeaderText="Age Classification"
-                                DataField="AgeClassification"
-                                SortExpression="AgeClassification" />
-                            <Rock:RockBoundField
                                 HeaderText="Email"
                                 DataField="Email"
                                 SortExpression="Email" />
+                            <Rock:RockBoundField
+                                HeaderText="Age Classification"
+                                DataField="AgeClassification"
+                                SortExpression="AgeClassification" />
                             <Rock:DefinedValueField
                                 DataField="RecordStatusValueId"
                                 HeaderText="Record Status"

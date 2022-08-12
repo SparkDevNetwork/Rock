@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,12 +15,15 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -30,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupRequirementType" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "8E67E852-D1BF-485C-9898-09F19998CC40")]
+    [Rock.SystemGuid.EntityTypeGuid( "8E67E852-D1BF-485C-9898-09F19998CC40" )]
     public partial class GroupRequirementType : Model<GroupRequirementType>
     {
         #region Entity Properties
@@ -157,6 +160,100 @@ namespace Rock.Model
         [DataMember]
         public string CheckboxLabel { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of due date.
+        /// </summary>
+        /// <value>
+        /// The type of due date.
+        /// </value>
+        [DataMember]
+        [DefaultValue( DueDateType.Immediate )]
+        public DueDateType DueDateType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days before the requirement is due.
+        /// </summary>
+        /// <value>
+        /// The due date offset in days.
+        /// </value>
+        [DataMember]
+        public int? DueDateOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category identifier.
+        /// </summary>
+        /// <value>
+        /// The category identifier.
+        /// </value>
+        [DataMember]
+        public int? CategoryId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> identifier for the group requirement type it does not meet.
+        /// </summary>
+        /// <value>
+        /// The workflow type identifier.
+        /// </value>
+        [DataMember]
+        public int? DoesNotMeetWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this requirement type's "Does Not Meet" workflow should auto-initiate.
+        /// </summary>
+        [DataMember]
+        [DefaultValue( false )]
+        public bool ShouldAutoInitiateDoesNotMeetWorkflow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text for the "Does Not Meet" workflow link.
+        /// </summary>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string DoesNotMeetWorkflowLinkText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> identifier for the group requirement type's warning.
+        /// </summary>
+        /// <value>
+        /// The workflow type identifier.
+        /// </value>
+        [DataMember]
+        public int? WarningWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this requirement type's "Warning" workflow should auto-initiate.
+        /// </summary>
+        [DataMember]
+        [DefaultValue( false )]
+        public bool ShouldAutoInitiateWarningWorkflow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text for the "Warning" workflow link.
+        /// </summary>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string WarningWorkflowLinkText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the summary.
+        /// </summary>
+        /// <value>
+        /// The summary.
+        /// </value>
+        [MaxLength( 2000 )]
+        [DataMember]
+        public string Summary { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -178,6 +275,55 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual DataView WarningDataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets "Does Not Meet" workflow type.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType DoesNotMeetWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets "Warning" workflow type.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType WarningWorkflowType { get; set; }
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    _supportedActions.Add( Authorization.OVERRIDE, "The roles and/or users that have access to override these requirement types." );
+                }
+
+                return _supportedActions;
+            }
+        }
+
+        private Dictionary<string, string> _supportedActions;
 
         #endregion
 
@@ -211,6 +357,9 @@ namespace Rock.Model
         {
             this.HasOptional( a => a.DataView ).WithMany().HasForeignKey( a => a.DataViewId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.WarningDataView ).WithMany().HasForeignKey( a => a.WarningDataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.Category ).WithMany().HasForeignKey( a => a.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.DoesNotMeetWorkflowType ).WithMany().HasForeignKey( a => a.DoesNotMeetWorkflowTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.WarningWorkflowType ).WithMany().HasForeignKey( a => a.WarningWorkflowTypeId ).WillCascadeOnDelete( false );
         }
     }
 

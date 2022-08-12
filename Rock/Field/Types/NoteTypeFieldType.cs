@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,9 +34,8 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.NOTE_TYPE )]
-    public class NoteTypeFieldType : FieldType, IEntityFieldType
+    public class NoteTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -119,13 +118,13 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 3 )
             {
                 if ( controls[0] != null && controls[0] is DropDownList )
-                    configurationValues[ENTITY_TYPE_NAME_KEY].Value = ( (DropDownList)controls[0] ).SelectedValue;
+                    configurationValues[ENTITY_TYPE_NAME_KEY].Value = ( ( DropDownList ) controls[0] ).SelectedValue;
 
                 if ( controls[1] != null && controls[1] is TextBox )
-                    configurationValues[QUALIFIER_COLUMN_KEY].Value = ( (TextBox)controls[1] ).Text;
+                    configurationValues[QUALIFIER_COLUMN_KEY].Value = ( ( TextBox ) controls[1] ).Text;
 
                 if ( controls[2] != null && controls[2] is TextBox )
-                    configurationValues[QUALIFIER_VALUE_KEY].Value = ( (TextBox)controls[2] ).Text;
+                    configurationValues[QUALIFIER_VALUE_KEY].Value = ( ( TextBox ) controls[2] ).Text;
             }
 
             return configurationValues;
@@ -141,19 +140,40 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 3 && configurationValues != null )
             {
                 if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
-                    ( (DropDownList)controls[0] ).SelectedValue = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
+                    ( ( DropDownList ) controls[0] ).SelectedValue = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
 
                 if ( controls[1] != null && controls[1] is TextBox && configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
-                    ( (TextBox)controls[1] ).Text = configurationValues[QUALIFIER_COLUMN_KEY].Value;
+                    ( ( TextBox ) controls[1] ).Text = configurationValues[QUALIFIER_COLUMN_KEY].Value;
 
                 if ( controls[2] != null && controls[2] is TextBox && configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
-                    ( (TextBox)controls[2] ).Text = configurationValues[QUALIFIER_VALUE_KEY].Value;
+                    ( ( TextBox ) controls[2] ).Text = configurationValues[QUALIFIER_VALUE_KEY].Value;
             }
         }
 
         #endregion
 
         #region Formatting
+
+        /// <summary>
+        /// Gets the text value.
+        /// </summary>
+        /// <param name="privateValue">The private value.</param>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns>System.String.</returns>
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                var noteType = NoteTypeCache.Get( privateValue.AsGuid() );
+                if ( noteType != null )
+                {
+                    return noteType.Name;
+                }
+            }
+
+            return privateValue;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -165,18 +185,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                var noteType = NoteTypeCache.Get( value.AsGuid() );
-                if ( noteType != null )
-                {
-                    formattedValue = noteType.Name;
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+               ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+               : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -301,7 +312,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             var noteType = NoteTypeCache.Get( guid );
-            return noteType != null ? noteType.Id : (int?)null;
+            return noteType != null ? noteType.Id : ( int? ) null;
         }
 
         /// <summary>
@@ -347,5 +358,44 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+
+            var noteId = NoteTypeCache.GetId( guid.Value );
+
+            if ( !noteId.HasValue )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<NoteType>().Value, noteId.Value )
+            };
+
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a NoteType and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<NoteType>().Value, nameof( NoteType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

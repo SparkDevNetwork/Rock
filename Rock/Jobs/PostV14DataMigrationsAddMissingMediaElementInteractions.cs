@@ -16,10 +16,16 @@
 //
 
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
+
+using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Rock.Jobs
 {
@@ -33,7 +39,7 @@ namespace Rock.Jobs
     [IntegerField(
     "Command Timeout",
     AttributeKey.CommandTimeout,
-    Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
+    Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of interactions, this could take several minutes or more.",
     IsRequired = false,
     DefaultIntegerValue = 60 * 60 )]
     public class PostV14DataMigrationsAddMissingMediaElementInteractions : IJob
@@ -53,38 +59,67 @@ namespace Rock.Jobs
 
             // get the configured timeout, or default to 60 minutes if it is blank
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
+            System.Collections.Generic.List<int> mediaInteractionWithoutInteractionIdList;
 
+            // First, get a list of all the Interaction IDs that we'll need to update each interaction that needs to be updated
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
-                rockContext.Database.ExecuteSqlCommand( @"
-WHILE (
-    EXISTS (
-        SELECT 1
-        FROM [Interaction] i
-        INNER JOIN [InteractionComponent] AS ico ON ico.[Id] = i.[InteractionComponentId]
-        INNER JOIN [InteractionChannel] AS ich ON ich.[Id] = ico.[InteractionChannelId]
-        WHERE
-            ich.[Guid] = 'D5B9BDAF-6E52-40D5-8E74-4E23973DF159'
-            AND i.[InteractionLength] IS NULL
-    )
-)
-BEGIN
-    UPDATE TOP (1000) i SET
-        i.[InteractionLength] = JSON_VALUE(i.[InteractionData],'$.WatchedPercentage')
-    FROM
-        [Interaction] AS i
-        INNER JOIN [InteractionComponent] AS ico ON ico.[Id] = i.[InteractionComponentId]
-        INNER JOIN [InteractionChannel] AS ich ON ich.[Id] = ico.[InteractionChannelId]
-    WHERE
-        ich.[Guid] = 'D5B9BDAF-6E52-40D5-8E74-4E23973DF159'
-        AND i.[InteractionLength] IS NULL
-END
-" );
+
+                var interactionChannelIdMediaEvent = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
+                if ( !interactionChannelIdMediaEvent.HasValue )
+                {
+                    DeleteJob( context.GetJobId() );
+                }
+
+                var interactionService = new InteractionService( rockContext ).Queryable();
+                var mediaInteractionWithoutInteractionLengthQuery = interactionService.Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelIdMediaEvent.Value && !a.InteractionLength.HasValue );
+                mediaInteractionWithoutInteractionIdList = mediaInteractionWithoutInteractionLengthQuery.Select( a => a.Id ).OrderBy( a => a ).ToList();
+            }
+
+            double updatedCount = 0;
+            int totalCount = mediaInteractionWithoutInteractionIdList.Count();
+            var lastUpdateDateTime = RockDateTime.Now;
+
+            // One interaction at time, parse the JSON and update InteractionLength. Doing it one
+            // as a time is still pretty fast, and has consistent performance. Maybe 30000 per minute.
+            // Note that to support SQL 2014, we can't use SQL JSON commands since that isn't supported until SQL 2016.
+            foreach ( var mediaInteractionId in mediaInteractionWithoutInteractionIdList )
+            {
+                using ( var rockContext = new Rock.Data.RockContext() )
+                {
+                    rockContext.Database.CommandTimeout = commandTimeout;
+                    var mediaInteraction = new InteractionService( rockContext ).Get( mediaInteractionId );
+
+                    var mediaEventInteractionData = mediaInteraction?.InteractionData.FromJsonOrNull<MediaEventInteractionData>();
+                    if ( mediaEventInteractionData?.WatchedPercentage != null && !mediaInteraction.InteractionLength.HasValue )
+                    {
+                        mediaInteraction.InteractionLength = mediaEventInteractionData.WatchedPercentage;
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
+
+                    }
+
+                    updatedCount++;
+
+                    if ( ( RockDateTime.Now - lastUpdateDateTime ).TotalSeconds > 3 )
+                    {
+                        var percentProgress = updatedCount * 100 / totalCount;
+                        context.UpdateLastStatusMessage( $"Update Progress {Math.Round( percentProgress, 2 )}%" );
+                        lastUpdateDateTime = RockDateTime.Now;
+                    }
+                }
             }
 
             DeleteJob( context.GetJobId() );
         }
+
+        private class MediaEventInteractionData
+        {
+            public string WatchMap { get; set; }
+
+            public float WatchedPercentage { get; set; }
+        }
+
 
         /// <summary>
         /// Deletes the job.

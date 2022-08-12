@@ -18,19 +18,25 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using Rock;
-using Slingshot.Core.Model;
 
-public class PersonNoteCsvMapper
+// Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
+using SlingshotCore = global::Slingshot.Core;
+
+namespace Rock.Slingshot
 {
-    public static PersonNote Map( IDictionary<string, object> csvEntry, Dictionary<string, string> headerMapper, ref HashSet<string> parserErrors )
+    public class PersonNoteCsvMapper
     {
-        string noteType = "PERSON_TIMELINE_NOTE";
-        if ( headerMapper.TryGetValue( "Note", out string csvColumnNote ) )
+        public static SlingshotCore.Model.PersonNote Map( IDictionary<string, object> csvEntry, Dictionary<string, string> headerMapper, ref HashSet<string> parserErrors )
         {
-            var personNote = new PersonNote
+            string noteType = "PERSON_TIMELINE_NOTE";
+            string csvColumnNote = headerMapper.GetValueOrNull( CSVHeaders.Note );
+            if ( csvColumnNote == null )
             {
-                PersonId = csvEntry[headerMapper["Id"]].ToIntSafe(),
+                return null;
+            }
+            var personNote = new SlingshotCore.Model.PersonNote
+            {
+                PersonId = csvEntry[headerMapper[CSVHeaders.Id]].ToIntSafe(),
                 Text = csvEntry[csvColumnNote].ToStringSafe(),
                 NoteType = noteType
             };
@@ -43,6 +49,5 @@ public class PersonNoteCsvMapper
             personNote.Id = Math.Abs( BitConverter.ToInt32( hashed, 0 ) ); // used abs to ensure positive number
             return personNote;
         }
-        return null;
     }
 }

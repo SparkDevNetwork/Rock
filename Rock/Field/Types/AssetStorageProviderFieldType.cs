@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -35,8 +36,27 @@ namespace Rock.Field.Types
     /// <seealso cref="Rock.Field.IEntityFieldType" />
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "1596F562-E8D0-4C5F-9A00-23B5594F17E2")]
-    public class AssetStorageProviderFieldType : FieldType, IEntityFieldType  
+    public class AssetStorageProviderFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? assetStorageProviderGuid = privateValue.AsGuidOrNull();
+            if ( assetStorageProviderGuid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var assetStorageProvider = new AssetStorageProviderService( rockContext ).Get( assetStorageProviderGuid.Value );
+                    if ( assetStorageProvider != null )
+                    {
+                        return assetStorageProvider.Name;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -47,22 +67,9 @@ namespace Rock.Field.Types
         /// <returns>System.String.</returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid? assetStorageProviderGuid = value.AsGuidOrNull();
-            if ( assetStorageProviderGuid.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var assetStorageProvider = new AssetStorageProviderService( rockContext ).Get( assetStorageProviderGuid.Value );
-                    if ( assetStorageProvider != null )
-                    {
-                        formattedValue = assetStorageProvider.Name;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -182,6 +189,59 @@ namespace Rock.Field.Types
 
             return null;
         }
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <summary>
+        /// Gets the referenced entities for the given raw value.
+        /// </summary>
+        /// <param name="privateValue">The private database value that will be associated with the entities.</param>
+        /// <param name="privateConfigurationValues">The private configuration values that describe the field type settings.</param>
+        /// <returns>
+        /// A list of <see cref="ReferencedEntity" /> objects that identify which entities this value depends on.
+        /// </returns>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var assetStorageProviderGuid = privateValue.AsGuidOrNull();
+
+            if ( !assetStorageProviderGuid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var assetStorageProviderId = new AssetStorageProviderService( rockContext ).GetId( assetStorageProviderGuid.Value );
+
+                if ( !assetStorageProviderId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>()
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<AssetStorageProvider>().Value, assetStorageProviderId.Value )
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets property (database column) names that will trigger an update of
+        /// the persisted values when they change.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values that describe the field type settings.</param>
+        /// <returns>
+        /// A dictionary whose key is the entity type identifier and the values are a list of property names on that entity type to be monitored.
+        /// </returns>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<AssetStorageProvider>().Value, nameof( AssetStorageProvider.Name ) )
+            };
+        }
+
         #endregion
     }
 }

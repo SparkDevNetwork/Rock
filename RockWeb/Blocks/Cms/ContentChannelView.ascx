@@ -91,7 +91,12 @@
                                     <Rock:KeyValueList ID="kvlOrder" runat="server" Label="Order Items By" KeyPrompt="Field" ValuePrompt="Direction"
                                         Help="The field value and direction that items should be ordered by." />
                                 </div>
-                                
+                                <div class="col-md-6">
+                                    <Rock:RockRadioButtonList ID="rblPersonalizationSegments" runat="server" Label="Personalization Segments" RepeatDirection="Horizontal"
+                                        Help="The setting determines how personalization segments effect the results shown. Ignore will not consider segments, Prioritize will add items with matching segments to the top of the list (in order by the sort order) and Filter will only show items that match the current individuals segments." />
+                                    <Rock:RockRadioButtonList ID="rblRequestFilters" runat="server" Label="Request Filters" RepeatDirection="Horizontal"
+                                        Help="The setting determines how request filters effect the results shown. Ignore will not consider filters, Prioritize will add items with matching filters to the top of the list (in order by the sort order) and Filter will only show items that match the current request's filters." />
+                                </div>
                             </div>
 
                             <div class="rock-header mt-4">

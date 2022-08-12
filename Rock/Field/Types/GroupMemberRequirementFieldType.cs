@@ -18,8 +18,10 @@
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 namespace Rock.Field.Types
@@ -29,7 +31,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "C0797A18-B489-46C7-8C30-F5E4F8246E23" )]
-    public class GroupMemberRequirementFieldType : FieldType, IEntityFieldType
+    public class GroupMemberRequirementFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
 
         #region Formatting
@@ -44,13 +46,21 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = privateValue;
 
             GroupMemberRequirement groupMemberRequirement = null;
 
             using ( var rockContext = new RockContext() )
             {
-                Guid? guid = value.AsGuidOrNull();
+                Guid? guid = privateValue.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
                     groupMemberRequirement = new GroupMemberRequirementService( rockContext ).GetNoTracking( guid.Value );
@@ -62,7 +72,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -136,5 +146,107 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                // This is a complex reference. See below in the GetReferencedProperties()
+                // method for a more detailed description of the paths we need. This query
+                // will get us the identifiers of the entities making up those paths.
+                var ids = new GroupMemberRequirementService( rockContext )
+                    .Queryable()
+                    .Where( gmr => gmr.Guid == guid.Value )
+                    .Select( gmr => new
+                    {
+                        GroupMemberRequirementId = gmr.Id,
+                        gmr.GroupMemberId,
+                        gmr.GroupMember.PersonId,
+                        gmr.GroupRequirementId,
+                        gmr.GroupRequirement.GroupRequirementTypeId,
+                        gmr.GroupRequirement.GroupId,
+                        gmr.GroupRequirement.GroupTypeId
+                    } )
+                    .FirstOrDefault();
+
+                if ( ids == null )
+                {
+                    return null;
+                }
+
+                var entityReferences = new List<ReferencedEntity>()
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupMemberRequirement>().Value, ids.GroupMemberRequirementId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupMember>().Value, ids.GroupMemberRequirementId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, ids.PersonId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupRequirement>().Value, ids.GroupRequirementId ),
+                    new ReferencedEntity( EntityTypeCache.GetId<GroupRequirementType>().Value, ids.GroupRequirementTypeId )
+                };
+
+                if ( ids.GroupId.HasValue )
+                {
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Group>().Value, ids.GroupId.Value ) );
+                }
+
+                if ( ids.GroupTypeId.HasValue )
+                {
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<GroupType>().Value, ids.GroupTypeId.Value ) );
+                }
+
+                return entityReferences;
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This is a complex one. The following navigation paths are used
+            // to generate the formatted values (as seen from the GroupMemberRequirement object):
+            // - GroupMember.Person.NickName
+            // - GroupMember.Person.LastName
+            // - GroupRequirement.GroupRequirementType.Name
+            // - GroupRequirement.Group.Name
+            // - GroupRequirement.GroupType.Name
+            //
+            // This means we need all the navigation properties involved:
+            // - GroupMemberId
+            // - GroupRequirementId
+            // - GroupMember.PersonId
+            // - GroupRequirement.GroupRequirementTypeId
+            // - GroupRequirement.GroupId
+            // - GroupRequirement.GroupTypeId
+            //
+            // We also need the actual properties that contain the values we need:
+            // - Person.NickName
+            // - Person.LastName
+            // - GroupRequirementType.Name
+            // - Group.Name
+            // - GroupType.Name
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<GroupMemberRequirement>().Value, nameof( GroupMemberRequirement.GroupMemberId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupMemberRequirement>().Value, nameof( GroupMemberRequirement.GroupRequirementId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupMember>().Value, nameof( GroupMember.PersonId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupRequirement>().Value, nameof( GroupRequirement.GroupRequirementTypeId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupRequirement>().Value, nameof( GroupRequirement.GroupId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupRequirement>().Value, nameof( GroupRequirement.GroupTypeId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupRequirementType>().Value, nameof( GroupRequirementType.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Group>().Value, nameof( Group.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupType>().Value, nameof( GroupType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

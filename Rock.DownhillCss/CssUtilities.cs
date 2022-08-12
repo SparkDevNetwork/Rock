@@ -890,6 +890,11 @@ icon {
 */
 /* MobileInsertMark - Used by Mobile Shell to insert it's own standard control CSS */
 
+/* Cover Sheet Styling */
+.android.cover-sheet {
+    -xf-bar-background-color: ?color-bar-background;
+}
+
 /* Flyout Styling */
 
 .flyout-menu ^listview {

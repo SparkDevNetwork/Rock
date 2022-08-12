@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Personalization Segment Results" )]
     [Category( "Cms" )]
-    [Description( "Block that lists existing Personalization Segments result." )]
+    [Description( "Block that lists Known Individuals for a given Personalization Segment." )]
 
     [Rock.SystemGuid.BlockTypeGuid( "438432E3-22A8-43D9-9F06-179C3B65D298" )]
     public partial class PersonalizationSegmentResults : RockBlock

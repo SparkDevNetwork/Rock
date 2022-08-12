@@ -31,13 +31,14 @@ namespace Rock.ViewModels.Rest.Controls
         /// This checks both the FinancialGateway model and the GatewayComponent.
         /// </summary>
         /// <value><c>true</c> if [show inactive]; otherwise, <c>false</c>.</value>
-        public bool ShowInactive { get; set; } = false;
+        public bool IncludeInactive { get; set; } = false;
 
         /// <summary>
-        /// If set to true then gateways that do now support Rock initiated transactions will be included.
+        /// If set to true then gateways that do not support Rock initiated transactions will be included.
         /// These GatewayComponents are used to download externally created transactions and do not allow Rock
         /// to create the transaction.
-        /// THIS DOES NOT CONSIDER THE "IsActive" PROPERTY.
+        /// <strong>This property does not affect if inactive gateways are shown or not.</strong>
+        /// The inclusion or exclusion of inactive gateways is controlled exclusively by the "IncludeInactive" property.
         /// </summary>
         /// <value><c>true</c> if [show all gateway components]; otherwise, <c>false</c>.</value>
         public bool ShowAllGatewayComponents { get; set; } = false;

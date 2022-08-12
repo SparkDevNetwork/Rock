@@ -448,26 +448,32 @@ namespace Rock.Model
                             var entityTypeFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.ENTITYTYPE ).Id;
                             var componentFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.COMPONENT ).Id;
                             var componentsFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.COMPONENTS ).Id;
+                            var existingEntityTypeString = existingEntityType.Guid.ToString().ToLower();
+                            var reflectedTypeGuidString = reflectedTypeGuid.Value.ToString().ToLower();
 
                             var attributeIdsUsingFieldType = attributeService.Queryable()
                                 .Where( a => a.FieldTypeId == entityTypeFieldTypeId
                                     || a.FieldTypeId == componentFieldTypeId
                                     || a.FieldTypeId == componentsFieldTypeId )
-                                .Select( a => a.Id );
+                                .Select( a => a.Id )
+                                .ToList();
 
-                            var attributeValues = attributeValueService.Queryable().Where( av => attributeIdsUsingFieldType.Contains( av.AttributeId ) && av.Value.Contains( existingEntityType.Guid.ToString() ) );
+                            rockContext.Database.CommandTimeout = 150;
 
-                            foreach ( var attributeValue in attributeValues )
+                            foreach ( var attributeIdUsingFieldType in attributeIdsUsingFieldType )
                             {
-                                attributeValue.Value = attributeValue.Value.ToLower().Replace( existingEntityType.Guid.ToString().ToLower(), reflectedTypeGuid.Value.ToString().ToLower() );
+                                var attributeValues = attributeValueService.Queryable().Where( av => av.AttributeId == attributeIdUsingFieldType && av.Value.Contains( existingEntityTypeString ) ).ToList();
+
+                                foreach ( var attributeValue in attributeValues )
+                                {
+                                    attributeValue.Value = attributeValue.Value.ToLower().Replace( existingEntityTypeString, reflectedTypeGuidString );
+                                }
                             }
                         }
 
                         // Now update the Guid of the EntityType
                         existingEntityType.Guid = reflectedTypeGuid.Value;
                     }
-
-                    entityTypesFromReflection.Remove( existingEntityType.Name );
                 }
 
                 // Add the newly discovered entities 
@@ -477,7 +483,11 @@ namespace Rock.Model
                     // added by the audit on a previous save in this method.
                     if ( entityType.Name != "Rock.Model.EntityType" )
                     {
-                        entityTypeService.Add( entityType );
+                        // double check that another thread didn't add this EntityType.
+                        if ( !entityTypeService.AlreadyExists( entityType.Name ) )
+                        {
+                            entityTypeService.Add( entityType );
+                        }
                     }
                 }
 
@@ -523,5 +533,16 @@ namespace Rock.Model
             return null;
 
         }
+
+        /// <summary>
+        /// Returns true if an EntityType with the same Name already exists in the database.
+        /// This can be used this to help prevent duplicates.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        private bool AlreadyExists( string name )
+        {
+            return this.Queryable().Where( a => a.Name == name ).Any();
+        }
+
     }
 }

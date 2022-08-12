@@ -15,60 +15,60 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using Rock;
 
-class PersonAddressCsvMapper
+// Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
+using SlingshotCore = global::Slingshot.Core;
+
+namespace Rock.Slingshot
 {
-    public static Slingshot.Core.Model.PersonAddress Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
+    public class PersonAddressCsvMapper
     {
-        var personAddress = new Slingshot.Core.Model.PersonAddress
+        public static SlingshotCore.Model.PersonAddress Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
         {
-            PersonId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe(),
-            AddressType = Slingshot.Core.Model.AddressType.Home
-        };
+            var personAddress = new SlingshotCore.Model.PersonAddress
+            {
+                PersonId = csvEntryLookup[csvHeaderMapper[CSVHeaders.Id]].ToIntSafe(),
+                AddressType = SlingshotCore.Model.AddressType.Home
+            };
 
-        {
-            if ( csvHeaderMapper.TryGetValue( "Home Address Street 1", out string csvColumnStreet1 ) )
+
+            var csvColumnStreet1 = csvHeaderMapper.GetValueOrNull( CSVHeaders.HomeAddressStreet1 );
+            if ( csvColumnStreet1 != null )
             {
                 personAddress.Street1 = csvEntryLookup[csvColumnStreet1].ToStringSafe();
             }
-        }
 
-        {
-            if ( csvHeaderMapper.TryGetValue( "Home Address Street 2", out string csvColumnStreet2 ) )
+            var csvColumnStreet2 = csvHeaderMapper.GetValueOrNull( CSVHeaders.HomeAddressStreet2 );
+            if ( csvColumnStreet2 != null )
             {
                 personAddress.Street2 = csvEntryLookup[csvColumnStreet2].ToStringSafe();
             }
-        }
 
-        {
-            if ( csvHeaderMapper.TryGetValue( "Home Address City", out string csvColumnCity ) )
+            var csvColumnCity = csvHeaderMapper.GetValueOrNull( CSVHeaders.HomeAddressCity );
+            if ( csvColumnCity != null )
             {
                 personAddress.City = csvEntryLookup[csvColumnCity].ToStringSafe();
             }
-        }
 
-        {
-            if ( csvHeaderMapper.TryGetValue( "Home Address State", out string csvColumnState ) )
+            var csvColumnState = csvHeaderMapper.GetValueOrNull( CSVHeaders.HomeAddressState );
+            if ( csvColumnState != null )
             {
                 personAddress.State = csvEntryLookup[csvColumnState].ToStringSafe();
             }
-        }
 
-        {
-            if ( csvHeaderMapper.TryGetValue( "Home Address Postal Code", out string csvColumnPostalCode ) )
+            var csvColumnPostalCode = csvHeaderMapper.GetValueOrNull( CSVHeaders.HomeAddressPostalCode );
+            if ( csvColumnPostalCode != null )
             {
                 personAddress.PostalCode = csvEntryLookup[csvColumnPostalCode].ToStringSafe();
             }
-        }
 
-        {
-            if ( csvHeaderMapper.TryGetValue( "Home Address Country", out string csvColumnCountry ) )
+            var csvColumnCountry = csvHeaderMapper.GetValueOrNull( CSVHeaders.HomeAddressCountry );
+            if ( csvColumnCountry != null )
             {
                 personAddress.Country = csvEntryLookup[csvColumnCountry].ToStringSafe();
             }
-        }
 
-        return personAddress;
+            return personAddress;
+        }
     }
 }

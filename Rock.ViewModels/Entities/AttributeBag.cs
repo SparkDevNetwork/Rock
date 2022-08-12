@@ -60,6 +60,38 @@ namespace Rock.ViewModels.Entities
         public string AttributeColor { get; set; }
 
         /// <summary>
+        /// Gets or sets the default persisted condensed HTML value.
+        /// </summary>
+        /// <value>
+        /// The persisted condensed HTML value.
+        /// </value>
+        public string DefaultPersistedCondensedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted condensed text value.
+        /// </summary>
+        /// <value>
+        /// The persisted condensed text value.
+        /// </value>
+        public string DefaultPersistedCondensedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted HTML value.
+        /// </summary>
+        /// <value>
+        /// The persisted HTML value.
+        /// </value>
+        public string DefaultPersistedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted text value.
+        /// </summary>
+        /// <value>
+        /// The persisted text value.
+        /// </value>
+        public string DefaultPersistedTextValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attribute's default value.
         /// </summary>
         /// <value>
@@ -153,6 +185,16 @@ namespace Rock.ViewModels.Entities
         /// true if this instance is analytic history; otherwise, false.
         /// </value>
         public bool IsAnalyticHistory { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the persisted values are
+        /// considered dirty. If the values are dirty then it should be assumed
+        /// that they are not in sync with the Rock.Model.Attribute.DefaultValue property.
+        /// </summary>
+        /// <value>
+        /// true if the persisted values are considered dirty; otherwise, false.
+        /// </value>
+        public bool IsDefaultPersistedValueDirty { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this Attribute is a Grid Column?

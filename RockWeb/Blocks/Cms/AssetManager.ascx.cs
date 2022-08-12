@@ -36,6 +36,8 @@ namespace RockWeb.Blocks.Cms
     [Rock.SystemGuid.BlockTypeGuid( "13165D92-9CCD-4071-8484-3956169CB640" )]
     public partial class AssetManager : RockBlock, IPickerBlock
     {
+        private const string CONTENT_FOLDER_ROOT = "~/Content";
+
         private const string NullSelectedId = "-1";
 
         #region IPicker Implementation
@@ -307,6 +309,11 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = file.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
+                    if ( !key.StartsWith( CONTENT_FOLDER_ROOT ) )
+                    {
+                        throw new Exception( "Invalid File Path" );
+                    }
+
                     Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, false );
 
                     byte[] bytes = asset.AssetStream.ReadBytesToEnd();

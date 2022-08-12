@@ -16,49 +16,54 @@
 //
 using System;
 using System.Collections.Generic;
-using Rock;
 
-public class PersonPhoneCsvMapper
+// Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
+using SlingshotCore = global::Slingshot.Core;
+
+namespace Rock.Slingshot
 {
-    public static List<Slingshot.Core.Model.PersonPhone> Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper, ref HashSet<string> parserErrors )
+    public class PersonPhoneCsvMapper
     {
-        var personPhones = new List<Slingshot.Core.Model.PersonPhone>();
-
-        int personId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe();
-
+        public static List<SlingshotCore.Model.PersonPhone> Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper, ref HashSet<string> parserErrors )
         {
-            if ( csvHeaderMapper.TryGetValue( "Home Phone", out string csvColumnPhone ) )
+            var personPhones = new List<SlingshotCore.Model.PersonPhone>();
+
+            int personId = csvEntryLookup[csvHeaderMapper[CSVHeaders.Id]].ToIntSafe();
+
+            var csvColumnHomePhone = csvHeaderMapper.GetValueOrNull( CSVHeaders.HomePhone );
+            if ( csvColumnHomePhone != null )
             {
-                var personHomePhone = new Slingshot.Core.Model.PersonPhone
+                var personHomePhone = new SlingshotCore.Model.PersonPhone
                 {
                     PersonId = personId,
-                    PhoneNumber = csvEntryLookup[csvColumnPhone].ToStringSafe(),
+                    PhoneNumber = csvEntryLookup[csvColumnHomePhone].ToStringSafe(),
                     PhoneType = "Home"
                 };
                 personPhones.Add( personHomePhone );
             }
-        }
 
-        {
-            if ( csvHeaderMapper.TryGetValue( "Mobile Phone", out string csvColumnPhone ) )
+            var csvColumnMobilePhone = csvHeaderMapper.GetValueOrNull( CSVHeaders.MobilePhone );
+            if ( csvColumnMobilePhone != null )
             {
                 bool isSMSEnabled = false;
-                if ( csvHeaderMapper.TryGetValue( "Is SMS Enabled", out string isSMSEnabledColumn ) )
+                var isSMSEnabledColumn = csvHeaderMapper.GetValueOrNull( CSVHeaders.IsSMSEnabled );
+                if ( isSMSEnabledColumn != null)
                 {
                     Boolean.TryParse( csvEntryLookup[isSMSEnabledColumn].ToStringSafe(), out isSMSEnabled );
                 }
-                var personMobilePhone = new Slingshot.Core.Model.PersonPhone
+
+                var personMobilePhone = new SlingshotCore.Model.PersonPhone
                 {
                     PersonId = personId,
-                    PhoneNumber = csvEntryLookup[csvColumnPhone].ToStringSafe(),
+                    PhoneNumber = csvEntryLookup[csvColumnMobilePhone].ToStringSafe(),
                     PhoneType = "Mobile",
                     IsMessagingEnabled = isSMSEnabled
                 };
+
                 personPhones.Add( personMobilePhone );
             }
+
+            return personPhones;
         }
-
-        return personPhones;
     }
-
 }

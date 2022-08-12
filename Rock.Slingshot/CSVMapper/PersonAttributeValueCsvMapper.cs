@@ -16,41 +16,46 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-using Rock;
-using Rock.Data;
-using Rock.Model;
 using Rock.Web.Cache;
 
-public class PersonAttributeValueCsvMapper
+// Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
+using SlingshotCore = global::Slingshot.Core;
+
+namespace Rock.Slingshot
 {
-    public static List<Slingshot.Core.Model.PersonAttributeValue> Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
+    public class PersonAttributeValueCsvMapper
     {
-        var personAttributeValues = new List<Slingshot.Core.Model.PersonAttributeValue>();
-
-        int personId = csvEntryLookup[csvHeaderMapper["Id"]].ToIntSafe();
-
-        IEnumerable<string> rockPersonAttributeKeys = AttributeCache.GetPersonAttributes()
-            .Select( a => a.Name );
-
-        foreach ( var rockPersonAttributeKey in rockPersonAttributeKeys )
+        public static List<SlingshotCore.Model.PersonAttributeValue> Map( IDictionary<string, object> csvEntryLookup, Dictionary<string, string> csvHeaderMapper )
         {
-            if ( !csvHeaderMapper.TryGetValue( rockPersonAttributeKey, out string csvColumnRockAttributeKey ) )
+            var personAttributeValues = new List<SlingshotCore.Model.PersonAttributeValue>();
+
+            int personId = csvEntryLookup[csvHeaderMapper[CSVHeaders.Id]].ToIntSafe();
+
+            IEnumerable<string> rockPersonAttributeKeys = AttributeCache.GetPersonAttributes()
+                .Select( a => a.Name );
+
+            foreach ( var rockPersonAttributeKey in rockPersonAttributeKeys )
             {
-                continue;
+                if ( !csvHeaderMapper.TryGetValue( rockPersonAttributeKey, out string csvColumnRockAttributeKey ) )
+                {
+                    continue;
+                }
+
+                string attributeValue = csvEntryLookup
+                    .GetValueOrNull( csvColumnRockAttributeKey )
+                    .ToStringSafe();
+
+                var personAttributeValue = new SlingshotCore.Model.PersonAttributeValue
+                {
+                    AttributeKey = rockPersonAttributeKey,
+                    AttributeValue = attributeValue,
+                    PersonId = personId
+                };
+
+                personAttributeValues.Add( personAttributeValue );
             }
-            string attributeValue = csvEntryLookup
-                .GetValueOrNull( csvColumnRockAttributeKey )
-                .ToStringSafe();
 
-            var personAttributeValue = new Slingshot.Core.Model.PersonAttributeValue
-            {
-                AttributeKey = rockPersonAttributeKey,
-                AttributeValue = attributeValue,
-                PersonId = personId
-            };
-            personAttributeValues.Add( personAttributeValue );
+            return personAttributeValues;
         }
-
-        return personAttributeValues;
     }
 }

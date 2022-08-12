@@ -646,12 +646,22 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
     <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
     <Compile Include="Bus\Queue\ExpiringCardEventQueue.cs" />
     <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
+    <Compile Include="Chart\ChartJs\ChartColorPaletteGenerator.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsCategorySeriesDataFactory.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsCategorySeriesDataPoint.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsConstants.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsDataFactory.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsDataset.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsTimeSeriesDataPoint.cs" />
+    <Compile Include="Chart\ChartJs\IChartJsCategorySeriesDataPoint.cs" />
+    <Compile Include="Chart\ChartJs\IChartJsTimeSeriesDataPoint.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
     <Compile Include="ClientService\Connection\ConnectionOpportunity\ConnectionOpportunityClientService.cs" />
@@ -849,6 +859,8 @@
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Group\GroupRequirementType\DueDateType.cs" />
+    <Compile Include="Model\Group\GroupRequirement\AppliesToAgeClassification.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />
@@ -1755,6 +1767,7 @@
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
+    <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
@@ -1781,6 +1794,11 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartJsChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\BarChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\LineChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\PieChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\IRockChart.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\ElectronicSignatureControl.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
@@ -1934,7 +1952,7 @@
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />
     <Compile Include="Communication\RockMessageRecipient.cs" />
-    <Compile Include="Chart\ChartJsTimeSeriesDataFactory.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsTimeSeriesDataFactory.cs" />
     <Compile Include="Chart\FlotChartDataSet.cs" />
     <Compile Include="Chart\TimeSeriesChartDataPoint.cs" />
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
@@ -3546,13 +3564,12 @@
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\BootstrapButton.cs" />
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
-    <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\RockBarChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
-    <Compile Include="Web\UI\Controls\Chart\ChartOptions.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\ChartOptions.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
-    <Compile Include="Web\UI\Controls\Chart\FlotChart.cs" />
-    <Compile Include="Web\UI\Controls\Chart\LineChart.cs" />
-    <Compile Include="Web\UI\Controls\Chart\PieChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\FlotChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\RockLineChart.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinArea.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinAreaRow.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroup.cs" />
@@ -4166,13 +4183,8 @@ if Exist "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll" del "$(ProjectDir)..\R
 if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>REM Check if the JavaScript projects have been built.
-If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian\node_modules" (
-    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj" -p:Configuration=$(ConfigurationName)
-)
-If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian.Blocks\node_modules" (
-    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian.Blocks\Rock.JavaScript.Obsidian.Blocks.njsproj" -p:Configuration=$(ConfigurationName)
-)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

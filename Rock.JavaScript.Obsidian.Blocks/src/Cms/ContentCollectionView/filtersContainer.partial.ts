@@ -58,7 +58,7 @@ export const Filter = defineComponent({
         const filterClass = computed((): string => {
             const filterSlugName = props.filter.label?.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-").toLowerCase() ?? "";
 
-            return `filter-${filterSlugName}`;
+            return `filter filter-${filterSlugName}`;
         });
 
         const headerMarkup = computed((): string => {
@@ -212,7 +212,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="collectionsearch-results">
+<div class="collectionsearch-filters">
     <h3 class="title">Filters</h3>
 
     <Filter v-for="item in filters"

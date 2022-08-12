@@ -109,7 +109,7 @@ function updateUrl(query: string, sortOrder: string, filterValues: Record<string
  * 
  * @param resultsContainerElement The element that will contain all results.
  * @param results The results that were returned by the server.
- * @param seeMore The callback to use when the see-more element is clicked.
+ * @param seeMore The callback to use when the js-more element is clicked.
  */
 function updateResults(resultsContainerElement: HTMLElement, results: SearchResultBag, seeMore: ((sourceGuid: Guid) => void)): void {
     for (const resultSource of results.resultSources ?? []) {
@@ -126,9 +126,12 @@ function updateResults(resultsContainerElement: HTMLElement, results: SearchResu
             sourceContainerElement.classList.add("results", `result-source-${sourceGuid.toLowerCase()}`);
             sourceContainerElement.innerHTML = resultSource.template ?? "";
 
-            const newSeeMoreElement = sourceContainerElement.querySelector(".see-more");
+            const newSeeMoreElement = sourceContainerElement.querySelector(".js-more");
             if (newSeeMoreElement) {
-                newSeeMoreElement.addEventListener("click", () => seeMore(sourceGuid));
+                newSeeMoreElement.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    seeMore(sourceGuid);
+                });
             }
 
             resultsContainerElement.append(sourceContainerElement);
@@ -155,7 +158,7 @@ function updateResults(resultsContainerElement: HTMLElement, results: SearchResu
         }
 
         // If there are no more results to load then hide the see more element.
-        const seeMoreElement = sourceContainerElement.querySelector(".see-more");
+        const seeMoreElement = sourceContainerElement.querySelector(".js-more");
         if (seeMoreElement && !resultSource.hasMore) {
             seeMoreElement.classList.add("hidden");
         }

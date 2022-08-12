@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,7 +35,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.NOTE_TYPES )]
-    public class NoteTypesFieldType : CategoryFieldType
+    public class NoteTypesFieldType : CategoryFieldType, IEntityReferenceFieldType
     {
         private const string REPEAT_COLUMNS = "repeatColumns";
 
@@ -114,23 +114,16 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             string formattedValue = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
                 var names = new List<string>();
 
-                foreach( string guidString in value.SplitDelimitedValues() )
+                foreach( string guidString in privateValue.SplitDelimitedValues() )
                 {
                     Guid? guid = guidString.AsGuidOrNull();
                     if ( guid.HasValue )
@@ -148,6 +141,19 @@ namespace Rock.Field.Types
 
             // The parent is CategoryFieldType. CategoryFieldType's FormatValue expects a list of category guids, so we should not call the base FormatValue.
             return formattedValue;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns>System.String.</returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -284,5 +290,41 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var referencedEntities = new List<ReferencedEntity>();
+            var noteTypeEntityTypeId = EntityTypeCache.GetId<Rock.Model.NoteType>().Value;
+
+            foreach ( string guidString in privateValue.SplitDelimitedValues() )
+            {
+                Guid? guid = guidString.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    var noteTypeId = NoteTypeCache.GetId( guid.Value );
+                    if ( noteTypeId != null )
+                    {
+                        referencedEntities.Add( new ReferencedEntity( noteTypeEntityTypeId, noteTypeId.Value ) );
+                    }
+                }
+            }
+
+            return referencedEntities;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a NoteType and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<NoteType>().Value, nameof( NoteType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

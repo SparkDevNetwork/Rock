@@ -30,11 +30,12 @@ namespace Rock.Model
     public partial class PersonalizationSegmentService
     {
         /// <summary>
-        /// Gets a Queryable of PersonAlias that meet the criteria of the Segment
+        /// Gets a Queryable of <see cref="PersonAlias"/> that have a <see cref="PersonAliasPersonalization.PersonalizationType"/>
+        /// of <see cref="PersonalizationType.Segment"/>
         /// </summary>
         /// <param name="segment">The segment.</param>
         /// <returns></returns>
-        public IQueryable<PersonAlias> GetPersonAliasQueryForSegment( PersonalizationSegmentCache segment )
+        public IQueryable<PersonAlias> GetPersonAliasSegmentQuery( PersonalizationSegmentCache segment )
         {
             var rockContext = this.Context as RockContext;
             var personAliasService = new PersonAliasService( rockContext );
@@ -58,7 +59,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a Queryable of <see cref="PersonAliasPersonalization"/> that have a <see cref="PersonAliasPersonalization.PersonalizationType"/> of <see cref="PersonalizationType.Segment"/>
+        /// Gets a Queryable of <see cref="PersonAliasPersonalization"/> that have a <see cref="PersonAliasPersonalization.PersonalizationType"/>
+        /// of <see cref="PersonalizationType.Segment"/>
         /// </summary>
         public IQueryable<Rock.Model.PersonAliasPersonalization> GetPersonAliasPersonalizationSegmentQuery()
         {
@@ -66,7 +68,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the person alias personalization query for the specified segment.
+        /// Gets a Queryable of <see cref="PersonAliasPersonalization"/> that have a <see cref="PersonAliasPersonalization.PersonalizationType"/>
+        /// of <see cref="PersonalizationType.Segment"/>
         /// </summary>
         /// <param name="personalizationSegment">The personalization segment.</param>
         public IQueryable<Rock.Model.PersonAliasPersonalization> GetPersonAliasPersonalizationSegmentQuery( PersonalizationSegmentCache personalizationSegment )
@@ -93,12 +96,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a Queryable of Personalized Entity that meet the criteria of the Segment
+        /// Gets a Queryable of <see cref="PersonalizedEntity"/> that have a <see cref="PersonAliasPersonalization.PersonalizationType"/>
+        /// of <see cref="PersonalizationType.Segment"/>
         /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityId">The entity id.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
-        public IQueryable<PersonalizedEntity> GetPersonalizedEntityQueryForSegment(int entityTypeId, int entityId)
+        public IQueryable<PersonalizedEntity> GetPersonalizedEntitySegmentQuery( int entityTypeId, int entityId )
         {
             return ( this.Context as RockContext ).PersonalizedEntities
                 .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.EntityTypeId == entityTypeId && a.EntityId == entityId );
@@ -113,7 +117,7 @@ namespace Rock.Model
         public void UpdatePersonalizedEntityForSegments( int entityTypeId, int entityId, List<int> segmentIds )
         {
             var rockContext = this.Context as RockContext;
-            var personalizedEntities = GetPersonalizedEntityQueryForSegment( entityTypeId, entityId );
+            var personalizedEntities = GetPersonalizedEntitySegmentQuery( entityTypeId, entityId );
             // Delete personalizedEntities that are no longer in the segment Ids provided.
             var personalizedEntitiesToDelete = personalizedEntities.Where( a => !segmentIds.Contains( a.PersonalizationEntityId ) );
             var countRemovedFromPersonalizedEntities = rockContext.BulkDelete( personalizedEntitiesToDelete );
@@ -132,7 +136,7 @@ namespace Rock.Model
 
             /*
              SK - 07-27-2022
-             Please defer using BulkInsert here as it throws error Unexpected existing transaction.
+             AddRange is used intentionally below instead of BulkInsert as it throws error Unexpected existing transaction.
             */
             rockContext.PersonalizedEntities.AddRange( personalizedEntitiesToInsert );
             rockContext.SaveChanges();
@@ -225,11 +229,20 @@ namespace Rock.Model
         /// <returns>System.String[].</returns>
         public string[] GetPersonalizationSegmentIdKeysForPersonAliasId( int personAliasId )
         {
-            var qry = ( this.Context as RockContext ).PersonAliasPersonalizations
-                .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.PersonAliasId == personAliasId );
+            var rockContext = ( RockContext ) this.Context;
 
-            var segmentIds = qry.Select( a => a.PersonalizationEntityId ).ToArray();
-            var segmentIdKeys = segmentIds.Select( a => IdHasher.Instance.GetHash( a ) ).ToArray();
+            // Get the list of Personalization Entity Ids associated with the specified person alias.
+            var qryEntityId = rockContext.PersonAliasPersonalizations
+                .Where( a => a.PersonalizationType == PersonalizationType.Segment && a.PersonAliasId == personAliasId )
+                .Select( a => a.PersonalizationEntityId );
+            // Get the active Personalization Segments associated with the Entity Ids.
+            var qrySegmentId = rockContext.Segments
+                .Where( s => s.IsActive && qryEntityId.Contains( s.Id ) )
+                .Select(s => s.Id);
+            // Return a set of hashed Ids identifying the Personalization Segments.
+            var segmentIdKeys = qrySegmentId.ToList()
+                .Select( a => IdHasher.Instance.GetHash( a ) )
+                .ToArray();
 
             return segmentIdKeys;
         }

@@ -1036,14 +1036,14 @@ namespace Rock.Rest.v2
 
                     // TODO: Need to see if the gateway is selected e.g. gateway.Guid == options.selectedGuid
                     // Add the gateway if the control is configured to show all of the gateways.
-                    if (  options.ShowInactive && options.ShowAllGatewayComponents )
+                    if (  options.IncludeInactive && options.ShowAllGatewayComponents )
                     {
                         items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Guid.ToString() } );
                         continue;
                     }
 
                     // Do not add if the component or gateway is not active and the controls has ShowInactive set to false.
-                    if ( options.ShowInactive == false && ( gateway.IsActive == false || component == null || component.IsActive == false ) )
+                    if ( options.IncludeInactive == false && ( gateway.IsActive == false || component == null || component.IsActive == false ) )
                     {
                         continue;
                     }

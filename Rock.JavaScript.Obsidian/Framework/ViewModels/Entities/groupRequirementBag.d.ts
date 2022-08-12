@@ -25,6 +25,21 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** GroupRequirement View Model */
 export type GroupRequirementBag = {
+    /** Gets or sets whether leaders are allowed to mark requirements as met manually. */
+    allowLeadersToOverride: boolean;
+
+    /** Gets or sets the "Applies To" Age Classification. */
+    appliesToAgeClassification: number;
+
+    /** Gets or sets the "Applies To" Rock.Model.DataView identifier. */
+    appliesToDataViewId?: number | null;
+
+    /** Gets or sets the "Due Date" attribute identifier for when the Rock.Model.GroupRequirementType.DueDateType is Rock.Model.DueDateType.GroupAttribute. */
+    dueDateAttributeId?: number | null;
+
+    /** Gets or sets the configured date for when the Rock.Model.GroupRequirementType.DueDateType is Rock.Model.DueDateType.ConfiguredDate. */
+    dueDateStaticDate?: string | null;
+
     /** Gets or sets the Rock.Model.Group identifier. */
     groupId?: number | null;
 

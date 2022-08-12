@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,10 +34,26 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_TYPE )]
-    public class DefinedTypeFieldType : FieldType, IEntityFieldType
+    public class DefinedTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Formatting
+
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( guid.HasValue )
+            {
+                var definedType = DefinedTypeCache.Get( guid.Value );
+                if ( definedType != null )
+                {
+                    return definedType.Name;
+                }
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -49,19 +65,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid? guid = value.AsGuidOrNull();
-            if (guid.HasValue)
-            {
-                var definedType = DefinedTypeCache.Get( guid.Value );
-                if (definedType != null)
-                { 
-                    formattedValue = definedType.Name;
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -217,5 +223,40 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var definedType = DefinedTypeCache.Get( guid.Value );
+
+            if ( definedType == null )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>()
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<DefinedType>().Value, definedType.Id )
+            };
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedType>().Value, nameof( DefinedType.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

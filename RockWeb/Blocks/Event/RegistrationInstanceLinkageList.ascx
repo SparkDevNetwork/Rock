@@ -27,7 +27,7 @@
                                             <asp:Literal ID="lCalendarItem" runat="server" />
                                         </ItemTemplate>
                                     </Rock:RockTemplateFieldUnselected>
-                                    <asp:BoundField HeaderText="Campus" DataField="Campus.Name" SortExpression="Campus.Name" NullDisplayText="All Campuses" />
+                                    <asp:BoundField HeaderText="Campus" DataField="Campus.Name" SortExpression="Campus.Name" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" SortExpression="Group" />
                                     <Rock:RockTemplateFieldUnselected HeaderText="Content Item">
                                         <ItemTemplate>
