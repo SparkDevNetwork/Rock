@@ -194,7 +194,31 @@ namespace Rock.Model
                                 GroupRequirement = this,
                                 MeetsGroupRequirement = warningDataViewPersonIdList.Contains( a ) == true ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets,
                             } );
+                    // Get the nullable group member requirement ID based on the PersonId, GroupRequirement and Role.
 
+
+                    //TO-DO make the grouping of the results let me set the GMR ID based on the logic.
+
+
+                    //GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+                    //var groupMemberRequirements = groupMemberRequirementService.GetActiveByPersonIdGroupIdGroupRoleId( personGroupRequirementStatus.PersonId, groupId, groupRoleId );
+                    ////GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                    ////GroupMember groupMember;
+                    ////if ( groupRoleId.HasValue )
+                    ////{
+                    ////    groupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId( groupId, personGroupRequirementStatus.PersonId, groupRoleId.Value );
+                    ////}
+                    ////else
+                    ////{
+                    ////    groupMember = groupMemberService.GetByGroupIdAndPersonId( groupId, personGroupRequirementStatus.PersonId ).First();
+                    ////}
+                    ////var groupMemberRequirements = groupMemberRequirementService.Queryable().Where( r => r.GroupMemberId == groupMember.Id
+                    ////&& r.GroupRequirementId == personGroupRequirementStatus.GroupRequirement.Id );
+
+                    //if ( groupMemberRequirements.Any() )
+                    //{
+                    //    personGroupRequirementStatus.GroupMemberRequirementId = groupMemberRequirements.First().Id;
+                    //}
                     return result;
                 }
             }
@@ -266,13 +290,28 @@ namespace Rock.Model
                 // manual
                 var groupMemberRequirementQry = new GroupMemberRequirementService( rockContext ).Queryable().Where( a => a.GroupMember.GroupId == groupId && a.GroupRequirementId == this.Id && a.RequirementMetDateTime.HasValue );
 
+                if ( this.DueDateStaticDate.HasValue )
+                {
+
+                }
                 var result = personQry.ToList().Select( a =>
-                    new PersonGroupRequirementStatus
+                {
+                    var possibleDueDate = CalculateGroupMemberRequirementDueDate(
+                            this.GroupRequirementType.DueDateType,
+                            this.GroupRequirementType.DueDateOffsetInDays,
+                            this.DueDateStaticDate,
+                            this.DueDateAttributeId.HasValue ? new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( this.DueDateAttributeId.Value, this.GroupId )?.Value.AsDateTime() ?? null : null,
+                new GroupService( rockContext ).Get( groupId ).Members.Where( m => m.PersonId == a.Id && m.GroupRoleId == groupRoleId ).Select( m => m.DateTimeAdded ).DefaultIfEmpty( null ).FirstOrDefault() );
+
+                    return new PersonGroupRequirementStatus
                     {
                         PersonId = a.Id,
                         GroupRequirement = this,
-                        MeetsGroupRequirement = groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id ) ? MeetsGroupRequirement.Meets : MeetsGroupRequirement.NotMet
-                    } );
+                        RequirementDueDate = possibleDueDate,
+                        MeetsGroupRequirement = groupMemberRequirementQry.Any( r => r.GroupMember.PersonId == a.Id ) ? MeetsGroupRequirement.Meets : possibleDueDate.HasValue ? possibleDueDate > RockDateTime.Now ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.NotMet : MeetsGroupRequirement.NotMet
+                    };
+                }
+            );
 
                 return result;
             }
