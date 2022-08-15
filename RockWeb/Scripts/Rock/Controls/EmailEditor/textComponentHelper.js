@@ -65,6 +65,20 @@
           Rock.controls.emailEditor.$currentTextComponent = $tableWrapper;
         }
 
+        if ($('.js-incodeeditormode') && $('.js-incodeeditormode').val() === "1") {
+            var context = $('.js-component-text-htmlEditor').summernote().data('summernote');
+            var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
+            var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
+            var $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
+
+            context.layoutInfo.editingArea.show();
+            context.layoutInfo.editor.removeClass('code-editor-visible');
+            context.layoutInfo.statusbar.show();
+            $codeEditorContainer.hide();
+            $inCodeEditorModeHiddenField.val("0");
+            context.invoke('toolbar.updateCodeview', false);
+        }
+
         $('.js-component-text-htmlEditor').summernote('code', $innerWrapper.html());
         $('.js-component-text-htmlEditor').summernote('commit');
 
