@@ -116,7 +116,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return Name.ToString();
+            return Name;
         }
 
         #endregion
