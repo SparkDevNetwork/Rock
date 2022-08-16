@@ -2155,6 +2155,14 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
             var oneYearAgo = context.Now.AddMonths( -12 );
 
+            /* 08/16/2022 MP
+              
+             Select the data from the database into a list before doing the GroupBy. This improves performance
+             significantly in this case since we'll be doing the GroupBy and Max in memory instead of having SQL
+             having to figure it out.
+            
+             */
+
             var mostRecentOldTransactionDateForAlertTypeByGivingId = givingAutomationSourceTransactionQueryForAlertType
                 .Where( t => t.TransactionDateTime < oneYearAgo )
                 .Select( a => new { a.AuthorizedPersonAlias.Person.GivingId, a.TransactionDateTime } )
@@ -2167,6 +2175,15 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 } ).ToDictionary(
                     k => k.GivingId,
                     v => v.MostRecentOldTransactionDateTime );
+
+
+            /* 08/16/2022 MP
+              
+             Select the data from the database into a list before doing the GroupBy. This improves performance
+             significantly in this case since we'll be doing the GroupBy in memory instead of having SQL
+             figure it out. 
+            
+             */
 
             var twelveMonthsTransactionsForAlertTypeByGivingId = givingAutomationSourceTransactionQueryForAlertType
                 .Where( t => t.TransactionDateTime >= oneYearAgo )
