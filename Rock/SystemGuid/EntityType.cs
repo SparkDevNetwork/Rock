@@ -754,5 +754,9 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.PersonalLinkSection"/> 
         /// </summary>
         public const string PERSONAL_LINK_SECTION = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF";
+
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowLog"/>
+        /// </summary>
+        public const string WORKFLOW_LOG = "332CFF36-D637-414D-B732-370B330B8D73";
     }
 }
