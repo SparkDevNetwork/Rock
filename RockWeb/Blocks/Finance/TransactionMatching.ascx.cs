@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -446,11 +446,14 @@ namespace RockWeb.Blocks.Finance
             {
                 // Put a highlight label on this panel that shows the Campus of the Batch being worked on:
                 var batchCampusId = new FinancialBatchService( rockContext ).GetSelect( batchId.Value, a => a.CampusId );
-                hlCampus.Text = "Batch Campus: " + CampusCache.Get( batchCampusId.Value ).Name;
-                hlCampus.Visible = true;
+                if ( batchCampusId.HasValue )
+                {
+                    hlCampus.Text = "Batch Campus: " + CampusCache.Get( batchCampusId.Value ).Name;
+                    hlCampus.Visible = true;
 
-                // Filter out anything that does not match the batch's campus.
-                financialAccountList = financialAccountList.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
+                    // Filter out anything that does not match the batch's campus.
+                    financialAccountList = financialAccountList.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
+                }
             }
 
             int? campusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
