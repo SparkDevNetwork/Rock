@@ -61,10 +61,8 @@ export default defineComponent({
             "attributeValues",
             "description",
             "fileName",
-            "layoutMobilePhone",
-            "layoutMobileTablet",
             "name",
-            "site"
+            "siteId"
         ];
 
         const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(layoutEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -132,25 +130,6 @@ export default defineComponent({
             }
 
             return true;
-        };
-
-        /**
-         * Event handler for the Delete button being clicked. Sends the
-         * delete request to the server and then redirects to the target page.
-         */
-        const onDelete = async (): Promise<void> => {
-            errorMessage.value = "";
-
-            const result = await invokeBlockAction<string>("Delete", {
-                key: layoutViewBag.value?.idKey
-            });
-
-            if (result.isSuccess && result.data) {
-                window.location.href = result.data;
-            }
-            else {
-                errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete layout.";
-            }
         };
 
         /**
@@ -254,7 +233,6 @@ export default defineComponent({
             errorMessage,
             isEditable,
             onCancelEdit,
-            onDelete,
             onEdit,
             onPropertyChanged,
             onSave,
@@ -278,12 +256,11 @@ export default defineComponent({
     entityTypeName="Layout"
     :isAuditHidden="false"
     :isBadgesVisible="true"
-    :isDeleteVisible="isEditable"
+    :isDeleteVisible="false"
     :isEditVisible="isEditable"
     :isFollowVisible="true"
-    :isSecurityHidden="false"
+    :isSecurityHidden="true"
     @cancelEdit="onCancelEdit"
-    @delete="onDelete"
     @edit="onEdit"
     @save="onSave">
     <template #view>

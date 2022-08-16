@@ -98,7 +98,7 @@ namespace Rock.Blocks.Cms
             var entity = GetInitialEntity( rockContext );
 
             var site = SiteCache.Get( entity.SiteId );
-            if ( site != null )
+            if ( site != null && isEditable )
             {
                 var physicalRootFolder = AppDomain.CurrentDomain.BaseDirectory;
                 var virtualThemeLayoutFolder = $"~/Themes/{site.Theme}/Layouts";
@@ -208,10 +208,8 @@ namespace Rock.Blocks.Cms
                 Description = entity.Description,
                 FileName = entity.FileName,
                 IsSystem = entity.IsSystem,
-                LayoutMobilePhone = entity.LayoutMobilePhone,
-                LayoutMobileTablet = entity.LayoutMobileTablet,
                 Name = entity.Name,
-                Site = entity.Site.ToListItemBag()
+                SiteId = entity.SiteId
             };
         }
 
@@ -284,17 +282,11 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Entity.IsSystem ),
                 () => entity.IsSystem = box.Entity.IsSystem );
 
-            box.IfValidProperty( nameof( box.Entity.LayoutMobilePhone ),
-                () => entity.LayoutMobilePhone = box.Entity.LayoutMobilePhone );
-
-            box.IfValidProperty( nameof( box.Entity.LayoutMobileTablet ),
-                () => entity.LayoutMobileTablet = box.Entity.LayoutMobileTablet );
-
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.Site ),
-                () => entity.SiteId = box.Entity.Site.GetEntityId<Site>( rockContext ) ?? 0 );
+            box.IfValidProperty( nameof( box.Entity.SiteId ),
+                () => entity.SiteId = box.Entity.SiteId );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -505,25 +497,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new LayoutService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
-            }
+            return ActionBadRequest( "Layout deletion is not allowed." );
         }
 
         /// <summary>

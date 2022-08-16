@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,23 +38,13 @@ namespace Rock.ViewModels.Blocks.Cms.LayoutDetail
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the layout mobile phone.
-        /// </summary>
-        public string LayoutMobilePhone { get; set; }
-
-        /// <summary>
-        /// Gets or sets the layout mobile tablet.
-        /// </summary>
-        public string LayoutMobileTablet { get; set; }
-
-        /// <summary>
         /// Gets or sets the logical name of the Layout.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Rock.Model.Site that this Layout Block is associated with.
+        /// Gets or sets the Id of the Rock.Model.Site that this Layout Block is associated with.
         /// </summary>
-        public ListItemBag Site { get; set; }
+        public int SiteId { get; set; }
     }
 }
