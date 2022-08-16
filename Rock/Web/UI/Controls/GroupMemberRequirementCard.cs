@@ -52,6 +52,11 @@ namespace Rock.Web.UI.Controls
         private GroupMemberRequirement _groupMemberRequirement;
 
         /// <summary>
+        /// Link Button control for manual "checkbox" requirements.
+        /// </summary>
+        private LinkButton _lbManualRequirement;
+
+        /// <summary>
         /// Link Button control for overriding requirements.
         /// </summary>
         private LinkButton _lbMarkAsMet;
@@ -189,15 +194,29 @@ namespace Rock.Web.UI.Controls
             GroupRequirementService groupRequirementService = new GroupRequirementService( rockContext );
             var groupRequirement = groupRequirementService.Get( GroupRequirementId.Value );
 
+            if ( groupRequirement.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual )
+            {
+                var manualLabel = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace() ? groupRequirement.GroupRequirementType.CheckboxLabel : groupRequirement.GroupRequirementType.Name;
+                _lbManualRequirement = new LinkButton
+                {
+                    CausesValidation = false,
+                    ID = "lbManualRequirement" + this.ClientID,
+                    Text = "<i class='fa fa-square-o fa-fw'></i>" + manualLabel,
+                };
+                _lbManualRequirement.Click += lbManualRequirement_Click;
+                Controls.Add( _lbManualRequirement );
+            }
+
+
             if ( groupRequirement.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
             {
                 _lbMarkAsMet = new LinkButton
                 {
                     CausesValidation = false,
-                    ID = "btnMarkasMetPopup" + this.ClientID,
+                    ID = "lbMarkasMetPopup" + this.ClientID,
                     Text = "<i class='fa fa-check-circle-o fa-fw'></i>Mark as Met",
                 };
-                _lbMarkAsMet.Click += btnMarkasMetPopup_Click;
+                _lbMarkAsMet.Click += lbMarkasMetPopup_Click;
                 Controls.Add( _lbMarkAsMet );
 
                 _modalDialog = new ModalDialog
@@ -377,13 +396,23 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                // If any workflows or if the requirement can be overridden, create the unordered list and list items.
-                if ( _hasDoesNotMeetWorkflow || _hasWarningWorkflow || _canOverride )
+                // If any workflows, the requirement can be overridden, or a manual requirement, create the unordered list and list items.
+                if ( _hasDoesNotMeetWorkflow || _hasWarningWorkflow || _canOverride || this._groupMemberRequirementType.RequirementCheckType == RequirementCheckType.Manual )
                 {
                     writer.AddStyleAttribute( "list-style-type", "none" );
                     writer.AddStyleAttribute( "margin", "0" );
                     writer.AddStyleAttribute( "padding", "0" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Ul );
+
+                    if ( this._groupMemberRequirementType.RequirementCheckType == RequirementCheckType.Manual && MeetsGroupRequirement != MeetsGroupRequirement.Meets )
+                    {
+                        writer.RenderBeginTag( HtmlTextWriterTag.Li );
+
+                        _lbManualRequirement.RenderControl( writer );
+
+                        // End the Li tag.
+                        writer.RenderEndTag();
+                    }
 
                     if ( _hasDoesNotMeetWorkflow && _lbDoesNotMeetWorkflow != null )
                     {
@@ -475,13 +504,49 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the Click event of the _btnMarkasMetPopup control.
+        /// Handles the Click event of the _lbMarkasMetPopup control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnMarkasMetPopup_Click( object sender, EventArgs e )
+        protected void lbMarkasMetPopup_Click( object sender, EventArgs e )
         {
             _modalDialog.Show();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbManualRequirement control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbManualRequirement_Click( object sender, EventArgs e )
+        {
+            // Save the Requirement change.
+            // Get the requirement ID, the group member ID, and mark it as completed.
+            var rockContext = new RockContext();
+            GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+            var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+            if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
+            {
+                groupMemberRequirement = new GroupMemberRequirement
+                {
+                    GroupRequirementId = GroupRequirementId.Value,
+                    GroupMemberId = GroupMemberId
+                };
+                groupMemberRequirementService.Add( groupMemberRequirement );
+            }
+
+            groupMemberRequirement.WasManuallyCompleted = true;
+            var currentPerson = ( ( RockPage ) Page ).CurrentPerson;
+            groupMemberRequirement.ManuallyCompletedByPersonAliasId = currentPerson.PrimaryAliasId;
+            groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
+
+            rockContext.SaveChanges();
+
+            // Reload the page to make sure that the current status is reflected in the card styling.
+            var currentPageReference = this.RockBlock().CurrentPageReference;
+            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
+            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
+            this.RockBlock().NavigateToPage( pageRef );
         }
 
         /// <summary>
@@ -516,7 +581,7 @@ namespace Rock.Web.UI.Controls
 
             // Reload the page to make sure that the current status is reflected in the card styling.
             var currentPageReference = this.RockBlock().CurrentPageReference;
-            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary(k => k.Key, k => k.Value.ToString());
+            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
             var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
             this.RockBlock().NavigateToPage( pageRef );
         }
