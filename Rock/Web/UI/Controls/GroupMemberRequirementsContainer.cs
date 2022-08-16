@@ -65,6 +65,11 @@ namespace Rock.Web.UI.Controls
         public string WorkflowEntryPage { get; set; }
 
         /// <summary>
+        /// A boolean to set whether the requirement summary is displayed on cards.
+        /// </summary>
+        public bool IsSummaryHidden { get; set; }
+
+        /// <summary>
         /// If true, recalculate the requirements of this group member, otherwise load existing requirements. 
         /// </summary>
         public bool ForceRefreshRequirements { get; set; }
@@ -177,7 +182,8 @@ namespace Rock.Web.UI.Controls
                         GroupRequirementId = requirementStatus.GroupRequirement.Id,
                         GroupMemberId = GroupMemberId,
                         GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate,
-                        WorkflowEntryPage = WorkflowEntryPage
+                        WorkflowEntryPage = WorkflowEntryPage,
+                        IsSummaryHidden = IsSummaryHidden
                     };
 
                     columnControl.Controls.Add( card );

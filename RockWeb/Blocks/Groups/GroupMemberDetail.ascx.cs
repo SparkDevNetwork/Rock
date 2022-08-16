@@ -57,10 +57,10 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 2 )]
 
-    [BooleanField( "Show public note",
-        Description = "Set to false to hide the public note.",
-        Key = AttributeKey.ShowPublicNotes,
-        DefaultBooleanValue = true,
+    [BooleanField( "Is Summary Hidden?",
+        Description = "Set to true to keep the summary field from displaying.",
+        Key = AttributeKey.IsSummaryHidden,
+        DefaultBooleanValue = false,
         Order = 3 )]
 
     [LinkedPage(
@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Groups
             public const string RegistrationPage = "RegistrationPage";
             public const string ShowMoveToOtherGroup = "ShowMoveToOtherGroup";
             public const string ShowRequirementsPublicly = "ShowRequirementsPublicly";
-            public const string ShowPublicNotes = "ShowPublicNotes";
+            public const string IsSummaryHidden = "IsSummaryHidden";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string EnableCommunications = "EnableCommunications";
             public const string EnableSMS = "EnableSMS";
@@ -138,6 +138,7 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
             gmrcRequirements.GroupMemberId = PageParameter( PageParameterKey.GroupMemberId ).AsInteger();
             gmrcRequirements.WorkflowEntryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
+            grmcRequirements.IsSummaryHidden = this.GetAttributeValue( AttributeKey.IsSummaryHidden );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it.
             this.BlockUpdated += GroupMemberDetail_BlockUpdated;

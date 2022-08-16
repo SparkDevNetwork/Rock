@@ -110,6 +110,11 @@ namespace Rock.Web.UI.Controls
         public int? GroupMemberRequirementId { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the summary is displayed.
+        /// </summary>
+        public bool IsSummaryHidden { get; set; }
+
+        /// <summary>
         /// Gets or sets the calculated due date for this group member requirement.
         /// </summary>
         public DateTime? GroupMemberRequirementDueDate { get; set; }
@@ -387,7 +392,7 @@ namespace Rock.Web.UI.Controls
                 // End the Div tag.
                 writer.RenderEndTag();
 
-                if ( this._groupMemberRequirementType.Summary.IsNotNullOrWhiteSpace() )
+                if ( this._groupMemberRequirementType.Summary.IsNotNullOrWhiteSpace() && !IsSummaryHidden )
                 {
                     writer.RenderBeginTag( HtmlTextWriterTag.Small );
                     writer.Write( this._groupMemberRequirementType.Summary );
