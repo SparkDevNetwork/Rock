@@ -128,7 +128,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guidString">The unique identifier string.</param>
         /// <returns></returns>
-        public static T Get( string guidString ) 
+        public static T Get( string guidString )
         {
             var guid = guidString.AsGuidOrNull();
             return guid.HasValue ? Get( guid.Value ) : default( T );
@@ -142,6 +142,22 @@ namespace Rock.Web.Cache
         public static T Get( Guid guid )
         {
             return Get( guid, null );
+        }
+
+        /// <summary>
+        /// Gets a cached item using an IdKey.
+        /// </summary>
+        /// <param name="idKey">The IdKey.</param>
+        /// <returns>T.</returns>
+        public static T GetByIdKey( string idKey )
+        {
+            var idFromIdKey = Rock.Utility.IdHasher.Instance.GetId( idKey );
+            if ( !idFromIdKey.HasValue )
+            {
+                return default( T );
+            }
+
+            return Get( idFromIdKey.Value );
         }
 
         /// <summary>
@@ -256,7 +272,7 @@ namespace Rock.Web.Cache
             }
             catch
             {
-                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{ entityDescription }\", Id=\"{ id }\"]." );
+                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{entityDescription}\", Id=\"{id}\"]." );
             }
         }
 
@@ -275,7 +291,7 @@ namespace Rock.Web.Cache
             }
             catch
             {
-                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{ entityDescription }\", Guid=\"{ guid }\"]." );
+                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{entityDescription}\", Guid=\"{guid}\"]." );
             }
         }
 

@@ -61,7 +61,7 @@ namespace Rock.Jobs
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
             System.Collections.Generic.List<int> mediaInteractionWithoutInteractionIdList;
 
-            // First, get a list of all the Interaction IDs that we'll need to update each interaction that needs to be updated
+            // First, get a list of all the Interaction IDs that we'll need to update because later each interaction needs to be updated.
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
@@ -70,6 +70,7 @@ namespace Rock.Jobs
                 if ( !interactionChannelIdMediaEvent.HasValue )
                 {
                     DeleteJob( context.GetJobId() );
+                    return;
                 }
 
                 var interactionService = new InteractionService( rockContext ).Queryable();
