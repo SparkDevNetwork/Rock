@@ -86,82 +86,70 @@ namespace Rock.Migrations
         public void SeedCategories()
         {
 
-            var sql = $@"
-
-                    DECLARE @EntityTypeID       INT; 
-
-                    -- Get LavaShortcodeCategory EntityId    
-                    SET @EntityTypeID = (SELECT TOP 1 [Id] FROM [EntityType] WHERE[Guid] = '{SystemGuid.EntityType.LAVA_SHORTCODE_CATEGORY}')
+            Sql( $@"
+                -- Get the Shorcode IDs
+                DECLARE @AccordionID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Accordion')
+                DECLARE @ChartID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Chart')
+                DECLARE @EasyPieChartID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Easy Pie Chart')
+                DECLARE @GoogleHeatmapID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Google Heatmap')
+                DECLARE @GoogleMapID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Google Map')
+                DECLARE @GoogleStaticMapID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Google Static Map')
+                DECLARE @KpiID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'KPI')
+                DECLARE @PanelID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Panel')
+                DECLARE @ParallaxID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Parallax')
+                DECLARE @SparklineChartID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Sparkline Chart')
+                DECLARE @TrendChartID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Trend Chart')
+                DECLARE @VimeoID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Vimeo')
+                DECLARE @WordCloudID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Word Cloud')
+                DECLARE @YouTubeID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'YouTube')
+        
+                -- Get the Category IDs
+                DECLARE @GeneralID INT = (SELECT [Id] FROM [Category] WHERE [Guid] = '12E91788-8545-4DE3-BB04-29F4968A4E2E')
+                DECLARE @ReportingID INT = (SELECT [Id] FROM [Category] WHERE [Guid] = 'A5503FF2-01A2-49CB-8C22-E57C3D7FDC29')
+                DECLARE @WebsiteID INT = (SELECT [Id] FROM [Category] WHERE [Guid] = 'C3270142-E72E-4FBF-BE94-9A2505DE7D54')
                     
-                    IF (@EntityTypeID = 0)
-                        BEGIN
-                            RETURN
-                        END
-                    ELSE
-                        BEGIN
-                            DECLARE @GeneralID          INT;
-                            DECLARE @ReportingID        INT;
-                            DECLARE @WebsiteID          INT;
+                -- Add LavaShortcode Categories
+                IF (@AccordionID IS NOT NULL AND @GeneralID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES  (@AccordionID, @GeneralID) END
 
-                            -- Shortcode IDs
-                            DECLARE @AccordionID        INT;
-                            DECLARE @ChartID            INT;
-                            DECLARE @EasyPieChartID     INT;
-                            DECLARE @GoogleHeatmapID    INT;
-                            DECLARE @GoogleMapID        INT;
-                            DECLARE @GoogleStaticMapID  INT;
-                            DECLARE @KpiID              INT;
-                            DECLARE @PanelID            INT;
-                            DECLARE @ParallaxID         INT;
-                            DECLARE @SparklineChartID   INT;
-                            DECLARE @TrendChartID       INT;
-                            DECLARE @VimeoID            INT;
-                            DECLARE @WordCloudID        INT;
-                            DECLARE @YouTubeID          INT;
-                    
-                            SET @AccordionID        = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Accordion')
-                            SET @ChartID            = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Chart')
-                            SET @EasyPieChartID     = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Easy Pie Chart')
-                            SET @GoogleHeatmapID    = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Google Heatmap')
-                            SET @GoogleMapID        = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Google Map')
-                            SET @GoogleStaticMapID  = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Google Static Map')
-                            SET @KpiID              = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'KPI')
-                            SET @PanelID            = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Panel')
-                            SET @ParallaxID         = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Parallax')
-                            SET @SparklineChartID   = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Sparkline Chart')
-                            SET @TrendChartID       = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Trend Chart')
-                            SET @VimeoID            = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Vimeo')
-                            SET @WordCloudID        = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'Word Cloud')
-                            SET @YouTubeID          = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name]   =   'YouTube')
-                  
-                            SET @GeneralID          = (SELECT TOP 1 [Id] FROM [Category] WHERE [EntityTypeId] = @EntityTypeID AND [Guid]  = '12E91788-8545-4DE3-BB04-29F4968A4E2E')
-                            SET @ReportingID        = (SELECT TOP 1 [Id] FROM [Category] WHERE [EntityTypeId] = @EntityTypeID AND [Guid]  = 'A5503FF2-01A2-49CB-8C22-E57C3D7FDC29')
-                            SET @WebsiteID          = (SELECT TOP 1 [Id] FROM [Category] WHERE [EntityTypeId] = @EntityTypeID AND [Guid]  = 'C3270142-E72E-4FBF-BE94-9A2505DE7D54')
-                    
-                            DECLARE @InsertModifiedDate DATETIME;
-                            SET @InsertModifiedDate = GETDATE()
-                    
-                            -- Add LavaShortcode Categories
-                            INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId)
-                            VALUES 
-                            (@AccordionID,      @GeneralID),
-                            (@ChartID,          @ReportingID),
-                            (@EasyPieChartID,   @ReportingID),
-                            (@GoogleHeatmapID,  @ReportingID),
-                            (@GoogleMapID,      @GeneralID),
-                            (@GoogleStaticMapID,@GeneralID),
-                            (@KpiID,            @ReportingID),
-                            (@PanelID,          @WebsiteID),
-                            (@ParallaxID,       @WebsiteID),
-                            (@SparklineChartID, @ReportingID),
-                            (@TrendChartID,     @ReportingID),
-                            (@VimeoID,          @WebsiteID),
-                            (@WordCloudID,      @GeneralID),
-                            (@YouTubeID,        @WebsiteID);
-                        END;
-                    ";
+                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@ChartID, @ReportingID) END
 
-            Sql( sql );
+                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@EasyPieChartID, @ReportingID) END
+
+                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@GoogleHeatmapID, @ReportingID) END
+
+                IF (@AccordionID IS NOT NULL AND @GeneralID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@GoogleMapID, @GeneralID) END
+
+                IF (@AccordionID IS NOT NULL AND @GeneralID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@GoogleStaticMapID, @GeneralID) END
+
+                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@KpiID, @ReportingID) END
+
+                IF (@AccordionID IS NOT NULL AND @WebsiteID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@PanelID, @WebsiteID) END
+
+                IF (@AccordionID IS NOT NULL AND @WebsiteID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@ParallaxID, @WebsiteID) END
+
+                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@SparklineChartID, @ReportingID) END
+
+                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@TrendChartID, @ReportingID) END
+
+                IF (@AccordionID IS NOT NULL AND @WebsiteID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@VimeoID, @WebsiteID) END
+
+                IF (@AccordionID IS NOT NULL AND @GeneralID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@WordCloudID, @GeneralID) END
+
+                IF (@AccordionID IS NOT NULL AND @WebsiteID IS NOT NULL)
+                BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@YouTubeID, @WebsiteID) END" );
         }
 
         private void RemoveCategories()
