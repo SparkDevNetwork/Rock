@@ -57,8 +57,8 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 2 )]
 
-    [BooleanField( "Is Summary Hidden?",
-        Description = "Set to true to keep the summary field from displaying.",
+    [BooleanField( "Is Requirement Summary Hidden?",
+        Description = "Set to true to hide the \"Summary\" field.",
         Key = AttributeKey.IsSummaryHidden,
         DefaultBooleanValue = false,
         Order = 3 )]
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
             gmrcRequirements.GroupMemberId = PageParameter( PageParameterKey.GroupMemberId ).AsInteger();
             gmrcRequirements.WorkflowEntryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
-            grmcRequirements.IsSummaryHidden = this.GetAttributeValue( AttributeKey.IsSummaryHidden );
+            gmrcRequirements.IsSummaryHidden = this.GetAttributeValue( AttributeKey.IsSummaryHidden ).AsBoolean();
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it.
             this.BlockUpdated += GroupMemberDetail_BlockUpdated;

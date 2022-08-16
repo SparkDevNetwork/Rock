@@ -212,7 +212,6 @@ namespace Rock.Web.UI.Controls
                 Controls.Add( _lbManualRequirement );
             }
 
-
             if ( groupRequirement.IsAuthorized( Authorization.OVERRIDE, currentPerson ) )
             {
                 _lbMarkAsMet = new LinkButton
@@ -246,7 +245,6 @@ namespace Rock.Web.UI.Controls
             // the Group Requirement Type has a workflow type ID,
             // the workflow is NOT auto initiated, and
             // the requirement status matches the workflow purpose (Meets with Warning or Not Met).
-
             _hasDoesNotMeetWorkflow = _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue
                 && !_groupMemberRequirementType.ShouldAutoInitiateDoesNotMeetWorkflow
                 && MeetsGroupRequirement == MeetsGroupRequirement.NotMet;
@@ -424,7 +422,6 @@ namespace Rock.Web.UI.Controls
                         writer.RenderBeginTag( HtmlTextWriterTag.Li );
                         _lbDoesNotMeetWorkflow.RenderControl( writer );
 
-                        //RegisterWorkflowDetailPageScript( _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value, _groupMemberRequirementType.DoesNotMeetWorkflowType.Guid, _lbNotMetWorkflow, "This is a message to prompt before workflow." );
                         // End the Li tag.
                         writer.RenderEndTag();
                     }
@@ -598,8 +595,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDoesNotMeetWorkflow_Click( object sender, EventArgs e )
         {
-            //trigger the workflow.
-            //new PageReference( WorkflowEntryPage, qryParms ).BuildUrl();
+            // Trigger the workflow.
             if ( _groupMemberRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
             {
                 var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.DoesNotMeetWorkflowTypeId.Value );
@@ -608,6 +604,7 @@ namespace Rock.Web.UI.Controls
                     var rockContext = new RockContext();
                     GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                     var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+
                     // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
                     Rock.Model.Workflow workflow;
                     if ( groupMemberRequirement != null && groupMemberRequirement.DoesNotMeetWorkflowId.HasValue )
@@ -630,7 +627,6 @@ namespace Rock.Web.UI.Controls
                         if ( processed )
                         {
                             // Update the group member requirement with the workflow ID.
-
                             if ( groupMemberRequirement == null && GroupRequirementId.HasValue )
                             {
                                 groupMemberRequirement = new GroupMemberRequirement
@@ -657,8 +653,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-
-
         /// <summary>
         /// Handles the Click event of the lbWarningWorkflow_Click control.
         /// </summary>
@@ -666,8 +660,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbWarningWorkflow_Click( object sender, EventArgs e )
         {
-            //trigger the workflow.
-            //new PageReference( WorkflowEntryPage, qryParms ).BuildUrl();
+            // Trigger the workflow.
             if ( _groupMemberRequirementType.WarningWorkflowTypeId.HasValue )
             {
                 var workflowType = WorkflowTypeCache.Get( this._groupMemberRequirementType.WarningWorkflowTypeId.Value );
@@ -676,6 +669,7 @@ namespace Rock.Web.UI.Controls
                     var rockContext = new RockContext();
                     GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
                     var groupMemberRequirement = groupMemberRequirementService.Get( this.GroupMemberRequirementId ?? 0 );
+
                     // If there is a workflow ID in the group member requirement, navigate to that workflow entry page, otherwise, activate one.
                     Rock.Model.Workflow workflow;
                     if ( groupMemberRequirement != null && groupMemberRequirement.WarningWorkflowId.HasValue )
