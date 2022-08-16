@@ -2095,7 +2095,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             }
 
             context.LateAlertsByGivingId = new Dictionary<string, List<(int AlertTypeId, bool ContinueIfMatched)>>();
-            List<FinancialTransactionAlert> lateAlerts = new List<FinancialTransactionAlert>();
+            List<FinancialTransactionAlert> addedlateAlerts = new List<FinancialTransactionAlert>();
 
             foreach ( FinancialTransactionAlertType lateGiftAlertType in lateGiftAlertTypes.OrderBy( a => a.Order ) )
             {
@@ -2108,9 +2108,14 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                         new FinancialTransactionAlertService( rockContext ).AddRange( lateAlertsForAlertType );
                         context.AlertsCreated += lateAlertsForAlertType.Count;
                         rockContext.SaveChanges();
+
+                        addedlateAlerts.AddRange( lateAlertsForAlertType );
                     }
                 }
             }
+
+            
+            HandlePostAlertsAddedLogic( addedlateAlerts );
         }
 
         /// <summary>
