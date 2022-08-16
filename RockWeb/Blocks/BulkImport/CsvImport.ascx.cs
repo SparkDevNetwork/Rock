@@ -127,6 +127,13 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            if ( !Page.IsPostBack )
+            {
+                // delete all files in the root directory on start up to ensure that no residual files are present before the upload
+                Array.ForEach( Directory.GetFiles( Request.MapPath( fupCSVFile.RootFolder ) ), delegate ( string path )
+             { File.Delete( path ); } );
+            }
             RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
         }
 
@@ -186,6 +193,7 @@ namespace RockWeb.Blocks.BulkImport
         {
             hfCSVFileName.Value = fupCSVFile.UploadedContentFilePath;
         }
+
         protected void fupCSVFile_FileRemoved( object sender, EventArgs e )
         {
             string filePath = Request.MapPath( hfCSVFileName.Value );
