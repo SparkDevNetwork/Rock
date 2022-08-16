@@ -139,7 +139,7 @@ namespace Rock.Utility.Settings
         public RockInstanceDatabaseConfiguration Database { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is clustered using RockWebFarm or Redis.
+        /// Gets a value indicating whether this instance is clustered using RockWebFarm.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
@@ -153,7 +153,7 @@ namespace Rock.Utility.Settings
                     return true;
                 }
 
-                return Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
+                return false;
             }
         }
 

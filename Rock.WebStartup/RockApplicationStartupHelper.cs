@@ -166,8 +166,8 @@ namespace Rock.WebStartup
 
             /* 2020-05-20 MDP
                Plugins use Direct SQL to update data,
-               or other things could have done data updates
-               So, just in case, clear the cache (which could be Redis) since anything that is in there could be stale
+               or other things could have done data updates.
+               So, just in case, clear the cache since anything that is in there could be stale
             */
 
             LogStartupMessage( "Reloading Cache" );
