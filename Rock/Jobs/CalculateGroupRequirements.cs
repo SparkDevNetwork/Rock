@@ -71,7 +71,7 @@ namespace Rock.Jobs
 
             foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).Include( a => a.GroupRequirementType.DataView ).Include( a => a.GroupRequirementType.WarningDataView ).AsNoTracking().ToList() )
             {
-                // Only calculate group requirements for Active groups (if an inactive group becomes active again, this job will take care of re-calculating the requirements again)
+                // Only calculate group requirements for Active groups (if an inactive group becomes active again, this job will take care of re-calculating the requirements again).
                 var groupQuery = groupService.Queryable().Where( a => a.IsActive );
                 if ( groupRequirement.GroupId.HasValue )
                 {
@@ -83,7 +83,7 @@ namespace Rock.Jobs
                 }
                 else
                 {
-                    // shouldn't happen, but Group Requirement doesn't have a groupId or a GroupTypeId
+                    // Shouldn't happen, but Group Requirement doesn't have a groupId or a GroupTypeId.
                     break;
                 }
 
