@@ -12,9 +12,9 @@
                             <div class="card-header group-hover">
                                 <span class="card-title"><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></span>
 
-                                <div class="panel-labels group-hover-item group-hover-show">
+                                <div class="panel-labels">
                                     <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs js-stop-immediate-propagation panel-widget-reorder"><i class="fa fa-bars"></i></a>
-                                    <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="btn btn-link btn-xs"><i class="fa fa-pencil"></i></asp:HyperLink>
+                                    <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></asp:HyperLink>
                                 </div>
                             </div>
 

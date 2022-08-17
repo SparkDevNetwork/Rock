@@ -30,11 +30,14 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="build\.eslintrc.js" />
+    <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="build\" />
     <Folder Include="src\" />
     <Folder Include="src\Cms\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
@@ -176,6 +179,6 @@
     <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="AfterCompile">
-    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
+    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build-fast" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
   </Target>
 </Project>

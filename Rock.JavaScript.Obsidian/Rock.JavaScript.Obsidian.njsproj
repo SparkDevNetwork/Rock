@@ -31,6 +31,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include=".eslintrc.js" />
+    <Content Include="Build\.eslintrc.js" />
+    <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\alert.ts" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Core\tsconfig.json" />
@@ -796,7 +798,7 @@
     <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="AfterCompile">
-    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
+    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build-fast" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
   </Target>
   <ProjectExtensions>
     <VisualStudio>

@@ -65,7 +65,7 @@ namespace Rock.Rest.Controllers
                     var assetStorageProvider = assetStorageService.GetNoTracking( assetStorageProviderId );
 
                     Asset asset = new Asset { Key = string.Empty, Type = AssetType.Folder };
-                    if ( assetFolderIdParts.Length > 1 )
+                    if ( assetFolderIdParts.Length > 1 && assetFolderIdParts[1].Length > 0 )
                     {
                         var scrubbedFileName = System.Text.RegularExpressions.Regex.Replace( assetFolderIdParts[1], "[" + System.Text.RegularExpressions.Regex.Escape( string.Concat( System.IO.Path.GetInvalidPathChars() ) ) + "]", string.Empty, System.Text.RegularExpressions.RegexOptions.CultureInvariant );
                         var scrubbedFilePath = System.IO.Path.GetDirectoryName( scrubbedFileName ).Replace( '\\', '/' );
@@ -74,6 +74,10 @@ namespace Rock.Rest.Controllers
 
                         var scrubbedFileNameAndPath = $"{scrubbedFilePath}/{scrubbedFileName}";
                         asset.Key = scrubbedFileNameAndPath;
+                    }
+                    else
+                    {
+                        asset.Key = string.Empty;
                     }
 
                     var component = assetStorageProvider.GetAssetStorageComponent();

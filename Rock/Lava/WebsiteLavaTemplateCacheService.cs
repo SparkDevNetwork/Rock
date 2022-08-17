@@ -16,6 +16,7 @@
 //
 using System;
 using System.Threading;
+
 using Rock.Web.Cache;
 
 namespace Rock.Lava
@@ -60,29 +61,21 @@ namespace Rock.Lava
         {
             WebsiteLavaTemplateCache template;
 
-            // If cache items need to be serialized, do not cache the template because it isn't serializable.
-            if ( RockCache.IsCacheSerialized )
+            var fromCache = true;
+
+            template = WebsiteLavaTemplateCache.GetOrAddExisting( key, () =>
             {
-                template = Load( engine, content );
+                fromCache = false;
+                return Load( engine, content );
+            } );
+
+            if ( fromCache )
+            {
+                Interlocked.Increment( ref _cacheHits );
             }
             else
             {
-                var fromCache = true;
-
-                template = WebsiteLavaTemplateCache.GetOrAddExisting( key, () =>
-                {
-                    fromCache = false;
-                    return Load( engine, content );
-                } );
-
-                if ( fromCache )
-                {
-                    Interlocked.Increment( ref _cacheHits );
-                }
-                else
-                {
-                    Interlocked.Increment( ref _cacheMisses );
-                }
+                Interlocked.Increment( ref _cacheMisses );
             }
 
             return template;
@@ -95,11 +88,6 @@ namespace Rock.Lava
         /// <returns></returns>
         public bool Contains( string key )
         {
-            if ( RockCache.IsCacheSerialized )
-            {
-                return false;
-            }
-
             bool contains = true;
 
             var template = WebsiteLavaTemplateCache.GetOrAddExisting( key, () =>
@@ -233,7 +221,7 @@ namespace Rock.Lava
                 templateKey = content.XxHash();
             }
 
-            return $"{ _cacheKeyPrefix }:{templateKey}";
+            return $"{_cacheKeyPrefix}:{templateKey}";
         }
 
         #endregion
