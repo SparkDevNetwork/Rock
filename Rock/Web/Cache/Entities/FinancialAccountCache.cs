@@ -45,6 +45,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? ParentAccountId { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.FinancialAccount.GlCode" />
+        [DataMember]
+        public string GlCode { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.FinancialAccount.CampusId" />
         [DataMember]
         public int? CampusId { get; private set; }
@@ -268,6 +272,7 @@ namespace Rock.Web.Cache
             this.Name = financialAccount.Name;
             this.PublicName = financialAccount.PublicName;
             this.ParentAccountId = financialAccount.ParentAccountId;
+            this.GlCode = financialAccount.GlCode;
             this.CampusId = financialAccount.CampusId;
             this.IsActive = financialAccount.IsActive;
             this.Order = financialAccount.Order;
