@@ -610,7 +610,10 @@ function onTaskCompleted( resultData )
             if ( valueItem == null && communication.SMSFromDefinedValueId != null )
             {
                 var lookupDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.GetValueOrDefault() );
-                ddlSMSFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                if ( lookupDefinedValue != null && lookupDefinedValue.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                {
+                    ddlSMSFrom.Items.Add( new ListItem( lookupDefinedValue.Description, lookupDefinedValue.Id.ToString() ) );
+                }
             }
 
             ddlSMSFrom.SetValue( communication.SMSFromDefinedValueId );
