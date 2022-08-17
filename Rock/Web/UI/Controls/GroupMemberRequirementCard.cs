@@ -541,6 +541,7 @@ namespace Rock.Web.UI.Controls
             var currentPerson = ( ( RockPage ) Page ).CurrentPerson;
             groupMemberRequirement.ManuallyCompletedByPersonAliasId = currentPerson.PrimaryAliasId;
             groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
+            groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
 
             rockContext.SaveChanges();
 
@@ -577,6 +578,7 @@ namespace Rock.Web.UI.Controls
             var currentPerson = ( ( RockPage ) Page ).CurrentPerson;
             groupMemberRequirement.OverriddenByPersonAliasId = currentPerson.PrimaryAliasId;
             groupMemberRequirement.OverriddenDateTime = RockDateTime.Now;
+            groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
 
             rockContext.SaveChanges();
             _modalDialog.Hide();
