@@ -24,6 +24,10 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class PersistedDatasetBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type PersistedDatasetBag = {
     /** Gets or sets the unique key to use to access this persisted dataset */
     accessKey?: string | null;
