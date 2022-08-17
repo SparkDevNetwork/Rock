@@ -89,6 +89,8 @@ namespace Rock.Lava
             return LavaSecurityHelper.IsAuthorized( context, commandName );
         }
 
+        public bool IncludeClosingTokenInParseResult { get; set; } = true;
+
         #region IRockLavaElement Implementation
 
         /// <summary>

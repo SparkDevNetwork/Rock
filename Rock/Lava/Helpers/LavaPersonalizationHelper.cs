@@ -110,19 +110,15 @@ namespace Rock.Lava
         public static List<int> GetPersonalizationRequestFilterIdList()
         {
             var requestFilterIdList = new List<int>();
-            RockPage rockPage = null;
 
             var httpRequest = System.Web.HttpContext.Current?.Request;
             if ( httpRequest != null )
             {
-                rockPage = System.Web.HttpContext.Current?.CurrentHandler as RockPage;
-            }
+                var rockPage = System.Web.HttpContext.Current?.CurrentHandler as RockPage;
 
-            // Get Request Filters.
-            // Prefer any previously determined filters if we are executing in the context of a RockPage,
-            // otherwise evaluate the filters for the current request.
-            if ( httpRequest != null )
-            {
+                // Get Request Filters.
+                // Prefer any previously determined filters if we are executing in the context of a RockPage,
+                // otherwise evaluate the filters for the current request.
                 if ( rockPage?.PersonalizationRequestFilterIds != null )
                 {
                     requestFilterIdList = rockPage.PersonalizationRequestFilterIds.ToList();

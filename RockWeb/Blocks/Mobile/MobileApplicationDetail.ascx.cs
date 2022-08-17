@@ -775,6 +775,10 @@ namespace RockWeb.Blocks.Mobile
                 var pageService = new PageService( context );
                 var page = pageService.Get( guid.Value );
 
+                if( page == null )
+                {
+                    return "No Page";
+                }
                 return page.PageTitle;
             }
         }
@@ -903,14 +907,19 @@ namespace RockWeb.Blocks.Mobile
                 var deepLinkPrefix = tbDeepLinkPathPrefix.Text.Trim( '/' );
 
                 // If there is a conflict between our deep link prefix and conflicting route.
-                var deepLinkPrefixTaken = new PageRouteService( rockContext ).Queryable()
+                var conflictingRoute = new PageRouteService( rockContext ).Queryable()
                     .AsEnumerable()
                     .Where( r => r.Route.StartsWith( $"{deepLinkPrefix}/" ) || r.Route == deepLinkPrefix )
                     .Any();
 
-                if ( deepLinkPrefixTaken )
+                var conflictingDeepLinkPathPrefix = new SiteService( rockContext ).Queryable()
+                    .AsEnumerable()
+                    .Where( s => s.AdditionalSettings != null && s.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>().DeepLinkPathPrefix == deepLinkPrefix )
+                    .Any();
+
+                if ( conflictingRoute || conflictingDeepLinkPathPrefix )
                 {
-                    nbDeepLinks.Text = $"Your 'Deep Link Path Prefix ('{tbDeepLinkPathPrefix.Text}') is currently conflicting with another route. Please check 'Settings > CMS Configuration > Routes' or pick a unique route.";
+                    nbDeepLinks.Text = $"Your 'Deep Link Path Prefix ('{tbDeepLinkPathPrefix.Text}') is currently conflicting with another route or path prefix. Please check 'Settings > CMS Configuration > Routes' or pick a unique deep link path prefix.";
                     nbDeepLinks.Visible = true;
                     return;
                 }

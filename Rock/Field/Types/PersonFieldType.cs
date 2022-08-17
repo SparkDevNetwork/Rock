@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -35,7 +36,7 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PERSON )]
-    public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType
+    public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -113,21 +114,15 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             string formattedValue = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
-                Guid guid = value.AsGuid();
+                Guid guid = privateValue.AsGuid();
+
                 using ( var rockContext = new RockContext() )
                 {
                     formattedValue = new PersonAliasService( rockContext ).Queryable()
@@ -138,7 +133,22 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -344,6 +354,56 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
 
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var personAliasValues = new PersonAliasService( rockContext ).Queryable()
+                    .Where( pa => pa.Guid == guid.Value )
+                    .Select( pa => new
+                    {
+                        pa.Id,
+                        pa.PersonId
+                    } )
+                    .FirstOrDefault();
+
+                if ( personAliasValues == null )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<PersonAlias>().Value, personAliasValues.Id ),
+                    new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, personAliasValues.PersonId )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the FirstName and LastName properties
+            // of a Person and the PersonId property of a PersonAlias. It
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<PersonAlias>().Value, nameof( PersonAlias.PersonId ) ),
+            };
+        }
+
+        #endregion
     }
 }

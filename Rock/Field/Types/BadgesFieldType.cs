@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Attribute;
@@ -26,20 +27,9 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "602F273B-7EC2-42E6-9AA7-A36A268192A3")]
-    public class BadgesFieldType : SelectFromListFieldType
+    public class BadgesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            return base.EditControl( configurationValues, id );
-        }
+        #region Methods
 
         /// <summary>
         /// Gets the list source.
@@ -71,5 +61,44 @@ namespace Rock.Field.Types
 
             return orderedBadges;
         }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+            var ids = valueGuidList
+                .Select( guid => BadgeCache.GetId( guid ) )
+                .Where( id => id.HasValue )
+                .ToList();
+
+            var badgeEntityTypeId = EntityTypeCache.GetId<Rock.Model.Badge>().Value;
+
+            return ids
+                .Select( id => new ReferencedEntity( badgeEntityTypeId, id.Value ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Badge and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Rock.Model.Badge>().Value, nameof( Rock.Model.Badge.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

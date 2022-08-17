@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -185,6 +185,18 @@ namespace RockWeb.Blocks.Cms
         DefaultBooleanValue = false,
         Category = "CustomSetting",
         Key = AttributeKey.EnableArchiveSummary )]
+    [EnumField(
+        "Personalization Segments",
+        Description = "The setting determines how personalization segments effect the results shown. Ignore will not consider segments, Prioritize will add items with matching segments to the top of the list (in order by the sort order) and Filter will only show items that match the current individuals segments.",
+        EnumSourceType = typeof( PersonalizationFilterType ),
+        Category = "CustomSetting",
+        Key = AttributeKey.PersonalizationSegments )]
+    [EnumField(
+        "Request Filters",
+        Description = "The setting determines how request filters effect the results shown. Ignore will not consider filters, Prioritize will add items with matching filters to the top of the list (in order by the sort order) and Filter will only show items that match the current request's filters.",
+        EnumSourceType = typeof( PersonalizationFilterType ),
+        Category = "CustomSetting",
+        Key = AttributeKey.RequestFilters )]
     #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW )]
     public partial class ContentChannelView : RockBlockCustomSettings
@@ -214,6 +226,8 @@ namespace RockWeb.Blocks.Cms
             public const string MetaImageAttribute = "MetaImageAttribute";
             public const string EnableTagList = "EnableTagList";
             public const string EnableArchiveSummary = "EnableArchiveSummary";
+            public const string PersonalizationSegments = "PersonalizationSegments";
+            public const string RequestFilters = "RequestFilters";
         }
 
         #endregion Attribute Keys
@@ -461,6 +475,8 @@ namespace RockWeb.Blocks.Cms
             SetAttributeValue( AttributeKey.MetaImageAttribute, ddlMetaImageAttribute.SelectedValue );
             SetAttributeValue( AttributeKey.EnableTagList, cbEnableTags.Checked.ToString() );
             SetAttributeValue( AttributeKey.EnableArchiveSummary, cbEnableArchiveSummary.Checked.ToString() );
+            SetAttributeValue( AttributeKey.PersonalizationSegments, rblPersonalizationSegments.SelectedValue );
+            SetAttributeValue( AttributeKey.RequestFilters, rblRequestFilters.SelectedValue );
 
             var ppFieldType = new PageReferenceFieldType();
             SetAttributeValue( AttributeKey.DetailPage, ppFieldType.GetEditValue( ppDetailPage, null ) );
@@ -1005,14 +1021,19 @@ $(document).ready(function() {
                 archiveSummaries = GetCacheItem( MONTH_YEAR_CACHE_KEY, true ) as List<ArchiveSummaryModel>;
             }
 
-            if ( items == null || ( isQueryParameterFilteringEnabled && Request.QueryString.Count > 0 ) )
+            ContentChannelCache contentChannel = null;
+            var channelGuid = GetAttributeValue( AttributeKey.Channel ).AsGuidOrNull();
+            if ( channelGuid.HasValue )
             {
-                var channelGuid = GetAttributeValue( AttributeKey.Channel ).AsGuidOrNull();
-                if ( channelGuid.HasValue )
+                contentChannel = ContentChannelCache.Get( channelGuid.Value );
+            }
+
+            if ( items == null || ( isQueryParameterFilteringEnabled && Request.QueryString.Count > 0 ) || ( contentChannel != null && contentChannel.EnablePersonalization ) )
+            {
+                if ( contentChannel != null )
                 {
                     var rockContext = new RockContext();
                     var contentChannelItemService = new ContentChannelItemService( rockContext );
-
                     var itemId = PageParameter( PageParameterKey.Item ).AsIntegerOrNull();
 
 
@@ -1094,89 +1115,112 @@ $(document).ready(function() {
                         }
                     }
 
-                    items = new List<ContentChannelItem>( contentChannelItemQuery.Count() );
-
-                    // All filtering has been added, now run query, check security and load attributes
-                    foreach ( var item in contentChannelItemQuery )
+                    IQueryable<ContentChannelItem> matchedContentChannelItemQry, nonMatchedContentChannelItemQry = null;
+                    var isNonMatchedContentChannelItemExists = false;
+                    if ( contentChannel.EnablePersonalization )
                     {
-                        if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        /*  08-18-2022 SK
+                            The setting determines how personalization segments effect the results shown.
+                            Ignore will not consider segments, Prioritize will add items with matching segments to the top of the list (in order by the sort order) and
+                            Filter will only show items that match the current individuals segments.
+                        */
+                        var segmentPersonalizationFilterType = GetAttributeValue( AttributeKey.PersonalizationSegments ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
+
+                        /*  08-18-2022 SK
+                            The setting determines how request filters effect the results shown.
+                            Ignore will not consider filters, Prioritize will add items with matching filters to the top of the list (in order by the sort order) and
+                            Filter will only show items that match the current request's filters.
+                        */
+                        var requestFiltersPersonalizationFilterType = GetAttributeValue( AttributeKey.RequestFilters ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
+
+                        var personalizationSegmentIds = new List<int>();
+                        if ( RockPage.PersonalizationSegmentIds != null )
                         {
-                            item.LoadAttributes( rockContext );
-                            items.Add( item );
+                            //Get all the valid Personalization Segment Ids for the Current User.
+                            personalizationSegmentIds = RockPage.PersonalizationSegmentIds.ToList();
+                        }
+
+                        var requestFilterIds = new List<int>();
+                        if ( RockPage.PersonalizationRequestFilterIds != null )
+                        {
+                            //Get all the valid Personalization Request Filter Ids for the Current User.
+                            requestFilterIds = RockPage.PersonalizationRequestFilterIds.ToList();
+                        }
+
+                        /* 
+                            If Segment OR Request Filter have PersonalizationFilterType selected as Filter, We need to process that first.
+                            It will give us the filtered dataset that can be used later. It is more or less like our other normal filter that we apply and acts as AND operator.
+                        */
+                        if ( segmentPersonalizationFilterType == PersonalizationFilterType.Filter )
+                        {
+                            /*
+                               This will return all the entity Ids with PersonalizationType as Segment and Entity Type Id of Content Channel Item
+                                which will help further to include content Channel Items that has no segment associated with it.
+                            */
+                            var allPersonalizedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment );
+
+                            /*
+                               This will return all the entity Ids with PersonalizationType as Segment, Entity Type Id of Content Channel Item
+                               and matching segment Ids of the current user.
+                            */
+                            var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
+                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => ( !allPersonalizedSegmentEntityIdsQry.Contains( cci.Id ) || matchedSegmentEntityIdsQry.Contains( cci.Id ) ) );
+                        }
+
+                        if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Filter )
+                        {
+                            // It will follow same approach that we did for the segment above.
+                            var allPersonalizedRequestEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter );
+                            var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
+                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => ( !allPersonalizedRequestEntityIdsQry.Contains( cci.Id ) || matchedRequestFilterEntityIdsQry.Contains( cci.Id ) ) );
+                        }
+
+                        /*
+                            Here we are assigning same result set to both matchedContentChannelItemQry as well as nonMatchedContentChannelItemQry.
+                            Technically both the variable is having same records at this point which will help us further if Prioritize is selected as FilterType for either on Segment Or Request Filters.
+                            Note:- In Prioritize we need to include both matching as well as non matching result set. Non matching records has to be appended at the
+                             end of the result set.
+                         */
+                        matchedContentChannelItemQry = contentChannelItemQuery;
+                        nonMatchedContentChannelItemQry = contentChannelItemQuery;
+
+                        if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize )
+                        {
+                            /*
+                                We are creating two result set at this point. One with matching and another with non-matching Segment Ids.
+                             */
+                            var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
+                            matchedContentChannelItemQry = matchedContentChannelItemQry.Where( cci => matchedSegmentEntityIdsQry.Contains( cci.Id ) );
+                            nonMatchedContentChannelItemQry = nonMatchedContentChannelItemQry.Where( cci => !matchedSegmentEntityIdsQry.Contains( cci.Id ) );
+                            isNonMatchedContentChannelItemExists = true;
+                        }
+
+                        if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
+                        {
+                            var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
+                            matchedContentChannelItemQry = matchedContentChannelItemQry.Where( cci => matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
+                            nonMatchedContentChannelItemQry = nonMatchedContentChannelItemQry.Where( cci => !matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
+                            isNonMatchedContentChannelItemExists = true;
                         }
                     }
-
-                    // Order the items
-                    string orderBy = GetAttributeValue( AttributeKey.Order );
-                    if ( !string.IsNullOrWhiteSpace( orderBy ) )
+                    else
                     {
-                        var fieldDirection = new List<string>();
-                        foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+                        matchedContentChannelItemQry = contentChannelItemQuery;
+                    }
+
+                    // GetContentChannelItems will return the content channel items after checking authorization and applying all the ordering.
+                    items = GetContentChannelItems( rockContext, matchedContentChannelItemQry );
+
+                    /*
+                       isNonMatchedContentChannelItemExists variable will only be true if Prioritize is selected as FilterType for either on Segment Or Request Filters.
+                       which states to include non matching records at the end.
+                    */
+                    if ( isNonMatchedContentChannelItemExists )
+                    {
+                        var nonMatchedContentChannelItems = GetContentChannelItems( rockContext, nonMatchedContentChannelItemQry );
+                        if ( nonMatchedContentChannelItems.Any() )
                         {
-                            if ( itemPair.Length == 2 && !string.IsNullOrWhiteSpace( itemPair[0] ) )
-                            {
-                                var sortDirection = SortDirection.Ascending;
-                                if ( !string.IsNullOrWhiteSpace( itemPair[1] ) )
-                                {
-                                    sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
-                                }
-                                fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
-                            }
-                        }
-
-                        var sortProperty = new SortProperty();
-                        sortProperty.Direction = SortDirection.Ascending;
-                        sortProperty.Property = fieldDirection.AsDelimited( "," );
-
-                        string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
-                        var itemQry = items.AsQueryable();
-                        IOrderedQueryable<ContentChannelItem> orderedQry = null;
-
-                        for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
-                        {
-                            string column = columns[columnIndex].Trim();
-
-                            var direction = sortProperty.Direction;
-                            if ( column.ToLower().EndsWith( " desc" ) )
-                            {
-                                column = column.Left( column.Length - 5 );
-                                direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
-                            }
-
-                            if ( column.StartsWith( "Attribute:" ) )
-                            {
-                                string attributeKey = column.Substring( 10 );
-
-                                if ( direction == SortDirection.Ascending )
-                                {
-                                    orderedQry = ( columnIndex == 0 ) ?
-                                        itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
-                                        orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
-                                }
-                                else
-                                {
-                                    orderedQry = ( columnIndex == 0 ) ?
-                                        itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
-                                        orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
-                                }
-                            }
-                            else
-                            {
-                                if ( direction == SortDirection.Ascending )
-                                {
-                                    orderedQry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : orderedQry.ThenBy( column );
-                                }
-                                else
-                                {
-                                    orderedQry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
-                                }
-                            }
-                        }
-
-                        if ( orderedQry != null )
-                        {
-                            items = orderedQry.ToList();
+                            items.AddRange( nonMatchedContentChannelItems );
                         }
                     }
 
@@ -1191,6 +1235,126 @@ $(document).ready(function() {
             }
 
             return new ItemContentResults { Items = items, Tags = tags, ArchiveSumaries = archiveSummaries };
+        }
+
+        /// <summary>
+        /// Gets the content channel items from the content channel item query after checking authorization and ordering all the items. 
+        /// </summary>
+        private List<ContentChannelItem> GetContentChannelItems( RockContext rockContext, IQueryable<ContentChannelItem> contentChannelItemQuery )
+        {
+            var items = new List<ContentChannelItem>( contentChannelItemQuery.Count() );
+            // All filtering has been added, now run query, check security and load attributes
+            foreach ( var item in contentChannelItemQuery )
+            {
+                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    item.LoadAttributes( rockContext );
+                    items.Add( item );
+                }
+            }
+
+            // Order the items
+            string orderBy = GetAttributeValue( AttributeKey.Order );
+            if ( !string.IsNullOrWhiteSpace( orderBy ) )
+            {
+                var fieldDirection = new List<string>();
+                foreach ( var itemPair in orderBy.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Split( '^' ) ) )
+                {
+                    if ( itemPair.Length == 2 && !string.IsNullOrWhiteSpace( itemPair[0] ) )
+                    {
+                        var sortDirection = SortDirection.Ascending;
+                        if ( !string.IsNullOrWhiteSpace( itemPair[1] ) )
+                        {
+                            sortDirection = itemPair[1].ConvertToEnum<SortDirection>( SortDirection.Ascending );
+                        }
+                        fieldDirection.Add( itemPair[0] + ( sortDirection == SortDirection.Descending ? " desc" : "" ) );
+                    }
+                }
+
+                var sortProperty = new SortProperty();
+                sortProperty.Direction = SortDirection.Ascending;
+                sortProperty.Property = fieldDirection.AsDelimited( "," );
+
+                string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                var itemQry = items.AsQueryable();
+                IOrderedQueryable<ContentChannelItem> orderedQry = null;
+
+                for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+                {
+                    string column = columns[columnIndex].Trim();
+
+                    var direction = sortProperty.Direction;
+                    if ( column.ToLower().EndsWith( " desc" ) )
+                    {
+                        column = column.Left( column.Length - 5 );
+                        direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+                    }
+
+                    if ( column.StartsWith( "Attribute:" ) )
+                    {
+                        string attributeKey = column.Substring( 10 );
+
+                        if ( direction == SortDirection.Ascending )
+                        {
+                            orderedQry = ( columnIndex == 0 ) ?
+                                itemQry.OrderBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                orderedQry.ThenBy( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
+                        }
+                        else
+                        {
+                            orderedQry = ( columnIndex == 0 ) ?
+                                itemQry.OrderByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue ) :
+                                orderedQry.ThenByDescending( i => i.AttributeValues.Where( v => v.Key == attributeKey ).FirstOrDefault().Value.SortValue );
+                        }
+                    }
+                    else
+                    {
+                        if ( direction == SortDirection.Ascending )
+                        {
+                            orderedQry = ( columnIndex == 0 ) ? itemQry.OrderBy( column ) : orderedQry.ThenBy( column );
+                        }
+                        else
+                        {
+                            orderedQry = ( columnIndex == 0 ) ? itemQry.OrderByDescending( column ) : orderedQry.ThenByDescending( column );
+                        }
+                    }
+                }
+
+                if ( orderedQry != null )
+                {
+                    items = orderedQry.ToList();
+                }
+            }
+
+            return items;
+        }
+
+        /// <summary>
+        /// Gets the personalized entity query.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personalizationType">The personalization type.</param>
+        /// <param name="segmentIds">The segment identifiers.</param>
+        private IQueryable<int> GetPersonalizedEntityIdsQry( RockContext rockContext, PersonalizationType personalizationType, List<int> segmentIds )
+        {
+            var entityTypeId = EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id;
+            return ( rockContext ).PersonalizedEntities
+                .Where( pe => pe.PersonalizationType == personalizationType && pe.EntityTypeId == entityTypeId && segmentIds.Contains( pe.PersonalizationEntityId ) )
+                .Select( a => a.EntityId );
+        }
+
+        /// <summary>
+        /// Gets the personalized entity identifiers query.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personalizationType">The personalization type.</param>
+        private IQueryable<int> GetPersonalizedEntityIdsQry( RockContext rockContext, PersonalizationType personalizationType )
+        {
+            var entityTypeId = EntityTypeCache.Get<Rock.Model.ContentChannelItem>().Id;
+            return ( rockContext ).PersonalizedEntities
+                .Where( pe => pe.PersonalizationType == personalizationType && pe.EntityTypeId == entityTypeId )
+                .Select( a => a.EntityId );
         }
 
         private IQueryable<ContentChannelItem> GetContentChannelItemQuery( RockContext rockContext,
@@ -1366,6 +1530,16 @@ $(document).ready(function() {
                     kvlOrder.CustomKeys.Add( "ExpireDateTime", "Expire" );
                     kvlOrder.CustomKeys.Add( "Order", "Order" );
 
+                    rblPersonalizationSegments.Visible = channel.EnablePersonalization;
+                    rblRequestFilters.Visible = channel.EnablePersonalization;
+                    if ( channel.EnablePersonalization )
+                    {
+                        rblPersonalizationSegments.BindToEnum<PersonalizationFilterType>();
+                        rblPersonalizationSegments.SetValue( ( int ) GetAttributeValue( AttributeKey.PersonalizationSegments ).AsInteger() );
+
+                        rblRequestFilters.BindToEnum<PersonalizationFilterType>();
+                        rblRequestFilters.SetValue( GetAttributeValue( AttributeKey.RequestFilters ).AsInteger() );
+                    }
 
                     // add attributes to the meta description and meta image attribute list
                     ddlMetaDescriptionAttribute.Items.Clear();
@@ -1558,6 +1732,27 @@ $(document).ready(function() {
         #endregion
 
         #region Helper Classes
+
+        /// <summary>
+        /// Personalization Filter Type
+        /// </summary>
+        private enum PersonalizationFilterType
+        {
+            /// <summary>
+            /// The ignore
+            /// </summary>
+            Ignore = 0,
+
+            /// <summary>
+            /// The prioritize
+            /// </summary>
+            Prioritize = 1,
+
+            /// <summary>
+            /// The filter
+            /// </summary>
+            Filter = 2
+        }
 
         private class TagModel : RockDynamic
         {

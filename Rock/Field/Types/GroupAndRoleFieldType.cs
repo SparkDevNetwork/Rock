@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,11 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,7 +33,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_AND_ROLE )]
-    public class GroupAndRoleFieldType : FieldType
+    public class GroupAndRoleFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -111,35 +113,14 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             string formattedValue = string.Empty;
 
-            Guid? groupTypeGuid = null;
-            Guid? groupGuid = null;
-            Guid? groupTypeRoleGuid = null;
-
-            string[] parts = ( value ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            if ( parts.Length > 0 )
+            if ( !TryGetGuidValues( privateValue, out var groupTypeGuid, out var groupGuid, out var groupTypeRoleGuid ) )
             {
-                groupTypeGuid = parts[0].AsGuidOrNull();
-                if ( parts.Length > 1 )
-                {
-                    groupGuid = parts[1].AsGuidOrNull();
-                }
-
-                if ( parts.Length > 2 )
-                {
-                    groupTypeRoleGuid = parts[2].AsGuidOrNull();
-                }
+                return string.Empty;
             }
 
             using ( var rockContext = new RockContext() )
@@ -171,7 +152,22 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return formattedValue;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -294,6 +290,105 @@ namespace Rock.Field.Types
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Tries the get unique identifier values that correspond to the private value.
+        /// </summary>
+        /// <param name="privateValue">The private value.</param>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="groupTypeRoleGuid">The group type role unique identifier.</param>
+        /// <returns><c>true</c> if one or more of the values was found, <c>false</c> otherwise.</returns>
+        private static bool TryGetGuidValues( string privateValue, out Guid? groupTypeGuid, out Guid? groupGuid, out Guid? groupTypeRoleGuid )
+        {
+            groupTypeGuid = null;
+            groupGuid = null;
+            groupTypeRoleGuid = null;
+
+            string[] parts = ( privateValue ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( parts.Length > 0 )
+            {
+                groupTypeGuid = parts[0].AsGuidOrNull();
+                if ( parts.Length > 1 )
+                {
+                    groupGuid = parts[1].AsGuidOrNull();
+                }
+
+                if ( parts.Length > 2 )
+                {
+                    groupTypeRoleGuid = parts[2].AsGuidOrNull();
+                }
+            }
+
+            return groupTypeGuid.HasValue || groupGuid.HasValue || groupTypeRoleGuid.HasValue;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !TryGetGuidValues( privateValue, out var groupTypeGuid, out var groupGuid, out var groupTypeRoleGuid ) )
+            {
+                return null;
+            }
+
+            var entityReferences = new List<ReferencedEntity>();
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( groupGuid.HasValue )
+                {
+                    var groupId = new GroupService( rockContext ).GetId( groupGuid.Value );
+
+                    if ( groupId.HasValue )
+                    {
+                        entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Group>().Value, groupId.Value ) );
+                    }
+                }
+                else if ( groupTypeGuid.HasValue )
+                {
+                    var groupType = GroupTypeCache.Get( groupTypeGuid.Value );
+
+                    if ( groupType != null )
+                    {
+                        entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<GroupType>().Value, groupType.Id ) );
+                    }
+                }
+
+                if ( groupTypeRoleGuid.HasValue )
+                {
+                    var groupTypeRoleId = new GroupTypeRoleService( rockContext ).GetId( groupTypeRoleGuid.Value );
+
+                    if ( groupTypeRoleId.HasValue )
+                    {
+                        entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<GroupTypeRole>().Value, groupTypeRoleId.Value ) );
+                    }
+                }
+            }
+
+            return entityReferences;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name properties of GroupType,
+            // GroupTypeRole and Group and should have its persisted values
+            // updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<GroupType>().Value, nameof( GroupType.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<GroupTypeRole>().Value, nameof( GroupTypeRole.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Group>().Value, nameof( Group.Name ) )
+            };
         }
 
         #endregion

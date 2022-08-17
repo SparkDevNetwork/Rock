@@ -25,10 +25,10 @@
                 <div class="row mb-5">
                     <div class="col-md-6">
                         <Rock:HiddenFieldWithClass ID="hfExistingRequestFilterKeyNames" runat="server" CssClass="js-existing-key-names" />
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" PropertyName="Name" onblur="populateRequestFilterKey()"/>
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" PropertyName="Name" onblur="populateRequestFilterKey()" />
                         <Rock:DataTextBox ID="tbKey" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" Required="true" PropertyName="RequestFilterKey" Label="Key" />
                         <Rock:RockDropDownList ID="ddlSiteKey" runat="server" SourceTypeName="Rock.Model.RequestFilter, Rock" PropertyName="SiteId"
-                            Label="Site" Help="Site - Optional site to limit the request filter to."/>
+                            Label="Site" Help="Site - Optional site to limit the request filter to." />
                     </div>
 
                     <div class="col-md-6">
@@ -71,8 +71,8 @@
                         <Rock:Grid ID="gQueryStringFilter" runat="server" DisplayType="Light" RowItemText="Query String Filter">
                             <Columns>
                                 <Rock:RockBoundField DataField="Key" HeaderText="Key" />
-                                <Rock:EnumField DataField="ComparisonType" HeaderText="Match Type"  />
-                                <Rock:RockBoundField DataField="ComparisonValue" HeaderText="Value"  />
+                                <Rock:EnumField DataField="ComparisonType" HeaderText="Match Type" />
+                                <Rock:RockBoundField DataField="ComparisonValue" HeaderText="Value" />
                                 <Rock:EditField OnClick="gQueryStringFilter_EditClick" />
                                 <Rock:DeleteField OnClick="gQueryStringFilter_DeleteClick" />
                             </Columns>
@@ -93,8 +93,8 @@
                         <Rock:Grid ID="gCookie" runat="server" DisplayType="Light" RowItemText="Cookie">
                             <Columns>
                                 <Rock:RockBoundField DataField="Key" HeaderText="Key" />
-                                <Rock:EnumField DataField="ComparisonType" HeaderText="Match Type"  />
-                                <Rock:RockBoundField DataField="ComparisonValue" HeaderText="Value"  />
+                                <Rock:EnumField DataField="ComparisonType" HeaderText="Match Type" />
+                                <Rock:RockBoundField DataField="ComparisonValue" HeaderText="Value" />
                                 <Rock:EditField OnClick="gCookie_EditClick" />
                                 <Rock:DeleteField OnClick="gCookie_DeleteClick" />
                             </Columns>
@@ -113,8 +113,8 @@
                         <Rock:Grid ID="gBrowser" runat="server" DisplayType="Light" RowItemText="Browser">
                             <Columns>
                                 <Rock:RockBoundField DataField="BrowserFamily" HeaderText="Browser Family" />
-                                <Rock:EnumField DataField="VersionComparisonType" HeaderText="Match Type"  />
-                                <Rock:RockBoundField DataField="MajorVersion" HeaderText="Major Version"  />
+                                <Rock:EnumField DataField="VersionComparisonType" HeaderText="Match Type" />
+                                <Rock:RockBoundField DataField="MajorVersion" HeaderText="Major Version" />
                                 <Rock:EditField OnClick="gBrowser_EditClick" />
                                 <Rock:DeleteField OnClick="gBrowser_DeleteClick" />
                             </Columns>
@@ -134,7 +134,7 @@
                             <Columns>
                                 <Rock:RockBoundField DataField="BeginningIPAddress" HeaderText="Beginning Address" />
                                 <Rock:RockBoundField DataField="EndingIPAddress" HeaderText="Ending Address" />
-                                <Rock:EnumField DataField="MatchType" HeaderText="Match Type"  />
+                                <Rock:EnumField DataField="MatchType" HeaderText="Match Type" />
                                 <Rock:EditField OnClick="gIpAddress_EditClick" />
                                 <Rock:DeleteField OnClick="gIpAddress_DeleteClick" />
                             </Columns>

@@ -80,6 +80,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.DoesNotMeetWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.WarningWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleCancellationWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, GroupType.FriendlyTypeName );

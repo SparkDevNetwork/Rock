@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 
 using Rock.Common.Mobile;
@@ -35,7 +36,7 @@ namespace Rock.Web.HttpModules
     [Description( "A HTTP Module that handles deep link requests for mobile applications." )]
     [Export( typeof( HttpModuleComponent ) )]
     [ExportMetadata( "ComponentName", "Deep Links" )]
-    [Rock.SystemGuid.EntityTypeGuid( "F00E2239-9FBF-4752-9B17-1183A62DAD5B")]
+    [Rock.SystemGuid.EntityTypeGuid( "F00E2239-9FBF-4752-9B17-1183A62DAD5B" )]
     public class DeepLinks : HttpModuleComponent
     {
         /// <summary>
@@ -120,8 +121,9 @@ namespace Rock.Web.HttpModules
             // If the route uses a Url as a fallback, we will redirect them as such.
             if ( matchedRoute.UsesUrlAsFallback )
             {
+                var fallbackUrlWithParams = InjectRouteParamsIntoUrl( matchedRoute.WebFallbackPageUrl, dynamicParams );
                 HttpContext.Current.Response.StatusCode = 303;
-                HttpContext.Current.Response.Redirect( matchedRoute.WebFallbackPageUrl );
+                HttpContext.Current.Response.Redirect( fallbackUrlWithParams );
                 HttpContext.Current.Response.End();
             }
             // The route falls back to a page, so let's build the route to that page 
@@ -139,10 +141,17 @@ namespace Rock.Web.HttpModules
                         return;
                     }
 
-                    var pageReference = new PageReference( page.Id, page.PageRoutes.First().Id, parameters );
+                    var pageReference = new PageReference( page.Id )
+                    {
+                        Parameters = parameters
+                    };
+
+                    if ( page.PageRoutes.Any() )
+                    {
+                        pageReference = new PageReference( page.Id, page.PageRoutes.First().Id, parameters );
+                    }
 
                     var routeUrl = pageReference.BuildUrl();
-
                     HttpContext.Current.Response.StatusCode = 301;
                     HttpContext.Current.Response.Redirect( routeUrl );
                     HttpContext.Current.Response.End();
@@ -185,7 +194,7 @@ namespace Rock.Web.HttpModules
         /// </summary>
         /// <param name="routes"></param>
         /// <param name="pathSegments"></param>
-        /// <returns>&lt;DeepLinkRoute, Dictionary&lt;string, string&gt;&gt;.</returns>
+        /// <returns>(DeepLinkRoute, Dictionary of strings</returns>
         public (DeepLinkRoute route, Dictionary<string, string> dynamicParams) FindRouteWithParams( List<DeepLinkRoute> routes, List<string> pathSegments )
         {
             var dynamicParameters = new Dictionary<string, string>();
@@ -260,6 +269,42 @@ namespace Rock.Web.HttpModules
             var response = shouldGetAASA ? DeepLinkCache.GetApplePayload() : DeepLinkCache.GetAndroidPayload();
             context.Response.Write( response );
             HttpContext.Current.Response.End();
+        }
+
+        /// <summary>
+        /// Injects the route parameters into URL. 
+        /// </summary>
+        /// <remarks>
+        /// This takes a url and a list of parameters to inject, and injects the corresponding value.
+        /// For example, if you have a route: c.com/christmas/{christmasId}, the requested url: c.com/christmas/123
+        /// and a dictionary with christmasId=123, it will replace correspondingly.
+        /// </remarks>
+        /// <param name="fallbackUrl">The URL.</param>
+        /// <param name="dynamicParameters"></param>
+        /// <returns>System.String.</returns>
+        private string InjectRouteParamsIntoUrl( string fallbackUrl, Dictionary<string, string> dynamicParameters )
+        {
+            if( !dynamicParameters.Any() )
+            {
+                return fallbackUrl;
+            }
+
+            var newUrl = fallbackUrl;
+            foreach ( var key in dynamicParameters.Keys )
+            {
+                // Match everything that matches our key within curly brackets ({key}) in our URL.
+                var matchExp = $"\\{{({key})\\}}";
+                var regex = new Regex( matchExp, RegexOptions.IgnoreCase );
+                var match = regex.Match( fallbackUrl );
+                if ( !match.Success )
+                {
+                    continue;
+                }
+
+                newUrl = newUrl.Replace( match.Value, dynamicParameters[key] );
+            }
+
+            return newUrl;
         }
     }
 }

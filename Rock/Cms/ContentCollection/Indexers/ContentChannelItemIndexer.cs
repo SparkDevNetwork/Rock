@@ -94,7 +94,8 @@ namespace Rock.Cms.ContentCollection.Indexers
                 items = new ContentChannelItemService( rockContext ).Queryable()
                     .AsNoTracking()
                     .Where( cci => cci.ContentChannelId == contentCollectionSourceCache.EntityId
-                        && cci.StartDateTime >= now )
+                        && cci.StartDateTime <= now
+                        && ( !cci.ExpireDateTime.HasValue || cci.ExpireDateTime.Value >= now ) )
                     .ToList();
 
                 if ( !items.Any() )
@@ -141,8 +142,16 @@ namespace Rock.Cms.ContentCollection.Indexers
             using ( var rockContext = new RockContext() )
             {
                 itemEntity = new ContentChannelItemService( rockContext ).Get( id );
+                var now = RockDateTime.Now;
 
-                if ( itemEntity == null || itemEntity.StartDateTime < RockDateTime.Now )
+                // If entity wasn't found or isn't visible yet then don't index.
+                if ( itemEntity == null || itemEntity.StartDateTime > now )
+                {
+                    return 0;
+                }
+
+                // If it has already expired, do not index.
+                if ( itemEntity.ExpireDateTime.HasValue && itemEntity.ExpireDateTime.Value < now )
                 {
                     return 0;
                 }

@@ -270,7 +270,11 @@
 
                 $person.append(getPerson(item))
 
-                $interaction.append(getInteractionData(item));
+                if (item.Isp !== null || item.OperatingSystem !== null || item.Application !== null) {
+                    $interaction.append(getInteractionData(item));
+                } else {
+                    $interaction.addClass("no-details");
+                }
 
                 $chart.append(getHeatMap(item.Data.WatchMap));
                 $percent.text(Math.floor(item.Data.WatchedPercentage) + "%");
@@ -308,7 +312,7 @@
         }
 
         const initializeExpanderHoverEventListener = function () {
-            let interactions = document.querySelectorAll(".individual-play-interaction");
+            let interactions = document.querySelectorAll(".individual-play-interaction:not(.no-details)");
 
             interactions.forEach(interaction => interaction.addEventListener("mouseover", event => {
                 if (event.target.getAttribute("name") === "expander") {

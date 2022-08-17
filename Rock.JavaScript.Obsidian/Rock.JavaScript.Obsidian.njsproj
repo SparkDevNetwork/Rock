@@ -31,6 +31,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include=".eslintrc.js" />
+    <Content Include="Build\.eslintrc.js" />
+    <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\alert.ts" />
     <Content Include="Framework\Controls\tsconfig.json" />
     <Content Include="Framework\Core\tsconfig.json" />
@@ -94,9 +96,13 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
+    <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
@@ -130,6 +136,7 @@
     <TypeScriptCompile Include="Framework\Controls\assetStorageProviderPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\badgeComponentPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\badgeList.ts" />
+    <TypeScriptCompile Include="Framework\Controls\badgePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\baseAsyncPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\codeEditor.ts" />
     <TypeScriptCompile Include="Framework\Controls\binaryFilePicker.ts" />
@@ -430,11 +437,18 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\layoutDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\mediaAccountDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\mediaFolderBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\mediaFolderDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\persistedDatasetBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersistedDatasetDetail\persistedDatasetDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\PersonalLinkSectionDetail\personalLinkSectionDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Blocks\customSettingsBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramEdgeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\Steps\flowNodeDiagramNodeBag.d.ts" />
@@ -703,6 +717,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\achievementTypePickerGetAchievementTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgeComponentPickerGetBadgeComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgeListGetBadgesOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\badgePickerGetBadgesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFilePickerGetBinaryFilesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
@@ -783,7 +798,7 @@
     <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="AfterCompile">
-    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
+    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build-fast" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
   </Target>
   <ProjectExtensions>
     <VisualStudio>

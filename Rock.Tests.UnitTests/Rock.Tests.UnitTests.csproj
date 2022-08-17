@@ -118,8 +118,11 @@
     <Compile Include="Rock\Lava\LavaUnitTestHelper.cs" />
     <Compile Include="Rock\Lava\LavaTypeAttributesTests.cs" />
     <Compile Include="Rock\Lava\RenderTests.cs" />
+    <Compile Include="Rock\Model\ConnectionRequestTest.cs" />
     <Compile Include="Rock\Security\EncryptionTests.cs" />
-    <Compile Include="Rock\Slingshot\PersonCSVMapperTest.cs" />
+    <Compile Include="Rock\Slingshot\PersonCsvMapperTest.cs" />
+    <Compile Include="Rock\Slingshot\PersonPhoneCsvMapperTest.cs" />
+    <Compile Include="Rock\Slingshot\PersonNoteCsvMapperTest.cs" />
     <Compile Include="Rock\UnitTestInitializer.cs" />
     <Compile Include="Rock\Utilities\DateTimeAssert.cs" />
     <Compile Include="Rock\Utilities\ScheduleTestHelper.cs" />
@@ -194,10 +197,6 @@
     <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj">
       <Project>{d6b19c0d-da5e-4f75-8001-04ded86b741f}</Project>
       <Name>Rock.Mailgun</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Mandrill\Rock.Mandrill.csproj">
-      <Project>{cf8c694a-55a0-434f-bc96-3450b96ec12a}</Project>
-      <Name>Rock.Mandrill</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Slingshot.Model\Rock.Slingshot.Model.csproj">
       <Project>{962944de-8bf4-4175-b55a-e75cf7918272}</Project>

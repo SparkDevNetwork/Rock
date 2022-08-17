@@ -29,6 +29,8 @@ export const enum EntityType {
     AchievementType = "0E99356C-0DEA-4F24-944E-21CD5FA83B9E",
     /** The achievement type prerequisite */
     AchievementTypePrerequisite = "5362DB19-B8E1-4378-A66A-FB097CE3AB90",
+    /** The  guid for the Rock.Model.AssessmentType entity. */
+    AssessmentType = "D17A28AC-F529-4AB0-A790-C21F9E74AC89",
     /** The guid for the Rock.Model.Attendance entity. */
     Attendance = "4CCB856F-51E0-4E48-B94A-1705EFBA6C9E",
     /** The guid for the Rock.Model.Attribute entity. */
@@ -307,4 +309,10 @@ export const enum EntityType {
     StepProgramAchievementComponent = "7140BAE3-89E9-423E-A691-6E13544203CA",
     /** The EntityType Guid for Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement  */
     InteractionSourcedAchievementComponent = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67",
+    /** The EntityType Guid for Rock.Model.MediaFolder  */
+    MediaFolder = "B28FC79F-9FEE-4BE4-801D-96B9246E6043",
+    /** The EntityType Guid for Rock.Model.PersistedDataset  */
+    PersistedDataset = "9C3064C0-CF9C-4549-9A80-022514B7FF83",
+    /** The EntityType Guid for Rock.Model.PersonalLinkSection  */
+    PersonalLinkSection = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF",
 }

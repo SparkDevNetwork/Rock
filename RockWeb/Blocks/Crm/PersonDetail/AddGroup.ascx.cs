@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -568,6 +568,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 ScriptManager.RegisterStartupScript( btnNext, btnNext.GetType(), "confirm-marital-status", script, true );
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -1951,6 +1953,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 nbMessages.NotificationBoxType = NotificationBoxType.Success;
                 nbMessages.Text = "No more duplicates remain. Select Finish to complete the addition of these individuals.";
             }
+        }
+
+        // Handlers called by the controls on your block.
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            nfciContactInfo.ShowCellPhoneFirst = GetAttributeValue( AttributeKey.ShowCellPhoneNumberFirst ).AsBoolean();
+            nfciContactInfo.IsMessagingVisible = string.IsNullOrWhiteSpace( _smsOption ) || _smsOption != "None";
         }
 
         #endregion

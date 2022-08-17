@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -34,7 +35,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ASSESSMENT_TYPE )]
-    public class AssessmentTypesFieldType : SelectFromListFieldType
+    public class AssessmentTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -113,18 +114,7 @@ namespace Rock.Field.Types
 
         #endregion
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
-        {
-            return base.EditControl( configurationValues, id );
-        }
+        #region Methods
 
         /// <summary>
         /// Gets the list source of Assessment types from the database
@@ -147,5 +137,48 @@ namespace Rock.Field.Types
                 } )
                 .ToDictionary( t => t.Guid.ToString(), t => t.Title );
         }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
+
+                var ids = new AssessmentTypeService( rockContext )
+                    .Queryable()
+                    .Where( at => valueGuidList.Contains( at.Guid ) )
+                    .Select( at => at.Id )
+                    .ToList();
+
+                var assessmentTypeEntityTypeId = EntityTypeCache.GetId<AssessmentType>().Value;
+
+                return ids
+                    .Select( id => new ReferencedEntity( assessmentTypeEntityTypeId, id ) )
+                    .ToList();
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Title property of a AssessmentType and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<AssessmentType>().Value, nameof( AssessmentType.Title ) )
+            };
+        }
+
+        #endregion
     }
 }

@@ -37,10 +37,29 @@ export type AttributeValueBag = {
      */
     entityId?: number | null;
 
+    /**
+     * Gets or sets a value indicating whether the persisted values are
+     * considered dirty. If the values are dirty then it should be assumed
+     * that they are not in sync with the Rock.Model.AttributeValue.Value property.
+     */
+    isPersistedValueDirty: boolean;
+
     /** Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework. */
     isSystem: boolean;
 
-    /** Gets or sets the value */
+    /** Gets or sets the persisted condensed HTML value. */
+    persistedCondensedHtmlValue?: string | null;
+
+    /** Gets or sets the persisted condensed text value. */
+    persistedCondensedTextValue?: string | null;
+
+    /** Gets or sets the persisted HTML value. */
+    persistedHtmlValue?: string | null;
+
+    /** Gets or sets the persisted text value. */
+    persistedTextValue?: string | null;
+
+    /** Gets or sets the raw value */
     value?: string | null;
 
     /** Gets the Value as a decimal (Computed on Save). */

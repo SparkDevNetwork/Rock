@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 
@@ -38,6 +39,22 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                return string.Empty;
+            }
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return HtmlFormat( GetTextValue( privateValue, null ) );
+        }
+
         /// <summary>
         /// Formats the value as HTML.
         /// </summary>
@@ -48,7 +65,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            return HtmlFormat( FormatValue( parentControl, value, configurationValues, condensed ) );
+            return GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -93,11 +110,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( string.IsNullOrWhiteSpace( value ) )
-            {
-                return string.Empty;
-            }
-            return value;
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>

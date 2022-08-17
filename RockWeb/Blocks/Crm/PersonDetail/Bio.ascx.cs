@@ -579,7 +579,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
             }
 
-            lName.Text = $"<h1>{nameText} <small>{firstName}</small></h1>{previousNameText}";
+            lName.Text = $"<h1 class='person-name'>{nameText} <small class='person-first-name'>{firstName}</small></h1>{previousNameText}";
         }
 
         private void ShowBadgeList()
@@ -886,7 +886,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 communicationPageReference = null;
             }
 
-            lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference, "d-block text-link text-truncate" );
+            lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference, "d-inline-block mw-100 text-link text-truncate" );
             if ( lEmail == null )
             {
                 lEmail.Visible = false;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,7 @@ namespace Rock.Communication.Transport
     /// <summary>
     /// Sends a communication through SMTP protocol
     /// </summary>
-    [Description( "Sends a communication through SMTP protocol" )]
+    [Description( "Sends a communication through SMTP protocol. **This transport should only be used for development and testing.**" )]
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "SMTP" )]
 
@@ -33,7 +33,7 @@ namespace Rock.Communication.Transport
     [TextField( "User Name", "", false, "", "", 2 )]
     [TextField( "Password", "", false, "", "", 3, null, true )]
     [BooleanField( "Use SSL", "", false, "", 4 )]
-    [IntegerField( "Concurrent Send Workers", "", false, 10, "", 5, key: "MaxParallelization" )]
+    [IntegerField( "Concurrent Send Workers", "", false, 1, "", 5, key: "MaxParallelization" )]
     [Rock.SystemGuid.EntityTypeGuid( "1FEF44B2-8685-4001-BE5B-8A059BC65430")]
     public class SMTP : SMTPComponent
     {

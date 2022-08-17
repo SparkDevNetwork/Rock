@@ -69,9 +69,6 @@
     <Reference Include="CacheManager.Serialization.Json, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
       <HintPath>..\packages\CacheManager.Serialization.Json.1.1.2\lib\net45\CacheManager.Serialization.Json.dll</HintPath>
     </Reference>
-    <Reference Include="CacheManager.StackExchange.Redis, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
-      <HintPath>..\packages\CacheManager.StackExchange.Redis.1.1.2\lib\net45\CacheManager.StackExchange.Redis.dll</HintPath>
-    </Reference>
     <Reference Include="CacheManager.SystemRuntimeCaching, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
       <HintPath>..\packages\CacheManager.SystemRuntimeCaching.1.1.2\lib\net45\CacheManager.SystemRuntimeCaching.dll</HintPath>
     </Reference>
@@ -350,9 +347,6 @@
     </Reference>
     <Reference Include="Serilog.Sinks.File, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Sinks.File.4.1.0\lib\net45\Serilog.Sinks.File.dll</HintPath>
-    </Reference>
-    <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
-      <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net46\StackExchange.Redis.StrongName.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -646,12 +640,22 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
     <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
     <Compile Include="Bus\Queue\ExpiringCardEventQueue.cs" />
     <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
+    <Compile Include="Chart\ChartJs\ChartColorPaletteGenerator.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsCategorySeriesDataFactory.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsCategorySeriesDataPoint.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsConstants.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsDataFactory.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsDataset.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsTimeSeriesDataPoint.cs" />
+    <Compile Include="Chart\ChartJs\IChartJsCategorySeriesDataPoint.cs" />
+    <Compile Include="Chart\ChartJs\IChartJsTimeSeriesDataPoint.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
     <Compile Include="ClientService\Connection\ConnectionOpportunity\ConnectionOpportunityClientService.cs" />
@@ -816,11 +820,16 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
+    <Compile Include="Field\IEntityReferenceFieldType.cs" />
+    <Compile Include="Field\PersistedValues.cs" />
+    <Compile Include="Field\ReferencedEntity.cs" />
+    <Compile Include="Field\ReferencedProperty.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
+    <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.Logic.cs" />
@@ -841,6 +850,11 @@
     <Compile Include="Model\CMS\RequestFilter\RequestFilterService.cs" />
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\PersonalizationSegmentService.CodeGenerated.cs" />
+    <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
+    <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
+    <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Group\GroupRequirementType\DueDateType.cs" />
+    <Compile Include="Model\Group\GroupRequirement\AppliesToAgeClassification.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />
@@ -1394,6 +1408,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Plugin\HotFixes\155_BackgroundCheckPersonEmailValidFix.cs" />
+    <Compile Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0.cs" />
     <Compile Include="Plugin\HotFixes\156_CorrectBlockCategories.cs" />
     <Compile Include="Plugin\HotFixes\147_MigrationRolupsFor13_1.cs" />
     <Compile Include="Pdf\PdfGenerator.cs" />
@@ -1746,6 +1761,7 @@
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
+    <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
@@ -1772,6 +1788,11 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\PageRouteWasUpdatedConsumer.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartJsChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\BarChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\LineChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\PieChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\IRockChart.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\ElectronicSignatureControl.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
@@ -1925,7 +1946,7 @@
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />
     <Compile Include="Communication\RockMessageRecipient.cs" />
-    <Compile Include="Chart\ChartJsTimeSeriesDataFactory.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsTimeSeriesDataFactory.cs" />
     <Compile Include="Chart\FlotChartDataSet.cs" />
     <Compile Include="Chart\TimeSeriesChartDataPoint.cs" />
     <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
@@ -3537,13 +3558,12 @@
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\BootstrapButton.cs" />
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
-    <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\RockBarChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
-    <Compile Include="Web\UI\Controls\Chart\ChartOptions.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\ChartOptions.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
-    <Compile Include="Web\UI\Controls\Chart\FlotChart.cs" />
-    <Compile Include="Web\UI\Controls\Chart\LineChart.cs" />
-    <Compile Include="Web\UI\Controls\Chart\PieChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\Flot\FlotChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\RockLineChart.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinArea.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinAreaRow.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroup.cs" />
@@ -4026,6 +4046,9 @@
     <Content Include="Plugin\HotFixes\153_FixERAStartDate_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>153_FixERAStartDate.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0_ChartShortcodeYAxisLabelFix.sql">
+      <DependentUpon>157_MigrationRollupsFor13_7_0.cs</DependentUpon>
+    </Content>
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
@@ -4154,13 +4177,8 @@ if Exist "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll" del "$(ProjectDir)..\R
 if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>REM Check if the JavaScript projects have been built.
-If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian\node_modules" (
-    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj" -p:Configuration=$(ConfigurationName)
-)
-If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian.Blocks\node_modules" (
-    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian.Blocks\Rock.JavaScript.Obsidian.Blocks.njsproj" -p:Configuration=$(ConfigurationName)
-)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

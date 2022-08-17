@@ -157,6 +157,11 @@ namespace Rock.Security
         /// </summary>
         public const string DELETE_ATTENDANCE = "DeleteAttendance";
 
+        /// <summary>
+        /// Authorization to override for group requirements
+        /// </summary>
+        public const string OVERRIDE = "Override";
+
         #endregion
 
         #region Public Methods

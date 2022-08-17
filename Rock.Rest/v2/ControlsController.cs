@@ -297,6 +297,35 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Badge Picker
+
+        /// <summary>
+        /// Get the list of Badge types for use in a Badge Picker.
+        /// </summary>
+        /// <returns>A list of badge types.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "BadgePickerGetBadges" )]
+        [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
+        public IHttpActionResult BadgePickerGetBadges( [FromBody] BadgePickerGetBadgesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var badges = BadgeCache.All().ToList();
+
+                // Filter out any badges that don't apply to the entity or are not
+                // authorized by the person to be viewed.
+                var badgeList = badges.Where( b => b.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson )
+                        || grant?.IsAccessGranted( b, Authorization.VIEW ) == true )
+                    .Select(b => new ListItemBag { Text = b.Name, Value = b.Guid.ToString() } )
+                    .ToList();
+
+                return Ok( badgeList );
+            }
+        }
+
+        #endregion
+
         #region Binary File Picker
 
         /// <summary>
@@ -1007,14 +1036,14 @@ namespace Rock.Rest.v2
 
                     // TODO: Need to see if the gateway is selected e.g. gateway.Guid == options.selectedGuid
                     // Add the gateway if the control is configured to show all of the gateways.
-                    if (  options.ShowInactive && options.ShowAllGatewayComponents )
+                    if (  options.IncludeInactive && options.ShowAllGatewayComponents )
                     {
                         items.Add( new ListItemBag { Text = gateway.Name, Value = gateway.Guid.ToString() } );
                         continue;
                     }
 
                     // Do not add if the component or gateway is not active and the controls has ShowInactive set to false.
-                    if ( options.ShowInactive == false && ( gateway.IsActive == false || component == null || component.IsActive == false ) )
+                    if ( options.IncludeInactive == false && ( gateway.IsActive == false || component == null || component.IsActive == false ) )
                     {
                         continue;
                     }

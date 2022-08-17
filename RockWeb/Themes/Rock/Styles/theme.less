@@ -245,8 +245,8 @@ textarea,
 }
 
 .btn-label {
-  margin-top: -1px;
   padding: 5px 5px 4px;
+  margin-top: -1px;
   font-size: 12px;
   line-height: 1;
 }
@@ -1568,13 +1568,20 @@ body.navbar-side-open {
     min-height: 600px;
   }
 
-  .page-title {
+  .page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     padding: 20px 15px;
     margin: -5px -15px 5px;
     color: @pagetitle-text-color;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
     border-bottom: 1px solid @gray-lighter;
+
+    .page-title {
+      flex: 1 1 auto;
+    }
 
     .title {
       margin: 0;
@@ -1612,7 +1619,7 @@ body.navbar-side-open {
     padding: 0;
     margin: 35px 35px 0;
 
-    .page-title {
+    .page-header {
       padding: 20px 35px;
       margin: -35px -35px 35px;
     }
@@ -1891,9 +1898,56 @@ body.navbar-side-open {
 
 .container-in-block {
   max-width: 1020px;
+  padding: 24px 0;
   margin: 0 auto;
   @media (min-width: @screen-md-min) {
     padding: 48px 30px;
+  }
+}
+
+.zone-context {
+  width: 100%;
+
+  .contextsetter {
+    margin: 12px 0 0;
+    .navbar-link {
+      display: inline-flex;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+      padding: @input-padding-y @input-padding-x;
+      color: #737475;
+      background: @body-background;
+      border-radius: @input-border-radius;
+
+      b {
+        margin-left: auto;
+      }
+    }
+
+    .open {
+      > .navbar-link {
+        color: @input-color;
+        background: mix(@body-background, @white, 65%);
+      }
+    }
+  }
+
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+
+  @media screen and (min-width: @grid-float-breakpoint) {
+    width: auto;
+
+    .contextsetter {
+      margin: 0;
+
+      .navbar-link {
+        width: @input-width-xl;
+      }
+    }
   }
 }
 

@@ -4,18 +4,34 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Rock.CodeGeneration.Dialogs"
+        d:DataContext="{d:DesignInstance Type=local:SelectEntityDialog}"
         mc:Ignorable="d"
-        Title="SelectEntityDialog"
+        Title="Select Entity"
+        FocusManager.FocusedElement="{Binding ElementName=Filter}"
         Height="450"
         Width="400"
         WindowStartupLocation="CenterOwner"
         WindowStyle="ToolWindow">
-    <ListBox Name="EntityListBox"
-             SelectionChanged="EntityListBox_SelectionChanged">
-        <ListBox.ItemTemplate>
-            <DataTemplate>
-                <TextBlock Text="{Binding Name}" />
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-    </ListBox>
+    <StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Label>Filter:</Label>
+            <TextBox Grid.Column="1"
+                     x:Name="Filter"
+                     Text="{Binding FilterValue, UpdateSourceTrigger=PropertyChanged}" />
+        </Grid>
+        <ListBox Name="EntityListBox"
+                 ItemsSource="{Binding Items}"
+                 SelectionChanged="EntityListBox_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
 </Window>

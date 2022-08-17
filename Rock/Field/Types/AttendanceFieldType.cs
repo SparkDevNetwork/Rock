@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,11 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,9 +34,27 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "45F2BE0A-43C2-40D6-9888-68A2E72ACD06")]
-    public class AttendanceFieldType : FieldType, IEntityFieldType
+    public class AttendanceFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = GetAttendanceGuid( privateValue );
+
+            if ( !guid.HasValue )
+            {
+                return privateValue;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attendance = GetAttendanceForDisplay( guid.Value, rockContext );
+
+                return attendance?.ToString() ?? privateValue;
+            }
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -45,35 +66,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
-
-            Guid? guid = value.AsGuidOrNull();
-            if ( !guid.HasValue )
-            {
-                var attendanceId = value.AsIntegerOrNull();
-                if ( attendanceId.HasValue )
-                {
-                    // if an Id was specified instead of a Guid, get the Guid instead
-                    using ( var rockContext = new RockContext() )
-                    {
-                        guid = new AttendanceService( rockContext ).GetGuid( attendanceId.Value );
-                    }
-                }
-            }
-
-            if ( guid.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var attendance = new AttendanceService( rockContext ).GetNoTracking( guid.Value );
-                    if ( attendance != null )
-                    {
-                        formattedValue = attendance.ToString();
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -199,6 +194,185 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the entity unique identifier for the entity specified by the value.
+        /// </summary>
+        /// <param name="privateValue">The private value.</param>
+        /// <returns>The unique identifier of the entity or <c>null</c> if it could not be determined.</returns>
+        private static Guid? GetAttendanceGuid( string privateValue )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( guid.HasValue )
+            {
+                return guid;
+            }
+
+            var attendanceId = privateValue.AsIntegerOrNull();
+
+            if ( attendanceId.HasValue )
+            {
+                // if an Id was specified instead of a Guid, get the Guid instead
+                using ( var rockContext = new RockContext() )
+                {
+                    return new AttendanceService( rockContext ).GetGuid( attendanceId.Value );
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the attendance record from the database. This applies all the
+        /// eager load settings so that the attendance record can be displayed.
+        /// </summary>
+        /// <param name="attendanceGuid">The attendance unique identifier.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>An <see cref="Attendance"/> entity or <c>null</c> if not found.</returns>
+        private static Attendance GetAttendanceForDisplay( Guid attendanceGuid, RockContext rockContext )
+        {
+            return new AttendanceService( rockContext )
+                .Queryable()
+                .Include( a => a.Occurrence )
+                .Include( a => a.Occurrence.Location )
+                .Include( a => a.Occurrence.Group )
+                .Include( a => a.PersonAlias )
+                .Include( a => a.PersonAlias.Person )
+                .FirstOrDefault( a => a.Guid == attendanceGuid );
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = GetAttendanceGuid( privateValue );
+
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var attendance = GetAttendanceForDisplay( guid.Value, rockContext );
+
+                    if ( attendance != null )
+                    {
+                        var textValue = attendance.ToString();
+
+                        return new PersistedValues
+                        {
+                            TextValue = textValue,
+                            CondensedTextValue = textValue.Truncate( 100 ),
+                            HtmlValue = textValue,
+                            CondensedHtmlValue = textValue.Truncate( 100 )
+                        };
+                    }
+                }
+            }
+
+            return new PersistedValues
+            {
+                TextValue = privateValue,
+                CondensedTextValue = privateValue,
+                HtmlValue = privateValue,
+                CondensedHtmlValue = privateValue
+            };
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = GetAttendanceGuid( privateValue );
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var attendance = new AttendanceService( rockContext )
+                    .Queryable()
+                    .Where( a => a.Guid == guid.Value )
+                    .Select( a => new
+                    {
+                        a.Id,
+                        a.PersonAliasId,
+                        a.PersonAlias.PersonId,
+                        a.Occurrence.GroupId,
+                        a.Occurrence.LocationId
+                    } )
+                    .FirstOrDefault();
+
+                if ( attendance == null )
+                {
+                    return null;
+                }
+
+                var entityReferences = new List<ReferencedEntity>();
+
+                if ( attendance.PersonAliasId.HasValue )
+                {
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<PersonAlias>().Value, attendance.PersonAliasId.Value ) );
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, attendance.PersonId ) );
+                }
+
+                // The Group and Location values on an Attendance record don't
+                // change so we don't need to monitor those, just the nested
+                // properties.
+
+                if ( attendance.GroupId.HasValue )
+                {
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Group>().Value, attendance.GroupId.Value ) );
+                }
+
+                if ( attendance.LocationId.HasValue )
+                {
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Location>().Value, attendance.LocationId.Value ) );
+                }
+
+                entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Rock.Model.Attendance>().Value, attendance.Id ) );
+
+                return entityReferences;
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var attendanceEntityTypeId = EntityTypeCache.GetId<Attendance>().Value;
+
+            // Technically, more properties on Person are used such as the
+            // suffix. But the extra overhead to monitor those is probably
+            // not worth it since we will pick up the change eventually
+            // on our nightly job runs.
+            // Likewise, attendance records should normally only exist on
+            // named locations so we don't monitor all the other properties.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( attendanceEntityTypeId, nameof( Attendance.DidAttend ) ),
+                new ReferencedProperty( attendanceEntityTypeId, nameof( Attendance.ScheduledToAttend ) ),
+                new ReferencedProperty( attendanceEntityTypeId, nameof( Attendance.RequestedToAttend ) ),
+                new ReferencedProperty( attendanceEntityTypeId, nameof( Attendance.DeclineReasonValueId ) ),
+                new ReferencedProperty( attendanceEntityTypeId, nameof( Attendance.StartDateTime ) ),
+                new ReferencedProperty( attendanceEntityTypeId, nameof( Attendance.EndDateTime ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<PersonAlias>().Value, nameof( PersonAlias.PersonId ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Group>().Value, nameof( Group.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<Location>().Value, nameof( Location.Name ) )
+            };
         }
 
         #endregion

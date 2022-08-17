@@ -44,6 +44,18 @@ namespace Rock.Client
         public string AttributeColor { get; set; }
 
         /// <summary />
+        public string DefaultPersistedCondensedHtmlValue { get; set; }
+
+        /// <summary />
+        public string DefaultPersistedCondensedTextValue { get; set; }
+
+        /// <summary />
+        public string DefaultPersistedHtmlValue { get; set; }
+
+        /// <summary />
+        public string DefaultPersistedTextValue { get; set; }
+
+        /// <summary />
         public string DefaultValue { get; set; }
 
         /// <summary />
@@ -81,6 +93,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsAnalyticHistory { get; set; }
+
+        /// <summary />
+        public bool IsDefaultPersistedValueDirty { get; set; }
 
         /// <summary />
         public bool IsGridColumn { get; set; }
@@ -159,6 +174,10 @@ namespace Rock.Client
             this.AbbreviatedName = source.AbbreviatedName;
             this.AllowSearch = source.AllowSearch;
             this.AttributeColor = source.AttributeColor;
+            this.DefaultPersistedCondensedHtmlValue = source.DefaultPersistedCondensedHtmlValue;
+            this.DefaultPersistedCondensedTextValue = source.DefaultPersistedCondensedTextValue;
+            this.DefaultPersistedHtmlValue = source.DefaultPersistedHtmlValue;
+            this.DefaultPersistedTextValue = source.DefaultPersistedTextValue;
             this.DefaultValue = source.DefaultValue;
             this.Description = source.Description;
             this.EnableHistory = source.EnableHistory;
@@ -172,6 +191,7 @@ namespace Rock.Client
             this.IsActive = source.IsActive;
             this.IsAnalytic = source.IsAnalytic;
             this.IsAnalyticHistory = source.IsAnalyticHistory;
+            this.IsDefaultPersistedValueDirty = source.IsDefaultPersistedValueDirty;
             this.IsGridColumn = source.IsGridColumn;
             this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsMultiValue = source.IsMultiValue;

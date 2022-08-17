@@ -215,49 +215,64 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var requestFilterService = new RequestFilterService( rockContext );
-            RequestFilter requestFilter;
             var requestFilterId = hfRequestFilterId.Value.AsInteger();
 
-            if ( requestFilterId == 0 )
+            // validate if request filter key unique
+            var isKeyDuplicate = RequestFilterCache.All()
+                .Where( rf => rf.Id != requestFilterId && rf.RequestFilterKey == tbKey.Text )
+                .Any();
+            if ( isKeyDuplicate )
             {
-                requestFilter = new RequestFilter();
-                requestFilter.Id = requestFilterId;
-                requestFilterService.Add( requestFilter );
-            }
-            else
-            {
-                requestFilter = requestFilterService.Get( requestFilterId );
-            }
-
-            if ( requestFilter == null )
-            {
+                nbWarningMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbWarningMessage.Text = $"Key '{tbKey.Text}' is already present. Please choose a different key";
                 return;
             }
 
-            requestFilter.Name = tbName.Text;
-            requestFilter.SiteId = ddlSiteKey.SelectedValue?.AsIntegerOrNull();
-            requestFilter.RequestFilterKey = tbKey.Text;
-            requestFilter.IsActive = cbIsActive.Checked;
+            using ( var rockContext = new RockContext() )
+            {
+                var requestFilterService = new RequestFilterService( rockContext );
+                RequestFilter requestFilter;
 
-            AdditionalFilterConfiguration.PreviousActivityRequestFilter.PreviousActivityTypes = cblPreviousActivity.SelectedValues
-                .Select( v => v.ConvertToEnum<PreviousActivityRequestFilter.PreviousActivityType>() )
-                .ToArray();
+                if ( requestFilterId == 0 )
+                {
+                    requestFilter = new RequestFilter();
+                    requestFilter.Id = requestFilterId;
+                    requestFilterService.Add( requestFilter );
+                }
+                else
+                {
+                    requestFilter = requestFilterService.Get( requestFilterId );
+                }
 
-            AdditionalFilterConfiguration.DeviceTypeRequestFilter.DeviceTypes = cblDeviceTypes.SelectedValues
-                .Select( v => v.ConvertToEnum<DeviceTypeRequestFilter.DeviceType>() )
-                .ToArray();
+                if ( requestFilter == null )
+                {
+                    return;
+                }
 
-            AdditionalFilterConfiguration.QueryStringRequestFilterExpressionType =
-                tglQueryStringFiltersAllAny.Checked ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny;
+                requestFilter.Name = tbName.Text;
+                requestFilter.SiteId = ddlSiteKey.SelectedValue?.AsIntegerOrNull();
+                requestFilter.RequestFilterKey = tbKey.Text;
+                requestFilter.IsActive = cbIsActive.Checked;
 
-            AdditionalFilterConfiguration.CookieRequestFilterExpressionType =
-                tglCookiesAllAny.Checked ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny;
+                AdditionalFilterConfiguration.PreviousActivityRequestFilter.PreviousActivityTypes = cblPreviousActivity.SelectedValues
+                    .Select( v => v.ConvertToEnum<PreviousActivityRequestFilter.PreviousActivityType>() )
+                    .ToArray();
 
-            requestFilter.FilterConfiguration = AdditionalFilterConfiguration;
+                AdditionalFilterConfiguration.DeviceTypeRequestFilter.DeviceTypes = cblDeviceTypes.SelectedValues
+                    .Select( v => v.ConvertToEnum<DeviceTypeRequestFilter.DeviceType>() )
+                    .ToArray();
 
-            rockContext.SaveChanges();
+                AdditionalFilterConfiguration.QueryStringRequestFilterExpressionType =
+                    tglQueryStringFiltersAllAny.Checked ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny;
+
+                AdditionalFilterConfiguration.CookieRequestFilterExpressionType =
+                    tglCookiesAllAny.Checked ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny;
+
+                requestFilter.FilterConfiguration = AdditionalFilterConfiguration;
+
+                rockContext.SaveChanges();
+            }
+
             NavigateToParentPage();
         }
 

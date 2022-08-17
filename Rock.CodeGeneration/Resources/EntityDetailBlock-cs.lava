@@ -70,7 +70,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
             {
                 var box = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, {% if UseAttributeValues == true %}true{% else %}false{% endif %}, rockContext );
+                SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );{% if UseAttributeValues == true %}
@@ -114,52 +114,47 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="loadAttributes"><c>true</c> if attributes and values should be loaded; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box, bool loadAttributes, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box, RockContext rockContext )
         {
             var entity = GetInitialEntity( rockContext );
 
-            if ( entity != null )
+            if ( entity == null )
             {
-                var isViewable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                box.ErrorMessage = $"The {{'{'}}{{ EntityName }}.FriendlyTypeName} was not found.";
+                return;
+            }
 
-                if ( loadAttributes )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
+            var isViewable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = {% if UseEntitySecurity %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );{% if UseAttributeValues == true %}
 
-                if ( entity.Id != 0 )
+            entity.LoadAttributes( rockContext );{% endif %}
+
+            if ( entity.Id != 0 )
+            {
+                // Existing entity was found, prepare for view mode by default.
+                if ( isViewable )
                 {
-                    // Existing entity was found, prepare for view mode by default.
-                    if ( isViewable )
-                    {
-                        box.Entity = GetEntityBagForView( entity, loadAttributes );
-                        box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    }
-                    else
-                    {
-                        box.ErrorMessage = EditModeMessage.NotAuthorizedToView( {{ EntityName }}.FriendlyTypeName );
-                    }
+                    box.Entity = GetEntityBagForView( entity );
+                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
-                    // New entity is being created, prepare for edit mode by default.
-                    if ( box.IsEditable )
-                    {
-                        box.Entity = GetEntityBagForEdit( entity, loadAttributes );
-                        box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    }
-                    else
-                    {
-                        box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( {{ EntityName }}.FriendlyTypeName );
-                    }
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( {{ EntityName }}.FriendlyTypeName );
                 }
             }
             else
             {
-                box.ErrorMessage = $"The {{'{'}}{{ EntityName }}.FriendlyTypeName} was not found.";
+                // New entity is being created, prepare for edit mode by default.
+                if ( box.IsEditable )
+                {
+                    box.Entity = GetEntityBagForEdit( entity );
+                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                }
+                else
+                {
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( {{ EntityName }}.FriendlyTypeName );
+                }
             }
         }
 
@@ -186,21 +181,17 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// Gets the bag for viewing the specied entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <param name="loadAttributes"><c>true</c> if attributes and values should be loaded; otherwise <c>false</c>.</param>
         /// <returns>A <see cref="{{ EntityName }}Bag"/> that represents the entity.</returns>
-        private {{ EntityName }}Bag GetEntityBagForView( {{ EntityName }} entity, bool loadAttributes )
+        private {{ EntityName }}Bag GetEntityBagForView( {{ EntityName }} entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetCommonEntityBag( entity );{% if UseAttributeValues == true %}
 
-            if ( loadAttributes )
-            {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-            }
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );{% endif %}
 
             return bag;
         }
@@ -209,21 +200,17 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// Gets the bag for editing the specied entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="loadAttributes"><c>true</c> if attributes and values should be loaded; otherwise <c>false</c>.</param>
         /// <returns>A <see cref="{{ EntityName }}Bag"/> that represents the entity.</returns>
-        private {{ EntityName }}Bag GetEntityBagForEdit( {{ EntityName }} entity, bool loadAttributes )
+        private {{ EntityName }}Bag GetEntityBagForEdit( {{ EntityName }} entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetCommonEntityBag( entity );{% if UseAttributeValues == true %}
 
-            if ( loadAttributes )
-            {
-                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
-            }
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );{% endif %}
 
             return bag;
         }
@@ -284,12 +271,12 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         {
             using ( var rockContext = new RockContext() )
             {
-                var entity = GetInitialEntity( rockContext );
+                var entity = GetInitialEntity( rockContext );{% if UseAttributeValues == true %}
 
                 if ( entity != null )
                 {
                     entity.LoadAttributes( rockContext );
-                }
+                }{% endif %}
 
                 return GetSecurityGrantToken( entity );
             }
@@ -299,13 +286,14 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         /// Gets the security grant token that will be used by UI controls on
         /// this block to ensure they have the proper permissions.
         /// </summary>
-        /// <param name="entity">The entity being viewed or edited on this block.</param>
         /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( IHasAttributes entity )
+        private string GetSecurityGrantToken( {{ EntityName }} entity )
         {
-            return new Rock.Security.SecurityGrant()
-                .AddRulesForAttributes( entity, RequestContext.CurrentPerson )
-                .ToToken();
+            var securityGrant = new Rock.Security.SecurityGrant();{% if UseAttributeValues == true %}
+
+            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );{% endif %}
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>
@@ -380,7 +368,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
                 var box = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity, true )
+                    Entity = GetEntityBagForEdit( entity )
                 };
 
                 return ActionOk( box );
@@ -436,7 +424,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
                 entity = entityService.Get( entity.Id );{% if UseAttributeValues == true %}
                 entity.LoadAttributes( rockContext );{% endif %}
 
-                return ActionOk( GetEntityBagForView( entity, true ) );
+                return ActionOk( GetEntityBagForView( entity ) );
             }
         }
 
@@ -478,7 +466,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            {% if UseAttributeValues == true %}using ( var rockContext = new RockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -496,7 +484,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
                 var refreshedBox = new DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity, true )
+                    Entity = GetEntityBagForEdit( entity )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
@@ -520,7 +508,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
                 }
 
                 return ActionOk( refreshedBox );
-            }
+            }{% else %}return ActionBadRequest( "Attributes are not supported by this block." );{% endif %}
         }
 
         #endregion

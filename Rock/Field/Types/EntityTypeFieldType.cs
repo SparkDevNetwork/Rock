@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,16 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENTITYTYPE )]
     public class EntityTypeFieldType : FieldType, IEntityFieldType
     {
+        /*
+         * 8/5/2022 - DSH
+         * 
+         * Note: We don't track changes to EntityType because that almost never
+         * happens and when it does it is extremely early in the Rock startup
+         * process so there is concern this might cause sporadic startup
+         * failures. Since the nightly job will get these fixed up if they are
+         * out of sync I decided not to track changes. If testing is performed
+         * and proven safe then we could later start tracking changes.
+         */
 
         #region Configuration
 
@@ -117,6 +127,19 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            return EntityTypeCache.Get( guid.Value )?.FriendlyName ?? string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -127,19 +150,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid guid = Guid.Empty;
-            if ( Guid.TryParse( value, out guid ) )
-            {
-                var entityType = EntityTypeCache.Get( guid );
-                if ( entityType != null )
-                {
-                    formattedValue = entityType.FriendlyName;
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion

@@ -166,8 +166,8 @@ namespace Rock.WebStartup
 
             /* 2020-05-20 MDP
                Plugins use Direct SQL to update data,
-               or other things could have done data updates
-               So, just in case, clear the cache (which could be Redis) since anything that is in there could be stale
+               or other things could have done data updates.
+               So, just in case, clear the cache since anything that is in there could be stale
             */
 
             LogStartupMessage( "Reloading Cache" );
@@ -623,7 +623,7 @@ namespace Rock.WebStartup
                         // Check to make sure no another migration has same number
                         if ( migrationTypesByNumber.ContainsKey( migrationNumberAttr.Number ) )
                         {
-                            throw new RockStartupException( $"The '{pluginAssemblyName}' plugin assembly contains duplicate migration numbers ({ migrationNumberAttr.Number})." );
+                            throw new RockStartupException( $"The '{pluginAssemblyName}' plugin assembly contains duplicate migration numbers ({migrationNumberAttr.Number})." );
                         }
 
                         migrationTypesByNumber.Add( migrationNumberAttr.Number, migrationType );
@@ -704,7 +704,7 @@ namespace Rock.WebStartup
                                     sqlTxn.Rollback();
                                 }
 
-                                throw new RockStartupException( $"##Plugin Migration error occurred in { migrationNumber}, {migrationType.Name}##", ex );
+                                throw new RockStartupException( $"##Plugin Migration error occurred in {migrationNumber}, {migrationType.Name}##", ex );
                             }
                         }
                     }
@@ -1045,6 +1045,11 @@ namespace Rock.WebStartup
                     try
                     {
                         IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                        if ( jobDetail == null )
+                        {
+                            continue;
+                        }
+
                         ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                         // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)

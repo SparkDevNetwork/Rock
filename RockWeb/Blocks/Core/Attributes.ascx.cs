@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -708,9 +708,22 @@ namespace RockWeb.Blocks.Core
                     }
 
                     var fieldType = FieldTypeCache.Get( attribute.FieldType.Id );
-                    attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( phEditControls.Controls[0] ), attribute.QualifierValues );
 
-                    rockContext.SaveChanges();
+                    var newValue = fieldType.Field.GetEditValue( attribute.GetControl( phEditControls.Controls[0] ), attribute.QualifierValues );
+
+                    if ( attributeValue.Value != newValue )
+                    {
+                        attributeValue.Value = newValue;
+
+                        Helper.UpdateAttributeValuePersistedValues( attributeValue, attribute );
+
+                        if ( attribute.IsReferencedEntityFieldType )
+                        {
+                            Helper.UpdateAttributeValueEntityReferences( attributeValue, rockContext );
+                        }
+
+                        rockContext.SaveChanges();
+                    }
                 }
 
                 hfIdValues.Value = string.Empty;

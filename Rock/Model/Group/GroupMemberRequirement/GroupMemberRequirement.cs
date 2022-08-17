@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -31,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberRequirement" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "FF1B2C4B-0F2D-4D9B-9E85-7336CCC24A62")]
+    [Rock.SystemGuid.EntityTypeGuid( "FF1B2C4B-0F2D-4D9B-9E85-7336CCC24A62" )]
     public partial class GroupMemberRequirement : Model<GroupMemberRequirement>
     {
         #region Entity Properties
@@ -92,6 +93,88 @@ namespace Rock.Model
         [DataMember]
         public DateTime? LastRequirementCheckDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the "Does Not Meet" <see cref="Rock.Model.Workflow"/> identifier for the group member's requirement.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier.
+        /// </value>
+        [DataMember]
+        public int? DoesNotMeetWorkflowId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Warning" <see cref="Rock.Model.Workflow"/> identifier for the group member's requirement.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier.
+        /// </value>
+        [DataMember]
+        public int? WarningWorkflowId { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the member requirement was manually completed.
+        /// </summary>
+        [DataMember]
+        [DefaultValue( false )]
+        public bool WasManuallyCompleted { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that manually completed this member requirement.
+        /// </summary>
+        /// <value>
+        /// The manually completed by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? ManuallyCompletedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the manually completed date for the group member requirement.
+        /// </summary>
+        /// <value>
+        /// The manually completed date time.
+        /// </value>
+        [DataMember]
+        public DateTime? ManuallyCompletedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the member requirement was overridden.
+        /// </summary>
+        [DataMember]
+        [DefaultValue( false )]
+        public bool WasOverridden { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that overrode this member requirement.
+        /// </summary>
+        /// <value>
+        /// The overridden by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? OverriddenByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the overridden date for the group member requirement.
+        /// </summary>
+        /// <value>
+        /// The overridden date time.
+        /// </value>
+        [DataMember]
+        public DateTime? OverriddenDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the due date for the group member requirement.
+        /// </summary>
+        /// <remarks>
+        /// The due date would be:
+        /// <br />
+        /// 1. Provided by a group administrator when the <see cref="Rock.Model.GroupRequirementType.DueDateType"/> is <see cref="DueDateType.ConfiguredDate"/>.<br />
+        /// 2. Calculated from GroupAttribute. Would be equal to the selected date in the attribute plus the <see cref="GroupRequirementType.DueDateOffsetInDays"/>.<br />
+        /// OR<br />
+        /// 3. Calculated from <see cref="DueDateType.DaysAfterJoining"/>. Would be equal to the date the individual was added to the group plus the <see cref="GroupRequirementType.DueDateOffsetInDays"/><br />
+        /// </remarks>
+        [DataMember]
+        public DateTime? DueDate { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -114,6 +197,40 @@ namespace Rock.Model
         [LavaVisible]
         public virtual GroupRequirement GroupRequirement { get; set; }
 
+        /// <summary>
+        /// Gets or sets the "Does Not Meet" <see cref="Rock.Model.Workflow"/>.
+        /// </summary>
+        /// <value>
+        /// The "Does Not Meet" workflow.
+        /// </value>
+        [LavaVisible]
+        public virtual Workflow DoesNotMeetWorkflow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "Warning" <see cref="Rock.Model.Workflow"/>.
+        /// </summary>
+        /// <value>
+        /// The "Warning" workflow.
+        /// </value>
+        [LavaVisible]
+        public virtual Workflow WarningWorkflow { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the person who manually completed the member requirement.
+        /// </summary>
+        /// <value>
+        /// The manually completed by person alias.
+        /// </value>
+        public virtual PersonAlias ManuallyCompletedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the person who overrode the member requirement.
+        /// </summary>
+        /// <value>
+        /// The overridden by person alias.
+        /// </value>
+        public virtual PersonAlias OverriddenByPersonAlias { get; set; }
+
         #endregion
     }
 
@@ -131,6 +248,10 @@ namespace Rock.Model
         {
             this.HasRequired( a => a.GroupRequirement ).WithMany().HasForeignKey( a => a.GroupRequirementId ).WillCascadeOnDelete( true );
             this.HasRequired( a => a.GroupMember ).WithMany( a => a.GroupMemberRequirements ).HasForeignKey( a => a.GroupMemberId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.DoesNotMeetWorkflow ).WithMany().HasForeignKey( a => a.DoesNotMeetWorkflowId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.WarningWorkflow ).WithMany().HasForeignKey( a => a.WarningWorkflowId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.ManuallyCompletedByPersonAlias ).WithMany().HasForeignKey( a => a.ManuallyCompletedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.OverriddenByPersonAlias ).WithMany().HasForeignKey( a => a.OverriddenByPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

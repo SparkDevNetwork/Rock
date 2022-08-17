@@ -82,12 +82,21 @@ namespace Rock.Model
             var viewModel = new GroupMemberRequirementBag
             {
                 IdKey = model.IdKey,
+                DoesNotMeetWorkflowId = model.DoesNotMeetWorkflowId,
+                DueDate = model.DueDate,
                 GroupMemberId = model.GroupMemberId,
                 GroupRequirementId = model.GroupRequirementId,
                 LastRequirementCheckDateTime = model.LastRequirementCheckDateTime,
+                ManuallyCompletedByPersonAliasId = model.ManuallyCompletedByPersonAliasId,
+                ManuallyCompletedDateTime = model.ManuallyCompletedDateTime,
+                OverriddenByPersonAliasId = model.OverriddenByPersonAliasId,
+                OverriddenDateTime = model.OverriddenDateTime,
                 RequirementFailDateTime = model.RequirementFailDateTime,
                 RequirementMetDateTime = model.RequirementMetDateTime,
                 RequirementWarningDateTime = model.RequirementWarningDateTime,
+                WarningWorkflowId = model.WarningWorkflowId,
+                WasManuallyCompleted = model.WasManuallyCompleted,
+                WasOverridden = model.WasOverridden,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -157,14 +166,23 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupMemberRequirement target, GroupMemberRequirement source )
         {
             target.Id = source.Id;
+            target.DoesNotMeetWorkflowId = source.DoesNotMeetWorkflowId;
+            target.DueDate = source.DueDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupMemberId = source.GroupMemberId;
             target.GroupRequirementId = source.GroupRequirementId;
             target.LastRequirementCheckDateTime = source.LastRequirementCheckDateTime;
+            target.ManuallyCompletedByPersonAliasId = source.ManuallyCompletedByPersonAliasId;
+            target.ManuallyCompletedDateTime = source.ManuallyCompletedDateTime;
+            target.OverriddenByPersonAliasId = source.OverriddenByPersonAliasId;
+            target.OverriddenDateTime = source.OverriddenDateTime;
             target.RequirementFailDateTime = source.RequirementFailDateTime;
             target.RequirementMetDateTime = source.RequirementMetDateTime;
             target.RequirementWarningDateTime = source.RequirementWarningDateTime;
+            target.WarningWorkflowId = source.WarningWorkflowId;
+            target.WasManuallyCompleted = source.WasManuallyCompleted;
+            target.WasOverridden = source.WasOverridden;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -517,14 +517,8 @@ namespace RockWeb.Blocks.Connection
                         connectionWorkflowState.Guid = connectionWorkflow.Guid;
                     }
 
-                    // need WrapTransaction due to Attribute saves
-                    rockContext.WrapTransaction( () =>
-                    {
-                        rockContext.SaveChanges();
-
-                        connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
-                        connectionWorkflow.ConnectionTypeId = connectionTypeId;
-                    } );
+                    connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
+                    connectionWorkflow.ConnectionTypeId = connectionTypeId;
                 }
 
                 if ( !connectionType.IsValid )

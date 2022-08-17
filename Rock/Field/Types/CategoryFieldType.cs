@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,9 +34,8 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CATEGORY )]
-    public class CategoryFieldType : FieldType, IEntityFieldType
+    public class CategoryFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -155,6 +154,28 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( this is CategoriesFieldType )
+            {
+                return privateValue;
+            }
+            else
+            {
+                if ( !string.IsNullOrWhiteSpace( privateValue ) )
+                {
+                    var category = CategoryCache.Get( privateValue.AsGuid() );
+                    if ( category != null )
+                    {
+                        return category.Name;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -165,25 +186,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( this is CategoriesFieldType )
-            {
-                formattedValue = value;
-            }
-            else
-            {
-                if ( !string.IsNullOrWhiteSpace( value ) )
-                {
-                    var category = CategoryCache.Get( value.AsGuid() );
-                    if ( category != null )
-                    {
-                        formattedValue = category.Name;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -347,5 +352,37 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( this is CategoriesFieldType )
+            {
+                return null;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                var category = CategoryCache.Get( privateValue.AsGuid() );
+                if ( category != null )
+                {
+                    return new List<ReferencedEntity>() { new ReferencedEntity( EntityTypeCache.GetId<Category>().Value, category.Id ) };
+                }
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<Category>().Value, nameof( Category.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

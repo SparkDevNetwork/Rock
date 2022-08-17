@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -243,9 +243,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var formattedValue = GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -630,5 +630,42 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldValues = oldPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+            var newValues = newPrivateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+
+            var oldSqlQuery = oldValues.ToUpper().Contains( "SELECT" ) && oldValues.ToUpper().Contains( "FROM" );
+            var newSqlQuery = newValues.ToUpper().Contains( "SELECT" ) && newValues.ToUpper().Contains( "FROM" );
+
+            if ( oldValues != newValues )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
+        {
+            var values = privateConfigurationValues.GetValueOrNull( VALUES_KEY ) ?? string.Empty;
+            var options = new Lava.CommonMergeFieldsOptions
+            {
+                GetLegacyGlobalMergeFields = false
+            };
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
+            var listSource = values.ResolveMergeFields( mergeFields );
+
+            // If the source is a SQL query then it is volatile since the results
+            // of the query might change at any time.
+            return listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" );
+        }
+
+        #endregion
     }
 }

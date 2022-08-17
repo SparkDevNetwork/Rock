@@ -11,11 +11,11 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbRoute" runat="server" Label="Route" Required="true" />
-                        <Rock:PagePicker ID="ppMobilePage" runat="server" Label="Mobile Page" Required="true" />
-                        <Rock:Toggle ID="tglFallbackType" runat="server" OnCheckedChanged="tglFallbackType_CheckedChanged" Label="Fallback Page" OnText="URL" OffText="Page" />
-                        <Rock:PagePicker ID="ppFallbackPage" runat="server" Label="Page" />
-                        <Rock:UrlLinkBox ID="tbFallbackUrl" runat="server" Label="URL" />
+                        <Rock:RockTextBox ID="tbRoute" runat="server" Label="Route" Required="true" Help="The web route you want to deep link to your mobile application. Follows the deep link path prefix."/>
+                        <Rock:PagePicker ID="ppMobilePage" runat="server" Label="Mobile Page" Required="true" Help="The mobile page you want the web route to direct to." />
+                        <Rock:Toggle ID="tglFallbackType" runat="server" OnCheckedChanged="tglFallbackType_CheckedChanged" Label="Fallback Method" OnText="URL" OffText="Page" ButtonSizeClass="btn-xs" Help="If someone goes to a deep link, and they do not have the mobile application installed or are on a different platform, you can either redirect them to a page directly or to an external URL. The route and query string parameters that were initially passed in will be passed along."/>
+                        <Rock:PagePicker ID="ppFallbackPage" runat="server" Label="Fallback Page" PromptForPageRoute="true" Help="The page to fallback to." />
+                        <Rock:UrlLinkBox ID="tbFallbackUrl" runat="server" Label="Fallback URL" Help="The URL to fallback to, if you included route paramters (ex: {GroupGuid}) in the route, they will be replaced in the fallback URL, if included." />
                     </div>
                 </div>
                 <div class="actions">

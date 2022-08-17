@@ -63,8 +63,12 @@
     <Compile Include="Cms\ContentCollectionView.cs" />
     <Compile Include="Cms\LayoutDetail.cs" />
     <Compile Include="Cms\MediaAccountDetail.cs" />
+    <Compile Include="Cms\MediaFolderDetail.cs" />
+    <Compile Include="Cms\PersistedDatasetDetail.cs" />
+    <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\CampusDetail.cs" />
+    <Compile Include="Crm\AssessmentTypeDetail.cs" />
     <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />

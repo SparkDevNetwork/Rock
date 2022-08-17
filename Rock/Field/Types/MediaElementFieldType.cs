@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -31,7 +32,7 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_ELEMENT )]
-    public class MediaElementFieldType : FieldType, IEntityFieldType
+    public class MediaElementFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -216,30 +217,45 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return FormatValueAsHtml( parentControl, value, configurationValues, condensed );
+            var mediaElementGuid = privateValue.AsGuidOrNull();
+
+            if ( !mediaElementGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaElementName = new MediaElementService( rockContext ).GetSelect( mediaElementGuid.Value, me => me.Name );
+
+                return mediaElementName ?? string.Empty;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetHtmlValue( privateValue, false );
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetHtmlValue( privateValue, true );
         }
 
         /// <summary>
-        /// Formats the value as HTML.
+        /// Gets the HTML formatted representation of this field value.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> then the value will be displayed in a condensed area; otherwise <c>false</c>.</param>
-        /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        /// <param name="privateValue">The private value of the field in the database.</param>
+        /// <param name="condensed">If set to <c>true</c> then the output should be condensed for rendering to a small space.</param>
+        /// <returns>A string that contains the HTML formatted representation of the field value.</returns>
+        private string GetHtmlValue( string privateValue, bool condensed )
         {
-            var mediaElementGuid = value.AsGuidOrNull();
+            var mediaElementGuid = privateValue.AsGuidOrNull();
 
             if ( !mediaElementGuid.HasValue )
             {
@@ -303,6 +319,36 @@ namespace Rock.Field.Types
                     return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive' />";
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> then the value will be displayed in a condensed area; otherwise <c>false</c>.</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            return !condensed
+                ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -575,6 +621,49 @@ namespace Rock.Field.Types
             }
 
             return new MediaElementService( rockContext ?? new RockContext() ).Get( mediaGuid.Value );
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var mediaElementId = new MediaElementService( rockContext ).GetId( guid.Value );
+
+                if ( !mediaElementId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<MediaElement>().Value, mediaElementId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name and ThumbnailDataJson properties
+            // of a MediaElement and should have its persisted values updated when
+            // changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<MediaElement>().Value, nameof( MediaElement.Name ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<MediaElement>().Value, nameof( MediaElement.ThumbnailDataJson ) )
+            };
         }
 
         #endregion

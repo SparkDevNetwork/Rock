@@ -45,6 +45,11 @@
                                 </div>
                             </div>
 
+                            <div class="rock-header mt-4">
+                                <h3 class="title">Settings</h3>
+                                <hr class="section-header-hr">
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:NumberBox ID="nbCount" runat="server" MinimumValue="0" CssClass="input-width-sm" Label="Items Per Page"
@@ -68,10 +73,12 @@
                                 </div>
                             </div>
 
+                             <div class="rock-header mt-4">
+                                <h3 class="title">Filters and Sorting</h3>
+                                <hr class="section-header-hr">
+                            </div>
+
                             <div class="form-group">
-                                <label class="control-label">
-                                    Filter
-                                </label>
                                 <asp:HiddenField ID="hfDataFilterId" runat="server" />
                                 <asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
                             </div>
@@ -85,22 +92,31 @@
                                         Help="The field value and direction that items should be ordered by." />
                                 </div>
                                 <div class="col-md-6">
-                                    <fieldset>
-                                        <legend>Social Media Settings</legend>
+                                    <Rock:RockRadioButtonList ID="rblPersonalizationSegments" runat="server" Label="Personalization Segments" RepeatDirection="Horizontal"
+                                        Help="The setting determines how personalization segments effect the results shown. Ignore will not consider segments, Prioritize will add items with matching segments to the top of the list (in order by the sort order) and Filter will only show items that match the current individuals segments." />
+                                    <Rock:RockRadioButtonList ID="rblRequestFilters" runat="server" Label="Request Filters" RepeatDirection="Horizontal"
+                                        Help="The setting determines how request filters effect the results shown. Ignore will not consider filters, Prioritize will add items with matching filters to the top of the list (in order by the sort order) and Filter will only show items that match the current request's filters." />
+                                </div>
+                            </div>
 
-                                        <Rock:RockCheckBox ID="cbSetRssAutodiscover" runat="server" Label="Set RSS Autodiscover Link" Text="Yes"
-                                            Help="Sets an RSS autodiscover link to the header section of the page." />
+                            <div class="rock-header mt-4">
+                                <h3 class="title">Social Media Settings</h3>
+                                <hr class="section-header-hr">
 
+                                <div class="row">
+                                    <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlMetaDescriptionAttribute" runat="server" Label="Meta Description Attribute"
                                             Help="Attribute to use for the page's meta description." />
-
+                                    </div>
+                                    <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlMetaImageAttribute" runat="server" Label="Meta Image Attribute"
                                             Help="Attribute to use for the page's og:image and image_src meta tags." />
-
-                                    </fieldset>
+                                    </div>
                                 </div>
-
                             </div>
+
+                            <Rock:RockCheckBox ID="cbSetRssAutodiscover" runat="server" Label="Set RSS Autodiscover Link" Text="Yes"
+                                Help="Sets an RSS autodiscover link to the header section of the page." />
 
                         </ContentTemplate>
                     </asp:UpdatePanel>

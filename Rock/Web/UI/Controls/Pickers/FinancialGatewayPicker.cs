@@ -39,17 +39,17 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if [show all]; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.14" )]
-        [Obsolete( "Use ShowInactive instead" )]
+        [Obsolete( "Use IncludeInactive instead" )]
         public bool ShowAll
         {
             get
             {
-                return ShowInactive;
+                return IncludeInactive;
             }
 
             set
             {
-                ShowInactive = value;
+                IncludeInactive = value;
             }
         }
 
@@ -58,28 +58,29 @@ namespace Rock.Web.UI.Controls
         /// This checks both the FinancialGateway model and the GatewayComponent.
         /// </summary>
         /// <value><c>true</c> if [show inactive]; otherwise, <c>false</c>.</value>
-        public bool ShowInactive
+        public bool IncludeInactive
         {
             get
             {
-                return ViewState["ShowInactive"] as bool? ?? false;
+                return ViewState["IncludeInactive"] as bool? ?? false;
             }
 
             set
             {
-                if ( ShowInactive != value )
+                if ( IncludeInactive != value )
                 {
-                    ViewState["ShowInactive"] = value;
+                    ViewState["IncludeInactive"] = value;
                     LoadItems();
                 }
             }
         }
 
         /// <summary>
-        /// If set to true then gateways that do now support Rock initiated transactions will be included.
+        /// If set to true then gateways that do not support Rock initiated transactions will be included.
         /// These GatewayComponents are used to download externally created transactions and do not allow Rock
         /// to create the transaction.
-        /// THIS DOES NOT CONSIDER THE "IsActive" PROPERTY.
+        /// <strong>This property does not affect if inactive gateways are shown or not.</strong>
+        /// The inclusion or exclusion of inactive gateways is controlled exclusively by the "IncludeInactive" property.
         /// </summary>
         /// <value><c>true</c> if [show all gateway components]; otherwise, <c>false</c>.</value>
         public bool ShowAllGatewayComponents
@@ -134,14 +135,14 @@ namespace Rock.Web.UI.Controls
                     GatewayComponent component = GatewayContainer.GetComponent( entityType.Name );
 
                     // Add the gateway if was already selected or if the control is configured to show all of the gateways.
-                    if ( gateway.Id == selectedItem || ( ShowInactive && ShowAllGatewayComponents ) )
+                    if ( gateway.Id == selectedItem || ( IncludeInactive && ShowAllGatewayComponents ) )
                     {
                         this.Items.Add( new ListItem( gateway.Name, gateway.Id.ToString() ) );
                         continue;
                     }
 
                     // Do not add if the component or gateway is not active and the controls has ShowInactive set to false.
-                    if ( ShowInactive == false && ( gateway.IsActive == false || component == null || component.IsActive == false ) )
+                    if ( IncludeInactive == false && ( gateway.IsActive == false || component == null || component.IsActive == false ) )
                     {
                         continue;
                     }
