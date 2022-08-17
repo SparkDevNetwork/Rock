@@ -87,7 +87,6 @@ namespace Rock.Migrations
         {
 
             Sql( $@"
-                -- Get the Shorcode IDs
                 DECLARE @AccordionID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Accordion')
                 DECLARE @ChartID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Chart')
                 DECLARE @EasyPieChartID INT = (SELECT TOP 1 [Id] FROM [LavaShortcode] WHERE [Name] = 'Easy Pie Chart')
@@ -112,43 +111,43 @@ namespace Rock.Migrations
                 IF (@AccordionID IS NOT NULL AND @GeneralID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES  (@AccordionID, @GeneralID) END
 
-                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                IF (@ChartID IS NOT NULL AND @ReportingID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@ChartID, @ReportingID) END
 
-                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                IF (@EasyPieChartID IS NOT NULL AND @ReportingID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@EasyPieChartID, @ReportingID) END
 
-                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                IF (@GoogleHeatmapID IS NOT NULL AND @ReportingID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@GoogleHeatmapID, @ReportingID) END
 
-                IF (@AccordionID IS NOT NULL AND @GeneralID IS NOT NULL)
+                IF (@GoogleMapID IS NOT NULL AND @GeneralID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@GoogleMapID, @GeneralID) END
 
-                IF (@AccordionID IS NOT NULL AND @GeneralID IS NOT NULL)
+                IF (@GoogleStaticMapID IS NOT NULL AND @GeneralID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@GoogleStaticMapID, @GeneralID) END
 
-                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                IF (@KpiID IS NOT NULL AND @ReportingID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@KpiID, @ReportingID) END
 
-                IF (@AccordionID IS NOT NULL AND @WebsiteID IS NOT NULL)
+                IF (@PanelID IS NOT NULL AND @WebsiteID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@PanelID, @WebsiteID) END
 
-                IF (@AccordionID IS NOT NULL AND @WebsiteID IS NOT NULL)
+                IF (@ParallaxID IS NOT NULL AND @WebsiteID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@ParallaxID, @WebsiteID) END
 
-                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                IF (@SparklineChartID IS NOT NULL AND @ReportingID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@SparklineChartID, @ReportingID) END
 
-                IF (@AccordionID IS NOT NULL AND @ReportingID IS NOT NULL)
+                IF (@TrendChartID IS NOT NULL AND @ReportingID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@TrendChartID, @ReportingID) END
 
-                IF (@AccordionID IS NOT NULL AND @WebsiteID IS NOT NULL)
+                IF (@VimeoID IS NOT NULL AND @WebsiteID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@VimeoID, @WebsiteID) END
 
-                IF (@AccordionID IS NOT NULL AND @GeneralID IS NOT NULL)
+                IF (@WordCloudID IS NOT NULL AND @GeneralID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@WordCloudID, @GeneralID) END
 
-                IF (@AccordionID IS NOT NULL AND @WebsiteID IS NOT NULL)
+                IF (@YouTubeID IS NOT NULL AND @WebsiteID IS NOT NULL)
                 BEGIN INSERT INTO [LavaShortcodeCategory] (LavaShortcodeId, CategoryId) VALUES (@YouTubeID, @WebsiteID) END" );
         }
 
