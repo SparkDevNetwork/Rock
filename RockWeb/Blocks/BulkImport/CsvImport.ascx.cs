@@ -130,9 +130,9 @@ namespace RockWeb.Blocks.BulkImport
 
             if ( !Page.IsPostBack )
             {
-                // delete all files in the root directory on start up to ensure that no residual files are present before the upload
-                Array.ForEach( Directory.GetFiles( Request.MapPath( fupCSVFile.RootFolder ) ), delegate ( string path )
-             { File.Delete( path ); } );
+                // delete all the csv files in the root directory on start up to ensure that no residual files are present before the upload
+                Directory.EnumerateFiles( Request.MapPath( fupCSVFile.RootFolder ), "*.csv" ).ToList()
+                    .ForEach( f => File.Delete( f ) );
             }
             RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", false );
         }
