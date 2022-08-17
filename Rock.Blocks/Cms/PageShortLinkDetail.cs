@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -52,6 +52,7 @@ namespace Rock.Blocks.CMS
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( "AD614123-C7CA-40EE-B5D5-64D0D1C91378")]
     public class PageShortLinkDetail : RockObsidianDetailBlockType
     {
         private int _minTokenLength = 7;
