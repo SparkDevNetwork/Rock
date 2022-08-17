@@ -42,6 +42,7 @@
     <Folder Include="src\Cms\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
+    <Folder Include="src\Cms\LayoutDetail\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Cms\MediaFolderDetail\" />
     <Folder Include="src\Cms\PageShortLinkDetail\" />
@@ -83,6 +84,10 @@
     <TypeScriptCompile Include="src\Cms\ContentCollectionView\filterGrid.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionView\filtersContainer.partial.ts" />
     <TypeScriptCompile Include="src\Cms\ContentCollectionView\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\layoutDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\LayoutDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\LayoutDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\LayoutDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\mediaAccountDetail.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\types.d.ts" />
