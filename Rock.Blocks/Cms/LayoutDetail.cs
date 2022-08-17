@@ -285,8 +285,12 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.SiteId ),
-                () => entity.SiteId = box.Entity.SiteId );
+            // Only allow UI to set SiteId if hasn't been set yet.
+            if ( entity.SiteId == 0 )
+            {
+                box.IfValidProperty( nameof( box.Entity.SiteId ),
+                    () => entity.SiteId = box.Entity.SiteId );
+            }
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
