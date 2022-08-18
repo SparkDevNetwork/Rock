@@ -3506,19 +3506,23 @@ namespace RockWeb.Blocks.Groups
                 grpGroupRequirementGroupRole.GroupRoleId = selectedGroupRequirement.GroupRoleId;
                 cbMembersMustMeetRequirementOnAdd.Checked = selectedGroupRequirement.MustMeetRequirementToAddMember;
 
+                var groupRequirementType = list.Where( r => r.Id == selectedGroupRequirement.GroupRequirementTypeId ).First();
+
                 ShowDueDateQualifierControls();
                 rblAppliesToAgeClassification.SelectedValue = selectedGroupRequirement.AppliesToAgeClassification.ToString();
                 dvpAppliesToDataView.SetValue( selectedGroupRequirement.AppliesToDataViewId );
                 cbAllowLeadersToOverride.Checked = selectedGroupRequirement.AllowLeadersToOverride;
-                if ( selectedGroupRequirement.DueDateAttributeId.HasValue )
+                if ( groupRequirementType.DueDateType == DueDateType.GroupAttribute )
                 {
                     ddlDueDateGroupAttribute.Visible = true;
+                    ddlDueDateGroupAttribute.SetValue( selectedGroupRequirement.DueDateAttributeId.HasValue ? selectedGroupRequirement.DueDateAttributeId.ToString() : string.Empty );
                 }
-                if ( selectedGroupRequirement.DueDateStaticDate.HasValue )
+                if ( groupRequirementType.DueDateType == DueDateType.ConfiguredDate )
                 {
                     dpDueDate.Visible = true;
+                    dpDueDate.SelectedDate = selectedGroupRequirement.DueDateStaticDate.Value;
                 }
-                ddlDueDateGroupAttribute.SetValue( selectedGroupRequirement.DueDateAttributeId.HasValue ? selectedGroupRequirement.DueDateAttributeId.ToString() : string.Empty );
+
             }
             else
             {
@@ -3569,13 +3573,20 @@ namespace RockWeb.Blocks.Groups
             groupRequirement.AppliesToAgeClassification = rblAppliesToAgeClassification.SelectedValue.ConvertToEnum<AppliesToAgeClassification>();
             groupRequirement.AppliesToDataViewId = dvpAppliesToDataView.SelectedValueAsId();
             groupRequirement.AllowLeadersToOverride = cbAllowLeadersToOverride.Checked;
-            groupRequirement.DueDateStaticDate = dpDueDate.SelectedDate;
 
-            // Set this due date attribute if it exists.
-            var groupDueDateAttributes = AttributeCache.AllForEntityType<Group>().Where( a => a.Key == ddlDueDateGroupAttribute.SelectedValue );
-            if ( groupDueDateAttributes.Any() )
+            if ( groupRequirement.GroupRequirementType.DueDateType == DueDateType.ConfiguredDate )
             {
-                groupRequirement.DueDateAttributeId = groupDueDateAttributes.First().Id;
+                groupRequirement.DueDateStaticDate = dpDueDate.SelectedDate;
+            }
+
+            if ( groupRequirement.GroupRequirementType.DueDateType == DueDateType.GroupAttribute )
+            {
+                // Set this due date attribute if it exists.
+                var groupDueDateAttributes = AttributeCache.AllForEntityType<Group>().Where( a => a.Key == ddlDueDateGroupAttribute.SelectedValue );
+                if ( groupDueDateAttributes.Any() )
+                {
+                    groupRequirement.DueDateAttributeId = groupDueDateAttributes.First().Id;
+                }
             }
 
             // Make sure we aren't adding a duplicate group requirement (same group requirement type and role)
