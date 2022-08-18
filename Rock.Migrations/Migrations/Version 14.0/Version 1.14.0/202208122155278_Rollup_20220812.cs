@@ -34,6 +34,7 @@ namespace Rock.Migrations
             UpdateAppleTvBlockFileName();
             AddAdminChecklistItemForRedis();
             ShowFormBuilderPages();
+            SetWorkflowLogIsSecured();
             CleanupMigrationHistory();
         }
         
@@ -178,6 +179,14 @@ namespace Rock.Migrations
         UPDATE [dbo].[__MigrationHistory]
         SET [Model] = 0x
         WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
+        }
+
+        /// <summary>
+        /// KA: Migration to Set IsSecured column of WorkflowLog to false.
+        /// </summary>
+        private void SetWorkflowLogIsSecured()
+        {
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.WorkflowLog", Rock.SystemGuid.EntityType.WORKFLOW_LOG, true, false );
         }
     }
 }
