@@ -950,6 +950,7 @@ namespace Rock.Client.SystemGuid
         public const string WORKFLOW_ACTION_TYPE = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6";
         public const string WORKFLOW_ACTIVITY = "2CB52ED0-CB06-4D62-9E2C-73B60AFA4C9F";
         public const string WORKFLOW_FORM_BUILDER_TEMPLATE = "65fa3078-9d42-4857-b78a-f32a05f7a4c1";
+        public const string WORKFLOW_LOG = "332CFF36-D637-414D-B732-370B330B8D73";
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
     }
 

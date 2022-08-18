@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,9 @@ using Rock.Common.Tv;
 
 namespace RockWeb.Blocks.Tv
 {
+    /// <summary>
+    /// Template block for developers to use to start a new block.
+    /// </summary>
     [DisplayName( "Apple TV Page Detail" )]
     [Category( "TV > TV Apps" )]
     [Description( "Allows a person to edit an Apple TV page." )]
@@ -113,6 +116,12 @@ namespace RockWeb.Blocks.Tv
 
             if ( pageId != null )
             {
+                var detailBreadCrumb = pageReference.BreadCrumbs.FirstOrDefault( x => x.Name == "Application Screen Detail" );
+                if ( detailBreadCrumb != null )
+                {
+                    pageReference.BreadCrumbs.Remove( detailBreadCrumb );
+                }
+
                 var page = PageCache.Get( pageId.Value );
 
                 if ( page != null )

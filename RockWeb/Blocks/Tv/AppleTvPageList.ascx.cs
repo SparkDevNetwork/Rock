@@ -218,7 +218,7 @@ namespace RockWeb.Blocks.Tv
             var pageInfo = ( PageRowInfo ) e.Row.DataItem;
             var lCacheSettings = e.Row.FindControl( "lCacheSettings" ) as Literal;
 
-            var cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( pageInfo.CacheControlHeaderSettings );
+            var cacheControlHeader = pageInfo.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>() ?? new RockCacheability();
 
             var cacheDescription = new StringBuilder();
             cacheDescription.Append( $"{cacheControlHeader.RockCacheablityType} " );

@@ -23,6 +23,10 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class PersonalLinkSectionBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type PersonalLinkSectionBag = {
     /** Gets or sets the name. */
     name?: string | null;
