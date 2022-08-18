@@ -63,14 +63,11 @@
     <Reference Include="BCrypt.Net, Version=0.1.5073.29922, Culture=neutral, PublicKeyToken=6bcd409ee6bc9292, processorArchitecture=MSIL">
       <HintPath>..\packages\BCrypt-Official.0.1.109\lib\BCrypt.Net.dll</HintPath>
     </Reference>
-    <Reference Include="CacheManager.Core, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
-      <HintPath>..\packages\CacheManager.Core.1.1.2\lib\net45\CacheManager.Core.dll</HintPath>
+    <Reference Include="CacheManager.Core, Version=1.2.0.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
+      <HintPath>..\packages\CacheManager.Core.1.2.0\lib\net45\CacheManager.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CacheManager.Serialization.Json, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
-      <HintPath>..\packages\CacheManager.Serialization.Json.1.1.2\lib\net45\CacheManager.Serialization.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="CacheManager.SystemRuntimeCaching, Version=1.1.2.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
-      <HintPath>..\packages\CacheManager.SystemRuntimeCaching.1.1.2\lib\net45\CacheManager.SystemRuntimeCaching.dll</HintPath>
+    <Reference Include="CacheManager.SystemRuntimeCaching, Version=1.2.0.0, Culture=neutral, PublicKeyToken=5b450b4fb65c4cdb, processorArchitecture=MSIL">
+      <HintPath>..\packages\CacheManager.SystemRuntimeCaching.1.2.0\lib\net45\CacheManager.SystemRuntimeCaching.dll</HintPath>
     </Reference>
     <Reference Include="CommonMark, Version=0.1.0.0, Culture=neutral, PublicKeyToken=001ef8810438905d, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonMark.NET.0.13.2\lib\net45\CommonMark.dll</HintPath>
