@@ -223,9 +223,9 @@ namespace Rock.WebStartup
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
             {
-                LogStartupMessage( "Starting Job Scheduler" );
-                StartJobScheduler();
-                ShowDebugTimingMessage( "Start Job Scheduler" );
+                LogStartupMessage( "Initializing Job Scheduler" );
+                InitializeJobScheduler();
+                ShowDebugTimingMessage( "Job Scheduler Initialized" );
             }
 
             // Start stage 2 of the web farm
@@ -1025,9 +1025,9 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// Starts the job scheduler.
+        /// Initialize the job scheduler.
         /// </summary>
-        private static void StartJobScheduler()
+        private static void InitializeJobScheduler()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1105,7 +1105,7 @@ namespace Rock.WebStartup
                 QuartzScheduler.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
 
                 // start the scheduler
-                QuartzScheduler.Start();
+                // Note, wait to start until Rock is fully started.
             }
         }
 

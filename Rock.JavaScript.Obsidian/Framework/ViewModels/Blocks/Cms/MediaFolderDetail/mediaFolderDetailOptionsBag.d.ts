@@ -24,6 +24,7 @@
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** Class MediaFolderDetailOptionsBag. */
 export type MediaFolderDetailOptionsBag = {
     /** Gets or sets the content channels. */
     contentChannels?: ListItemBag[] | null;
