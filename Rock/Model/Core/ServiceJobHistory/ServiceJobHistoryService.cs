@@ -61,12 +61,10 @@ namespace Rock.Model
         public void DeleteMoreThanMax()
         {
             ServiceJobService serviceJobService = new ServiceJobService( (RockContext)this.Context );
+            var serviceJobIds = serviceJobService.AsNoFilter().Select( sj => sj.Id ).ToArray();
+            foreach ( var serviceJobId in serviceJobIds)
             {
-                var serviceJobs = serviceJobService.AsNoFilter().Select( sj => sj.Id ).ToArray();
-                for (int i = 0; i < serviceJobs.Count(); i++ )
-                {
-                    DeleteMoreThanMax( serviceJobs[i] );
-                }
+                DeleteMoreThanMax( serviceJobId );
             }
         }
 
@@ -76,32 +74,13 @@ namespace Rock.Model
         /// <param name="serviceJobId">The service job identifier.</param>
         public void DeleteMoreThanMax( int serviceJobId )
         {
-
-            int historyCount;
-            ServiceJobService serviceJobService = new ServiceJobService( (RockContext)this.Context );
-            ServiceJob serviceJob = serviceJobService.Get( serviceJobId );
-            historyCount = serviceJob.HistoryCount;
-
+            var rockContext = this.Context as RockContext;
+            var historyCount = new ServiceJobService( rockContext ).GetSelect( serviceJobId, s => s.HistoryCount );
             historyCount = historyCount <= 0 ? historyCount = 500 : historyCount;
-            var matchingServiceJobs = this.AsNoFilter().Where( a => a.ServiceJobId == serviceJobId ).OrderByDescending( a => a.StartDateTime );
-            var serviceJobsMoreThanMax = matchingServiceJobs.Skip( historyCount ).ToArray();
 
-            for ( int i = 0; i < serviceJobsMoreThanMax.Count(); i++ )
-            {
-                this.Delete( serviceJobsMoreThanMax[i] );
-            }
-
-            this.Context.SaveChanges();
-        }
-
-        /// <summary>
-        /// Adds the specified item and automatically delete items that are more than the maximum.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        public override void Add( ServiceJobHistory item )
-        {
-            base.Add( item );
-            DeleteMoreThanMax( item.ServiceJobId );
+            ServiceJobHistoryService serviceJobHistoryService = new ServiceJobHistoryService( rockContext );
+            var serviceJobHistoryToDeleteQuery = serviceJobHistoryService.Queryable().Where( a => a.ServiceJobId == serviceJobId ).OrderByDescending( a => a.StartDateTime ).Skip( historyCount );
+            rockContext.BulkDelete( serviceJobHistoryToDeleteQuery );
         }
     }
 }
