@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -248,7 +249,16 @@ namespace RockWeb.Blocks.Security
         Key = AttributeKey.ShowGender,
         Description = "Determines if the gender selection field should be shown.",
         DefaultBooleanValue = true,
-        Order = 23 )]
+        Order = 25 )]
+
+    [AttributeCategoryField(
+        "Attribute Categories",
+        Key = AttributeKey.AttributeCategories,
+        Description = "The Attribute Categories to display attributes from.",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.Person",
+        IsRequired = false,
+        Order = 26 )]
 
     #endregion
 
@@ -283,6 +293,7 @@ namespace RockWeb.Blocks.Security
             public const string CampusSelectorLabel = "CampusSelectorLabel";
             public const string CreateCommunicationRecord = "CreateCommunicationRecord";
             public const string ShowGender = "ShowGender";
+            public const string AttributeCategories = "AttributeCategories";
         }
 
         #region Fields
@@ -392,6 +403,8 @@ usernameTextbox.blur(function () {{
                 tbUserName.Label );      // 3 
 
             ScriptManager.RegisterStartupScript( this, GetType(), "AccountEntry_" + this.ClientID, script, true );
+
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -477,6 +490,8 @@ usernameTextbox.blur(function () {{
 
                     SetCurrentPersonDetails();
                 }
+
+                BuildAttributes();
             }
         }
 
@@ -696,6 +711,17 @@ usernameTextbox.blur(function () {{
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BuildAttributes();
+        }
 
         #endregion
 
@@ -1153,7 +1179,9 @@ usernameTextbox.blur(function () {{
                 campusId = cpCampus.SelectedCampusId;
             }
 
-            PersonService.SaveNewPerson( person, rockContext, campusId, false );
+            avcAttributes.GetEditValues( person );
+
+            PersonService.SaveNewPerson( person, rockContext, campusId, true );
 
             // save address
             if ( pnlAddress.Visible )
@@ -1221,6 +1249,45 @@ usernameTextbox.blur(function () {{
             }
 
             return Rock.RockDateTime.Today.AddYears( minimumAge * -1 ) >= birthday;
+        }
+
+        /// <summary>
+        /// Builds the attributes.
+        /// </summary>
+        private void BuildAttributes()
+        {
+            var attributeList = GetCategoryAttributeList( AttributeKey.AttributeCategories );
+            var person = new Person();
+
+            avcAttributes.IncludedAttributes = attributeList.ToArray();
+            avcAttributes.ValidationGroup = this.BlockValidationGroup;
+            avcAttributes.AddEditControls( person );
+        }
+
+        /// <summary>
+        /// Gets the category attribute list.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <returns></returns>
+        private List<AttributeCache> GetCategoryAttributeList( string attributeKey )
+        {
+            var attributeList = new List<AttributeCache>();
+            foreach ( Guid categoryGuid in GetAttributeValue( attributeKey ).SplitDelimitedValues( false ).AsGuidList() )
+            {
+                var category = CategoryCache.Get( categoryGuid );
+                if ( category != null )
+                {
+                    foreach ( var attribute in new AttributeService( new RockContext() ).GetByCategoryId( category.Id, false ) )
+                    {
+                        if ( !attributeList.Any(a => a.Guid == attribute.Guid ) )
+                        {
+                            attributeList.Add( AttributeCache.Get( attribute ) );
+                        }
+                    }
+                }
+            }
+
+            return attributeList;
         }
 
         #endregion

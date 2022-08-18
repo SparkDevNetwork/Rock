@@ -88,6 +88,9 @@
                     </asp:Panel>
 
                 <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+
+                <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" ShowCategoryLabel="false" />
+
             </div>
 
         </div>

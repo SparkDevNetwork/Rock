@@ -2384,7 +2384,7 @@ usernameTextbox.blur(function () {{
                 {
                     foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id, false ) )
                     {
-                        if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        if ( !attributeList.Any( a => a.Guid == attribute.Guid ) )
                         {
                             attributeList.Add( AttributeCache.Get( attribute ) );
                         }
