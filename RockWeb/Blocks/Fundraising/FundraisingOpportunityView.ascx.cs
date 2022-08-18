@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Fundraising
             if ( groupMember != null && pnlParticipantActions.Visible )
             {
                 var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
-                string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : "issue";
+                string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : groupMember.Person.FullName;
                 mergeFields.Add( "ProgressTitle", progressTitle );
                 // Create the total and the goal variables before setting them.
                 decimal contributionTotal;

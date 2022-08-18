@@ -547,7 +547,7 @@ namespace RockWeb.Blocks.Fundraising
             if ( groupMember.PersonId == this.CurrentPersonId )
             {
                 // show a warning about missing Photo or Intro if the current person is viewing their own profile
-                string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : "issue";
+                string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : groupMember.Person.FullName;
                 mergeFields.Add( "ProgressTitle", progressTitle );
                 var warningItems = new List<string>();
                 if ( !groupMember.Person.PhotoId.HasValue )
