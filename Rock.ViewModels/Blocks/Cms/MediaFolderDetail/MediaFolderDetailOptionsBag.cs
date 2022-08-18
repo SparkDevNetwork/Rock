@@ -21,6 +21,9 @@ using System;
 
 namespace Rock.ViewModels.Blocks.Cms.MediaFolderDetail
 {
+    /// <summary>
+    /// Class MediaFolderDetailOptionsBag.
+    /// </summary>
     public class MediaFolderDetailOptionsBag
     {
         /// <summary>
