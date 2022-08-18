@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -235,8 +235,7 @@ namespace RockWeb.Blocks.Finance
                     int accountId = 0;
                     if ( int.TryParse( e.Value, out accountId ) && ddlAccount.Visible )
                     {
-                        var service = new FinancialAccountService( new RockContext() );
-                        var account = service.Get( accountId );
+                        var account = FinancialAccountCache.Get( accountId );
                         if ( account != null )
                         {
                             e.Value = account.Name;

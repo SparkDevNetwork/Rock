@@ -220,15 +220,11 @@ namespace Rock.Field.Types
                     displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
                 }
 
-                using ( var rockContext = new RockContext() )
-                {
-                    var service = new FinancialAccountService( rockContext );
-                    var account = service.GetNoTracking( guid.Value );
+                var account = FinancialAccountCache.Get( guid.Value );
 
-                    if ( account != null )
-                    {
-                        return displayPublicName ? account.PublicName : account.Name;
-                    }
+                if ( account != null )
+                {
+                    return displayPublicName ? account.PublicName : account.Name;
                 }
             }
 
@@ -316,14 +312,11 @@ namespace Rock.Field.Types
                 int? id = picker.ItemId.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var account = new FinancialAccountService( rockContext ).GetNoTracking( id.Value );
+                    var account = FinancialAccountCache.Get( id.Value );
 
-                        if ( account != null )
-                        {
-                            return account.Guid.ToString();
-                        }
+                    if ( account != null )
+                    {
+                        return account.Guid.ToString();
                     }
                 }
                 else
@@ -351,8 +344,8 @@ namespace Rock.Field.Types
                 Guid guid = value.AsGuid();
 
                 // get the item (or null) and set it
-                var account = new FinancialAccountService( new RockContext() ).Get( guid );
-                picker.SetValue( account );
+                var account = FinancialAccountCache.Get( guid );
+                picker.SetValueFromCache( account );
             }
         }
 
@@ -369,7 +362,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new FinancialAccountService( new RockContext() ).Get( guid );
+            var item = FinancialAccountCache.Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -381,7 +374,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new FinancialAccountService( new RockContext() ).Get( id ?? 0 );
+            var item = FinancialAccountCache.Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }
@@ -428,20 +421,18 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            var accountId = FinancialAccountCache.GetId( guid.Value );
+
+            if ( !accountId.HasValue )
             {
-                var accountId = new FinancialAccountService( rockContext ).GetId( guid.Value );
-
-                if ( !accountId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId.Value )
-                };
+                return null;
             }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId.Value )
+            };
+
         }
 
         /// <inheritdoc/>

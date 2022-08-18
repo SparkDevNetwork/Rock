@@ -1823,7 +1823,7 @@ mission. We are so grateful for your commitment.</p>
 
             var allowAccountsInUrl = this.GetAttributeValue( AttributeKey.AllowAccountOptionsInURL ).AsBoolean();
             var rockContext = new RockContext();
-            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
+            List<int> selectableAccountIds = FinancialAccountCache.GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
 
             bool enableMultiAccount = this.GetAttributeValue( AttributeKey.EnableMultiAccount ).AsBoolean();
@@ -1865,7 +1865,7 @@ mission. We are so grateful for your commitment.</p>
                     string invalidAccountInURLMessage = this.GetAttributeValue( AttributeKey.InvalidAccountInURLMessage );
                     if ( invalidAccountInURLMessage.IsNotNullOrWhiteSpace() )
                     {
-                        var validAccountUrlIdsQuery = new FinancialAccountService( rockContext ).GetByIds( selectableAccountIds )
+                        var validAccountUrlIdsQuery = FinancialAccountCache.GetByIds( selectableAccountIds )
                             .Where( a =>
                                  a.IsActive &&
                                  ( a.StartDate == null || a.StartDate <= RockDateTime.Today ) &&
