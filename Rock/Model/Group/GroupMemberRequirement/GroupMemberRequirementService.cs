@@ -34,20 +34,29 @@ namespace Rock.Model
         /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who are members of a specific group.
         /// </summary>
         /// <param name="personId"></param>
+        /// <param name="groupRequirementId"></param>
         /// <param name="groupId"></param>
         /// <param name="groupRoleId"></param>
         /// <returns>
         /// A queryable collection of <see cref="Rock.Model.GroupMemberRequirement">GroupMemberRequirements</see> that belong to the specified person, group and role.
         /// </returns>
-        public IQueryable<GroupMemberRequirement> GetActiveByPersonIdGroupIdGroupRoleId( int personId, int groupId, int? groupRoleId )
+        public int? GetIdByPersonIdRequirementIdGroupIdGroupRoleId( int personId, int groupRequirementId, int groupId, int? groupRoleId )
         {
-            var groupMemberRequirements = Queryable( "GroupMember,GroupMemberRequirement" )
-                .Where( r => r.GroupMember.PersonId == personId && r.GroupMember.GroupId == groupId );
+            var groupMemberRequirements = Queryable()
+                .Where( r => r.GroupMember.PersonId == personId && r.GroupMember.GroupId == groupId && r.GroupRequirementId == groupRequirementId );
             if ( groupRoleId.HasValue )
             {
                 groupMemberRequirements = groupMemberRequirements.Where( r => r.GroupMember.GroupRoleId == groupRoleId.Value );
             }
-            return groupMemberRequirements.OrderBy( r => r.GroupMember.GroupRole.Order );
+            groupMemberRequirements = groupMemberRequirements.OrderBy( r => r.GroupMember.GroupRole.Order );
+            if ( groupMemberRequirements.Any() )
+            {
+                return groupMemberRequirements.First().Id;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
