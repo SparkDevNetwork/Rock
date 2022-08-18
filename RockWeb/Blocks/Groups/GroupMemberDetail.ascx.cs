@@ -51,10 +51,10 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 1 )]
 
-    [BooleanField( "Show requirements publicly",
-        Description = "Set to false to hide the requirements.",
-        Key = AttributeKey.ShowRequirementsPublicly,
-        DefaultBooleanValue = true,
+    [BooleanField( "Are Requirements publicly hidden?",
+        Description = "Set to true to publicly show the group member's requirements.",
+        Key = AttributeKey.AreRequirementsPubliclyHidden,
+        DefaultBooleanValue = false,
         Order = 2 )]
 
     [BooleanField( "Is Requirement Summary Hidden?",
@@ -63,36 +63,42 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = false,
         Order = 3 )]
 
+    [BooleanField( "Are Requirements refreshed when block is loaded?",
+        Description = "Set to true to refresh group member requirements when the block is loaded.",
+        Key = AttributeKey.AreRequirementsRefreshedOnLoad,
+        DefaultBooleanValue = false,
+        Order = 4 )]
+
     [LinkedPage(
         "Workflow Entry Page",
         Description = "Page used to launch a new workflow of the selected type.",
         Key = AttributeKey.WorkflowEntryPage,
         DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY,
-        Order = 4 )]
+        Order = 5 )]
 
     [BooleanField( "Enable Communications",
         Description = "Enables the capability to send quick communications from the block.",
         Key = AttributeKey.EnableCommunications,
         DefaultBooleanValue = true,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField( "Enable SMS",
         Description = "Allows SMS to be able to be sent from the communications if the individual has SMS enabled. Otherwise only email will be an option.",
         Key = AttributeKey.EnableSMS,
         DefaultBooleanValue = true,
-        Order = 6 )]
+        Order = 7 )]
 
     [BooleanField( "Append Organization Email Header/Footer",
         Description = "Will append the organization’s email header and footer to the email message.",
         Key = AttributeKey.AppendHeaderFooter,
         DefaultBooleanValue = true,
-        Order = 7 )]
+        Order = 8 )]
 
     [BooleanField( "Allow Selecting 'From'",
         Description = "Allows the 'from' of the communication to be changed to a different person.",
         Key = AttributeKey.AllowSelectingFrom,
         DefaultBooleanValue = true,
-        Order = 8 )]
+        Order = 9 )]
 
     [DefinedValueField( "Allowed SMS Numbers",
         Key = AttributeKey.AllowedSMSNumbers,
@@ -100,7 +106,7 @@ namespace RockWeb.Blocks.Groups
         Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ",
         IsRequired = false,
         AllowMultiple = true,
-        Order = 9 )]
+        Order = 10 )]
 
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_DETAIL )]
     public partial class GroupMemberDetail : RockBlock
@@ -109,8 +115,9 @@ namespace RockWeb.Blocks.Groups
         {
             public const string RegistrationPage = "RegistrationPage";
             public const string ShowMoveToOtherGroup = "ShowMoveToOtherGroup";
-            public const string ShowRequirementsPublicly = "ShowRequirementsPublicly";
+            public const string AreRequirementsPubliclyHidden = "AreRequirementsPubliclyHidden";
             public const string IsSummaryHidden = "IsSummaryHidden";
+            public const string AreRequirementsRefreshedOnLoad = "AreRequirementsRefreshedOnLoad";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string EnableCommunications = "EnableCommunications";
             public const string EnableSMS = "EnableSMS";
@@ -171,7 +178,8 @@ namespace RockWeb.Blocks.Groups
                 gmrcRequirements.GroupMemberId = groupMemberId;
             }
 
-            gmrcRequirements.Visible = groupMemberId > 0;
+            bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
+            gmrcRequirements.Visible = !areRequirementsPubliclyHidden;
 
             if ( !Page.IsPostBack )
             {
@@ -190,6 +198,9 @@ namespace RockWeb.Blocks.Groups
 
             bool enableCommunications = this.GetAttributeValue( AttributeKey.EnableCommunications ).AsBooleanOrNull() ?? true;
             btnShowCommunicationDialog.Visible = enableCommunications;
+
+            bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
+            gmrcRequirements.Visible = !areRequirementsPubliclyHidden;
         }
 
         /// <summary>
@@ -568,7 +579,16 @@ namespace RockWeb.Blocks.Groups
             pnlRequirements.Visible = groupHasRequirements;
             btnRefreshRequirements.Visible = groupHasRequirements;
 
-            ShowGroupRequirementsStatuses( false );
+            bool areRequirementsRefreshedOnLoad = this.GetAttributeValue( AttributeKey.AreRequirementsRefreshedOnLoad ).AsBooleanOrNull() ?? false;
+
+            if ( areRequirementsRefreshedOnLoad )
+            {
+                CalculateRequirements( true );
+            }
+            else
+            {
+                ShowGroupRequirementsStatuses( false );
+            }
         }
 
         /// <summary>
@@ -662,7 +682,8 @@ namespace RockWeb.Blocks.Groups
                 groupMember.GroupRoleId = selectedGroupRoleId;
             }
 
-            gmrcRequirements.Visible = true;
+            bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
+            gmrcRequirements.Visible = !areRequirementsPubliclyHidden;
 
             // Force refreshing the requirements when loading the container.
             gmrcRequirements.ForceRefreshRequirements = forceRefreshRequirements || groupMember.IsNewOrChangedGroupMember( rockContext );
@@ -1426,7 +1447,8 @@ namespace RockWeb.Blocks.Groups
             gmrcRequirements.Visible = false;
             CalculateRequirements( true );
             nbRecheckedNotification.Text = "Successfully refreshed requirements.";
-            gmrcRequirements.Visible = true;
+            bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
+            gmrcRequirements.Visible = !areRequirementsPubliclyHidden;
 
             // Reload the page to make sure that the container has updated cards.
             var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
