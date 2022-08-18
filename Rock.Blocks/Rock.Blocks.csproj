@@ -124,6 +124,9 @@
     <Folder Include="Security\" />
     <Folder Include="Utility\" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DefaultTvApplication.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
