@@ -19,6 +19,11 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.PersonalLinkSectionDetail
 {
+    /// <summary>
+    /// Class PersonalLinkSectionBag.
+    /// Implements the <see cref="Rock.ViewModels.Utility.EntityBagBase" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class PersonalLinkSectionBag : EntityBagBase
     {
         /// <summary>

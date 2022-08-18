@@ -30,7 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             Update_spCrm_FamilyAnalyticsEraDataset();
-            FixIncorrectERAStartDate();
+            //FixIncorrectERAStartDate();
         }
 
         /// <summary>
@@ -40,9 +40,41 @@ namespace Rock.Migrations
         {
         }
 
+        /// <summary>
+        /// Fixes the incorrect era start date. The error was introduced in 13.4 and fixed in 13.6.
+        /// This does not need to be run again in 14.0 and is not "run n safe".
+        /// For Rock instances that pull from the repo instead of applying the updates they can run this job manually if needed.
+        /// </summary>
         private void FixIncorrectERAStartDate()
         {
-            Sql( MigrationSQL._202207152352391_Rollup_20220715_RecoverERAStartDate_Update );
+            Sql( $@"
+            IF NOT EXISTS (
+                SELECT 1
+                FROM [ServiceJob]
+                WHERE [Class] = 'Rock.Jobs.PostV136FixIncorrectERAStartDate'
+                                AND [Guid] = '{SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE}'
+            )
+            BEGIN
+                INSERT INTO [ServiceJob] (
+                    [IsSystem]
+                    ,[IsActive]
+                    ,[Name]
+                    ,[Description]
+                    ,[Class]
+                    ,[CronExpression]
+                    ,[NotificationStatus]
+                    ,[Guid]
+                ) VALUES (
+                    1
+                    ,1
+                    ,'Rock Update Helper v13.6 - Fix Incorrect eRA Start Dates'
+                    ,'This job fixes eRA Start Dates (broken in v13.4) for people who are currently eRA.'
+                    ,'Rock.Jobs.PostV136FixIncorrectERAStartDate'
+                    ,'0 0 21 1/1 * ? *'
+                    ,1
+                    ,'{SystemGuid.ServiceJob.DATA_MIGRATIONS_136_FIX_INCORRECT_ERA_START_DATE}'
+                );
+            END" );
         }
 
         private void Update_spCrm_FamilyAnalyticsEraDataset()

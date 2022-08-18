@@ -20,6 +20,11 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.MediaFolderDetail
 {
+    /// <summary>
+    /// Class MediaFolderBag.
+    /// Implements the <see cref="Rock.ViewModels.Utility.EntityBagBase" />
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class MediaFolderBag : EntityBagBase
     {
         /// <summary>

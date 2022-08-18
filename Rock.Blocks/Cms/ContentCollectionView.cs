@@ -940,14 +940,10 @@ namespace Rock.Blocks.Cms
                     break;
             }
 
-            // Run the search.
-            var results = await ContentIndexContainer.GetActiveComponent().SearchAsync( searchQuery, searchOptions );
-
             // Start preparing the result.
             var resultBag = new SearchResultSourceBag
             {
                 SourceGuid = source?.Guid ?? Guid.Empty,
-                HasMore = results.TotalResultsAvailable > ( maxResults + offset ),
                 Results = new List<string>()
             };
 
@@ -967,14 +963,23 @@ namespace Rock.Blocks.Cms
 
             resultBag.Template = resultsTemplate.ResolveMergeFields( mergeFields );
 
-            // Merge the results with the Lava template.
-            var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
-
-            foreach ( var result in results.Documents )
+            // Run the search.
+            var activeComponent = ContentIndexContainer.GetActiveComponent();
+            if ( activeComponent != null )
             {
-                mergeFields.AddOrReplace( "Item", result );
+                var results = await activeComponent.SearchAsync( searchQuery, searchOptions );
 
-                resultBag.Results.Add( itemTemplate.ResolveMergeFields( mergeFields ) );
+                resultBag.HasMore = results.TotalResultsAvailable > ( maxResults + offset );
+
+                // Merge the results with the Lava template.
+                var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
+
+                foreach ( var result in results.Documents )
+                {
+                    mergeFields.AddOrReplace( "Item", result );
+
+                    resultBag.Results.Add( itemTemplate.ResolveMergeFields( mergeFields ) );
+                }
             }
 
             return resultBag;
