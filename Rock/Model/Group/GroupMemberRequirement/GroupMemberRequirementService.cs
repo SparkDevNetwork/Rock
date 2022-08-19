@@ -29,7 +29,6 @@ namespace Rock.Model
     /// </summary>
     public partial class GroupMemberRequirementService
     {
-
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who are members of a specific group.
         /// </summary>
@@ -71,6 +70,7 @@ namespace Rock.Model
             {
                 groupMemberRequirements = groupMemberRequirements.Where( r => r.GroupMember.GroupRoleId == groupRoleId.Value );
             }
+
             groupMemberRequirements = groupMemberRequirements.OrderBy( r => r.GroupMember.GroupRole.Order );
             if ( groupMemberRequirements.Any() )
             {
