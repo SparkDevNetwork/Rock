@@ -879,7 +879,11 @@ namespace Rock.Data
             // model hooks, achievements need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit.
             var entitiesForAchievements = new List<IEntity>();
-            var isAchievementsEnabled = canUseCache && EntityTypeCache.Get<T>()?.IsAchievementsEnabled == true;
+            var entityType = EntityTypeCache.Get<T>();
+            var isAchievementsEnabled = canUseCache && entityType != null
+                && entityType.IsAchievementsEnabled == true
+                && AchievementTypeCache.HasActiveAchievementTypesForEntityTypeId( entityType.Id );
+            
 
             // ensure CreatedDateTime and ModifiedDateTime is set
             var currentDateTime = RockDateTime.Now;
