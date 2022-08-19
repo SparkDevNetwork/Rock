@@ -1186,8 +1186,8 @@ $(document).ready(function() {
 
                         if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize || requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
                         {
-                            var matchedPredicate = LinqPredicateBuilder.True<ContentChannelItem>();
-                            var nonMatchedPredicate = LinqPredicateBuilder.False<ContentChannelItem>();
+                            var matchedPredicate = LinqPredicateBuilder.False<ContentChannelItem>();
+                            var nonMatchedPredicate = LinqPredicateBuilder.True<ContentChannelItem>();
                             if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize )
                             {
                                 /*
@@ -1197,16 +1197,16 @@ $(document).ready(function() {
                                 // Create the set of conditions for filtering the target entities.
                                 // Attribute Values are filtered by entity identifiers, grouped by entity type and
                                 // combined with a logical OR.
-                                matchedPredicate = matchedPredicate.And( cci => matchedSegmentEntityIdsQry.Contains( cci.Id ) );
-                                nonMatchedPredicate = nonMatchedPredicate.Or( cci => !matchedSegmentEntityIdsQry.Contains( cci.Id ) );
+                                matchedPredicate = matchedPredicate.Or( cci => matchedSegmentEntityIdsQry.Contains( cci.Id ) );
+                                nonMatchedPredicate = nonMatchedPredicate.And( cci => !matchedSegmentEntityIdsQry.Contains( cci.Id ) );
                                 isNonMatchedContentChannelItemExists = true;
                             }
 
                             if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
                             {
                                 var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
-                                matchedPredicate = matchedPredicate.And( cci => matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
-                                nonMatchedPredicate = nonMatchedPredicate.Or( cci => !matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
+                                matchedPredicate = matchedPredicate.Or( cci => matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
+                                nonMatchedPredicate = nonMatchedPredicate.And( cci => !matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
                                 isNonMatchedContentChannelItemExists = true;
                             }
 
