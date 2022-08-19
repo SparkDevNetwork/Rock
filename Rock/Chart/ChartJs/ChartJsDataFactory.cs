@@ -72,6 +72,9 @@ namespace Rock.Chart
         /// <summary>
         /// Legend alignment: {start|center|end}
         /// </summary>
+        /// <remarks>
+        /// This setting has no effect in ChartJs v2.8.0
+        /// </remarks>
         public string LegendAlignment { get; set; } = "center";
 
         /// <summary>
@@ -217,7 +220,7 @@ namespace Rock.Chart
         /// Gets a JavaScript data object that represents the configuration for the ChartJs tooltip chart element.
         /// </summary>
         /// <returns></returns>
-        protected dynamic GetTooltipsConfigurationObject( string containerControlId, string valueFormatString )
+        protected virtual dynamic GetTooltipsConfigurationObject( string containerControlId, string valueFormatString )
         {
             if ( containerControlId == null )
             {

@@ -698,6 +698,7 @@
     <Compile Include="Chart\ChartJs\ChartJsConstants.cs" />
     <Compile Include="Chart\ChartJs\ChartJsDataFactory.cs" />
     <Compile Include="Chart\ChartJs\ChartJsDataset.cs" />
+    <Compile Include="Chart\ChartJs\ChartJsPieChartDataFactory.cs" />
     <Compile Include="Chart\ChartJs\ChartJsTimeSeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsCategorySeriesDataPoint.cs" />
     <Compile Include="Chart\ChartJs\IChartJsTimeSeriesDataPoint.cs" />
@@ -1837,6 +1838,7 @@
     <Compile Include="Web\UI\Controls\Chart\Flot\LineChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\Flot\PieChart.cs" />
     <Compile Include="Web\UI\Controls\Chart\IRockChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\RockPieChart.cs" />
     <Compile Include="Web\UI\Controls\CompositePlaceHolder.cs" />
     <Compile Include="Web\UI\Controls\ElectronicSignatureControl.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />

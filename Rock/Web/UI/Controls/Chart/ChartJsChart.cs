@@ -419,6 +419,7 @@ namespace Rock.Web.UI.Controls
 
             RockPage.AddScriptLink( this.Page, "~/Scripts/moment.min.js" );
             RockPage.AddScriptLink( this.Page, "~/Scripts/Chartjs/Chart.min.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/Chartjs/Chart.plugin.datalabels.min.js" );
 
             EnsureChildControls();
         }
@@ -663,7 +664,7 @@ namespace Rock.Web.UI.Controls
         protected virtual string GetPlotChartJavaScript()
         {
             var script = @"
-function plotChart (chartData, chartOptions, plotSelector, yaxisLabelText)
+function plotChart (chartData, plotSelector, yaxisLabelText)
 {
     if (chartData && chartData.data && chartData.data.datasets && chartData.data.datasets.length > 0)
     {
@@ -806,8 +807,16 @@ $.ajax({
             }
             else
             {
-                var chartData = GetChartDataJson();
 
+                string chartData = null;
+                try
+                {
+                    chartData = GetChartDataJson();
+                }
+                catch
+                {
+                    // Ignore.
+                }
                 if ( string.IsNullOrWhiteSpace( chartData ) )
                 {
                     if ( string.IsNullOrEmpty( chartData ) )
@@ -817,8 +826,8 @@ $.ajax({
                 }
 
                 scriptFormat.Append( @"
-var _chartData = <chartData>;
 $(function() {
+var _chartData = <chartData>;
 " )
                     .Replace( "<chartData>", chartData );
             }
@@ -833,7 +842,7 @@ var yaxisLabelText = $('#{0} .js-yaxis-value').val();
 
             scriptFormat.Append( $@"
 // Create the Chart
-var _chart = plotChart(_chartData, chartOptions, plotSelector, yaxisLabelText);
+var _chart = plotChart(_chartData, plotSelector, yaxisLabelText);
 { plotScript }
 " );
 
@@ -937,7 +946,7 @@ $('#{this.ClientID}').find('.js-chart-placeholder').bind('click', function (even
         /// Sets properties of this chart from the properties of a ChartStyle object.
         /// </summary>
         /// <param name="chartStyle">The chart style.</param>
-        public void SetChartStyle( ChartStyle chartStyle )
+        public virtual void SetChartStyle( ChartStyle chartStyle )
         {
             if ( chartStyle.Legend != null )
             {

@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Rock.Model;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Chart
 {
@@ -29,6 +27,9 @@ namespace Rock.Chart
     /// <remarks>
     /// This factory can generate the following data formats:
     /// * A JSON object compatible with the ChartJs constructor 'data' parameter: new Chart([chartContainer], [data]);
+    /// 
+    /// NOTE: For future development, this factory should be superseded by new factories that are style-specific - ChartJsLineChartDataFactory and ChartJsBarChartDataFactory.
+    /// See the ChartJsPieChartDataFactory for an example of the preferred implementation.
     /// </remarks>
     public class ChartJsCategorySeriesDataFactory<TDataPoint> : ChartJsDataFactory
         where TDataPoint : IChartJsCategorySeriesDataPoint
@@ -145,7 +146,7 @@ namespace Rock.Chart
         /// </summary>
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
-        public string GetJson( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
+        public virtual string GetJson( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
         {
             // Apply the argument settings.
             this.SetChartStyle( args.ChartStyle );
@@ -197,7 +198,12 @@ namespace Rock.Chart
             return SerializeJsonObject( chartStructure );
         }
 
-        private string SerializeJsonObject( dynamic jsonObject )
+        /// <summary>
+        /// Serialize the specified object to JSON.
+        /// </summary>
+        /// <param name="jsonObject"></param>
+        /// <returns></returns>
+        protected string SerializeJsonObject( dynamic jsonObject )
         {
             var jsonSetting = new JsonSerializerSettings
             {
@@ -219,7 +225,7 @@ namespace Rock.Chart
         /// Using discrete categories for the Category scale allows the data series to be padded with zero-values where no data is found.
         /// This often shows a more accurate representation of the data rather than allowing Chart.js to interpolate the empty intervals.
         /// </remarks>
-        private dynamic GetChartDataJsonObjectForSpecificCategoryScale( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
+        protected dynamic GetChartDataJsonObjectForSpecificCategoryScale( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
         {
             var categoryNames = this.Datasets.SelectMany( x => x.DataPoints ).Select( x => x.Category ).ToList();
             var colorGenerator = new ChartColorPaletteGenerator( this.ChartColors );
@@ -234,35 +240,7 @@ namespace Rock.Chart
 
                 if ( this.ChartStyle == ChartJsCategorySeriesChartStyleSpecifier.Pie )
                 {
-                    // For a pie chart, each data point represents a slice and therefore should have a different color.
-                    var pieColorGenerator = new ChartColorPaletteGenerator( this.ChartColors );
-                    var pieColors = new List<string>();
-                    var fillColors = new List<string>();
-                    int fadePercentage = this.AreaFillOpacity.ToIntSafe() * 100;
-
-                    for ( int i = 0; i < categoryNames.Count; i++ )
-                    {
-                        var nextColor = pieColorGenerator.GetNextColor();
-                        pieColors.Add( nextColor.ToRGBA() );
-
-                        if ( fadePercentage > 0 )
-                        {
-                            nextColor.FadeOut( fadePercentage );
-                            fillColors.Add( nextColor.ToRGBA() );
-                        }
-                    }
-
-                    dataValues = GetDataPointsForAllCategories( dataset, categoryNames );
-
-                    jsDataset = new
-                    {
-                        label = dataset.Name,
-                        borderColor = pieColors,
-                        borderWidth = 2,
-                        backgroundColor = pieColors,
-                        fill = fadePercentage > 0 ? "origin" : "false",
-                        data = dataValues
-                    };
+                    throw new Exception( "Use ChartJsPieChartDataFactory instead." );
                 }
                 else
                 {
@@ -303,7 +281,7 @@ namespace Rock.Chart
         /// <param name="dataset"></param>
         /// <param name="categoryNames"></param>
         /// <returns></returns>
-        private List<decimal> GetDataPointsForAllCategories( ChartJsCategorySeriesDataset dataset, List<string> categoryNames )
+        protected List<decimal> GetDataPointsForAllCategories( ChartJsCategorySeriesDataset dataset, List<string> categoryNames )
         {
             var dataValues = new List<decimal>();
 
@@ -353,7 +331,7 @@ namespace Rock.Chart
         /// Gets the maximum value that will be plotted for the current set of data points.
         /// </summary>
         /// <returns></returns>
-        private decimal GetMaximumDataValue()
+        protected decimal GetMaximumDataValue()
         {
             decimal maxValue = 0;
 

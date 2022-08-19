@@ -19,11 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Rock.Model;
-using Rock.Utility;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Chart
 {
@@ -34,6 +30,9 @@ namespace Rock.Chart
     /// This factory can generate the following data formats:
     /// * A JSON object compatible with the ChartJs constructor 'data' parameter: new Chart([chartContainer], [data]);
     /// * A Lava Chart Shortcode text block.
+    ///
+    /// NOTE: For future development, this factory should be superseded by new factories that are style-specific - ChartJsLineChartDataFactory and ChartJsBarChartDataFactory.
+    /// See the ChartJsPieChartDataFactory for an example of the preferred implementation.
     /// </remarks>
     public class ChartJsTimeSeriesDataFactory<TDataPoint> : ChartJsDataFactory
             where TDataPoint : IChartJsTimeSeriesDataPoint
