@@ -14,6 +14,8 @@
 
                     <Rock:Toggle ID="tQuery" runat="server" Label="Selection Query?" OnText="Yes" OffText="No" Checked="true"
                         Help="Will the SQL Text above return rows? If so, a grid will be displayed containing the results of the query." />
+
+                    <Rock:RockCheckBox ID="cbGetExecutionPlan" runat="server" Label="Get Execution Plan" />
                 </fieldset>
 
                 <div class="actions">
@@ -29,6 +31,8 @@
             <div class="grid">
                 <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" Visible="false" />
             </div>
+
+            <Rock:CodeEditor ID="ceExplainPlanJSON" runat="server" EditorMode="JavaScript" Label="Explain Plan" Visible="false" EditorHeight="600" />
 
             <p id="pQueryTime" runat="server" class="text-right margin-r-md" visible="false" />
         </div>

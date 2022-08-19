@@ -123,7 +123,20 @@ FROM
                         gReport.Visible = true;
 
                         var sw = System.Diagnostics.Stopwatch.StartNew();
-                        DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                        DataSet dataSet;
+
+                        ceExplainPlanJSON.Visible = cbGetExecutionPlan.Checked;
+
+                        if ( cbGetExecutionPlan.Checked )
+                        {
+                            dataSet = DbService.GetDataSetIncludePlan( query, out string explainPlanJson );
+                            ceExplainPlanJSON.Text = explainPlanJson;
+                        }
+                        else
+                        {
+                            dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                        }
+                        
                         sw.Stop();
 
                         if ( dataSet.Tables.Count > 0 )

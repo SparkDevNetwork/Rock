@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
+using Newtonsoft.Json;
+
 namespace Rock.Data
 {
     /// <summary>
@@ -336,6 +338,59 @@ namespace Rock.Data
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns a data set for the specified query and also returns the Explain Plan.
+        /// </summary>
+        /// <param name="queryText">The query text.</param>
+        /// <param name="explainPlanJson">The explain plan json.</param>
+        /// <returns>DataSet.</returns>
+        public static DataSet GetDataSetIncludePlan( string queryText, out string explainPlanJson )
+        {
+            // Idea from https://stackoverflow.com/a/25880171/1755417
+            // and https://stackoverflow.com/a/7359705/1755417
+            var connectionString = GetRockContextConnectionString();
+
+            using ( var connection = new SqlConnection( connectionString ) )
+            using ( var sqlCommand = new SqlCommand() )
+            {
+                connection.Open();
+                sqlCommand.Connection = connection;
+
+                // Enable the statistics.
+                sqlCommand.CommandText = "SET STATISTICS XML ON";
+
+                sqlCommand.ExecuteNonQuery();
+
+                sqlCommand.CommandText = queryText;
+
+                SqlDataAdapter adapter = new SqlDataAdapter( sqlCommand );
+                DataSet dataSet = new DataSet( "rockDs" );
+
+                adapter.Fill( dataSet );
+                if ( dataSet.Tables.Count > 1 )
+                {
+                    // DataSet will have two tables.
+                    // 1st table is query result.
+                    // 2nd table is the plan Xml.
+                    var explainTable = dataSet.Tables[1];
+                    var explainPlanXML = explainTable.Rows[0].Field<string>( 0 );
+
+                    var explainNode = System.Xml.Linq.XDocument.Parse( explainPlanXML );
+
+                    explainPlanJson = JsonConvert.SerializeXNode( explainNode, Formatting.Indented );
+
+                    // Remove the Plan dataTable since we have extracted that to Json.
+                    dataSet.Tables.Remove( explainTable );
+                }
+                else
+                {
+                    explainPlanJson = "";
+                }
+
+                return dataSet;
+            }
         }
 
         /// <summary>
