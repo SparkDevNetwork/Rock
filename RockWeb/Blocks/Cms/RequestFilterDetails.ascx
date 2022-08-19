@@ -42,7 +42,7 @@
                         <div class="panel-title">Previous Activity</div>
                     </div>
                     <div class="panel-body">
-                        <Rock:RockCheckBoxList ID="cblPreviousActivity" runat="server" Label="Vistor Type" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblPreviousActivity" runat="server" Label="Visitor Type" RepeatDirection="Horizontal" />
                     </div>
                 </asp:Panel>
 
