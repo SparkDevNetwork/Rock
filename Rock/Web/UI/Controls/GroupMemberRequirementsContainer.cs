@@ -115,12 +115,10 @@ namespace Rock.Web.UI.Controls
             IEnumerable<GroupRequirementStatus> groupRequirementStatuses;
             if ( ForceRefreshRequirements )
             {
-                groupRequirementStatuses = groupMember.Group.PersonMeetsGroupRequirements( rockContext, groupMember.PersonId, groupMember.GroupRoleId );
+                groupMember.CalculateRequirements( rockContext, true );
             }
-            else
-            {
-                groupRequirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
-            }
+
+            groupRequirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
 
             // This collects the statuses by their requirement type category with empty / no category requirement types first, then it is by category name.
             var requirementCategories = groupRequirementStatuses
