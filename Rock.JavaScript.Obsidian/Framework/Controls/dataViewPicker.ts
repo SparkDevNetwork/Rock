@@ -21,15 +21,13 @@ import { standardAsyncPickerProps, updateRefValue } from "@Obsidian/Utility/comp
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { defineComponent, PropType, ref, watch } from "vue";
 import { DataViewTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
-import RockFormField from "./rockFormField";
 import TreeItemPicker from "./treeItemPicker";
 
 export default defineComponent({
     name: "DataViewPicker",
 
     components: {
-        TreeItemPicker,
-        RockFormField
+        TreeItemPicker
     },
 
     props: {
