@@ -1295,7 +1295,7 @@ namespace Rock.Rest.v2
                     listItem.Text = schoolGrade.Description;
                 }
 
-                listItem.Value = options.UseGradeOffsetAsValue ? schoolGrade.Value : schoolGrade.Guid.ToString();
+                listItem.Value = options.UseGuidAsValue ? schoolGrade.Guid.ToString() : schoolGrade.Value;
 
                 list.Add( listItem );
             }

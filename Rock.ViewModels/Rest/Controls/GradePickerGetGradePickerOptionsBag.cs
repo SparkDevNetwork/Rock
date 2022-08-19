@@ -31,8 +31,8 @@ namespace Rock.ViewModels.Rest.Controls
         public bool UseAbbreviation { get; set; } = false;
 
         /// <summary>
-        /// Whether to use a grade offset instead of a GUID as the picker value
+        /// Whether to use a GUID instead of a grade offset as the picker value
         /// </summary>
-        public bool UseGradeOffsetAsValue { get; set; } = false;
+        public bool UseGuidAsValue { get; set; } = false;
     }
 }

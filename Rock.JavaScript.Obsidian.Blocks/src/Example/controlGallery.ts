@@ -195,10 +195,10 @@ function convertComponentName(name: string | undefined | null): string {
  * Takes an element name and a collection of attribute keys and values and
  * constructs the example code. This can be used inside a computed call to
  * have the example code dynamically match the selected settings.
- * 
+ *
  * @param elementName The name of the element to use in the example code.
  * @param attributes The attribute names and values to append to the element name.
- * 
+ *
  * @returns A string of valid HTML content for how to use the component.
  */
 function buildExampleCode(elementName: string, attributes: Record<string, Ref<unknown> | unknown>): string {
@@ -3728,7 +3728,7 @@ const gradePickerGallery = defineComponent({
             displayStyle: ref(PickerDisplayStyle.Auto),
             displayStyleItems,
             useAbbreviation: ref(false),
-            useGradeOffsetAsValue: ref(false),
+            useGuidAsValue: ref(false),
             enhanceForLongLists: ref(false),
             multiple: ref(false),
             showBlankItem: ref(false),
@@ -3751,7 +3751,7 @@ const gradePickerGallery = defineComponent({
         :displayStyle="displayStyle"
         :showBlankItem="showBlankItem"
         :useAbbreviation="useAbbreviation"
-        :useGradeOffsetAsValue="useGradeOffsetAsValue" />
+        :useGuidAsValue="useGuidAsValue" />
     <template #settings>
         <div class="row">
             <div class="col-md-4">
@@ -3775,7 +3775,7 @@ const gradePickerGallery = defineComponent({
                 <CheckBox label="Use Abbreviations" v-model="useAbbreviation" />
             </div>
             <div class="col-md-3">
-                <CheckBox label="Use Grade Offset Value" v-model="useGradeOffsetAsValue" />
+                <CheckBox label="Use GUID Value" v-model="useGuidAsValue" />
             </div>
         </div>
     </template>
