@@ -543,8 +543,14 @@ namespace RockWeb.Blocks.Fundraising
             // Top Main
             string profileLavaTemplate = this.GetAttributeValue( AttributeKey.ProfileLavaTemplate );
 
-            //To-do - change this logic to allow families or leaders??
-            if ( groupMember.PersonId == this.CurrentPersonId )
+            // Create a list of group member Ids that are all the family members in the current group.
+            var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
+
+            // This variable sets up whether the current person is logged in, is in the same family as the block's group member, and whether this group's participation type is "Family".
+            bool isCurrentPersonAFamilyMemberOfGroupMemberAndGroupParticipationTypeIsFamily =
+                participationMode == 2 && this.CurrentPersonId.HasValue && familyMembers.Contains( this.CurrentPersonId.Value );
+
+            if ( groupMember.PersonId == this.CurrentPersonId || isCurrentPersonAFamilyMemberOfGroupMemberAndGroupParticipationTypeIsFamily )
             {
                 // show a warning about missing Photo or Intro if the current person is viewing their own profile
                 string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : groupMember.Person.FullName;
@@ -584,8 +590,8 @@ namespace RockWeb.Blocks.Fundraising
 
             bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();
 
-            // only show Contribution stuff if the current person is the participant and contribution requests haven't been disabled
-            bool showContributions = !disablePublicContributionRequests && ( groupMember.PersonId == this.CurrentPersonId );
+            // only show Contribution stuff if the participant is the current person or an allowed family member, and contribution requests haven't been disabled
+            bool showContributions = !disablePublicContributionRequests && ( groupMember.PersonId == this.CurrentPersonId || isCurrentPersonAFamilyMemberOfGroupMemberAndGroupParticipationTypeIsFamily );
             btnContributionsTab.Visible = showContributions;
 
             // Progress
@@ -600,7 +606,6 @@ namespace RockWeb.Blocks.Fundraising
                 var groupMembers = group.Members.ToList();
 
                 // Create a list of group member Ids that are all the family members in the current group.
-                var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
                 var familyMemberGroupMemberIdsInCurrentGroup = groupMembers.Where( m => familyMembers.Contains( m.PersonId ) ).Select( m => m.Id ).ToList();
 
                 contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
