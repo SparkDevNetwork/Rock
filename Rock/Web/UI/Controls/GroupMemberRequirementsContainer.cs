@@ -111,6 +111,14 @@ namespace Rock.Web.UI.Controls
 
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( GroupMemberId );
+
+            // If there is not a groupMember record, hide the container, and return.
+            if ( groupMember == null )
+            {
+                this.Visible = false;
+                return;
+            }
+
             var attributeValueService = new AttributeValueService( rockContext );
             IEnumerable<GroupRequirementStatus> groupRequirementStatuses;
             if ( ForceRefreshRequirements )

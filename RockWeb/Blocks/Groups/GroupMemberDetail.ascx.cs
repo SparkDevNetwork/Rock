@@ -325,6 +325,8 @@ namespace RockWeb.Blocks.Groups
             {
                 groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
                 pdAuditDetails.SetEntity( groupMember, ResolveRockUrl( "~" ) );
+
+                gmrcRequirements.GroupMemberId = groupMemberId;
             }
             else
             {
@@ -341,6 +343,8 @@ namespace RockWeb.Blocks.Groups
                     // hide the panel drawer that show created and last modified dates
                     pdAuditDetails.Visible = false;
                 }
+
+                gmrcRequirements.Visible = false;
             }
 
             if ( groupMember == null )
@@ -362,7 +366,6 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            gmrcRequirements.GroupMemberId = groupMemberId;
             pnlEditDetails.Visible = true;
 
             hfGroupId.Value = groupMember.GroupId.ToString();
