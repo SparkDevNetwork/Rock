@@ -33,6 +33,7 @@ namespace Rock.Blocks.Example
     [IconCssClass( "fa fa-flask" )]
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY )]
+    [Rock.SystemGuid.BlockTypeGuid( "50B7B326-8212-44E6-8CF6-515B1FF75A19")]
     public class FieldTypeGallery : RockObsidianBlockType
     {
 

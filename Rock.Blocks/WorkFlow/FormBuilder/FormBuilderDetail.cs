@@ -62,6 +62,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "A61C5E3C-2267-4CF7-B305-D8AF0DB9660B")]
     public class FormBuilderDetail : RockObsidianBlockType
     {
         private static class PageParameterKey
