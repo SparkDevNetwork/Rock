@@ -22,7 +22,7 @@ function main() {
 
     let newestFileStamp = 0;
 
-    glob("{Framework,System,Build}/**/*", (err, files) => {
+    glob("src/**/*", (err, files) => {
         if (err) {
             return;
         }
