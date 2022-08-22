@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs" />
+    <Compile Include="Migrations\202208221727058_GivingAlertFinancialTransactionCascadeDelete.designer.cs">
+      <DependentUpon>202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202206092326573_Rollup_0609.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202206092326573_Rollup_0609.designer.cs">
       <DependentUpon>202206092326573_Rollup_0609.cs</DependentUpon>
@@ -1294,6 +1298,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202208221727058_GivingAlertFinancialTransactionCascadeDelete.resx">
+      <DependentUpon>202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202206092326573_Rollup_0609.resx">
       <DependentUpon>202206092326573_Rollup_0609.cs</DependentUpon>
     </EmbeddedResource>
