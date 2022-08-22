@@ -118,12 +118,12 @@ export default defineComponent({
          * Event handler for the Cancel button being clicked while in Edit mode.
          * Handles redirect to parent page if creating a new entity.
          *
-         * @returns true if the panel should leave edit mode; otherwise false.
+         * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
          */
-        const onCancelEdit = async (): Promise<boolean> => {
+        const onCancelEdit = async (): Promise<boolean | string> => {
             if (!layoutEditBag.value?.idKey) {
                 if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                    window.location.href = config.navigationUrls[NavigationUrlKey.ParentPage];
+                    return config.navigationUrls[NavigationUrlKey.ParentPage];
                 }
 
                 return false;
@@ -174,9 +174,9 @@ export default defineComponent({
          * Event handler for the panel's Save event. Send the data to the server
          * to be saved and then leave edit mode or redirect to target page.
          *
-         * @returns true if the panel should leave edit mode; otherwise false.
+         * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
          */
-        const onSave = async (): Promise<boolean> => {
+        const onSave = async (): Promise<boolean | string> => {
             errorMessage.value = "";
 
             const data: DetailBlockBox<LayoutBag, LayoutDetailOptionsBag> = {
@@ -196,9 +196,7 @@ export default defineComponent({
                     return true;
                 }
                 else if (result.statusCode === 201 && typeof result.data === "string") {
-                    window.location.href = result.data;
-
-                    return false;
+                    return result.data;
                 }
             }
 

@@ -22,11 +22,11 @@ import TextBox from "@Obsidian/Controls/textBox";
 import { watchPropertyChanges } from "@Obsidian/Utility/block";
 import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/CMS/PageShortLinkDetail/pageShortLinkBag";
-import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CMS/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
+import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
 
 export default defineComponent({
-    name: "Core.PageShortLinkDetail.EditPanel",
+    name: "Cms.PageShortLinkDetail.EditPanel",
 
     props: {
         modelValue: {

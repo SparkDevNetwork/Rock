@@ -20,11 +20,11 @@ import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContaine
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
 import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/CMS/PageShortLinkDetail/pageShortLinkBag";
-import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CMS/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
+import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
 
 export default defineComponent({
-    name: "CMS.PageShortLinkDetail.ViewPanel",
+    name: "Cms.PageShortLinkDetail.ViewPanel",
 
     props: {
         modelValue: {

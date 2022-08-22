@@ -163,7 +163,7 @@ export const Filter = defineComponent({
 });
 
 export default defineComponent({
-    name: "CMS.ContentCollectionView.FilterContainer",
+    name: "Cms.ContentCollectionView.FilterContainer",
 
     components: {
         Filter,
