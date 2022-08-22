@@ -744,7 +744,7 @@ SET
 {% if isEra == ''Yes'' %}
 
 <div class=""rockbadge rockbadge-standard rockbadge-era"" data-toggle=""tooltip"" data-original-title=""{{ Person.NickName}} became an eRA on {{ Person | Attribute:''core_EraStartDate''}}"">
-    <span>eRA</span>
+    <span class=""metric-value"">eRA</span>
 </div>
 
 {% else %}
@@ -756,7 +756,7 @@ SET
         
         {% if daysSinceEnd <= 30 %}
             <div class=""rockbadge rockbadge-standard rockbadge-era era-loss"" data-toggle=""tooltip"" data-original-title=""{{ Person.NickName}} lost eRA status {{ daysSinceEnd }} days ago"">
-                <span>eRA</span>
+                <span class=""metric-value"">eRA</span>
             </div>
         {% endif %}
     {% endif %}
