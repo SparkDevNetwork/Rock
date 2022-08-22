@@ -70,6 +70,8 @@ export const enum ServiceJob {
     DataMigrations127RebuildGroupSalutations = "FD32833A-6FC8-43E6-8D36-0C840DBE99F8",
     /** The Job to run Post v13.0 Data Migrations for Add InteractionComponentId index to Interaction */
     DataMigrations130AddInteractionInteractionComponentIdIndex = "1D7FADEC-2A8A-46FD-898E-58544E7FD9F2",
+    /** The Job to run Post v13.3 Data Migrations for Adding InteractionSessionLocationId index to Interaction Session */
+    DataMigrations133AddInteractionSessionInteractionSessionLocationIdIndex = "219BF98C-C10C-4B19-86DB-C69D9B8705FC",
     /** The Job to Migrate pre-v8.0 History Summary Data */
     MigrateHistorySummaryData = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14",
     /** The Job to Migrate pre-v7.0 PageViews and Communication Recipient Activity to Interactions */
