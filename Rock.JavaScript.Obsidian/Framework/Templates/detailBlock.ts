@@ -728,11 +728,7 @@ export default defineComponent({
         if (isAutoEditMode.value) {
             isPanelVisible.value = false;
 
-            (async function () {
-                await new Promise(resolve => setTimeout(resolve, 2000));
-
-                const isEditOkay = await onEditClick();
-            })();
+            onEditClick();
         }
 
         return {
