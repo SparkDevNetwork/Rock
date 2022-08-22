@@ -118,7 +118,17 @@ namespace Rock.Web.UI
         {
             messages = string.Empty;
             bool compiledSuccessfully = true;
-            var newestRockWebStyleFileDateTimeUTC = Directory.GetFiles( _rockWebStylesDirectory, "*.*", SearchOption.AllDirectories ).Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+            var rockWebStyleFiles = Directory.GetFiles( _rockWebStylesDirectory, "*.*", SearchOption.AllDirectories );
+            DateTime newestRockWebStyleFileDateTimeUTC;
+            if ( rockWebStyleFiles.Any() )
+            {
+                newestRockWebStyleFileDateTimeUTC = rockWebStyleFiles.Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+            }
+            else
+            {
+                // Shouldn't happen, but just in case, say there are new files so that all files will get compiled.
+                newestRockWebStyleFileDateTimeUTC = DateTime.MaxValue;
+            }
 
             try
             {
@@ -127,6 +137,7 @@ namespace Rock.Web.UI
                 {
                     return true;
                 }
+
                 FileInfo[] files = themeDirectory.GetFiles();
 
                 if ( files == null || !this.AllowsCompile )
@@ -147,10 +158,25 @@ namespace Rock.Web.UI
                 var cssOutputFileNames = lessInputFiles.Select( a => Path.ChangeExtension( a.FullName, "css" ) ).ToArray();
 
                 // Get the datetime of the most recently modified theme file (except for the css output files)
-                var newestThemeFileDateTimeUTC = Directory
+                var themeFilesList = Directory
                     .GetFiles( themeDirectory.FullName, "*.*", SearchOption.AllDirectories )
-                    .Where( a => !cssOutputFileNames.Contains( a ) )
-                    .Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+                    .Where( a => !cssOutputFileNames.Contains( a ) );
+
+
+                DateTime newestThemeFileDateTimeUTC;
+
+                if ( themeFilesList.Any() )
+                {
+                    newestThemeFileDateTimeUTC = themeFilesList
+                        .Select( a => File.GetLastWriteTimeUtc( a ) ).Max();
+                }
+                else
+                {
+                    // If there aren't any LESS ThemeFiles, there probably are not any theme files
+                    // to compile, but set newestThemeFileDateTimeUTC to Max just in case.
+                    // That would cause the less files to always get compiled.
+                    newestThemeFileDateTimeUTC = DateTime.MaxValue;
+                }
 
                 foreach ( var file in lessInputFiles )
                 {
