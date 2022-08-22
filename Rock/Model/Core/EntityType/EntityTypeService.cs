@@ -110,7 +110,7 @@ namespace Rock.Model
 
             entityType.IsSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( type );
 
-            var entityTypeGuidAttributeValue = type.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
+            var entityTypeGuidAttributeValue = type.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
             if ( entityTypeGuidAttributeValue.HasValue )
             {
                 entityType.Guid = entityTypeGuidAttributeValue.Value;
@@ -430,7 +430,7 @@ namespace Rock.Model
                     }
 
                     var reflectedType = reflectedTypeLookupByName.GetValueOrNull( existingEntityType.Name );
-                    var reflectedTypeGuid = reflectedType?.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
+                    var reflectedTypeGuid = reflectedType?.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
                     if ( reflectedTypeGuid != null && reflectedTypeGuid.Value != existingEntityType.Guid )
                     {
                         /*
