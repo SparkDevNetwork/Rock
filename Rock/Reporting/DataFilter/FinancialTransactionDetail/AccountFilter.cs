@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataFilter.FinancialTransactionDetail
 {
@@ -48,7 +49,7 @@ namespace Rock.Reporting.DataFilter.FinancialTransactionDetail
             if ( selectionValues.Length >= 1 )
             {
                 var accountGuids = selectionValues[0].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                var accountIds = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+                var accountIds = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
 
                 var qry = new FinancialTransactionDetailService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => accountIds.Contains( p.AccountId ) );

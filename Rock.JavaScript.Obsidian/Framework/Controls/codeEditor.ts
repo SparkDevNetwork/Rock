@@ -35,7 +35,7 @@ type ThemeTypes = "rock"
     | "xcode" | "github" | "ambiance" | "chaos"
     | "clouds_midnight" | "cobalt" | "idle_fingers" | "kr_theme"
     | "merbivore" | "merbivore_soft" | "mono_industrial" | "monokai"
-    | "pastel_on_dark" | "solarized_on_dark" | "terminal" | "tomorrow_night"
+    | "pastel_on_dark" | "solarized_dark" | "terminal" | "tomorrow_night"
     | "tomorrow_night_blue" | "tomorrow_night_bright" | "tomorrow_night_eighties"
     | "twilight" | "vibrant_ink";
 
@@ -54,9 +54,9 @@ const aceScriptPromise = loadJavaScriptAsync("/Scripts/ace/ace.js", () => !!wind
 /**
  * Gets the name of the theme to use with the ACE editor. This handles any
  * name mapping and capitalization issues.
- * 
+ *
  * @param theme The name of the theme being requested.
- * 
+ *
  * @returns The name of the actual theme to use with the ACE editor.
  */
 function getAceTheme(theme?: string): string {
@@ -70,12 +70,12 @@ function getAceTheme(theme?: string): string {
 /**
  * Gets the name of the syntax mode to use with the ACE editor. This handles any
  * name mapping and capitalization issues.
- * 
+ *
  * @param mode The name of the mode being requested.
- * 
+ *
  * @returns The name of the actual mode to use with the ACE editor.
  */
- function getAceMode(mode?: string): string {
+function getAceMode(mode?: string): string {
     if (!mode) {
         return "text";
     }

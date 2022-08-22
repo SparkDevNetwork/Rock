@@ -24,6 +24,10 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/**
+ * Class MediaFolderBag.
+ * Implements the Rock.ViewModels.Utility.EntityBagBase
+ */
 export type MediaFolderBag = {
     /** Gets or sets the content channel. */
     contentChannel?: ListItemBag | null;

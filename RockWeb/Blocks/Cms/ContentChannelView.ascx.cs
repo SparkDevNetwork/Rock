@@ -1184,23 +1184,34 @@ $(document).ready(function() {
                         matchedContentChannelItemQry = contentChannelItemQuery;
                         nonMatchedContentChannelItemQry = contentChannelItemQuery;
 
-                        if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize )
+                        if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize || requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
                         {
-                            /*
-                                We are creating two result set at this point. One with matching and another with non-matching Segment Ids.
-                             */
-                            var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
-                            matchedContentChannelItemQry = matchedContentChannelItemQry.Where( cci => matchedSegmentEntityIdsQry.Contains( cci.Id ) );
-                            nonMatchedContentChannelItemQry = nonMatchedContentChannelItemQry.Where( cci => !matchedSegmentEntityIdsQry.Contains( cci.Id ) );
-                            isNonMatchedContentChannelItemExists = true;
-                        }
+                            var matchedPredicate = LinqPredicateBuilder.False<ContentChannelItem>();
+                            var nonMatchedPredicate = LinqPredicateBuilder.True<ContentChannelItem>();
+                            if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize )
+                            {
+                                /*
+                                    We are creating two result set at this point. One with matching and another with non-matching Segment Ids.
+                                 */
+                                var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
+                                // Create the set of conditions for filtering the target entities.
+                                // Attribute Values are filtered by entity identifiers, grouped by entity type and
+                                // combined with a logical OR.
+                                matchedPredicate = matchedPredicate.Or( cci => matchedSegmentEntityIdsQry.Contains( cci.Id ) );
+                                nonMatchedPredicate = nonMatchedPredicate.And( cci => !matchedSegmentEntityIdsQry.Contains( cci.Id ) );
+                                isNonMatchedContentChannelItemExists = true;
+                            }
 
-                        if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
-                        {
-                            var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
-                            matchedContentChannelItemQry = matchedContentChannelItemQry.Where( cci => matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
-                            nonMatchedContentChannelItemQry = nonMatchedContentChannelItemQry.Where( cci => !matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
-                            isNonMatchedContentChannelItemExists = true;
+                            if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
+                            {
+                                var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
+                                matchedPredicate = matchedPredicate.Or( cci => matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
+                                nonMatchedPredicate = nonMatchedPredicate.And( cci => !matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
+                                isNonMatchedContentChannelItemExists = true;
+                            }
+
+                            matchedContentChannelItemQry = contentChannelItemQuery.Where( matchedPredicate );
+                            nonMatchedContentChannelItemQry = contentChannelItemQuery.Where( nonMatchedPredicate );
                         }
                     }
                     else
@@ -1224,7 +1235,7 @@ $(document).ready(function() {
                         }
                     }
 
-                    if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !isQueryParameterFilteringEnabled )
+                    if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !isQueryParameterFilteringEnabled && !contentChannel.EnablePersonalization )
                     {
                         string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                         AddCacheItem( CONTENT_CACHE_KEY, items, ItemCacheDuration.Value, cacheTags );

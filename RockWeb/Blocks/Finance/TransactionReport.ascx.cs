@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -156,9 +156,6 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadAccounts()
         {
-            var rockContext = new RockContext();
-            FinancialAccountService accountService = new FinancialAccountService( rockContext );
-
             List<Guid> selectedAccounts = new List<Guid>();
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
@@ -166,8 +163,7 @@ namespace RockWeb.Blocks.Finance
                 selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).AsGuidList();
             }
 
-            var accountList = accountService.Queryable()
-                                .Where( a => selectedAccounts.Contains( a.Guid ) )
+            var accountList = FinancialAccountCache.GetByGuids( selectedAccounts )
                                 .OrderBy( a => a.Order )
                                 .Select( a => new
                                 {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -140,7 +140,6 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                var financialAccounts = new FinancialAccountService( rockContext ).Queryable().Select( a => new { a.Id, a.Name } ).ToDictionary( k => k.Id, v => v.Name );
 
                 var yearsMergeObjects = new List<Dictionary<string, object>>();
                 foreach ( var item in summaryList.GroupBy( a => a.Year ) )
@@ -150,7 +149,7 @@ namespace RockWeb.Blocks.Finance
                     foreach ( var a in item )
                     {
                         var accountDictionary = new Dictionary<string, object>();
-                        accountDictionary.Add( "Account", financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty );
+                        accountDictionary.Add( "Account", FinancialAccountCache.Get( a.AccountId )?.Name ?? string.Empty );
                         accountDictionary.Add( "TotalAmount", a.TotalAmount );
                         accountsList.Add( accountDictionary );
                     }

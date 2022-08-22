@@ -824,7 +824,6 @@ namespace Rock.Web.Cache
             value.SetFromEntity( entity, qualifiers );
 
             RockCacheManager<AttributeCache>.Instance.AddOrUpdate( QualifiedKey( entity.Id.ToString() ), value );
-            RockCacheManager<int?>.Instance.AddOrUpdate( QualifiedKey( value.Guid.ToString() ), value.Id );
 
             return value;
         }

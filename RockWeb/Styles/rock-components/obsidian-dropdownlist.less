@@ -7,12 +7,17 @@
 }
 
 .ant-select.form-control .ant-select-selector {
-  height: 38px;
-  padding: 4px 12px;
+  height: (@input-height - 2px);
+  padding: @input-padding-y @input-padding-x;
   margin: 0;
   background-color: initial;
   border: none;
   box-shadow: none;
+}
+
+.ant-select-single .ant-select-selector .ant-select-selection-item, .ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+  height: floor(@input-line-height * @input-font-size);
+  line-height: @input-line-height;
 }
 
 .ant-select.ant-select-multiple.form-control .ant-select-selector {
@@ -20,9 +25,9 @@
 }
 
 .ant-select.ant-select-focused:not(.ant-select-disabled).form-control {
-  border: 1px solid var(--brand-primary);
+  border-color: @input-border-focus;
   outline: none;
-  box-shadow: 0 0 0 2px #fad5bc;
+  box-shadow: 0 0 0 2px @input-focus-rgba;
 }
 
 .ant-select.ant-select-focused:not(.ant-select-disabled).form-control .ant-select-selector {
@@ -33,6 +38,7 @@
 
 .ant-select.form-control .ant-select-arrow,
 .ant-select.form-control .ant-select-clear {
+  margin-top: -8px;
   width: 16px;
   height: 16px;
   font-size: 16px;

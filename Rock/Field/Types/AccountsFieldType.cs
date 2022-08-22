@@ -214,15 +214,12 @@ namespace Rock.Field.Types
                     displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
                 }
 
-                var guids = privateValue.SplitDelimitedValues();
+                var guids = privateValue.SplitDelimitedValues().ToList().AsGuidList();
 
-                using ( var rockContext = new RockContext() )
+                var accounts = FinancialAccountCache.GetByGuids( guids ) ?? new FinancialAccountCache[0];
+                if ( accounts.Any() )
                 {
-                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) );
-                    if ( accounts.Any() )
-                    {
-                        return string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
-                    }
+                    return string.Join( ", ", ( from account in accounts select displayPublicName && account.PublicName != null && account.PublicName != string.Empty ? account.PublicName : account.Name ).ToArray() );
                 }
             }
 
@@ -310,15 +307,14 @@ namespace Rock.Field.Types
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                using ( var rockContext = new RockContext() )
-                {
-                    var accounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => ids.Contains( a.Id ) );
 
-                    if ( accounts.Any() )
-                    {
-                        guids = accounts.Select( a => a.Guid ).ToList();
-                    }
+                var accounts = FinancialAccountCache.GetByIds( ids );
+
+                if ( accounts.Any() )
+                {
+                    guids = accounts.Select( a => a.Guid ).ToList();
                 }
+
 
                 return string.Join( ",", guids );
             }
@@ -353,8 +349,8 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) );
-                    picker.SetValues( accounts );
+                    var accounts = FinancialAccountCache.GetByGuids( guids );
+                    picker.SetValuesFromCache( accounts );
                 }
             }
         }
@@ -403,26 +399,23 @@ namespace Rock.Field.Types
 
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var guids = privateValue.SplitDelimitedValues();
+            var guids = privateValue.SplitDelimitedValues().AsGuidList();
 
-            if ( guids.Length == 0 )
+            if ( !guids.Any() )
             {
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            var accountIds = FinancialAccountCache.GetByGuids( guids ).Select( a => a.Id );
+            if ( accountIds.Any() )
             {
-                var accountIds = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid.ToString() ) ).Select( a => a.Id );
-                if ( accountIds.Any() )
+                var referencedEntities = new List<ReferencedEntity>();
+                foreach ( var accountId in accountIds )
                 {
-                    var referencedEntities = new List<ReferencedEntity>();
-                    foreach ( var accountId in accountIds )
-                    {
-                        referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId ) );
-                    }
-
-                    return referencedEntities;
+                    referencedEntities.Add( new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId ) );
                 }
+
+                return referencedEntities;
             }
 
             return null;
