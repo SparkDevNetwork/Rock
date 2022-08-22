@@ -141,6 +141,7 @@
     <TypeScriptCompile Include="Framework\Controls\binaryFilePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\binaryFileTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\componentPicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\connectionRequestPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\copyButton.ts" />
     <TypeScriptCompile Include="Framework\Controls\dataViewPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\definedValuePicker.ts" />
@@ -719,6 +720,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFilePickerGetBinaryFilesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\binaryFileTypePickerGetBinaryFileTypesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\categoryPickerChildTreeItemsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\connectionRequestPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\dataViewsPickerGetDataViewsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\componentPickerGetComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\definedValuePickerGetDefinedValuesOptionsBag.d.ts" />

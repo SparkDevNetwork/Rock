@@ -492,6 +492,146 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Connection Request Picker
+
+        /// <summary>
+        /// Gets the data views and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which data views to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of data views.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ConnectionRequestPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1E079A57-9B44-4365-9C9C-2383A9A3F45B" )]
+        public IHttpActionResult ConnectionRequestPickerGetChildren( [FromBody] ConnectionRequestPickerGetChildrenOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            using ( var rockContext = new RockContext() )
+            {
+                string service = null;
+
+                /*
+                 * Determine what type of resource the GUID we received is so we know what types of 
+                 * children to query for.
+                 */
+                if (options.ParentGuid == null)
+                {
+                    // Get the root Connection Types
+                    service = "type";
+                }
+                else
+                {
+                    var conOpp = new ConnectionOpportunityService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( op => op.Guid == options.ParentGuid )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    if (conOpp.Any())
+                    {
+                        // Get the Connection Requests
+                        service = "request";
+                    }
+                    else
+                    {
+                        var conType = new ConnectionTypeService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( t => t.Guid == options.ParentGuid )
+                            .ToList()
+                            .Where( t => t.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( t, Authorization.VIEW ) == true );
+
+                        if (conType.Any() )
+                        {
+                            // Get the Connection Opportunities
+                            service = "opportunity";
+                        }
+                    }
+                }
+
+                /*
+                 * Fetch the children
+                 */
+                var list = new List<TreeItemBag>();
+
+                if (service == "type")
+                {
+                    // Get the Connection Types
+                    var connectionTypes = new ConnectionTypeService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .OrderBy( ct => ct.Name )
+                        .ToList()
+                        .Where( ct => ct.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( ct, Authorization.VIEW ) == true );
+
+                    foreach ( var connectionType in connectionTypes)
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = connectionType.Guid.ToString();
+                        item.Text = connectionType.Name;
+                        item.HasChildren = connectionType.ConnectionOpportunities.Any();
+                        item.IconCssClass = connectionType.IconCssClass;
+                        list.Add( item );
+                    }
+                }
+                else if (service == "opportunity")
+                {
+                    // Get the Connection Opportunities
+                    var opportunities = new ConnectionOpportunityService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( op => op.ConnectionType.Guid == options.ParentGuid )
+                        .OrderBy( op => op.Name )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    foreach ( var opportunity in opportunities )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = opportunity.Guid.ToString();
+                        item.Text = opportunity.Name;
+                        item.HasChildren = opportunity.ConnectionRequests
+                            .Any( r =>
+                                r.ConnectionState == ConnectionState.Active ||
+                                r.ConnectionState == ConnectionState.FutureFollowUp );
+                        item.IconCssClass = opportunity.IconCssClass;
+                        list.Add( item );
+                    }
+                }
+                else if ( service == "request" )
+                {
+                    var requests = new ConnectionRequestService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( r =>
+                            r.ConnectionOpportunity.Guid == options.ParentGuid &&
+                            r.PersonAlias != null &&
+                            r.PersonAlias.Person != null )
+                        .OrderBy( r => r.PersonAlias.Person.LastName )
+                        .ThenBy( r => r.PersonAlias.Person.NickName )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    foreach ( var request in requests )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = request.Guid.ToString();
+                        item.Text = request.PersonAlias.Person.FullName;
+                        item.HasChildren = false;
+                        item.IconCssClass = "fa fa-user";
+                        list.Add( item );
+                    }
+                }
+                else
+                {
+                    // service type wasn't set, so we don't know where to look
+                    return NotFound();
+                }
+
+                return Ok( list );
+            }
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>

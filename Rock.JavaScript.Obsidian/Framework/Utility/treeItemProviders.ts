@@ -24,7 +24,8 @@ import { LocationPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/
 import { DataViewPickerGetDataViewsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataViewPickerGetDataViewsOptionsBag";
 import { WorkflowTypePickerGetWorkflowTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowTypePickerGetWorkflowTypesOptionsBag";
 import { PagePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetChildrenOptionsBag";
-import { PagePickerGetSelectedPageHierarchyOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/PagePickerGetSelectedPageHierarchyOptionsBag";
+import { PagePickerGetSelectedPageHierarchyOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/pagePickerGetSelectedPageHierarchyOptionsBag";
+import { ConnectionRequestPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/connectionRequestPickerGetChildrenOptionsBag";
 import { flatten } from "./arrayUtils";
 
 /**
@@ -407,6 +408,58 @@ export class PageTreeItemProvider implements ITreeItemProvider {
         return rootLayer;
     }
 
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        return await this.getItems(null);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        return this.getItems(item.value);
+    }
+}
+
+
+
+/**
+ * Tree Item Provider for retrieving connection requests from the server and displaying
+ * them inside a tree list.
+ */
+export class ConnectionRequestTreeItemProvider implements ITreeItemProvider {
+    /**
+     * The security grant token that will be used to request additional access
+     * to the category list.
+     */
+    public securityGrantToken?: string | null;
+
+    /**
+     * Gets the child items from the server.
+     *
+     * @param parentGuid The parent item whose children are retrieved.
+     *
+     * @returns A collection of TreeItem objects as an asynchronous operation.
+     */
+    private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
+        const options: Partial<ConnectionRequestPickerGetChildrenOptionsBag> = {
+            parentGuid,
+            securityGrantToken: this.securityGrantToken
+        };
+        const url = "/api/v2/Controls/ConnectionRequestPickerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.log("Error", response.errorMessage);
+            return [];
+        }
+    }
 
     /**
      * @inheritdoc
