@@ -1447,16 +1447,12 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRefreshRequirements_Click( object sender, EventArgs e )
         {
-            gmrcRequirements.Visible = false;
             CalculateRequirements( true );
             nbRecheckedNotification.Text = "Successfully refreshed requirements.";
+            nbRecheckedNotification.Visible = true;
             bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
             gmrcRequirements.Visible = !areRequirementsPubliclyHidden;
-
-            // Reload the page to make sure that the container has updated cards.
-            var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
-            pageRef.Parameters.Add( "GroupMemberId", hfGroupMemberId.Value.ToString() );
-            NavigateToPage( pageRef );
+            gmrcRequirements.DataBind();
         }
 
         /// <summary>

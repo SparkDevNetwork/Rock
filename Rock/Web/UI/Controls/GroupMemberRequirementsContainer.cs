@@ -33,7 +33,7 @@ namespace Rock.Web.UI.Controls
     /// Displays a container for the requirement cards that will allow updating.
     /// </summary>
     [ToolboxData( "<{0}:GroupMemberRequirementsContainer runat=server></{0}:GroupMemberRequirementsContainer>" )]
-    public class GroupMemberRequirementsContainer : Control, INamingContainer
+    public class GroupMemberRequirementsContainer : CompositeControl, INamingContainer
     {
         #region Properties
 
@@ -94,6 +94,15 @@ namespace Rock.Web.UI.Controls
             base.OnLoad( e );
 
             EnsureChildControls();
+        }
+
+        /// <summary>
+        /// DataBind for the Requirements Container.
+        /// </summary>
+        public override void DataBind()
+        {
+            base.DataBind();
+            RecreateChildControls();
         }
 
         /// <summary>
