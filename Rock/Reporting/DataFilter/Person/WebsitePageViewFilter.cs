@@ -36,7 +36,7 @@ namespace Rock.Reporting.DataFilter.Interaction
     /// </summary>
     [Description( "Filter people based on their webpage view data" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Website Page View Filter" )]
+    [ExportMetadata( "ComponentName", "Site Page View Filter" )]
     [Rock.SystemGuid.EntityTypeGuid( "8E1E9C39-3A5C-49E5-8CB4-356A7EEF4206" )]
     public class WebsitePageViewFilter : DataFilterComponent
     {
@@ -78,7 +78,7 @@ namespace Rock.Reporting.DataFilter.Interaction
         /// <exception cref="System.NotImplementedException"></exception>
         public override string GetTitle( Type entityType )
         {
-            return "Website Page View";
+            return "Site Page View";
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ console.log(websiteNames);
             controls.Add( rlbWebsites );
 
             var websiteslabel = new Label();
-            websiteslabel.Text = " websites(s) ";
+            websiteslabel.Text = " sites(s) ";
             filterControl.Controls.Add( websiteslabel );
             controls.Add( websiteslabel );
 
@@ -217,7 +217,7 @@ console.log(websiteNames);
             slidingDateRangePicker.ID = filterControl.GetChildControlInstanceName( "slidingDateRangePicker" );
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             slidingDateRangePicker.Label = "Date Started";
-            slidingDateRangePicker.Help = "The date range within which the website page was viewed";
+            slidingDateRangePicker.Help = "The date range within which the site page was viewed";
             slidingDateRangePicker.Required = false;
             filterControl.Controls.Add( slidingDateRangePicker );
             controls.Add( slidingDateRangePicker );
@@ -229,14 +229,23 @@ console.log(websiteNames);
         {
             var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
             var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+            var listItems = new List<ListItem>();
 
             var channels = new InteractionChannelService( new RockContext() )
                 .Queryable()
                 .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
-                .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )
+                .Select( x => new InteractionChannelViewModel() { Name = x.Name, Id = x.Id, SiteId = x.ChannelEntityId.Value } )
                 .ToList();
 
-            return channels.OrderBy( m => m.Text ).ToList();
+            foreach ( var channel in channels )
+            {
+                var site = SiteCache.Get( channel.SiteId );
+                var listItem = new ListItem( channel.Name, channel.Id.ToString() );
+                listItem.Attributes.Add( "data-category", site.SiteType.ToString() );
+                listItems.Add( listItem );
+            }
+
+            return listItems.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -275,6 +284,17 @@ console.log(websiteNames);
 
             writer.AddAttribute( "class", "col-md-5" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div ); // rlbWebsites
+            const string script = @"
+            var groups = {};
+            $(""select option[data-category]"").each(function () {
+                groups[$.trim($( this ).attr( ""data-category"" ) )] = true;
+            });
+            $.each( groups, function (c) {
+                $( ""select option[data-category='"" + c + ""']"" ).wrapAll( '<optgroup label=""' + c + '"">' );
+            });
+                ";
+
+            ScriptManager.RegisterStartupScript( rlbWebsites, rlbWebsites.GetType(), "group-listbox-items", script, true );
             rlbWebsites.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -458,6 +478,16 @@ console.log(websiteNames);
             {
                 return selection.FromJsonOrNull<SelectionConfig>() ?? new SelectionConfig();
             }
+        }
+
+        /// <summary>
+        /// Viewmodel for interaction channels 
+        /// </summary>
+        private sealed class InteractionChannelViewModel
+        {
+            public string Name { get; set; }
+            public int Id { get; set; }
+            public int SiteId { get; set; }
         }
     }
 }

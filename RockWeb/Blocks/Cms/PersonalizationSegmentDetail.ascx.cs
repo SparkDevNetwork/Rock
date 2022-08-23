@@ -453,7 +453,9 @@ namespace RockWeb.Blocks.Cms
             lstSessionCountFilterWebSites.Items.Clear();
             foreach ( var site in SiteCache.All().Where( a => a.IsActive ) )
             {
-                lstSessionCountFilterWebSites.Items.Add( new ListItem( site.Name, site.Guid.ToString() ) );
+                var listItem = new ListItem( site.Name, site.Guid.ToString() );
+                listItem.Attributes.Add( "data-category", site.SiteType.ToString() );
+                lstSessionCountFilterWebSites.Items.Add( listItem );
             }
 
             ComparisonHelper.PopulateComparisonControl( ddlSessionCountFilterComparisonType, ComparisonHelper.NumericFilterComparisonTypesRequired, true );
@@ -461,6 +463,17 @@ namespace RockWeb.Blocks.Cms
             nbSessionCountFilterCompareValue.Text = sessionCountSegmentFilter.ComparisonValue.ToString();
             drpSessionCountFilterSlidingDateRange.DelimitedValues = sessionCountSegmentFilter.SlidingDateRangeDelimitedValues;
             lstSessionCountFilterWebSites.SetValues( sessionCountSegmentFilter.SiteGuids );
+
+            const string script = @"
+            var groups = {};
+            $(""select option[data-category]"").each(function () {
+                groups[$.trim($( this ).attr( ""data-category"" ) )] = true;
+            });
+            $.each( groups, function (c) {
+                $( ""select option[data-category='"" + c + ""']"" ).wrapAll( '<optgroup label=""' + c + '"">' );
+            });
+                ";
+            ScriptManager.RegisterStartupScript( mdSessionCountFilterConfiguration, mdSessionCountFilterConfiguration.GetType(), "group-listbox-items", script, true );
 
             mdSessionCountFilterConfiguration.Show();
         }

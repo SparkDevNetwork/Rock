@@ -36,7 +36,7 @@ namespace Rock.Reporting.DataFilter.Interaction
     /// </summary>
     [Description( "Filter people based on their website session interaction" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Website Session Filter" )]
+    [ExportMetadata( "ComponentName", "Site Session Filter" )]
     [Rock.SystemGuid.EntityTypeGuid( "50FDC068-D943-4673-B656-DFC2792BEEF7" )]
     public class WebsiteSessionFilter : DataFilterComponent
     {
@@ -78,7 +78,7 @@ namespace Rock.Reporting.DataFilter.Interaction
         /// <exception cref="System.NotImplementedException"></exception>
         public override string GetTitle( Type entityType )
         {
-            return "Website Session";
+            return "Site Session";
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ function() {
             controls.Add( rlbWebsites );
 
             var websitesLabel = new Label();
-            websitesLabel.Text = " websites(s) ";
+            websitesLabel.Text = " sites(s) ";
             filterControl.Controls.Add( websitesLabel );
             controls.Add( websitesLabel );
 
@@ -239,7 +239,7 @@ function() {
             slidingDateRangePicker.ID = filterControl.GetChildControlInstanceName( "slidingDateRangePicker" );
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             slidingDateRangePicker.Label = "Date Started";
-            slidingDateRangePicker.Help = "The date range within which the website page was viewed";
+            slidingDateRangePicker.Help = "The date range within which the site page was viewed";
             slidingDateRangePicker.Required = false;
             filterControl.Controls.Add( slidingDateRangePicker );
             controls.Add( slidingDateRangePicker );
@@ -263,14 +263,23 @@ function() {
         {
             var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
             var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+            var listItems = new List<ListItem>();
 
             var channels = new InteractionChannelService( rockContext )
                 .Queryable()
                 .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
-                .Select( ic => new ListItem() { Text = ic.Name, Value = ic.Id.ToString() } )
+                .Select( ic => new InteractionChannelViewModel() { Name = ic.Name, Id = ic.Id, SiteId = ic.ChannelEntityId.Value } )
                 .ToList();
 
-            return channels.OrderBy( m => m.Text ).ToList();
+            foreach ( var channel in channels )
+            {
+                var site = SiteCache.Get( channel.SiteId );
+                var listItem = new ListItem( channel.Name, channel.Id.ToString() );
+                listItem.Attributes.Add( "data-category", site.SiteType.ToString() );
+                listItems.Add( listItem );
+            }
+
+            return listItems.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -311,6 +320,17 @@ function() {
 
             writer.AddAttribute( "class", "col-md-5" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div ); // websites
+            const string script = @"
+            var groups = {};
+            $(""select option[data-category]"").each(function () {
+                groups[$.trim($( this ).attr( ""data-category"" ) )] = true;
+            });
+            $.each( groups, function (c) {
+                $( ""select option[data-category='"" + c + ""']"" ).wrapAll( '<optgroup label=""' + c + '"">' );
+            });
+                ";
+
+            ScriptManager.RegisterStartupScript( rlbWebsites, rlbWebsites.GetType(), "group-listbox-items", script, true );
             rlbWebsites.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -524,6 +544,16 @@ function() {
             {
                 return selection.FromJsonOrNull<SelectionConfig>() ?? new SelectionConfig();
             }
+        }
+
+        /// <summary>
+        /// Viewmodel for interaction channels 
+        /// </summary>
+        private sealed class InteractionChannelViewModel
+        {
+            public string Name { get; set; }
+            public int Id { get; set; }
+            public int SiteId { get; set; }
         }
     }
 }
