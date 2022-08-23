@@ -35,8 +35,9 @@ namespace Rock.Migrations
             AddAdminChecklistItemForRedis();
             ShowFormBuilderPages();
             SetWorkflowLogIsSecured();
-            CleanupMigrationHistory();
             AddCreateFKIndexesPostUpdateJob();
+            TVPageRoutes();
+            CleanupMigrationHistory();
         }
         
         /// <summary>
@@ -193,7 +194,10 @@ namespace Rock.Migrations
         {
             RockMigrationHelper.UpdateEntityType( "Rock.Model.WorkflowLog", Rock.SystemGuid.EntityType.WORKFLOW_LOG, true, false );
         }
-    
+
+        /// <summary>
+        /// Adds the create fk indexes post update job.
+        /// </summary>
         private void AddCreateFKIndexesPostUpdateJob()
         {
             // add ServiceJob: Rock Update Helper v14.0 - Add FK indexes
@@ -225,6 +229,16 @@ namespace Rock.Migrations
             RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Class", "Rock.Jobs.PostV14DataMigrationsCreateFKIndexes", "Command Timeout", "Command Timeout", @"Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.", 0, @"14400", "9DCBBA2E-39DE-4507-9D53-093A67056C9C", "CommandTimeout" );
             RockMigrationHelper.AddAttributeValue( "9DCBBA2E-39DE-4507-9D53-093A67056C9C", 86, @"14400", "9DCBBA2E-39DE-4507-9D53-093A67056C9C" ); // Rock Update Helper v14.0 - Add FK indexes: Command Timeout
         }
-    
+
+        /// <summary>
+        /// v14.0 Add Data Migration for TV Page Routes
+        /// </summary>
+        private void TVPageRoutes()
+        {
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPS, "admin/cms/appletv-applications" );
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPLICATION_DETAIL, "admin/cms/appletv-applications/{SiteId}" );
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPLICATION_SCREEN_DETAIL, "admin/cms/appletv-applications/{SiteId}/{PageId}" );
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.MOBILE_SITE_PAGES, "admin/cms/mobile-applications/{SiteId}/{Page}" );
+        }
     }
 }
