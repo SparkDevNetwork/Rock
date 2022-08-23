@@ -64,9 +64,6 @@ namespace Rock.Migrations
 	            WHERE cr.[ConnectionTypeId] IS NULL" );
             AlterColumn( "dbo.ConnectionRequest", "ConnectionTypeId", c => c.Int( nullable: false ) );
 
-            CreateIndex( "dbo.RegistrationRegistrant", "RegistrationTemplateId" );
-            CreateIndex( "dbo.GroupMember", "GroupTypeId" );
-            CreateIndex( "dbo.ConnectionRequest", "ConnectionTypeId" );
             AddForeignKey("dbo.GroupMember", "GroupTypeId", "dbo.GroupType", "Id");
             AddForeignKey("dbo.RegistrationRegistrant", "RegistrationTemplateId", "dbo.RegistrationTemplate", "Id");
             AddForeignKey("dbo.ConnectionRequest", "ConnectionTypeId", "dbo.ConnectionType", "Id");
@@ -80,9 +77,6 @@ namespace Rock.Migrations
             DropForeignKey("dbo.ConnectionRequest", "ConnectionTypeId", "dbo.ConnectionType");
             DropForeignKey("dbo.RegistrationRegistrant", "RegistrationTemplateId", "dbo.RegistrationTemplate");
             DropForeignKey("dbo.GroupMember", "GroupTypeId", "dbo.GroupType");
-            DropIndex("dbo.ConnectionRequest", new[] { "ConnectionTypeId" });
-            DropIndex("dbo.GroupMember", new[] { "GroupTypeId" });
-            DropIndex("dbo.RegistrationRegistrant", new[] { "RegistrationTemplateId" });
             DropColumn("dbo.ConnectionRequest", "ConnectionTypeId");
             DropColumn("dbo.GroupMember", "GroupTypeId");
             DropColumn("dbo.RegistrationRegistrant", "RegistrationTemplateId");
