@@ -33,4 +33,10 @@ export type PagePickerGetPageRoutesOptionsBag = {
      * retrieving the routes for.
      */
     pageGuid?: Guid | null;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };
