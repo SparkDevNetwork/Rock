@@ -186,17 +186,11 @@ namespace RockWeb.Blocks.Cms
         Category = "CustomSetting",
         Key = AttributeKey.EnableArchiveSummary )]
     [EnumField(
-        "Personalization Segments",
-        Description = "The setting determines how personalization segments effect the results shown. Ignore will not consider segments, Prioritize will add items with matching segments to the top of the list (in order by the sort order) and Filter will only show items that match the current individuals segments.",
+        "Personalization",
+        Description = "The setting determines how personalization effect the results shown. Ignore will not consider segments or request filters, Prioritize will add items with matching items to the top of the list (in order by the sort order) and Filter will only show items that match the current individuals segments and request filters.",
         EnumSourceType = typeof( PersonalizationFilterType ),
         Category = "CustomSetting",
-        Key = AttributeKey.PersonalizationSegments )]
-    [EnumField(
-        "Request Filters",
-        Description = "The setting determines how request filters effect the results shown. Ignore will not consider filters, Prioritize will add items with matching filters to the top of the list (in order by the sort order) and Filter will only show items that match the current request's filters.",
-        EnumSourceType = typeof( PersonalizationFilterType ),
-        Category = "CustomSetting",
-        Key = AttributeKey.RequestFilters )]
+        Key = AttributeKey.Personalization )]
     #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW )]
     public partial class ContentChannelView : RockBlockCustomSettings
@@ -226,8 +220,7 @@ namespace RockWeb.Blocks.Cms
             public const string MetaImageAttribute = "MetaImageAttribute";
             public const string EnableTagList = "EnableTagList";
             public const string EnableArchiveSummary = "EnableArchiveSummary";
-            public const string PersonalizationSegments = "PersonalizationSegments";
-            public const string RequestFilters = "RequestFilters";
+            public const string Personalization = "Personalization";
         }
 
         #endregion Attribute Keys
@@ -475,8 +468,7 @@ namespace RockWeb.Blocks.Cms
             SetAttributeValue( AttributeKey.MetaImageAttribute, ddlMetaImageAttribute.SelectedValue );
             SetAttributeValue( AttributeKey.EnableTagList, cbEnableTags.Checked.ToString() );
             SetAttributeValue( AttributeKey.EnableArchiveSummary, cbEnableArchiveSummary.Checked.ToString() );
-            SetAttributeValue( AttributeKey.PersonalizationSegments, rblPersonalizationSegments.SelectedValue );
-            SetAttributeValue( AttributeKey.RequestFilters, rblRequestFilters.SelectedValue );
+            SetAttributeValue( AttributeKey.Personalization, rblPersonalization.SelectedValue );
 
             var ppFieldType = new PageReferenceFieldType();
             SetAttributeValue( AttributeKey.DetailPage, ppFieldType.GetEditValue( ppDetailPage, null ) );
@@ -1124,15 +1116,7 @@ $(document).ready(function() {
                             Ignore will not consider segments, Prioritize will add items with matching segments to the top of the list (in order by the sort order) and
                             Filter will only show items that match the current individuals segments.
                         */
-                        var segmentPersonalizationFilterType = GetAttributeValue( AttributeKey.PersonalizationSegments ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
-
-                        /*  08-18-2022 SK
-                            The setting determines how request filters effect the results shown.
-                            Ignore will not consider filters, Prioritize will add items with matching filters to the top of the list (in order by the sort order) and
-                            Filter will only show items that match the current request's filters.
-                        */
-                        var requestFiltersPersonalizationFilterType = GetAttributeValue( AttributeKey.RequestFilters ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
-
+                        var personalizationFilterType = GetAttributeValue( AttributeKey.Personalization ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
                         var personalizationSegmentIds = new List<int>();
                         if ( RockPage.PersonalizationSegmentIds != null )
                         {
@@ -1151,67 +1135,42 @@ $(document).ready(function() {
                             If Segment OR Request Filter have PersonalizationFilterType selected as Filter, We need to process that first.
                             It will give us the filtered dataset that can be used later. It is more or less like our other normal filter that we apply and acts as AND operator.
                         */
-                        if ( segmentPersonalizationFilterType == PersonalizationFilterType.Filter )
+                        if ( personalizationFilterType == PersonalizationFilterType.Ignore )
+                        {
+                            matchedContentChannelItemQry = contentChannelItemQuery;
+                        }
+                        else
                         {
                             /*
-                               This will return all the entity Ids with PersonalizationType as Segment and Entity Type Id of Content Channel Item
+                                This will return all the entity Ids with PersonalizationType as Segment and Entity Type Id of Content Channel Item
                                 which will help further to include content Channel Items that has no segment associated with it.
-                            */
+                             */
                             var allPersonalizedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment );
-
-                            /*
-                               This will return all the entity Ids with PersonalizationType as Segment, Entity Type Id of Content Channel Item
-                               and matching segment Ids of the current user.
-                            */
                             var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
-                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => ( !allPersonalizedSegmentEntityIdsQry.Contains( cci.Id ) || matchedSegmentEntityIdsQry.Contains( cci.Id ) ) );
-                        }
 
-                        if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Filter )
-                        {
-                            // It will follow same approach that we did for the segment above.
-                            var allPersonalizedRequestEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter );
+                            var allPersonalizedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter );
                             var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
-                            contentChannelItemQuery = contentChannelItemQuery.Where( cci => ( !allPersonalizedRequestEntityIdsQry.Contains( cci.Id ) || matchedRequestFilterEntityIdsQry.Contains( cci.Id ) ) );
-                        }
-
-                        /*
-                            Here we are assigning same result set to both matchedContentChannelItemQry as well as nonMatchedContentChannelItemQry.
-                            Technically both the variable is having same records at this point which will help us further if Prioritize is selected as FilterType for either on Segment Or Request Filters.
-                            Note:- In Prioritize we need to include both matching as well as non matching result set. Non matching records has to be appended at the
-                             end of the result set.
-                         */
-                        matchedContentChannelItemQry = contentChannelItemQuery;
-                        nonMatchedContentChannelItemQry = contentChannelItemQuery;
-
-                        if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize || requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
-                        {
-                            var matchedPredicate = LinqPredicateBuilder.False<ContentChannelItem>();
-                            var nonMatchedPredicate = LinqPredicateBuilder.True<ContentChannelItem>();
-                            if ( segmentPersonalizationFilterType == PersonalizationFilterType.Prioritize )
+                            if ( personalizationFilterType == PersonalizationFilterType.Filter )
                             {
-                                /*
-                                    We are creating two result set at this point. One with matching and another with non-matching Segment Ids.
-                                 */
-                                var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
+                                contentChannelItemQuery = contentChannelItemQuery.Where( cci => ( !allPersonalizedSegmentEntityIdsQry.Contains( cci.Id ) || matchedSegmentEntityIdsQry.Contains( cci.Id ) ) );
+                                contentChannelItemQuery = contentChannelItemQuery.Where( cci => ( !allPersonalizedRequestFilterEntityIdsQry.Contains( cci.Id ) || matchedRequestFilterEntityIdsQry.Contains( cci.Id ) ) );
+                                matchedContentChannelItemQry = contentChannelItemQuery;
+                            }
+                            else
+                            {
+                                var matchedPredicate = LinqPredicateBuilder.False<ContentChannelItem>();
+
                                 // Create the set of conditions for filtering the target entities.
                                 // Attribute Values are filtered by entity identifiers, grouped by entity type and
                                 // combined with a logical OR.
-                                matchedPredicate = matchedPredicate.Or( cci => matchedSegmentEntityIdsQry.Contains( cci.Id ) );
-                                nonMatchedPredicate = nonMatchedPredicate.And( cci => !matchedSegmentEntityIdsQry.Contains( cci.Id ) );
-                                isNonMatchedContentChannelItemExists = true;
-                            }
+                                matchedPredicate = matchedPredicate.Or( cci => matchedSegmentEntityIdsQry.Contains( cci.Id ) && ( matchedRequestFilterEntityIdsQry.Contains( cci.Id ) || !allPersonalizedRequestFilterEntityIdsQry.Contains( cci.Id ) ) );
+                                matchedPredicate = matchedPredicate.Or( cci => !allPersonalizedSegmentEntityIdsQry.Contains( cci.Id ) && matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
 
-                            if ( requestFiltersPersonalizationFilterType == PersonalizationFilterType.Prioritize )
-                            {
-                                var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
-                                matchedPredicate = matchedPredicate.Or( cci => matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
-                                nonMatchedPredicate = nonMatchedPredicate.And( cci => !matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
                                 isNonMatchedContentChannelItemExists = true;
-                            }
 
-                            matchedContentChannelItemQry = contentChannelItemQuery.Where( matchedPredicate );
-                            nonMatchedContentChannelItemQry = contentChannelItemQuery.Where( nonMatchedPredicate );
+                                matchedContentChannelItemQry = contentChannelItemQuery.Where( matchedPredicate );
+                                nonMatchedContentChannelItemQry = contentChannelItemQuery.Where( matchedPredicate.Not() );
+                            }
                         }
                     }
                     else
@@ -1541,15 +1500,11 @@ $(document).ready(function() {
                     kvlOrder.CustomKeys.Add( "ExpireDateTime", "Expire" );
                     kvlOrder.CustomKeys.Add( "Order", "Order" );
 
-                    rblPersonalizationSegments.Visible = channel.EnablePersonalization;
-                    rblRequestFilters.Visible = channel.EnablePersonalization;
+                    rblPersonalization.Visible = channel.EnablePersonalization;
                     if ( channel.EnablePersonalization )
                     {
-                        rblPersonalizationSegments.BindToEnum<PersonalizationFilterType>();
-                        rblPersonalizationSegments.SetValue( ( int ) GetAttributeValue( AttributeKey.PersonalizationSegments ).AsInteger() );
-
-                        rblRequestFilters.BindToEnum<PersonalizationFilterType>();
-                        rblRequestFilters.SetValue( GetAttributeValue( AttributeKey.RequestFilters ).AsInteger() );
+                        rblPersonalization.BindToEnum<PersonalizationFilterType>();
+                        rblPersonalization.SetValue( ( int ) GetAttributeValue( AttributeKey.Personalization ).AsInteger() );
                     }
 
                     // add attributes to the meta description and meta image attribute list
