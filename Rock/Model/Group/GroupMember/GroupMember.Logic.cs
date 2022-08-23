@@ -461,6 +461,20 @@ namespace Rock.Model
             // Get all the group requirements that apply the group member's role, ordered by requirement type name.
             var allGroupRequirements = this.Group.GetGroupRequirements( rockContext ).Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name ).ToList();
 
+            // If the requirement's Applies To Age Classification is not "All", filter the query to the corresponding Age Classification.
+            allGroupRequirements = allGroupRequirements.Where( a => a.AppliesToAgeClassification == AppliesToAgeClassification.All || ( int ) a.AppliesToAgeClassification == ( int ) this.Person.AgeClassification ).ToList();
+
+            //allGroupRequirements = allGroupRequirements.Where( a => a.AppliesToDataViewId == null || 
+            //if ( this.AppliesToDataViewId.HasValue )
+            //{
+            //    // If the Group Requirement has a Data View it applies to, apply it here.
+            //    var appliesToDataViewPersonService = new PersonService( rockContext );
+            //    var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
+            //    var appliesToDataViewWhereExpression = this.AppliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
+            //    var appliesToDataViewPersonIds = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
+            //    personQry = personQry.Where( p => appliesToDataViewPersonIds.Contains( p.Id ) );
+            //}
+
             // outer join on group requirements
             var result = from groupRequirement in allGroupRequirements
                          join metRequirement in metRequirements on groupRequirement.Id equals metRequirement.GroupRequirementId into j
