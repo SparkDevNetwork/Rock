@@ -503,7 +503,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ConnectionRequestPickerGetChildren" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "1E079A57-9B44-4365-9C9C-2383A9A3F45B" )]
+        [Rock.SystemGuid.RestActionGuid( "5316914b-cf47-4dac-9e10-71767fdf1eb9" )]
         public IHttpActionResult ConnectionRequestPickerGetChildren( [FromBody] ConnectionRequestPickerGetChildrenOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
