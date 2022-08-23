@@ -453,6 +453,8 @@ namespace Rock.Model
 
                             if ( scheduledTransaction != null )
                             {
+                                // This is the normal case where we create new transaction as a result of
+                                // a new scheduled transaction that the gateway processed.
                                 scheduledTransactionIds.Add( scheduledTransaction.Id );
                                 if ( payment.ScheduleActive.HasValue )
                                 {
@@ -477,9 +479,11 @@ namespace Rock.Model
                             }
                             else
                             {
+                                // This handles an edge-case where there is a mismatch between what the Gateway thinks the amount is and what Rock thinks the amount is.
+                                // If there is a mismatch, this will end up creating a new transaction to correct the amounts
                                 transaction.AuthorizedPersonAliasId = originalTxn.AuthorizedPersonAliasId;
                                 transaction.SourceTypeValueId = originalTxn.SourceTypeValueId;
-                                transaction.ScheduledTransactionId = originalTxn.TransactionTypeValueId;
+                                transaction.TransactionTypeValueId = originalTxn.TransactionTypeValueId;
                                 financialPaymentDetail = originalTxn.FinancialPaymentDetail;
                                 originalTxn.TransactionDetails.ToList().ForEach( d => originalTxnDetails.Add( d ) );
                             }
