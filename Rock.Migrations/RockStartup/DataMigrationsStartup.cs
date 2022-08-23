@@ -34,7 +34,9 @@ namespace Rock.Migrations.RockStartup
         public int StartupOrder => 0;
 
         /// <summary>
-        /// Method that will be run at Rock startup
+        /// Method that will be run at Rock startup to run post update service jobs.
+        /// These jobs are run asynchronously so Post update jobs must not be order dependent
+        /// and must be able to run at the same time as other jobs.
         /// </summary>
         public void OnStartup()
         {
