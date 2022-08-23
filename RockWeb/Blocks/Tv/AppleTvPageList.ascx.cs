@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Tv
         private static class PageParameterKey
         {
             public const string SiteId = "SiteId";
-            public const string SitePageId = "SitePageId";
+            public const string PageId = "PageId";
         }
 
         #endregion PageParameterKeys
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Tv
             NavigateToLinkedPage( AttributeKey.PageDetail, new Dictionary<string, string>
             {
                 { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
-                { PageParameterKey.SitePageId, "0" }
+                { PageParameterKey.PageId, "0" }
             } );
         }
 
@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Tv
             NavigateToLinkedPage( AttributeKey.PageDetail, new Dictionary<string, string>
             {
                 { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
-                { PageParameterKey.SitePageId, e.RowKeyId.ToString() }
+                { PageParameterKey.PageId, e.RowKeyId.ToString() }
             } );
         }
 

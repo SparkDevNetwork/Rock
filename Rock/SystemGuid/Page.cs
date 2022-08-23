@@ -48,6 +48,21 @@ namespace Rock.SystemGuid
         public const string ACCOUNTS = "2B630A3B-E081-4204-A3E4-17BB3A5F063D";
 
         /// <summary>
+        /// The apple tv application detail
+        /// </summary>
+        public const string APPLE_TV_APPLICATION_DETAIL = "ED4341EB-3846-48B4-96D3-444D3ABBF389";
+
+        /// <summary>
+        /// The apple tv application screen detail
+        /// </summary>
+        public const string APPLE_TV_APPLICATION_SCREEN_DETAIL = "6CC8D008-8D30-416D-8A36-7D01B72A2518";
+
+        /// <summary>
+        /// The apple tv apps
+        /// </summary>
+        public const string APPLE_TV_APPS = "C8B81EBE-E98F-43EF-9E39-0491685145E2";
+
+        /// <summary>
         /// The financial account search guid
         /// ParentPage: Internal Homepage > Finance > Administration
         /// </summary>
@@ -858,6 +873,11 @@ namespace Rock.SystemGuid
         /// ParentPage: Communications
         /// </summary>
         public const string MASS_PUSH_NOTIFICATIONS = "3D97725E-5E17-411F-856C-F4B79B9BFF15";
+        
+        /// <summary>
+        /// The mobile site pages
+        /// </summary>
+        public const string MOBILE_SITE_PAGES = "37E21200-DF91-4426-89CC-7D067237A037";
 
         /// <summary>
         /// Gets the Email Preference page guid
