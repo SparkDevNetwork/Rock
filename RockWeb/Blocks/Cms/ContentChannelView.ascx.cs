@@ -1112,9 +1112,10 @@ $(document).ready(function() {
                     if ( contentChannel.EnablePersonalization )
                     {
                         /*  08-18-2022 SK
-                            The setting determines how personalization segments effect the results shown.
-                            Ignore will not consider segments, Prioritize will add items with matching segments to the top of the list (in order by the sort order) and
-                            Filter will only show items that match the current individuals segments.
+                            The setting determines how personalization effect the results shown.
+                            Ignore will not consider segments or request filters,
+                            Prioritize will add items with matching items to the top of the list (in order by the sort order) and
+                            Filter will only show items that match the current individuals segments and request filters.
                         */
                         var personalizationFilterType = GetAttributeValue( AttributeKey.Personalization ).ConvertToEnum<PersonalizationFilterType>( PersonalizationFilterType.Ignore );
                         var personalizationSegmentIds = new List<int>();
@@ -1131,10 +1132,6 @@ $(document).ready(function() {
                             requestFilterIds = RockPage.PersonalizationRequestFilterIds.ToList();
                         }
 
-                        /* 
-                            If Segment OR Request Filter have PersonalizationFilterType selected as Filter, We need to process that first.
-                            It will give us the filtered dataset that can be used later. It is more or less like our other normal filter that we apply and acts as AND operator.
-                        */
                         if ( personalizationFilterType == PersonalizationFilterType.Ignore )
                         {
                             matchedContentChannelItemQry = contentChannelItemQuery;
@@ -1143,31 +1140,42 @@ $(document).ready(function() {
                         {
                             /*
                                 This will return all the entity Ids with PersonalizationType as Segment and Entity Type Id of Content Channel Item
-                                which will help further to include content Channel Items that has no segment associated with it.
+                                which will help further to include content Channel Items that has no Segment associated with it.
                              */
                             var allPersonalizedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment );
                             var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.Segment, personalizationSegmentIds );
 
+                            /*
+                                This will return all the entity Ids with PersonalizationType as RequestFilter and Entity Type Id of Content Channel Item
+                                which will help further to include content Channel Items that has no Request Filter associated with it.
+                             */
                             var allPersonalizedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter );
                             var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( rockContext, PersonalizationType.RequestFilter, requestFilterIds );
                             if ( personalizationFilterType == PersonalizationFilterType.Filter )
                             {
+                                /*
+                                    This will return either the contentChannelItem that has no associated Personalized Segment defined OR
+                                    items with matching personalization segments.
+                                    Similar filter is also applied related to Request Filter in consequent lines.
+                                */
                                 contentChannelItemQuery = contentChannelItemQuery.Where( cci => ( !allPersonalizedSegmentEntityIdsQry.Contains( cci.Id ) || matchedSegmentEntityIdsQry.Contains( cci.Id ) ) );
                                 contentChannelItemQuery = contentChannelItemQuery.Where( cci => ( !allPersonalizedRequestFilterEntityIdsQry.Contains( cci.Id ) || matchedRequestFilterEntityIdsQry.Contains( cci.Id ) ) );
                                 matchedContentChannelItemQry = contentChannelItemQuery;
                             }
                             else
                             {
+                                /*
+                                    In Prioritize, matching result set will have following items - 
+                                    At least one of the Segment as well as Request Filters are matched with person
+                                                                    OR
+                                    Either Content Channel Item's Segment OR Request Filter are matched with person AND the other Personalization Filter Type which is not matched have nothing selected (Acts as WildCard).
+                                    Note:- In Prioritize, we need to include both matching as well as non matching result set. Non matching records has to be appended at the
+                                    end of the result set.
+                                 */
+                                isNonMatchedContentChannelItemExists = true;
                                 var matchedPredicate = LinqPredicateBuilder.False<ContentChannelItem>();
-
-                                // Create the set of conditions for filtering the target entities.
-                                // Attribute Values are filtered by entity identifiers, grouped by entity type and
-                                // combined with a logical OR.
                                 matchedPredicate = matchedPredicate.Or( cci => matchedSegmentEntityIdsQry.Contains( cci.Id ) && ( matchedRequestFilterEntityIdsQry.Contains( cci.Id ) || !allPersonalizedRequestFilterEntityIdsQry.Contains( cci.Id ) ) );
                                 matchedPredicate = matchedPredicate.Or( cci => !allPersonalizedSegmentEntityIdsQry.Contains( cci.Id ) && matchedRequestFilterEntityIdsQry.Contains( cci.Id ) );
-
-                                isNonMatchedContentChannelItemExists = true;
-
                                 matchedContentChannelItemQry = contentChannelItemQuery.Where( matchedPredicate );
                                 nonMatchedContentChannelItemQry = contentChannelItemQuery.Where( matchedPredicate.Not() );
                             }
