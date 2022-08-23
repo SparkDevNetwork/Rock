@@ -263,23 +263,14 @@ function() {
         {
             var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
             var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
-            var listItems = new List<ListItem>();
 
             var channels = new InteractionChannelService( rockContext )
                 .Queryable()
                 .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
-                .Select( ic => new InteractionChannelViewModel() { Name = ic.Name, Id = ic.Id, SiteId = ic.ChannelEntityId.Value } )
+                .Select( ic => new ListItem() { Text = ic.Name, Value = ic.Id.ToString() } )
                 .ToList();
 
-            foreach ( var channel in channels )
-            {
-                var site = SiteCache.Get( channel.SiteId );
-                var listItem = new ListItem( channel.Name, channel.Id.ToString() );
-                listItem.Attributes.Add( "data-category", site.SiteType.ToString() );
-                listItems.Add( listItem );
-            }
-
-            return listItems.OrderBy( m => m.Text ).ToList();
+            return channels.OrderBy( m => m.Text ).ToList();
         }
 
         /// <summary>
@@ -320,17 +311,6 @@ function() {
 
             writer.AddAttribute( "class", "col-md-5" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div ); // websites
-            const string script = @"
-            var groups = {};
-            $(""select option[data-category]"").each(function () {
-                groups[$.trim($( this ).attr( ""data-category"" ) )] = true;
-            });
-            $.each( groups, function (c) {
-                $( ""select option[data-category='"" + c + ""']"" ).wrapAll( '<optgroup label=""' + c + '"">' );
-            });
-                ";
-
-            ScriptManager.RegisterStartupScript( rlbWebsites, rlbWebsites.GetType(), "group-listbox-items", script, true );
             rlbWebsites.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -544,16 +524,6 @@ function() {
             {
                 return selection.FromJsonOrNull<SelectionConfig>() ?? new SelectionConfig();
             }
-        }
-
-        /// <summary>
-        /// Viewmodel for interaction channels 
-        /// </summary>
-        private sealed class InteractionChannelViewModel
-        {
-            public string Name { get; set; }
-            public int Id { get; set; }
-            public int SiteId { get; set; }
         }
     }
 }
