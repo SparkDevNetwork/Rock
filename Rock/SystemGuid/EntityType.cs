@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -759,5 +759,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.WorkflowLog"/>
         /// </summary>
         public const string WORKFLOW_LOG = "332CFF36-D637-414D-B732-370B330B8D73";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.Location"/> 
+        /// </summary>
+        public const string LOCATION = "0D6410AD-C83C-47AC-AF3D-616D09EDF63B";
     }
 }
