@@ -15,13 +15,15 @@
 // </copyright>
 //
 
-import { computed, defineComponent, nextTick } from "vue";
+import { computed, defineComponent, nextTick, ref } from "vue";
 import Alert from "@Obsidian/Controls/alert";
 import EntityTagList from "@Obsidian/Controls/entityTagList";
 import { EntityType } from "@Obsidian/SystemGuids";
 import { BadgesConfigurationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Badges/badgesConfigurationBox";
 import { useConfigurationValues } from "@Obsidian/Utility/block";
 import { ControlLazyMode } from "@Obsidian/Types/Controls/controlLazyMode";
+import { tooltip } from "@Obsidian/Utility/tooltip";
+import { popover } from "@Obsidian/Utility/popover";
 
 export default defineComponent({
     name: "Crm.PersonDetail.Badges",
@@ -35,6 +37,8 @@ export default defineComponent({
         const config = useConfigurationValues<BadgesConfigurationBox>();
 
         // #region Values
+
+        const containerRef = ref<HTMLElement | null>(null);
 
         // #endregion
 
@@ -70,26 +74,40 @@ export default defineComponent({
 
         // #endregion
 
-        const script = [...config.topLeftBadges ?? [],
-            ...config.topMiddleBadges ?? [],
-            ...config.topRightBadges ?? [],
-            ...config.bottomLeftBadges ?? [],
-            ...config.bottomRightBadges ?? []]
-            .map(b => b.javaScript ?? "").join("");
+        const script =
+            [
+                ...config.topLeftBadges ?? [],
+                ...config.topMiddleBadges ?? [],
+                ...config.topRightBadges ?? [],
+                ...config.bottomLeftBadges ?? [],
+                ...config.bottomRightBadges ?? []
+            ]
+                .map(b => b.javaScript ?? "").join("");
 
         if (script !== "") {
+            console.log("script", script);
             // Add the script on the next tick to ensure the HTML has been rendered.
             nextTick(() => {
                 const scriptNode = document.createElement("script");
                 scriptNode.type = "text/javascript";
-                scriptNode.innerText = script;
+                scriptNode.appendChild(document.createTextNode(script));
                 document.body.appendChild(scriptNode);
             });
         }
 
+        nextTick(() => {
+            if (!containerRef.value) {
+                return;
+            }
+
+            tooltip(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"tooltip\"]")));
+            popover(Array.from(containerRef.value.querySelectorAll(".rockbadge[data-toggle=\"popover\"]")));
+        });
+
         return {
             bottomLeftBadges,
             bottomRightBadges,
+            containerRef,
             entityKey: config.personKey,
             entityTypeGuid: EntityType.Person,
             lazyMode: ControlLazyMode.Eager,
@@ -100,7 +118,7 @@ export default defineComponent({
     },
 
     template: `
-<div class="card card-badges">
+<div ref="containerRef" class="card card-badges">
     <div class="card-badge-top">
         <div class="rockbadge-container" v-html="topLeftBadges"></div>
 

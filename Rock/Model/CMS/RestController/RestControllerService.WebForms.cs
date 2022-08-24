@@ -105,7 +105,7 @@ namespace Rock.Model
                 var controller = discoveredControllers.Where( c => c.Name == name ).FirstOrDefault();
                 if ( controller == null )
                 {
-                    var controllerRockGuid = action.ControllerDescriptor.ControllerType.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>()?.Guid;
+                    var controllerRockGuid = action.ControllerDescriptor.ControllerType.GetCustomAttribute<Rock.SystemGuid.RestControllerGuidAttribute>( inherit: false )?.Guid;
 
                     controller = new DiscoveredControllerFromReflection
                     {

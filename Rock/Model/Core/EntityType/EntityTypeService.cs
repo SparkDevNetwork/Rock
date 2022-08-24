@@ -110,7 +110,7 @@ namespace Rock.Model
 
             entityType.IsSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( type );
 
-            var entityTypeGuidAttributeValue = type.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
+            var entityTypeGuidAttributeValue = type.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
             if ( entityTypeGuidAttributeValue.HasValue )
             {
                 entityType.Guid = entityTypeGuidAttributeValue.Value;
@@ -430,7 +430,7 @@ namespace Rock.Model
                     }
 
                     var reflectedType = reflectedTypeLookupByName.GetValueOrNull( existingEntityType.Name );
-                    var reflectedTypeGuid = reflectedType?.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>()?.Guid;
+                    var reflectedTypeGuid = reflectedType?.GetCustomAttribute<Rock.SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
                     if ( reflectedTypeGuid != null && reflectedTypeGuid.Value != existingEntityType.Guid )
                     {
                         /*
@@ -448,18 +448,26 @@ namespace Rock.Model
                             var entityTypeFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.ENTITYTYPE ).Id;
                             var componentFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.COMPONENT ).Id;
                             var componentsFieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.COMPONENTS ).Id;
+                            var existingEntityTypeString = existingEntityType.Guid.ToString().ToLower();
+                            var reflectedTypeGuidString = reflectedTypeGuid.Value.ToString().ToLower();
 
                             var attributeIdsUsingFieldType = attributeService.Queryable()
                                 .Where( a => a.FieldTypeId == entityTypeFieldTypeId
                                     || a.FieldTypeId == componentFieldTypeId
                                     || a.FieldTypeId == componentsFieldTypeId )
-                                .Select( a => a.Id );
+                                .Select( a => a.Id )
+                                .ToList();
 
-                            var attributeValues = attributeValueService.Queryable().Where( av => attributeIdsUsingFieldType.Contains( av.AttributeId ) && av.Value.Contains( existingEntityType.Guid.ToString() ) );
+                            rockContext.Database.CommandTimeout = 150;
 
-                            foreach ( var attributeValue in attributeValues )
+                            foreach ( var attributeIdUsingFieldType in attributeIdsUsingFieldType )
                             {
-                                attributeValue.Value = attributeValue.Value.ToLower().Replace( existingEntityType.Guid.ToString().ToLower(), reflectedTypeGuid.Value.ToString().ToLower() );
+                                var attributeValues = attributeValueService.Queryable().Where( av => av.AttributeId == attributeIdUsingFieldType && av.Value.Contains( existingEntityTypeString ) ).ToList();
+
+                                foreach ( var attributeValue in attributeValues )
+                                {
+                                    attributeValue.Value = attributeValue.Value.ToLower().Replace( existingEntityTypeString, reflectedTypeGuidString );
+                                }
                             }
                         }
 

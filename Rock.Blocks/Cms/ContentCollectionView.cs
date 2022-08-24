@@ -110,12 +110,20 @@ namespace Rock.Blocks.Cms
 
     [TextField( "Results Template",
         Description = "The lava template to use to render the results container. It must contain an element with the class 'result-items'.",
-        DefaultValue = @"<div>
-    <h2><i class=""{{ SourceEntity.IconCssClass }}""></i> {{ SourceName }}</h2>
-    <div class=""result-items""></div>
-    <div class=""actions"">
-       <a href=""#"" class=""btn btn-default see-more js-more"">Show More</a>
+        DefaultValue = @"<div class=""panel panel-default"">
+    {% if SourceEntity and SourceEntity != empty %}
+        <div class=""panel-heading"">
+            <h2 class=""panel-title"">
+                <i class=""{{ SourceEntity.IconCssClass }}""></i> {{ SourceName }}
+            </h2>
+        </div>
+    {% endif %}
+    <div class=""list-group"">
+        <div class=""result-items""></div>
     </div>
+</div>
+<div class=""actions"">
+   <a href=""#"" class=""btn btn-default show-more"">Show More</a>
 </div>",
         Category = "CustomSetting",
         Key = AttributeKey.ResultsTemplate )]
@@ -123,14 +131,24 @@ namespace Rock.Blocks.Cms
     [TextField( "Item Template",
         Description = "The lava template to use to render a single result.",
         DefaultValue = @"<div class=""result-item"">
-    <div>{{ Item.Name }}</div>
+    <a href=""#"" class=""list-group-item"">
+        <h4>{{ Item.Name }}</h4>
+        <p>Posted on {{ Item.RelevanceDateTime  | AsDateTime | Date:'MMM dd, yyyy' }}</p>
+        {{ Item.Content | StripHtml | Truncate:100 }}
+        <span class=""pull-right pt-4 pl-2 text-primary"">
+            <i class=""fa fa-arrow-right""></i>
+        </span>
+        <span class=""text-muted""></span>
+    </a>
 </div>",
         Category = "CustomSetting",
         Key = AttributeKey.ItemTemplate )]
 
     [TextField( "Pre-Search Template",
         Description = "The lava template to use to render the content displayed before a search happens. This will not be used if Search on Load is enabled.",
-        DefaultValue = "",
+        DefaultValue = @"<div class=""panel panel-default"">
+    <div class=""panel-body"">Discover content that matches your preferences.</div>
+</div>",
         Category = "CustomSetting",
         Key = AttributeKey.PreSearchTemplate )]
 
@@ -922,14 +940,10 @@ namespace Rock.Blocks.Cms
                     break;
             }
 
-            // Run the search.
-            var results = await ContentIndexContainer.GetActiveComponent().SearchAsync( searchQuery, searchOptions );
-
             // Start preparing the result.
             var resultBag = new SearchResultSourceBag
             {
                 SourceGuid = source?.Guid ?? Guid.Empty,
-                HasMore = results.TotalResultsAvailable > ( maxResults + offset ),
                 Results = new List<string>()
             };
 
@@ -949,14 +963,23 @@ namespace Rock.Blocks.Cms
 
             resultBag.Template = resultsTemplate.ResolveMergeFields( mergeFields );
 
-            // Merge the results with the Lava template.
-            var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
-
-            foreach ( var result in results.Documents )
+            // Run the search.
+            var activeComponent = ContentIndexContainer.GetActiveComponent();
+            if ( activeComponent != null )
             {
-                mergeFields.AddOrReplace( "Item", result );
+                var results = await activeComponent.SearchAsync( searchQuery, searchOptions );
 
-                resultBag.Results.Add( itemTemplate.ResolveMergeFields( mergeFields ) );
+                resultBag.HasMore = results.TotalResultsAvailable > ( maxResults + offset );
+
+                // Merge the results with the Lava template.
+                var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
+
+                foreach ( var result in results.Documents )
+                {
+                    mergeFields.AddOrReplace( "Item", result );
+
+                    resultBag.Results.Add( itemTemplate.ResolveMergeFields( mergeFields ) );
+                }
             }
 
             return resultBag;

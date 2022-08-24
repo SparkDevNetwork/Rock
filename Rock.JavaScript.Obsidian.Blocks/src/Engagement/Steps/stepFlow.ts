@@ -95,7 +95,7 @@ export default defineComponent({
         const settings = ref<FlowNodeDiagramSettingsBag>({
             nodeWidth: configurationValues.nodeWidth,
             nodeVerticalSpacing: configurationValues.nodeVerticalSpacing,
-            nodeHorizontalSpacing: configurationValues.nodeHorizontalSpacing,
+            chartWidth: configurationValues.chartWidth,
             chartHeight: configurationValues.chartHeight
         });
 

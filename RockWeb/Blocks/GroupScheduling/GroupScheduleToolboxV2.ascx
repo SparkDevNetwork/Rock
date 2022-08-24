@@ -62,9 +62,9 @@
                         <div class="col-md-4">
                             <div class="schedule-actions">
                                 <asp:Literal ID="lActionHeader" runat="server" />
-                                <asp:LinkButton ID="btnScheduleUnavailability" runat="server" CssClass="btn btn-default btn-block" Text="Schedule Unavailability" OnClick="btnScheduleUnavailability_Click" />
-                                <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-default btn-block" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" />
-                                <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-default btn-block" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" />
+                                <asp:LinkButton ID="btnScheduleUnavailability" runat="server" CssClass="btn btn-default btn-block" Text="Schedule Unavailability" OnClick="btnScheduleUnavailability_Click" CausesValidation="false" />
+                                <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-default btn-block" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" CausesValidation="false" />
+                                <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-default btn-block" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" CausesValidation="false" />
                             </div>
                         </div>
                     </div>
@@ -171,12 +171,15 @@
                     </div>
                 </asp:Panel>
                 <%-- Preferences Add/Edit GroupScheduleAssignment modal --%>
-                <Rock:ModalDialog ID="mdGroupScheduleAssignment" runat="server" OnSaveClick="mdGroupScheduleAssignment_SaveClick" Title="Add/Edit Assignment" >
+                <Rock:ModalDialog ID="mdGroupScheduleAssignment" runat="server" OnSaveClick="mdGroupScheduleAssignment_SaveClick"
+                    Title="Add/Edit Assignment" ValidationGroup="GroupScheduleAssignment">
                     <Content>
                         <asp:HiddenField ID="hfGroupScheduleAssignmentGroupId" runat="server" />
                         <asp:HiddenField ID="hfGroupScheduleAssignmentId" runat="server" />
-                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentSchedule" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged" Label="Schedule" Required="true" />
-                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentLocation" runat="server" Label="Location" />
+                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentSchedule" runat="server" Label="Schedule"
+                            AutoPostBack="true" OnSelectedIndexChanged="ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged"
+                            Required="true" ValidationGroup="GroupScheduleAssignment" />
+                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentLocation" runat="server" Label="Location" ValidationGroup="GroupScheduleAssignment" />
                     </Content>
                 </Rock:ModalDialog>
             </div>

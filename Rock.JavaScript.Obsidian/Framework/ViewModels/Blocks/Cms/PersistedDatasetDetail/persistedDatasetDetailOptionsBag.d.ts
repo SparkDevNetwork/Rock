@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Class PersistedDatasetDetailOptionsBag. */
 export type PersistedDatasetDetailOptionsBag = {
 };

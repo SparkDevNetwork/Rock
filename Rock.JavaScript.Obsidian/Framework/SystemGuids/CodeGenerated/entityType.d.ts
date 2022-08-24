@@ -315,4 +315,6 @@ export const enum EntityType {
     PersistedDataset = "9C3064C0-CF9C-4549-9A80-022514B7FF83",
     /** The EntityType Guid for Rock.Model.PersonalLinkSection  */
     PersonalLinkSection = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF",
+    /** The EntityType Guid for Rock.Model.WorkflowLog */
+    WorkflowLog = "332CFF36-D637-414D-B732-370B330B8D73",
 }

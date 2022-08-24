@@ -59,16 +59,16 @@ namespace Rock.Blocks.Engagement.Steps
         Order = 2 )]
 
     [IntegerField(
-        "Node Horizontal Spacing",
-        Key = AttributeKey.NodeHorizontalSpacing,
-        Description = "How many pixels wide should the flow paths be between the nodes?",
-        DefaultValue = "200",
+        "Chart Width",
+        Key = AttributeKey.ChartWidth,
+        Description = "How many pixels wide should the chart be?",
+        DefaultValue = "1200",
         Order = 3 )]
 
     [IntegerField(
         "Chart Height",
         Key = AttributeKey.ChartHeight,
-        Description = "How tall should the chart be (in pixels)?",
+        Description = "How many pixels tall should the chart be?",
         DefaultValue = "900",
         Order = 4 )]
 
@@ -82,7 +82,7 @@ namespace Rock.Blocks.Engagement.Steps
         {
             public const string NodeWidth = "NodeWidth";
             public const string NodeVerticalSpacing = "NodeVerticalSpacing";
-            public const string NodeHorizontalSpacing = "NodeHorizontalSpacing";
+            public const string ChartWidth = "ChartWidth";
             public const string ChartHeight = "ChartHeight";
         }
 
@@ -124,7 +124,7 @@ namespace Rock.Blocks.Engagement.Steps
                 Campuses = Campuses,
                 NodeWidth = GetAttributeValue( AttributeKey.NodeWidth ).AsInteger(),
                 NodeVerticalSpacing = GetAttributeValue( AttributeKey.NodeVerticalSpacing ).AsInteger(),
-                NodeHorizontalSpacing = GetAttributeValue( AttributeKey.NodeHorizontalSpacing ).AsInteger(),
+                ChartWidth = GetAttributeValue( AttributeKey.ChartWidth ).AsInteger(),
                 ChartHeight = GetAttributeValue( AttributeKey.ChartHeight ).AsInteger(),
                 ProgramName = ProgramName,
                 StepTypeCount = StepTypeCount

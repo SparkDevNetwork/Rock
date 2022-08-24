@@ -18,36 +18,28 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-
+    
     /// <summary>
     ///
     /// </summary>
-    public partial class Rollup_20220715 : Rock.Migrations.RockMigration
+    public partial class GivingAlertFinancialTransactionCascadeDelete : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            Update_spCrm_FamilyAnalyticsEraDataset();
-            FixIncorrectERAStartDate();
+            DropForeignKey("dbo.FinancialTransactionAlert", "TransactionId", "dbo.FinancialTransaction");
+            AddForeignKey("dbo.FinancialTransactionAlert", "TransactionId", "dbo.FinancialTransaction", "Id", cascadeDelete: true);
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-        }
-
-        private void FixIncorrectERAStartDate()
-        {
-            Sql( MigrationSQL._202207152352391_Rollup_20220715_RecoverERAStartDate_Update );
-        }
-
-        private void Update_spCrm_FamilyAnalyticsEraDataset()
-        {
-            Sql( MigrationSQL._202207152352391_Rollup_20220715_spCrm_FamilyAnalyticsEraDataset );
+            DropForeignKey("dbo.FinancialTransactionAlert", "TransactionId", "dbo.FinancialTransaction");
+            AddForeignKey("dbo.FinancialTransactionAlert", "TransactionId", "dbo.FinancialTransaction", "Id");
         }
     }
 }
