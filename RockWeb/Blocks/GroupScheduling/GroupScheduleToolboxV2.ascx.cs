@@ -893,7 +893,7 @@ $('#{0}').tooltip();
 
                 // use the ClientAddScript option since this grid is created in a repeater and a normal postback won't wire up correctly
                 gGroupPreferenceAssignments.Actions.ClientAddScript = string.Format(
-                    @"window.location = ""javascript:__doPostBack( '{0}', 'Add_GroupPreferenceAssignment|GroupId:{1}' )""",
+                    @"javascript:__doPostBack( '{0}', 'Add_GroupPreferenceAssignment|GroupId:{1}' ); return false;",
                     upnlContent.ClientID,
                     group.Id );
 
@@ -968,6 +968,7 @@ $('#{0}').tooltip();
 
                 if ( alreadyAssigned )
                 {
+                    mdGroupScheduleAssignment.Hide();
                     return;
                 }
             }
