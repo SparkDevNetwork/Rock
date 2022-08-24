@@ -58,8 +58,8 @@ namespace Rock.Lava.Blocks
 
         private string _attributesMarkup;
         private bool _renderErrors = true;
-        private string matchContent = null;
-        private string elseContent = null;
+        private string _matchContent = null;
+        private string _otherwiseContent = null;
         LavaElementAttributes _settings = new LavaElementAttributes();
 
         #region Constructors
@@ -84,30 +84,30 @@ namespace Rock.Lava.Blocks
         {
             _attributesMarkup = markup;
 
-            // Get the internal content of the block. The list of tokens passed in to custom blocks includes the block closing tag,
-            // We need to remove the unmatched closing tag to get the valid internal markup for the block.
-            var elseFound = false;
+            // Scan the block tokens and separate matched and unmatched content.
+            // If unmatched content exists, it is shown when the block filter is not satisfied.
+            var otherwiseFound = false;
             foreach ( var token in tokens )
             {
                 var scanToken = token.Replace( " ", "" ).Replace( "-", "" ).ToLower();
-                if ( scanToken == "{%else%}" )
+                if ( scanToken == "{%otherwise%}" )
                 {
-                    if ( elseFound )
+                    if ( otherwiseFound )
                     {
-                        // If more than one else tag exists, throw an error.
-                        throw new Exception( "Unexpected {% else %} encountered." );
+                        // If more than one alternate tag exists, throw an error.
+                        throw new Exception( "Unexpected {% otherwise %} encountered." );
                     }
-                    elseFound = true;
+                    otherwiseFound = true;
                     continue;
                 }
 
-                if ( elseFound )
+                if ( otherwiseFound )
                 {
-                    elseContent += token;
+                    _otherwiseContent += token;
                 }
                 else
                 {
-                    matchContent += token;
+                    _matchContent += token;
                 }
             }
 
@@ -127,8 +127,8 @@ namespace Rock.Lava.Blocks
 
                 var showContent = ShowContentForCurrentRequest( context );
 
-                // Render the internal template, before or after the {% else %} tag if it exists.
-                var content = ( showContent ) ? matchContent : elseContent;
+                // Render the internal template, before or after the {% otherwise %} tag if it exists.
+                var content = ( showContent ) ? _matchContent : _otherwiseContent;
 
                 if ( !string.IsNullOrEmpty( content ) )
                 {
@@ -233,7 +233,13 @@ namespace Rock.Lava.Blocks
                 }
                 else
                 {
-                    person = LavaHelper.GetCurrentPerson( context );
+                    // If the Lava context contains a Person variable, prefer it to the CurrentPerson.
+                    // This allows the block to be used in processes where there is no active user.
+                    person = context.GetMergeField( "Person" ) as Person;
+                    if ( person == null )
+                    {
+                        person = LavaHelper.GetCurrentPerson( context );
+                    }
                 }
 
                 List<int> personSegmentIdList;
