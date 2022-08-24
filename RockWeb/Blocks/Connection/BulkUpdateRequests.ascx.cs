@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -586,7 +586,13 @@ namespace RockWeb.Blocks.Connection
         private void BindDropdownLists( ConnectionType connectionType )
         {
             // Add Opportunites to dropdown list
-            foreach ( var opportunity in connectionType.ConnectionOpportunities.OrderBy( m => m.Order ).ThenBy( m => m.Name ) )
+            var activeOpportunities = connectionType.ConnectionOpportunities
+                .Where( co => co.IsActive == true )
+                .OrderBy( co => co.Order )
+                .ThenBy( co => co.Name )
+                .ToList();
+
+            foreach ( var opportunity in activeOpportunities )
             {
                 ddlOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
             }
