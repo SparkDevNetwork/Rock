@@ -514,12 +514,12 @@ Segment Matches=ALL_MEN, Filter Matches=QUERY_2, Visible=True.
         }
 
         [TestMethod]
-        public void PersonalizeBlock_WithElseClauseAndPositiveMatch_ShowsContentForMatch()
+        public void PersonalizeBlock_WithOtherwiseClauseAndPositiveMatch_ShowsContentForMatch()
         {
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
 Match!
-{% else %}
+{% otherwise %}
 No match!
 {% endpersonalize %}
 ";
@@ -531,12 +531,12 @@ No match!
         }
 
         [TestMethod]
-        public void PersonalizeBlock_WithElseClauseAndNegativeMatch_ShowsContentForNoMatch()
+        public void PersonalizeBlock_WithOtherwiseClauseAndNegativeMatch_ShowsContentForNoMatch()
         {
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
 Match!
-{% else %}
+{% otherwise %}
 No match!
 {% endpersonalize %}
 ";
@@ -553,10 +553,10 @@ No match!
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
     {% assign isTrue = true %}
-    {% if isTrue %}Lava template rendered.{% endif %}
+    {% if isTrue %}Visible content.{% else %}Hidden content.{% endif %}
 {% endpersonalize %}
 ";
-            var expectedOutput = @"Lava template rendered.";
+            var expectedOutput = @"Visible content.";
 
             AssertOutputForPersonAndRequest( input,
                 expectedOutput,
@@ -564,24 +564,33 @@ No match!
         }
 
         [TestMethod]
-        [Ignore("This extended use-case is not yet implemented.")]
-        public void PersonalizeBlock_WithElseClauseAndNestedTags_ProcessesNestedTagsCorrectly()
+        public void PersonalizeBlock_WithOtherwiseClauseAndNestedTags_ProcessesNestedTagsCorrectly()
         {
             var input = @"
 {% personalize requestfilter:'QUERY_1' %}
-    {% assign isTrue = true %}
+    {% assign isTrue = false %}
     {% if isTrue %}
-Match!
+       Hidden content.
+    {% else %}
+        Query 1 Matched!
     {% endif %}
-{% else %}
-No match!
+{% otherwise %}
+    {% assign isTrue = false %}
+    {% if isTrue %}
+       Hidden content.
+    {% else %}
+        Query 1 Not Matched!
+    {% endif %}
 {% endpersonalize %}
 ";
-            var expectedOutput = @"Match!";
 
             AssertOutputForPersonAndRequest( input,
-                expectedOutput,
+                "Query 1 Matched!",
                 inputUrl: "http://rock.rocksolidchurchdemo.com?parameter1=true" );
+
+            AssertOutputForPersonAndRequest( input,
+                "Query 1 Not Matched!",
+                inputUrl: "http://rock.rocksolidchurchdemo.com" );
         }
 
         #endregion
