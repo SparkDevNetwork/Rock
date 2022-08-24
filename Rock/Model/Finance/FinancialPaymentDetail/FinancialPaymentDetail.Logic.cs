@@ -154,6 +154,8 @@ namespace Rock.Model
             CurrencyTypeValueId = null;
             CreditCardTypeValueId = null;
 
+            ExpirationMonthEncrypted = null;
+            ExpirationYearEncrypted = null;
             NameOnCard = null;
             ExpirationMonth = null;
             ExpirationYear = null;
