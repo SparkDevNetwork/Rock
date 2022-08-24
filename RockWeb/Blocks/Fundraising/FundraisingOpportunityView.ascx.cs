@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -70,7 +70,8 @@ namespace RockWeb.Blocks.Fundraising
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it.
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
@@ -240,7 +241,7 @@ namespace RockWeb.Blocks.Fundraising
             //// Participant Actions 
             // only show if the current person is a group member
             var groupMember = group.Members.FirstOrDefault( a => a.PersonId == this.CurrentPersonId );
-            var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
+            var participationMode = group.GetAttributeValue( "ParticipationType" ).ConvertToEnumOrNull<ParticipationType>() ?? ParticipationType.Individual;
             if ( groupMember != null )
             {
                 hfGroupMemberId.Value = groupMember.Id.ToString();
@@ -253,35 +254,30 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             mergeFields.Add( "GroupMember", groupMember );
-            mergeFields.Add( "ParticipationMode", participationMode );
+            mergeFields.Add( "ParticipationMode", participationMode.ToString( "D" ) );
 
             // Progress
             if ( groupMember != null && pnlParticipantActions.Visible )
             {
                 var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
-                string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : groupMember.Person.FullName;
+                string progressTitle = participationMode == ParticipationType.Individual ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name;
                 mergeFields.Add( "ProgressTitle", progressTitle );
+
                 // Create the total and the goal variables before setting them.
                 decimal contributionTotal;
                 decimal? fundraisingGoal;
 
                 // If this is a Family participation type, collect the number of family members that are on the team.
-                if ( participationMode == 2 )
+                if ( participationMode == ParticipationType.Family )
                 {
                     // Create a list of group member Ids that are all the family members in the current group.
-                    var familyMembers = groupMember.Person.GetFamilyMembers( true ).Select( m => m.PersonId ).ToList();
-                    var familyMemberGroupMembersInCurrentGroup = groupMembers.Where( m => familyMembers.Contains( m.PersonId ) );
-                    var familyMemberGroupMemberIdsInCurrentGroup = familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList();
-                    contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
-                            .Where( d => d.EntityTypeId == entityTypeIdGroupMember
-                                    && d.EntityId.HasValue
-                                    && familyMemberGroupMemberIdsInCurrentGroup.Contains( d.EntityId.Value ) )
-                            .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+                    GroupService groupService = new GroupService( rockContext );
+                    var familyMemberGroupMembersInCurrentGroup = groupService.GroupMembersInAnotherGroup( groupMember.Person.GetFamily(), groupMember.Group );
 
-                    // Multiply the number of family members by the individual fundraising goals from the group (not any goals from the group members).
-                    var groupFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
-                    fundraisingGoal = groupFundraisingGoal.HasValue ? familyMemberGroupMemberIdsInCurrentGroup.Count * groupFundraisingGoal.Value : 0.00M;
+                    contributionTotal = new FinancialTransactionDetailService( rockContext )
+                        .GetContributionsForGroupMemberList( entityTypeIdGroupMember, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
 
+                    decimal groupFundraisingGoal = 0;
                     var familyMemberGroupMembers = new List<object>();
                     foreach ( var member in familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender ).ToList() )
                     {
@@ -289,14 +285,25 @@ namespace RockWeb.Blocks.Fundraising
                         var familyMemberQueryParams = new Dictionary<string, string>();
                         familyMemberQueryParams.Add( "GroupId", hfGroupId.Value );
                         familyMemberQueryParams.Add( "GroupMemberId", member.Id.ToString() );
-                        familyMemberQueryParams.Add( "ParticipationMode", participationMode.ToString() );
+                        familyMemberQueryParams.Add( "ParticipationMode", participationMode.ToString( "D" ) );
                         familyMemberMergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", familyMemberQueryParams ) );
                         familyMemberMergeFields.Add( "ParticipantPageUrl", LinkedPageUrl( "ParticipantPage", familyMemberQueryParams ) );
                         familyMemberMergeFields.Add( "FullName", member.Person.FullName );
                         familyMemberMergeFields.Add( "PhotoUrl", member.Person.PhotoUrl );
                         familyMemberGroupMembers.Add( familyMemberMergeFields );
+
+                        var memberFundraisingGoal = member.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                        if ( memberFundraisingGoal.HasValue )
+                        {
+                            groupFundraisingGoal += memberFundraisingGoal.Value;
+                        }
+                        else
+                        {
+                            groupFundraisingGoal += group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? 0;
+                        }
                     }
 
+                    fundraisingGoal = groupFundraisingGoal;
                     mergeFields.Add( "FamilyMemberGroupMembers", familyMemberGroupMembers );
                 }
                 else
@@ -312,6 +319,7 @@ namespace RockWeb.Blocks.Fundraising
                         fundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
                     }
                 }
+
                 var amountLeft = fundraisingGoal - contributionTotal;
                 var percentMet = fundraisingGoal > 0 ? contributionTotal * 100 / fundraisingGoal : 100;
 
@@ -321,7 +329,7 @@ namespace RockWeb.Blocks.Fundraising
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "GroupId", hfGroupId.Value );
                 queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
-                queryParams.Add( "ParticipationMode", participationMode.ToString() );
+                queryParams.Add( "ParticipationMode", participationMode.ToString( "D" ) );
                 mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( "DonationPage", queryParams ) );
                 mergeFields.Add( "ParticipantPageUrl", LinkedPageUrl( "ParticipantPage", queryParams ) );
 

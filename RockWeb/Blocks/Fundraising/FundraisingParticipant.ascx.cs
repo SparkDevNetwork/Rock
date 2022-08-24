@@ -516,7 +516,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             group.LoadAttributes( rockContext );
-            var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
+            var participationMode = group.GetAttributeValue( "ParticipationType" ).ConvertToEnumOrNull<ParticipationType>() ?? ParticipationType.Individual;
 
             // set page title to the trip name
             RockPage.Title = group.GetAttributeValue( "OpportunityTitle" );
@@ -548,12 +548,12 @@ namespace RockWeb.Blocks.Fundraising
 
             // This variable sets up whether the current person is logged in, is in the same family as the block's group member, and whether this group's participation type is "Family".
             bool isCurrentPersonAFamilyMemberOfGroupMemberAndGroupParticipationTypeIsFamily =
-                participationMode == 2 && this.CurrentPersonId.HasValue && familyMembers.Contains( this.CurrentPersonId.Value );
+                participationMode == ParticipationType.Family && this.CurrentPersonId.HasValue && familyMembers.Contains( this.CurrentPersonId.Value );
 
             if ( groupMember.PersonId == this.CurrentPersonId || isCurrentPersonAFamilyMemberOfGroupMemberAndGroupParticipationTypeIsFamily )
             {
                 // show a warning about missing Photo or Intro if the current person is viewing their own profile
-                string progressTitle = participationMode.HasValue ? participationMode.Value == 1 ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name : groupMember.Person.FullName;
+                string progressTitle = participationMode == ParticipationType.Individual ? groupMember.Person.FullName : groupMember.Person.PrimaryFamily.Name;
                 mergeFields.Add( "ProgressTitle", progressTitle );
                 var warningItems = new List<string>();
                 if ( !groupMember.Person.PhotoId.HasValue )
@@ -601,7 +601,7 @@ namespace RockWeb.Blocks.Fundraising
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
             // If this is a Family participation type, collect the number of family members that are on the team.
-            if ( participationMode == 2 )
+            if ( participationMode == ParticipationType.Family )
             {
                 var groupMembers = group.Members.ToList();
 
@@ -641,7 +641,7 @@ namespace RockWeb.Blocks.Fundraising
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
             queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
-            queryParams.Add( "ParticipationMode", participationMode.ToString() );
+            queryParams.Add( "ParticipationMode", participationMode.ToString( "D" ) );
             mergeFields.Add( "MakeDonationUrl", LinkedPageUrl( AttributeKey.DonationPage, queryParams ) );
 
             var opportunityType = DefinedValueCache.Get( group.GetAttributeValue( "OpportunityType" ).AsGuid() );

@@ -218,7 +218,9 @@ namespace RockWeb.Blocks.Fundraising
                 // Look up the group and find if it has a participation type / mode.
                 var group = new GroupService( rockContext ).Get( groupId.Value );
                 group.LoadAttributes( rockContext );
-                var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
+
+                // If the participation type isn't known, assume "Individual".
+                var participationMode = group.GetAttributeValue( "ParticipationType" ).ConvertToEnumOrNull<ParticipationType>() ?? ParticipationType.Individual;
 
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupMemberList = groupMemberService.Queryable().Where( a => a.GroupId == groupId && a.GroupMemberStatus == GroupMemberStatus.Active )
@@ -226,7 +228,7 @@ namespace RockWeb.Blocks.Fundraising
 
                 bool showOnlyFirstName = this.GetAttributeValue( "ShowFirstNameOnly" ).AsBoolean();
 
-                if ( participationMode == 2 )
+                if ( participationMode == ParticipationType.Family )
                 {
                     var groupMembersByFamily = groupMemberList.Select( g => g.Person.PrimaryFamily ).Distinct();
                     foreach ( var familyGroup in groupMembersByFamily )
@@ -299,11 +301,10 @@ namespace RockWeb.Blocks.Fundraising
                     groupMember.LoadAttributes( rockContext );
                     groupMember.Group.LoadAttributes( rockContext );
 
-                    var participationMode = groupMember.Group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
-                    if ( participationMode.HasValue )
-                    {
-                        queryParams.Add( "ParticipationMode", participationMode.ToString() );
-                    }
+                    // If the participation type isn't known, assume "Individual".
+                    var participationMode = groupMember.Group.GetAttributeValue( "ParticipationType" ).ConvertToEnumOrNull<ParticipationType>() ?? ParticipationType.Individual;
+
+                    queryParams.Add( "ParticipationMode", participationMode.ToString( "D" ) );
 
                     var financialAccount = new FinancialAccountService( rockContext ).Get( groupMember.Group.GetAttributeValue( "FinancialAccount" ).AsGuid() );
                     if ( financialAccount != null )

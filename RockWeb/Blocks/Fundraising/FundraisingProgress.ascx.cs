@@ -148,9 +148,9 @@ namespace RockWeb.Blocks.Fundraising
             groupMembersQuery = groupMembersQuery.Sort( new SortProperty { Property = "Person.LastName, Person.NickName" } );
 
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
-            var participationMode = group.GetAttributeValue( "ParticipationType" ).AsIntegerOrNull();
+            var participationMode = group.GetAttributeValue( "ParticipationType" ).ConvertToEnumOrNull<ParticipationType>() ?? ParticipationType.Individual;
 
-            if ( participationMode == 2 )
+            if ( participationMode == ParticipationType.Family )
             {
                 var groupMembersByFamily = groupMembersQuery.Select( g => g.Person.PrimaryFamily ).Distinct().ToList().Select( g =>
                 {
@@ -158,10 +158,7 @@ namespace RockWeb.Blocks.Fundraising
                     var groupMembersList = groupMembersQuery.Where( m => m.Person.PrimaryFamilyId == familyGroup.Id );
                     var familyGroupMemberIds = groupMembersList.Select( m => m.Id ).ToList();
 
-                    var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
-                                .Where( d => d.EntityTypeId == entityTypeIdGroupMember
-                                        && d.EntityId.HasValue && familyGroupMemberIds.Contains( d.EntityId.Value ) )
-                                .Sum( d => ( decimal? ) d.Amount ) ?? 0;
+                    var contributionTotal = new FinancialTransactionDetailService( rockContext ).GetContributionsForGroupMemberList( entityTypeIdGroupMember, familyGroupMemberIds );
 
                     var fundraisingGoal = familyGroupMemberIds.Count * group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
 
