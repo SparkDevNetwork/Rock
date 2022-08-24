@@ -390,7 +390,9 @@ namespace Rock.CodeGeneration.Pages
                 {
                     if ( rootFolder != null )
                     {
-                        if ( IsClientChecked )
+                        bool allModelsAreSelected = _modelItems.Count == _modelItems.Count( i => i.IsChecked );
+
+                        if ( IsClientChecked && allModelsAreSelected )
                         {
                             var codeGenFolder = Path.Combine( ClientFolder, "CodeGenerated" );
                             if ( Directory.Exists( codeGenFolder ) )
@@ -401,7 +403,7 @@ namespace Rock.CodeGeneration.Pages
                             Directory.CreateDirectory( Path.Combine( ClientFolder, "CodeGenerated" ) );
                         }
 
-                        if ( IsServiceChecked && _modelItems.Count == _modelItems.Count( i => i.IsChecked ) )
+                        if ( IsServiceChecked && allModelsAreSelected )
                         {
                             var codeGenFolder = Path.Combine( NamespaceFolder( ServiceFolder, "Rock.Model" ).FullName, "CodeGenerated" );
                             if ( Directory.Exists( codeGenFolder ) )
@@ -412,7 +414,7 @@ namespace Rock.CodeGeneration.Pages
                             Directory.CreateDirectory( codeGenFolder );
                         }
 
-                        if ( IsRestChecked && _modelItems.Count == _modelItems.Count( i => i.IsChecked ) )
+                        if ( IsRestChecked && allModelsAreSelected )
                         {
                             // var filePath1 = Path.Combine( rootFolder, "Controllers" );
                             // var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.CodeGenerated.cs" ) );
