@@ -164,6 +164,7 @@ namespace Rock.Blocks.Crm.PersonDetail
             var badges = badgeTypeGuids
                     .Select( g => BadgeCache.Get( g ) )
                     .Where( b => b != null && b.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    .OrderBy( b => b.Order )
                     .ToList();
 
             // Render all the badges and then filter out any that are empty.
