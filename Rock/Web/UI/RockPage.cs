@@ -87,6 +87,11 @@ namespace Rock.Web.UI
         private Stopwatch _onLoadStopwatch = null;
 
         /// <summary>
+        /// Contains the IRockBlockType wrapper objects that need to be initialized during OnLoad.
+        /// </summary>
+        private readonly List<RockBlockTypeWrapper> _blockTypeWrappers = new List<RockBlockTypeWrapper>();
+
+        /// <summary>
         /// The fingerprint to use with obsidian files.
         /// </summary>
         private static long _obsidianFingerprint = 0;
@@ -1324,6 +1329,8 @@ Rock.settings.initialize({{
                                             wrapper.InitializeAsUserControl( this );
                                             wrapper.AppRelativeTemplateSourceDirectory = "~";
 
+                                            _blockTypeWrappers.Add( wrapper );
+
                                             control = wrapper;
                                             control.ClientIDMode = ClientIDMode.AutoID;
                                         }
@@ -1970,6 +1977,13 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
         protected override void OnLoadComplete( EventArgs e )
         {
             base.OnLoadComplete( e );
+
+            // Cause the wrapper to render it's content so the initialization
+            // logic will be part of our page load timings.
+            foreach ( var wrapper in _blockTypeWrappers )
+            {
+                wrapper.RenderAndCache();
+            }
 
             // Finalize the debug settings
             if ( _showDebugTimings )

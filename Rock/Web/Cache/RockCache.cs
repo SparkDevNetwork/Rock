@@ -106,34 +106,16 @@ namespace Rock.Web.Cache
 
         #region Public Static Properties
 
-        private static bool? _isCacheSerialized = null;
-
         /// <summary>
-        /// Gets an indicator of whether cache manager is configured in a way that items will be serialized (i.e. if using Redis)
+        /// Gets an indicator of whether cache manager is configured in a way that items will be serialized.
+        /// This will always return false since we no longer support cache managers that require serialization.
         /// </summary>
         /// <value>
         /// Flag indicating if cache items are serialized
         /// </value>
-        public static bool IsCacheSerialized
-        {
-            get
-            {
-                if ( _isCacheSerialized == null )
-                {
-                    if ( Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() == true )
-                    {
-                        _isCacheSerialized = true;
-                    }
-                    else
-                    {
-                        // not using Redis, so it is safe to cache non-serializable things (like CacheLavaTemplate)
-                        _isCacheSerialized = false;
-                    }
-                }
-
-                return _isCacheSerialized.Value;
-            }
-        }
+        [Obsolete( "Rock Cache doesn't have a requirement to be serializable anymore. However, we should try to keep it serializable." )]
+        [RockObsolete( "1.15" )]
+        public static bool IsCacheSerialized => false;
 
         /// <summary>
         /// Gets or sets the keys for items stored in the object cache. The region is optional, but the key
@@ -159,7 +141,7 @@ namespace Rock.Web.Cache
             {
                 _objectCacheKeyReferences = value;
             }
-        } 
+        }
         private static List<CacheKeyReference> _objectCacheKeyReferences = new List<CacheKeyReference>();
 
         /// <summary>
@@ -181,8 +163,10 @@ namespace Rock.Web.Cache
                 }
                 return _stringCacheKeyReferences;
             }
-            set {
-                _stringCacheKeyReferences = value;            }
+            set
+            {
+                _stringCacheKeyReferences = value;
+            }
         }
         private static List<CacheKeyReference> _stringCacheKeyReferences = new List<CacheKeyReference>();
 
@@ -273,8 +257,8 @@ namespace Rock.Web.Cache
                 Expiration = expiration,
                 AllowCacheBypass = false
             };
-            
-            return GetOrAddExisting(args);
+
+            return GetOrAddExisting( args );
         }
 
         /// <summary>
@@ -423,7 +407,7 @@ namespace Rock.Web.Cache
                     }
 
                     var value = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( !value.Contains(key) )
+                    if ( !value.Contains( key ) )
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
@@ -711,26 +695,11 @@ namespace Rock.Web.Cache
         /// <returns>
         ///   <c>true</c> if [is end point available] [the specified socket]; otherwise, <c>false</c>.
         /// </returns>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public static bool IsEndPointAvailable( string socket, string password )
         {
-            try
-            {
-                var configurationOptions = StackExchange.Redis.ConfigurationOptions.Parse( socket );
-                configurationOptions.ConnectRetry = 1;
-                configurationOptions.ConnectTimeout = 500;
-
-                if ( password.IsNotNullOrWhiteSpace() )
-                {
-                    configurationOptions.Password = password;
-                }
-                
-                var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect( configurationOptions );
-                return redisConnection.IsConnected;
-            }
-            catch(Exception)
-            {
-                return false;
-            }
+            return false;
         }
 
         /// <summary>

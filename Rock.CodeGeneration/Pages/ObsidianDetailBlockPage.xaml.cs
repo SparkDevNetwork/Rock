@@ -94,6 +94,9 @@ namespace Rock.CodeGeneration.Pages
 
             SelectedEntityName.Content = _selectedEntityType?.FullName ?? string.Empty;
             UpdateEntityProperties();
+
+            UseAttributeValuesCheckBox.IsChecked = typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( entityType );
+            UseAttributeValuesCheckBox.IsEnabled = UseAttributeValuesCheckBox.IsChecked ?? false;
         }
 
         /// <summary>

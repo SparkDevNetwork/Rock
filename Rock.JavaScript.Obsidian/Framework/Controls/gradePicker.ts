@@ -39,7 +39,7 @@ export default defineComponent({
             default: false
         },
 
-        useGradeOffsetAsValue: {
+        useGuidAsValue: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -81,7 +81,7 @@ export default defineComponent({
         const loadOptions = async (): Promise<ListItemBag[]> => {
             const options: Partial<GradePickerGetGradesOptionsBag> = {
                 useAbbreviation: props.useAbbreviation,
-                useGradeOffsetAsValue: props.useGradeOffsetAsValue
+                useGuidAsValue: props.useGuidAsValue
             };
             const result = await http.post<ListItemBag[]>("/api/v2/Controls/GradePickerGetGrades", undefined, options);
 
@@ -100,7 +100,7 @@ export default defineComponent({
 
         // #region Watchers
 
-        watch(() => [props.useAbbreviation, props.useGradeOffsetAsValue], () => {
+        watch(() => [props.useAbbreviation, props.useGuidAsValue], () => {
             loadedItems.value = null;
         });
 

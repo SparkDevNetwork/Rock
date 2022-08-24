@@ -349,6 +349,12 @@ namespace Rock.Data
         public DbSet<Rock.Model.AttributeMatrixTemplate> AttributeMatrixTemplates { get; set; }
 
         /// <summary>
+        /// Gets or sets the attribute referenced entities.
+        /// </summary>
+        /// <value>The attribute referenced entities.</value>
+        public DbSet<Rock.Model.AttributeReferencedEntity> AttributeReferencedEntities { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -379,6 +385,12 @@ namespace Rock.Data
         /// The attribute value historicals.
         /// </value>
         public DbSet<AttributeValueHistorical> AttributeValueHistoricals { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the attribute value referenced entities.
+        /// </summary>
+        /// <value>The attribute value referenced entities.</value>
+        public DbSet<Rock.Model.AttributeValueReferencedEntity> AttributeValueReferencedEntities { get; set; }
 
         /// <summary>
         /// Gets or sets the Attribute Values.

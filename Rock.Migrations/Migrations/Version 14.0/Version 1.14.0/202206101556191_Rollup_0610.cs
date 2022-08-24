@@ -685,8 +685,23 @@ namespace Rock.Migrations
         /// </summary>
         private void BadgeMigrations()
         {
-            Sql( @"UPDATE [AttributeValue] SET [Value]=N'{% assign baptismDate = Person | Attribute:''BaptismDate'' %}
+            Sql( @"
+-- Warning: Note the subtle ending character difference between these next few Guids
+DECLARE @BaptismBadgeId int =          ( SELECT TOP 1 [Id] FROM [Badge] WHERE [Guid] = '66972bff-42cd-49ab-9a7a-e1b9deca4ebe' )
+DECLARE @ConnectionStatusBadgeId int = ( SELECT TOP 1 [Id] FROM [Badge] WHERE [Guid] = '66972bff-42cd-49ab-9a7a-e1b9deca4ebf' )
+DECLARE @RecordStatusBadgeId int =     ( SELECT TOP 1 [Id] FROM [Badge] WHERE [Guid] = '66972bff-42cd-49ab-9a7a-e1b9deca4eca' )
+DECLARE @EraBadgeId int =              ( SELECT TOP 1 [Id] FROM [Badge] WHERE [Guid] = '7fc986b9-ca1e-cbb7-4e63-c79eac34f39d' )
+DECLARE @GroupRequirementsBadgeId int =( SELECT TOP 1 [Id] FROM [Badge] WHERE [Guid] = '132f9c2a-0af4-4ad9-87ef-7730b284e10e' )
 
+-- This is a well known attribute: Lava Badge Component's 'DisplayText' key
+DECLARE @LavaBadgeDisplayTextAttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '01C9BA59-D8D4-4137-90A6-B3C06C70BBC3' )
+
+-- Now we'll update these five badges as long as they have a matching CHECKSUM (meaning they have not be edited/modified by the organization).
+
+-- Baptism Badge
+UPDATE [AttributeValue] 
+SET 
+   [Value]=N'{% assign baptismDate = Person | Attribute:''BaptismDate'' %}
 {% if baptismDate != '''' -%}
     <div class=""rockbadge rockbadge-icon rockbadge-baptism"" data-toggle=""tooltip"" data-original-title=""{{ Person.NickName }} was baptized on {{ baptismDate }}."">
 <i class=""badge-icon fa fa-tint""></i>
@@ -695,29 +710,41 @@ namespace Rock.Migrations
     <div class=""rockbadge rockbadge-icon rockbadge-baptism rockbadge-disabled"" data-toggle=""tooltip"" data-original-title=""No baptism date entered for {{ Person.NickName }}."">
         <i class=""badge-icon fa fa-tint""></i>
     </div>
-{% endif -%}' WHERE ([Guid]='EE3D1647-19C3-4E29-9ECF-923589C6F19F')
+{% endif -%}' 
+WHERE AttributeId = @LavaBadgeDisplayTextAttributeId AND EntityId = @BaptismBadgeId AND CHECKSUM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE([Value], ' ', '*^'), '^*', ''), '*^', ' '), CHAR(10), ''), CHAR(13), ''), CHAR(9), '')) = -572717666
 
-UPDATE [AttributeValue] SET [Value]=N'{% if Person.ConnectionStatusValue.Value != empty -%}
+-- Connection Status Badge
+UPDATE [AttributeValue]
+SET 
+   [Value]=N'{% if Person.ConnectionStatusValue.Value != empty -%}
 <div class=""rockbadge rockbadge-label"">
         <span class=""label label-success"">{{ Person.ConnectionStatusValue.Value }}</span> 
 </div>
-{% endif -%}' WHERE ([Guid]='9FE030A3-CAE7-4EB4-9164-1D27A3965670')
+{% endif -%}' 
+WHERE AttributeId = @LavaBadgeDisplayTextAttributeId AND EntityId = @ConnectionStatusBadgeId AND CHECKSUM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE([Value], ' ', '*^'), '^*', ''), '*^', ' '), CHAR(10), ''), CHAR(13), ''), CHAR(9), '')) = 1740721257
 
-UPDATE [AttributeValue] SET [Value]=N'<div class=""rockbadge rockbadge-label"">
-{% if Person.RecordStatusValue.Value != empty and Person.RecordStatusValue.Value == ""Inactive"" -%}
-                    <span class=""label label-danger"" title=""{{ Person.RecordStatusReasonValue.Value }}"" data-toggle=""tooltip"">{{ Person.RecordStatusValue.Value }}</span>
-                    {% elseif Person.RecordStatusValue.Value != empty and Person.RecordStatusValue.Value == ""Pending"" -%}
-                    <span class=""label label-warning"" title=""{{ Person.RecordStatusReasonValue.Value }}"" data-toggle=""tooltip"">{{ Person.RecordStatusValue.Value }}</span>
-                {% endif -%}
-</div>' WHERE ([Guid]='B434C492-D5AA-4F81-BEBA-C50F4B82263A')
+-- Record Status Badge
+UPDATE [AttributeValue] 
+SET
+   [Value]=N'{% if Person.RecordStatusValue.Value != empty and Person.RecordStatusValue.Value == ""Inactive"" -%}
+    <div class=""rockbadge rockbadge-label"">
+        <span class=""label label-danger"" title=""{{ Person.RecordStatusReasonValue.Value }}"" data-toggle=""tooltip"">{{ Person.RecordStatusValue.Value }}</span>
+    </div>
+{% elseif Person.RecordStatusValue.Value != empty and Person.RecordStatusValue.Value == ""Pending"" -%}
+    <div class=""rockbadge rockbadge-label"">
+        <span class=""label label-warning"" title=""{{ Person.RecordStatusReasonValue.Value }}"" data-toggle=""tooltip"">{{ Person.RecordStatusValue.Value }}</span>
+    </div>
+{% endif -%}' 
+WHERE AttributeId = @LavaBadgeDisplayTextAttributeId AND EntityId = @RecordStatusBadgeId AND CHECKSUM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE([Value], ' ', '*^'), '^*', ''), '*^', ' '), CHAR(10), ''), CHAR(13), ''), CHAR(9), '')) = -1338005962
 
-
-UPDATE [AttributeValue] SET [Value]=N'{% assign isEra = Person | Attribute:''core_CurrentlyAnEra'' %}
-
+-- ERA Badge
+UPDATE [AttributeValue]
+SET
+   [Value]=N'{% assign isEra = Person | Attribute:''core_CurrentlyAnEra'' %}
 {% if isEra == ''Yes'' %}
 
 <div class=""rockbadge rockbadge-standard rockbadge-era"" data-toggle=""tooltip"" data-original-title=""{{ Person.NickName}} became an eRA on {{ Person | Attribute:''core_EraStartDate''}}"">
-    <span>eRA</span>
+    <span class=""metric-value"">eRA</span>
 </div>
 
 {% else %}
@@ -729,20 +756,26 @@ UPDATE [AttributeValue] SET [Value]=N'{% assign isEra = Person | Attribute:''cor
         
         {% if daysSinceEnd <= 30 %}
             <div class=""rockbadge rockbadge-standard rockbadge-era era-loss"" data-toggle=""tooltip"" data-original-title=""{{ Person.NickName}} lost eRA status {{ daysSinceEnd }} days ago"">
-                <span>eRA</span>
+                <span class=""metric-value"">eRA</span>
             </div>
         {% endif %}
     {% endif %}
-{% endif %}' WHERE ([Guid]='233996A4-DE82-4083-B6ED-814F063389BA')
+{% endif %}' 
+WHERE AttributeId = @LavaBadgeDisplayTextAttributeId AND EntityId = @EraBadgeId AND CHECKSUM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE([Value], ' ', '*^'), '^*', ''), '*^', ' '), CHAR(10), ''), CHAR(13), ''), CHAR(9), '')) = 1934384809
 
-UPDATE [AttributeValue] SET [Value]=N'{% assign groupHasRequirements = Entity.GroupType.GroupRequirements | Size | AsBoolean %}
+-- Group Requirement Badge
+UPDATE [AttributeValue] 
+SET 
+   [Value]=N'{% assign groupHasRequirements = Entity.GroupType.GroupRequirements | Size | AsBoolean %}
 {% assign typeHasRequirements = Entity.GroupRequirements | Size | AsBoolean %}
 
 {% if groupHasRequirements or typeHasRequirements -%}
     <div class=""rockbadge rockbadge-icon"" data-toggle=""tooltip"" data-original-title=""Group has requirements."" style=""color:var(--brand-success);"">
         <i class=""badge-icon fa fa-tasks""></i>
     </div>
-{% endif -%}' WHERE ([Guid]='C3539DCF-C3D6-4243-A14F-0F4FEB0F2118')" );
+{% endif -%}' 
+WHERE AttributeId = @LavaBadgeDisplayTextAttributeId AND EntityId = @GroupRequirementsBadgeId AND CHECKSUM(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE([Value], ' ', '*^'), '^*', ''), '*^', ' '), CHAR(10), ''), CHAR(13), ''), CHAR(9), '')) = -1807913642
+" );
         }
     }
 }

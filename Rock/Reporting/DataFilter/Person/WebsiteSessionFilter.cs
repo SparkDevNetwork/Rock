@@ -36,7 +36,7 @@ namespace Rock.Reporting.DataFilter.Interaction
     /// </summary>
     [Description( "Filter people based on their website session interaction" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Website Session Filter" )]
+    [ExportMetadata( "ComponentName", "Site Session Filter" )]
     [Rock.SystemGuid.EntityTypeGuid( "50FDC068-D943-4673-B656-DFC2792BEEF7" )]
     public class WebsiteSessionFilter : DataFilterComponent
     {
@@ -78,7 +78,7 @@ namespace Rock.Reporting.DataFilter.Interaction
         /// <exception cref="System.NotImplementedException"></exception>
         public override string GetTitle( Type entityType )
         {
-            return "Website Session";
+            return "Site Session";
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ function() {
             controls.Add( rlbWebsites );
 
             var websitesLabel = new Label();
-            websitesLabel.Text = " websites(s) ";
+            websitesLabel.Text = " sites(s) ";
             filterControl.Controls.Add( websitesLabel );
             controls.Add( websitesLabel );
 
@@ -239,7 +239,7 @@ function() {
             slidingDateRangePicker.ID = filterControl.GetChildControlInstanceName( "slidingDateRangePicker" );
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             slidingDateRangePicker.Label = "Date Started";
-            slidingDateRangePicker.Help = "The date range within which the website page was viewed";
+            slidingDateRangePicker.Help = "The date range within which the site page was viewed";
             slidingDateRangePicker.Required = false;
             filterControl.Controls.Add( slidingDateRangePicker );
             controls.Add( slidingDateRangePicker );

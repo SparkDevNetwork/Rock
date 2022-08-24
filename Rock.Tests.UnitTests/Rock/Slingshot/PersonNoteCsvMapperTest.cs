@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Slingshot;
 using Slingshot.Core.Model;
 
 namespace Rock.Tests.UnitTests.Rock.Slingshot

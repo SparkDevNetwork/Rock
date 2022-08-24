@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -79,7 +80,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-           /// <summary>
+        /// <summary>
         /// Gets or sets a value indicating whether [display public name].
         /// </summary>
         /// <value>
@@ -291,7 +292,7 @@ function doPostBack() {{
             {
                 _hfViewMode.RenderControl( writer );
             }
-                        
+
             if ( this.AllowMultiSelect )
             {
                 _btnSelectAll.RenderControl( writer );
@@ -305,7 +306,7 @@ function doPostBack() {{
             {
                 writer.Write( "<a class='btn btn-xs btn-link picker-cancel mr-auto' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
             }
-                      
+
 
             if ( !DisplayActiveOnly )
             {
@@ -355,14 +356,32 @@ function doPostBack() {{
         /// Sets the value.
         /// </summary>
         /// <param name="account">The account.</param>
-
         public void SetValue( FinancialAccount account )
+        {
+            FinancialAccountCache financialAccountCache;
+            if ( account != null )
+            {
+                financialAccountCache = FinancialAccountCache.Get( account.Id );
+            }
+            else
+            {
+                financialAccountCache = null;
+            }
+
+            SetValueFromCache( financialAccountCache );
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="account">The account.</param>
+        public void SetValueFromCache( FinancialAccountCache account )
         {
             if ( account != null )
             {
                 ItemId = account.Id.ToString();
 
-                var parentGroupIds = GetFinancialAccountAncestorsIdList( account.ParentAccount );
+                var parentGroupIds = GetFinancialAccountAncestorsIdList( account.ParentAccountId );
                 InitialItemParentIds = parentGroupIds.AsDelimited( "," );
                 ItemName = account.Name;
             }
@@ -377,15 +396,25 @@ function doPostBack() {{
         /// Returns a list of the ancestor FinancialAccounts of the specified FinancialAccount.
         /// If the ParentFinancialAccount property of the FinancialAccount is not populated, it is assumed to be a top-level node.
         /// </summary>
-        /// <param name="financialAccount">The financial account.</param>
+        /// <param name="financialAccountId">The financial account identifier.</param>
         /// <param name="ancestorFinancialAccountIds">The ancestor financial account ids.</param>
-        /// <returns></returns>
-        private List<int> GetFinancialAccountAncestorsIdList( FinancialAccount financialAccount, List<int> ancestorFinancialAccountIds = null )
+        /// <returns>List&lt;System.Int32&gt;.</returns>
+        private List<int> GetFinancialAccountAncestorsIdList( int? financialAccountId, List<int> ancestorFinancialAccountIds = null )
         {
             if ( ancestorFinancialAccountIds == null )
             {
                 ancestorFinancialAccountIds = new List<int>();
             }
+
+
+            if ( financialAccountId == null )
+            {
+                return ancestorFinancialAccountIds;
+            }
+
+
+            var financialAccount = FinancialAccountCache.Get( financialAccountId.Value );
+
 
             if ( financialAccount == null )
             {
@@ -401,40 +430,50 @@ function doPostBack() {{
             // Create or add this node to the history stack for this tree walk.
             ancestorFinancialAccountIds.Insert( 0, financialAccount.Id );
 
-            ancestorFinancialAccountIds = this.GetFinancialAccountAncestorsIdList( financialAccount.ParentAccount, ancestorFinancialAccountIds );
+            ancestorFinancialAccountIds = this.GetFinancialAccountAncestorsIdList( financialAccount.ParentAccountId, ancestorFinancialAccountIds );
 
             return ancestorFinancialAccountIds;
         }
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the selected values to the specified Financial Accounts
         /// </summary>
-        /// <param name="accounts">The accounts.</param>
+        /// <param name="accounts"></param>
         public void SetValues( IEnumerable<FinancialAccount> accounts )
         {
-            var financialAccounts = accounts?.ToList();
+            var financialAccountsCache = FinancialAccountCache.GetByIds( accounts?.Select( a => a.Id ) );
+            SetValuesFromCache( financialAccountsCache );
+        }
+
+        /// <summary>
+        /// Sets the selected values to the specified Financial Accounts
+        /// </summary>
+        /// <param name="financialAccountsCache"></param>
+        public void SetValuesFromCache( IEnumerable<FinancialAccountCache> financialAccountsCache )
+        {
+            var financialAccounts = financialAccountsCache?.ToList();
 
             if ( financialAccounts != null && financialAccounts.Any() )
             {
                 var ids = new List<string>();
                 var names = new List<string>();
-                var parrentAccountIds = new List<int>();
+                var parentAccountIds = new List<int>();
 
-                foreach ( var account in accounts )
+                foreach ( var account in financialAccountsCache )
                 {
                     if ( account != null )
                     {
                         ids.Add( account.Id.ToString() );
                         names.Add( this.DisplayPublicName ? account.PublicName : account.Name );
-                        if ( account.ParentAccount != null && !parrentAccountIds.Contains( account.ParentAccount.Id ) )
+                        if ( account.ParentAccount != null && !parentAccountIds.Contains( account.ParentAccount.Id ) )
                         {
-                            var parrentAccount = account.ParentAccount;
-                            var accountParentIds = GetFinancialAccountAncestorsIdList( parrentAccount );
+                            var parentAccountId = account.ParentAccountId;
+                            var accountParentIds = GetFinancialAccountAncestorsIdList( parentAccountId );
                             foreach ( var accountParentId in accountParentIds )
                             {
-                                if ( !parrentAccountIds.Contains( accountParentId ) )
+                                if ( !parentAccountIds.Contains( accountParentId ) )
                                 {
-                                    parrentAccountIds.Add( accountParentId );
+                                    parentAccountIds.Add( accountParentId );
                                 }
                             }
                         }
@@ -442,7 +481,7 @@ function doPostBack() {{
                 }
 
                 // NOTE: Order is important (parents before children) since the GroupTreeView loads on demand
-                InitialItemParentIds = parrentAccountIds.AsDelimited( "," );
+                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
             }
@@ -459,13 +498,13 @@ function doPostBack() {{
         protected override void SetValueOnSelect()
         {
             var accountId = ItemId.AsIntegerOrNull();
-            FinancialAccount account = null;
+            FinancialAccountCache account = null;
             if ( accountId.HasValue && accountId > 0 )
             {
-                account = new FinancialAccountService( new RockContext() ).Get( accountId.Value );
+                account = FinancialAccountCache.Get( accountId.Value );
             }
 
-            SetValue( account );
+            SetValueFromCache( account );
         }
 
         /// <summary>
@@ -477,11 +516,8 @@ function doPostBack() {{
             var accountIds = ItemIds.Where( i => i != "0" ).AsIntegerList();
             if ( accountIds.Any() )
             {
-                var accounts = new FinancialAccountService( new RockContext() )
-                    .Queryable()
-                    .Where( g => accountIds.Contains( g.Id ) )
-                    .ToList();
-                this.SetValues( accounts );
+                var accounts = FinancialAccountCache.GetByIds( accountIds );
+                this.SetValuesFromCache( accounts );
             }
             else
             {
@@ -525,7 +561,7 @@ function doPostBack() {{
         {
             var activeOnly = this.DisplayActiveOnly;
 
-            if ( !this.DisplayActiveOnly && _cbShowInactiveAccounts!=null )
+            if ( !this.DisplayActiveOnly && _cbShowInactiveAccounts != null )
             {
                 activeOnly = !_cbShowInactiveAccounts.Checked;
             }

@@ -53,6 +53,8 @@ export const enum ServiceJob {
     DataMigrations140AddMissingMediaElementInteractions = "3E6817DA-CEE0-42F8-A30E-FF787719493C",
     /** The Job to run Post v14.0 Data Migrations to update current sessions */
     DataMigrations140UpdateCurrentSessions = "53A6804F-5895-4E19-907D-916B5CF175AB",
+    /** The Job to run Post v140 to add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId. */
+    DataMigrations140CreateFkIndexes = "D96BD1F7-6A4A-4DC0-B10D-40031F709573",
     /** The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields. */
     DataMigrations124DecryptFinancialPaymentDetails = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12",
     /** The Job to get NCOA */

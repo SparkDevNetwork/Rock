@@ -30,16 +30,22 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="build\.eslintrc.js" />
+    <Content Include="build\build-fast.js" />
     <Content Include="package.json" />
     <Content Include="rollup.config.js" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="build\" />
     <Folder Include="src\" />
     <Folder Include="src\Cms\" />
     <Folder Include="src\Cms\ContentCollectionDetail\" />
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
+    <Folder Include="src\Cms\MediaFolderDetail\" />
+    <Folder Include="src\Cms\PersistedDatasetDetail\" />
+    <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Crm\" />
@@ -80,6 +86,18 @@
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\mediaFolderDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\MediaFolderDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\MediaFolderDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\MediaFolderDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\persistedDatasetDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\PersistedDatasetDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\personalLinkSectionDetail.ts" />
+    <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
@@ -156,6 +174,6 @@
     <Touch Files="node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="AfterCompile">
-    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
+    <Exec Condition="'$(EnableTypeScript)' == 'true'" Command="npm run build-fast" EnvironmentVariables="CONFIGURATION=$(Configuration)" />
   </Target>
 </Project>

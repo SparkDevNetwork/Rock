@@ -107,7 +107,7 @@ namespace Rock.CodeGeneration.Pages
             {
                 if ( type.GetGenericTypeDefinition() == typeof( Dictionary<,> ) )
                 {
-                    if ( type.GetGenericArguments()[0] != typeof( string ) )
+                    if ( type.GetGenericArguments()[0] != typeof( string ) && type.GetGenericArguments()[0] != typeof( Guid ) )
                     {
                         return false;
                     }

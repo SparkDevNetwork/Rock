@@ -169,9 +169,9 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            bool? boolValue = value.AsBooleanOrNull();
+            bool? boolValue = privateValue.AsBooleanOrNull();
 
             if ( !boolValue.HasValue )
             {
@@ -180,9 +180,9 @@ namespace Rock.Field.Types
 
             if ( boolValue.Value )
             {
-                if ( configurationValues.ContainsKey( ConfigurationKey.TrueText ) )
+                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.TrueText ) )
                 {
-                    return configurationValues[ConfigurationKey.TrueText];
+                    return privateConfigurationValues[ConfigurationKey.TrueText];
                 }
                 else
                 {
@@ -191,9 +191,9 @@ namespace Rock.Field.Types
             }
             else
             {
-                if ( configurationValues.ContainsKey( ConfigurationKey.FalseText ) )
+                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.FalseText ) )
                 {
-                    return configurationValues[ConfigurationKey.FalseText];
+                    return privateConfigurationValues[ConfigurationKey.FalseText];
                 }
                 else
                 {
@@ -203,9 +203,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            bool? boolValue = value.AsBooleanOrNull();
+            bool? boolValue = privateValue.AsBooleanOrNull();
 
             if ( !boolValue.HasValue )
             {
@@ -215,6 +215,12 @@ namespace Rock.Field.Types
             // A condensed boolean value simply returns "Y" or "N" regardless
             // of the other configuration values.
             return boolValue.Value ? "Y" : "N";
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetCondensedTextValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>

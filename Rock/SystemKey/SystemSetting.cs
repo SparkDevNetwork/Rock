@@ -126,23 +126,31 @@ namespace Rock.SystemKey
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
 
         /// <summary>
-        /// Enable a redis cache cluster
+        /// (Obsolete) Enable a redis cache cluster
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
 
         /// <summary>
-        /// Comma separated list of Redis endpoints (e.g. server.com:6379)
+        /// (Obsolete) Comma separated list of Redis endpoints (e.g. server.com:6379)
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
 
         /// <summary>
-        /// The redis password
+        /// (Obsolete) The redis password
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_PASSWORD = "RedisPassword";
 
         /// <summary>
-        /// The redis database index number
+        /// (Obsolete) The redis database index number
         /// </summary>
+        [Obsolete( "No longer needed since we no longer support Redis." )]
+        [RockObsolete( "1.15" )]
         public const string REDIS_DATABASE_NUMBER = "RedisDatabaseNumber";
 
         /// <summary>

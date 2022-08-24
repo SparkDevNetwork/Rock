@@ -68,7 +68,7 @@ namespace Rock.Workflow.Action
         IsRequired = false,
         Order = 3,
         Key = AttributeKey.LastAttendedDate,
-        FieldTypeClassNames = new string[] { "Rock.Field.Types.DateTimeFieldType" } )]
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.DateFieldType" } )]
 
     #endregion
     [Rock.SystemGuid.EntityTypeGuid( "86FDF83F-FFB5-47B4-8548-32CD53843EDB" )]

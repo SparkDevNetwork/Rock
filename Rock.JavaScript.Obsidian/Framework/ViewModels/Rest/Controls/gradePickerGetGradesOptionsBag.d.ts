@@ -29,6 +29,6 @@ export type GradePickerGetGradesOptionsBag = {
     /** Type of the container the components are within */
     useAbbreviation: boolean;
 
-    /** Whether to use a grade offset instead of a GUID as the picker value */
-    useGradeOffsetAsValue: boolean;
+    /** Whether to use a GUID instead of a grade offset as the picker value */
+    useGuidAsValue: boolean;
 };

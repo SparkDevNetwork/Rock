@@ -129,18 +129,18 @@ namespace Rock.ViewModels.Blocks.Engagement.Steps
         public int? NodeVerticalSpacing { get; set; }
 
         /// <summary>
-        /// Gets or sets the Node horizontal spacing
+        /// Gets or sets the chart width
         /// </summary>
         /// <value>
-        /// Pixel spacing between Node levels for the flows to span across
+        /// The number of pixels wide the chart should be
         /// </value>
-        public int? NodeHorizontalSpacing { get; set; }
+        public int? ChartWidth { get; set; }
 
         /// <summary>
         /// Gets or sets the chart height
         /// </summary>
         /// <value>
-        /// The number of pixels in heigh the chart should be
+        /// The number of pixels high the chart should be
         /// </value>
         public int? ChartHeight { get; set; }
     }

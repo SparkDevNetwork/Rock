@@ -369,7 +369,7 @@ namespace Rock.Field.Types
 
             using ( var rockContext = new RockContext() )
             {
-                var workflowActivityTypeId = new WorkflowActivityTypeService( rockContext ).GetId( guid.Value );
+                var workflowActivityTypeId = WorkflowActivityTypeCache.GetId( guid.Value );
 
                 if ( !workflowActivityTypeId.HasValue )
                 {

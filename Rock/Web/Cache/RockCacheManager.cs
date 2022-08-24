@@ -115,70 +115,19 @@ namespace Rock.Web.Cache
         {
             bool cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS )?.AsBoolean() ?? false;
 
-            bool redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() ?? false;
-            if ( redisEnabled == false )
-            {
-                var config = new ConfigurationBuilder( "InProcess" )
-                .WithDictionaryHandle();
-                if ( cacheStatisticsEnabled )
-                {
-                    config = config.EnableStatistics().EnablePerformanceCounters();
-                }
-                else
-                {
-                    config = config.DisablePerformanceCounters().DisableStatistics();
-                }
 
-                return config.Build();
-            }
-
-            string redisPassword = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
-            string[] redisEndPointList = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )?.Split( ',' );
-            int redisDbIndex = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER )?.AsIntegerOrNull() ?? 0;
-
-            var cacheConfig = new ConfigurationBuilder( "InProcess With Redis Backplane" )
-                .WithJsonSerializer()
-                .WithDictionaryHandle()
-                .And
-                .WithRedisConfiguration(
-                    "redis",
-                    redisConfig =>
-                    {
-                        redisConfig.WithAllowAdmin().WithDatabase( redisDbIndex );
-
-                        if ( redisPassword.IsNotNullOrWhiteSpace() )
-                        {
-                            redisConfig.WithPassword( redisPassword );
-                        }
-
-                        foreach ( var redisEndPoint in redisEndPointList )
-                        {
-                            string[] info = redisEndPoint.Split( ':' );
-                            if ( info.Length == 2 )
-                            {
-                                redisConfig.WithEndpoint( info[0], info[1].AsIntegerOrNull() ?? 6379 );
-                            }
-                            else
-                            {
-                                redisConfig.WithEndpoint( info[0], 6379 );
-                            }
-                        }
-                    } )
-                .WithMaxRetries( 100 )
-                .WithRetryTimeout( 10 )
-                .WithRedisBackplane( "redis" )
-                .WithRedisCacheHandle( "redis", true );
+            var config = new ConfigurationBuilder( "InProcess" ).WithDictionaryHandle();
 
             if ( cacheStatisticsEnabled )
             {
-                cacheConfig = cacheConfig.EnableStatistics().EnablePerformanceCounters();
+                config = config.EnableStatistics().EnablePerformanceCounters();
             }
             else
             {
-                cacheConfig = cacheConfig.DisablePerformanceCounters().DisableStatistics();
+                config = config.DisablePerformanceCounters().DisableStatistics();
             }
 
-            return cacheConfig.Build();
+            return config.Build();
         }
 
         /// <summary>

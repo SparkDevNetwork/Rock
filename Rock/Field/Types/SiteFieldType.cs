@@ -300,33 +300,31 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            Guid? guid = privateValue.AsGuidOrNull();
+            var id = privateValue.AsIntegerOrNull();
 
-            if ( !guid.HasValue )
+            if ( !id.HasValue )
             {
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            // Query the cache to make sure the id is valid.
+            var siteId = SiteCache.Get( id.Value )?.Id;
+
+            if ( !siteId.HasValue )
             {
-                var groupId = new SiteService( rockContext ).GetId( guid.Value );
-
-                if ( !groupId.HasValue )
-                {
-                    return null;
-                }
-
-                return new List<ReferencedEntity>
-                {
-                    new ReferencedEntity( EntityTypeCache.GetId<Site>().Value, groupId.Value )
-                };
+                return null;
             }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<Site>().Value, siteId.Value )
+            };
         }
 
         /// <inheritdoc/>
         List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
         {
-            // This field type references the Name property of a Group and
+            // This field type references the Name property of a Site and
             // should have its persisted values updated when changed.
             return new List<ReferencedProperty>
             {

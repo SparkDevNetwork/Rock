@@ -626,26 +626,21 @@ namespace Rock.Data
                         TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
                     }
 
-                    if ( item.Entity is IModel model )
+                    if ( item.Entity is IEntity entity )
                     {
-                        // If this is a model and it was modified, check if any
+                        // If this is an entity and it was modified, check if any
                         // attributes (and values) should now be considered dirty.
                         if ( item.PreSaveState == EntityContextState.Modified )
                         {
-                            var dependantAttributeIds = AttributeCache.GetDirtyAttributeIdsForPropertyChange( item.Entity.TypeId, () => item.ModifiedProperties );
+                            var dependantAttributeIds = AttributeCache.GetDirtyAttributeIdsForPropertyChange( entity.TypeId, () => item.ModifiedProperties );
 
                             if ( dependantAttributeIds.Any() )
                             {
-                                Task.Run( async () =>
+                                ExecuteAfterCommit( () =>
                                 {
-                                    // Wait for the transaction to complete and be committed.
-                                    // TODO: Should this be a bus message instead?
-                                    if ( await WrappedTransactionCompletedTask == true )
+                                    using ( var rockContext = new RockContext() )
                                     {
-                                        using ( var rockContext = new RockContext() )
-                                        {
-                                            Rock.Attribute.Helper.UpdateDependantAttributesAndValues( dependantAttributeIds, item.Entity.TypeId, item.Entity.Id, rockContext );
-                                        }
+                                        Rock.Attribute.Helper.UpdateDependantAttributesAndValues( dependantAttributeIds, entity.TypeId, entity.Id, rockContext );
                                     }
                                 } );
                             }
@@ -657,21 +652,19 @@ namespace Rock.Data
                         {
                             // No need to check modified properties, assume any attribute
                             // value that references this entity needs to be updated.
-                            Task.Run( async () =>
+                            ExecuteAfterCommit( () =>
                             {
-                                // Wait for the transaction to complete and be committed.
-                                // TODO: Should this be a bus message instead?
-                                if ( await WrappedTransactionCompletedTask == true )
+                                using ( var rockContext = new RockContext() )
                                 {
-                                    using ( var rockContext = new RockContext() )
-                                    {
-                                        Rock.Attribute.Helper.UpdateDependantAttributesAndValues( null, item.Entity.TypeId, item.Entity.Id, rockContext );
-                                    }
+                                    Rock.Attribute.Helper.UpdateDependantAttributesAndValues( null, entity.TypeId, entity.Id, rockContext );
                                 }
                             } );
                         }
+                    }
 
-                        model.PostSaveChanges( this );
+                    if ( item.Entity is IModel model )
+                    {
+                            model.PostSaveChanges( this );
                     }
                 }
             }
@@ -886,7 +879,18 @@ namespace Rock.Data
             // model hooks, achievements need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit.
             var entitiesForAchievements = new List<IEntity>();
-            var isAchievementsEnabled = canUseCache && EntityTypeCache.Get<T>()?.IsAchievementsEnabled == true;
+
+            bool isAchievementsEnabled = false;
+
+            if ( canUseCache )
+            {
+                var entityType = EntityTypeCache.Get<T>();
+                if ( entityType != null )
+                { 
+                    isAchievementsEnabled = entityType.IsAchievementsEnabled == true
+                        && AchievementTypeCache.HasActiveAchievementTypesForEntityTypeId( entityType.Id );
+                }
+            }
 
             // ensure CreatedDateTime and ModifiedDateTime is set
             var currentDateTime = RockDateTime.Now;

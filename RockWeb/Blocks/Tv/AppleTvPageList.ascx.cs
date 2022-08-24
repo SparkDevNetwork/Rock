@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -25,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -37,7 +39,7 @@ namespace RockWeb.Blocks.Tv
     The code from this block was taken primarily from the MobileApplicationDetail.ascx block.
     
     */
-    [DisplayName( "TV Page List" )]
+    [DisplayName( "Apple TV Page List" )]
     [Category( "TV > TV Apps" )]
     [Description( "Lists pages for TV apps (Apple or other)." )]
 
@@ -46,7 +48,7 @@ namespace RockWeb.Blocks.Tv
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "7BD1B79C-BF27-42C6-8359-F80EC7FEE397" )]
-    public partial class TvPageList : Rock.Web.UI.RockBlock, ISecondaryBlock
+    public partial class AppleTvPageList : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
         #region Attribute Keys
 
@@ -62,7 +64,7 @@ namespace RockWeb.Blocks.Tv
         private static class PageParameterKey
         {
             public const string SiteId = "SiteId";
-            public const string SitePageId = "SitePageId";
+            public const string PageId = "PageId";
         }
 
         #endregion PageParameterKeys
@@ -149,7 +151,7 @@ namespace RockWeb.Blocks.Tv
             NavigateToLinkedPage( AttributeKey.PageDetail, new Dictionary<string, string>
             {
                 { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
-                { PageParameterKey.SitePageId, "0" }
+                { PageParameterKey.PageId, "0" }
             } );
         }
 
@@ -163,7 +165,7 @@ namespace RockWeb.Blocks.Tv
             NavigateToLinkedPage( AttributeKey.PageDetail, new Dictionary<string, string>
             {
                 { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
-                { PageParameterKey.SitePageId, e.RowKeyId.ToString() }
+                { PageParameterKey.PageId, e.RowKeyId.ToString() }
             } );
         }
 
@@ -210,6 +212,32 @@ namespace RockWeb.Blocks.Tv
             if ( e.Row.RowType != DataControlRowType.DataRow )
             {
                 return;
+            }
+
+            // Add cache information
+            var pageInfo = ( PageRowInfo ) e.Row.DataItem;
+            var lCacheSettings = e.Row.FindControl( "lCacheSettings" ) as Literal;
+
+            if ( pageInfo.CacheControlHeaderSettings != null )
+            {
+                var cacheControlHeader = pageInfo.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>() ?? new RockCacheability();
+
+                var cacheDescription = new StringBuilder();
+                cacheDescription.Append( $"{cacheControlHeader.RockCacheablityType} " );
+
+                if ( cacheControlHeader.MaxAge != null || cacheControlHeader.SharedMaxAge != null )
+                {
+                    if ( cacheControlHeader.MaxAge != null )
+                    {
+                        cacheDescription.Append( $"<span class=\"label label-default\">Max Age: {cacheControlHeader.MaxAge.ToSeconds() / 60}m</span> " );
+                    }
+
+                    if ( cacheControlHeader.SharedMaxAge != null )
+                    {
+                        cacheDescription.Append( $" <span class=\"label label-default\">Max Shared Age: {cacheControlHeader.SharedMaxAge.ToSeconds() / 60}m</span>" );
+                    }
+                }
+                lCacheSettings.Text = cacheDescription.ToString();
             }
 
             // Hide the delete button if this page is the application's default page
@@ -286,12 +314,13 @@ namespace RockWeb.Blocks.Tv
                     .GetBySiteId( applicationId )
                     .OrderBy( p => p.Order )
                     .ThenBy( p => p.InternalName )
-                    .Select( p => new
+                    .Select( p => new PageRowInfo
                     {
-                        p.Id,
-                        p.InternalName,
+                        Id = p.Id,
+                        InternalName = p.InternalName,
                         DisplayInNav = p.DisplayInNavWhen != DisplayInNavWhen.Never,
-                        p.Description
+                        Description = p.Description,
+                        CacheControlHeaderSettings = p.CacheControlHeaderSettings
                     } )
                     .ToList();
 
@@ -305,6 +334,18 @@ namespace RockWeb.Blocks.Tv
             pnlBlock.Visible = visible;
         }
 
+
+        /// <summary>
+        /// POCO for showing data on the grid
+        /// </summary>
+        public class PageRowInfo
+        {
+            public int Id { get; set; }
+            public string InternalName { get; set; }
+            public bool DisplayInNav { get; set; }
+            public string Description { get; set; }
+            public string CacheControlHeaderSettings { get; set; }
+        }
         #endregion
     }
 }

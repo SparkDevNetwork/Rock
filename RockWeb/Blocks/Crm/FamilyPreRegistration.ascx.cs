@@ -1445,7 +1445,7 @@ usernameTextbox.blur(function () {{
                 {
                     cpCampus.SelectedCampusId = campuses.First().Id;
                     cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean();
-                    pnlCampus.Visible = true;
+                    pnlCampus.Visible = cpCampus.Visible;
                 }
                 else
                 {
@@ -2384,7 +2384,7 @@ usernameTextbox.blur(function () {{
                 {
                     foreach ( var attribute in new AttributeService( _rockContext ).GetByCategoryId( category.Id, false ) )
                     {
-                        if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        if ( !attributeList.Any( a => a.Guid == attribute.Guid ) )
                         {
                             attributeList.Add( AttributeCache.Get( attribute ) );
                         }

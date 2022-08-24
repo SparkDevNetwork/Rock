@@ -166,8 +166,8 @@ namespace Rock.WebStartup
 
             /* 2020-05-20 MDP
                Plugins use Direct SQL to update data,
-               or other things could have done data updates
-               So, just in case, clear the cache (which could be Redis) since anything that is in there could be stale
+               or other things could have done data updates.
+               So, just in case, clear the cache since anything that is in there could be stale
             */
 
             LogStartupMessage( "Reloading Cache" );
@@ -223,9 +223,9 @@ namespace Rock.WebStartup
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
             {
-                LogStartupMessage( "Starting Job Scheduler" );
-                StartJobScheduler();
-                ShowDebugTimingMessage( "Start Job Scheduler" );
+                LogStartupMessage( "Initializing Job Scheduler" );
+                InitializeJobScheduler();
+                ShowDebugTimingMessage( "Job Scheduler Initialized" );
             }
 
             // Start stage 2 of the web farm
@@ -1025,9 +1025,9 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// Starts the job scheduler.
+        /// Initialize the job scheduler.
         /// </summary>
-        private static void StartJobScheduler()
+        private static void InitializeJobScheduler()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1105,7 +1105,7 @@ namespace Rock.WebStartup
                 QuartzScheduler.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
 
                 // start the scheduler
-                QuartzScheduler.Start();
+                // Note, wait to start until Rock is fully started.
             }
         }
 

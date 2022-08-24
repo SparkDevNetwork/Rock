@@ -69,13 +69,12 @@ namespace Rock.Field.Types
         /// <inheritdoc />
         public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string videoUrl = privateValue;
-            if ( !string.IsNullOrEmpty( videoUrl ) )
+            if ( privateValue.IsNullOrWhiteSpace() )
             {
-                return videoUrl.EncodeHtml();
+                return string.Empty;
             }
 
-            return string.Empty;
+            return $"<a href=\"{privateValue.EncodeXml( true )}\">{privateValue.Truncate( 100 ).EncodeHtml()}</a>";
         }
 
         /// <summary>
@@ -88,9 +87,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            // For compatability reasons, condensed value is the plain URL text encoded for HTML.
             return !condensed
                 ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
-                : GetCondensedHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+                : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
         }
 
         #endregion

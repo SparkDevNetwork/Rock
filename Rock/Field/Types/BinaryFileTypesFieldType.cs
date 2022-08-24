@@ -49,9 +49,9 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            Guid? guid = privateValue.AsGuidOrNull();
+            var valueGuidList = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
 
-            if ( !guid.HasValue )
+            if ( !valueGuidList.Any() )
             {
                 return null;
             }
@@ -59,8 +59,10 @@ namespace Rock.Field.Types
             using ( var rockContext = new RockContext() )
             {
                 var fileTypeIds = new BinaryFileTypeService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Select( b => b.Id );
+                    .Queryable()
+                    .Where( bft => valueGuidList.Contains( bft.Guid ) )
+                    .Select( b => b.Id )
+                    .ToList();
 
                 if ( !fileTypeIds.Any() )
                 {

@@ -21,7 +21,7 @@ namespace Rock.CodeGeneration
         {
             try
             {
-                return type.GetCustomAttribute<GA>();
+                return type.GetCustomAttribute<GA>( inherit: false);
             }
             catch ( FormatException )
             {
@@ -34,7 +34,7 @@ namespace Rock.CodeGeneration
         {
             try
             {
-                return methodInfo.GetCustomAttribute<GA>();
+                return methodInfo.GetCustomAttribute<GA>( inherit: false);
             }
             catch ( FormatException )
             {
@@ -123,8 +123,10 @@ JOIN EntityType et
             var processedTypes = new HashSet<Type>();
             var nameSpaces = types.Select( a => a.Namespace ).Distinct().ToArray();
 
-            var regExHasEntityTypeGuidWithGuid = new Regex( @"(:?^|\s)\[.*EntityTypeGuid\s*\(.*(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}\s*""\s*\)" );
-            var regExHasEntityTypeGuidWithSystemGuidConst = new Regex( @"(:?^|\s)\[.*EntityTypeGuid\s*\(.*Rock.SystemGuid.*\s*\)" );
+            var guidTypeName = typeof( GA ).Name.Replace( "Attribute", string.Empty );
+
+            var regExHasRockGuidWithGuid = new Regex( @"(:?^|\s)\[.*" + guidTypeName + @"\s*\(.*(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}\s*""\s*\)" );
+            var regExHasRockGuidWithSystemGuidConst = new Regex( @"(:?^|\s)\[.*"+ guidTypeName + @"\s*\(.*Rock.SystemGuid.*\s*\)" );
 
             Dictionary<Type, List<string>> possibleClassDeclarationsCache = new Dictionary<Type, List<string>>();
 
@@ -210,13 +212,13 @@ JOIN EntityType et
                             guidLine = $"    [{rockGuidDeclaration}( \"{guidValue}\")]";
                         }
 
-                        // If this type isn't in the EntityType table yet, and it doesn't have a EntityTypeGuid yet, see if we already code generated this with a new guid                     
-                        var alreadyCodeGeneratedWithSomeEntityTypeGuidButNotCompiled = sourceFileLines.Any( ln => regExHasEntityTypeGuidWithGuid.IsMatch( ln ) || regExHasEntityTypeGuidWithSystemGuidConst.IsMatch( ln ) );
+                        // If this type isn't in the EntityType (or BlockType, etc) table yet, and it doesn't have a EntityTypeGuid (or BlockTypeGuid, etc) yet, see if we already code generated this with a new guid                     
+                        var alreadyCodeGeneratedWithSomeRockGuidButNotCompiled = sourceFileLines.Any( ln => regExHasRockGuidWithGuid.IsMatch( ln ) || regExHasRockGuidWithSystemGuidConst.IsMatch( ln ) );
 
                         // Just in case, also look for exact guid 
                         var alreadyCodeGeneratedWithSameGuidButNotCompiled = sourceFileText.Contains( guidLine );
 
-                        if ( !( alreadyCodeGeneratedWithSomeEntityTypeGuidButNotCompiled || alreadyCodeGeneratedWithSameGuidButNotCompiled ) )
+                        if ( !( alreadyCodeGeneratedWithSomeRockGuidButNotCompiled || alreadyCodeGeneratedWithSameGuidButNotCompiled ) )
                         {
                             sourceFileText = sourceFileText.Replace( sourceFileLine, $"{guidLine}{Environment.NewLine}{sourceFileLine}" );
                             File.WriteAllText( fileName, sourceFileText );

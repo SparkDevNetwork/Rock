@@ -535,13 +535,25 @@ This can be due to multiple threads updating the same attribute at the same time
                         {
                             a.AttributeId,
                             a.EntityId,
-                            a.Value
+                            a.Value,
+                            a.PersistedTextValue,
+                            a.PersistedHtmlValue,
+                            a.PersistedCondensedTextValue,
+                            a.PersistedCondensedHtmlValue,
+                            a.IsPersistedValueDirty
                         } );
 
                     foreach ( var attributeValueSelect in attributeValueSelectQuery )
                     {
                         var attributeKey = AttributeCache.Get( attributeValueSelect.AttributeId ).Key;
-                        var attributeValueCache = new AttributeValueCache( attributeValueSelect.AttributeId, attributeValueSelect.EntityId, attributeValueSelect.Value );
+                        var attributeValueCache = new AttributeValueCache( attributeValueSelect.AttributeId,
+                            attributeValueSelect.EntityId,
+                            attributeValueSelect.Value,
+                            attributeValueSelect.PersistedTextValue,
+                            attributeValueSelect.PersistedHtmlValue,
+                            attributeValueSelect.PersistedCondensedTextValue,
+                            attributeValueSelect.PersistedCondensedHtmlValue,
+                            attributeValueSelect.IsPersistedValueDirty );
                         attributeValues[attributeKey] = attributeValueCache;
                     }
                 }
@@ -551,19 +563,27 @@ This can be due to multiple threads updating the same attribute at the same time
                 {
                     if ( attributeValues[attribute.Key] == null )
                     {
-                        var attributeValue = new AttributeValueCache();
-                        attributeValue.AttributeId = attribute.Id;
-                        attributeValue.EntityId = entity?.Id;
+                        AttributeValueCache attributeValue;
 
                         var attributeValueDefaults = entity.AttributeValueDefaults;
                         if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
                         {
-                            attributeValue.Value = attributeValueDefaults[attribute.Key];
+                            attributeValue = new AttributeValueCache( attribute.Id,
+                                entity?.Id,
+                                attributeValueDefaults[attribute.Key] );
                         }
                         else
                         {
-                            attributeValue.Value = attribute.DefaultValue;
+                            attributeValue = new AttributeValueCache( attribute.Id,
+                                entity?.Id,
+                                attribute.DefaultValue,
+                                attribute.DefaultPersistedTextValue,
+                                attribute.DefaultPersistedHtmlValue,
+                                attribute.DefaultPersistedCondensedTextValue,
+                                attribute.DefaultPersistedCondensedHtmlValue,
+                                attribute.IsDefaultPersistedValueDirty );
                         }
+
                         attributeValues[attribute.Key] = attributeValue;
                     }
                     else
@@ -818,7 +838,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 {
                     if ( allAttributeValues.TryGetValue( ( entity.Id, attribute.Id ), out var value ) )
                     {
-                        var attributeValueCache = new AttributeValueCache( attribute.Id, value.EntityId, value.Value );
+                        var attributeValueCache = new AttributeValueCache( attribute.Id, value.EntityId, value.Value, value.PersistedTextValue, value.PersistedHtmlValue, value.PersistedCondensedTextValue, value.PersistedCondensedHtmlValue, value.IsPersistedValueDirty );
 
                         attributeValues[attribute.Key] = attributeValueCache;
                     }
@@ -830,7 +850,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 {
                     if ( !attributeValues.ContainsKey( attribute.Key ) )
                     {
-                        var attributeValue = new AttributeValueCache
+                        AttributeValueCache attributeValue = new AttributeValueCache
                         {
                             AttributeId = attribute.Id,
                             EntityId = entity?.Id
@@ -839,11 +859,20 @@ This can be due to multiple threads updating the same attribute at the same time
                         var attributeValueDefaults = entity.AttributeValueDefaults;
                         if ( attributeValueDefaults != null && attributeValueDefaults.ContainsKey( attribute.Key ) )
                         {
-                            attributeValue.Value = attributeValueDefaults[attribute.Key];
+                            attributeValue = new AttributeValueCache( attribute.Id,
+                                entity?.Id,
+                                attributeValueDefaults[attribute.Key] );
                         }
                         else
                         {
-                            attributeValue.Value = attribute.DefaultValue;
+                            attributeValue = new AttributeValueCache( attribute.Id,
+                                entity?.Id,
+                                attribute.DefaultValue,
+                                attribute.DefaultPersistedTextValue,
+                                attribute.DefaultPersistedHtmlValue,
+                                attribute.DefaultPersistedCondensedTextValue,
+                                attribute.DefaultPersistedCondensedHtmlValue,
+                                attribute.IsDefaultPersistedValueDirty );
                         }
 
                         attributeValues[attribute.Key] = attributeValue;
@@ -945,7 +974,7 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="attributes">The attributes whose values we are interested in.</param>
         /// <param name="rockContext">The rock context to use when accessing the database.</param>
         /// <returns>A dictionary of all values loaded.</returns>
-        private static Dictionary<(int RealEntityId, int AttributeId), (int EntityId, string Value)> LoadAttributeValues( List<LoadAttributesKey> entityKeys, List<AttributeCache> attributes, RockContext rockContext )
+        private static Dictionary<(int RealEntityId, int AttributeId), AttributeItemValue> LoadAttributeValues( List<LoadAttributesKey> entityKeys, List<AttributeCache> attributes, RockContext rockContext )
         {
             // Initialize the EntityKey SQL parameter.
             var entityIdsTable = new DataTable();
@@ -978,7 +1007,17 @@ This can be due to multiple threads updating the same attribute at the same time
             {
                 items = rockContext.Database.SqlQuery<AttributeItemValue>(
                         @"
-SELECT A.[EntityTypeId], AV.[EntityId], entityKey.[RealEntityId], AV.[AttributeId], AV.[Value]
+SELECT
+    A.[EntityTypeId],
+    AV.[EntityId],
+    entityKey.[RealEntityId],
+    AV.[AttributeId],
+    AV.[Value],
+    AV.[PersistedTextValue],
+    AV.[PersistedHtmlValue],
+    AV.[PersistedCondensedTextValue],
+    AV.[PersistedCondensedHtmlValue],
+    AV.[IsPersistedValueDirty]
 FROM [AttributeValue] AV
 INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
 INNER JOIN @EntityKey entityKey ON entityKey.[EntityTypeId] = A.[EntityTypeId] AND entityKey.[EntityId] = AV.[EntityId]",
@@ -1004,7 +1043,17 @@ INNER JOIN @EntityKey entityKey ON entityKey.[EntityTypeId] = A.[EntityTypeId] A
 
                 items = rockContext.Database.SqlQuery<AttributeItemValue>(
                         @"
-SELECT A.[EntityTypeId], AV.[EntityId], entityKey.[RealEntityId], AV.[AttributeId], AV.[Value]
+SELECT
+    A.[EntityTypeId],
+    AV.[EntityId],
+    entityKey.[RealEntityId],
+    AV.[AttributeId],
+    AV.[Value],
+    AV.[PersistedTextValue],
+    AV.[PersistedHtmlValue],
+    AV.[PersistedCondensedTextValue],
+    AV.[PersistedCondensedHtmlValue],
+    AV.[IsPersistedValueDirty]
 FROM [AttributeValue] AV
 INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
 INNER JOIN @EntityKey entityKey ON entityKey.[EntityTypeId] = A.[EntityTypeId] AND entityKey.[EntityId] = AV.[EntityId]
@@ -1013,7 +1062,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 .ToList();
             }
 
-            return items.ToDictionary( i => ( i.RealEntityId, i.AttributeId ), i => ( i.EntityId, i.Value ) );
+            return items.ToDictionary( i => ( i.RealEntityId, i.AttributeId ), i => i );
         }
 
         #endregion
@@ -2358,9 +2407,17 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                         var value = item.Value;
                         if ( fieldType != null && value != null )
                         {
-                            var attributeValue = new AttributeValueCache();
-                            attributeValue.AttributeId = value.AttributeId;
-                            attributeValue.Value = fieldType.GetCopyValue( value.Value, rockContext );
+                            var copyValue = fieldType.GetCopyValue( value.Value, rockContext );
+
+                            var attributeValue = new AttributeValueCache( value.AttributeId,
+                                null,
+                                copyValue,
+                                value.PersistedTextValue,
+                                value.PersistedHtmlValue,
+                                value.PersistedCondensedTextValue,
+                                value.PersistedCondensedHtmlValue,
+                                value.IsPersistedValueDirty );
+
                             target.AttributeValues.Add( item.Key, attributeValue );
                         }
                         else
@@ -2928,6 +2985,36 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
             /// </summary>
             /// <value>The value from AttributeValue.</value>
             public string Value { get; set; }
+
+            /// <summary>
+            /// Gets or sets the persisted text value.
+            /// </summary>
+            /// <value>The persisted text value.</value>
+            public string PersistedTextValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the persisted HTML value.
+            /// </summary>
+            /// <value>The persisted HTML value.</value>
+            public string PersistedHtmlValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the persisted condensed text value.
+            /// </summary>
+            /// <value>The persisted condensed text value.</value>
+            public string PersistedCondensedTextValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the persisted condensed HTML value.
+            /// </summary>
+            /// <value>The persisted condensed HTML value.</value>
+            public string PersistedCondensedHtmlValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this persisted value is dirty.
+            /// </summary>
+            /// <value><c>true</c> if this this persisted value is dirty; otherwise, <c>false</c>.</value>
+            public bool IsPersistedValueDirty { get; set; }
         }
 
         #endregion

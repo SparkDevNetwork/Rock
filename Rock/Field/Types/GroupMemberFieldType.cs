@@ -776,9 +776,9 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var guid = privateValue.AsGuidOrNull();
+            var guids = privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
 
-            if ( !guid.HasValue )
+            if ( !guids.Any() )
             {
                 return null;
             }
@@ -787,24 +787,30 @@ namespace Rock.Field.Types
             {
                 var idValues = new GroupMemberService( rockContext )
                     .Queryable()
-                    .Where( gm => gm.Guid == guid.Value )
+                    .Where( gm => guids.Contains( gm.Guid ) )
                     .Select( gm => new
                     {
                         gm.Id,
                         gm.PersonId
                     } )
-                    .FirstOrDefault();
+                    .ToList();
 
-                if ( idValues == null )
+                if ( !idValues.Any() )
                 {
                     return null;
                 }
 
-                return new List<ReferencedEntity>
+                var groupMemberEntityTypeId = EntityTypeCache.GetId<GroupMember>().Value;
+                var personEntityTypeId = EntityTypeCache.GetId<Person>().Value;
+                var entityReferences = new List<ReferencedEntity>();
+
+                foreach ( var ids in idValues )
                 {
-                    new ReferencedEntity( EntityTypeCache.GetId<GroupMember>().Value, idValues.Id ),
-                    new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, idValues.PersonId )
-                };
+                    entityReferences.Add( new ReferencedEntity( groupMemberEntityTypeId, ids.Id ) );
+                    entityReferences.Add( new ReferencedEntity( personEntityTypeId, ids.PersonId ) );
+                }
+
+                return entityReferences;
             }
         }
 

@@ -62,6 +62,12 @@
     <Compile Include="Blocks\Cms\ContentCollectionView\SearchResultSourceBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderDetail\MediaFolderBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderDetail\MediaFolderDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetBag.cs" />
+    <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
@@ -352,8 +358,14 @@
     <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
     <Compile Include="Reporting\FieldFilterSourceBag.cs" />
     <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />
     <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PagePickerGetPageRoutesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PageRouteValueBag.cs" />
+    <Compile Include="Rest\Controls\PagePickerGetPageNameOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PagePickerGetSelectedPageHierarchyOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PagePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\StepTypePickerGetStepTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\StepStatusPickerGetStepStatusesOptionsBag.cs" />
     <Compile Include="Rest\Controls\InteractionComponentPickerGetInteractionComponentsOptionsBag.cs" />

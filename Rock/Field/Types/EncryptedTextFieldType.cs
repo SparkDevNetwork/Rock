@@ -267,5 +267,16 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            // Persisted values store the unencrypted value in the database, which is bad.
+            return false;
+        }
+
+        #endregion
+
     }
 }
