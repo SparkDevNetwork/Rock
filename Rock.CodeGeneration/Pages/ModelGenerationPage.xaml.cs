@@ -439,6 +439,7 @@ namespace Rock.CodeGeneration.Pages
                                 if ( IsServiceChecked )
                                 {
                                     WriteServiceFile( ServiceFolder, type );
+                                    EnsureEntityTypeSystemGuid( ServiceFolder, type );
                                 }
 
                                 if ( IsRestChecked )
@@ -647,6 +648,8 @@ namespace Rock.CodeGeneration.Pages
                         // types that OK based on how they are used
                         var ignoredThreadSafeTypeWarning = new Type[] {
                             typeof(Rock.UniversalSearch.IndexComponents.Lucene),
+                            typeof(Rock.Cms.ContentCollection.IndexComponents.Elasticsearch),
+                            typeof(Rock.Cms.ContentCollection.IndexComponents.Lucene)
                         };
 
                         var ignoredThreadSafeFieldWarning = new string[]
@@ -939,6 +942,45 @@ GO
             {
                 _modelItems[i].IsChecked = selected;
             }
+        }
+
+        /// <summary>
+        /// Ensures the entity type Guid is in SystemGuid\EntityType
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        /// <param name="type">The type.</param>
+        private void EnsureEntityTypeSystemGuid( string rootFolder, Type type )
+        {
+            var entityTypeSystemGuid = type.GetCustomAttribute<SystemGuid.EntityTypeGuidAttribute>( inherit: false )?.Guid;
+            if ( !entityTypeSystemGuid.HasValue )
+            {
+                return;
+            }
+
+            var guidString = entityTypeSystemGuid.ToString();
+
+            var entityTypeSystemGuidFileName = new FileInfo( Path.Combine( rootFolder, "SystemGuid\\EntityType.cs" ) );
+
+            var fileLines = File.ReadAllLines( entityTypeSystemGuidFileName.FullName );
+            if ( fileLines.Any( x => x.IndexOf( guidString, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+            {
+                // already in there
+                return;
+            }
+
+            var entityTypeConstName = type.Name.SplitCase().Replace( " ", "_" ).ToUpper();
+
+            string newEntityTypeGuidCode = $@"
+        /// <summary>
+        /// The EntityType Guid for <see cref=""{type.FullName}""/> 
+        /// </summary>
+        public const string {entityTypeConstName} = ""{guidString.ToUpper()}"";";
+
+            var updatedFileLines = fileLines.Where( a => a != "}" && a != "    }");
+            updatedFileLines = updatedFileLines.Append( newEntityTypeGuidCode );
+            updatedFileLines = updatedFileLines.Append( "    }");
+            updatedFileLines = updatedFileLines.Append( "}");
+            File.WriteAllLines( entityTypeSystemGuidFileName.FullName, updatedFileLines.ToArray() );
         }
 
         /// <summary>
