@@ -48,19 +48,20 @@ namespace Rock.Migrations
                 // Qualifier for attribute: ParticipationType
                 RockMigrationHelper.UpdateAttributeQualifier( SystemGuid.Attribute.PARTICIPATION_TYPE, "repeatColumns", @"", "04D5573C-4671-45B7-A591-13EC6EA0FF99" );
 
-                // Update the Fundraising Entry Transaction Header
-                string oldAssignParticipantReference;
-                string newAssignParticipantReference;
+            }
+            // Update the Fundraising Entry Transaction Header
+            string oldAssignParticipantReference;
+            string newAssignParticipantReference;
 
-                string oldParticipantReference;
-                string newParticipantReference;
+            string oldParticipantReference;
+            string newParticipantReference;
 
-                // This is for the Participant Lava.
-                oldAssignParticipantReference = "{% assign groupMember = TransactionEntity %}";
-                newAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
+            // This is for the Participant Lava.
+            oldAssignParticipantReference = "{% assign groupMember = TransactionEntity %}";
+            newAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
 {% assign participationType = PageParameter[''ParticipationMode''] %}";
 
-                Sql( $@"
+            Sql( $@"
                     UPDATE [AttributeValue]
                     SET [Value] = REPLACE([Value],'{oldAssignParticipantReference}','{newAssignParticipantReference}')
                     WHERE [Id] IN (SELECT av.[Id]
@@ -70,8 +71,8 @@ namespace Rock.Migrations
                 " );
 
 
-                oldParticipantReference = "{{ groupMember.Person.FullName }}";
-                newParticipantReference = @"
+            oldParticipantReference = "{{ groupMember.Person.FullName }}";
+            newParticipantReference = @"
                  {% if participationType == ''2'' %}
                    {{ groupMember.Person.PrimaryFamily.Name }}
                  {% else %}
@@ -79,7 +80,7 @@ namespace Rock.Migrations
                  {% endif  %}
                     ";
 
-                Sql( $@"
+            Sql( $@"
                     UPDATE [AttributeValue]
                     SET [Value] = REPLACE([Value],'{oldParticipantReference}','{newParticipantReference}')
                     WHERE [Id] IN (SELECT av.[Id]
@@ -87,7 +88,14 @@ namespace Rock.Migrations
                             INNER JOIN [Attribute] a ON a.[Id] = av.[AttributeId]
                             WHERE a.[Guid] = '{SystemGuid.Attribute.FUNDRAISING_TRANSACTION_HEADER}')
                 " );
-            }
+
+
+            // Rock.Model.RequirementCheckType.Manual enum value is '2'.
+            Sql( $@"UPDATE gmr
+                    SET gmr.[WasManuallyCompleted] = 1, gmr.[ManuallyCompletedDateTime] = gmr.[RequirementMetDateTime]
+                        FROM [dbo].[GroupRequirementType] grt INNER JOIN [dbo].[GroupRequirement] gr ON grt.[Id] = gr.[GroupRequirementTypeId] 
+                        INNER JOIN [dbo].[GroupMemberRequirement] gmr ON gr.[Id] = gmr.[GroupRequirementId]
+                        WHERE (gmr.[RequirementMetDateTime] IS NOT NULL AND grt.[RequirementCheckType] = 2" );
         }
 
         /// <summary>
@@ -116,8 +124,8 @@ namespace Rock.Migrations
                 " );
 
 
-                oldParticipantReference = "{{ groupMember.Person.FullName }}";
-                newParticipantReference = @"
+            oldParticipantReference = "{{ groupMember.Person.FullName }}";
+            newParticipantReference = @"
                  {% if participationType == ''2'' %}
                    {{ groupMember.Person.PrimaryFamily.Name }}
                  {% else %}
@@ -125,7 +133,7 @@ namespace Rock.Migrations
                  {% endif  %}
                     ";
 
-                Sql( $@"
+            Sql( $@"
                     UPDATE [AttributeValue]
                     SET [Value] = REPLACE([Value],'{newParticipantReference}','{oldParticipantReference}')
                     WHERE [Id] IN (SELECT av.[Id]
