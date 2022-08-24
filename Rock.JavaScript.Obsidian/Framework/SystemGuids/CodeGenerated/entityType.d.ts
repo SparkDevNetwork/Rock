@@ -233,6 +233,8 @@ export const enum EntityType {
     Note = "53DC1E78-14A5-44DE-903F-6A2CB02164E7",
     /** The guid for the Rock.Model.Page entity */
     Page = "E104DCDF-247C-4CED-A119-8CC51632761F",
+    /** The guid for the Rock.Model.PageShortLink entity. */
+    PageShortLink = "83D8C6DF-1D53-438B-93B2-75A2038BBEE6",
     /** The guid for the Rock.Model.Person entity */
     Person = "72657ED8-D16E-492E-AC12-144C5E7567E7",
     /** The guid for the Rock.Model.PersonAlias entity */

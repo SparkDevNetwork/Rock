@@ -551,6 +551,11 @@ namespace Rock.SystemGuid
         public const string PAGE = "E104DCDF-247C-4CED-A119-8CC51632761F";
 
         /// <summary>
+        /// The guid for the Rock.Model.PageShortLink entity.
+        /// </summary>
+        public const string PAGE_SHORT_LINK = "83D8C6DF-1D53-438B-93B2-75A2038BBEE6";
+
+        /// <summary>
         /// The guid for the Rock.Model.Person entity
         /// </summary>
         public const string PERSON = "72657ED8-D16E-492E-AC12-144C5E7567E7";
