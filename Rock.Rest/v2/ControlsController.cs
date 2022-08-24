@@ -1500,7 +1500,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupPickerGetChildren" )]
         [Authenticate]
-        [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
+        [Rock.SystemGuid.RestActionGuid( "c4f5432a-eb1e-4235-a5cd-bde37cc324f7" )]
         public IHttpActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
