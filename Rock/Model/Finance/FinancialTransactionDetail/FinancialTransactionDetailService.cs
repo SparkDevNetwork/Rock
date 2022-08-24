@@ -49,6 +49,25 @@ namespace Rock.Model
                     t.Transaction.AuthorizedPersonAlias.Person != null );
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entityTypeIdForGroupMember"></param>
+        /// <param name="groupMembers"></param>
+        /// <returns></returns>
+        public decimal GetContributionsForGroupMemberList( int? entityTypeIdForGroupMember, List<int> groupMembers )
+        {
+            if ( groupMembers.Count() == 0 )
+            {
+                return 0;
+            }
+            return Queryable()
+        .Where( d => d.EntityTypeId == entityTypeIdForGroupMember
+                && d.EntityId.HasValue
+                && groupMembers.Contains( d.EntityId.Value ) )
+        .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
+        }
+
         #region Stored Procedure Queries
 
         /// <summary>
