@@ -106,7 +106,7 @@ export default defineComponent({
         const campusType = ref(props.modelValue.campusType ?? "");
         const campusStatus = ref(props.modelValue.campusStatus ?? "");
         const gender = ref(props.modelValue.gender?.toString() ?? FormFieldVisibility.Hidden.toString());
-        const email = ref(props.modelValue.gender?.toString() ?? FormFieldVisibility.Hidden.toString());
+        const email = ref(props.modelValue.email?.toString() ?? FormFieldVisibility.Hidden.toString());
         const mobilePhone = ref(props.modelValue.mobilePhone?.toString() ?? FormFieldVisibility.Hidden.toString());
         const birthdate = ref(props.modelValue.birthdate?.toString() ?? FormFieldVisibility.Hidden.toString());
         const address = ref(props.modelValue.address?.toString() ?? FormFieldVisibility.Hidden.toString());
@@ -155,7 +155,7 @@ export default defineComponent({
             campusType.value = props.modelValue.campusType ?? "";
             campusStatus.value = props.modelValue.campusStatus ?? "";
             gender.value = props.modelValue.gender?.toString() ?? FormFieldVisibility.Hidden.toString();
-            email.value = props.modelValue.gender?.toString() ?? FormFieldVisibility.Hidden.toString();
+            email.value = props.modelValue.email?.toString() ?? FormFieldVisibility.Hidden.toString();
             mobilePhone.value = props.modelValue.mobilePhone?.toString() ?? FormFieldVisibility.Hidden.toString();
             birthdate.value = props.modelValue.birthdate?.toString() ?? FormFieldVisibility.Hidden.toString();
             address.value = props.modelValue.address?.toString() ?? FormFieldVisibility.Hidden.toString();
