@@ -292,7 +292,13 @@ namespace Rock.Lava.RockLiquid.Blocks
                 }
                 else
                 {
-                    person = LavaHelper.GetCurrentPerson( context );
+                    // If the Lava context contains a Person variable, prefer it to the CurrentPerson.
+                    // This allows the block to be used in processes where there is no active user.
+                    person = context.GetMergeField( "Person" ) as Person;
+                    if ( person == null )
+                    {
+                        person = LavaHelper.GetCurrentPerson( context );
+                    }
                 }
 
                 List<int> personSegmentIdList;
