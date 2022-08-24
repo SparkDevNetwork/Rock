@@ -45,7 +45,7 @@ namespace Rock.Slingshot
     public class SlingshotImporter
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Importer"/> class and extracts the zip folder.
+        /// Initializes a new instance of the <see cref="Importer"/> class.
         /// </summary>
         /// <param name="slingshotFileName">Name of the slingshot file.</param>
         public SlingshotImporter( string slingshotFileName, string foreignSystemKey, BulkImporter.ImportUpdateType importUpdateType, EventHandler<object> onProgress = null )
@@ -935,9 +935,9 @@ namespace Rock.Slingshot
                         financialAccountImport.Name = "Unnamed Financial Account";
                     }
 
-                    if ( slingshotFinancialAccount.CampusId.HasValue )
+                    if ( slingshotFinancialAccount.CampusId.HasValue && this.CampusLookupByForeignId.ContainsKey( slingshotFinancialAccount.CampusId.Value ) )
                     {
-                        financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
+                        financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value].Id;
                     }
 
                     return financialAccountImport;
@@ -960,9 +960,9 @@ namespace Rock.Slingshot
             var financialBatchImportList = new List<Model.FinancialBatchImport>();
             foreach ( var slingshotFinancialBatch in this.SlingshotFinancialBatchList )
             {
-                int? campusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : null;
-                var newFinancialBatchImport = BulkImporter.ConvertModelWithLogging<Model.FinancialBatchImport>( slingshotFinancialBatch, () =>
-                {
+                var campusIdHasValue = ( slingshotFinancialBatch.CampusId.HasValue && this.CampusLookupByForeignId.ContainsKey( slingshotFinancialBatch.CampusId.Value ) );
+                int? campusId = campusIdHasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : null;
+                var newFinancialBatchImport = BulkImporter.ConvertModelWithLogging<Model.FinancialBatchImport>( slingshotFinancialBatch, () => {
                     var financialBatchImport = new Model.FinancialBatchImport()
                     {
                         FinancialBatchForeignId = slingshotFinancialBatch.Id,
@@ -1237,9 +1237,9 @@ namespace Rock.Slingshot
                         System.Diagnostics.Debug.WriteLine( $"#### Duplicate AttendanceId detected:{attendanceImport.AttendanceForeignId.Value} ####" );
                     }
 
-                    if ( slingshotAttendance.CampusId.HasValue )
+                    if ( slingshotAttendance.CampusId.HasValue && this.CampusLookupByForeignId.ContainsKey( slingshotAttendance.CampusId.Value ) )
                     {
-                        attendanceImport.CampusId = this.CampusLookupByForeignId[slingshotAttendance.CampusId.Value]?.Id;
+                        attendanceImport.CampusId = this.CampusLookupByForeignId[slingshotAttendance.CampusId.Value].Id;
                     }
 
                     return attendanceImport;
@@ -1359,7 +1359,10 @@ namespace Rock.Slingshot
 
                     if ( slingshotGroup.CampusId.HasValue )
                     {
-                        groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
+                        if ( this.CampusLookupByForeignId.ContainsKey( slingshotGroup.CampusId.Value ) )
+                        {
+                            groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value].Id;
+                        }
                     }
 
                     // Group Members
@@ -1439,8 +1442,11 @@ namespace Rock.Slingshot
                     groupImport.AttributeValues = new List<Model.AttributeValueImport>();
                     foreach ( var slingshotGroupAttributeValue in slingshotGroup.Attributes )
                     {
-                        int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
-                        groupImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotGroupAttributeValue.AttributeValue ) );
+                        if ( this.GroupAttributeKeyLookup.ContainsKey( slingshotGroupAttributeValue.AttributeKey ) )
+                        {
+                            int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
+                            groupImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotGroupAttributeValue.AttributeValue ) );
+                        }
                     }
 
                     return groupImport;
@@ -1562,9 +1568,9 @@ namespace Rock.Slingshot
                         throw new Exception( "personImport.FamilyForeignId must be greater than 0 or null" );
                     }
 
-                    if ( ( slingshotBusiness.Campus?.CampusId ?? 0 ) != 0 )
+                    if ( ( slingshotBusiness.Campus?.CampusId ?? 0 ) != 0 && this.CampusLookupByForeignId.ContainsKey( slingshotBusiness.Campus.CampusId ) )
                     {
-                        businessImport.CampusId = this.CampusLookupByForeignId[slingshotBusiness.Campus.CampusId]?.Id;
+                        businessImport.CampusId = this.CampusLookupByForeignId[slingshotBusiness.Campus.CampusId].Id;
                     }
 
                     switch ( slingshotBusiness.RecordStatus )
@@ -1679,8 +1685,11 @@ namespace Rock.Slingshot
                     // Attribute Values
                     foreach ( var slingshotBusinessAttributeValue in slingshotBusiness.Attributes )
                     {
-                        int attributeId = this.PersonAttributeKeyLookup[slingshotBusinessAttributeValue.AttributeKey].Id;
-                        businessImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotBusinessAttributeValue.AttributeValue ) );
+                        if ( this.PersonAttributeKeyLookup.ContainsKey( slingshotBusinessAttributeValue.AttributeKey ) )
+                        {
+                            int attributeId = this.PersonAttributeKeyLookup[slingshotBusinessAttributeValue.AttributeKey].Id;
+                            businessImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotBusinessAttributeValue.AttributeValue ) );
+                        }
                     }
 
                     return businessImport;
@@ -1829,9 +1838,9 @@ namespace Rock.Slingshot
                             break;
                     }
 
-                    if ( ( slingshotPerson.Campus?.CampusId ?? 0 ) != 0 )
+                    if ( ( slingshotPerson.Campus?.CampusId ?? 0 ) != 0 && this.CampusLookupByForeignId.ContainsKey( slingshotPerson.Campus.CampusId ) )
                     {
-                        personImport.CampusId = this.CampusLookupByForeignId[slingshotPerson.Campus.CampusId]?.Id;
+                        personImport.CampusId = this.CampusLookupByForeignId[slingshotPerson.Campus.CampusId].Id;
                     }
 
                     switch ( slingshotPerson.RecordStatus )
@@ -2015,7 +2024,7 @@ namespace Rock.Slingshot
                                 break;
 
                             case SlingshotCore.Model.AddressType.Other:
-                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid()].Id;
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid()].Id;
                                 break;
                         }
 
@@ -2050,8 +2059,11 @@ namespace Rock.Slingshot
                     // Attribute Values
                     foreach ( var slingshotPersonAttributeValue in slingshotPerson.Attributes )
                     {
-                        int attributeId = this.PersonAttributeKeyLookup[slingshotPersonAttributeValue.AttributeKey].Id;
-                        personImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotPersonAttributeValue.AttributeValue ) );
+                        if ( this.PersonAttributeKeyLookup.ContainsKey( slingshotPersonAttributeValue.AttributeKey ) )
+                        {
+                            int attributeId = this.PersonAttributeKeyLookup[slingshotPersonAttributeValue.AttributeKey].Id;
+                            personImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotPersonAttributeValue.AttributeValue ) );
+                        }
                     }
 
                     return personImport;
@@ -2548,6 +2560,11 @@ namespace Rock.Slingshot
             var slingshotFinancialTransactionLookup = this.SlingshotFinancialTransactionList.ToDictionary( k => k.Id, v => v );
             foreach ( var slingshotFinancialTransactionDetail in slingshotFinancialTransactionDetailList )
             {
+                if ( !slingshotFinancialTransactionLookup.ContainsKey( slingshotFinancialTransactionDetail.TransactionId ) )
+                {
+                    throw new Exception( $"Transaction import error:  Unable to import orphaned transaction details with transaction id {slingshotFinancialTransactionDetail.TransactionId}." );
+                }
+
                 slingshotFinancialTransactionLookup[slingshotFinancialTransactionDetail.TransactionId].FinancialTransactionDetails.Add( slingshotFinancialTransactionDetail );
             }
 
