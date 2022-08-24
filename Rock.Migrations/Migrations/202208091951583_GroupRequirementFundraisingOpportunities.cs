@@ -55,7 +55,7 @@ namespace Rock.Migrations
                 string oldParticipantReference;
                 string newParticipantReference;
 
-                // This is for the Structured Content Editor Tools, and will update old class references.
+                // This is for the Participant Lava.
                 oldAssignParticipantReference = "{% assign groupMember = TransactionEntity %}";
                 newAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
 {% assign participationType = PageParameter[''ParticipationMode''] %}";
