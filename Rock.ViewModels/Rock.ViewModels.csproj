@@ -72,6 +72,8 @@
     <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\AssetStorageProviderDetail\AssetStorageProviderBag.cs" />
+    <Compile Include="Blocks\Core\AssetStorageProviderDetail\AssetStorageProviderDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />

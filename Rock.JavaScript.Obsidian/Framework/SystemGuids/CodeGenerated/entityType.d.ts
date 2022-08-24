@@ -31,6 +31,8 @@ export const enum EntityType {
     AchievementTypePrerequisite = "5362DB19-B8E1-4378-A66A-FB097CE3AB90",
     /** The  guid for the Rock.Model.AssessmentType entity. */
     AssessmentType = "D17A28AC-F529-4AB0-A790-C21F9E74AC89",
+    /** The  guid for the Rock.Model.AssetStorageProvider entity. */
+    AssetstorageProvider = "E0B4BE77-B29F-4BD4-AE45-CF833AC3A482",
     /** The guid for the Rock.Model.Attendance entity. */
     Attendance = "4CCB856F-51E0-4E48-B94A-1705EFBA6C9E",
     /** The guid for the Rock.Model.Attribute entity. */
@@ -231,8 +233,6 @@ export const enum EntityType {
     Note = "53DC1E78-14A5-44DE-903F-6A2CB02164E7",
     /** The guid for the Rock.Model.Page entity */
     Page = "E104DCDF-247C-4CED-A119-8CC51632761F",
-    /** The guid for the Rock.Model.PageShortLink entity */
-    PageShortLink = "83D8C6DF-1D53-438B-93B2-75A2038BBEE6",
     /** The guid for the Rock.Model.Person entity */
     Person = "72657ED8-D16E-492E-AC12-144C5E7567E7",
     /** The guid for the Rock.Model.PersonAlias entity */

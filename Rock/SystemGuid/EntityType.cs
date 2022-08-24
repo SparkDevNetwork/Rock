@@ -44,6 +44,11 @@ namespace Rock.SystemGuid
         public const string ASSESSMENT_TYPE = "D17A28AC-F529-4AB0-A790-C21F9E74AC89";
 
         /// <summary>
+        /// The  guid for the Rock.Model.AssetStorageProvider entity.
+        /// </summary>
+        public const string ASSETSTORAGE_PROVIDER = "E0B4BE77-B29F-4BD4-AE45-CF833AC3A482";
+
+        /// <summary>
         /// The guid for the Rock.Model.Attendance entity.
         /// </summary>
         public const string ATTENDANCE = "4CCB856F-51E0-4E48-B94A-1705EFBA6C9E";

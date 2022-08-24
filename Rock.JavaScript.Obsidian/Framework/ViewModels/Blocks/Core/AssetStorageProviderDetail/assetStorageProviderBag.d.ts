@@ -24,18 +24,18 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-export type PageShortLinkBag = {
-    /** Gets or sets the Rock.Model.Site that is associated with this PageShortLink. */
-    site?: ListItemBag | null;
+export type AssetStorageProviderBag = {
+    /** Gets or sets the description. */
+    description?: string | null;
 
-    /** Gets or sets the token. */
-    token?: string | null;
+    /** Gets or sets the type of the entity. */
+    entityType?: ListItemBag | null;
 
-    /** Gets or sets the URL. */
-    url?: string | null;
+    /** Gets or sets a flag indicating if this item is active or not. */
+    isActive: boolean;
 
-    /** Gets or sets the link to be copied to the clipboard in the UI when the user clicks the copy button in the view mode. */
-    copyLink?: string | null;
+    /** Gets or sets the name. */
+    name?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

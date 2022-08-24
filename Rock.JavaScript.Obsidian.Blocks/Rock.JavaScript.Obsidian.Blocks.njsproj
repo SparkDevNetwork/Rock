@@ -49,6 +49,7 @@
     <Folder Include="src\Cms\PersistedDatasetDetail\" />
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="src\Core\" />
+    <Folder Include="src\Core\AssetStorageProviderDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Crm\" />
     <Folder Include="src\Crm\AssessmentTypeDetail\" />
@@ -108,6 +109,10 @@
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\types.d.ts" />
     <TypeScriptCompile Include="src\Cms\PersonalLinkSectionDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Core\assetStorageProviderDetail.ts" />
+    <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.d.ts" />
+    <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
