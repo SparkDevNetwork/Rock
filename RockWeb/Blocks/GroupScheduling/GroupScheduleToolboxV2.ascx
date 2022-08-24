@@ -62,9 +62,9 @@
                         <div class="col-md-4">
                             <div class="schedule-actions">
                                 <asp:Literal ID="lActionHeader" runat="server" />
-                                <asp:LinkButton ID="btnScheduleUnavailability" runat="server" CssClass="btn btn-default btn-block" Text="Schedule Unavailability" OnClick="btnScheduleUnavailability_Click" />
-                                <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-default btn-block" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" />
-                                <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-default btn-block" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" />
+                                <asp:LinkButton ID="btnScheduleUnavailability" runat="server" CssClass="btn btn-default btn-block" Text="Schedule Unavailability" OnClick="btnScheduleUnavailability_Click" CausesValidation="false" />
+                                <asp:LinkButton ID="btnUpdateSchedulePreferences" runat="server" CssClass="btn btn-default btn-block" Text="Update Schedule Preferences" OnClick="btnUpdateSchedulePreferences_Click" CausesValidation="false" />
+                                <asp:LinkButton ID="btnSignUp" runat="server" CssClass="btn btn-default btn-block" Text="Sign-Up for Additional Times" OnClick="btnSignUp_Click" CausesValidation="false" />
                             </div>
                         </div>
                     </div>
