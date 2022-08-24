@@ -153,6 +153,7 @@
     <TypeScriptCompile Include="Framework\Controls\financialStatementTemplatePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\following.ts" />
     <TypeScriptCompile Include="Framework\Controls\gradePicker.ts" />
+    <TypeScriptCompile Include="Framework\Controls\groupPicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\pagePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\streakTypePicker.ts" />
     <TypeScriptCompile Include="Framework\Controls\stepTypePicker.ts" />
@@ -738,6 +739,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\followingSetFollowingOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\gradePickerGetGradesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupMemberPickerGetGroupMembersOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\groupPickerGetChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\interactionComponentPickerGetInteractionComponentsOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\locationPickerGetActiveChildrenOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\pagePickerGetChildrenOptionsBag.d.ts" />

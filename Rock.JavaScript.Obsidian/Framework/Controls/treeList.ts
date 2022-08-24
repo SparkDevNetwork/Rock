@@ -161,6 +161,16 @@ const treeItem = defineComponent({
         };
 
         /**
+         * If something changes to make existing children no longer exist in the list,
+         * unexpand this item
+         */
+        watch(hasChildren, () => {
+            if (!hasChildren.value && showChildren.value) {
+                onExpand();
+            }
+        });
+
+        /**
          * Event handler for when a child item is expanded.
          *
          * @param item The item that was expanded.

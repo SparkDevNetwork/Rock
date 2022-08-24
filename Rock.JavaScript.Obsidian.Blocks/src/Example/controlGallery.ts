@@ -160,6 +160,7 @@ import RockValidation from "@Obsidian/Controls/rockValidation";
 import TabbedContent from "@Obsidian/Controls/tabbedContent";
 import ValueDetailList from "@Obsidian/Controls/valueDetailList";
 import PagePicker from "@Obsidian/Controls/pagePicker";
+import GroupPicker from "@Obsidian/Controls/groupPicker";
 
 // #region Gallery Support
 
@@ -5417,6 +5418,56 @@ const pagePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates group picker */
+const groupPickerGallery = defineComponent({
+    name: "GroupPickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        GroupPicker
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            limitToSchedulingEnabled: ref(false),
+            limitToRSVPEnabled: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("groupPicker"),
+            exampleCode: `<GroupPicker label="Group" v-model="value" :multiple="false" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+
+    <GroupPicker label="Group"
+        v-model="value"
+        :multiple="multiple"
+        :limitToSchedulingEnabled="limitToSchedulingEnabled"
+        :limitToRSVPEnabled="limitToRSVPEnabled" />
+
+    <template #settings>
+
+    <div class="row">
+        <div class="col-md-4">
+            <CheckBox label="Multiple" v-model="multiple" />
+        </div>
+        <div class="col-md-4">
+            <CheckBox label="Limit to Scheduling Enabled" v-model="limitToSchedulingEnabled" />
+        </div>
+        <div class="col-md-4">
+            <CheckBox label="Limit to RSVP Enabled" v-model="limitToRSVPEnabled" />
+        </div>
+    </div>
+
+        <p class="text-semibold font-italic">Not all options have been implemented yet.</p>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     alertGallery,
@@ -5518,7 +5569,8 @@ const controlGalleryComponents: Record<string, Component> = [
     transitionVerticalCollapseGallery,
     valueDetailListGallery,
     pagePickerGallery,
-    connectionRequestPickerGallery
+    connectionRequestPickerGallery,
+    groupPickerGallery
 ]
     // Sort list by component name
     .sort((a, b) => a.name.localeCompare(b.name))

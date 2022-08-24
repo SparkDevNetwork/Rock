@@ -1490,6 +1490,189 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Group Picker
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
+        public IHttpActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupService = new GroupService(rockContext);
+
+                List<int> includedGroupTypeIds = options.IncludedGroupTypeGuids
+                    .Select( ( guid ) =>
+                    {
+                        var gt = GroupTypeCache.Get( guid );
+
+                        if (gt != null)
+                        {
+                            return gt.Id;
+                        }
+
+                        return 0;
+                    } )
+                    .ToList();
+
+                // if specific group types are specified, show the groups regardless of ShowInNavigation
+                bool limitToShowInNavigation = !includedGroupTypeIds.Any();
+
+                Rock.Model.Group parentGroup = groupService.GetByGuid( options.Guid ?? Guid.Empty );
+                int id = parentGroup == null ? 0 : parentGroup.Id;
+
+                Rock.Model.Group rootGroup = groupService.GetByGuid( options.RootGroupGuid ?? Guid.Empty );
+                int rootGroupId = rootGroup == null ? 0 : rootGroup.Id;
+
+                var qry = groupService
+                    .GetChildren( id, rootGroupId, false, includedGroupTypeIds, new List<int>(), options.IncludeInactiveGroups, limitToShowInNavigation, 0, false, false )
+                    .AsNoTracking();
+
+                List<Rock.Model.Group> groupList = new List<Rock.Model.Group>();
+                List<TreeItemBag> groupNameList = new List<TreeItemBag>();
+
+                var person = GetPerson();
+
+                if (parentGroup == null)
+                {
+                    parentGroup = rootGroup;
+                }
+
+                List<int> groupIdsWithSchedulingEnabledWithAncestors = null;
+                List<int> groupIdsWithRSVPEnabledWithAncestors = null;
+
+                var listOfChildGroups = qry.ToList().OrderBy( g => g.Order ).ThenBy( g => g.Name ).ToList();
+                if ( listOfChildGroups.Any() )
+                {
+                    if ( options.LimitToSchedulingEnabled )
+                    {
+                        groupIdsWithSchedulingEnabledWithAncestors = groupService.GetGroupIdsWithSchedulingEnabledWithAncestors();
+                    }
+
+                    if ( options.LimitToRSVPEnabled )
+                    {
+                        groupIdsWithRSVPEnabledWithAncestors = groupService.GetGroupIdsWithRSVPEnabledWithAncestors();
+                    }
+                }
+
+                foreach ( var group in listOfChildGroups )
+                {
+                    // we already have the ParentGroup record, so lets set it for each group to avoid a database round-trip during Auth
+                    group.ParentGroup = parentGroup;
+
+                    var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+                    //// Before checking Auth, filter based on the limitToSchedulingEnabled and limitToRSVPEnabled option.
+                    //// Auth takes longer to check, so if we can rule the group out sooner, that will save a bunch of time
+
+                    if ( options.LimitToSchedulingEnabled )
+                    {
+                        var includeGroup = false;
+                        if ( groupType?.IsSchedulingEnabled == true )
+                        {
+                            // if this group's group type has scheduling enabled, we will include this group
+                            includeGroup = true;
+                        }
+                        else
+                        {
+                            // if this group's group type does not have scheduling enabled, we will need to include it if any of its children
+                            // have scheduling enabled
+
+                            if ( groupIdsWithSchedulingEnabledWithAncestors != null )
+                            {
+                                bool hasChildScheduledEnabledGroups = groupIdsWithSchedulingEnabledWithAncestors.Contains( group.Id );
+                                if ( hasChildScheduledEnabledGroups )
+                                {
+                                    includeGroup = true;
+                                }
+                            }
+                        }
+
+                        if ( !includeGroup )
+                        {
+                            continue;
+                        }
+                    }
+
+                    if ( options.LimitToRSVPEnabled )
+                    {
+                        var includeGroup = false;
+                        if ( groupType?.EnableRSVP == true )
+                        {
+                            // if this group's group type has RSVP enabled, we will include this group
+                            includeGroup = true;
+                        }
+                        else
+                        {
+                            if ( groupIdsWithRSVPEnabledWithAncestors != null )
+                            {
+                                bool hasChildRSVPEnabledGroups = groupIdsWithRSVPEnabledWithAncestors.Contains( group.Id );
+                                if ( hasChildRSVPEnabledGroups )
+                                {
+                                    includeGroup = true;
+                                }
+                            }
+                        }
+
+                        if ( !includeGroup )
+                        {
+                            continue;
+                        }
+                    }
+
+                    bool groupIsAuthorized = group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+                    if ( !groupIsAuthorized )
+                    {
+                        continue;
+                    }
+
+                    groupList.Add( group );
+                    var treeViewItem = new TreeItemBag();
+                    treeViewItem.Value = group.Guid.ToString();
+                    treeViewItem.Text = group.Name;
+                    treeViewItem.IsActive = group.IsActive;
+
+                    // if there a IconCssClass is assigned, use that as the Icon.
+                    treeViewItem.IconCssClass = groupType?.IconCssClass;
+
+                    groupNameList.Add( treeViewItem );
+                }
+
+                // try to quickly figure out which items have Children
+                List<int> resultIds = groupList.Select( a => a.Id ).ToList();
+                var qryHasChildren = groupService.Queryable().AsNoTracking()
+                    .Where( g =>
+                        g.ParentGroupId.HasValue &&
+                        resultIds.Contains( g.ParentGroupId.Value ) );
+
+                if ( includedGroupTypeIds.Any() )
+                {
+                    qryHasChildren = qryHasChildren.Where( a => includedGroupTypeIds.Contains( a.GroupTypeId ) );
+                }
+
+                var qryHasChildrenList = qryHasChildren
+                    .Select( g => g.ParentGroup.Guid )
+                    .Distinct()
+                    .ToList();
+
+                foreach ( var g in groupNameList )
+                {
+                    Guid groupGuid = g.Value.AsGuid();
+                    g.HasChildren = qryHasChildrenList.Any( a => a == groupGuid );
+                }
+
+                return Ok( groupNameList );
+            }
+        }
+
+        #endregion
+
         #region Interaction Channel Picker
 
         /// <summary>
