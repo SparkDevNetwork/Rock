@@ -70,10 +70,10 @@ namespace Rock.Field.Types
                 return privateValue;
             }
 
-            var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) )?.ToList() ?? new List<EventCalendarCache>();
+            var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) ).Where( g => g != null ).ToList();
             if ( eventCalendars.Any() )
             {
-                return string.Join( ",", eventCalendars.Select( ec => ec.Name ) );
+                return string.Join( ", ", eventCalendars.Select( ec => ec.Name ) );
             }
 
             return privateValue;
