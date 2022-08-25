@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,7 @@ namespace Rock.Blocks.CMS
     /// <seealso cref="Rock.Blocks.RockObsidianDetailBlockType" />
 
     [DisplayName( "Page Short Link Detail" )]
-    [Category( "Obsidian > CMS" )]
+    [Category( "CMS" )]
     [Description( "Displays the details of a particular page short link." )]
     [IconCssClass( "fa fa-question" )]
 

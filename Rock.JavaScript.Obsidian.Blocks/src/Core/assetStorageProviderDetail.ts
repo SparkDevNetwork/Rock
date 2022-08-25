@@ -136,10 +136,10 @@ export default defineComponent({
          *
          * @returns true if the panel should leave edit mode; otherwise false.
          */
-        const onCancelEdit = async (): Promise<boolean> => {
+        const onCancelEdit = async (): Promise<boolean | string> => {
             if (!assetStorageProviderEditBag.value?.idKey) {
                 if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                    window.location.href = config.navigationUrls[NavigationUrlKey.ParentPage];
+                    return config.navigationUrls[NavigationUrlKey.ParentPage];
                 }
 
                 return false;
@@ -152,7 +152,7 @@ export default defineComponent({
          * Event handler for the Delete button being clicked. Sends the
          * delete request to the server and then redirects to the target page.
          */
-        const onDelete = async (): Promise<void> => {
+        const onDelete = async (): Promise<false | string> => {
             errorMessage.value = "";
 
             const result = await invokeBlockAction<string>("Delete", {
@@ -160,10 +160,11 @@ export default defineComponent({
             });
 
             if (result.isSuccess && result.data) {
-                window.location.href = result.data;
+                return result.data;
             }
             else {
                 errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete asset storage provider.";
+                return false;
             }
         };
 
@@ -211,7 +212,7 @@ export default defineComponent({
          *
          * @returns true if the panel should leave edit mode; otherwise false.
          */
-        const onSave = async (): Promise<boolean> => {
+        const onSave = async (): Promise<boolean | string> => {
             errorMessage.value = "";
 
             const data: DetailBlockBox<AssetStorageProviderBag, AssetStorageProviderDetailOptionsBag> = {
@@ -225,7 +226,7 @@ export default defineComponent({
             });
 
             if (result.isSuccess && config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                window.location.href = config.navigationUrls[NavigationUrlKey.ParentPage];
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
 
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save asset storage provider.";

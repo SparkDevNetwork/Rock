@@ -36,7 +36,7 @@ namespace Rock.Blocks.Core
     ///
 
     [DisplayName( "Asset Storage Provider Detail" )]
-    [Category( "Obsidian > Core" )]
+    [Category( "Core" )]
     [Description( "Displays the details of a particular asset storage provider." )]
     [IconCssClass( "fa fa-question" )]
 
