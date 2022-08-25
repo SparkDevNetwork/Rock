@@ -20,7 +20,10 @@
 .panel-collapsible {
   // Put toolbar shadow in front of grid.
   z-index: 10; // Set to 10 so the toolbar is in front of the panel-body and active pagination button.
-  box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
+
+  .connection-board-view & {
+    box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
+  }
 
   .panel-drawer {
     border-bottom: 1px solid @panel-border;

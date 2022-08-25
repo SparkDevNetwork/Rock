@@ -4202,12 +4202,14 @@ namespace RockWeb.Blocks.Connection
             {
                 upnlBoardView.Visible = true;
                 upnlGridView.Visible = false;
+                pnlView.CssClass = "panel panel-block connection-board-view";
                 BindBoard();
             }
             else
             {
                 upnlBoardView.Visible = false;
                 upnlGridView.Visible = true;
+                pnlView.CssClass = "panel panel-block connection-grid-view";
                 GetRequestsGrid();
             }
         }
