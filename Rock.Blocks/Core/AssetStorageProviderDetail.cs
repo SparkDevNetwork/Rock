@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -26,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.AssetStorageProviderDetail;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
 {
@@ -129,6 +129,7 @@ namespace Rock.Blocks.Core
             var isViewable = BlockCache.IsAuthorized( Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
+            Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
             entity.LoadAttributes( rockContext );
 
             if ( entity.Id != 0 )
@@ -195,7 +196,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, true, IsAttributeIncluded );
 
             return bag;
         }
@@ -214,7 +215,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, true, IsAttributeIncluded );
 
             return bag;
         }
@@ -248,8 +249,9 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
+                    Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
                     entity.LoadAttributes( rockContext );
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, true, IsAttributeIncluded );
                 } );
 
             return true;
@@ -287,6 +289,7 @@ namespace Rock.Blocks.Core
 
                 if ( entity != null )
                 {
+                    Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
                     entity.LoadAttributes( rockContext );
                 }
 
@@ -356,6 +359,17 @@ namespace Rock.Blocks.Core
             return true;
         }
 
+        /// <summary>
+        /// Determines if the attribute should be included in the block.
+        /// </summary>
+        /// <param name="attribute">The attribute to be checked.</param>
+        /// <returns><c>true</c> if the attribute should be included, <c>false</c> otherwise.</returns>
+        private bool IsAttributeIncluded( AttributeCache attribute )
+        {
+            // Don't include the special attributes "Order" and "Active".
+            return attribute.Key != "Order" && attribute.Key != "Active";
+        }
+
         #endregion
 
         #region Block Actions
@@ -376,6 +390,7 @@ namespace Rock.Blocks.Core
                     return actionError;
                 }
 
+                Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
                 entity.LoadAttributes( rockContext );
 
                 var box = new DetailBlockBox<AssetStorageProviderBag, AssetStorageProviderDetailOptionsBag>
@@ -492,6 +507,7 @@ namespace Rock.Blocks.Core
                 }
 
                 // Reload attributes based on the new property values.
+                Helper.EnsureComponentInstanceAttributes( entity, e => e.EntityTypeId, rockContext );
                 entity.LoadAttributes( rockContext );
 
                 var refreshedBox = new DetailBlockBox<AssetStorageProviderBag, AssetStorageProviderDetailOptionsBag>
