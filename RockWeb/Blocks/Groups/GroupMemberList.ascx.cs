@@ -843,28 +843,6 @@ namespace RockWeb.Blocks.Groups
 
             int groupMemberId = groupMember.Id;
 
-            if ( _groupMembersWithRegistrations.ContainsKey( groupMemberId ) )
-            {
-                e.Row.AddCssClass( "js-has-registration" );
-
-                var lRegistration = e.Row.FindControl( _registrationField.ID ) as Literal;
-                if ( lRegistration != null )
-                {
-                    var regLinks = new List<string>();
-
-                    foreach ( var reg in _groupMembersWithRegistrations[groupMemberId] )
-                    {
-                        regLinks.Add(
-                            string.Format(
-                                "<a href='{0}'>{1}</a>",
-                                LinkedPageUrl( "RegistrationPage", new Dictionary<string, string> { { "RegistrationId", reg.RegistrationId.ToString() } } ),
-                                reg.RegistrationName ) );
-                    }
-
-                    lRegistration.Text = regLinks.AsDelimited( "<br/>" );
-                }
-            }
-
             var lFullName = e.Row.FindControl( _requirementFullNameField.ID ) as Literal;
             if ( lFullName != null )
             {
@@ -1338,13 +1316,22 @@ namespace RockWeb.Blocks.Groups
 
                 using ( var rockContext = new RockContext() )
                 {
-                    ddlRequirementType.DataSource = new GroupMemberService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( r => r.GroupId == _group.Id )
-                        .SelectMany( r => r.GroupMemberRequirements )
-                        .Select( r => r.GroupRequirement ).Distinct()
-                        .Select( r => new { Id = r.GroupRequirementTypeId, r.GroupRequirementType.Name } )
-                        .ToList();
+                    // We need to get group requirements as well as group type requirements into one datasource here.
+                    var groupMemberService = new GroupMemberService( rockContext ).Queryable().AsNoTracking();
+                    var groupService = new GroupService( rockContext ).Queryable().AsNoTracking();
+                    var groupTypeService = new GroupTypeService( rockContext ).Queryable().AsNoTracking();
+                    var groupReqs = groupService.Where( g => g.Id == _group.Id ).SelectMany( g => g.GroupRequirements );
+
+                    // Get all the requirements from both group and group type, regardless of if any are in the group member requirements yet.
+                    var requirementsFromGroup = groupMemberService.Where( r => r.GroupId == _group.Id )
+                        .SelectMany( r => r.Group.GroupRequirements )
+                        .Distinct().ToList();
+                    var requirementsFromGroupType = groupMemberService
+                       .Where( r => r.GroupId == _group.Id )
+                       .SelectMany( r => r.Group.GroupType.GroupRequirements ).Distinct().ToList();
+                    requirementsFromGroup.AddRange( requirementsFromGroupType );
+
+                    ddlRequirementType.DataSource = requirementsFromGroup.Distinct().Select( r => new { Id = r.GroupRequirementTypeId, Name = r.GroupRequirementType.Name } );
                     ddlRequirementType.DataBind();
                     ddlRequirementType.Items.Insert( 0, new ListItem() );
                 }
@@ -1516,20 +1503,10 @@ namespace RockWeb.Blocks.Groups
             personProfileLinkField.LinkedPageAttributeKey = "PersonProfilePage";
             gGroupMembers.Columns.Add( personProfileLinkField );
 
-            // Add Link to Profile Page Column
-            var requirementPersonProfileLinkField = new PersonProfileLinkField();
-            personProfileLinkField.LinkedPageAttributeKey = "PersonProfilePage";
-            gGroupMemberRequirements.Columns.Add( personProfileLinkField );
-
             // Hold a reference to the delete column
             _deleteField = new DeleteField();
             _deleteField.Click += DeleteOrArchiveGroupMember_Click;
             gGroupMembers.Columns.Add( _deleteField );
-
-            // Hold a reference to the delete column
-            _deleteField = new DeleteField();
-            _deleteField.Click += DeleteOrArchiveGroupMember_Click;
-            gGroupMemberRequirements.Columns.Add( _deleteField );
         }
 
         /// <summary>
