@@ -256,21 +256,13 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( privateValue.IsNotNullOrWhiteSpace() )
-            {
-                return $"{privateValue}% watched";
-            }
-            return privateValue;
+            return privateValue.IsNotNullOrWhiteSpace() ? $"{privateValue}% watched" : privateValue;
         }
 
         /// <inheritdoc/>
         public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( privateValue.IsNotNullOrWhiteSpace() )
-            {
-                return $"{privateValue}%";
-            }
-            return privateValue;
+            return privateValue.IsNotNullOrWhiteSpace() ? $"{privateValue}%" : privateValue;
         }
 
         /// <summary>

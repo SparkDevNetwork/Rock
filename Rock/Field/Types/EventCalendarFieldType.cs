@@ -73,7 +73,7 @@ namespace Rock.Field.Types
             var eventCalendars = guids.Select( g => EventCalendarCache.Get( g ) )?.ToList() ?? new List<EventCalendarCache>();
             if ( eventCalendars.Any() )
             {
-                return string.Join( ",", eventCalendars.Select( ec => ec.Name ) );
+                return string.Join( ", ", eventCalendars.Select( ec => ec.Name ) );
             }
 
             return privateValue;
