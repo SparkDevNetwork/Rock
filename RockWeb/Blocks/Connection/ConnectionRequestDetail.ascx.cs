@@ -639,6 +639,7 @@ namespace RockWeb.Blocks.Connection
                     connectionRequest.ConnectorPersonAliasId = newConnectorPersonAliasId;
                     connectionRequest.PersonAlias = personAliasService.Get( ppRequestor.PersonAliasId.Value );
 
+                    var oldState = connectionRequest.ConnectionState;
                     var state = rblState.SelectedValueAsEnumOrNull<ConnectionState>();
 
                     // If a value is selected in the radio button list, use it, otherwise use "Active".
@@ -654,12 +655,14 @@ namespace RockWeb.Blocks.Connection
 
                     connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
 
-                    connectionRequest.CampusId = cpCampus.SelectedCampusId;
-
-                    connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
-                    connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
-                    connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
-                    connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
+                    if ( oldState != ConnectionState.Connected )
+                    {
+                        connectionRequest.CampusId = cpCampus.SelectedCampusId;
+                        connectionRequest.AssignedGroupId = ddlPlacementGroup.SelectedValueAsId();
+                        connectionRequest.AssignedGroupMemberRoleId = ddlPlacementGroupRole.SelectedValueAsInt();
+                        connectionRequest.AssignedGroupMemberStatus = ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>();
+                        connectionRequest.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValues();
+                    }
 
                     connectionRequest.Comments = tbComments.Text.SanitizeHtml();
 
@@ -2584,7 +2587,16 @@ namespace RockWeb.Blocks.Connection
             }
 
             CheckGroupRequirement();
-            BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+            var enableConnectionRelatedControl = connectionRequest.ConnectionState != ConnectionState.Connected;
+            ddlPlacementGroup.Enabled = enableConnectionRelatedControl;
+            ddlPlacementGroupStatus.Enabled = enableConnectionRelatedControl;
+            ddlPlacementGroupRole.Enabled = enableConnectionRelatedControl;
+            phGroupMemberAttributes.Visible = enableConnectionRelatedControl;
+            cpCampus.Enabled = enableConnectionRelatedControl;
+            if ( enableConnectionRelatedControl )
+            {
+                BuildGroupMemberAttributes( groupId, roleId, ddlPlacementGroupStatus.SelectedValueAsEnumOrNull<GroupMemberStatus>(), true );
+            }
         }
 
         private void CheckGroupRequirement()
@@ -2635,7 +2647,6 @@ namespace RockWeb.Blocks.Connection
         {
             phGroupMemberAttributes.Controls.Clear();
             phGroupMemberAttributesView.Controls.Clear();
-
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
                 using ( var rockContext = new RockContext() )
