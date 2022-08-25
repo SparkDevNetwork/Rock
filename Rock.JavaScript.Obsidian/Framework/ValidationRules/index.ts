@@ -22,6 +22,7 @@ import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 import { isUrl } from "@Obsidian/Utility/url";
 import { containsRequiredRule, defineRule, normalizeRules, parseRule, rulesPropType, validateValue } from "@Obsidian/Utility/validationRules";
+import { triggerAsyncId } from "async_hooks";
 
 // For backwards compatibility:
 export {
@@ -104,6 +105,15 @@ defineRule("required", (value: unknown, params?: unknown[]): ValidationResult =>
 
     if (!value) {
         return "is required";
+    }
+
+    return true;
+});
+
+// This is like "required" but slightly less strict (doesn't fail on 0 or empty array)
+defineRule("notblank", (value: unknown) => {
+    if (value === undefined || value === null || value === "") {
+        return "cannot be blank";
     }
 
     return true;

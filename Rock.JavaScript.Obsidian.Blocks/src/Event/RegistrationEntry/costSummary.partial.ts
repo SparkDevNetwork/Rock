@@ -209,6 +209,9 @@ export default defineComponent({
             if (min > 0) {
                 rules.push("required");
             }
+            else {
+                rules.push("notblank");
+            }
 
             rules.push(`gte:${min}`);
             rules.push(`lte:${max}`);
