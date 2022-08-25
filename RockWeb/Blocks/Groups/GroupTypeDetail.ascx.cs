@@ -2507,7 +2507,7 @@ namespace RockWeb.Blocks.Groups
             fieldTypeIds.Add( FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE.AsGuid() ).Value );
             fieldTypeIds.Add( FieldTypeCache.GetId( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ).Value );
 
-            ddlDueDateGroupAttribute.DataSource = GroupAttributesState.Where( a => fieldTypeIds.Contains( a.FieldType.Id ) );
+            ddlDueDateGroupAttribute.DataSource = GroupAttributesState.Where( a => fieldTypeIds.Contains( a.FieldTypeId ) ).ToList();
             ddlDueDateGroupAttribute.DataBind();
 
             // Make sure that the Due Date controls are not visible unless the requirement has a due date.
