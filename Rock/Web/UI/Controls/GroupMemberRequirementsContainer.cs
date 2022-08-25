@@ -180,7 +180,7 @@ namespace Rock.Web.UI.Controls
                 var currentPerson = this.RockBlock().CurrentPerson;
 
                 // Add the Group Member Requirement Cards here.
-                foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( rr => rr.MeetsGroupRequirement ).ThenBy( r => r.GroupRequirement.GroupRequirementType.Name ) )
+                foreach ( var requirementStatus in requirementCategory.RequirementResults.OrderBy( r => r.GroupRequirement.GroupRequirementType.Name ) )
                 {
                     // Set up Security or Override access.
                     var currentPersonIsLeaderOfCurrentGroup = groupMember.Group.Members.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( currentPerson.Id );
