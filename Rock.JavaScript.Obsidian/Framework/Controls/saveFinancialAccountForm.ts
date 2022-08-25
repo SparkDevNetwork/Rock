@@ -15,24 +15,20 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { defineComponent, inject, PropType } from "vue";
-import Alert from "../Elements/alert";
-import InlineCheckBox from "../Elements/inlineCheckBox";
-import RockButton from "../Elements/rockButton";
-import TextBox from "../Elements/textBox";
-import { Guid } from "../Util/guid";
-import { Person } from "../ViewModels";
-import { BlockHttp } from "../Util/block";
+import Alert from "./alert";
+import InlineCheckBox from "./inlineCheckBox";
+import RockButton from "./rockButton";
+import TextBox from "./textBox";
 import RockForm from "./rockForm";
-import { useStore } from "../Store/index";
+import { useStore } from "@Obsidian/PageState";
+import { SaveFinancialAccountFormSaveAccountOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountOptionsBag";
+import { SaveFinancialAccountFormSaveAccountResultBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountResultBag";
+import { PersonBag } from "@Obsidian/ViewModels/Entities/personBag";
+import { useHttp } from "@Obsidian/Utility/http";
 
 const store = useStore();
-
-type SaveFinancialAccountFormResult = {
-    title: string;
-    detail: string;
-    isSuccess: boolean;
-};
 
 /** A form to save a payment token for later use as a Financial Person Saved Account */
 const SaveFinancialAccountForm = defineComponent({
@@ -58,9 +54,11 @@ const SaveFinancialAccountForm = defineComponent({
             required: true
         }
     },
-    setup () {
+    setup() {
+        const http = useHttp();
+
         return {
-            http: inject("http") as BlockHttp
+            http
         };
     },
     data () {
@@ -91,7 +89,7 @@ const SaveFinancialAccountForm = defineComponent({
     },
     computed: {
         /** The person currently authenticated */
-        currentPerson (): Person | null {
+        currentPerson (): PersonBag | null {
             return store.state.currentPerson;
         },
 
@@ -113,16 +111,18 @@ const SaveFinancialAccountForm = defineComponent({
 
             this.isLoading = true;
 
-            const result = await this.http.post<SaveFinancialAccountFormResult>(`/api/v2/controls/savefinancialaccountforms/${this.gatewayGuid}`, null, {
-                Password: this.password,
-                SavedAccountName: this.savedAccountName,
-                TransactionCode: this.transactionCode,
-                Username: this.username,
-                GatewayPersonIdentifier: this.gatewayPersonIdentifier
-            });
+            const options: Partial<SaveFinancialAccountFormSaveAccountOptionsBag> = {
+                gatewayGuid: this.gatewayGuid,
+                password: this.password,
+                savedAccountName: this.savedAccountName,
+                transactionCode: this.transactionCode,
+                username: this.username,
+                gatewayPersonIdentifier: this.gatewayPersonIdentifier
+            };
+            const result = await this.http.post<SaveFinancialAccountFormSaveAccountResultBag>("/api/v2/Controls/SaveFinancialAccountFormSaveAccount", null, options);
 
-            if (result?.data?.isSuccess) {
-                this.successTitle = result.data.title;
+            if (result.isSuccess && result.data?.isSuccess) {
+                this.successTitle = result.data.title || "";
                 this.successMessage = result.data.detail || "Success";
             }
             else {

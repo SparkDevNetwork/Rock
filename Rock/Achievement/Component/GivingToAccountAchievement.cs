@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,6 +79,7 @@ namespace Rock.Achievement.Component
         Order = 4,
         Key = AttributeKey.EndDateTime )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "5F8C7ECE-618D-429C-B459-782031F3C1C3")]
     public class GivingToAccountAchievement : AchievementComponent
     {
         /// <summary>

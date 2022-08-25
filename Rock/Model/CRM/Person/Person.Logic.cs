@@ -28,6 +28,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.UniversalSearch;
@@ -485,7 +486,7 @@ namespace Rock.Model
         {
             get
             {
-                return Person.GetAge( this.BirthDate );
+                return Person.GetAge( this.BirthDate, this.DeceasedDate );
             }
 
             private set
@@ -498,7 +499,33 @@ namespace Rock.Model
         /// Gets the age.
         /// </summary>
         /// <param name="birthDate">The birth date.</param>
+        /// <param name="deceasedDate">The deceased date.</param>
         /// <returns></returns>
+        public static int? GetAge( DateTime? birthDate, DateTime? deceasedDate )
+        {
+            if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
+            {
+                DateTime asOfDate = deceasedDate.HasValue ? deceasedDate.Value : RockDateTime.Today;
+                int age = asOfDate.Year - birthDate.Value.Year;
+                if ( birthDate.Value > asOfDate.AddYears( -age ) )
+                {
+                    // their birthdate is after today's date, so they aren't a year older yet
+                    age--;
+                }
+
+                return age;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the age.
+        /// </summary>
+        /// <param name="birthDate">The birth date.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use GetAge( birthDate, deceasedDate ) instead." )]
         public static int? GetAge( DateTime? birthDate )
         {
             if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
@@ -534,7 +561,7 @@ namespace Rock.Model
 
                 if ( age > 0 )
                 {
-                    return age + ( age == 1 ? " yr" : " yrs" );
+                    return age + ( age == 1 ? " yr" : " years" );
                 }
                 else if ( age < -1 )
                 {
@@ -1225,7 +1252,7 @@ namespace Rock.Model
         public PhoneNumber GetPhoneNumber( Guid phoneType )
         {
             int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
-            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
+            return PhoneNumbers?.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 
         /// <summary>
@@ -1275,7 +1302,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public sealed class CalculateFamilySalutationArgs
         {
@@ -1750,7 +1777,7 @@ namespace Rock.Model
         /// </summary>
         public void BulkIndexDocuments()
         {
-            List<IndexModelBase> indexableItems = new List<IndexModelBase>();
+            List<PersonIndex> indexablePersonList = new List<PersonIndex>();
 
             var recordTypePersonId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             var recordTypeBusinessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
@@ -1768,15 +1795,17 @@ namespace Rock.Model
                 recordCounter++;
 
                 var indexablePerson = PersonIndex.LoadByModel( person );
-                indexableItems.Add( indexablePerson );
+                indexablePersonList.Add( indexablePerson );
 
                 if ( recordCounter > 100 )
                 {
-                    IndexContainer.IndexDocuments( indexableItems );
-                    indexableItems = new List<IndexModelBase>();
+                    IndexContainer.IndexDocuments( indexablePersonList );
+                    indexablePersonList = new List<PersonIndex>();
                     recordCounter = 0;
                 }
             }
+
+            IndexContainer.IndexDocuments( indexablePersonList );
 
             // return businesses
             var businesses = new PersonService( rockContext ).Queryable().AsNoTracking()
@@ -1784,20 +1813,22 @@ namespace Rock.Model
                                      p.IsSystem == false
                                      && p.RecordTypeValueId == recordTypeBusinessId );
 
+            List<BusinessIndex> indexableBusinessList = new List<BusinessIndex>();
+
             foreach ( var business in businesses )
             {
                 var indexableBusiness = BusinessIndex.LoadByModel( business );
-                indexableItems.Add( indexableBusiness );
+                indexableBusinessList.Add( indexableBusiness );
 
                 if ( recordCounter > 100 )
                 {
-                    IndexContainer.IndexDocuments( indexableItems );
-                    indexableItems = new List<IndexModelBase>();
+                    IndexContainer.IndexDocuments( indexableBusinessList );
+                    indexableBusinessList = new List<BusinessIndex>();
                     recordCounter = 0;
                 }
             }
 
-            IndexContainer.IndexDocuments( indexableItems );
+            IndexContainer.IndexDocuments( indexableBusinessList );
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,8 +34,8 @@ namespace Rock.Rest.Controllers
     ///
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
-    [RockGuid( "921331a3-879c-46bb-b37b-a274cf00378e" )]
-    public class CheckinController : ApiControllerBase
+    [Rock.SystemGuid.RestControllerGuid( "921331A3-879C-46BB-B37B-A274CF00378E")]
+    public class CheckinController : ApiControllerBase 
     {
         /// <summary>
         /// Gets the configuration status of a checkin device
@@ -45,7 +45,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/checkin/configuration/status" )]
-        [RockGuid( "bc3aa76c-e391-481a-aa4e-35d322d55df7" )]
+        [Rock.SystemGuid.RestActionGuid( "BC3AA76C-E391-481A-AA4E-35D322D55DF7" )]
         public LocalDeviceConfigurationStatus GetConfigurationStatus( LocalDeviceConfiguration localDeviceConfiguration )
         {
             if ( localDeviceConfiguration?.CurrentKioskId == null || localDeviceConfiguration?.CurrentCheckinTypeId == null )
@@ -81,7 +81,7 @@ namespace Rock.Rest.Controllers
         /// </remarks>
         [HttpGet]
         [System.Web.Http.Route( "api/checkin/printsessionlabels" )]
-        [RockGuid( "804f10b4-0201-43e3-bf9f-16e72c897809" )]
+        [Rock.SystemGuid.RestActionGuid( "804F10B4-0201-43E3-BF9F-16E72C897809" )]
         public PrintSessionLabelsResponse PrintSessionLabels( [FromUri] string session, [FromUri] int? kioskId = null, [FromUri] int? printerId = null, [FromUri] PrintSessionLabelsPrinterOverride printerOverride = PrintSessionLabelsPrinterOverride.Client )
         {
             List<Guid?> sessionGuids;

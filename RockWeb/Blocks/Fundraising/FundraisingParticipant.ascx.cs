@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Fundraising
     [TextField( "Image CSS Class", "CSS class to apply to the image.", false, "img-thumbnail", key: "ImageCssClass", order: 9 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "PersonAttributes", "The Person Attributes that the participant can edit", false, true, order: 7 )]
     [BooleanField( "Show Amount", "Determines if the Amount column should be displayed in the Contributions List.", false, order: 8 )]
+    [Rock.SystemGuid.BlockTypeGuid( "1FEA697F-DD12-4FE0-BC58-EE896123E7F1" )]
     public partial class FundraisingParticipant : RockBlock
     {
         #region Base Control Methods

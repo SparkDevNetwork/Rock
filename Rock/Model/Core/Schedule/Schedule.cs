@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -32,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Schedule" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SCHEDULE )]
     public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag, IOrdered, ICacheable
     {
         #region Entity Properties
@@ -114,6 +116,7 @@ namespace Rock.Model
         /// The weekly time of day.
         /// </value>
         [DataMember]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public TimeSpan? WeeklyTimeOfDay { get; set; }
 
         /// <summary>

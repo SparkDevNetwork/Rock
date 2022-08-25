@@ -43,6 +43,8 @@
 @import "_dashboard.less";
 @import "_grid.less";
 
+@import "_rock-obsidian.less";
+
 @import "_blocks-cms.less";
 @import "_blocks-connections.less";
 @import "_blocks-security.less";
@@ -67,6 +69,9 @@
 
 @import "./Bootstrap/mixins.less";
 
+.imports(true) { @import "_legacy-badges.less"; }
+.imports(false) {  }
+.imports(@enable-legacy-badges);
 
 // 2. HTML Overrides
 //--------------------------------
@@ -291,10 +296,10 @@ th[align="right"] {
 }
 
 .control-label-offset {
-  margin-top: @line-height-computed + 5px;
+  margin-top: @control-label-offset;
 
   &.checkbox {
-    margin-top: @line-height-computed + 10px;
+    margin-top: @control-label-offset-checkbox;
   }
 }
 
@@ -515,6 +520,7 @@ th[align="right"] {
   border-bottom: 1px solid #dbdbdb;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
 
   @media (min-width: @screen-sm-min) {
@@ -539,6 +545,20 @@ th[align="right"] {
       background: #e9ecee;
     }
   }
+
+  .nav-pills {
+    margin: 6px 8px;
+
+    > li {
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+  }
+}
+
+.panel-toolbar-shadow {
+  box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
+  z-index: 10;
 }
 
 .no-border {
@@ -583,6 +603,10 @@ th[align="right"] {
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
   background-color: @white;
 
+  .panel-title i {
+    display: none;
+  }
+
   .panel-heading {
     display: flex;
     align-items: center;
@@ -596,38 +620,46 @@ th[align="right"] {
   }
 
   .panel-body {
+    padding: 13px 18px 15px;
 
-    .form-group.static-control {
-      margin-bottom: 2px;
-      .clearfix();
+    .form-group {
+      &.static-control {
+        line-height: 1.25;
+        margin-bottom: 16px;
 
-      label {
-        float: left;
-        width: 40%;
-        padding-right: 12px;
-        text-align: right;
-        font-size: @font-size-base;
-        line-height: @line-height-base;
-      }
+        .control-wrapper {
+          .form-control-static {
+            margin: 0;
+            padding: 0;
+            min-height: 0;
+            line-height: 1.5;
+          }
+        }
 
-      .form-control-static {
-        float: left;
-        width: 60%;
-        padding-top: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        label {
+          margin-bottom: 3px;
+        }
+
       }
     }
 
     h4 {
-      font-size: @font-size-base;
+      padding: 8px 18px;
+      margin: -13px -18px 12px;
+      font-size: @font-size-sm;
       font-weight: @font-weight-semibold;
+      color: @gray-600;
+      background: @gray-200;
     }
 
-    hr {
-      margin-top: @padding-base-vertical;
-      margin-bottom: (@padding-base-vertical * 2);
+    .form-group + h4 {
+      margin-top: 24px;
     }
+
     // styles for matrix attributes
     .form-group.static-control.matrix-attribute label {
       width: 100%;
@@ -641,6 +673,10 @@ th[align="right"] {
     i.fa.fa-bars {
       cursor: pointer;
     }
+  }
+
+  .attribute-values + .attribute-values {
+    margin-top: 24px;
   }
 }
 
@@ -700,6 +736,34 @@ th[align="right"] {
 
   .panel-sidebar {
     border-right: 1px solid @panel-border;
+  }
+}
+
+.panel-body-columns {
+  padding: 0;
+  margin: -@panel-body-padding;
+
+  > [class*="col-"] {
+    padding: @panel-body-padding;
+  }
+
+  .sidebar {
+    background-color: @panel-drawer-bg;
+    border-bottom: 1px solid @panel-border;
+
+    &:last-child {
+      border-top: 1px solid @panel-border;
+    }
+
+    @media (min-width: @screen-md-min) {
+      border-bottom: 0;
+      border-right: 1px solid @panel-border;
+
+      &:last-child {
+        border-top: 0;
+        border-left: 1px solid @panel-border;
+      }
+    }
   }
 }
 
@@ -1182,5 +1246,30 @@ div.aspNetDisabled {
       min-height: 100px;
       overflow: auto;
     }
+  }
+}
+
+.segment-and {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  max-width: 580px;
+  margin: 32px auto;
+  .text {
+    padding: 0 6px;
+    text-transform: uppercase;
+    border: 1px solid @panel-border;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #E4E4E4;
+    font-weight: 500;
+    margin: 0 10px;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    border: 1px solid @panel-border;
+    flex: 1;
   }
 }

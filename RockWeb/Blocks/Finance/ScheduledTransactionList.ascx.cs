@@ -71,6 +71,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.PersonTokenUsageLimit )]
 
     [ContextAware]
+    [Rock.SystemGuid.BlockTypeGuid( "694FF260-8C6F-4A59-93C9-CF3793FE30E6" )]
     public partial class ScheduledTransactionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         #region Keys
@@ -234,8 +235,7 @@ namespace RockWeb.Blocks.Finance
                     int accountId = 0;
                     if ( int.TryParse( e.Value, out accountId ) && ddlAccount.Visible )
                     {
-                        var service = new FinancialAccountService( new RockContext() );
-                        var account = service.Get( accountId );
+                        var account = FinancialAccountCache.Get( accountId );
                         if ( account != null )
                         {
                             e.Value = account.Name;

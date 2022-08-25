@@ -103,7 +103,7 @@ namespace Rock.Model
                     new AddPageRenameInteraction.Message()
                     {
                         PageGuid = Entity.Guid
-                    }.Send();
+                    }.SendWhen( this.DbContext.WrappedTransactionCompletedTask );
                 }
             }
         }

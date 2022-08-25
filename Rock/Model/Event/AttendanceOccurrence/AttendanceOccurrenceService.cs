@@ -322,7 +322,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets future occurrence data for the selected group (including all scheduled dates).
+        /// Gets future occurrence data for the selected group (including all scheduled dates), sorted by occurrence data in ascending order.
         /// </summary>
         /// <param name="group">The group.</param>
         /// <param name="toDateTime">To date time.  If not supplied, this will default to 6 months from the current date.</param>
@@ -379,6 +379,8 @@ namespace Rock.Model
 
             if ( groupSchedule == null )
             {
+                // If there's no group schedule, sort the occurrences and return them.
+                occurrences = occurrences.OrderBy( o => o.OccurrenceDate ).ToList();
                 return occurrences;
             }
 
@@ -479,6 +481,7 @@ namespace Rock.Model
                 occurrences.Add( occurrence );
             }
 
+            // Sort occurs here to include any new occurrences added by the group schedule.
             occurrences = occurrences.OrderBy( o => o.OccurrenceDate ).ToList();
 
             return occurrences;

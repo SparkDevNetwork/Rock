@@ -75,6 +75,13 @@ namespace Rock.Data
         /// Is there a transaction in progress?
         /// </summary>
         private bool _transactionInProgress = false;
+        private TaskCompletionSource<bool> _wrappedTransactionCompleted = null;
+
+        /// <summary>
+        /// A list of action delegates to execute once the data has been committed
+        /// to the database.
+        /// </summary>
+        private List<Action> _commitedActions = new List<Action>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
@@ -145,6 +152,28 @@ namespace Rock.Data
         public string SourceOfChange { get; set; }
 
         /// <summary>
+        /// If <see cref="WrapTransaction(Action)"/> is in progress, this will return a task that will return completed
+        /// after the transaction is committed. Otherwise, it will return a completed task immediately.
+        /// </summary>
+        /// <value>
+        /// The wrapped transaction completed.
+        /// </value>
+        public Task<bool> WrappedTransactionCompletedTask
+        {
+            get
+            {
+                if ( _transactionInProgress )
+                {
+                    return _wrappedTransactionCompleted?.Task ?? Task.FromResult( true );
+                }
+                else
+                {
+                    return Task.FromResult( true );
+                }
+            }
+        }
+
+        /// <summary>
         /// Wraps the action in a BeginTransaction and CommitTransaction.
         /// Note that this will *always* commit the transaction (unless an exception occurs).
         /// If need to rollback the transaction within your action (for example, to show a validation warning),
@@ -170,6 +199,8 @@ namespace Rock.Data
             if ( !_transactionInProgress )
             {
                 _transactionInProgress = true;
+                _wrappedTransactionCompleted = new TaskCompletionSource<bool>();
+
                 using ( var dbContextTransaction = this.Database.BeginTransaction() )
                 {
                     try
@@ -177,20 +208,26 @@ namespace Rock.Data
                         if ( action.Invoke() )
                         {
                             dbContextTransaction.Commit();
+                            _wrappedTransactionCompleted.SetResult( true );
+
+                            ExecuteAfterCommitActions();
                         }
                         else
                         {
                             dbContextTransaction.Rollback();
+                            _wrappedTransactionCompleted.SetResult( false );
                             return false;
                         }
                     }
                     catch
                     {
                         dbContextTransaction.Rollback();
+                        _wrappedTransactionCompleted.SetResult( false );
                         throw;
                     }
                     finally
                     {
+                        _wrappedTransactionCompleted = null;
                         _transactionInProgress = false;
                     }
                 }
@@ -200,6 +237,50 @@ namespace Rock.Data
             else
             {
                 return action.Invoke();
+            }
+        }
+
+        /// <summary>
+        /// Executes the action delegate method after the changes have been
+        /// commited to the database. If there is no transaction this is just
+        /// before SaveChanges() returns. If there is a transaction then it
+        /// is just before WrapTransaction returns.
+        /// </summary>
+        /// <remarks>
+        /// Because this action will be called after the commit has completed
+        /// this <see cref="RockContext"/> should be considered invalid by
+        /// the action delegate method. Meaning, create your own context.
+        /// </remarks>
+        /// <param name="action">The action delegate to execute after the changes have been committed.</param>
+        internal void ExecuteAfterCommit( Action action )
+        {
+            _commitedActions.Add( action );
+        }
+
+        /// <summary>
+        /// Executes all the "after-commit" action delegate methods that have
+        /// been registered.
+        /// </summary>
+        private void ExecuteAfterCommitActions()
+        {
+            // Create a new array for committed actions. This is so that if
+            // some action registers yet another action (not supported) then
+            // it will go into the next save rather than cause an enumeration error.
+            var actions = _commitedActions;
+            _commitedActions = new List<Action>();
+
+            foreach ( var action in actions )
+            {
+                try
+                {
+                    action();
+                }
+                catch ( Exception ex )
+                {
+                    // Log but do not throw, this ensures all commit
+                    // actions get executed.
+                    ExceptionLogService.LogException( ex );
+                }
             }
         }
 
@@ -358,6 +439,11 @@ namespace Rock.Data
                         var attempts = ProcessAchievements( updatedItems );
                         saveChangesResult.AchievementAttempts = attempts;
                     }
+                }
+
+                if ( !_transactionInProgress )
+                {
+                    ExecuteAfterCommitActions();
                 }
             }
 
@@ -641,10 +727,45 @@ namespace Rock.Data
                         TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
                     }
 
-                    if ( item.Entity is IModel )
+                    if ( item.Entity is IEntity entity )
                     {
-                        var model = item.Entity as IModel;
-                        model.PostSaveChanges( this );
+                        // If this is an entity and it was modified, check if any
+                        // attributes (and values) should now be considered dirty.
+                        if ( item.PreSaveState == EntityContextState.Modified )
+                        {
+                            var dependantAttributeIds = AttributeCache.GetDirtyAttributeIdsForPropertyChange( entity.TypeId, () => item.ModifiedProperties );
+
+                            if ( dependantAttributeIds.Any() )
+                            {
+                                ExecuteAfterCommit( () =>
+                                {
+                                    using ( var rockContext = new RockContext() )
+                                    {
+                                        Rock.Attribute.Helper.UpdateDependantAttributesAndValues( dependantAttributeIds, entity.TypeId, entity.Id, rockContext );
+                                    }
+                                } );
+                            }
+                        }
+
+                        // If this is a model and it was deleted, check if any
+                        // sttributes (and values) should now be considered dirty.
+                        if ( item.PreSaveState == EntityContextState.Deleted )
+                        {
+                            // No need to check modified properties, assume any attribute
+                            // value that references this entity needs to be updated.
+                            ExecuteAfterCommit( () =>
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    Rock.Attribute.Helper.UpdateDependantAttributesAndValues( null, entity.TypeId, entity.Id, rockContext );
+                                }
+                            } );
+                        }
+                    }
+
+                    if ( item.Entity is IModel model )
+                    {
+                            model.PostSaveChanges( this );
                     }
                 }
             }
@@ -658,8 +779,8 @@ namespace Rock.Data
                 tcsPostSave.SetResult( true );
             }
 
-            var processEntityTypeIndexMsgs = new List<ProcessEntityTypeIndex.Message>();
-            var deleteEntityTypeIndexMsgs = new List<DeleteEntityTypeIndex.Message>();
+            var processIndexMsgs = new List<BusStartedTaskMessage>();
+            var deleteIndexMsgs = new List<BusStartedTaskMessage>();
             foreach ( var item in updatedItems )
             {
                 // check if this entity should be passed on for indexing
@@ -673,7 +794,7 @@ namespace Rock.Data
                             EntityId = item.Entity.Id
                         };
 
-                        deleteEntityTypeIndexMsgs.Add( deleteEntityTypeIndexMsg );
+                        deleteIndexMsgs.Add( deleteEntityTypeIndexMsg );
                     }
                     else
                     {
@@ -683,26 +804,69 @@ namespace Rock.Data
                             EntityId = item.Entity.Id
                         };
 
-                        processEntityTypeIndexMsgs.Add( processEntityTypeIndexMsg );
+                        processIndexMsgs.Add( processEntityTypeIndexMsg );
+                    }
+                }
+
+                // Check if this item should be processed by the content collection.
+                var itemEntityTypeCache = EntityTypeCache.Get( item.Entity.TypeId );
+                if ( itemEntityTypeCache != null && itemEntityTypeCache.IsContentCollectionIndexingEnabled )
+                {
+                    // We only handle deleted states here. The detail blocks where
+                    // an entity is edited should send the bus message to update
+                    // the index when an item is saved. The job will catch anything
+                    // else that is missed.
+                    if ( item.State == EntityContextState.Detached || item.State == EntityContextState.Deleted )
+                    {
+                        var msg = new DeleteContentCollectionDocument.Message
+                        {
+                            EntityTypeId = item.Entity.TypeId,
+                            EntityId = item.Entity.Id
+                        };
+
+                        deleteIndexMsgs.Add( msg );
                     }
                 }
 
                 if ( item.Entity is ICacheable cacheable )
                 {
-                    cacheable.UpdateCache( item.PreSaveStateLegacy, this );
+                    /* 04/14/2022 MDP
+
+                     If we are in WrapTransaction, some other thread could update the cached item from the
+                     database before we have committed the transaction. That could cause the cache to have the
+                     previous value instead of the new value. To prevent that from happening,
+                     we'll use the ContinueWith on WrappedTransactionCompletedTask take care of flushing the
+                     cache after the data is committed to the database.
+
+                     Using the TaskContinuationOptions.ExecuteSynchronously option so that it runs in the same thread
+                     as WrapTransaction.
+
+                    */
+
+                    WrappedTransactionCompletedTask.ContinueWith( ( task ) =>
+                    {
+                        var commitedSuccessfully = task.Result;
+                        if ( commitedSuccessfully )
+                        {
+                            using ( var rockContextUpdateCache = new RockContext() )
+                            {
+                                cacheable.UpdateCache( item.PreSaveStateLegacy, rockContextUpdateCache );
+                            }
+                        };
+                    }, TaskContinuationOptions.ExecuteSynchronously );
                 }
             }
 
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( processEntityTypeIndexMsgs.Any() || deleteEntityTypeIndexMsgs.Any() )
+            if ( processIndexMsgs.Any() || deleteIndexMsgs.Any() )
             {
                 System.Threading.Tasks.Task.Run( () =>
                 {
                     var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
                     if ( indexingEnabled )
                     {
-                        processEntityTypeIndexMsgs.ForEach( t => t.Send() );
-                        deleteEntityTypeIndexMsgs.ForEach( t => t.Send() );
+                        processIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
+                        deleteIndexMsgs.ForEach( t => t.SendWhen( WrappedTransactionCompletedTask ) );
                     }
                 } );
             }
@@ -724,11 +888,12 @@ namespace Rock.Data
                     {
                         hook.PostSave( contextItem );
                     }
-                    catch
+                    catch ( Exception ex )
                     {
                         // Intentionally ignored, this is cleanup so if one
                         // thing fails to clean up don't let that affect the
                         // rest of the cleanup.
+                        ExceptionLogService.LogException( ex, null );
                     }
                 }
             }
@@ -819,7 +984,18 @@ namespace Rock.Data
             // model hooks, achievements need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit.
             var entitiesForAchievements = new List<IEntity>();
-            var isAchievementsEnabled = canUseCache && EntityTypeCache.Get<T>()?.IsAchievementsEnabled == true;
+
+            bool isAchievementsEnabled = false;
+
+            if ( canUseCache )
+            {
+                var entityType = EntityTypeCache.Get<T>();
+                if ( entityType != null )
+                { 
+                    isAchievementsEnabled = entityType.IsAchievementsEnabled == true
+                        && AchievementTypeCache.HasActiveAchievementTypesForEntityTypeId( entityType.Id );
+                }
+            }
 
             // ensure CreatedDateTime and ModifiedDateTime is set
             var currentDateTime = RockDateTime.Now;
@@ -1017,7 +1193,7 @@ namespace Rock.Data
                             EntityTypeId = entity.TypeId
                         };
 
-                        processWorkflowTriggerMsg.Send();
+                        processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompletedTask );
                     }
                 }
             }
@@ -1257,6 +1433,15 @@ namespace Rock.Data
         [System.Diagnostics.DebuggerDisplay( "{Entity.GetType()}:{Entity}, State:{State}" )]
         protected class ContextItem : IEntitySaveEntry
         {
+            #region Fields
+
+            /// <summary>
+            /// The lazy wrapper around <see cref="ModifiedProperties"/>.
+            /// </summary>
+            private readonly Lazy<IReadOnlyList<string>> _lazyModifiedProperties;
+
+            #endregion
+
             /// <summary>
             /// Gets or sets the entity.
             /// </summary>
@@ -1332,6 +1517,17 @@ namespace Rock.Data
             public IReadOnlyDictionary<string, object> OriginalValues { get; set; }
 
             /// <summary>
+            /// Gets the collection of property names that have been modified. This
+            /// will include any additional changes made during the PreSave event.
+            /// </summary>
+            /// <remarks>
+            /// This is a relatively expensive operation of up to 1.5ms so this
+            /// propery should not be accessed unless you really need to.
+            /// </remarks>
+            /// <value>A collection of modified property names.</value>
+            public IReadOnlyList<string> ModifiedProperties => _lazyModifiedProperties.Value;
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="ContextItem" /> class.
             /// </summary>
             /// <param name="entity">The entity.</param>
@@ -1375,6 +1571,7 @@ namespace Rock.Data
                 if ( dbEntityEntry.State == EntityState.Modified || dbEntityEntry.State == EntityState.Deleted )
                 {
                     var originalValues = new Dictionary<string, object>();
+
 #if REVIEW_NET5_0_OR_GREATER
                     foreach ( var p in DbEntityEntry.OriginalValues.Properties )
                     {
@@ -1388,6 +1585,45 @@ namespace Rock.Data
 #endif
 
                     OriginalValues = originalValues;
+
+
+                    // Construct this lazily because not all save hooks will
+                    // even use this. It takes about 0.6ms to run.
+                    _lazyModifiedProperties = new Lazy<IReadOnlyList<string>>( () =>
+                    {
+                        if ( PreSaveState != EntityContextState.Modified )
+                        {
+                            return null;
+                        }
+
+                        var modifiedProperties = new List<string>();
+
+                        foreach ( var p in OriginalValues.Keys )
+                        {
+                            var originalValue = OriginalValues[p];
+                            var currentValue = DbEntityEntry.CurrentValues[p];
+
+                            // Both are null, no change.
+                            if ( originalValue == null && currentValue == null )
+                            {
+                                continue;
+                            }
+
+                            // One is null and the other is not, changed value.
+                            if ( ( originalValue == null && currentValue != null ) || ( originalValue != null && currentValue == null ) )
+                            {
+                                modifiedProperties.Add( p );
+                            }
+
+                            // At this point, both are not null. Do an Equals check.
+                            else if ( !originalValue.Equals( currentValue ) )
+                            {
+                                modifiedProperties.Add( p );
+                            }
+                        }
+
+                        return modifiedProperties;
+                    } );
                 }
             }
         }

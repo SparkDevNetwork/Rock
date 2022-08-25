@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Ical.Net;
 using Ical.Net.DataTypes;
-using Ical.Net.Interfaces.DataTypes;
-using Ical.Net.Serialization.iCalendar.Serializers;
+using Ical.Net.Serialization;
+using Ical.Net.CalendarComponents;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -62,7 +62,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             // Set the test timezone.
             LavaTestHelper.SetRockDateTimeToAlternateTimezone();
-              
+
             // Initialize the test calendar data.
             _tzId = RockDateTime.OrgTimeZoneInfo.Id;
             _today = RockDateTime.Today;
@@ -73,12 +73,12 @@ namespace Rock.Tests.UnitTests.Lava
             {
                 Events =
                 {
-                    new Event
+                    new CalendarEvent
                     {
                         DtStart = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 16, 30, 0, _tzId ),
-                        DtEnd = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 17, 30, 0, _tzId ),
+                        DtEnd = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 17, 30, 0 , _tzId ),
                         DtStamp = new CalDateTime( _today.Year, _today.Month, _today.Day, _tzId ),
-                        RecurrenceRules = new List<IRecurrencePattern> { _weeklyRecurrence },
+                        RecurrenceRules = new List<RecurrencePattern> { _weeklyRecurrence },
                         Sequence = 0,
                         Uid = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
                     }
@@ -89,12 +89,12 @@ namespace Rock.Tests.UnitTests.Lava
             {
                 Events =
                 {
-                    new Event
+                    new CalendarEvent
                     {
                         DtStart = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day, 8, 0, 0 ),
                         DtEnd = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day, 10, 0, 0 ),
                         DtStamp = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day ),
-                        RecurrenceRules = new List<IRecurrencePattern> { _monthlyRecurrence },
+                        RecurrenceRules = new List<RecurrencePattern> { _monthlyRecurrence },
                         Sequence = 0,
                         Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
                     }
@@ -678,6 +678,34 @@ namespace Rock.Tests.UnitTests.Lava
             } );
         }
 
+        /// <summary>
+        /// Requesting the difference between a target date affected by Daylight Saving Time (DST) and a DateTimeOffset should return a result that accounts for the input time zone.
+        /// </summary>
+        [TestMethod]
+        public void DateDiff_WithDaylightSavingDateTimeObjectAsInput_AdjustsResultForDst()
+        {
+            LavaTestHelper.SetRockDateTimeToDaylightSavingTimezone();
+
+            // Get a date that occurs within daylight saving time for the Central Standard Time timezone.
+            var testDate = new DateTime( 2022, 9, 1, 10, 0, 0 );
+            try
+            {
+                Assert.IsTrue( RockDateTime.OrgTimeZoneInfo.IsDaylightSavingTime( testDate ), "Test date is not within a daylight saving period." );
+
+                var testDateFormatted = testDate.ToString( "yyyy-MM-d hh:mm:ss" );
+                var template = "{{ '<inputDate>' | DateDiff:inputDate,'s' }}"
+                    .Replace( "<inputDate>", testDateFormatted );
+
+                var lavaValues = new LavaDataDictionary() { { "inputDate", testDate } };
+
+                TestHelper.AssertTemplateOutput( "0", template, lavaValues );
+            }
+            finally
+            {
+                LavaTestHelper.SetRockDateTimeToLocalTimezone();
+            }
+        }
+
         #endregion
 
         #region Filter Tests: DatesFromICal
@@ -943,6 +971,43 @@ namespace Rock.Tests.UnitTests.Lava
 
                 TestHelper.AssertTemplateOutput( engine, "today", "{{ dateTimeInput | DaysFromNow }}", mergeValues2 );
             } );
+        }
+
+        #endregion
+
+        #region Filter Tests: IsDateBetween
+
+        /// <summary>
+        /// Verifies when no format string is provided, the start and end date ranges default to SOD and EOD respectively.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithoutFormatString_AdjustsStartAndEndTimes()
+        {
+            var template = "{{ '2022-05-01 09:00' | IsDateBetween:'2022-05-01 12:00','2022-05-01 07:00' }}";
+
+            TestHelper.AssertTemplateOutput( "true", template );
+        }
+
+        /// <summary>
+        /// Verifies when a format string if provided, the start and end date ranges maintain their given times.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithFormatString_DoesNotAdjustTimes()
+        {
+            var template = "{{ '2022-05-01 09:00' | IsDateBetween:'2022-05-01 12:00','2022-05-01 07:00','yyyy-MM-dd HH:mm' }}";
+
+            TestHelper.AssertTemplateOutput( "false", template );
+        }
+
+        /// <summary>
+        /// Verifies that filter works when DateTime or DateTimeOffset input is sent.
+        /// </summary>
+        [TestMethod]
+        public void IsDateBetween_WithDateTimeOrDateTimeOffsetAsInput()
+        {
+            var template = "{{ targetDate | IsDateBetween:startDate,endDate }}";
+            var mergeValues = new LavaDataDictionary() { { "targetDate", DateTime.Parse( "2022-05-02" ) }, { "startDate", DateTime.Parse( "2022-05-01" ) }, { "endDate", DateTime.Parse( "2022-05-03" ) } };
+            TestHelper.AssertTemplateOutput( "true", template, mergeValues );
         }
 
         #endregion
@@ -1314,6 +1379,17 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30 PM',4 }}";
 
             TestHelper.AssertTemplateOutput( "17 weeks, 6 days, 1 hour, 30 minutes", template );
+        }
+
+        /// <summary>
+        /// Comparing an input date/time to a supplied reference that is the same, it should return "just now".
+        /// </summary>
+        [TestMethod]
+        public void HumanizeTimeSpan_CompareWithSame_YieldsJustNow()
+        {
+            var template = "{{ '3-Sep-2020 11:30:00 PM' | HumanizeTimeSpan:'3-Sep-2020 11:30:00 PM' }}";
+
+            TestHelper.AssertTemplateOutput( "just now", template );
         }
 
         /// <summary>

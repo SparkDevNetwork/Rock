@@ -16,10 +16,10 @@
 //
 
 import { computed, defineComponent, PropType } from "vue";
-import InlineSwitch from "../Elements/inlineSwitch";
-import TransitionVerticalCollapse from "../Elements/transitionVerticalCollapse";
-import { useVModelPassthrough } from "../Util/component";
-import Header from "./header";
+import InlineSwitch from "./inlineSwitch";
+import TransitionVerticalCollapse from "./transitionVerticalCollapse";
+import { useVModelPassthrough } from "@Obsidian/Utility/component";
+import SectionHeader from "./sectionHeader";
 
 /**
  * Displays the UI for the Confirmation Email component in the Communications
@@ -29,7 +29,7 @@ export default defineComponent({
     name: "SectionContainer",
 
     components: {
-        Header,
+        SectionHeader,
         InlineSwitch,
         TransitionVerticalCollapse
     },
@@ -77,9 +77,11 @@ export default defineComponent({
 
     template: `
 <div class="section-container well">
-    <div class="section-header d-flex">
-        <div class="section-header-content flex-grow-1 align-items-center">
-            <Header :title="title" :description="description" />
+    <div class="section-header">
+        <div class="section-header-content">
+            <SectionHeader :title="title" :description="description" :isSeparatorHidden="true">
+                <template #actions><slot name="actions" /></template>
+            </SectionHeader>
         </div>
 
         <div v-if="toggleText" class="section-header-toggle align-self-end">
@@ -89,8 +91,7 @@ export default defineComponent({
 
     <TransitionVerticalCollapse>
         <div v-if="showContent">
-            <hr class="section-header-hr" />
-
+            <hr class="section-header-hr">
             <slot />
         </div>
     </TransitionVerticalCollapse>

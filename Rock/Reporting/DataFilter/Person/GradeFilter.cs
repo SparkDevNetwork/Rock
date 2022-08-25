@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on based on the current grade" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Grade" )]
+    [Rock.SystemGuid.EntityTypeGuid( "7311CCCF-BBFB-4FF7-AFD0-3D7F2D466C1B")]
     public class GradeFilter : DataFilterComponent
     {
         #region Properties

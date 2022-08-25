@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplateFormField" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "A773CAA2-2211-416B-BDD7-D907085B4441")]
     public partial class RegistrationTemplateFormField : Model<RegistrationTemplateFormField>, IOrdered, ICacheable
     {
         #region Entity Properties

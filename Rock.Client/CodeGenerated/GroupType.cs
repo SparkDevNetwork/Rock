@@ -172,9 +172,10 @@ namespace Rock.Client
         </dl>
         <dl>
         {% for attribute in Group.AttributeValues %}
-        <dt>{{ attribute.AttributeName }}:</dt>
-
-<dd>{{ attribute.ValueFormatted }} </dd>
+            {% if attribute.ValueFormatted != '' %}
+                <dt>{{ attribute.AttributeName }}</dt>
+                <dd>{{ attribute.ValueFormatted }}</dd>
+            {% endif %}
         {% endfor %}
         </dl>
     </div>

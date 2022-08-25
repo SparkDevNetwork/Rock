@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -33,7 +34,8 @@ namespace Rock.Field.Types
     /// The selected value is stored as a Guid.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class ConnectionStatusFieldType : FieldType, IEntityFieldType
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_STATUS )]
+    public class ConnectionStatusFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -142,6 +144,26 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var status = new ConnectionStatusService( rockContext ).GetNoTracking( guid.Value );
+                    if ( status != null )
+                    {
+                        return status.Name;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -152,23 +174,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var formattedValue = string.Empty;
-
-            var guid = value.AsGuidOrNull();
-
-            if ( guid.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var status = new ConnectionStatusService( rockContext ).GetNoTracking( guid.Value );
-                    if ( status != null )
-                    {
-                        formattedValue = status.Name;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -324,6 +332,45 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var statusId = new ConnectionStatusService( rockContext ).GetId( guid.Value );
+
+                if ( !statusId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>()
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<ConnectionStatus>().Value, statusId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<ConnectionStatus>().Value, nameof( ConnectionStatus.Name ) ),
+            };
         }
 
         #endregion

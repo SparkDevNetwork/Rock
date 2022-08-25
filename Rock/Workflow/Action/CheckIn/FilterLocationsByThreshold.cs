@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Filter Locations by Threshold" )]
 
     [BooleanField( "Remove", "Select 'Yes' if locations should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [Rock.SystemGuid.EntityTypeGuid( "EB9E5114-D86D-49CF-89A1-6EF52428AD2E")]
     public class FilterLocationsByThreshold : CheckInActionComponent
     {
         /// <summary>

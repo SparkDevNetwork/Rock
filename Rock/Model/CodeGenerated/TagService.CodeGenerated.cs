@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// Tag View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Tag ) )]
-    public partial class TagViewModelHelper : ViewModelHelper<Tag, Rock.ViewModel.TagViewModel>
+    public partial class TagViewModelHelper : ViewModelHelper<Tag, TagBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.TagViewModel CreateViewModel( Tag model, Person currentPerson = null, bool loadAttributes = true )
+        public override TagBag CreateViewModel( Tag model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.TagViewModel
+            var viewModel = new TagBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 BackgroundColor = model.BackgroundColor,
                 CategoryId = model.CategoryId,
                 Description = model.Description,
@@ -192,7 +192,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.TagViewModel ToViewModel( this Tag model, Person currentPerson = null, bool loadAttributes = false )
+        public static TagBag ToViewModel( this Tag model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new TagViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataSelect
     [Description( "Select output using Lava template" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Lava Template" )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.REPORTING_DATASELECT_LIQUIDSELECT )]
     public class LiquidSelect : DataSelectComponent
     {
         #region Properties

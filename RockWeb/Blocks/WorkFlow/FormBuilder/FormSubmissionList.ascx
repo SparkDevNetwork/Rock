@@ -12,7 +12,7 @@
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
 
-                <div class="d-flex align-items-center p-2 border-bottom border-panel" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 4px;">
+                <div class="panel-toolbar panel-toolbar-shadow">
                     <ul class="nav nav-pills nav-sm">
                         <li id="tabSubmissions" runat="server" class="active">
                             <asp:LinkButton ID="lnkSubmissions" runat="server" Text="Submissions" CssClass="show-pill" OnClick="lnkSubmissions_Click" pill="submissions-tab" />
@@ -34,9 +34,9 @@
 
             <div class="panel-body">
 
-                <div>
-                    <h3 class="m-0">Submissions</h3>
-                    <div class="text-sm text-muted">
+                <div class="rock-header">
+                    <h3 class="title">Submissions</h3>
+                    <div class="description">
                         Below is a listing of submissions for this form.
                     </div>
                     <hr class="section-header-hr" />
@@ -48,12 +48,12 @@
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" PersonIdField="PersonId" OnRowSelected="gWorkflows_RowSelected" EnableStickyHeaders="true" RowItemText="Submissions">
+                    <Rock:Grid ID="gWorkflows" runat="server" AllowSorting="true" PersonIdField="PersonId" OnRowSelected="gWorkflows_RowSelected" EnableStickyHeaders="true" RowItemText="Submission">
                         <Columns>
                             <Rock:SelectField />
-                            <Rock:DateField DataField="ActivatedDateTime" HeaderText="Submitted" SortExpression="SubmittedDate" />
-                            <Rock:CampusField DataField="Campus" HeaderText="Campus" SortExpression="Campus" />
-                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="Person" />
+                            <Rock:DateField DataField="ActivatedDateTime" HeaderText="Submitted" SortExpression="ActivatedDateTime" />
+                            <Rock:CampusField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
+                            <Rock:PersonField DataField="Person" HeaderText="Person" SortExpression="InitiatorPersonAlias.Person.FirstName,InitiatorPersonAlias.Person.LastName,InitiatorPersonAlias.Person.NickName" />
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -24,7 +24,7 @@ using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 
-using Rock.ViewModel.Blocks.Event.RegistrationEntry;
+using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 
 namespace Rock.Model
 {

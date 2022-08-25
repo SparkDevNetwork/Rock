@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// RegistrationTemplatePlacement View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( RegistrationTemplatePlacement ) )]
-    public partial class RegistrationTemplatePlacementViewModelHelper : ViewModelHelper<RegistrationTemplatePlacement, Rock.ViewModel.RegistrationTemplatePlacementViewModel>
+    public partial class RegistrationTemplatePlacementViewModelHelper : ViewModelHelper<RegistrationTemplatePlacement, RegistrationTemplatePlacementBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.RegistrationTemplatePlacementViewModel CreateViewModel( RegistrationTemplatePlacement model, Person currentPerson = null, bool loadAttributes = true )
+        public override RegistrationTemplatePlacementBag CreateViewModel( RegistrationTemplatePlacement model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.RegistrationTemplatePlacementViewModel
+            var viewModel = new RegistrationTemplatePlacementBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AllowMultiplePlacements = model.AllowMultiplePlacements,
                 Cost = model.Cost,
                 GroupTypeId = model.GroupTypeId,
@@ -184,7 +184,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.RegistrationTemplatePlacementViewModel ToViewModel( this RegistrationTemplatePlacement model, Person currentPerson = null, bool loadAttributes = false )
+        public static RegistrationTemplatePlacementBag ToViewModel( this RegistrationTemplatePlacement model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new RegistrationTemplatePlacementViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Security.Oidc
     [DisplayName( "OpenID Connect Claims" )]
     [Category( "Security > OIDC" )]
     [Description( "Block for displaying and editing available OpenID Connect claims." )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.OIDC_CLAIMS )]
     public partial class AuthClaims : RockBlock, ICustomGridColumns
     {
         public class PageParameterKey

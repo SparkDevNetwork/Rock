@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
     [BooleanField( "Load Current Person from Page", "If set to true the form will autopopulate fields from the person profile", false, key: "LoadPerson" )]
+    [Rock.SystemGuid.BlockTypeGuid( "82A285C1-0D6B-41E0-B1AA-DD356021BDBF" )]
     public partial class GroupSimpleRegister : RockBlock
     {
         #region overridden control methods

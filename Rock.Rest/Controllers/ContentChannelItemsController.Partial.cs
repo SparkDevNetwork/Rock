@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "d50bdcc2-6913-4ce7-aa82-eb249b0b173c" )]
     public partial class ContentChannelItemsController
     {
         /// <summary>
@@ -46,7 +45,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ContentChannelItems/GetChildren/{id}" )]
-        [RockGuid( "5d0a02f4-940b-435b-9474-5af06c90a408" )]
+        [Rock.SystemGuid.RestActionGuid( "5D0A02F4-940B-435B-9474-5AF06C90A408" )]
         public IQueryable<ContentChannelItem> GetChildren( int id )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
@@ -81,7 +80,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ContentChannelItems/GetParents/{id}" )]
-        [RockGuid( "af21954e-ddf3-4c35-a923-92ef3786ba8f" )]
+        [Rock.SystemGuid.RestActionGuid( "AF21954E-DDF3-4C35-A923-92EF3786BA8F" )]
         public IQueryable<ContentChannelItem> GetParents( int id )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities

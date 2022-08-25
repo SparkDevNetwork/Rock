@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -55,6 +56,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<GroupRequirement>( Context ).Queryable().Any( a => a.DueDateAttributeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, GroupRequirement.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.ContentChannelAttributeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, MediaFolder.FriendlyTypeName );
@@ -74,7 +81,7 @@ namespace Rock.Model
     /// Attribute View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Attribute ) )]
-    public partial class AttributeViewModelHelper : ViewModelHelper<Attribute, Rock.ViewModel.AttributeViewModel>
+    public partial class AttributeViewModelHelper : ViewModelHelper<Attribute, AttributeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -83,20 +90,23 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AttributeViewModel CreateViewModel( Attribute model, Person currentPerson = null, bool loadAttributes = true )
+        public override AttributeBag CreateViewModel( Attribute model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AttributeViewModel
+            var viewModel = new AttributeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,
                 AttributeColor = model.AttributeColor,
+                DefaultPersistedCondensedHtmlValue = model.DefaultPersistedCondensedHtmlValue,
+                DefaultPersistedCondensedTextValue = model.DefaultPersistedCondensedTextValue,
+                DefaultPersistedHtmlValue = model.DefaultPersistedHtmlValue,
+                DefaultPersistedTextValue = model.DefaultPersistedTextValue,
                 DefaultValue = model.DefaultValue,
                 Description = model.Description,
                 EnableHistory = model.EnableHistory,
@@ -108,6 +118,7 @@ namespace Rock.Model
                 IsActive = model.IsActive,
                 IsAnalytic = model.IsAnalytic,
                 IsAnalyticHistory = model.IsAnalyticHistory,
+                IsDefaultPersistedValueDirty = model.IsDefaultPersistedValueDirty,
                 IsGridColumn = model.IsGridColumn,
                 IsIndexEnabled = model.IsIndexEnabled,
                 IsMultiValue = model.IsMultiValue,
@@ -192,6 +203,10 @@ namespace Rock.Model
             target.AbbreviatedName = source.AbbreviatedName;
             target.AllowSearch = source.AllowSearch;
             target.AttributeColor = source.AttributeColor;
+            target.DefaultPersistedCondensedHtmlValue = source.DefaultPersistedCondensedHtmlValue;
+            target.DefaultPersistedCondensedTextValue = source.DefaultPersistedCondensedTextValue;
+            target.DefaultPersistedHtmlValue = source.DefaultPersistedHtmlValue;
+            target.DefaultPersistedTextValue = source.DefaultPersistedTextValue;
             target.DefaultValue = source.DefaultValue;
             target.Description = source.Description;
             target.EnableHistory = source.EnableHistory;
@@ -205,6 +220,7 @@ namespace Rock.Model
             target.IsActive = source.IsActive;
             target.IsAnalytic = source.IsAnalytic;
             target.IsAnalyticHistory = source.IsAnalyticHistory;
+            target.IsDefaultPersistedValueDirty = source.IsDefaultPersistedValueDirty;
             target.IsGridColumn = source.IsGridColumn;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsMultiValue = source.IsMultiValue;
@@ -232,7 +248,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AttributeViewModel ToViewModel( this Attribute model, Person currentPerson = null, bool loadAttributes = false )
+        public static AttributeBag ToViewModel( this Attribute model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AttributeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

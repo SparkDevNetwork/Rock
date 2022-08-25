@@ -157,9 +157,18 @@ namespace RockWeb.Blocks.Connection
         Order = 15,
         Key = AttributeKey.ConnectionRequestHistoryPage )]
 
+    [LinkedPage(
+        "Bulk Update Requests",
+        Description = "Page used to update selected connection requests",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUESTS_BULK_UPDATE,
+        Order = 16,
+        Key = AttributeKey.BulkUpdateRequestsPage )]
+
     #endregion Block Attributes
 
     [ContextAware( typeof( Person ), IsConfigurable = false )]
+    [Rock.SystemGuid.BlockTypeGuid( "28DBE708-E99B-4879-A64D-656C030D25B5" )]
     public partial class ConnectionRequestBoard : ContextEntityBlock
     {
         /*
@@ -245,6 +254,9 @@ namespace RockWeb.Blocks.Connection
             public const string ConnectionRequestId = "ConnectionRequestId";
             public const string ConnectionRequestGuid = "ConnectionRequestGuid";
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+            public const string CampusId = "CampusId";
+            public const string ConnectionTypeId = "ConnectionTypeId";
+            public const string EntitySetId = "EntitySetId";
         }
 
         /// <summary>
@@ -266,6 +278,7 @@ namespace RockWeb.Blocks.Connection
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string StatusTemplate = "StatusTemplate";
             public const string ConnectionRequestHistoryPage = "ConnectionRequestHistoryPage";
+            public const string BulkUpdateRequestsPage = "BulkUpdateRequestsPage";
         }
 
         /// <summary>
@@ -589,6 +602,16 @@ namespace RockWeb.Blocks.Connection
             BlockUpdated += Block_BlockUpdated;
             AddConfigurationUpdateTrigger( upnlRoot );
 
+            // Add a custom button with an EventHandler for bulk updates
+            var customActionConfigEventButton = new CustomActionConfigEvent
+            {
+                IconCssClass = "fa fa-truck fa-fw",
+                HelpText = "Update selected requests",
+                EventHandler = LbUpdateConnections_Click
+            };
+
+            gRequests.Actions.AddCustomActionBlockButton( customActionConfigEventButton );
+
             // Configure the badge types
             var delimitedBadgeGuids = GetAttributeValue( AttributeKey.Badges );
 
@@ -609,6 +632,57 @@ namespace RockWeb.Blocks.Connection
 
             blRequestModalViewModeBadges.BadgeTypes.AddRange( badgeTypes );
             pnlRequestModalViewModeBadges.Visible = true;
+        }
+
+        private void LbUpdateConnections_Click( object sender, EventArgs e )
+        {
+            var selectedItems = new List<int>();
+            gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+
+            if ( selectedItems.Count == 0 )
+            {
+                gRequests.ShowModalAlertMessage( "No requests selected", ModalAlertType.Information );
+            }
+            else
+            {
+                var connectionType = GetConnectionType();
+                int entitySetId = GetEntitySetId( selectedItems );
+                int connectionTypeId = connectionType.Id;
+
+                var queryParams = new Dictionary<string, string>()
+                {
+                    { PageParameterKey.ConnectionTypeId, connectionTypeId.ToString() },
+                    { PageParameterKey.EntitySetId, entitySetId.ToString() }
+                };
+
+                NavigateToLinkedPage( AttributeKey.BulkUpdateRequestsPage, queryParams );
+            }
+        }
+
+        private int GetEntitySetId( List<int> ids )
+        {
+            var rockContext = new RockContext();
+            var entitySet = new EntitySet();
+            entitySet.EntityTypeId = gRequests.EntityTypeId ?? ConnectionRequestEntityTypeId;
+            entitySet.ExpireDateTime = RockDateTime.Now.AddDays( 1 );
+
+            var service = new EntitySetService( rockContext );
+            service.Add( entitySet );
+            rockContext.SaveChanges();
+
+            List<EntitySetItem> entitySetItems = new List<EntitySetItem>();
+
+            foreach ( var id in ids )
+            {
+                var item = new EntitySetItem();
+                item.EntitySetId = entitySet.Id;
+                item.EntityId = id;
+                entitySetItems.Add( item );
+            }
+
+            rockContext.BulkInsert( entitySetItems );
+
+            return entitySet.Id;
         }
 
         /// <summary>
@@ -876,7 +950,7 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
+                mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
             }
 
             mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", daysUntilRequestIdle ) );
@@ -898,6 +972,12 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            var title = connectionRequest.ToString();
+            string quickReturnLava = "{{ Title | AddQuickReturn:'ConnectionRequests', 60 }}";
+            var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            quickReturnMergeFields.Add( "Title", title );
+            quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
+
             // Add the lava header
             // Resolve the text field merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
@@ -916,7 +996,19 @@ namespace RockWeb.Blocks.Connection
             lRequestModalViewModeEmail.Text = GetEmailLinkMarkup( viewModel.PersonId, viewModel.PersonEmail );
             aRequestModalViewModeProfileLink.Attributes["href"] = string.Format( "/person/{0}", viewModel.PersonId );
             btnRequestModalViewModeTransfer.Visible = DoShowTransferButton();
-            btnRequestModalViewModeConnect.Visible = viewModel.CanConnect && CanUserEditConnectionRequest();
+
+            /* 
+                08/09/2022 - SK
+                This is special case where we are not using viewModel.CanConnect in order to make this align with older ConnectionRequestDetail block.
+                CanConnect() method use RequiresPlacementGroupToConnect and AssignedGroupId are also being used in calculation
+                which ultimately controlling btnRequestModalViewModeConnect Visibility.
+            */
+            //btnRequestModalViewModeConnect.Visible = viewModel.CanConnect && CanUserEditConnectionRequest();
+            btnRequestModalViewModeConnect.Visible =
+                viewModel.ConnectionState != ConnectionState.Inactive &&
+                viewModel.ConnectionState != ConnectionState.Connected &&
+                connectionRequest.ConnectionOpportunity.ShowConnectButton &&
+                CanUserEditConnectionRequest();
             btnRequestModalViewModeEdit.Visible = CanUserEditConnectionRequest();
             lbRequestModalViewModeAddActivity.Visible = CanUserEditConnectionRequest();
             rRequestModalViewModeConnectorSelect.Visible = CanUserEditConnectionRequest();
@@ -1891,16 +1983,21 @@ namespace RockWeb.Blocks.Connection
 
             BindConnectorOptions( ddlRequestModalAddEditModeConnector, true, campusId, connectorPersonAliasId );
 
-            ConnectionState[] ignoredConnectionTypes = { };
+            List<ConnectionState> ignoredConnectionTypes = new List<ConnectionState>();
 
             // If this Connection Type does not allow Future Follow-Up, ignore it from the ConnectionState types.
             if ( !connectionType.EnableFutureFollowup )
             {
-                ignoredConnectionTypes = new ConnectionState[] { ConnectionState.FutureFollowUp };
+                ignoredConnectionTypes.Add( ConnectionState.FutureFollowUp );
+            }
+
+            if ( viewModel == null || viewModel.ConnectionState != ConnectionState.Connected )
+            {
+                ignoredConnectionTypes.Add( ConnectionState.Connected );
             }
 
             // Ignore binding the Connection Types that are in the provided array.
-            rblRequestModalAddEditModeState.BindToEnum( ignoreTypes: ignoredConnectionTypes );
+            rblRequestModalAddEditModeState.BindToEnum( ignoreTypes: ignoredConnectionTypes.ToArray() );
 
             // Status
             rblRequestModalAddEditModeStatus.Items.Clear();
@@ -4582,6 +4679,7 @@ namespace RockWeb.Blocks.Connection
             // Check for a connection request or opportunity id param. The request takes priority since it is more specific
             var connectionRequestIdParam = PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
             var connectionOpportunityIdParam = PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull();
+            var campusIdParam = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
 
             if ( !ConnectionOpportunityId.HasValue && connectionRequestIdParam.HasValue )
             {
@@ -4618,6 +4716,10 @@ namespace RockWeb.Blocks.Connection
                 ViewAllActivities = false;
                 IsRequestModalAddEditMode = false;
                 RequestModalViewModeSubMode = RequestModalViewModeSubMode_View;
+                if ( campusIdParam.HasValue )
+                {
+                    SaveSettingByConnectionType( UserPreferenceKey.CampusFilter, campusIdParam.ToString() );
+                }
             }
 
             // If the opportunity is not yet set by the request or opportunity id params, then set it from preference
@@ -5429,7 +5531,8 @@ namespace RockWeb.Blocks.Connection
     campusId: {10},
     lastActivityTypeIds: {11},
     controlClientId: {12},
-    pastDueOnly: {13}
+    pastDueOnly: {13},
+    connectionRequestId: {14}
 }});",
                 ToJavaScript( ConnectionOpportunityId ), // 0
                 ToJavaScript( GetMaxCardsPerColumn() ), // 1
@@ -5444,7 +5547,8 @@ namespace RockWeb.Blocks.Connection
                 ToJavaScript( CampusId ), // 10
                 ToJavaScript( cblLastActivityFilter.SelectedValuesAsInt ), // 11
                 ToJavaScript( lbJavaScriptCommand.ClientID ), // 12
-                ToJavaScript( rcbPastDueOnly.Checked ) /* 13 */ );
+                ToJavaScript( rcbPastDueOnly.Checked ), //13
+                ToJavaScript( ConnectionRequestId ) /* 14 */ );
 
             ScriptManager.RegisterStartupScript(
                 upnlJavaScript,

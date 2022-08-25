@@ -146,7 +146,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// Gets or sets a value indicating whether this <see cref="RockCheckBoxList"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
@@ -339,7 +339,6 @@ namespace Rock.Web.UI.Controls
             // add custom validator
             CustomValidator.ID = this.ID + "_cfv";
             CustomValidator.ClientValidationFunction = "Rock.controls.rockCheckBoxList.clientValidate";
-            CustomValidator.ErrorMessage = this.Label != string.Empty ? this.Label + " is required." : string.Empty;
             CustomValidator.CssClass = "validation-error help-inline";
             CustomValidator.Enabled = this.Required;
             CustomValidator.Display = ValidatorDisplay.Dynamic;

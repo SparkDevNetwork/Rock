@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,7 +28,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Communications REST API
     /// </summary>
-    [RockGuid( "1df46cc7-326a-48e6-b0a9-9330badd0512" )]
     public partial class CommunicationsController
     {
         /// <summary>
@@ -38,7 +37,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Communications/Send/{id}" )]
-        [RockGuid( "272c25fc-c608-4673-99d5-7fb1377d8a61" )]
+        [Rock.SystemGuid.RestActionGuid( "272C25FC-C608-4673-99D5-7FB1377D8A61" )]
         public virtual Task Send( int id )
         {
             var communication = GetById( id );
@@ -55,7 +54,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Communications/ImportSent" )]
-        [RockGuid( "d99d0fee-3479-4dc5-b92e-5d743c07efc1" )]
+        [Rock.SystemGuid.RestActionGuid( "D99D0FEE-3479-4DC5-B92E-5D743C07EFC1" )]
         public virtual async Task<HttpResponseMessage> ImportSent( [FromBody] IEnumerable<ImportSentCommunicationApiModel> importCommunications )
         {
             if ( importCommunications == null || importCommunications.Count() == 0 )

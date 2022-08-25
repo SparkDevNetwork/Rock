@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialPaymentDetail" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "F3659077-43FD-4805-BC42-BC8A3F9C3008")]
     public partial class FinancialPaymentDetail : Model<FinancialPaymentDetail>
     {
         #region Entity Properties
@@ -112,7 +113,7 @@ namespace Rock.Model
             get
             {
                 // We are only checking null here because empty string is valid.
-                if ( _nameOnCard.IsNull() )
+                if ( _nameOnCard == null )
                 {
                     return _nameOnCardEncrypted;
                 }
@@ -413,6 +414,8 @@ namespace Rock.Model
              * behavior:
              *
              * https://github.com/SparkDevNetwork/Rock/commit/6953aa1986d46c9c84663ce818333425c0807c01#diff-e0c4fac8254b21998bb9235c3dee4ee9R36
+             * 
+             * 2022-07-21 ED: Point of clarification. The FK Constraint uses the ON DELETE SET NULL clause created a the migration.
              */
             this.HasOptional( t => t.FinancialPersonSavedAccount ).WithMany().HasForeignKey( t => t.FinancialPersonSavedAccountId ).WillCascadeOnDelete( true );
         }

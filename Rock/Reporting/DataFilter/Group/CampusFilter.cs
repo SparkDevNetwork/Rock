@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups by campus" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Campus Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "32AEA2DF-2374-478D-865E-D1B6FB2E06D0")]
     public class CampusFilter : DataFilterComponent
     {
         #region Properties

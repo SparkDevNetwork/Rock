@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,6 +33,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.SystemGuid;
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Steps
@@ -40,6 +41,7 @@ namespace RockWeb.Blocks.Steps
     [DisplayName( "Step Program Detail" )]
     [Category( "Steps" )]
     [Description( "Displays the details of the given Step Program for editing." )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
 
@@ -67,7 +69,8 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
-    public partial class StepProgramDetail : RockBlock
+    [Rock.SystemGuid.BlockTypeGuid( "CF372F6E-7131-4FF7-8BCD-6053DBB67D34" )]
+    public partial class StepProgramDetail : ContextEntityBlock
     {
         #region Attribute Keys
 
@@ -115,6 +118,7 @@ namespace RockWeb.Blocks.Steps
         #region Properties
 
         private List<StepStatus> StatusesState { get; set; }
+
         private List<StepWorkflowTriggerViewModel> WorkflowsState { get; set; }
 
         #endregion
@@ -194,12 +198,14 @@ namespace RockWeb.Blocks.Steps
             InitializeChartScripts();
             InitializeChartFilter();
             InitializeSettingsNotification( upStepProgram );
+            hlStepFlow.NavigateUrl = ResolveUrl( string.Format( "~//steps/program/{0}/flow", _stepProgramId ) );
 
             var editAllowed = IsUserAuthorized( Authorization.EDIT );
             if ( !editAllowed && _program != null )
             {
                 editAllowed = _program.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
+
             InitializeAttributesGrid( editAllowed );
         }
 
@@ -214,7 +220,6 @@ namespace RockWeb.Blocks.Steps
             if ( !Page.IsPostBack )
             {
                 var stepProgramId = PageParameter( PageParameterKey.StepProgramId ).AsInteger();
-
                 ShowDetail( stepProgramId );
             }
             else
@@ -288,7 +293,6 @@ namespace RockWeb.Blocks.Steps
         private void InitializeActionButtons()
         {
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated Step Types and Step Participants will also be deleted!');", StepProgram.FriendlyTypeName );
-
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;
         }
 
@@ -360,7 +364,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnDelete_Click ( object sender, EventArgs e )
+        protected void btnDelete_Click( object sender, EventArgs e )
         {
             this.DeleteRecord();
         }
@@ -449,7 +453,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridReorderEventArgs" /> instance containing the event data.</param>
-        void gStatuses_GridReorder( object sender, GridReorderEventArgs e )
+        protected void gStatuses_GridReorder( object sender, GridReorderEventArgs e )
         {
             var movedItem = StatusesState.Where( ss => ss.Order == e.OldIndex ).FirstOrDefault();
 
@@ -495,8 +499,8 @@ namespace RockWeb.Blocks.Steps
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gStatuses_Edit( object sender, RowEventArgs e )
         {
-            Guid StepStatusGuid = ( Guid ) e.RowKeyValue;
-            gStatuses_ShowEdit( StepStatusGuid );
+            Guid stepStatusGuid = ( Guid ) e.RowKeyValue;
+            gStatuses_ShowEdit( stepStatusGuid );
         }
 
         /// <summary>
@@ -749,7 +753,6 @@ namespace RockWeb.Blocks.Steps
 
                 gWorkflows.DataSource = WorkflowsState;
             }
-
 
             gWorkflows.DataBind();
         }
@@ -1082,7 +1085,6 @@ namespace RockWeb.Blocks.Steps
                 {
                     stepProgram.AllowPerson( Authorization.ADMINISTRATE, CurrentPerson, rockContext );
                 }
-
             }
             catch ( Exception ex )
             {
@@ -1120,55 +1122,68 @@ namespace RockWeb.Blocks.Steps
             if ( stepProgram == null )
             {
                 stepProgram = new StepProgram { Id = 0 };
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
 
-            /*
-             SK - 10/28/2021
-             Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
-             */
-            bool editAllowed = stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson );
             pnlDetails.Visible = true;
-            hfStepProgramId.Value = stepProgram.Id.ToString();
-            lIcon.Text = string.Format( "<i class='{0}'></i>", stepProgram.IconCssClass );
-            bool readOnly = false;
-
-            nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed )
+            if ( stepProgram != null && stepProgram.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
-            }
+                /*
+                SK - 10/28/2021
+                Earlier only Person with admin rights were allowed edit the block. That was changed to look for Edit after the Parent Authority for Step Type and Program is set.
+                */
+                bool editAllowed = stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                hfStepProgramId.Value = stepProgram.Id.ToString();
+                lIcon.Text = string.Format( "<i class='{0}'></i>", stepProgram.IconCssClass );
+                bool readOnly = false;
 
-            rblDefaultListView.Items.Clear();
-            rblDefaultListView.Items.Add( new ListItem( "Cards", StepProgram.ViewMode.Cards.ToString() ) );
-            rblDefaultListView.Items.Add( new ListItem( "Grid", StepProgram.ViewMode.Grid.ToString() ) );
-
-            if ( readOnly )
-            {
-                btnEdit.Visible = false;
-                btnDelete.Visible = false;
-                btnSecurity.Visible = false;
-                ShowReadonlyDetails( stepProgram );
-            }
-            else
-            {
-                btnEdit.Visible = true;
-                btnDelete.Visible = true;
-                btnSecurity.Visible = true;
-
-                btnSecurity.Title = "Secure " + stepProgram.Name;
-                btnSecurity.EntityId = stepProgram.Id;
-
-                if ( !stepProgramId.Equals( 0 ) )
+                nbEditModeMessage.Visible = false;
+                nbEditModeMessage.Text = string.Empty;
+                if ( !editAllowed )
                 {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
+                }
+
+                rblDefaultListView.Items.Clear();
+                rblDefaultListView.Items.Add( new ListItem( "Cards", StepProgram.ViewMode.Cards.ToString() ) );
+                rblDefaultListView.Items.Add( new ListItem( "Grid", StepProgram.ViewMode.Grid.ToString() ) );
+
+                if ( readOnly )
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
+                    btnSecurity.Visible = false;
                     ShowReadonlyDetails( stepProgram );
                 }
                 else
                 {
-                    ShowEditDetails( stepProgram );
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    btnSecurity.Visible = true;
+                    btnSecurity.Visible = stepProgram.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                    btnSecurity.Title = "Secure " + stepProgram.Name;
+                    btnSecurity.EntityId = stepProgram.Id;
+
+                    if ( !stepProgramId.Equals( 0 ) )
+                    {
+                        ShowReadonlyDetails( stepProgram );
+                    }
+                    else
+                    {
+                        ShowEditDetails( stepProgram );
+                    }
                 }
+            }
+            else
+            {
+                nbEditModeMessage.Visible = true;
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToView( ContentChannel.FriendlyTypeName );
+                pnlEditDetails.Visible = false;
+                pnlViewDetails.Visible = false;
+                this.HideSecondaryBlocks( true );
             }
         }
 
@@ -1183,6 +1198,7 @@ namespace RockWeb.Blocks.Steps
                 stepProgram = new StepProgram();
                 stepProgram.IconCssClass = "fa fa-compress";
             }
+
             if ( stepProgram.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( StepProgram.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -1246,12 +1262,7 @@ namespace RockWeb.Blocks.Steps
             lReadOnlyTitle.Text = stepProgram.Name.FormatAsHtmlTitle();
             lStepProgramName.Text = stepProgram.Name;
 
-            // Create the read-only description text.
-            var descriptionListMain = new DescriptionList();
-
-            descriptionListMain.Add( "Description", stepProgram.Description );
-
-            lStepProgramDescription.Text = descriptionListMain.Html;
+            lStepProgramDescription.Text = stepProgram.Description.ScrubHtmlAndConvertCrLfToBr();
 
             // Configure Label: Inactive
             hlInactive.Visible = !stepProgram.IsActive;
@@ -1343,6 +1354,12 @@ namespace RockWeb.Blocks.Steps
                     stepTypeIds.Contains( x.StepTypeId ) &&
                     x.CompletedDateKey != null );
 
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
             // Apply date range
             var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
             var dateRange = reportPeriod.GetDateRange();
@@ -1397,6 +1414,12 @@ namespace RockWeb.Blocks.Steps
                 query = query.Where( x => x.CompletedDateTime < compareDate );
             }
 
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
             return query;
         }
 
@@ -1421,6 +1444,12 @@ namespace RockWeb.Blocks.Steps
                 .Where( x =>
                     stepTypeIds.Contains( x.StepTypeId ) &&
                     x.StartDateKey != null );
+
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
 
             // Apply date range
             var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
@@ -1631,11 +1660,7 @@ namespace RockWeb.Blocks.Steps
                 LineTension = 0.4m
             } );
 
-            string script = string.Format( @"
-            var barCtx = $('#{0}')[0].getContext('2d');
-            var barChart = new Chart(barCtx, {1});",
-                                    chartCanvas.ClientID,
-                                    chartDataJson );
+            string script = string.Format( @"var barCtx = $('#{0}')[0].getContext('2d'); var barChart = new Chart(barCtx, {1});", chartCanvas.ClientID, chartDataJson );
 
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityChartScript", script, true );
         }
@@ -1697,7 +1722,7 @@ namespace RockWeb.Blocks.Steps
                     .Select( x =>
                     {
                         // Add 1 for the first day of the month
-                        var dateKey = x.Key.MonthKey * 100 + 1;
+                        var dateKey = ( x.Key.MonthKey * 100 ) + 1;
 
                         return new StepTypeActivityDataPoint
                         {
@@ -1738,8 +1763,7 @@ namespace RockWeb.Blocks.Steps
                         SortKey1 = x.Key.SortKey1,
                         SortKey2 = x.Key.SortKey2,
                         CompletedCount = x.Count
-                    }
-                     )
+                    } )
                     .OrderBy( x => x.SortKey1 )
                     .ThenBy( x => x.SortKey2 )
                     .ToList();
@@ -1801,7 +1825,12 @@ namespace RockWeb.Blocks.Steps
                     x.StepType.StepProgramId == programId
                     && x.StepType.IsActive
                     && x.CompletedDateKey.HasValue );
-            ;
+
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                stepsCompletedQuery = stepsCompletedQuery.Where( s => s.CampusId == campusContext.Id );
+            }
 
             return stepsCompletedQuery;
         }
@@ -1817,12 +1846,19 @@ namespace RockWeb.Blocks.Steps
         private class StepWorkflowTriggerViewModel
         {
             public int Id { get; set; }
+
             public Guid Guid { get; set; }
+
             public string WorkflowTypeName { get; set; }
+
             public int? StepTypeId { get; set; }
+
             public int WorkflowTypeId { get; set; }
+
             public StepWorkflowTrigger.WorkflowTriggerCondition TriggerType { get; set; }
+
             public string TypeQualifier { get; set; }
+
             public string TriggerDescription { get; set; }
 
             public StepWorkflowTriggerViewModel()
@@ -2008,7 +2044,6 @@ namespace RockWeb.Blocks.Steps
         {
             ViewState["AttributesState"] = JsonConvert.SerializeObject( AttributesState, Formatting.None, jsonSetting );
         }
-
 
         /// <summary>
         /// Get the implementing type of the Attribute Definition.

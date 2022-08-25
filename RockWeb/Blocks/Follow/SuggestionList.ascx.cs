@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Follow
     [Category( "Follow" )]
     [Description( "Block for viewing list of following events." )]
     [LinkedPage( "Detail Page" )]
+    [Rock.SystemGuid.BlockTypeGuid( "23818F47-D81E-4B6E-B89B-045B1FAD4C2B" )]
     public partial class SuggestionList : RockBlock, ICustomGridColumns
     {
         #region Control Methods

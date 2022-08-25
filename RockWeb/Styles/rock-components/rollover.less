@@ -27,24 +27,34 @@
   }
 
   .group-hover-show {
-    opacity: 0;
     visibility: hidden;
+    opacity: 0;
+  }
+
+  .group-hover-0-show {
+    width: 0;
+    height: 0;
   }
 
   .group-hover-hide {
-    opacity: 1;
     visibility: visible;
+    opacity: 1;
   }
 
   &:hover {
     .group-hover-show {
-      opacity: 1;
       visibility: visible;
+      opacity: 1;
+    }
+
+    .group-hover-0-show {
+      width: auto;
+      height: auto;
     }
 
     .group-hover-hide {
-      opacity: 0;
       visibility: hidden;
+      opacity: 0;
     }
   }
 }

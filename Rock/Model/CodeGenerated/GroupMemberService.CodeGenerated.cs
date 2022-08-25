@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -72,7 +73,7 @@ namespace Rock.Model
     /// GroupMember View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( GroupMember ) )]
-    public partial class GroupMemberViewModelHelper : ViewModelHelper<GroupMember, Rock.ViewModel.GroupMemberViewModel>
+    public partial class GroupMemberViewModelHelper : ViewModelHelper<GroupMember, GroupMemberBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -81,17 +82,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupMemberViewModel CreateViewModel( GroupMember model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupMemberBag CreateViewModel( GroupMember model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupMemberViewModel
+            var viewModel = new GroupMemberBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ArchivedByPersonAliasId = model.ArchivedByPersonAliasId,
                 ArchivedDateTime = model.ArchivedDateTime,
                 CommunicationPreference = ( int ) model.CommunicationPreference,
@@ -100,6 +100,7 @@ namespace Rock.Model
                 GroupMemberStatus = ( int ) model.GroupMemberStatus,
                 GroupOrder = model.GroupOrder,
                 GroupRoleId = model.GroupRoleId,
+                GroupTypeId = model.GroupTypeId,
                 GuestCount = model.GuestCount,
                 InactiveDateTime = model.InactiveDateTime,
                 IsArchived = model.IsArchived,
@@ -189,6 +190,7 @@ namespace Rock.Model
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupOrder = source.GroupOrder;
             target.GroupRoleId = source.GroupRoleId;
+            target.GroupTypeId = source.GroupTypeId;
             target.GuestCount = source.GuestCount;
             target.InactiveDateTime = source.InactiveDateTime;
             target.IsArchived = source.IsArchived;
@@ -214,7 +216,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupMemberViewModel ToViewModel( this GroupMember model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupMemberBag ToViewModel( this GroupMember model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupMemberViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

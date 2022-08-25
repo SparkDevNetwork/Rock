@@ -57,37 +57,6 @@ namespace Rock.Model
                     }
                 }
 
-                var updateGroupMemberMsg = new UpdateGroupMember.Message
-                {
-                    State = State,
-                    GroupId = Entity.GroupId,
-                    PersonId = Entity.PersonId,
-                    GroupMemberStatus = Entity.GroupMemberStatus,
-                    GroupMemberRoleId = Entity.GroupRoleId,
-                    IsArchived = Entity.IsArchived
-                };
-
-                if ( Entity.Group != null )
-                {
-                    updateGroupMemberMsg.GroupTypeId = Entity.Group.GroupTypeId;
-                }
-
-                // If this isn't a new group member, get the previous status and role values
-                if ( State == EntityContextState.Modified )
-                {
-                    updateGroupMemberMsg.PreviousGroupMemberStatus = ( GroupMemberStatus ) OriginalValues[nameof( GroupMember.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>();
-                    updateGroupMemberMsg.PreviousGroupMemberRoleId = OriginalValues[nameof( GroupMember.GroupRoleId )].ToStringSafe().AsInteger();
-                    updateGroupMemberMsg.PreviousIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
-                }
-
-                // If this isn't a deleted group member, get the group member guid
-                if ( State != EntityContextState.Deleted )
-                {
-                    updateGroupMemberMsg.GroupMemberGuid = Entity.Guid;
-                }
-
-                updateGroupMemberMsg.Send();
-
                 int? oldPersonId = null;
                 int? newPersonId = null;
 
@@ -165,6 +134,7 @@ namespace Rock.Model
 
                 if ( group != null )
                 {
+                    this.Entity.GroupTypeId = group.GroupTypeId;
                     string oldGroupName = group.Name;
                     if ( oldGroupId.HasValue && oldGroupId.Value != group.Id )
                     {
@@ -275,13 +245,14 @@ namespace Rock.Model
                     var groupType = GroupTypeCache.Get( group.GroupTypeId );
                     if ( groupType != null && groupType.IsIndexEnabled )
                     {
+                        int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
                         var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
                         {
-                            EntityTypeId = groupType.Id,
+                            EntityTypeId = groupEntityTypeId,
                             EntityId = group.Id
                         };
 
-                        processEntityTypeIndexMsg.Send();
+                        processEntityTypeIndexMsg.SendWhen( this.RockContext.WrappedTransactionCompletedTask );
                     }
                 }
 
@@ -435,6 +406,46 @@ namespace Rock.Model
                         }
                     }
                 }
+
+                SendUpdateGroupMemberMessage();
+            }
+
+            /// <summary>
+            /// Sends the update group member message.
+            /// Don't do this in pre-save as it can cause a Race Condition with the message bus and the DB save.
+            /// </summary>
+            private void SendUpdateGroupMemberMessage()
+            {
+                var updateGroupMemberMsg = new UpdateGroupMember.Message
+                {
+                    State = State,
+                    GroupId = Entity.GroupId,
+                    PersonId = Entity.PersonId,
+                    GroupMemberStatus = Entity.GroupMemberStatus,
+                    GroupMemberRoleId = Entity.GroupRoleId,
+                    IsArchived = Entity.IsArchived
+                };
+
+                if ( Entity.Group != null )
+                {
+                    updateGroupMemberMsg.GroupTypeId = Entity.Group.GroupTypeId;
+                }
+
+                // If this isn't a new group member, get the previous status and role values
+                if ( State == EntityContextState.Modified )
+                {
+                    updateGroupMemberMsg.PreviousGroupMemberStatus = OriginalValues[nameof( GroupMember.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>();
+                    updateGroupMemberMsg.PreviousGroupMemberRoleId = OriginalValues[nameof( GroupMember.GroupRoleId )].ToStringSafe().AsInteger();
+                    updateGroupMemberMsg.PreviousIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
+                }
+
+                // If this isn't a deleted group member, get the group member guid
+                if ( State != EntityContextState.Deleted )
+                {
+                    updateGroupMemberMsg.GroupMemberGuid = Entity.Guid;
+                }
+
+                updateGroupMemberMsg.Send();
             }
         }
     }

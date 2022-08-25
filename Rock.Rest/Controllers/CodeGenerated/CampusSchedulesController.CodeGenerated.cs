@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// CampusSchedules REST API
     /// </summary>
+    [RestControllerGuid( "F3678260-13B2-42E3-9C75-FF26E2FD555B" )]
     public partial class CampusSchedulesController : Rock.Rest.ApiController<Rock.Model.CampusSchedule>
     {
         /// <summary>

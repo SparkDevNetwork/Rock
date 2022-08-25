@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// DefinedValues REST API
     /// </summary>
+    [RestControllerGuid( "36EA755E-E0EB-499C-9F04-1E027A8D9030" )]
     public partial class DefinedValuesController : Rock.Rest.ApiController<Rock.Model.DefinedValue>
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,7 +29,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Users REST API
     /// </summary>
-    [RockGuid( "003879b7-b613-4295-982b-9f3427a25081" )]
     public partial class UserLoginsController
     {
         /// <summary>
@@ -40,7 +39,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/userlogins/available/{username}" )]
         [System.Web.Http.Route( "api/userlogins/available" )]
-        [RockGuid( "037c3806-0a80-4029-acae-269dfc702ea8" )]
+        [Rock.SystemGuid.RestActionGuid( "037C3806-0A80-4029-ACAE-269DFC702EA8" )]
         public bool Available( string username )
         {
             return ( ( UserLoginService ) Service ).Exists( username ) == false;
@@ -54,7 +53,6 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authenticate, Secured]
-        [RockGuid( "91f8509c-1feb-4d23-ac23-3c5f6a7eaca8" )]
         public override System.Net.Http.HttpResponseMessage Post( UserLogin value )
         {
             if ( ( ( UserLoginService ) Service ).Exists( value.UserName ) )
@@ -82,7 +80,6 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         /// <param name="value">The value.</param>
         [Authenticate, Secured]
-        [RockGuid( "07d5a10c-2d74-46cc-a70c-f6dafa1ec65e" )]
         public override void Put( int id, UserLogin value )
         {
             // Store current value, as SetPassword() will always set this to false.
@@ -123,6 +120,7 @@ namespace Rock.Rest.Controllers
                 if ( !string.IsNullOrWhiteSpace( userLoginWithPlainTextPassword.PlainTextPassword ) )
                 {
                     ( this.Service as UserLoginService ).SetPassword( value, userLoginWithPlainTextPassword.PlainTextPassword );
+                    value.IsLockedOut = false; // unlock the user account if they reset their password.
                 }
             }
             else

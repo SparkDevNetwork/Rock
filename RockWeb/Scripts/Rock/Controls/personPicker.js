@@ -97,11 +97,11 @@
                         dataType: 'json'
                     });
 
-                    // if it takes more than 1.5 seconds for the search to complete, show a wait indicator
+                    // Display a wait indicator to show that the search is now running.
                     if ($('.js-searching-notification').length == 0) {
                         $searchResults.prepend('<i class="fa fa-refresh fa-spin margin-l-md js-searching-notification" style="display: none; opacity: .4;"></i>');
                     }
-                    $('.js-searching-notification').delay(1500).fadeIn(800);
+                    $('.js-searching-notification').fadeIn(800);
 
                     promise.done(function (data) {
                         $searchResults.html('');
@@ -122,8 +122,10 @@
                         $('.js-searching-notification').remove();
                     });
                 },
-                // set minLength to 0, but check that at least one field as 3 chars before fetching from REST
+                // Set minLength to 0, but check that at least one field has 3 chars before fetching from REST.
+                // To minimize load on the server, don't trigger the search until a reasonable delay after the last keypress.
                 minLength: 0,
+                delay: 750,
                 html: true,
                 appendTo: $searchResults,
                 pickerControlId: controlId,
@@ -337,6 +339,13 @@
                 $pickerPersonName.val(selectedText);
             });
 
+            // disable the enter key : this will prevent the enter key from clearing the loaded search query.
+            $pickerControl.on('keypress', function (e) {
+                if (e.which == 13) {
+                    return false;
+                }
+            });
+
             var setSelectedPerson = function (selectedValue, selectedText) {
                 var selectedPersonLabel = $pickerControl.find('.js-personpicker-selectedperson-label');
 
@@ -454,7 +463,6 @@
                 personPicker.initialize();
             }
         };
-
         return exports;
     }());
 }(jQuery));

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ namespace Rock.Model
     /// </summary>
     [RockDomain( "CRM" )]
     [Table( "IdentityVerificationCode" )]
+    [Rock.SystemGuid.EntityTypeGuid( "3FCB8972-C319-4262-9D6E-3D60E1C4E463")]
     public partial class IdentityVerificationCode : Model<IdentityVerificationCode>
     {
         #region Properties

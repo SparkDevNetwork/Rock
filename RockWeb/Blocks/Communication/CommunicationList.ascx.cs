@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Communication
         Order = 1 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "56ABBD0F-8F62-4094-88B3-161E71F21419" )]
     public partial class CommunicationList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         #region Attribute Keys
@@ -478,10 +479,10 @@ namespace RockWeb.Blocks.Communication
             string content = tbContent.Text;
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
+                // Concatenate the content fields and search the result.
+                // This achieves better query performance than searching the fields individually.
                 communicationsQuery = communicationsQuery.Where( c =>
-                    c.Message.Contains( content ) ||
-                    c.SMSMessage.Contains( content ) ||
-                    c.PushMessage.Contains( content ) );
+                                    ( c.Message + c.SMSMessage + c.PushMessage ).Contains( content ) );
             }
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// MetricPartitions REST API
     /// </summary>
+    [RestControllerGuid( "5B93ED2C-1C17-44C9-8707-9E69A825835F" )]
     public partial class MetricPartitionsController : Rock.Rest.ApiController<Rock.Model.MetricPartition>
     {
         /// <summary>

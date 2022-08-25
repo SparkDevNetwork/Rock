@@ -15,7 +15,12 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.ViewModels.Cms;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks
 {
@@ -123,20 +128,46 @@ namespace Rock.Blocks
                 return BrowserNotSupportedMarkup;
             }
 
+            var config = GetConfigBag( rootElementId );
+
             return
 $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
 Obsidian.onReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializeBlock({{
-            blockFileUrl: '{BlockFileUrl}',
-            rootElement: document.getElementById('{rootElementId}'),
-            blockGuid: '{BlockCache.Guid}',
-            configurationValues: {GetBlockInitialization( RockClientType.Web ).ToCamelCaseJson( false, true )}
-        }});
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.initializeBlock({config.ToCamelCaseJson( false, true )});
     }});
 }});
 </script>";
+        }
+
+        /// <summary>
+        /// Gets the configuration bag that will contains all the required
+        /// information to initialize a block on an Obsidian page.
+        /// </summary>
+        /// <param name="rootElementId">The identifier of the root element the block will be rendered in.</param>
+        /// <returns>The configuration bag for this block instance.</returns>
+        private ObsidianBlockConfigBag GetConfigBag( string rootElementId )
+        {
+            List<BlockCustomActionBag> configActions = null;
+
+            if ( this is IHasCustomActions customActionsBlock )
+            {
+                var canEdit = BlockCache.IsAuthorized( Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var canAdministrate = BlockCache.IsAuthorized( Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+
+                configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
+            }
+
+            return new ObsidianBlockConfigBag
+            {
+                BlockFileUrl = BlockFileUrl,
+                RootElementId = rootElementId,
+                BlockGuid = BlockCache.Guid,
+                ConfigurationValues = GetBlockInitialization( RockClientType.Web ),
+                CustomConfigurationActions = configActions
+            };
+
         }
 
         /// <summary>
@@ -186,6 +217,51 @@ Obsidian.onReady(() => {{
             return true;
         }
 
+        /// <summary>
+        /// Gets any non-empty EntityTypeQualifiedColumn values for the entity
+        /// specified by the generic type. If this entity type has no attributes
+        /// with qualified columns then an empty list will be returned.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity whose attributes will be inspected.</typeparam>
+        /// <returns>A list of distinct EntityTypeQualifiedColumn values for <typeparamref name="TEntity"/>.</returns>
+        protected List<string> GetAttributeQualifiedColumns<TEntity>()
+        {
+            var entityTypeId = EntityTypeCache.Get<TEntity>( false )?.Id;
+
+            if ( !entityTypeId.HasValue )
+            {
+                return new List<string>();
+            }
+
+            var attributes = AttributeCache.GetByEntityType( entityTypeId );
+
+            var qualifiedColumns = attributes.Select( a => a.EntityTypeQualifierColumn )
+                .Distinct()
+                .Where( c => !c.IsNullOrWhiteSpace() )
+                .ToList();
+
+            return qualifiedColumns;
+        }
+
         #endregion Methods
+
+        #region Standard Block Actions
+
+        /// <summary>
+        /// Gets all the block configuration data that can be used to initialize
+        /// the Obsidian block. This is used when a block's settings have been
+        /// changed and the block needs to be reloaded on the page.
+        /// </summary>
+        /// <returns>An action result that contains the block configuration data.</returns>
+        [BlockAction]
+        [RockInternal]
+        public BlockActionResult RefreshObsidianBlockInitialization()
+        {
+            var rootElementId = $"obsidian-{BlockCache.Guid}";
+
+            return ActionOk( GetConfigBag( rootElementId ) );
+        }
+
+        #endregion
     }
 }

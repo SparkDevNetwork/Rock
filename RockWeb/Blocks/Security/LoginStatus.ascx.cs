@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
@@ -41,6 +42,7 @@ namespace RockWeb.Blocks.Security
     [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)", false )]
     [KeyValueListField( "Logged In Page List", "List of pages to show in the dropdown when the user is logged in. The link field takes Lava with the CurrentPerson merge fields. Place the text 'divider' in the title field to add a divider.", false, "", "Title", "Link" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "04712F3D-9667-4901-A49D-4507573EF7AD" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         private const string LOG_OUT = "Log Out";
@@ -176,7 +178,7 @@ namespace RockWeb.Blocks.Security
                 var site = RockPage.Layout.Site;
                 if ( site.LoginPageId.HasValue )
                 {
-                    site.RedirectToLoginPage( true );
+                    site.RedirectToLoginPage( !RockPage.RockBlocks.Where( a => a is IDisallowReturnUrlBlock ).Any() );
                 }
                 else
                 {

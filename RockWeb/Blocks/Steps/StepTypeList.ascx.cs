@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Steps
     [DisplayName( "Step Type List" )]
     [Category( "Steps" )]
     [Description( "Shows a list of all step types for a program." )]
+    [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
 
@@ -55,7 +56,8 @@ namespace RockWeb.Blocks.Steps
 
     #endregion Block Attributes
 
-    public partial class StepTypeList : RockBlock, ISecondaryBlock
+    [Rock.SystemGuid.BlockTypeGuid( "3EFB4302-9AB4-420F-A818-48B1B06AD109" )]
+    public partial class StepTypeList : ContextEntityBlock, ISecondaryBlock
     {
         #region Attribute Keys
 
@@ -679,6 +681,14 @@ namespace RockWeb.Blocks.Steps
 
             var startedStepsQry = stepService.Queryable();
             var completedStepsQry = stepService.Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus );
+
+            // Filter by CampusId
+            var campusContext = ContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                startedStepsQry = startedStepsQry.Where( s => s.CampusId == campusContext.Id );
+                completedStepsQry = completedStepsQry.Where( s => s.CampusId == campusContext.Id );
+            }
 
             var stepTypes = stepTypesQry.Select( x =>
                 new StepTypeListItemViewModel

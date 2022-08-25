@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Net;
 using Rock.Web.Cache;
@@ -69,6 +70,15 @@ namespace Rock.Blocks
 
         /// <inheritdoc/>
         public abstract object GetBlockInitialization( RockClientType clientType );
+
+        /// <summary>
+        /// Renews the security grant token that should be used by controls with this block.
+        /// </summary>
+        /// <returns>A string that contains the security grant token.</returns>
+        protected virtual string RenewSecurityGrantToken()
+        {
+            return string.Empty;
+        }
 
         /// <summary>
         /// Gets the attribute value.
@@ -186,6 +196,26 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Creates a 409-Conflict response with an optional error message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A BlockActionResult instance.</returns>
+        protected BlockActionResult ActionConflict( string message = null )
+        {
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Conflict );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Conflict )
+                {
+                    Error = message
+                };
+            }
+        }
+
+        /// <summary>
         /// Creates a 401-Unauthorized response with an optional error message.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -226,12 +256,23 @@ namespace Rock.Blocks
         }
 
         /// <summary>
-        /// Creates a 404-Not Found response with no content.
+        /// Creates a 404-Not Found response with an optional error message.
         /// </summary>
+        /// <param name="message">The message.</param>
         /// <returns>A BlockActionResult instance.</returns>
-        protected virtual BlockActionResult ActionNotFound()
+        protected BlockActionResult ActionNotFound( string message = null )
         {
-            return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.NotFound )
+                {
+                    Error = message
+                };
+            }
         }
 
         /// <summary>
@@ -245,6 +286,21 @@ namespace Rock.Blocks
             {
                 Error = message
             };
+        }
+
+        #endregion
+
+        #region Standard Block Actions
+
+        /// <summary>
+        /// Requests the renewal of the security grant token.
+        /// </summary>
+        /// <returns>A response that contains the new security grant token or an empty string.</returns>
+        [BlockAction( "RenewSecurityGrantToken" )]
+        [RockInternal]
+        public BlockActionResult RenewSecurityGrantTokenAction()
+        {
+            return ActionOk( RenewSecurityGrantToken() );
         }
 
         #endregion

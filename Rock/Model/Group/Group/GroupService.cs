@@ -959,6 +959,7 @@ namespace Rock.Model
                 FirstName = s.Person.FirstName,
                 Gender = s.Person.Gender,
                 s.Person.BirthDate,
+                s.Person.DeceasedDate,
                 GroupRoleId = s.GroupRoleId
             } ).ToList();
 
@@ -975,6 +976,7 @@ namespace Rock.Model
                     FirstName = s.Person.FirstName,
                     Gender = s.Person.Gender,
                     s.Person.BirthDate,
+                    s.Person.DeceasedDate,
                     GroupRoleId = s.GroupRoleId
                 } ).ToList();
 
@@ -988,6 +990,7 @@ namespace Rock.Model
                         FirstName = s.Person.FirstName,
                         Gender = s.Person.Gender,
                         s.Person.BirthDate,
+                        s.Person.DeceasedDate,
                         GroupRoleId = s.GroupRoleId
                     } ).ToList();
                 }
@@ -1034,7 +1037,7 @@ namespace Rock.Model
             // Children:
             if ( includeChildren || !adults.Any() )
             {
-                var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
+                var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate, f.DeceasedDate ) );
 
                 if ( children.Count() > 0 )
                 {

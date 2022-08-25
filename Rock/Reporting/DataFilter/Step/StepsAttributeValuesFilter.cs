@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Reporting.DataFilter.Step
     [Description( "Filter Steps on attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Step Attributes Values Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "6CF4A474-1D49-4F96-BFBF-6B0E2203022E")]
     public class StepsAttributeValuesFilter : EntityFieldFilter
     {
         #region Properties

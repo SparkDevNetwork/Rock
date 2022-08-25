@@ -1,0 +1,215 @@
+﻿<Page x:Class="Rock.CodeGeneration.Pages.ModelGenerationPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Rock.CodeGeneration.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="500"
+      MinHeight="450"
+      Title="ModelGenerationPage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0"
+              Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Row="0"
+                   Grid.Column="0"
+                   FontWeight="Bold"
+                   Padding="5,5,5,0">Assembly:</Label>
+            <TextBlock Grid.Row="0"
+                       Grid.Column="1"
+                       Padding="5,5,0,0"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{Binding DisplayedAssemblyPath}" />
+            <TextBlock Grid.Row="0"
+                       Grid.Column="2"
+                       Padding="5,5,0,0"
+                       ToolTip="{Binding AssemblyDateTime}">
+                (<Run Text="{Binding AssemblyDateTimeElapsed}" />)
+            </TextBlock>
+
+            <Label Grid.Row="1"
+                   Grid.Column="0"
+                   FontWeight="Bold"
+                   Padding="5,5,0,0">Database:</Label>
+            <TextBlock Grid.Row="1"
+                       Grid.Column="1"
+                       Grid.ColumnSpan="2"
+                       Padding="5,5,0,0"
+                       Text="{Binding DatabaseConnectionString}" />
+        </Grid>
+
+        <StackPanel Grid.Row="1" Margin="0,0,5,0">
+            <CheckBox x:Name="SelectAllCheckBox"
+                      HorizontalAlignment="Right"
+                      Checked="SelectAllCheckBox_CheckedChanged"
+                      Unchecked="SelectAllCheckBox_CheckedChanged"
+                      IsChecked="true">Select All</CheckBox>
+        </StackPanel>
+
+        <ListBox x:Name="ModelsListBox"
+                 Grid.Row="2"
+                 Margin="5,0,5,10"
+                 SelectionMode="Single">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox Grid.Row="0"
+                                  Grid.Column="0"
+                                  IsChecked="{Binding IsChecked}" />
+
+                        <StackPanel Orientation="Horizontal"
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Margin="4,0,0,0">
+                            <TextBlock HorizontalAlignment="Stretch"
+                                       Text="{Binding Name}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="3"
+                    Margin="5,0,5,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <CheckBox Grid.Row="0"
+                          Grid.Column="0"
+                          IsChecked="{Binding IsServiceChecked}">Service</CheckBox>
+                <TextBox Grid.Row="0"
+                         Grid.Column="1"
+                         Margin="5,0,0,5"
+                         MouseDoubleClick="ServiceFolderTextBox_MouseDoubleClick"
+                         Text="{Binding ServiceFolder}" />
+
+                <CheckBox Grid.Row="1"
+                          Grid.Column="0"
+                          IsChecked="{Binding IsViewModelsChecked}">View Models (C#)</CheckBox>
+                <TextBox Grid.Row="1"
+                         Grid.Column="1"
+                         Margin="5,0,0,5"
+                         MouseDoubleClick="ViewModelsFolderTextBox_MouseDoubleClick"
+                         Text="{Binding ViewModelsFolder}" />
+
+                <CheckBox Grid.Row="2"
+                          Grid.Column="0"
+                          IsChecked="{Binding IsRestChecked}">Rest</CheckBox>
+                <TextBox Grid.Row="2"
+                         Grid.Column="1"
+                         Margin="5,0,0,5"
+                         MouseDoubleClick="RestFolderTextBox_MouseDoubleClick"
+                         Text="{Binding RestFolder}" />
+
+                <CheckBox Grid.Row="3"
+                          Grid.Column="0"
+                          IsChecked="{Binding IsClientChecked}">Client</CheckBox>
+                <TextBox Grid.Row="3"
+                         Grid.Column="1"
+                         Margin="5,0,0,5"
+                         MouseDoubleClick="ClientFolderTextBox_MouseDoubleClick"
+                         Text="{Binding ClientFolder}" />
+
+                <CheckBox Grid.Row="4"
+                          Grid.Column="0"
+                          IsChecked="{Binding IsDatabaseProcsChecked}">Database Procs</CheckBox>
+                <TextBox Grid.Row="4"
+                         Grid.Column="1"
+                         Margin="5,0,0,5"
+                         Text="{Binding DatabaseFolder}" />
+
+                <CheckBox Grid.Row="5"
+                          Grid.Column="0"
+                          Grid.ColumnSpan="2"
+                          HorizontalAlignment="Left"
+                          Margin="0,0,0,5"
+                          IsChecked="{Binding IsRockGuidsChecked}">Rock Guids</CheckBox>
+
+                <CheckBox Grid.Row="6"
+                          Grid.Column="0"
+                          Grid.ColumnSpan="2"
+                          HorizontalAlignment="Left"
+                          Margin="0,0,0,5"
+                          IsChecked="{Binding IsReportObsoleteChecked}">Report Obsolete</CheckBox>
+
+                <CheckBox Grid.Row="7"
+                          Grid.Column="0"
+                          Grid.ColumnSpan="2"
+                          HorizontalAlignment="Left"
+                          Margin="0,0,0,5"
+                          IsChecked="{Binding IsEnsureCopyrightHeadersChecked}">Ensure Copyright Headers</CheckBox>
+
+                <CheckBox Grid.Row="8"
+                          Grid.Column="0"
+                          Grid.ColumnSpan="2"
+                          Margin="0,0,0,5"
+                          HorizontalAlignment="Left"
+                          Foreground="Red"
+                          IsChecked="{Binding IsDisableHotfixMigrationsChecked}">Disable Hotfix Migrations. DO NOT USE ON HOTFIX BRANCHES!</CheckBox>
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="200" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="GenerateButton"
+                            Click="GenerateButton_Click">Generate</Button>
+                </StackPanel>
+
+                <ProgressBar x:Name="GenerateProgress"
+                             Grid.Row="0"
+                             Grid.Column="1"
+                             Visibility="Hidden" />
+            </Grid>
+
+            <Label FontWeight="Bold">Warnings:</Label>
+        </StackPanel>
+        <TextBox x:Name="ResultsTextBox"
+                 Grid.Row="4"
+                 IsReadOnly="True"
+                 VerticalScrollBarVisibility="Visible"
+                 Margin="5,0,5,5"/>
+    </Grid>
+</Page>

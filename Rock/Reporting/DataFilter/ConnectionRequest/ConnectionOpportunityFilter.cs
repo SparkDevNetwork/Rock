@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Would allow filtering requests to a specific Connection Opportunity." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Opportunity Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "A2B6B6D1-02FB-46A9-8588-1D93FE44E51E")]
     public class ConnectionOpportunityFilter : DataFilterComponent
     {
         #region Properties

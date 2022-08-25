@@ -4,70 +4,76 @@
     // Private RockTree "class" that will represent instances of the node tree in memory
     // and provide all functionality needed by instances of a treeview control.
     var RockTree = function (element, options) {
-            this.$el = $(element);
-            this.options = options;
-            this.selectedNodes = [];
-
-            // Create an object-based event aggregator (not DOM-based)
-            // for internal eventing
-            this.events = $({});
-        },
-
+        this.$el = $(element);
+        this.options = options;
+        this.selectedNodes = [];
+       
+        // Create an object-based event aggregator (not DOM-based)
+        // for internal eventing
+        this.events = $({});
+    },
         // Generic recursive utility function to find a node in the tree by its id
-		_findNodeById = function (id, array) {
-		    var currentNode,
-				node;
+        _findNodeById = function (id, array) {
+            var currentNode,
+                node;
 
-		    if (!array || typeof array.length !== 'number') {
-		        return null;
-		    }
+            if (!array || typeof array.length !== 'number') {
+                return null;
+            }
 
-        // remove surrounding single quotes from id if they exist
-        var idCompare = id.toString().replace(/(^')|('$)/g, '');
+            // remove surrounding single quotes from id if they exist
+            var idCompare = id.toString().replace(/(^')|('$)/g, '');
 
-		    for (var i = 0; i < array.length; i++) {
-		        currentNode = array[i];
+            for (var i = 0; i < array.length; i++) {
+                currentNode = array[i];
 
-		        if (currentNode.id.toString() === idCompare) {
-		            return currentNode;
-		        } else if (currentNode.hasChildren) {
-		            node = _findNodeById(id, currentNode.children || []);
+                if (currentNode.id.toString() === idCompare) {
+                    return currentNode;
+                } else if (currentNode.hasChildren) {
+                    node = _findNodeById(id, currentNode.children || []);
 
-		            if (node) {
-		                return node;
-		            }
-		        }
-		    }
+                    if (node) {
+                        return node;
+                    }
+                }
+            }
 
-		    return null;
-		},
+            return null;
+        },
 
         // Default utility function to attempt to map a Rock.Web.UI.Controls.Pickers.TreeViewItem
         // to a more standard JS object.
-		_mapArrayDefault = function (arr, treeView) {
-		    return $.map(arr, function (item) {
-		        var node = {
-		            id: item.Guid || item.Id,
-		            name: item.Name || item.Title,
-		            iconCssClass: item.IconCssClass,
-		            parentId: item.ParentId,
-		            hasChildren: item.HasChildren,
-		            isActive: item.IsActive,
-                    countInfo: item.CountInfo,
-                    isCategory: item.IsCategory
-		        };
+        _mapArrayDefault = function (arr, treeView) {
 
-		        if (item.Children && typeof item.Children.length === 'number') {
-		            node.children = _mapArrayDefault(item.Children, treeView);
+            return $.map(arr, function (item) {
+
+                var node = {
+                    id: item.Guid || item.Id,
+                    name: item.Name || item.Title,
+                    iconCssClass: item.IconCssClass,
+                    parentId: item.ParentId,
+                    hasChildren: item.HasChildren,
+                    isActive: item.IsActive,
+                    countInfo: item.CountInfo,
+                    isCategory: item.IsCategory,
+                    path: item.Path
+                };
+
+                if (node.parentId === null) {
+                    node.parentId = '0';
+                }
+
+                if (item.Children && typeof item.Children.length === 'number') {
+                    node.children = _mapArrayDefault(item.Children, treeView);
                 }
 
                 if (node.isCategory) {
                     node.id = treeView.options.categoryPrefix + node.id;
                 }
 
-		        return node;
-		    });
-		},
+                return node;
+            });
+        },
 
         // Utility function that attempts to derive a node tree structure given an HTML element
         _mapFromHtml = function ($el, attrs) {
@@ -76,7 +82,7 @@
 
             $ul.children('li').each(function () {
                 var $li = $(this),
-                  node = {
+                    node = {
                         id: $li.attr('data-id'),
                         name: $li.children('span').first().html(),
                         hasChildren: $li.children('ul').length > 0,
@@ -104,8 +110,9 @@
         constructor: RockTree,
         init: function () {
             // Load data into tree asynchronously
+
             var promise = this.fetch(this.options.id),
-				self = this;
+                self = this;
 
             this.showLoading(this.$el);
 
@@ -182,23 +189,28 @@
                     self.clearError();
 
                     return $.ajax({
-                            url: restUrl,
-                            dataType: 'json',
-                            contentType: 'application/json'
-                        })
+                        url: restUrl,
+                        dataType: 'json',
+                        contentType: 'application/json'
+                    })
                         .done(function (data) {
                             try {
                                 self.dataBind(data, parentNode);
                             } catch (e) {
                                 dfd.reject(e);
                             }
+
+                            self.$el.trigger('rockTree:fetchCompleted', [{ success: true, data: data }]);
                         })
                         .fail(function (jqXHR, textStatus, errorThrown) {
                             self.renderError(jqXHR.responseJSON ? jqXHR.responseJSON.ExceptionMessage : errorThrown);
+
+                            self.$el.trigger('rockTree:fetchCompleted', [{ success: false, data: jqXHR }]);
                         });
                 };
 
-          if (this.options.restUrl) {
+            if (this.options.restUrl) {
+
                 if ((this.options.expandedIds && typeof this.options.expandedIds.length === 'number') ||
                     (this.options.expandedCategoryIds && typeof this.options.expandedCategoryIds.length === 'number')) {
                     toExpandParentItems = this.options.expandedIds || [];
@@ -220,7 +232,8 @@
                             currentId = currentId.toString().replace(/(^')|('$)/g, '');
 
                             var currentNode = _findNodeById(currentId, self.nodes);
-                            while (currentNode == null && toExpandParentItems.length > 0) {
+                            
+                            while (currentNode === null && toExpandParentItems.length > 0) {
                                 // if we can't find it, try the next one until we find one or run out of expanded ids
                                 currentId = toExpandParentItems.shift();
                                 currentNode = _findNodeById(currentId, self.nodes);
@@ -253,7 +266,7 @@
                             currentCategoryId = currentCategoryId.toString().replace(/(^')|('$)/g, '');
 
                             var currentCategoryNode = _findNodeById(currentCategoryId, self.nodes);
-                            while (currentCategoryNode == null && toExpandCategories.length > 0) {
+                            while (currentCategoryNode === null && toExpandCategories.length > 0) {
                                 // if we can't find it, try the next one until we find one or run out of expanded ids
                                 currentCategoryId = categoryPrefix + toExpandCategories.shift();
                                 currentCategoryNode = _findNodeById(currentCategoryId, self.nodes);
@@ -343,8 +356,8 @@
                 if (startingNode.children) {
                     getChildren(startingNode);
 
-                // Otherwise fetch the child nodes first and then fetch their child nodes
                 } else {
+                    // Otherwise fetch the child nodes first and then fetch their child nodes
                     inProgress[startingNode.id] = startingNode.id;
                     self.fetch(startingNode.id).done(function () {
                         delete inProgress[startingNode.id];
@@ -396,7 +409,7 @@
             // If a parent node is supplied, append the result set to the parent node.
             if (parentNode) {
                 parentNode.children = nodeArray;
-            // Otherwise the result set would be the root array.
+                // Otherwise the result set would be the root array.
             } else {
                 this.nodes = nodeArray;
             }
@@ -405,104 +418,124 @@
             // via the $el to notify the DOM
             this.events.trigger('nodes:dataBound');
             this.$el.trigger('rockTree:dataBound');
+            
             return nodeArray;
         },
 
         // Recursively render out each node in the DOM via the `$el` property
         render: function () {
+
             var self = this,
-				$ul = $('<ul/>'),
-				renderNode = function ($list, node) {
-				    var hasChildren = false;
-				    if (node.hasChildren) {
+                $ul = $('<ul/>'),
+                renderNode = function ($list, node, parentId) {
+                    var hasChildren = false;
+                                        
+                    if (node.hasChildren) {
+
                         hasChildren = true;
 
-				        // we know it has children, but they might not be loaded yet (children === undefined)
-				        // but if they are loaded there may actually be NO active children, so in that case,
-				        // we'll consider them as NOT having children
-				        if ( node.children === undefined ) {
-				          hasChildren = true;
-				        } else if (node.children !== undefined && node.children.length == 0  ) {
-				          hasChildren = false;
-				        }
-				    }
+                        // we know it has children, but they might not be loaded yet (children === undefined)
+                        // but if they are loaded there may actually be NO active children, so in that case,
+                        // we'll consider them as NOT having children
+                        if (node.children === undefined) {
+                            hasChildren = true;
+                        } else if (node.children !== undefined && node.children.length === 0) {
+                            hasChildren = false;
+                        }
+                    }
 
-				    var $li = $('<li/>'),
-						$childUl,
-						includeAttrs = self.options.mapping.include,
-                    folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
-                    leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
+                    var $li = $('<li/>'),
+                        $childUl,
+                        includeAttrs = self.options.mapping.include,
+                        folderCssClass = hasChildren ? (node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed) : "",
+                        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
 
-				    $li.addClass('rocktree-item')
-						.addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
-                        .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
-						.attr('data-id', node.id)
-						.attr('data-parent-id', node.parentId);
+                    var isActive = (!node.hasOwnProperty('isActive') || node.isActive);
 
-				    // Include any configured custom data-* attributes to be decorated on the <li>
-				    for (var i = 0; i < includeAttrs.length; i++) {
-				        $li.attr('data-' + includeAttrs[i], node[includeAttrs[i]]);
-				    }
+                    $li.attr('id', 'node-item-' + Rock.utility.dashify(node.id));
+
+                    $li.addClass('rocktree-item')
+                        .addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
+                        .addClass(isActive ? '' : 'is-inactive')
+                        .attr('data-id', node.id);
+
+
+                    if (parentId) {
+                        $li.attr('data-parent-id', parentId);
+                    }
+                    else {
+                        $li.attr('data-parent-id', node.parentId);
+                    }
+
+                    // Include any configured custom data-* attributes to be decorated on the <li>
+                    for (var i = 0; i < includeAttrs.length; i++) {
+                        $li.attr('data-' + includeAttrs[i], node[includeAttrs[i]]);
+                    }
 
                     // ensure we only get Text for the tooltip
-				    var tmp = document.createElement("DIV");
-				    tmp.innerHTML = node.name;
-				    var nodeText = tmp.textContent || tmp.innerText || "";
+                    var tmp = document.createElement("DIV");
+                    tmp.innerHTML = node.name;
+                    var nodeText = tmp.textContent || tmp.innerText || "";
+                    var titleText = self.escapeHtml(nodeText.trim());
 
-				    var countInfoHtml = '';
-				    if (typeof (node.countInfo) != 'undefined' && node.countInfo != null) {
-				        countInfoHtml = '<span class="label label-tree">' + node.countInfo + '</span>';
-				    }
+                    var countInfoHtml = '';
+                    if (typeof (node.countInfo) !== 'undefined' && node.countInfo !== null) {
+                        countInfoHtml = '<span class="label label-tree">' + node.countInfo + '</span>';
+                    }
 
-				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
-				    var $rockTreeNameNode = $li.find('.rocktree-name');
+                    $li.append('<span class="rocktree-name" title="' + titleText + '"> <span class="rocktree-node-name-text">' + node.name + '</span>' + countInfoHtml + '</span>');
+                    var $rockTreeNameNode = $li.find('.rocktree-name');
 
                     if (!self.options.categorySelection && node.isCategory) {
                         // Remove the hover event for the item since it is a category and we don't want to show it as being selectable.
                         $rockTreeNameNode.addClass('disabled');
                     }
 
-				    for (var i = 0; i < self.selectedNodes.length; i++) {
-				        if (self.selectedNodes[i].id == node.id) {
-				            $rockTreeNameNode.addClass('selected');
-				            break;
-				        }
-				    }
+                    for (var i = 0; i < self.selectedNodes.length; i++) {
+                        if (self.selectedNodes[i].id === node.id) {
+                            $rockTreeNameNode.addClass('selected');
+                            break;
+                        }
+                    }
 
-            if (hasChildren) {
-				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
+                    if (hasChildren) {
+                        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
-				        if (node.iconCssClass) {
-				            $rockTreeNameNode.prepend('<i class="icon-fw ' + node.iconCssClass + '"></i>');
-				        }
+                        if (node.iconCssClass) {
+                            $rockTreeNameNode.prepend('<i class="icon-fw ' + node.iconCssClass + '"></i>');
+                        }
 
-				        if (self.options.showSelectChildren && self.options.multiselect) {
-				            $li.append('<i class="fa fa-angle-double-down icon-fw clickable select-children js-select-children" title="Select Children"></i>');
-				        }
-				    } else {
-				        if (leafCssClass) {
-				            $rockTreeNameNode.prepend('<i class="icon-fw ' + leafCssClass + '"></i>');
-				        }
-				    }
+                        if (self.options.showSelectChildren && self.options.multiselect) {
+                            $li.append('<i class="fa fa-angle-double-down icon-fw clickable select-children js-select-children" title="Select Children"></i>');
+                        }
+                    } else {
+                        if (leafCssClass) {
+                            $rockTreeNameNode.prepend('<i class="icon-fw ' + leafCssClass + '"></i>');
+                        }
+                    }
 
-				    $list.append($li);
+                    $list.append($li);
 
-				    if (node.hasChildren && node.children) {
-				        $childUl = $('<ul/>');
-				        $childUl.addClass('rocktree-children');
+                    if (node.hasChildren && node.children) {
+
+                        $childUl = $('<ul/>');
+                        $childUl.addClass('rocktree-children');
 
                         if (!node.isOpen) {
                             $childUl.hide();
                         }
 
-				        $li.append($childUl);
+                        $li.append($childUl);
 
-				        var l = node.children.length;
-				        for (var i = 0; i < l; i++) {
-				            renderNode($childUl, node.children[i]);
-				        }
-				    }
-				};
+                        var l = node.children.length;
+                        for (var i = 0; i < l; i++) {
+                            renderNode($childUl, node.children[i], node.id);
+                        }
+                    }
+
+                    $('#node-item-' + Rock.utility.dashify(node.id)).attr('node-open', node.isOpen);
+
+                };
 
             // Clear tree and prepare to re-render
             this.$el.empty();
@@ -512,8 +545,25 @@
             $.each(this.nodes, function (index, node) {
                 renderNode($ul, node);
             });
-
+                        
             this.$el.trigger('rockTree:rendered');
+        },
+
+        escapeHtml: function (unencodedString) {
+            // This method is based on he.js (https://github.com/mathiasbynens/he).
+            var regexEscape = /["&'<>`]/g;
+            var escapeMap = {
+                '"': '&quot;',
+                '&': '&amp;',
+                '\'': '&#x27;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '`': '&#x60;'
+            };
+
+            return unencodedString.replace(regexEscape, function ($0) {
+                return escapeMap[$0];
+            });
         },
 
         // clear the error message
@@ -534,7 +584,9 @@
 
         // Show loading spinner
         showLoading: function ($element) {
-            $element.append(this.options.loadingHtml);
+            if (this.options.loadingHtml && this.options.loadingHtml.length > 0) {
+                $element.append(this.options.loadingHtml);
+            }
         },
 
         // Remove loading spinner
@@ -580,32 +632,34 @@
                 e.stopPropagation();
 
                 var $icon = $(this),
-					$ul = $icon.siblings('ul'),
-					id = $icon.parent('li').attr('data-id'),
-					node = _findNodeById(id, self.nodes),
-					openClass = self.options.iconClasses.branchOpen,
-					closedClass = self.options.iconClasses.branchClosed;
+                    $ul = $icon.siblings('ul'),
+                    id = $icon.parent('li').attr('data-id'),
+                    node = _findNodeById(id, self.nodes),
+                    openClass = self.options.iconClasses.branchOpen,
+                    closedClass = self.options.iconClasses.branchClosed;
 
                 if (node.isOpen) {
                     $ul.hide();
                     node.isOpen = false;
                     $icon.removeClass(openClass).addClass(closedClass);
-                    self.$el.trigger('rockTree:collapse');
+                    self.render();
+                    self.$el.trigger('rockTree:collapse', { nodeId: id, type: 'collapse' });
                 } else {
                     node.isOpen = true;
                     $icon.removeClass(closedClass).addClass(openClass);
-
                     // If the node has children, but they haven't been loaded yet,
                     // attempt to load them first, then re-render
                     if (node.hasChildren && !node.children) {
                         self.showLoading($icon.parent('li'));
                         self.fetch(node.id).done(function () {
                             self.render();
-                            self.$el.trigger('rockTree:expand');
+                            self.$el.trigger('rockTree:expand', { nodeId: id, type: 'expand' });
                         });
-                    } else {
+                    }
+                    else {
                         $ul.show();
-                        self.$el.trigger('rockTree:expand');
+                        self.render();
+                        self.$el.trigger('rockTree:expand', { nodeId: id, type: 'expand' });
                     }
                 }
             });
@@ -624,7 +678,7 @@
                     i;
 
                 // Selecting a category when one is not allowed should do nothing.
-                if (!self.options.categorySelection && node.isCategory ) {
+                if (!self.options.categorySelection && node.isCategory) {
                     return;
                 }
 
@@ -647,14 +701,18 @@
                 $rockTree.find('.selected').parent('li[data-id="' + id + '"]').removeClass('selected');
                 $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);
+                    var nodeId = $li.attr('data-id');
+
                     selectedNodes.push({
-                        id: $li.attr('data-id'),
+                        id: nodeId,
                         // get the li text excluding child text
-                        name: $li.contents(':not(ul)').text()
+                        name: $li.contents(':not(ul)').text(),
+                        path: _findNodeById(nodeId, self.nodes)?.path
                     });
                 });
 
                 self.selectedNodes = selectedNodes;
+
                 self.$el.trigger('rockTree:selected', id);
                 self.$el.trigger('rockTree:itemClicked', id);
 
@@ -666,7 +724,7 @@
                 }
 
                 for (i = 0; i < onSelected.length; i++) {
-                  $(document).trigger(onSelected[i], id);
+                    $(document).trigger(onSelected[i], id);
                 }
             });
 
@@ -693,13 +751,12 @@
                     for (var i = 0; i < childNodes.length; i++) {
                         var selected = false;
                         for (var j = 0; j < self.selectedNodes.length; j++) {
-                            if (self.selectedNodes[j].id == childNodes[i].id) {
+                            if (self.selectedNodes[j].id === childNodes[i].id) {
                                 selected = true;
                                 break;
                             }
                         }
-                        if (!selected)
-                        {
+                        if (!selected) {
                             allChildNodesAlreadySelected = false;
                             break;
                         }
@@ -710,7 +767,7 @@
                     for (var i = 0; i < self.selectedNodes.length; i++) {
                         var isAChildNode = false;
                         for (var j = 0; j < childNodes.length; j++) {
-                            if (childNodes[j].id == self.selectedNodes[i].id) {
+                            if (childNodes[j].id === self.selectedNodes[i].id) {
                                 isAChildNode = true;
                                 break;
                             }
@@ -721,8 +778,7 @@
                     }
 
                     // If all the child nodes were not already selected, select all them
-                    if (!allChildNodesAlreadySelected)
-                    {
+                    if (!allChildNodesAlreadySelected) {
                         for (var i = 0; i < childNodes.length; i++) {
                             newSelectedNodes.push(childNodes[i]);
                         }
@@ -756,8 +812,7 @@
                 // create a new rocktree
                 rockTree = new RockTree(this, settings);
             }
-            else
-            {
+            else {
                 // use the existing rocktree but update the settings and clean up selectedNodes
                 rockTree.options = settings;
                 rockTree.selectedNodes = [];

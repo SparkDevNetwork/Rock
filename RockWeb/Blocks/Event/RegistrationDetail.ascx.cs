@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Audit Page", "Page used to display the history of changes to a registration.", true, "", "", 5 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION, "", 6 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 7 )]
+    [Rock.SystemGuid.BlockTypeGuid( "A1C967B2-EEDA-416F-A53C-7BE46D6DA4E1" )]
     public partial class RegistrationDetail : RockBlock
     {
         #region Fields
@@ -465,6 +466,13 @@ namespace RockWeb.Blocks.Event
 
                     History.EvaluateChange( changes, "Discount Amount", registration.DiscountAmount, cbDiscountAmount.Value );
                     registration.DiscountAmount = cbDiscountAmount.Value == null ? 0 : cbDiscountAmount.Value.Value;
+
+                    bool campusChanged = !registration.CampusId.Equals( cpRegistrationCampus.SelectedValueAsInt() );
+                    if ( campusChanged )
+                    {
+                        History.EvaluateChange( changes, "Campus", registration.CampusId, cpRegistrationCampus.SelectedValueAsInt() );
+                        registration.CampusId = cpRegistrationCampus.SelectedValueAsInt();
+                    }
 
                     if ( !Page.IsValid )
                     {
@@ -1556,16 +1564,27 @@ namespace RockWeb.Blocks.Event
                 registration.RegistrationInstance.Linkages != null &&
                 registration.RegistrationInstance.Linkages.Any() )
             {
-                foreach ( var group in registration.RegistrationInstance.Linkages
+                var linkageGroups = registration.RegistrationInstance.Linkages
                     .Where( l => l.Group != null )
                     .OrderBy( l => l.Group.Name )
-                    .Select( l => l.Group ) )
+                    .Select( l => l.Group );
+                if ( linkageGroups.Any() )
                 {
-                    ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                    foreach ( var group in linkageGroups )
+                    {
+                        ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                    }
+
+                    ddlGroup.Visible = true;
                 }
             }
 
             ddlGroup.SetValue( registration.Group );
+
+            if ( registration.CampusId.HasValue )
+            {
+                cpRegistrationCampus.SelectedCampusId = registration.CampusId;
+            }
 
             registration.LoadAttributes();
 
@@ -2681,17 +2700,14 @@ namespace RockWeb.Blocks.Event
                 rlDocumentLink.Label = documentTemplate.Name;
 
                 const string htmlFormat = @"
-<div class='col-xs-6' style='padding-left: 0px;'>
-    <div style='display: flex; flex-direction: row; align-items: center;'>
-        <div style='display: flex; border: 1px solid {0}; height: 40px; width: 40px; border-radius: 50%; background: {1}; color: {0}; justify-content: center; align-items: center;'>
+    <div class='icon-property'>
+        <div class='icon' style='background: {1}; color: {0};'>
             <i class='fa fa-signature'></i>
         </div>
-        <div style='display: flex; flex-direction: column; margin-left: 10px;'>
+        <div class='property'>
             {2}
-        </div>  
-    </div>
-</div>
-";
+        </div>
+    </div>";
                 string borderColor = string.Empty;
                 string backgroundColor = string.Empty;
                 string links = string.Empty;
@@ -2699,11 +2715,10 @@ namespace RockWeb.Blocks.Event
                 if ( registrant.SignatureDocumentId.HasValue )
                 {
                     links = string.Format(
-                        @"<a href='{0}' target='_blank'>Signed On {1}</a>
-                        <a href='{2}' target='_blank'>By {3}</a>",
+                        @"<a href='{0}' target='_blank'>Signed on {1}</a>
+                        <small>Signed by {2}</small>",
                         ResolveRockUrl( string.Format( "~/GetFile.ashx?id={0}", registrant.SignatureDocumentId ?? 0 ) ),
-                        registrant.SignatureDocumentSignedDateTime.Value.ToString("dddd, MMMM dd, yyyy"),
-                        ResolveRockUrl( string.Format( "~/Person/{0}", registrant.PersonId.Value ) ),
+                        registrant.SignatureDocumentSignedDateTime?.ToString( "dddd, MMMM dd, yyyy" ),
                         registrant.SignatureDocumentSignedName );
 
                     borderColor = "#16C98D";
@@ -2711,7 +2726,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    links = "<p>Not yet Signed</p>";
+                    links = "<span>Not yet Signed</span>";
                     borderColor = "#737475";
                     backgroundColor = "#DFE0E1";
                 }

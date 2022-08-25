@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on signals" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Signal Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "5DC0EEB7-2B9E-4828-883B-0E7090C992AA")]
     public class HasSignalFilter : DataFilterComponent
     {
         #region Properties

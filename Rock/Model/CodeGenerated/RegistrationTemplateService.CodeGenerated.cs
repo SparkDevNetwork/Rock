@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -54,6 +55,12 @@ namespace Rock.Model
         public bool CanDelete( RegistrationTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<RegistrationRegistrant>( Context ).Queryable().Any( a => a.RegistrationTemplateId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationTemplate.FriendlyTypeName, RegistrationRegistrant.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -62,7 +69,7 @@ namespace Rock.Model
     /// RegistrationTemplate View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( RegistrationTemplate ) )]
-    public partial class RegistrationTemplateViewModelHelper : ViewModelHelper<RegistrationTemplate, Rock.ViewModel.RegistrationTemplateViewModel>
+    public partial class RegistrationTemplateViewModelHelper : ViewModelHelper<RegistrationTemplate, RegistrationTemplateBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.RegistrationTemplateViewModel CreateViewModel( RegistrationTemplate model, Person currentPerson = null, bool loadAttributes = true )
+        public override RegistrationTemplateBag CreateViewModel( RegistrationTemplate model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.RegistrationTemplateViewModel
+            var viewModel = new RegistrationTemplateBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AddPersonNote = model.AddPersonNote,
                 AllowExternalRegistrationUpdates = model.AllowExternalRegistrationUpdates,
                 AllowMultipleRegistrants = model.AllowMultipleRegistrants,
@@ -281,7 +287,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.RegistrationTemplateViewModel ToViewModel( this RegistrationTemplate model, Person currentPerson = null, bool loadAttributes = false )
+        public static RegistrationTemplateBag ToViewModel( this RegistrationTemplate model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new RegistrationTemplateViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

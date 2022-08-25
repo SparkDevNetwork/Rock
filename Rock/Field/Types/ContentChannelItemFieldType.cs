@@ -21,11 +21,11 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
-using Rock.Attribute;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -33,9 +33,9 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) content channel item filtered by a selected content channel
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class ContentChannelItemFieldType : FieldType, IEntityFieldType
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNEL_ITEM )]
+    public class ContentChannelItemFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Configuration
 
         /// <summary>
@@ -73,11 +73,9 @@ namespace Rock.Field.Types
             ddl.Help = "Content Channel to select items from, if left blank any content channel's item can be selected.";
 
             ddl.Items.Add( new ListItem() );
-            
+
             var contentChannels = ContentChannelCache.All().OrderBy( a => a.Name ).ToList();
-            contentChannels.ForEach( g =>
-                ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) )
-            );
+            contentChannels.ForEach( g => ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) ) );
 
             return controls;
         }
@@ -90,7 +88,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( CONTENT_CHANNEL_KEY, new ConfigurationValue( "Content Channel", "Content Channel to select items from, if left blank any content channel's item can be selected.", "" ) );
+            configurationValues.Add( CONTENT_CHANNEL_KEY, new ConfigurationValue( "Content Channel", "Content Channel to select items from, if left blank any content channel's item can be selected.", string.Empty ) );
 
             if ( controls != null && controls.Count == 1 )
             {
@@ -123,6 +121,25 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var contentChannelItem = new ContentChannelItemService( rockContext ).GetNoTracking( guid.Value );
+                    if ( contentChannelItem != null )
+                    {
+                        return contentChannelItem.Title;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -133,22 +150,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid guid = Guid.Empty;
-            if ( Guid.TryParse( value, out guid ) )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var contentChannelItem = new ContentChannelItemService( rockContext ).GetNoTracking( guid );
-                    if ( contentChannelItem != null )
-                    {
-                        formattedValue = contentChannelItem.Title;
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -170,7 +174,7 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) )
             {
                 int contentChannelId = 0;
-                if ( Int32.TryParse( configurationValues[CONTENT_CHANNEL_KEY].Value, out contentChannelId ) && contentChannelId > 0 )
+                if ( int.TryParse( configurationValues[CONTENT_CHANNEL_KEY].Value, out contentChannelId ) && contentChannelId > 0 )
                 {
                     editControl.ContentChannelId = contentChannelId;
                 }
@@ -191,12 +195,26 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 int? itemId = picker.ContentChannelItemId;
+                int? configurationChannelId = configurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) ? configurationValues[CONTENT_CHANNEL_KEY].Value.AsIntegerOrNull() : null;
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        // If the configuration Content Channel has a selected value, include that value in the clause.
+                        if ( configurationChannelId.HasValue )
+                        {
+                            itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
+                                .Where( a => a.Id == itemId.Value
+                                && a.ContentChannelId == configurationChannelId.Value )
+                                .Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        }
+                        else
+                        {
+                            itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
+                                .Where( a => a.Id == itemId.Value )
+                                .Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                        }
                     }
                 }
 
@@ -287,6 +305,45 @@ namespace Rock.Field.Types
 
             return null;
         }
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemId = new ContentChannelItemService( rockContext ).GetId( guid.Value );
+
+                if ( !contentChannelItemId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>()
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<ContentChannelItem>().Value, contentChannelItemId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<ContentChannelItem>().Value, nameof( ContentChannelItem.Title ) ),
+            };
+        }
+
         #endregion
     }
 }

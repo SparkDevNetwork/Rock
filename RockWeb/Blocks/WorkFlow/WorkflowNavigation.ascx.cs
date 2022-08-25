@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.WorkFlow
     [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 1 )]
     [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type.", true, "", "", 2 )]
     [LinkedPage( "Manage Page", "Page used to manage workflows of the selected type.", true, "", "", 3 )]
+    [Rock.SystemGuid.BlockTypeGuid( "DDC6B004-9ED1-470F-ABF5-041250082168" )]
     public partial class WorkflowNavigation : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

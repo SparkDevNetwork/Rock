@@ -38,18 +38,26 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbName" runat="server"
-                                SourceTypeName="Rock.Model.FinancialGateway, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.FinancialGateway, Rock" PropertyName="Name" />
                         </div>
-                        <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+
+                        <div class="col-md-1">
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" AutoPostBack="true" OnCheckedChanged="cbIsActive_CheckedChanged" />
+                        </div>
+
+                        <div class="col-md-5">
+                            <Rock:NotificationBox
+                                ID="nbIsActiveWarning"
+                                runat="server"
+                                NotificationBoxType="Warning"
+                                Heading="Important!"
+                                Visible="false"></Rock:NotificationBox>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbDescription" runat="server"
-                                SourceTypeName="Rock.Model.FinancialGateway, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.FinancialGateway, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         </div>
                     </div>
 
@@ -64,7 +72,7 @@
                                 Help="By default online payments will be grouped into batches with a start time 12:00:00 AM. However if the payment gateway groups transactions into batches based on a different time, this offset can specified so that Rock will use the same time when creating batches for online transactions" />
                             <Rock:DayOfWeekPicker ID="dowBatchStartDay" visible="false" runat="server" Label="Batch Start Day" Help="The day of the week that Rock will create new batches." />
                         </div>
-                        <div class="col-md-6">                
+                        <div class="col-md-6">
                             <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>

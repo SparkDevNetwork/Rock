@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays the details of the given Document Type for editing." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "85E9AA73-7C96-4731-8DD6-AA604C35E536" )]
     public partial class DocumentTypeDetail : RockBlock
     {
         #region Keys

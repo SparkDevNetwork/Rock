@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Used to assign a Registration to a Transaction Detail record" )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "7651F50F-3E32-4437-B71A-FED1855098AD" )]
     public partial class EventRegistrationMatching : RockBlock
     {
         private List<FinancialTransactionDetail> _financialTransactionDetailList;

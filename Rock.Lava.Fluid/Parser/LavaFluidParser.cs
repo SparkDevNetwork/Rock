@@ -103,6 +103,7 @@ namespace Rock.Lava.Fluid
             RegisterLavaCommentTag();
             RegisterLavaCaptureTag();
             RegisterLavaElseIfTag();
+            RegisterLavaTag();
 
             RegisterLavaOperators();
 
@@ -156,7 +157,8 @@ namespace Rock.Lava.Fluid
 
             Primary.Parser =
                 String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) )
-                .Or( member.Then<Expression>( x => {
+                .Or( member.Then<Expression>( x =>
+                {
                     if ( x.Segments.Count == 1 )
                     {
                         // Redefine these Liquid keywords as case-insensitive for compatibility with Lava.
@@ -320,6 +322,43 @@ namespace Rock.Lava.Fluid
         }
 
         /// <summary>
+        /// Re-implement the {% liquid %} tag to be Lava-friendly.
+        /// </summary>
+        private void RegisterLavaTag()
+        {
+            var LiquidTag = Literals.WhiteSpace( true ) // {% liquid %} can start with new lines
+                .Then( ( context, x ) => { ( ( FluidParseContext ) context ).InsideLiquidTag = true; return x; } )
+                .SkipAnd( OneOrMany( Identifier.Switch( ( context, previous ) =>
+                {
+                    // Because tags like 'else' are not listed, they won't count in TagsList, and will stop being processed
+                    // as inner tags in blocks like {% if %} TagsList {% endif $}
+                    var tagName = previous;
+
+                    if ( RegisteredTags.TryGetValue( tagName, out var tag ) )
+                    {
+                        return tag;
+                    }
+                    // If the tag name matches a shortcode, return it.
+                    // Note that there is some potential for collision between built-in tags and shortcodes,
+                    // which may require this parser to be refined further.
+                    else if ( RegisteredTags.TryGetValue( tagName + "_", out var shortcodeTag ) )
+                    {
+                        return shortcodeTag;
+                    }
+                    else
+                    {
+                        throw new ParseException( $"Unknown tag '{tagName}' at {context.Scanner.Cursor.Position}" );
+                    }
+                } ) ) )
+                .Then( ( context, x ) => { ( ( FluidParseContext ) context ).InsideLiquidTag = false; return x; } )
+                .AndSkip( TagEnd ).Then<Statement>( x => new LiquidStatement( x ) );
+
+            // Register the new tag, and add an alias for the "{% lava %}" tag.
+            RegisteredTags["liquid"] = LiquidTag;
+            RegisteredTags["lava"] = LiquidTag;
+        }
+
+        /// <summary>
         /// Create a parser for the set of tags and shortcodes that have been defined.
         /// </summary>
         /// <param name="throwOnUnknownTag">If true, undefined tags return null rather than throwing an exception.</param>
@@ -355,7 +394,16 @@ namespace Rock.Lava.Fluid
                                 return shortcode;
                             }
 
-                            throw new global::Fluid.ParseException( $"Unknown shortcode '{tagName}' at {context.Scanner.Cursor.Position}" );
+                            // If we encounter an invalid shortcode, always throw an error - if we don't, the parser will report
+                            // a different (and misleading) error caused by the unexpected syntax.
+                            // However, we can safely ignore the error inside a {% liquid %} tag because it will be reported
+                            // later when the content of the tag is processed.
+                            var p = ( FluidParseContext ) context;
+                            if ( !p.InsideLiquidTag )
+                            {
+                                throw new global::Fluid.ParseException( $"Unknown shortcode '{tagName}' at {context.Scanner.Cursor.Position}" );
+                            }
+                            return null;
                         } )
                     )
                 );

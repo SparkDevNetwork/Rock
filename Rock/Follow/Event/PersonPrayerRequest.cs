@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Follow.Event
     [ExportMetadata( "ComponentName", "PersonPrayerRequest" )]
 
     [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 0)]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_PRAYER_REQUEST )]
     public class PersonPrayerRequest : EventComponent
     {
         #region Event Component Implementation

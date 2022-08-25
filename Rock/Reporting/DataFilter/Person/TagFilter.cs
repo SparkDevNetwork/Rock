@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on a person tag" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Tag Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "DD28F6C7-6571-4C6A-A021-13A5EB8BD216")]
     public class TagFilter : DataFilterComponent
     {
         #region Properties

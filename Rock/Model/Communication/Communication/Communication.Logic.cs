@@ -93,7 +93,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion 
+        #endregion
         #region Methods
 
         /// <summary>
@@ -266,6 +266,51 @@ namespace Rock.Model
                     .Where( a => a.Count() > 1 )
                     .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
                     .SelectMany( a => a );
+
+                var duplicateEmailRecipients = duplicateEmailRecipientsQry.ToList();
+                communicationRecipientService.DeleteRange( duplicateEmailRecipients );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Removes the non-primary person alias recipients.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void RemoveNonPrimaryPersonAliasRecipients( RockContext rockContext )
+        {
+            /*
+             * 4-MAY-2022 DMV
+             *
+             * In tracking down alleged duplicate communications we discovered
+             * that duplicates could be sent to the same person if they are in the
+             * recipient list more that once with mulitple Person Alias IDs.
+             * This could have occured through a person merge or other data changes
+             * in Rock. This method removes those duplicates from the list before
+             * sending the communication.
+             *
+             */
+
+            var communicationRecipientService = new CommunicationRecipientService( rockContext );
+
+            var recipientsQry = GetRecipientsQry( rockContext );
+
+            int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            if ( smsMediumEntityTypeId.HasValue )
+            {
+                IQueryable<CommunicationRecipient> duplicateSMSRecipientsQuery = recipientsQry.Where( a => a.MediumEntityTypeId == smsMediumEntityTypeId.Value )
+                    .Where( a => a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId ); // Only non-primary aliases.
+
+                var duplicateSMSRecipients = duplicateSMSRecipientsQuery.ToList();
+                communicationRecipientService.DeleteRange( duplicateSMSRecipients );
+            }
+
+            int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            if ( emailMediumEntityTypeId.HasValue )
+            {
+                IQueryable<CommunicationRecipient> duplicateEmailRecipientsQry = recipientsQry.Where( a => a.MediumEntityTypeId == emailMediumEntityTypeId.Value )
+                    .Where( a => a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId ); // Only non-primary aliases.
 
                 var duplicateEmailRecipients = duplicateEmailRecipientsQry.ToList();
                 communicationRecipientService.DeleteRange( duplicateEmailRecipients );
@@ -448,6 +493,8 @@ namespace Rock.Model
                     {
                         communication.RemoveRecipientsWithDuplicateAddress( rockContext );
                     }
+
+                    communication.RemoveNonPrimaryPersonAliasRecipients( rockContext );
                 }
             }
 
@@ -491,6 +538,8 @@ namespace Rock.Model
                     {
                         communication.RemoveRecipientsWithDuplicateAddress( rockContext );
                     }
+
+                    communication.RemoveNonPrimaryPersonAliasRecipients( rockContext );
                 }
             }
 

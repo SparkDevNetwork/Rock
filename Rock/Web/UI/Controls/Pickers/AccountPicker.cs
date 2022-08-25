@@ -31,23 +31,35 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AccountPicker : ItemPicker
     {
+
         #region Controls
+
+        private HiddenFieldWithClass _hfSearchValue;
+        private HiddenFieldWithClass _hfPickerShowActive;
+        private HiddenFieldWithClass _hfViewMode;
 
         /// <summary>
         /// The Select All button
         /// </summary>
         private HyperLink _btnSelectAll;
 
-        #endregion
+        /// <summary>
+        /// The checkbox to show inactive groups
+        /// </summary>
+        private RockCheckBox _cbShowInactiveAccounts;
+        #endregion Controls
 
+        #region Constructors
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountPicker"/> class.
         /// </summary>
         public AccountPicker() : base()
         {
-            this.ShowSelectChildren = true;
+            //Assembly.GetCallingAssembly()
         }
+        #endregion Constructors
 
+        #region Properties
         /// <summary>
         /// Gets or sets a value indicating whether [display active only].
         /// </summary>
@@ -114,7 +126,91 @@ namespace Rock.Web.UI.Controls
                 SetValue( value );
             }
         }
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="ItemPicker"/> should allow a search when used for single select
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enhance for long list]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnhanceForLongLists
+        {
+            get
+            {
+                return ViewState["EnhanceForLongLists"] as bool? ?? true;
+            }
 
+            set
+            {
+                ViewState["EnhanceForLongLists"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="ItemPicker"/> should display the child count item count label on the parent item.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display child item count label]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayChildItemCountLabel
+        {
+            get
+            {
+                return ViewState["DisplayChildItemCountLabel"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayChildItemCountLabel"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the custom data items that will be serialized as a json object that is used to add custom properties to the itemPicker.js node object.
+        /// This value should be specified as a json array (i.e. "[{\"itemKey\":\"jsClientPropName\",\"itemValueKey\":\"ServerPropName\"}]").
+        /// The json properties "itemKey" and "itemValueKey" must be in camel-case.
+        /// </summary>
+        /// <value>The custom data items.</value>
+        public string CustomDataItems { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        protected override void RegisterJavaScript()
+        {
+            // Don't call base we have our own JS
+            //base.RegisterJavaScript();
+
+            // This json object is used to add custom properties to the itemPicker.js node object
+            var customDataItems = CustomDataItems.IsNotNullOrWhiteSpace() ? CustomDataItems : "[]";
+
+            var treeViewScript =
+$@"Rock.controls.accountPicker.initialize({{ 
+    controlId: '{this.ClientID}',
+    restUrl: '{this.ResolveUrl( ItemRestUrl )}',
+    searchRestUrl:'{this.ResolveUrl( SearchRestUrl )}',
+    getParentIdsUrl:'{this.ResolveUrl( GetParentIdsCollectionUrl )}',
+    allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
+    allowCategorySelection: {this.UseCategorySelection.ToString().ToLower()},
+    categoryPrefix: '{CategoryPrefix}',
+    defaultText: '{this.DefaultText}',
+    restParams: $('#{ItemRestUrlExtraParamsControl.ClientID}').val(),
+    expandedIds: [{this.InitialItemParentIds}],
+    expandedCategoryIds: [{this.ExpandedCategoryIds}],
+    showSelectChildren: {this.ShowSelectChildren.ToString().ToLower()},
+    enhanceForLongLists: {this.EnhanceForLongLists.ToString().ToLower()},
+    customDataItems: {customDataItems}
+}});
+
+function doPostBack() {{
+    {Page.ClientScript.GetPostBackEventReference( this, string.Empty )}
+}}
+";
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ClientID, treeViewScript, true );
+        }
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -122,12 +218,58 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            _btnSelectAll = new HyperLink();
-            _btnSelectAll.ID = "_btnSelectAll";
-            _btnSelectAll.CssClass = "btn btn-default btn-xs js-select-all pull-right";
-            _btnSelectAll.Text = "Select All";
+            _btnSelectAll = new HyperLink
+            {
+                ID = this.ID + "_btnSelectAll",
+                CssClass = "btn btn-link btn-xs js-select-all",
+                Text = "Select All"
+            };
 
             this.Controls.Add( _btnSelectAll );
+
+
+            _cbShowInactiveAccounts = new RockCheckBox
+            {
+                ID = this.ID + "_cbShowInactiveAccounts",
+                Text = "Show Inactive",
+                CssClass = "picker-show-inactive",
+                ContainerCssClass = "js-picker-show-inactive",
+                SelectedIconCssClass = "fa fa-check-square-o",
+                UnSelectedIconCssClass = "fa fa-square-o",
+                CausesValidation = false,
+                AutoPostBack = true,
+            };
+            _cbShowInactiveAccounts.CheckedChanged += _cbShowInactiveAccounts_CheckedChanged;
+            this.Controls.Add( _cbShowInactiveAccounts );
+
+            _hfSearchValue = new HiddenFieldWithClass
+            {
+                ID = this.ID + "_hfSearchValue",
+                CssClass = "js-existing-search-value"
+            };
+
+            this.Controls.Add( _hfSearchValue );
+
+            _hfPickerShowActive = new HiddenFieldWithClass
+            {
+                ID = this.ID + "_hfPickerShowActive",
+                CssClass = "js-picker-showactive-value"
+            };
+            this.Controls.Add( _hfPickerShowActive );
+
+            _hfViewMode = new HiddenFieldWithClass
+            {
+                ID = this.ID + "_hfViewMode",
+                CssClass = "js-picker-view-mode"
+            };
+
+            this.Controls.Add( _hfViewMode );
+        }
+
+        private void _cbShowInactiveAccounts_CheckedChanged( object sender, EventArgs e )
+        {
+            ShowDropDown = true;
+            SetExtraRestParams();
         }
 
         /// <summary>
@@ -136,11 +278,43 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public override void RenderCustomPickerActions( HtmlTextWriter writer )
         {
-            base.RenderCustomPickerActions( writer );
+            if ( EnhanceForLongLists && _hfSearchValue != null )
+            {
+                _hfSearchValue.RenderControl( writer );
+            }
+
+            if ( _hfPickerShowActive != null )
+            {
+                _hfPickerShowActive.RenderControl( writer );
+            }
+
+            if ( _hfViewMode != null )
+            {
+                _hfViewMode.RenderControl( writer );
+            }
 
             if ( this.AllowMultiSelect )
             {
                 _btnSelectAll.RenderControl( writer );
+
+                writer.Write( "<a class='btn btn-xs btn-link picker-cancel mr-auto' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
+
+                writer.Write( "<a class='btn btn-link btn-xs picker-preview' id='btnPreviewSelection_{0}' title='Preview'><i class='fa fa-list'></i></a>", this.ClientID );
+                writer.Write( "<a class='btn btn-link btn-xs picker-treeview' id='btnTreeView_{0}' title='Tree View'><i class='fa fa-sitemap'></i></a>", this.ClientID );
+            }
+            else
+            {
+                writer.Write( "<a class='btn btn-xs btn-link picker-cancel mr-auto' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
+            }
+
+
+            if ( !DisplayActiveOnly )
+            {
+                _cbShowInactiveAccounts.RenderControl( writer );
+            }
+            else
+            {
+                this.Controls.Remove( _cbShowInactiveAccounts );
             }
         }
 
@@ -150,9 +324,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
             SetExtraRestParams();
-            this.IconCssClass = "fa fa-building-o";
+            base.OnInit( e );
         }
 
         /// <summary>
@@ -171,75 +344,77 @@ namespace Rock.Web.UI.Controls
                 this.AddCssClass( "picker-lg" );
             }
 
+            base.IconCssClass = "fa fa-building-o";
+            base.PickerMenuCssClasses = "picker-menu dropdown-menu picker-menu-w500 styled-scroll";
+            CustomDataItems = "[{\"itemKey\":\"glCode\",\"itemValueKey\":\"GlCode\"},{\"itemKey\":\"path\",\"itemValueKey\":\"Path\"}]";
+
             // NOTE: The base ItemPicker.RenderBaseControl will do additional CSS class additions.
             base.RenderBaseControl( writer );
         }
 
         /// <summary>
-        /// Sets the value to the specified FinancialAccount
+        /// Sets the value.
         /// </summary>
         /// <param name="account">The account.</param>
         public void SetValue( FinancialAccount account )
         {
-            if ( account == null )
+            FinancialAccountCache financialAccountCache;
+            if ( account != null )
             {
-                SetValueFromCache( null );
+                financialAccountCache = FinancialAccountCache.Get( account.Id );
             }
             else
             {
-                var accountCache = FinancialAccountCache.Get( account.Id );
-                SetValueFromCache( accountCache );
+                financialAccountCache = null;
             }
-            
+
+            SetValueFromCache( financialAccountCache );
         }
 
         /// <summary>
-        /// Sets the value to the specified FinancialAccountCache
+        /// Sets the value.
         /// </summary>
-        /// <param name="accountCache">The account cache.</param>
-        public void SetValueFromCache( FinancialAccountCache accountCache )
+        /// <param name="account">The account.</param>
+        public void SetValueFromCache( FinancialAccountCache account )
         {
-            if ( accountCache != null )
+            if ( account != null )
             {
-                ItemId = accountCache.Id.ToString();
-                List<int> parentAccountIds = new List<int>();
-                var parentAccount = accountCache.ParentAccount;
+                ItemId = account.Id.ToString();
 
-                while ( parentAccount != null )
-                {
-                    if ( parentAccountIds.Contains( parentAccount.Id ) )
-                    {
-                        // infinite recursion
-                        break;
-                    }
-
-                    parentAccountIds.Insert( 0, parentAccount.Id );
-                    parentAccount = parentAccount.ParentAccount;
-                }
-
-                InitialItemParentIds = parentAccountIds.AsDelimited( "," );
-                ItemName = this.DisplayPublicName ? accountCache.PublicName : accountCache.Name;
+                var parentGroupIds = GetFinancialAccountAncestorsIdList( account.ParentAccountId );
+                InitialItemParentIds = parentGroupIds.AsDelimited( "," );
+                ItemName = account.Name;
             }
             else
             {
                 ItemId = Constants.None.IdValue;
                 ItemName = Constants.None.TextHtml;
             }
-        }
 
+        }
         /// <summary>
         /// Returns a list of the ancestor FinancialAccounts of the specified FinancialAccount.
         /// If the ParentFinancialAccount property of the FinancialAccount is not populated, it is assumed to be a top-level node.
         /// </summary>
-        /// <param name="financialAccount">The financial account.</param>
+        /// <param name="financialAccountId">The financial account identifier.</param>
         /// <param name="ancestorFinancialAccountIds">The ancestor financial account ids.</param>
-        /// <returns></returns>
-        private List<int> GetFinancialAccountAncestorsIdList( FinancialAccountCache financialAccount, List<int> ancestorFinancialAccountIds = null )
+        /// <returns>List&lt;System.Int32&gt;.</returns>
+        private List<int> GetFinancialAccountAncestorsIdList( int? financialAccountId, List<int> ancestorFinancialAccountIds = null )
         {
             if ( ancestorFinancialAccountIds == null )
             {
                 ancestorFinancialAccountIds = new List<int>();
             }
+
+
+            if ( financialAccountId == null )
+            {
+                return ancestorFinancialAccountIds;
+            }
+
+
+            var financialAccount = FinancialAccountCache.Get( financialAccountId.Value );
+
 
             if ( financialAccount == null )
             {
@@ -255,7 +430,7 @@ namespace Rock.Web.UI.Controls
             // Create or add this node to the history stack for this tree walk.
             ancestorFinancialAccountIds.Insert( 0, financialAccount.Id );
 
-            ancestorFinancialAccountIds = this.GetFinancialAccountAncestorsIdList( financialAccount.ParentAccount, ancestorFinancialAccountIds );
+            ancestorFinancialAccountIds = this.GetFinancialAccountAncestorsIdList( financialAccount.ParentAccountId, ancestorFinancialAccountIds );
 
             return ancestorFinancialAccountIds;
         }
@@ -266,7 +441,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="accounts"></param>
         public void SetValues( IEnumerable<FinancialAccount> accounts )
         {
-            var financialAccountsCache = FinancialAccountCache.GetByIds( accounts?.Select( a => a.Id ));
+            var financialAccountsCache = FinancialAccountCache.GetByIds( accounts?.Select( a => a.Id ) );
             SetValuesFromCache( financialAccountsCache );
         }
 
@@ -276,7 +451,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="financialAccountsCache"></param>
         public void SetValuesFromCache( IEnumerable<FinancialAccountCache> financialAccountsCache )
         {
-            if ( financialAccountsCache.Any() )
+            var financialAccounts = financialAccountsCache?.ToList();
+
+            if ( financialAccounts != null && financialAccounts.Any() )
             {
                 var ids = new List<string>();
                 var names = new List<string>();
@@ -288,19 +465,22 @@ namespace Rock.Web.UI.Controls
                     {
                         ids.Add( account.Id.ToString() );
                         names.Add( this.DisplayPublicName ? account.PublicName : account.Name );
-                        var parentAccount = account.ParentAccount;
-                        var accountParentIds = GetFinancialAccountAncestorsIdList( parentAccount );
-                        foreach ( var accountParentId in accountParentIds )
+                        if ( account.ParentAccount != null && !parentAccountIds.Contains( account.ParentAccount.Id ) )
                         {
-                            if ( !parentAccountIds.Contains( accountParentId ) )
+                            var parentAccountId = account.ParentAccountId;
+                            var accountParentIds = GetFinancialAccountAncestorsIdList( parentAccountId );
+                            foreach ( var accountParentId in accountParentIds )
                             {
-                                parentAccountIds.Add( accountParentId );
+                                if ( !parentAccountIds.Contains( accountParentId ) )
+                                {
+                                    parentAccountIds.Add( accountParentId );
+                                }
                             }
                         }
                     }
                 }
 
-                // NOTE: Order is important (parents before children)
+                // NOTE: Order is important (parents before children) since the GroupTreeView loads on demand
                 InitialItemParentIds = parentAccountIds.AsDelimited( "," );
                 ItemIds = ids;
                 ItemNames = names;
@@ -317,8 +497,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var item = FinancialAccountCache.Get( ItemId.AsInteger() );
-            this.SetValueFromCache( item );
+            var accountId = ItemId.AsIntegerOrNull();
+            FinancialAccountCache account = null;
+            if ( accountId.HasValue && accountId > 0 )
+            {
+                account = FinancialAccountCache.Get( accountId.Value );
+            }
+
+            SetValueFromCache( account );
         }
 
         /// <summary>
@@ -327,9 +513,16 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="System.NotImplementedException"></exception>
         protected override void SetValuesOnSelect()
         {
-            var itemIds = ItemIds.Select( int.Parse );
-            var items = FinancialAccountCache.GetByIds( itemIds );
-            this.SetValuesFromCache( items );
+            var accountIds = ItemIds.Where( i => i != "0" ).AsIntegerList();
+            if ( accountIds.Any() )
+            {
+                var accounts = FinancialAccountCache.GetByIds( accountIds );
+                this.SetValuesFromCache( accounts );
+            }
+            else
+            {
+                this.SetValues( null );
+            }
         }
 
         /// <summary>
@@ -344,26 +537,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the search rest URL.
+        /// </summary>
+        /// <value>The search rest URL.</value>
+        public string SearchRestUrl
+        {
+            get { return "~/api/financialaccounts/getchildrenbysearchterm/"; }
+        }
+
+        /// <summary>
+        /// Gets the get parent ids URL.
+        /// </summary>
+        /// <value>The get parent ids URL.</value>
+        public string GetParentIdsCollectionUrl
+        {
+            get { return "~/api/financialaccounts/getparentidscollection/"; }
+        }
+
+        /// <summary>
         /// Sets the extra rest parameters.
         /// </summary>
         private void SetExtraRestParams()
         {
-            var extraParams = new System.Text.StringBuilder();
-            extraParams.Append( $"/{this.DisplayActiveOnly.ToString()}/{this.DisplayPublicName.ToString()}" );
-            ItemRestUrlExtraParams = extraParams.ToString();
+            var activeOnly = this.DisplayActiveOnly;
 
-            if ( AllowMultiSelect && ShowSelectChildren )
+            if ( !this.DisplayActiveOnly && _cbShowInactiveAccounts != null )
             {
-                // If this is a multi-select with the ShowSelectChildren, disable lazy-load
-                // to help the "Select Children" btn in the AccountPicker work better.
-                // Note that if there are an unusually large number of FinancialAccounts, 
-                // disabling lazy-loading could cause issues. 
-                ItemRestUrlExtraParams += "?lazyLoad=false";
+                activeOnly = !_cbShowInactiveAccounts.Checked;
             }
-            else
-            {
-                ItemRestUrlExtraParams += "?lazyLoad=true";
-            }
+
+            var extraParams = new System.Text.StringBuilder();
+            extraParams.Append( '/' ).Append( activeOnly ).Append( '/' ).Append( this.DisplayPublicName ).Append( "?countsType=" ).Append( DisplayChildItemCountLabel ? AccountTreeViewItem.GetCountsType.ChildGroups : AccountTreeViewItem.GetCountsType.None );
+            ItemRestUrlExtraParams = extraParams.ToString();
         }
+        #endregion Methods
     }
 }

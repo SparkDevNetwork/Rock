@@ -4,12 +4,12 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
-           
+
             <asp:HiddenField ID="hfAccountId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-building-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
-                
+
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
                 </div>
@@ -74,21 +74,21 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6"> 
+                        <div class="col-md-6">
                             <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />
                             <Rock:DefinedValuePicker ID="dvpAccountType" runat="server" Label="Account Type" />
                             <Rock:DataTextBox ID="tbPublicName" runat="server"
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="PublicName" />
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                             <Rock:DataTextBox ID="tbUrl" runat="server"
-                                SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Url" />
+                                SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Url" Label="URL" />
                         </div>
-                        <div class="col-md-6">                
+                        <div class="col-md-6">
                             <Rock:DataTextBox ID="tbGLCode" runat="server"
                                 SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" Label="GL Code" />
                             <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" Label="Start Date" />
                             <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
-                            <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />           
+                            <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />
                         </div>
                     </div>
 
@@ -102,7 +102,7 @@
                             </Columns>
                         </Rock:Grid>
                     </asp:Panel>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="attributes">

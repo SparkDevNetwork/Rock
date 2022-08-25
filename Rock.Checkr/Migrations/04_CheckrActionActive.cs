@@ -44,7 +44,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddActionTypeAttributeValue( "70DABC23-6587-4F18-8551-C655AA285F44", "EC759165-949E-4966-BAFD-68A656A4EBF7", @"00b8c76c-0fff-4827-8abc-48215004686f" ); // Background Check:Submit Request:Submit Request:Request Type Attribute
             RockMigrationHelper.AddActionTypeAttributeValue( "70DABC23-6587-4F18-8551-C655AA285F44", "232B2F98-3B2F-4C53-81FC-061A92675C41", @"c4c12a1e-26b7-4580-b70c-baf64497f3e8" ); // Background Check:Submit Request:Submit Request:Billing Code Attribute
 
-            RockMigrationHelper.AddEntityAttribute( "Rock.Checkr.Checkr", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Active", "", "Should Service be used?", 0, "", "0ac1596b-0143-4939-aacd-0b14f6f74322" );
+            RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Checkr.Checkr", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Active", "", "Should Service be used?", 0, "", "0ac1596b-0143-4939-aacd-0b14f6f74322", null );
             RockMigrationHelper.AddAttributeValue( "0ac1596b-0143-4939-aacd-0b14f6f74322", 0, "True", "554468D0-A891-5281-4D08-FED46D756E28" );
         }
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Select all the requests where the requester is the same person as the group members returned from this other data view." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Data View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "945F52F8-0E9F-4964-8CB9-6BE2D2493459")]
     public class GroupMemberDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Properties

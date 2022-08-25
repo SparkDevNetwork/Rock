@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on notes" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Note Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "D1C6B443-823F-4188-B089-2804AD2C35D5")]
     public class HasNoteFilter : DataFilterComponent
     {
         #region Properties

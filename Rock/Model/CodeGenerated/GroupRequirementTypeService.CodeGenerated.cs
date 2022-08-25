@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// GroupRequirementType View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( GroupRequirementType ) )]
-    public partial class GroupRequirementTypeViewModelHelper : ViewModelHelper<GroupRequirementType, Rock.ViewModel.GroupRequirementTypeViewModel>
+    public partial class GroupRequirementTypeViewModelHelper : ViewModelHelper<GroupRequirementType, GroupRequirementTypeBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,30 +72,40 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupRequirementTypeViewModel CreateViewModel( GroupRequirementType model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupRequirementTypeBag CreateViewModel( GroupRequirementType model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupRequirementTypeViewModel
+            var viewModel = new GroupRequirementTypeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CanExpire = model.CanExpire,
+                CategoryId = model.CategoryId,
                 CheckboxLabel = model.CheckboxLabel,
                 DataViewId = model.DataViewId,
                 Description = model.Description,
+                DoesNotMeetWorkflowLinkText = model.DoesNotMeetWorkflowLinkText,
+                DoesNotMeetWorkflowTypeId = model.DoesNotMeetWorkflowTypeId,
+                DueDateOffsetInDays = model.DueDateOffsetInDays,
+                DueDateType = ( int ) model.DueDateType,
                 ExpireInDays = model.ExpireInDays,
+                IconCssClass = model.IconCssClass,
                 Name = model.Name,
                 NegativeLabel = model.NegativeLabel,
                 PositiveLabel = model.PositiveLabel,
                 RequirementCheckType = ( int ) model.RequirementCheckType,
+                ShouldAutoInitiateDoesNotMeetWorkflow = model.ShouldAutoInitiateDoesNotMeetWorkflow,
+                ShouldAutoInitiateWarningWorkflow = model.ShouldAutoInitiateWarningWorkflow,
                 SqlExpression = model.SqlExpression,
+                Summary = model.Summary,
                 WarningDataViewId = model.WarningDataViewId,
                 WarningLabel = model.WarningLabel,
                 WarningSqlExpression = model.WarningSqlExpression,
+                WarningWorkflowLinkText = model.WarningWorkflowLinkText,
+                WarningWorkflowTypeId = model.WarningWorkflowTypeId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -165,20 +176,31 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.CanExpire = source.CanExpire;
+            target.CategoryId = source.CategoryId;
             target.CheckboxLabel = source.CheckboxLabel;
             target.DataViewId = source.DataViewId;
             target.Description = source.Description;
+            target.DoesNotMeetWorkflowLinkText = source.DoesNotMeetWorkflowLinkText;
+            target.DoesNotMeetWorkflowTypeId = source.DoesNotMeetWorkflowTypeId;
+            target.DueDateOffsetInDays = source.DueDateOffsetInDays;
+            target.DueDateType = source.DueDateType;
             target.ExpireInDays = source.ExpireInDays;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IconCssClass = source.IconCssClass;
             target.Name = source.Name;
             target.NegativeLabel = source.NegativeLabel;
             target.PositiveLabel = source.PositiveLabel;
             target.RequirementCheckType = source.RequirementCheckType;
+            target.ShouldAutoInitiateDoesNotMeetWorkflow = source.ShouldAutoInitiateDoesNotMeetWorkflow;
+            target.ShouldAutoInitiateWarningWorkflow = source.ShouldAutoInitiateWarningWorkflow;
             target.SqlExpression = source.SqlExpression;
+            target.Summary = source.Summary;
             target.WarningDataViewId = source.WarningDataViewId;
             target.WarningLabel = source.WarningLabel;
             target.WarningSqlExpression = source.WarningSqlExpression;
+            target.WarningWorkflowLinkText = source.WarningWorkflowLinkText;
+            target.WarningWorkflowTypeId = source.WarningWorkflowTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -194,7 +216,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupRequirementTypeViewModel ToViewModel( this GroupRequirementType model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupRequirementTypeBag ToViewModel( this GroupRequirementType model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupRequirementTypeViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

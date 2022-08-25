@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Blocks.  NOTE: Some of these are referenced in Migrations to avoid string-typos. */
 export const enum BlockType {
     /** Gets the Badges display block guid */
     Badges = "FC8AF928-C4AF-40C7-A667-4B24390F03A1",
@@ -60,6 +61,8 @@ export const enum BlockType {
     EventRegistrationTemplateDetail = "91354899-304E-44C7-BD0D-55F42E6505D3",
     /** The Convert Business Block Type Guid */
     ConvertBusiness = "115A7725-6760-4E86-8171-57F4A3CF6909",
+    /** The financial account search block type */
+    FinancialAccountSearch = "867E32A8-786E-4090-BE2B-6BE780440D44",
     /** The bulk update block type guid */
     BulkUpdate = "A844886D-ED6F-4367-9C6F-667401201ED0",
     /** The assessment list block type guid */
@@ -122,10 +125,18 @@ export const enum BlockType {
     MobileConnectionConnectionRequestList = "612E9E13-434F-4E47-958D-37E1C3EEF304",
     /** The mobile Connection &gt; Connection Request Detail block type. */
     MobileConnectionConnectionRequestDetail = "EF537CC9-5E53-4832-A473-0D5EA439C296",
-    /** The mobile Core &gt;  block type. */
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.Search block type. */
     MobileCoreSearch = "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
     /** The mobile Groups &gt; Group Registration block type. */
     MobileGroupsGroupRegistration = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912",
+    /** The mobile groups Group Schedule Preference block type. */
+    MobileGroupsGroupSchedulePreference = "F6D0A258-F97E-4561-B881-ACBF985F89DC",
+    /** The mobile groups Group Schedule Sign Up block type. */
+    MobileGroupsGroupScheduleSignup = "CA27CB14-22FD-4DE6-9C3B-0EAA0AA84708",
+    /** The mobile groups Group Schedule Preference block type. */
+    MobileGroupsGroupScheduleToolbox = "E00F3C6D-D007-4408-8A41-AD2A6AB29D6E",
+    /** The mobile groups Group Schedule Unavailability block type. */
+    MobileGroupsGroupScheduleUnavailability = "AEFF246D-A514-4D46-801E-D717E1D1D209",
     /** The mobile Groups &gt; Group Finder block type. */
     MobileGroupsGroupFinder = "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C",
     /** The mobile Prayer &gt; Prayer Card View block type. */
@@ -138,7 +149,14 @@ export const enum BlockType {
     ObsidianExampleFieldTypeGallery = "B9C209C2-ABB8-4B48-A68E-944572007B03",
     /** Data Views with persistence enabled block Guid */
     PersistedDataViewList = "3C4FAFAE-41D1-4FF2-B6DC-FF99CD4DABBE",
+    /** The dataview search results block type */
+    DataviewSearchResults = "BFB625F7-75CA-48FE-9C82-90E47374242B",
+    /** The report search results block type */
+    ReportSearchResults = "13955B32-11F4-4606-8C31-4C6E5324C81A",
+    /** The Step Flow */
+    StepFlow = "2B4E0128-BCDF-48BF-AEC9-85001169DA3E",
+    /** The reporting dashboard liquid/lava dashboard widget. */
+    ReportingLavaDashboardWidget = "AC19A4F3-2E88-487E-8E88-377C1C20DBD5",
     /** The contribution statement lava (Legacy) */
     ContributionStatementLavaLegacy = "AF986B72-ADD9-4E05-971F-1DE4EBED8667",
 }
-

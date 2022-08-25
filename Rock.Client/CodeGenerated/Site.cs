@@ -71,6 +71,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool DisablePredictableIds { get; set; }
+
+        /// <summary />
         public bool EnabledForShortening { get; set; } = true;
 
         /// <summary />
@@ -80,7 +83,16 @@ namespace Rock.Client
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
+        public bool EnablePageViewGeoTracking { get; set; }
+
+        /// <summary />
         public bool EnablePageViews { get; set; } = true;
+
+        /// <summary />
+        public bool EnablePersonalization { get; set; }
+
+        /// <summary />
+        public bool EnableVisitorTracking { get; set; }
 
         /// <summary />
         public string ErrorPage { get; set; }
@@ -210,10 +222,14 @@ namespace Rock.Client
             this.DefaultPageId = source.DefaultPageId;
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
+            this.DisablePredictableIds = source.DisablePredictableIds;
             this.EnabledForShortening = source.EnabledForShortening;
             this.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
+            this.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
             this.EnablePageViews = source.EnablePageViews;
+            this.EnablePersonalization = source.EnablePersonalization;
+            this.EnableVisitorTracking = source.EnableVisitorTracking;
             this.ErrorPage = source.ErrorPage;
             this.ExternalUrl = source.ExternalUrl;
             this.FavIconBinaryFileId = source.FavIconBinaryFileId;

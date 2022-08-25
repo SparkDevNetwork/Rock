@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "RelatedEntity" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "BD29E403-BA47-4688-BE29-45A38CE8BD03")]
     public partial class RelatedEntity : Model<RelatedEntity>, IOrdered
     {
         #region Entity Properties

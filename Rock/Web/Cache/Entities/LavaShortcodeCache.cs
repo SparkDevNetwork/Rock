@@ -151,7 +151,17 @@ namespace Rock.Web.Cache
             TagType = shortcode.TagType;
             Parameters = shortcode.Parameters;
             EnabledLavaCommands = shortcode.EnabledLavaCommands;
+            CategoryIds = shortcode.Categories.Select( c => c.Id ).ToList();
         }
+
+        /// <summary>
+        /// Gets or sets the category ids.
+        /// </summary>
+        /// <value>
+        /// The category ids.
+        /// </value>
+        [DataMember]
+        public List<int> CategoryIds { get; private set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

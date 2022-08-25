@@ -25,6 +25,7 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Data
@@ -187,6 +188,37 @@ namespace Rock.Data
             return query;
         }
 
+        /// <summary>
+        /// Gets a queryable that returns an <see cref="IQueryable{T}"/> for the
+        /// single item with the specified key. This allows for chaining to other
+        /// EF statements but handles the decoding of the key for you.
+        /// </summary>
+        /// <remarks>
+        /// The key is a string representation of either an integer identifier,
+        /// a unique identifier, or a hashed identifier.
+        /// </remarks>
+        /// <param name="key">The key to be parsed and used to load the model.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <returns>A queryable limited to the single model matching the key.</returns>
+        public virtual IQueryable<T> GetQueryableByKey( string key, bool allowIntegerIdentifier = true )
+        {
+            int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
+
+            if ( !id.HasValue )
+            {
+                var guid = key.AsGuidOrNull();
+
+                if ( guid.HasValue )
+                {
+                    return Queryable().Where( e => e.Guid == guid.Value );
+                }
+
+                id = Rock.Utility.IdHasher.Instance.GetId( key );
+            }
+
+            return id.HasValue ? Queryable().Where( e => e.Id == id.Value ) : Queryable().Where( e => false );
+        }
+
         #endregion
 
         #region Get Methods
@@ -209,6 +241,35 @@ namespace Rock.Data
         public virtual T Get( Guid guid )
         {
             return AsNoFilter().FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets the model with the key value.
+        /// </summary>
+        /// <remarks>
+        /// The key is a string representation of either an integer identifier,
+        /// a unique identifier, or a hashed identifier.
+        /// </remarks>
+        /// <param name="key">The key to be parsed and used to load the model.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <returns>The model <typeparamref name="T"/> loaded from the database or <c>null</c> if not found.</returns>
+        public virtual T Get( string key, bool allowIntegerIdentifier = true )
+        {
+            int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
+
+            if ( !id.HasValue )
+            {
+                var guid = key.AsGuidOrNull();
+
+                if ( guid.HasValue )
+                {
+                    return Get( guid.Value );
+                }
+
+                id = Rock.Utility.IdHasher.Instance.GetId( key );
+            }
+
+            return id.HasValue ? Get( id.Value ) : null;
         }
 
         /// <summary>
@@ -236,6 +297,37 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the model with the key value, with any related objects to
+        /// include in the query results (Eager-Loading).
+        /// </summary>
+        /// <remarks>
+        /// The key is a string representation of either an integer identifier,
+        /// a unique identifier, or a hashed identifier.
+        /// </remarks>
+        /// <param name="key">The key to be parsed and used to load the model.</param>
+        /// <param name="path">The path to the property to be eager loaded.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <returns>The model <typeparamref name="T"/> loaded from the database or <c>null</c> if not found.</returns>
+        public virtual T GetInclude<TProperty>( string key, Expression<Func<T, TProperty>> path, bool allowIntegerIdentifier = true )
+        {
+            int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
+
+            if ( !id.HasValue )
+            {
+                var guid = key.AsGuidOrNull();
+
+                if ( guid.HasValue )
+                {
+                    return GetInclude( guid.Value, path );
+                }
+
+                id = Rock.Utility.IdHasher.Instance.GetId( key );
+            }
+
+            return id.HasValue ? GetInclude( id.Value, path ) : null;
+        }
+
+        /// <summary>
         /// Gets the model with the id value but doesn't load it into the EF ChangeTracker.
         /// Use this if you won't be making any changes to the record and don't need lazy loading
         /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
@@ -260,6 +352,37 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the model with the key value but doesn't load it into the EF ChangeTracker.
+        /// Use this if you won't be making any changes to the record and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
+        /// </summary>
+        /// <remarks>
+        /// The key is a string representation of either an integer identifier,
+        /// a unique identifier, or a hashed identifier.
+        /// </remarks>
+        /// <param name="key">The key to be parsed and used to load the model.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <returns>The model <typeparamref name="T"/> loaded from the database or <c>null</c> if not found.</returns>
+        public virtual T GetNoTracking( string key, bool allowIntegerIdentifier = true )
+        {
+            int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
+
+            if ( !id.HasValue )
+            {
+                var guid = key.AsGuidOrNull();
+
+                if ( guid.HasValue )
+                {
+                    return GetNoTracking( guid.Value );
+                }
+
+                id = Rock.Utility.IdHasher.Instance.GetId( key );
+            }
+
+            return id.HasValue ? GetNoTracking( id.Value ) : null;
+        }
+
+        /// <summary>
         /// Gets the model with the id value into the selected form
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -281,6 +404,33 @@ namespace Rock.Data
         public TResult GetSelect<TResult>( Guid guid, System.Linq.Expressions.Expression<Func<T, TResult>> selector )
         {
             return AsNoFilter().Where( a => a.Guid == guid ).Select( selector ).FirstOrDefault();
+        }
+
+        /// <remarks>
+        /// The key is a string representation of either an integer identifier,
+        /// a unique identifier, or a hashed identifier.
+        /// </remarks>
+        /// <param name="key">The key to be parsed and used to load the model.</param>
+        /// <param name="selector">The LINQ expression that defines the format of the result object.</param>
+        /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
+        /// <returns>The model <typeparamref name="T"/> loaded from the database or <c>null</c> if not found.</returns>
+        public TResult GetSelect<TResult>( string key, Expression<Func<T, TResult>> selector, bool allowIntegerIdentifier = true )
+        {
+            int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
+
+            if ( !id.HasValue )
+            {
+                var guid = key.AsGuidOrNull();
+
+                if ( guid.HasValue )
+                {
+                    return GetSelect( guid.Value, selector );
+                }
+
+                id = Rock.Utility.IdHasher.Instance.GetId( key );
+            }
+
+            return id.HasValue ? GetSelect( id.Value, selector ) : default;
         }
 
         /// <summary>
@@ -364,7 +514,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual Guid? GetGuid( int id )
         {
-            return this.Queryable().Where( a => a.Id == id ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+            return this.AsNoFilter().Where( a => a.Id == id ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
         }
 
         /// <summary>
@@ -374,7 +524,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int? GetId( Guid guid )
         {
-            return this.Queryable().Where( a => a.Guid == guid ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+            return this.AsNoFilter().Where( a => a.Guid == guid ).Select( a => ( int? ) a.Id ).FirstOrDefault();
         }
 
         /// <summary>
@@ -713,6 +863,20 @@ namespace Rock.Data
 #else
             return _objectSet.SqlQuery( query, parameters );
 #endif
+        }
+
+        /// <summary>
+        /// Gets the query using data view.
+        /// </summary>
+        /// <param name="dataview">The dataview.</param>
+        /// <returns>IQueryable&lt;T&gt;.</returns>
+        public IQueryable<T> GetQueryUsingDataView( Rock.Model.DataView dataview )
+        {
+            var paramExpression = this.ParameterExpression;
+            var whereExpression = dataview.GetExpression( this, paramExpression );
+
+            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, paramExpression );
+            return this.Queryable().Where( lambda );
         }
 
         /// <summary>

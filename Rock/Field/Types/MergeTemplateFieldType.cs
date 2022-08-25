@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -32,7 +33,8 @@ namespace Rock.Field.Types
     /// Stored as MergeTemplate's Guid
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class MergeTemplateFieldType : FieldType, IEntityFieldType
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MERGE_TEMPLATE )]
+    public class MergeTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
 
@@ -46,8 +48,15 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+        }
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            string formattedValue = value;
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 using ( var rockContext = new RockContext() )
@@ -59,8 +68,7 @@ namespace Rock.Field.Types
                     }
                 }
             }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return formattedValue;
         }
 
         #endregion
@@ -220,6 +228,47 @@ namespace Rock.Field.Types
 
             return null;
         }
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var mergeTemplateId = new MergeTemplateService( rockContext ).GetId( guid.Value );
+
+                if ( !mergeTemplateId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<MergeTemplate>().Value, mergeTemplateId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Merge Template and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<MergeTemplate>().Value, nameof( MergeTemplate.Name ) )
+            };
+        }
+
         #endregion
     }
 }

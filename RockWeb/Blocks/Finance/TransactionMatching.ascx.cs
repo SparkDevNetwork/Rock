@@ -126,6 +126,7 @@ namespace RockWeb.Blocks.Finance
         Description = "Determines if the email address field should be shown.",
         Order = 9 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "1A8BEE2A-E5BE-4BA5-AFDB-E9C9278419BA" )]
     public partial class TransactionMatching : RockBlock
     {
         #region Attribute Keys
@@ -445,11 +446,14 @@ namespace RockWeb.Blocks.Finance
             {
                 // Put a highlight label on this panel that shows the Campus of the Batch being worked on:
                 var batchCampusId = new FinancialBatchService( rockContext ).GetSelect( batchId.Value, a => a.CampusId );
-                hlCampus.Text = "Batch Campus: " + CampusCache.Get( batchCampusId.Value ).Name;
-                hlCampus.Visible = true;
+                if ( batchCampusId.HasValue )
+                {
+                    hlCampus.Text = "Batch Campus: " + CampusCache.Get( batchCampusId.Value ).Name;
+                    hlCampus.Visible = true;
 
-                // Filter out anything that does not match the batch's campus.
-                financialAccountList = financialAccountList.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
+                    // Filter out anything that does not match the batch's campus.
+                    financialAccountList = financialAccountList.Where( a => a.CampusId.HasValue && a.CampusId.Value == batchCampusId );
+                }
             }
 
             int? campusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
@@ -1099,11 +1103,11 @@ namespace RockWeb.Blocks.Finance
             string keyPrefix = GetUserPreferenceKeyPrefix();
 
             var selectedAccountIdList = apDisplayedPersonalAccounts.SelectedValuesAsInt().ToList();
-            var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
+            var selectedAccountGuidList = FinancialAccountCache.GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
             this.SetUserPreference( keyPrefix + "account-list", selectedAccountGuidList.AsDelimited( "," ) );
 
             var optionalAccountIdList = apOptionalPersonalAccounts.SelectedValuesAsInt().ToList();
-            var optionalAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( optionalAccountIdList ).Select( a => a.Guid ).ToList();
+            var optionalAccountGuidList = FinancialAccountCache.GetByIds( optionalAccountIdList ).Select( a => a.Guid ).ToList();
             this.SetUserPreference( keyPrefix + "optional-account-list", optionalAccountGuidList.AsDelimited( "," ) );
 
             this.SetUserPreference( keyPrefix + "only-show-selected-accounts", cbOnlyShowSelectedAccounts.Checked.ToString() );
@@ -1159,18 +1163,18 @@ namespace RockWeb.Blocks.Finance
             string keyPrefix = GetUserPreferenceKeyPrefix();
 
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
-            var personalAccountList = new FinancialAccountService( new RockContext() )
+            var personalAccountList = FinancialAccountCache
                 .GetByGuids( personalAccountGuidList )
                 .Where( a => a.IsActive )
                 .ToList();
-            apDisplayedPersonalAccounts.SetValues( personalAccountList );
+            apDisplayedPersonalAccounts.SetValuesFromCache( personalAccountList );
 
             var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
-            var optionalAccountList = new FinancialAccountService( new RockContext() )
+            var optionalAccountList = FinancialAccountCache
                 .GetByGuids( optionalAccountGuidList )
                 .Where( a => a.IsActive )
                 .ToList();
-            apOptionalPersonalAccounts.SetValues( optionalAccountList );
+            apOptionalPersonalAccounts.SetValuesFromCache( optionalAccountList );
 
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
             cbIncludeChildAccounts.Checked = this.GetUserPreference( keyPrefix + "include-child-accounts" ).AsBoolean();
@@ -1244,12 +1248,12 @@ namespace RockWeb.Blocks.Finance
             var accountNumberSecured = hfCheckMicrHashed.Value;
 
 
-            /* 07/24/2014 (added engineer note on 2020-09-23) MDP 
-             * 
+            /* 07/24/2014 (added engineer note on 2020-09-23) MDP
+             *
              * Note: The logic for this isn't what you might expect!
-             * 
+             *
              * A FinancialTransaction should only have amounts if it is matched to a person, so
-             
+
              - If individual is not selected, don't save any amounts, even if they entered amounts on the UI. So we will ignore them since an individual wasn't selected.
              - If they 'Unmatched' (the transaction had previously been matched to an individual, but now it isn't) clear out any amounts (even if amounts were specified in the UI)
 
@@ -2105,6 +2109,16 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private Location GetAddressLocation( RockContext rockContext, AddressControl addressControl )
         {
+            // Only verify if at least one address field contains a value.
+            // Ignore State as it is always prefilled with a value.
+            if ( acAddPersonAddress.Street1.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.Street2.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.City.IsNullOrWhiteSpace() &&
+                acAddPersonAddress.PostalCode.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
             var locationService = new LocationService( rockContext );
             return locationService.Get(
                 addressControl.Street1,

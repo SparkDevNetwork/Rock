@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Shows the number of Group Members that are participating from a set of candidates defined by a Person Data View" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Participation Rate" )]
+    [Rock.SystemGuid.EntityTypeGuid( "A09DEA74-82ED-41F7-8A1E-AAC771DEC692")]
     public class ParticipationRateSelect : DataSelectComponent
     {
         #region Properties

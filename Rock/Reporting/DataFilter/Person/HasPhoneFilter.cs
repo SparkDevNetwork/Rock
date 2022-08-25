@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on based on the phone type and messaging capability" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Phone Number" )]
+    [Rock.SystemGuid.EntityTypeGuid( "95CBCA37-47E7-477C-A5F6-77C6E6B99244")]
     public class HasPhoneFilter : DataFilterComponent
     {
         #region Properties

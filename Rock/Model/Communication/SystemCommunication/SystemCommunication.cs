@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SystemCommunication" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SYSTEM_COMMUNICATION )]
     public partial class SystemCommunication : Model<SystemCommunication>
     {
         #region Entity Properties

@@ -107,6 +107,7 @@ namespace RockWeb.Blocks.Prayer
         DefaultBooleanValue = true,
         IsRequired = true,
         Order = 8 )]
+    [Rock.SystemGuid.BlockTypeGuid( "FD294789-3B72-4D83-8006-FA50B5087D06" )]
     public partial class PrayerSession : RockBlock
     {
         #region Keys
@@ -522,6 +523,17 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
+            var groupGuidQryString = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+            if ( groupGuidQryString.HasValue )
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.Group != null && a.Group.Guid == groupGuidQryString.Value );
+            }
+            else
+            {
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.GroupId == null );
+            }
+
+            var seee = prayerRequestQuery.ToList();
             var limitToPublic = GetAttributeValue( PUBLIC_ONLY ).AsBoolean();
             var categoryList = prayerRequestQuery
                 .Where( p => p.Category != null && ( !limitToPublic || ( p.IsPublic ?? false ) ) )
@@ -602,7 +614,7 @@ namespace RockWeb.Blocks.Prayer
             var groupGuidQryString = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
             if ( groupGuidQryString.HasValue )
             {
-                prayerRequestQuery = prayerRequestQuery.Where( a => a.Group.Guid == groupGuidQryString.Value );
+                prayerRequestQuery = prayerRequestQuery.Where( a => a.Group != null && a.Group.Guid == groupGuidQryString.Value );
             }
             else
             {

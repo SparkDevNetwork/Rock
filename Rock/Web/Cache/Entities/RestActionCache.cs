@@ -154,7 +154,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public new static RestActionCache Get( string apiId )
         {
-            return Get( apiId, Guid.Empty, null );
+            return Get( apiId, null );
         }
 
         /// <summary>
@@ -165,50 +165,26 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static RestActionCache Get( string apiId, RockContext rockContext )
         {
-            return Get( apiId, Guid.Empty, rockContext );
-        }
-
-        /// <summary>
-        /// Gets the specified API identifier.
-        /// </summary>
-        /// <param name="apiId">The API identifier.</param>
-        /// <param name="rockGuid">The unique identifier.</param>
-        /// <returns></returns>
-        public static RestActionCache Get( string apiId, Guid rockGuid )
-        {
-            return Get( apiId, rockGuid, null );
-        }
-
-        /// <summary>
-        /// Gets the specified API identifier.
-        /// </summary>
-        /// <param name="apiId">The API identifier.</param>
-        /// <param name="rockGuid">The unique identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public static RestActionCache Get( string apiId, Guid rockGuid, RockContext rockContext )
-        {
-            return apiId.IsNullOrWhiteSpace() && rockGuid.IsEmpty()
-                ? null : GetOrAddExisting( apiId, () => QueryDbByApiId( apiId, rockGuid, rockContext ) );
+            return apiId.IsNotNullOrWhiteSpace()
+                ? GetOrAddExisting( apiId, () => QueryDbByApiId( apiId, rockContext ) ) : null;
         }
 
         /// <summary>
         /// Queries the database by API identifier.
         /// </summary>
         /// <param name="apiId">The API identifier.</param>
-        /// <param name="rockGuid">The unique identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static RestActionCache QueryDbByApiId( string apiId, Guid rockGuid, RockContext rockContext )
+        private static RestActionCache QueryDbByApiId( string apiId, RockContext rockContext )
         {
             if ( rockContext != null )
             {
-                return QueryDbByApiIdWithContext( apiId, rockGuid, rockContext );
+                return QueryDbByApiIdWithContext( apiId, rockContext );
             }
 
             using ( var newRockContext = new RockContext() )
             {
-                return QueryDbByApiIdWithContext( apiId, rockGuid, newRockContext );
+                return QueryDbByApiIdWithContext( apiId, newRockContext );
             }
         }
 
@@ -216,14 +192,13 @@ namespace Rock.Web.Cache
         /// Queries the database by id with context.
         /// </summary>
         /// <param name="apiId">The API identifier.</param>
-        /// <param name="rockGuid">The unique identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static RestActionCache QueryDbByApiIdWithContext( string apiId, Guid rockGuid, RockContext rockContext )
+        private static RestActionCache QueryDbByApiIdWithContext( string apiId, RockContext rockContext )
         {
             var service = new RestActionService( rockContext );
             var entity = service.Queryable().AsNoTracking()
-                .FirstOrDefault( a => a.ApiId == apiId || a.Guid.Equals( rockGuid ) );
+                .FirstOrDefault( a => a.ApiId == apiId );
 
             if ( entity == null ) return null;
 

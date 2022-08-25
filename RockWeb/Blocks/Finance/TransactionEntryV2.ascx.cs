@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Transactions;
+using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The Lava template to use to provide the cover the fees prompt to the individual. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         Key = AttributeKey.FeeCoverageMessage,
-        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% (${{ CalculatedAmount }}) to help cover the electronic transaction fees.",
+        DefaultValue = @"Make my gift go further. Please increase my gift by {{ Percentage }}% ({{ AmountHTML }}) to help cover the electronic transaction fees.",
         Order = 28 )]
 
     #region Scheduled Transactions
@@ -479,6 +479,7 @@ namespace RockWeb.Blocks.Finance
     #endregion Advanced Options
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "6316D801-40C0-4EED-A2AD-55C13870664D" )]
     public partial class TransactionEntryV2 : RockBlock
     {
         #region constants
@@ -1020,7 +1021,7 @@ mission. We are so grateful for your commitment.</p>
             bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
-                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, "_hostedPaymentInfoControl", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
+                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
                 this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
             }
@@ -1191,7 +1192,8 @@ mission. We are so grateful for your commitment.</p>
                 dtpStartDate.SelectedDate = RockDateTime.Today;
             }
 
-            pnlScheduledTransaction.Visible = allowScheduledTransactions;
+            pnlScheduledTransactionFrequency.Visible = allowScheduledTransactions;
+            pnlScheduledTransactionStartDate.Visible = allowScheduledTransactions;
 
             return true;
         }
@@ -1431,7 +1433,7 @@ mission. We are so grateful for your commitment.</p>
 
             var hostedGatewayComponentList = Rock.Financial.GatewayContainer.Instance.Components
                 .Select( a => a.Value.Value )
-                .Where( a => a is IHostedGatewayComponent )
+                .Where( a => a is IHostedGatewayComponent && !( a is TestGateway ) )
                 .Select( a => a as IHostedGatewayComponent ).ToList();
 
             rptInstalledGateways.DataSource = hostedGatewayComponentList;
@@ -1821,7 +1823,7 @@ mission. We are so grateful for your commitment.</p>
 
             var allowAccountsInUrl = this.GetAttributeValue( AttributeKey.AllowAccountOptionsInURL ).AsBoolean();
             var rockContext = new RockContext();
-            List<int> selectableAccountIds = new FinancialAccountService( rockContext ).GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
+            List<int> selectableAccountIds = FinancialAccountCache.GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() ).Select( a => a.Id ).ToList();
             CampusAccountAmountPicker.AccountIdAmount[] accountAmounts = null;
 
             bool enableMultiAccount = this.GetAttributeValue( AttributeKey.EnableMultiAccount ).AsBoolean();
@@ -1863,7 +1865,7 @@ mission. We are so grateful for your commitment.</p>
                     string invalidAccountInURLMessage = this.GetAttributeValue( AttributeKey.InvalidAccountInURLMessage );
                     if ( invalidAccountInURLMessage.IsNotNullOrWhiteSpace() )
                     {
-                        var validAccountUrlIdsQuery = new FinancialAccountService( rockContext ).GetByIds( selectableAccountIds )
+                        var validAccountUrlIdsQuery = FinancialAccountCache.GetByIds( selectableAccountIds )
                             .Where( a =>
                                  a.IsActive &&
                                  ( a.StartDate == null || a.StartDate <= RockDateTime.Today ) &&
@@ -1937,7 +1939,7 @@ mission. We are so grateful for your commitment.</p>
             IEntity transactionEntity = GetTransactionEntity();
 
             introMessageMergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
-            if ( transactionEntity != null && introMessageTemplate.HasMergeFields() )
+            if ( transactionEntity != null && LavaHelper.IsLavaTemplate( introMessageTemplate ) )
             {
                 introMessageMergeFields.Add( "TransactionEntity", transactionEntity );
                 var transactionEntityTypeId = transactionEntity.TypeId;
@@ -2773,9 +2775,22 @@ mission. We are so grateful for your commitment.</p>
             {
                 FinancialPersonSavedAccount financialPersonSavedAccount = new FinancialPersonSavedAccountService( rockContext ).Get( savedAccountId.Value );
 
-                if ( financialPersonSavedAccount != null && financialPersonSavedAccount.ReferenceNumber.IsNotNullOrWhiteSpace() )
+                if ( financialPersonSavedAccount != null )
                 {
-                    paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.ReferenceNumber;
+                    if ( financialPersonSavedAccount.ReferenceNumber.IsNotNullOrWhiteSpace() )
+                    {
+                        paymentInfo.ReferenceNumber = financialPersonSavedAccount.ReferenceNumber;
+                    }
+
+                    if ( financialPersonSavedAccount.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+                    {
+                        paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.GatewayPersonIdentifier;
+                    }
+                    else
+                    {
+                        // If this is from a SavedAccount, and GatewayPersonIdentifier is unknown, this is probably from an older NMI gateway transaction that only saved the GatewayPersonIdentifier to ReferenceNumber.
+                        paymentInfo.GatewayPersonIdentifier = financialPersonSavedAccount.ReferenceNumber;
+                    }
                 }
             }
 
@@ -2988,41 +3003,15 @@ mission. We are so grateful for your commitment.</p>
 
             paymentInfo.FinancialPersonSavedAccountId = ddlPersonSavedAccount.SelectedValueAsId();
 
-            // get the payment comment
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
-
-            if ( paymentInfo != null )
-            {
-                mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
-            }
-
             var commentTransactionAccountDetails = new List<FinancialTransactionDetail>();
             PopulateTransactionDetails( commentTransactionAccountDetails );
-            mergeFields.Add( "TransactionAccountDetails", commentTransactionAccountDetails.Where( a => a.Amount != 0 ).ToList() );
 
-            string paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
-
-            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
-            {
-                if ( paymentComment.IsNotNullOrWhiteSpace() )
-                {
-                    paymentInfo.Comment1 = string.Format( "{0}: {1}", paymentComment, tbCommentEntry.Text );
-                }
-                else
-                {
-                    paymentInfo.Comment1 = tbCommentEntry.Text;
-                }
-            }
-            else
-            {
-                paymentInfo.Comment1 = paymentComment;
-            }
+            SetPaymentComment( paymentInfo, commentTransactionAccountDetails, tbCommentEntry.Text );
 
             paymentInfo.Amount = commentTransactionAccountDetails.Sum( a => a.Amount );
 
-            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            paymentInfo.TransactionTypeValueId = txnType.Id;
+            var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = transactionType.Id;
 
             return paymentInfo;
         }
@@ -3121,8 +3110,8 @@ mission. We are so grateful for your commitment.</p>
             transaction.TransactionDateTime = RockDateTime.Now;
             transaction.FinancialGatewayId = financialGateway.Id;
 
-            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            transaction.TransactionTypeValueId = txnType.Id;
+            var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            transaction.TransactionTypeValueId = transactionType.Id;
 
             transaction.Summary = paymentInfo.Comment1;
 
@@ -3350,6 +3339,9 @@ mission. We are so grateful for your commitment.</p>
             scheduledTransaction.AuthorizedPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId ).Value;
             scheduledTransaction.FinancialGatewayId = financialGateway.Id;
 
+            var transactionType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            scheduledTransaction.TransactionTypeValueId = transactionType.Id;
+
             scheduledTransaction.Summary = paymentInfo.Comment1;
 
             if ( scheduledTransaction.FinancialPaymentDetail == null )
@@ -3415,10 +3407,52 @@ mission. We are so grateful for your commitment.</p>
             Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
             if ( receiptEmail.HasValue )
             {
-                // Queue a transaction to send receipts
-                var transactionIds = new List<int> { transactionId };
-                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, transactionIds );
-                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                // Queue a bus message to send receipts
+                var sendPaymentReceiptsTask = new ProcessSendPaymentReceiptEmails.Message
+                {
+                    SystemEmailGuid = receiptEmail.Value,
+                    TransactionId = transactionId
+                };
+
+                sendPaymentReceiptsTask.Send();
+            }
+        }
+
+        /// <summary>
+        /// Sets the comment field for a payment, incorporating the Lava template specified in the block settings if appropriate.
+        /// </summary>
+        /// <param name="paymentInfo"></param>
+        /// <param name="userComment"></param>
+        private void SetPaymentComment( PaymentInfo paymentInfo, List<FinancialTransactionDetail> commentTransactionAccountDetails, string userComment )
+        {
+            // Create a payment comment using the Lava template specified in this block.
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
+
+            if ( paymentInfo != null )
+            {
+                mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
+            }
+
+            mergeFields.Add( "TransactionAccountDetails", commentTransactionAccountDetails.Where( a => a.Amount != 0 ).ToList() );
+
+            var paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
+
+            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
+            {
+                if ( paymentComment.IsNotNullOrWhiteSpace() )
+                {
+                    // Append user comments to the block-specified payment comment.
+                    paymentInfo.Comment1 = string.Format( "{0}: {1}", paymentComment, userComment );
+                }
+                else
+                {
+                    paymentInfo.Comment1 = userComment;
+                }
+            }
+            else
+            {
+                paymentInfo.Comment1 = paymentComment;
             }
         }
 

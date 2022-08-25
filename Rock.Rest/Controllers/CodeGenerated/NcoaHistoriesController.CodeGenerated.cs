@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// NcoaHistories REST API
     /// </summary>
+    [RestControllerGuid( "41959096-5B2F-46CE-AAE2-6C10CA3D3AC7" )]
     public partial class NcoaHistoriesController : Rock.Rest.ApiController<Rock.Model.NcoaHistory>
     {
         /// <summary>

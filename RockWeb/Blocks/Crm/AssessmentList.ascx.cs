@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -76,6 +76,7 @@ namespace Rockweb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.ASSESSMENT_LIST )]
     public partial class AssessmentList : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys

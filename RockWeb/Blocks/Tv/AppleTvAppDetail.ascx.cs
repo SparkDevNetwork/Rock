@@ -17,9 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Web.UI;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -40,6 +43,7 @@ namespace RockWeb.Blocks.Tv
     #region Block Attributes
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "49F3D87E-BD8D-43D4-8217-340F3DFF4562" )]
     public partial class AppleTvAppDetail : Rock.Web.UI.RockBlock
     {
 
@@ -116,6 +120,12 @@ namespace RockWeb.Blocks.Tv
             {
                 var site = SiteCache.Get( applicationId.Value );
 
+                var detailBreadCrumb = pageReference.BreadCrumbs.FirstOrDefault( x => x.Name == "Application Detail" );
+                if ( detailBreadCrumb != null )
+                {
+                    pageReference.BreadCrumbs.Remove( detailBreadCrumb );
+                }
+
                 if ( site != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( site.Name, pageReference ) );
@@ -160,7 +170,7 @@ namespace RockWeb.Blocks.Tv
             var isNewSite = false;
 
             // Site is new so create one
-            if ( site.IsNull() )
+            if ( site == null )
             {
                 site = new Site();
                 siteService.Add( site );
@@ -184,11 +194,15 @@ namespace RockWeb.Blocks.Tv
             site.LoginPageId = ppLoginPage.PageId;
             site.LoginPageRouteId = ppLoginPage.PageRouteId;
 
-            // Create/Modify API Key
-            additionalSettings.ApiKeyId =  SaveApiKey( additionalSettings.ApiKeyId, txtApiKey.Text, string.Format( "tv_application_{0}", site.Id ), rockContext );
-            site.AdditionalSettings = additionalSettings.ToJson();
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
 
-            rockContext.SaveChanges();
+                // Create/Modify API Key
+                additionalSettings.ApiKeyId = SaveApiKey( additionalSettings.ApiKeyId, txtApiKey.Text, string.Format( "tv_application_{0}", site.Id ), rockContext );
+                site.AdditionalSettings = additionalSettings.ToJson();
+                rockContext.SaveChanges();
+            } );
 
             // Create interaction channel for this site
             var interactionChannelService = new InteractionChannelService( rockContext );
@@ -227,7 +241,8 @@ namespace RockWeb.Blocks.Tv
                 rockContext.SaveChanges();
 
                 var pageService = new PageService( rockContext );
-                var page = new Rock.Model.Page{
+                var page = new Rock.Model.Page
+                {
                     InternalName = "Start Screen",
                     BrowserTitle = "Start Screen",
                     PageTitle = "Start Screen",
@@ -296,7 +311,7 @@ namespace RockWeb.Blocks.Tv
             var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
 
             // We're being instructed to build a new site.
-            if (applicationId == 0 )
+            if ( applicationId == 0 )
             {
                 ShowEdit();
                 return;
@@ -305,7 +320,7 @@ namespace RockWeb.Blocks.Tv
             var rockContext = new RockContext();
             var site = new SiteService( rockContext ).Get( applicationId );
 
-            if ( site.IsNull() )
+            if ( site == null )
             {
                 nbMessages.Text = "Could not find the application.";
             }
@@ -328,7 +343,7 @@ namespace RockWeb.Blocks.Tv
                         .Select( c => c.RetentionDuration )
                         .FirstOrDefault();
 
-                if (retentionDuration.HasValue)
+                if ( retentionDuration.HasValue )
                 {
                     viewContent.Add( "Page View Retention", retentionDuration.Value.ToString() + " days" );
                 }
@@ -364,7 +379,9 @@ namespace RockWeb.Blocks.Tv
             var rockContext = new RockContext();
             var site = new SiteService( rockContext ).Get( applicationId );
 
-            if ( site.IsNotNull() )
+            ceApplicationJavaScript.Visible = PageParameter("ShowApplicationJs").AsBoolean();
+
+            if ( site != null )
             {
                 hlblInactive.Visible = !site?.IsActive ?? true;
                 lBlockTitle.Text = site.Name;
@@ -406,9 +423,21 @@ namespace RockWeb.Blocks.Tv
                 {
                     nbPageViewRetentionPeriodDays.Text = retentionDuration.Value.ToString();
                 }
-                
+
                 nbPageViewRetentionPeriodDays.Visible = site.EnablePageViews;
-            }      
+            }
+            else
+            {
+                var stream = typeof( Rock.Blocks.RockObsidianBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
+                
+                if ( stream != null )
+                {
+                    using ( var reader = new StreamReader( stream ) )
+                    {
+                        ceApplicationJavaScript.Text = reader.ReadToEnd();
+                    }
+                }
+            }
         }
 
         #endregion

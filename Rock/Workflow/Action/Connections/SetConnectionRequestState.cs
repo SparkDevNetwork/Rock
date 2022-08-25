@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.DateFieldType" } )]
     [DateField( "Follow Up Date", "The follow-up date when state is being set to Future Follow Up (if Follow Up Date Attribute is not specified).", false, "", "", 4 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "3C3B389B-BE46-495E-A5AC-2B2C7BA41DBA")]
     public class SetConnectionRequestState : ActionComponent
     {
         /// <summary>

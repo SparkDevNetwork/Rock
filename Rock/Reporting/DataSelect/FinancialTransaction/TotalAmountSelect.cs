@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataSelect.FinancialTransaction
     [Description( "Select the Total Amount of a Transaction" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Transaction Total Amount" )]
+    [Rock.SystemGuid.EntityTypeGuid( "5BD5E922-D729-4ECB-990F-8DA8440FA28A")]
     public class TotalAmountSelect : DataSelectComponent
     {
         #region Properties

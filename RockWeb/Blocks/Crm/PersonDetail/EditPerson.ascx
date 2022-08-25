@@ -33,7 +33,7 @@
                             <Rock:DefinedValuePicker ID="dvpReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="dvpReason_SelectedIndexChanged"></Rock:DefinedValuePicker>
                             <Rock:DatePicker ID="dpDeceasedDate" runat="server" Visible="false" Label="Deceased Date" AllowFutureDateSelection="False" RequireYear="True" />
                             <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false" autocomplete="off"></Rock:RockTextBox>
-                            <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
+                            <Rock:ImageEditor ID="imgPhoto" runat="server" Label="Photo" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" EnableCrop="true" />
                         </div>
                     </div>
 
@@ -80,7 +80,7 @@
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockRadioButtonList>
-                                <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
+                                <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birth Day" />
                                 <asp:Panel ID="pnlGradeGraduation" runat="server" CssClass="form-row">
                                     <div class="col-xs-6 col-sm-3">
                                         <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" />

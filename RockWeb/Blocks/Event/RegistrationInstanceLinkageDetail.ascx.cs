@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Block for editing a linkage associated to an event registration instance." )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D341EF12-406B-477D-8A85-16EBDDF2B04B" )]
     public partial class RegistrationInstanceLinkageDetail : Rock.Web.UI.RockBlock
     {
         #region Keys
@@ -106,6 +107,7 @@ namespace RockWeb.Blocks.Event
                 linkage.GroupId = gpLinkageGroup.SelectedValueAsInt();
                 linkage.PublicName = tbLinkagePublicName.Text;
                 linkage.UrlSlug = tbLinkageUrlSlug.Text;
+                linkage.CampusId = cpLinkageCampus.SelectedCampusId;
 
                 if ( !Page.IsValid || !linkage.IsValid )
                 {
@@ -379,6 +381,8 @@ namespace RockWeb.Blocks.Event
 
             gpLinkageGroup.SetValue( linkage.Group );
             gpLinkageGroup_SelectItem( null, null );
+
+            cpLinkageCampus.SetValue( linkage.Campus );
 
             tbLinkagePublicName.Text = linkage.PublicName;
             tbLinkageUrlSlug.Text = linkage.UrlSlug;

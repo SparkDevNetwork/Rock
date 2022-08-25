@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people basaed on Interactions" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Interactions Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "FA4ADD22-C2E7-4A52-A98B-DEA592F75020")]
     public class InteractionsFilter : DataFilterComponent
     {
         #region Properties

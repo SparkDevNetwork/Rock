@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group type for editing." )]
+    [Rock.SystemGuid.BlockTypeGuid( "78B8EE69-71A7-43C1-B00B-ED13828FE104" )]
     public partial class GroupTypeDetail : RockBlock
     {
         #region Properties
@@ -716,6 +717,24 @@ namespace RockWeb.Blocks.Groups
             BindInheritedAttributes( gtpInheritedGroupType.SelectedValueAsInt(), groupTypeService, attributeService );
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbSchedulingEnabled control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void cbSchedulingEnabled_CheckedChanged( object sender, EventArgs e )
+        {
+            ScheduleTypesRequired();
+        }
+
+        /// <summary>
+        /// Sets the requirement of the "Schedule Types" control based on the checked state of the "Scheduling Enabled" control.
+        /// </summary>
+        private void ScheduleTypesRequired()
+        {
+            cblScheduleTypes.Required = cbSchedulingEnabled.Checked;
+        }
+
         #endregion
 
         #region Internal Methods
@@ -927,6 +946,8 @@ namespace RockWeb.Blocks.Groups
 
             // Scheduling
             cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
+            ScheduleTypesRequired();
+            cblScheduleTypes.RequiredErrorMessage = "A 'Group Schedule Option' must be selected under 'Attendance / Check-In' when Scheduling is enabled.";
 
             ddlScheduleConfirmationSystemCommunication.SetValue( groupType.ScheduleConfirmationSystemCommunicationId );
             cbRequiresReasonIfDeclineSchedule.Checked = groupType.RequiresReasonIfDeclineSchedule;
@@ -3037,5 +3058,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
     }
 }

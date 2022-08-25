@@ -26,6 +26,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -652,6 +653,8 @@ namespace Rock.Financial
 
                 try
                 {
+                    RockLogger.Log.Debug( RockLogDomains.Finance, $"AutomatedPaymentProcessor exception occurred while saving transaction {transactionGuid}: {exception.Message}" );
+
                     _rockContext.WrapTransaction( () =>
                     {
                         financialTransaction = SaveTransaction( transactionGuid );
@@ -772,6 +775,8 @@ namespace Rock.Financial
         /// </summary>
         private FinancialTransaction SaveTransaction( Guid transactionGuid )
         {
+            RockLogger.Log.Debug( RockLogDomains.Finance, $"AutomatedPaymentProcessor attempting to save transaction {transactionGuid}" );
+
             // if this is a future transaction, the payment hasn't been charged yet
             if ( _payment == null && _automatedPaymentArgs.FutureProcessingDateTime.HasValue )
             {
@@ -802,8 +807,6 @@ namespace Rock.Financial
             financialTransaction.SettledDate = _payment.SettledDate;
             financialTransaction.ForeignKey = _payment.ForeignKey;
             financialTransaction.FutureProcessingDateTime = _automatedPaymentArgs.FutureProcessingDateTime;
-
-
             financialTransaction.ForeignCurrencyCodeValueId = GetCurrencyCodeDefinedValueCache( _automatedPaymentArgs.AmountCurrencyCode )?.Id;
 
             // Create a new payment detail or update the future transaction's payment detail now that it has been charged
@@ -927,6 +930,8 @@ namespace Rock.Financial
                 batch.Id,
                 batchChanges
             );
+
+            RockLogger.Log.Debug( RockLogDomains.Finance, $"AutomatedPaymentProcessor save succeeded for transaction {transactionGuid}" );
 
             return financialTransaction;
         }

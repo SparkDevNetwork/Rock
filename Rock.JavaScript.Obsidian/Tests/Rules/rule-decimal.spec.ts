@@ -16,7 +16,7 @@
 //
 
 import assert = require("assert");
-import { validateValue } from "../../Framework/Rules/index";
+import { validateValue } from "../../Framework/ValidationRules/index";
 
 const expectedDecimalErrorText = "must be a decimal value.";
 

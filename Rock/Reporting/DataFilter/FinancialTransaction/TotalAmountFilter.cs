@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.FinancialTransaction
     [Description( "Filter Transactions based on Total Amount" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Transaction Total Amount" )]
+    [Rock.SystemGuid.EntityTypeGuid( "356D67D8-2D00-4C7F-921D-95DD78769B39")]
     public class TotalAmountFilter : DataFilterComponent
     {
         #region Properties

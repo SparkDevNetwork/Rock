@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PhoneNumber" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "AD7E27CB-036D-40C6-B352-81B38BFAE798")]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
         #region Entity Properties

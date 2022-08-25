@@ -128,6 +128,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CONVERT_BUSINESS = "115A7725-6760-4E86-8171-57F4A3CF6909";
 
+        /// <summary>
+        /// The financial account search block type
+        /// </summary>
+        public const string FINANCIAL_ACCOUNT_SEARCH = "867E32A8-786E-4090-BE2B-6BE780440D44";
+
         #endregion
 
         /// <summary>
@@ -310,6 +315,26 @@ namespace Rock.SystemGuid
         public const string MOBILE_GROUPS_GROUP_REGISTRATION = "8A42E4FA-9FE1-493C-B6D8-7A766D96E912";
 
         /// <summary>
+        /// The mobile groups <see cref="Rock.Blocks.Types.Mobile.Groups.GroupSchedulePreference">Group Schedule Preference</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_PREFERENCE = "F6D0A258-F97E-4561-B881-ACBF985F89DC";
+
+        /// <summary>
+        /// The mobile groups <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleSignUp">Group Schedule Sign Up</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_SIGNUP = "CA27CB14-22FD-4DE6-9C3B-0EAA0AA84708";
+
+        /// <summary>
+        /// The mobile groups <see cref="Rock.Blocks.Types.Mobile.Groups.GroupSchedulePreference">Group Schedule Preference</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_TOOLBOX = "E00F3C6D-D007-4408-8A41-AD2A6AB29D6E";
+
+        /// <summary>
+        /// The mobile groups <see cref="Rock.Blocks.Types.Mobile.Groups.GroupScheduleUnavailability">Group Schedule Unavailability</see> block type.
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_SCHEDULE_UNAVAILABILITY = "AEFF246D-A514-4D46-801E-D717E1D1D209";
+
+        /// <summary>
         /// The mobile Groups &gt; <see cref="Rock.Blocks.Types.Mobile.Groups.GroupFinder">Group Finder</see> block type.
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_FINDER = "BAC6671E-4D6F-4428-A6FA-69B8BEADF55C";
@@ -346,6 +371,33 @@ namespace Rock.SystemGuid
         /// Data Views with persistence enabled block Guid
         /// </summary>
         public const string PERSISTED_DATA_VIEW_LIST = "3C4FAFAE-41D1-4FF2-B6DC-FF99CD4DABBE";
+
+        /// <summary>
+        /// The dataview search results block type
+        /// </summary>
+        public const string DATAVIEW_SEARCH_RESULTS = "BFB625F7-75CA-48FE-9C82-90E47374242B";
+
+        /// <summary>
+        /// The report search results block type
+        /// </summary>
+        public const string REPORT_SEARCH_RESULTS = "13955B32-11F4-4606-8C31-4C6E5324C81A";
+
+        #endregion Reporting Block Types
+
+        #region Steps Block Types
+
+        /// <summary>
+        /// The Step Flow
+        /// </summary>
+        public const string STEP_FLOW = "2B4E0128-BCDF-48BF-AEC9-85001169DA3E";
+        #endregion Steps Block Types
+
+        #region Reporting Block Types
+
+        /// <summary>
+        /// The reporting dashboard liquid/lava dashboard widget.
+        /// </summary>
+        public const string REPORTING_LAVA_DASHBOARD_WIDGET = "AC19A4F3-2E88-487E-8E88-377C1C20DBD5";
 
         #endregion Reporting Block Types
 

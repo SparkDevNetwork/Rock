@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataFilter.FinancialTransactionDetail
 {
@@ -31,6 +32,7 @@ namespace Rock.Reporting.DataFilter.FinancialTransactionDetail
     [Description( "Transaction Detail by Account" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Account Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "3BE224DE-B630-44BC-A7A6-32B8A7FA459E")]
     public class AccountFilter : BaseAccountFilter<Rock.Model.FinancialTransactionDetail>
     {
         /// <summary>
@@ -47,7 +49,7 @@ namespace Rock.Reporting.DataFilter.FinancialTransactionDetail
             if ( selectionValues.Length >= 1 )
             {
                 var accountGuids = selectionValues[0].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                var accountIds = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+                var accountIds = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
 
                 var qry = new FinancialTransactionDetailService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => accountIds.Contains( p.AccountId ) );

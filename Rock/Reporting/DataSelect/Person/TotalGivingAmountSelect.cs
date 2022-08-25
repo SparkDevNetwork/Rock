@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the total giving amount of the person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Total Giving Amount" )]
+    [Rock.SystemGuid.EntityTypeGuid( "680C50EC-2815-4390-9BCD-6EE0D2496E34")]
     public class TotalGivingAmountSelect : DataSelectComponent
     {
         /// <summary>
@@ -185,7 +186,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             var accountIdList = ( controls[2] as AccountPicker ).SelectedValuesAsInt().ToList();
             string accountGuids = string.Empty;
-            var accounts = new FinancialAccountService( new RockContext() ).GetByIds( accountIdList );
+            var accounts = FinancialAccountCache.GetByIds( accountIdList );
             if ( accounts != null && accounts.Any() )
             {
                 accountGuids = accounts.Select( a => a.Guid ).ToList().AsDelimited( "," );
@@ -250,10 +251,10 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( selectionValues.Length >= 5 )
                 {
                     var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                    var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids );
+                    var accounts = FinancialAccountCache.GetByGuids( accountGuids );
                     if ( accounts != null && accounts.Any() )
                     {
-                        accountPicker.SetValues( accounts );
+                        accountPicker.SetValuesFromCache( accounts );
                     }
                 }
 
@@ -376,7 +377,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( selectionValues.Length >= 5 )
             {
                 var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).Where( a => a != Guid.Empty ).ToList();
-                accountIdList = new FinancialAccountService( context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+                accountIdList = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
             }
 
             bool combineGiving = false;

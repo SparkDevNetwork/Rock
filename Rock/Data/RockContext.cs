@@ -360,6 +360,12 @@ namespace Rock.Data
         public DbSet<Rock.Model.AttributeMatrixTemplate> AttributeMatrixTemplates { get; set; }
 
         /// <summary>
+        /// Gets or sets the attribute referenced entities.
+        /// </summary>
+        /// <value>The attribute referenced entities.</value>
+        public DbSet<Rock.Model.AttributeReferencedEntity> AttributeReferencedEntities { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -390,6 +396,12 @@ namespace Rock.Data
         /// The attribute value historicals.
         /// </value>
         public DbSet<AttributeValueHistorical> AttributeValueHistoricals { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the attribute value referenced entities.
+        /// </summary>
+        /// <value>The attribute value referenced entities.</value>
+        public DbSet<Rock.Model.AttributeValueReferencedEntity> AttributeValueReferencedEntities { get; set; }
 
         /// <summary>
         /// Gets or sets the Attribute Values.
@@ -760,6 +772,22 @@ namespace Rock.Data
         /// The content channel types.
         /// </value>
         public DbSet<ContentChannelType> ContentChannelTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content collections.
+        /// </summary>
+        /// <value>
+        /// The ccontent collections.
+        /// </value>
+        public DbSet<ContentCollection> ContentCollections { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content collection sources.
+        /// </summary>
+        /// <value>
+        /// The content collection sources.
+        /// </value>
+        public DbSet<ContentCollectionSource> ContentCollectionSources { get; set; }
 
         /// <summary>
         /// Gets or sets the data views.
@@ -1352,6 +1380,14 @@ namespace Rock.Data
         /// the Interaction Sessions.
         /// </value>
         public DbSet<InteractionSession> InteractionSessions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interaction Session Locations.
+        /// </summary>
+        /// <value>
+        /// the Interaction Sessions Locations.
+        /// </value>
+        public DbSet<InteractionSessionLocation> InteractionSessionLocations { get; set; }
 
         /// <summary>
         /// Gets or sets the lava shortcodes.
@@ -2202,6 +2238,38 @@ namespace Rock.Data
         /// The workflow types.
         /// </value>
         public DbSet<WorkflowType> WorkflowTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person alias personalizations.
+        /// </summary>
+        /// <value>
+        /// The person alias personalizations.
+        /// </value>
+        public DbSet<PersonAliasPersonalization> PersonAliasPersonalizations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personalized entities.
+        /// </summary>
+        /// <value>
+        /// The personalized entities.
+        /// </value>
+        public DbSet<PersonalizedEntity> PersonalizedEntities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request filters.
+        /// </summary>
+        /// <value>
+        /// The request filters.
+        /// </value>
+        public DbSet<RequestFilter> RequestFilters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the segments.
+        /// </summary>
+        /// <value>
+        /// The segments.
+        /// </value>
+        public DbSet<PersonalizationSegment> Segments { get; set; }
 
         #endregion
 

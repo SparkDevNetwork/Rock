@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_CHANNEL )]
     public partial class ContentChannel : Model<ContentChannel>, ICacheable, ICampusFilterable
     {
         #region Entity Properties
@@ -212,6 +213,15 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS )]
         public int? StructuredContentToolValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable personalization].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable personalization]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnablePersonalization { get; set; }
 
         #endregion Entity Properties
 

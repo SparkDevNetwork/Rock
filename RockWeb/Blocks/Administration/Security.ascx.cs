@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Security" )]
     [Category( "Administration" )]
     [Description( "Displays security settings for a specific entity." )]
+    [Rock.SystemGuid.BlockTypeGuid( "20474B3D-0DE7-4B63-B7B9-E042DBEF788C" )]
     public partial class Security : RockBlock
     {
         #region Fields
@@ -78,6 +79,17 @@ namespace RockWeb.Blocks.Administration
             string entityTypeName = string.Empty;
             Type type = null;
 
+            // If we didn't find it by Id, check if it is a Guid and translate.
+            if ( !entityTypeId.HasValue )
+            {
+                var entityTypeGuid = PageParameter( "EntityTypeId" ).AsGuidOrNull();
+
+                if ( entityTypeGuid.HasValue )
+                {
+                    entityTypeId = EntityTypeCache.GetId( entityTypeGuid.Value );
+                }
+            }
+
             // Get Entity Type
             if ( entityTypeId.HasValue )
             {
@@ -89,19 +101,18 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Get Entity Id
-            int entityId = PageParameter( "EntityId" ).AsIntegerOrNull() ?? 0;
-
             // Get object type
             if ( type != null )
             {
-                if ( entityId == 0 )
-                {
-                    iSecured = ( ISecured ) Activator.CreateInstance( type );
-                }
-                else
+                var entityId = PageParameter( "EntityId" );
+                if ( entityId.IsNotNullOrWhiteSpace() && entityId != "0" )
                 {
                     iSecured = Rock.Reflection.GetIEntityForEntityType( type, entityId ) as ISecured;
+                }
+
+                if ( iSecured == null )
+                {
+                    iSecured = ( ISecured ) Activator.CreateInstance( type );
                 }
 
                 var block = iSecured as Rock.Model.Block;

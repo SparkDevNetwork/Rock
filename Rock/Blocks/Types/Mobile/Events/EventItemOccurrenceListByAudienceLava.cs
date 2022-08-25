@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -106,6 +106,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_EVENTITEMOCCURRENCELISTBYAUDIENCELAVA_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "FC2879AC-5967-43E7-8759-6888BF21CE21")]
     public class EventItemOccurrenceListByAudienceLava : RockMobileBlockType
     {
         #region Block Attributes

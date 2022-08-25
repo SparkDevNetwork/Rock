@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// AchievementAttempt View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( AchievementAttempt ) )]
-    public partial class AchievementAttemptViewModelHelper : ViewModelHelper<AchievementAttempt, Rock.ViewModel.AchievementAttemptViewModel>
+    public partial class AchievementAttemptViewModelHelper : ViewModelHelper<AchievementAttempt, AchievementAttemptBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AchievementAttemptViewModel CreateViewModel( AchievementAttempt model, Person currentPerson = null, bool loadAttributes = true )
+        public override AchievementAttemptBag CreateViewModel( AchievementAttempt model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AchievementAttemptViewModel
+            var viewModel = new AchievementAttemptBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AchievementAttemptEndDateTime = model.AchievementAttemptEndDateTime,
                 AchievementAttemptStartDateTime = model.AchievementAttemptStartDateTime,
                 AchievementTypeId = model.AchievementTypeId,
@@ -182,7 +182,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AchievementAttemptViewModel ToViewModel( this AchievementAttempt model, Person currentPerson = null, bool loadAttributes = false )
+        public static AchievementAttemptBag ToViewModel( this AchievementAttempt model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AchievementAttemptViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.SSNFieldType" } )]
     [WorkflowAttribute( "Request Type Attribute", "The attribute that contains the type of background check to submit (Specific to provider).", false, "", "", 3, null)]
     [WorkflowAttribute( "Billing Code Attribute", "The attribute that contains the billing code to use when submitting background check.", false, "", "", 4 )]
+    [Rock.SystemGuid.EntityTypeGuid( "C4DAE3D6-931F-497F-AC00-60BAFA87B758")]
     public class BackgroundCheckRequest : ActionComponent
     {
         /// <summary>

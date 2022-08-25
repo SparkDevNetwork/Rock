@@ -304,7 +304,7 @@ namespace Rock.Mobile
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
-            if ( additionalSettings.IsNull() )
+            if ( additionalSettings == null )
             {
                 throw new Exception( "Invalid or non-existing AdditionalSettings property on site." );
             }
@@ -352,6 +352,14 @@ namespace Rock.Mobile
             var settings = additionalSettings.DownhillSettings;
             settings.Platform = DownhillPlatform.Mobile; // ensure the settings are set to mobile
 
+            // Use this dictionary to include any additional styles in the future that we add and need to parse within the mobile package.
+            var additionalDownhill = new Dictionary<string, string>
+            {
+                ["?color-bar-background"] = additionalSettings.BarBackgroundColor
+            };
+
+            settings.AdditionalCssToParse = additionalDownhill;
+
             var cssStyles = CssUtilities.BuildFramework( settings ); // append custom css but parse it for downhill variables
 
             if ( additionalSettings.CssStyle.IsNotNullOrWhiteSpace() )
@@ -395,6 +403,7 @@ namespace Rock.Mobile
             package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
             package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
+            package.AppearanceSettings.ToastXaml = additionalSettings.ToastXaml;
             package.AppearanceSettings.NavigationBarActionsXaml = additionalSettings.NavigationBarActionXaml;
             package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
@@ -410,6 +419,11 @@ namespace Rock.Mobile
             package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.Light );
             package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
             package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.Brand );
+
+            //
+            // Setup the deep link settings.
+            //
+            package.DeepLinkSettings.DeepLinkRoutes = additionalSettings.DeepLinkRoutes;
 
             if ( site.FavIconBinaryFileId.HasValue )
             {

@@ -22,9 +22,11 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
+
 using Quartz;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -36,9 +38,26 @@ namespace Rock.Jobs
     [DisplayName( "Connection Requests Automation" )]
     [Description( "This job will perform routine operations on active connection requests. This includes processing any configured Status Automation rules that are configured on the Connection Type." )]
 
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (900). If there are SQL Timeout exceptions, this value can be increased.",
+        IsRequired = false,
+        DefaultIntegerValue = 60 * 15,
+        Category = "General",
+        Order = 7 )]
+
     [DisallowConcurrentExecution]
     public class ConnectionRequestsAutomation : IJob
     {
+        /// <summary>
+        /// Keys to use for Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string CommandTimeout = "CommandTimeout";
+        }
+
         #region Constructors
 
         /// <summary>
@@ -54,12 +73,17 @@ namespace Rock.Jobs
 
         #endregion Constructors
 
+        private int commandTimeout;
+
         /// <summary>
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
+
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
             var updatedResults = new ConcurrentBag<int>();
@@ -99,11 +123,26 @@ namespace Rock.Jobs
             var groupViews = new List<GroupView>();
             foreach ( var connectionStatus in connectionTypeView.ConnectionStatuses )
             {
-                foreach ( var connectionStatusAutomation in connectionStatus.ConnectionStatusAutomations )
+                var matchedConnectionRequests = new List<int>();
+                foreach ( var connectionStatusAutomation in connectionStatus.ConnectionStatusAutomations.OrderBy( a => a.Order ).ThenBy( a => a.AutomationName ) )
                 {
                     var rockContext = new RockContext();
+                    rockContext.Database.CommandTimeout = commandTimeout;
+
                     var connectionRequestService = new ConnectionRequestService( rockContext );
-                    var connectionRequestQry = connectionRequestService.Queryable().Include( a => a.AssignedGroup.Members ).Where( a => a.ConnectionStatusId == connectionStatus.Id );
+                    var destinationStatusId = connectionStatusAutomation.DestinationStatusId;
+
+                    // Limit to connection requests that don't already have the same connection status that this automation sets it to
+                    var connectionRequestQry = connectionRequestService.Queryable()
+                        .Where( a => a.ConnectionStatusId == connectionStatus.Id && a.ConnectionStatusId != connectionStatusAutomation.DestinationStatusId )
+                        .Include( a => a.ConnectionOpportunity ).Include( a => a.PersonAlias );
+
+                    if ( connectionStatusAutomation.GroupRequirementsFilter != GroupRequirementsFilter.Ignore )
+                    {
+                        // if we need to process GroupRequirements, include AssignedGroup.Members to avoid some lazy loading.
+                        connectionRequestQry = connectionRequestQry.Include( a => a.AssignedGroup.Members );
+                    }
+
                     if ( connectionStatusAutomation.DataViewId.HasValue )
                     {
                         // Get the dataview configured for the connection request
@@ -116,16 +155,10 @@ namespace Rock.Jobs
                             continue;
                         }
 
-                        // Now we'll filter our connection request query to only include the ones that are in the configured data view.
-                        var dataViewGetQueryArgs = new DataViewGetQueryArgs
-                        {
-                            DbContext = rockContext
-                        };
-
                         IQueryable<ConnectionRequest> dataviewQuery;
                         try
                         {
-                            dataviewQuery = dataview.GetQuery( dataViewGetQueryArgs ) as IQueryable<ConnectionRequest>;
+                            dataviewQuery = connectionRequestService.GetQueryUsingDataView( dataview );
                         }
                         catch ( Exception ex )
                         {
@@ -143,10 +176,23 @@ namespace Rock.Jobs
                         connectionRequestQry = connectionRequestQry.Where( a => dataviewQuery.Any( b => b.Id == a.Id ) );
                     }
 
+                    var connectionRequests = new List<ConnectionRequest>();
+
+                    //if matchedConnectionRequests list is too long, we prevent passing long list to EF rather filter out the matchedConnectionRequest in memory.
+                    if ( matchedConnectionRequests.Count < 100 )
+                    {
+                        //If the matched connection request list is Less than 100, we pass the list to EF and let SQL handle this.
+                        connectionRequests = connectionRequestQry.Where( a => !matchedConnectionRequests.Contains( a.Id ) ).ToList();
+                    }
+                    else
+                    {
+                        //If we have more than 100 matched connection request list, we put the connectionRequestQry into a List then apply the filter to avoid sql exception.
+                        connectionRequests = connectionRequestQry.ToList().Where(a=> !matchedConnectionRequests.Contains( a.Id ) ).ToList();
+                    }
+
                     var eligibleConnectionRequests = new List<ConnectionRequest>();
                     if ( connectionStatusAutomation.GroupRequirementsFilter != GroupRequirementsFilter.Ignore )
                     {
-                        var connectionRequests = connectionRequestQry.ToList();
                         foreach ( var connectionRequest in connectionRequests )
                         {
                             // Group Requirement can't be met when either placement group or placement group role id is missing
@@ -169,18 +215,27 @@ namespace Rock.Jobs
                     }
                     else
                     {
-                        eligibleConnectionRequests = connectionRequestQry.ToList();
+                        eligibleConnectionRequests = connectionRequests;
                     }
 
                     var updatedCount = 0;
                     foreach ( var connectionRequest in eligibleConnectionRequests )
                     {
-                        connectionRequest.ConnectionStatusId = connectionStatusAutomation.DestinationStatusId;
+                        if ( connectionRequest.ConnectionStatusId == connectionStatusAutomation.DestinationStatusId )
+                        {
+                            continue;
+                        }
+
+                        connectionRequest.SetConnectionStatusFromAutomationLoop( connectionStatusAutomation );
+                        matchedConnectionRequests.Add( connectionRequest.Id );
                         updatedCount++;
                     }
 
-                    rockContext.SaveChanges();
-                    updatedResults.Add( updatedCount );
+                    if ( updatedCount > 0 )
+                    {
+                        rockContext.SaveChanges();
+                        updatedResults.Add( updatedCount );
+                    }
                 }
             }
         }
@@ -196,6 +251,7 @@ namespace Rock.Jobs
         private List<ConnectionTypeView> GetConnectionTypeViewsWithOrderedStatuses()
         {
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
             var connectionTypeService = new ConnectionTypeService( rockContext );
 
             var views = connectionTypeService.Queryable().AsNoTracking()

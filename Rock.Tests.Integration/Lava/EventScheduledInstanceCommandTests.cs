@@ -380,7 +380,7 @@ namespace Rock.Tests.Integration.Lava
 {% eventscheduledinstance eventid:'Customs & Classics Car Show' startdate:'2018-4-1' maxoccurrences:1 %}
     {% for item in EventScheduledInstances %}
         Name={{ item.Name }}<br>
-        Date={{item.Date }}<br>
+        Date={{item.Date | Date:'yyyy-MM-dd' }}<br>
         Time={{ item.Time }}<br>
         DateTime={{ item.DateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}
     {% endfor %}
@@ -389,8 +389,8 @@ namespace Rock.Tests.Integration.Lava
 
             var rockTimeOffset = LavaDateTime.ConvertToRockDateTime( new DateTime( 2021, 9, 1, 0, 0, 0, DateTimeKind.Unspecified ) ).ToString( "zzz" );
 
-            var expectedOutput = @"
-Name=Customs & Classics Car Show<br>Date=16/04/2018<br>Time=9:24 AM<br>DateTime=2018-04-16T09:24:13<offset>
+            var expectedOutput = $@"
+Name=Customs & Classics Car Show<br>Date=2018-04-16<br>Time=9:24 AM<br>DateTime=2018-04-16T09:24:13<offset>
 ";
             expectedOutput = expectedOutput.Replace( "<offset>", rockTimeOffset );
 

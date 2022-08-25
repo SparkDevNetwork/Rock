@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -357,6 +357,7 @@ namespace RockWeb.Blocks.Event
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 5 )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.EVENT_REGISTRATION_TEMPLATE_DETAIL )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
         #region Attribute Keys
@@ -1758,12 +1759,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrantFormField_SaveClick( object sender, EventArgs e )
         {
-            var isSaved = FieldSave();
-            if ( !isSaved )
-            {
-                return;
-            }
-
+            FieldSave();
             HideDialog();
             BuildControls( true );
         }
@@ -1771,7 +1767,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <summary>
         /// Saves the form field
         /// </summary>
-        private bool FieldSave()
+        private void FieldSave()
         {
             var formGuid = hfFormGuid.Value.AsGuid();
 
@@ -1811,12 +1807,6 @@ The logged-in person's information will be used to complete the registrar inform
 
                     case RegistrationFieldSource.RegistrantAttribute:
                         {
-                            Page.Validate( edtRegistrantAttribute.ValidationGroup );
-                            if ( !Page.IsValid )
-                            {
-                                return false;
-                            }
-
                             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
                             edtRegistrantAttribute.GetAttributeProperties( attribute );
                             attributeForm.Attribute = attribute;
@@ -1851,8 +1841,6 @@ The logged-in person's information will be used to complete the registrar inform
                     }
                 }
             }
-
-            return true;
         }
 
         /// <summary>
@@ -2322,7 +2310,17 @@ The logged-in person's information will be used to complete the registrar inform
         protected void ddlSignatureDocumentTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
             var selectedTemplate = GetSelectedTemplate();
-            cbDisplayInLine.Visible = selectedTemplate?.IsLegacy != true;
+            var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
+            var isLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy == true;
+
+            cbDisplayInLine.Visible = isLegacySelected;
+            cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
+            cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
+
+            if ( isNonLegacySelected )
+            {
+                cbAllowExternalUpdates.Checked = false;
+            }
         }
 
         #endregion
@@ -2576,6 +2574,10 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="rockContext">The rock context.</param>
         private void ShowEditDetails( RegistrationTemplate registrationTemplate, RockContext rockContext )
         {
+            var signatureDocTemplate = registrationTemplate.RequiredSignatureDocumentTemplate;
+            var isNonLegacySignatureSelected = signatureDocTemplate != null && signatureDocTemplate.IsLegacy != true;
+            var isLegacySignatureSelected = signatureDocTemplate != null && signatureDocTemplate.IsLegacy == true;
+
             if ( registrationTemplate.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( RegistrationTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -2603,6 +2605,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
+            cbDisplayInLine.Visible = isLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
@@ -2617,6 +2620,8 @@ The logged-in person's information will be used to complete the registrar inform
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
+            cbAllowExternalUpdates.Enabled = !isNonLegacySignatureSelected;
+            cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySignatureSelected );
             cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants.ToString();
@@ -2675,6 +2680,20 @@ The logged-in person's information will be used to complete the registrar inform
             var defaultForm = FormState.FirstOrDefault();
             BuildControls( true, defaultForm.Guid );
             BindRegistrationAttributesGrid();
+        }
+
+        /// <summary>
+        /// Gets the help text for the AllowExternalUpdates field based on whether or not it is enabled
+        /// because if it's disabled, we'd like to explain to the user why.
+        /// </summary>
+        private string GetAllowExternalUpdatesHelpText(bool isEnabled)
+        {
+            if (isEnabled)
+            {
+                return "Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will not be allowed to change any of the registrant information and attributes.";
+            }
+
+            return "Updating details of a registration are not allowed when a signature document is used because it could otherwise invalidate the previously signed document.";
         }
 
         /// <summary>
@@ -2846,8 +2865,8 @@ The logged-in person's information will be used to complete the registrar inform
 
                  Normally, we order by Order, but in this particular situation it was decided
                  it would be better to order these by Name in the dropdown list.
-    
-                 Reason: To improve usability. 
+
+                 Reason: To improve usability.
             */
             var groupTypeList = new GroupTypeService( rockContext )
                 .Queryable().AsNoTracking()
@@ -3381,15 +3400,10 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrationAttribute_SaveClick( object sender, EventArgs e )
         {
-            Page.Validate( edtRegistrationAttributes.ValidationGroup );
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
             edtRegistrationAttributes.GetAttributeProperties( attribute );
 
+            // Controls will show warnings
             if ( !attribute.IsValid )
             {
                 return;

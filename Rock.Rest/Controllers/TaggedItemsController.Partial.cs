@@ -30,7 +30,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// TaggedItems REST API
     /// </summary>
-    [RockGuid( "6cdb23b0-f531-4969-937a-f5f9640d7921" )]
     public partial class TaggedItemsController
     {
         /// <summary>
@@ -46,7 +45,7 @@ namespace Rock.Rest.Controllers
         /// <param name="includeInactive">The include inactive.</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        [RockGuid( "38974825-9693-479b-a5b0-29e4fd43a80a" )]
+        [Rock.SystemGuid.RestActionGuid( "38974825-9693-479b-a5b0-29e4fd43a80a" )]
         public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             SetProxyCreation( true );
@@ -108,7 +107,7 @@ namespace Rock.Rest.Controllers
         /// </exception>
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
-        [RockGuid( "d5378184-e340-4745-84c7-d6fdfb5ebd3b" )]
+        [Rock.SystemGuid.RestActionGuid( "D5378184-E340-4745-84C7-D6FDFB5EBD3B" )]
         public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier = null, string entityQualifierValue = null, Guid? categoryGuid = null, bool? includeInactive = null )
         {
             SetProxyCreation( true );

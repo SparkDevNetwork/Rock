@@ -29,7 +29,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// ExceptionLogs REST API
     /// </summary>
-    [RockGuid( "224d50d0-bb26-4512-bcf4-04407a9d84ed" )]
     public partial class ExceptionLogsController
     {
         /// <summary>
@@ -38,7 +37,9 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ExceptionLogs/GetChartData" )]
-        [RockGuid( "403444ae-0267-408a-b9a8-7e5d70aa594f" )]
+        [Rock.SystemGuid.RestActionGuid( "403444AE-0267-408A-B9A8-7E5D70AA594F" )]
+        [RockObsolete( "1.14.0" )]
+        [Obsolete( "This method is no longer used by the Exception List block." )]
         public IEnumerable<IChartData> GetChartData()
         {
             // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it
@@ -83,7 +84,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ExceptionLogs/LogException" )]
         [HttpPost]
-        [RockGuid( "3be0d16f-c372-4483-8a99-d5de9278bd41" )]
+        [Rock.SystemGuid.RestActionGuid( "3BE0D16F-C372-4483-8A99-D5DE9278BD41" )]
         public void LogException( Exception ex )
         {
             var personAlias = this.GetPersonAlias();

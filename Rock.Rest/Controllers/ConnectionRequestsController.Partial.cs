@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,7 +31,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Connection Requests Controller
     /// </summary>
-    [RockGuid( "7973d1c3-799a-4068-8251-7615e5161d87" )]
     public partial class ConnectionRequestsController
     {
         #region Standard Method Overrides
@@ -42,7 +41,6 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
-        [RockGuid( "ef2f05c7-7167-4492-b4ee-db807dbbd14b" )]
         public override void Delete( int id )
         {
             // We need to enable proxy creation so the IsAuthorizedToEdit call works correctly.
@@ -91,7 +89,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ConnectionRequests/GetChildren/{id}" )]
-        [RockGuid( "b69f20c1-e643-48fd-b4c3-387a87e04788" )]
+        [Rock.SystemGuid.RestActionGuid( "B69F20C1-E643-48FD-B4C3-387A87E04788" )]
         public IQueryable<TreeViewItem> GetChildren( string id )
         {
             // Enable proxy creation since child collections need to be navigated
@@ -177,7 +175,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured, HttpGet]
         [System.Web.Http.Route( "api/ConnectionRequests/DoesStatusChangeCauseWorkflows/{connectionOpportunityId}/{fromStatusId}/{toStatusId}" )]
-        [RockGuid( "e97fa5be-d87a-4ba4-b719-c527f8c079e4" )]
+        [Rock.SystemGuid.RestActionGuid( "E97FA5BE-D87A-4BA4-B719-C527F8C079E4" )]
         public WorkflowCheckViewModel DoesStatusChangeCauseWorkflows( int connectionOpportunityId, int fromStatusId, int toStatusId )
         {
             var connectionRequestService = Service as ConnectionRequestService;
@@ -202,7 +200,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ConnectionRequests/ConnectionBoardRequestViewModel/{connectionRequestId}" )]
-        [RockGuid( "c867fecb-0491-438a-ab12-b37c356e3b82" )]
+        [Rock.SystemGuid.RestActionGuid( "C867FECB-0491-438A-AB12-B37C356E3B82" )]
         public ConnectionRequestViewModel GetConnectionBoardStatusViewModel(
             int connectionRequestId,
             int? campusId = null,
@@ -266,7 +264,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException">errorResponse</exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ConnectionRequests/ConnectionBoardStatusViewModels/{connectionOpportunityId}" )]
-        [RockGuid( "8be5dfe1-cc4d-4119-93be-e90302be9d88" )]
+        [Rock.SystemGuid.RestActionGuid( "8BE5DFE1-CC4D-4119-93BE-E90302BE9D88" )]
         public List<ConnectionStatusViewModel> GetConnectionBoardStatusViewModels(
             int connectionOpportunityId,
             int? campusId = null,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberScheduleTemplate" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "D84ED719-B659-433C-BFA0-E798E52C6B24")]
     public class GroupMemberScheduleTemplate : Model<GroupMemberScheduleTemplate>
     {
         #region Entity Properties

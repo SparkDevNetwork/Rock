@@ -139,7 +139,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if [allow checkout default]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowCheckoutDefault => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( false );
+        public bool AllowCheckoutDefault => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK ).AsBoolean( false );
 
         /// <summary>
         /// Gets a value indicating whether [enable presence].
@@ -593,6 +593,48 @@ namespace Rock.CheckIn
             }
 
             /// <summary>
+            /// Gets the display birthdate on adults.
+            /// </summary>
+            /// <value>
+            /// The display birthdate on adults.
+            /// </value>
+            public string DisplayBirthdateOnAdults
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS );
+                }
+            }
+
+            /// <summary>
+            /// Gets the display birthdate on children attribute.
+            /// </summary>
+            /// <value>
+            /// The display birthdate on children attribute.
+            /// </value>
+            public string DisplayBirthdateOnChildren
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN );
+                }
+            }
+
+            /// <summary>
+            /// Gets the display grade on children attribute.
+            /// </summary>
+            /// <value>
+            /// The display grade on children attribute.
+            /// </value>
+            public string DisplayGradeOnChildren
+            {
+                get
+                {
+                    return GetAttributeForAttributeKey( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN );
+                }
+            }
+
+            /// <summary>
             /// Gets a Dictionary of GroupTypeRoleId and Name for the known relationship group type roles that are defined for Registration (where 0 means Child/Adult in Family)
             /// </summary>
             /// <value>
@@ -717,6 +759,16 @@ namespace Rock.CheckIn
             {
                 return _checkinType.GetSetting( groupTypeAttributeKey ).SplitDelimitedValues().AsGuidList().Select( g => AttributeCache.Get( g ) ).Where( a => a != null ).ToList();
             }
+
+            /// <summary>
+            /// Gets the attribute that is specified for the GroupType attribute key.
+            /// </summary>
+            /// <param name="groupTypeAttributeKey">The group type attribute key.</param>
+            /// <returns></returns>
+            private string GetAttributeForAttributeKey( string groupTypeAttributeKey )
+            {
+                return _checkinType.GetSetting( groupTypeAttributeKey );
+            }
         }
 
         #endregion
@@ -798,7 +850,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// The individuals without an ability level will not be asked as part of each check-in.
         /// If the person has an ability level: show the ability selection screen (to possibly change it) and then allow selecting a group that matches the ability level.
-        /// If the person does not have an ability level: Bypass the ability screen then allow selection of a group that has no ability levels. 
+        /// If the person does not have an ability level: Bypass the ability screen then allow selection of a group that has no ability levels.
         /// </summary>
         DoNotAskIfThereIsNoAbilityLevel = 2
     }
@@ -824,5 +876,26 @@ namespace Rock.CheckIn
         /// Place the success template content under the existing content
         /// </summary>
         Append = 2
+    }
+
+    /// <summary>
+    /// Determines how controls are displayed in the block.
+    /// </summary>
+    public static class ControlOptions
+    {
+        /// <summary>
+        /// Hides the field from being displayed.
+        /// </summary>
+        public const string HIDE = "Hide";
+
+        /// <summary>
+        /// The field is display and the value is optional.
+        /// </summary>
+        public const string OPTIONAL = "Optional";
+
+        /// <summary>
+        /// The field is displayed and the value is required.
+        /// </summary>
+        public const string REQUIRED = "Required";
     }
 }

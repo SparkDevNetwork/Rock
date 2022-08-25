@@ -116,6 +116,10 @@ namespace Rock.Slingshot
             BulkImporter.SlingshotLogFile = this.SlingshotLogFile;
         }
 
+        protected SlingshotImporter()
+        {
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [use sample photos].
         /// </summary>
@@ -262,9 +266,9 @@ namespace Rock.Slingshot
         public List<SlingshotCore.Model.BusinessAttribute> SlingshotBusinessAttributes { get; private set; }
 
         // Class Functionality Properties
-        private string SlingshotFileName { get; set; }
+        protected string SlingshotFileName { get; set; }
 
-        public string SlingshotLogFile { get; private set; }
+        public string SlingshotLogFile { get; protected set; }
 
         /// <summary>
         /// Gets or sets the foreign system key.
@@ -272,7 +276,7 @@ namespace Rock.Slingshot
         /// <value>
         /// The foreign system key.
         /// </value>
-        private string ForeignSystemKey { get; set; }
+        protected string ForeignSystemKey { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the slingshot directory.
@@ -280,7 +284,7 @@ namespace Rock.Slingshot
         /// <value>
         /// The name of the slingshot directory.
         /// </value>
-        private string SlingshotDirectoryName { get; set; }
+        protected string SlingshotDirectoryName { get; set; }
 
         /// <summary>
         /// Gets or sets list of Images found in *.images.slingshot folders
@@ -353,7 +357,7 @@ namespace Rock.Slingshot
         /// <value>
         /// The bulk importer.
         /// </value>
-        private BulkImporter BulkImporter { get; set; }
+        protected BulkImporter BulkImporter { get; set; }
 
         /// <summary>
         /// Does the import.
@@ -766,7 +770,8 @@ namespace Rock.Slingshot
             {
                 if ( !noteTypeLookup.ContainsKey( noteTypeName ) )
                 {
-                    var newNoteType = BulkImporter.ConvertModelWithLogging<NoteType>( noteTypeName, () => {
+                    var newNoteType = BulkImporter.ConvertModelWithLogging<NoteType>( noteTypeName, () =>
+                    {
                         return new NoteType
                         {
                             IsSystem = false,
@@ -777,7 +782,7 @@ namespace Rock.Slingshot
                             UserSelectable = true,
                             IconCssClass = string.Empty
                         };
-                    } ) ;
+                    } );
 
                     noteTypeService.Add( newNoteType );
                     rockContext.SaveChanges();
@@ -788,7 +793,8 @@ namespace Rock.Slingshot
 
             foreach ( var slingshotEntityNote in slingshotEntityNoteList )
             {
-                var newNoteImport = BulkImporter.ConvertModelWithLogging<Model.NoteImport>( slingshotEntityNote, () => {
+                var newNoteImport = BulkImporter.ConvertModelWithLogging<Model.NoteImport>( slingshotEntityNote, () =>
+                {
                     var noteImport = new Model.NoteImport()
                     {
                         NoteForeignId = slingshotEntityNote.Id,
@@ -838,7 +844,8 @@ namespace Rock.Slingshot
             var financialPledgeImportList = new List<Model.FinancialPledgeImport>();
             foreach ( var slingshotFinancialPledge in this.SlingshotFinancialPledgeList )
             {
-                var newFinancialPledge = BulkImporter.ConvertModelWithLogging( slingshotFinancialPledge, () => {
+                var newFinancialPledge = BulkImporter.ConvertModelWithLogging( slingshotFinancialPledge, () =>
+                {
                     var financialPledgeImport = new Model.FinancialPledgeImport()
                     {
                         FinancialPledgeForeignId = slingshotFinancialPledge.Id,
@@ -913,7 +920,8 @@ namespace Rock.Slingshot
             {
                 int? parentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? null : slingshotFinancialAccount.ParentAccountId;
 
-                var newFinancialAccount = BulkImporter.ConvertModelWithLogging<Model.FinancialAccountImport>( slingshotFinancialAccount, () => {
+                var newFinancialAccount = BulkImporter.ConvertModelWithLogging<Model.FinancialAccountImport>( slingshotFinancialAccount, () =>
+                {
                     var financialAccountImport = new Model.FinancialAccountImport()
                     {
                         FinancialAccountForeignId = slingshotFinancialAccount.Id,
@@ -927,9 +935,9 @@ namespace Rock.Slingshot
                         financialAccountImport.Name = "Unnamed Financial Account";
                     }
 
-                    if ( slingshotFinancialAccount.CampusId.HasValue )
+                    if ( slingshotFinancialAccount.CampusId.HasValue && this.CampusLookupByForeignId.ContainsKey( slingshotFinancialAccount.CampusId.Value ) )
                     {
-                        financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
+                        financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value].Id;
                     }
 
                     return financialAccountImport;
@@ -952,7 +960,8 @@ namespace Rock.Slingshot
             var financialBatchImportList = new List<Model.FinancialBatchImport>();
             foreach ( var slingshotFinancialBatch in this.SlingshotFinancialBatchList )
             {
-                int? campusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : null;
+                var campusIdHasValue = ( slingshotFinancialBatch.CampusId.HasValue && this.CampusLookupByForeignId.ContainsKey( slingshotFinancialBatch.CampusId.Value ) );
+                int? campusId = campusIdHasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : null;
                 var newFinancialBatchImport = BulkImporter.ConvertModelWithLogging<Model.FinancialBatchImport>( slingshotFinancialBatch, () => {
                     var financialBatchImport = new Model.FinancialBatchImport()
                     {
@@ -1009,7 +1018,8 @@ namespace Rock.Slingshot
             foreach ( var slingshotFinancialTransaction in this.SlingshotFinancialTransactionList )
             {
                 bool skipImport = false;
-                var newFinancialTransaction = BulkImporter.ConvertModelWithLogging<Model.FinancialTransactionImport>( slingshotFinancialTransaction, () => {
+                var newFinancialTransaction = BulkImporter.ConvertModelWithLogging<Model.FinancialTransactionImport>( slingshotFinancialTransaction, () =>
+                {
                     var financialTransactionImport = new Model.FinancialTransactionImport()
                     {
                         FinancialTransactionForeignId = slingshotFinancialTransaction.Id,
@@ -1100,7 +1110,8 @@ namespace Rock.Slingshot
 
                     foreach ( var slingshotFinancialTransactionDetail in slingshotFinancialTransaction.FinancialTransactionDetails )
                     {
-                        var newFinancialTransactionDetail = BulkImporter.ConvertModelWithLogging<Model.FinancialTransactionDetailImport>( slingshotFinancialTransactionDetail, () => {
+                        var newFinancialTransactionDetail = BulkImporter.ConvertModelWithLogging<Model.FinancialTransactionDetailImport>( slingshotFinancialTransactionDetail, () =>
+                        {
                             var financialTransactionDetailImport = new Model.FinancialTransactionDetailImport()
                             {
                                 FinancialAccountForeignId = slingshotFinancialTransactionDetail.AccountId,
@@ -1190,7 +1201,8 @@ namespace Rock.Slingshot
             HashSet<int> attendanceIds = new HashSet<int>();
             foreach ( var slingshotAttendance in this.SlingshotAttendanceList )
             {
-                var newAttendance = BulkImporter.ConvertModelWithLogging<Model.AttendanceImport>( slingshotAttendance, () => {
+                var newAttendance = BulkImporter.ConvertModelWithLogging<Model.AttendanceImport>( slingshotAttendance, () =>
+                {
                     var attendanceImport = new Model.AttendanceImport()
                     {
                         PersonForeignId = slingshotAttendance.PersonId,
@@ -1225,13 +1237,13 @@ namespace Rock.Slingshot
                         System.Diagnostics.Debug.WriteLine( $"#### Duplicate AttendanceId detected:{attendanceImport.AttendanceForeignId.Value} ####" );
                     }
 
-                    if ( slingshotAttendance.CampusId.HasValue )
+                    if ( slingshotAttendance.CampusId.HasValue && this.CampusLookupByForeignId.ContainsKey( slingshotAttendance.CampusId.Value ) )
                     {
-                        attendanceImport.CampusId = this.CampusLookupByForeignId[slingshotAttendance.CampusId.Value]?.Id;
+                        attendanceImport.CampusId = this.CampusLookupByForeignId[slingshotAttendance.CampusId.Value].Id;
                     }
 
                     return attendanceImport;
-                    } );
+                } );
                 attendanceImportList.Add( newAttendance );
             }
 
@@ -1250,7 +1262,8 @@ namespace Rock.Slingshot
             var scheduleImportList = new List<Model.ScheduleImport>();
             foreach ( var slingshotSchedule in this.SlingshotScheduleList )
             {
-                var newSchedule = BulkImporter.ConvertModelWithLogging<Model.ScheduleImport>( slingshotSchedule, () => {
+                var newSchedule = BulkImporter.ConvertModelWithLogging<Model.ScheduleImport>( slingshotSchedule, () =>
+                {
                     return new Model.ScheduleImport()
                     {
                         ScheduleForeignId = slingshotSchedule.Id,
@@ -1274,7 +1287,8 @@ namespace Rock.Slingshot
             var locationImportList = new List<Model.LocationImport>();
             foreach ( var slingshotLocation in this.SlingshotLocationList )
             {
-                var newLocation = BulkImporter.ConvertModelWithLogging<Model.LocationImport>( slingshotLocation, () => {
+                var newLocation = BulkImporter.ConvertModelWithLogging<Model.LocationImport>( slingshotLocation, () =>
+                {
                     return new Model.LocationImport()
                     {
                         LocationForeignId = slingshotLocation.Id,
@@ -1310,7 +1324,8 @@ namespace Rock.Slingshot
 
             foreach ( var slingshotGroup in this.SlingshotGroupList )
             {
-                var newGroup = BulkImporter.ConvertModelWithLogging<Model.GroupImport>( slingshotGroup, () => {
+                var newGroup = BulkImporter.ConvertModelWithLogging<Model.GroupImport>( slingshotGroup, () =>
+                {
                     var parentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? ( int? ) null : slingshotGroup.ParentGroupId;
 
                     var slingshotGroupName = slingshotGroup.Name;
@@ -1344,7 +1359,10 @@ namespace Rock.Slingshot
 
                     if ( slingshotGroup.CampusId.HasValue )
                     {
-                        groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
+                        if ( this.CampusLookupByForeignId.ContainsKey( slingshotGroup.CampusId.Value ) )
+                        {
+                            groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value].Id;
+                        }
                     }
 
                     // Group Members
@@ -1352,7 +1370,8 @@ namespace Rock.Slingshot
                     {
                         if ( !groupImport.GroupMemberImports.Any( gm => gm.PersonForeignId == groupMember.PersonId && gm.RoleName == groupMember.Role ) )
                         {
-                            var newGroupMember = BulkImporter.ConvertModelWithLogging<Model.GroupMemberImport>( groupMember, () => {
+                            var newGroupMember = BulkImporter.ConvertModelWithLogging<Model.GroupMemberImport>( groupMember, () =>
+                            {
                                 return new Model.GroupMemberImport()
                                 {
                                     PersonForeignId = groupMember.PersonId,
@@ -1393,7 +1412,8 @@ namespace Rock.Slingshot
 
                         if ( groupLocationTypeValueId.HasValue )
                         {
-                            var newGroupAddress = BulkImporter.ConvertModelWithLogging<Model.GroupAddressImport>( slingshotGroupAddress, () => {
+                            var newGroupAddress = BulkImporter.ConvertModelWithLogging<Model.GroupAddressImport>( slingshotGroupAddress, () =>
+                            {
                                 return new Model.GroupAddressImport()
                                 {
                                     GroupLocationTypeValueId = groupLocationTypeValueId.Value,
@@ -1422,8 +1442,11 @@ namespace Rock.Slingshot
                     groupImport.AttributeValues = new List<Model.AttributeValueImport>();
                     foreach ( var slingshotGroupAttributeValue in slingshotGroup.Attributes )
                     {
-                        int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
-                        groupImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotGroupAttributeValue.AttributeValue ) );
+                        if ( this.GroupAttributeKeyLookup.ContainsKey( slingshotGroupAttributeValue.AttributeKey ) )
+                        {
+                            int attributeId = this.GroupAttributeKeyLookup[slingshotGroupAttributeValue.AttributeKey].Id;
+                            groupImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotGroupAttributeValue.AttributeValue ) );
+                        }
                     }
 
                     return groupImport;
@@ -1510,7 +1533,8 @@ namespace Rock.Slingshot
             foreach ( var slingshotBusiness in this.SlingshotBusinessList )
             {
                 importCounter++;
-                var newBusiness = BulkImporter.ConvertModelWithLogging<Model.PersonImport>( slingshotBusiness, () => {
+                var newBusiness = BulkImporter.ConvertModelWithLogging<Model.PersonImport>( slingshotBusiness, () =>
+                {
                     var businessImport = new Model.PersonImport()
                     {
                         RecordTypeValueId = this.PersonRecordTypeValues[SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid()].Id,
@@ -1544,9 +1568,9 @@ namespace Rock.Slingshot
                         throw new Exception( "personImport.FamilyForeignId must be greater than 0 or null" );
                     }
 
-                    if ( ( slingshotBusiness.Campus?.CampusId ?? 0 ) != 0 )
+                    if ( ( slingshotBusiness.Campus?.CampusId ?? 0 ) != 0 && this.CampusLookupByForeignId.ContainsKey( slingshotBusiness.Campus.CampusId ) )
                     {
-                        businessImport.CampusId = this.CampusLookupByForeignId[slingshotBusiness.Campus.CampusId]?.Id;
+                        businessImport.CampusId = this.CampusLookupByForeignId[slingshotBusiness.Campus.CampusId].Id;
                     }
 
                     switch ( slingshotBusiness.RecordStatus )
@@ -1590,7 +1614,8 @@ namespace Rock.Slingshot
                             continue;
                         }
 
-                        var newBusinessPhone = BulkImporter.ConvertModelWithLogging<Model.PhoneNumberImport>( slingshotBusinessPhone, () => {
+                        var newBusinessPhone = BulkImporter.ConvertModelWithLogging<Model.PhoneNumberImport>( slingshotBusinessPhone, () =>
+                        {
                             return new Model.PhoneNumberImport()
                             {
                                 NumberTypeValueId = this.PhoneNumberTypeValues[slingshotBusinessPhone.PhoneType].Id,
@@ -1631,7 +1656,8 @@ namespace Rock.Slingshot
 
                         if ( groupLocationTypeValueId.HasValue )
                         {
-                            var newBusinessAddress = BulkImporter.ConvertModelWithLogging<Model.PersonAddressImport>( slingshotBusinessAddress, () => {
+                            var newBusinessAddress = BulkImporter.ConvertModelWithLogging<Model.PersonAddressImport>( slingshotBusinessAddress, () =>
+                            {
                                 return new Model.PersonAddressImport()
                                 {
                                     GroupLocationTypeValueId = groupLocationTypeValueId.Value,
@@ -1659,8 +1685,11 @@ namespace Rock.Slingshot
                     // Attribute Values
                     foreach ( var slingshotBusinessAttributeValue in slingshotBusiness.Attributes )
                     {
-                        int attributeId = this.PersonAttributeKeyLookup[slingshotBusinessAttributeValue.AttributeKey].Id;
-                        businessImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotBusinessAttributeValue.AttributeValue ) );
+                        if ( this.PersonAttributeKeyLookup.ContainsKey( slingshotBusinessAttributeValue.AttributeKey ) )
+                        {
+                            int attributeId = this.PersonAttributeKeyLookup[slingshotBusinessAttributeValue.AttributeKey].Id;
+                            businessImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotBusinessAttributeValue.AttributeValue ) );
+                        }
                     }
 
                     return businessImport;
@@ -1731,7 +1760,7 @@ namespace Rock.Slingshot
         /// Bulks the importer on progress.
         /// </summary>
         /// <param name="e">The e.</param>
-        private void BulkImporter_OnProgress( string e )
+        protected void BulkImporter_OnProgress( string e )
         {
             ReportProgress( 0, e );
         }
@@ -1760,7 +1789,8 @@ namespace Rock.Slingshot
 
             foreach ( var slingshotPerson in this.SlingshotPersonList )
             {
-                var newPerson = BulkImporter.ConvertModelWithLogging<Model.PersonImport>( slingshotPerson, () => {
+                var newPerson = BulkImporter.ConvertModelWithLogging<Model.PersonImport>( slingshotPerson, () =>
+                {
                     var personImport = new Model.PersonImport()
                     {
                         RecordTypeValueId = this.PersonRecordTypeValues[SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid()].Id,
@@ -1808,9 +1838,9 @@ namespace Rock.Slingshot
                             break;
                     }
 
-                    if ( ( slingshotPerson.Campus?.CampusId ?? 0 ) != 0 )
+                    if ( ( slingshotPerson.Campus?.CampusId ?? 0 ) != 0 && this.CampusLookupByForeignId.ContainsKey( slingshotPerson.Campus.CampusId ) )
                     {
-                        personImport.CampusId = this.CampusLookupByForeignId[slingshotPerson.Campus.CampusId]?.Id;
+                        personImport.CampusId = this.CampusLookupByForeignId[slingshotPerson.Campus.CampusId].Id;
                     }
 
                     switch ( slingshotPerson.RecordStatus )
@@ -1937,12 +1967,13 @@ namespace Rock.Slingshot
                     personImport.PersonSearchKeys = new List<Model.PersonSearchKeyImport>();
                     foreach ( var slingshotPersonSearchKey in slingshotPerson.PersonSearchKeys )
                     {
-                        var newPersonSearchKeyImport = BulkImporter.ConvertModelWithLogging<Model.PersonSearchKeyImport>( slingshotPersonSearchKey, () => {
+                        var newPersonSearchKeyImport = BulkImporter.ConvertModelWithLogging<Model.PersonSearchKeyImport>( slingshotPersonSearchKey, () =>
+                        {
                             return new Model.PersonSearchKeyImport
                             {
                                 SearchValue = slingshotPersonSearchKey.SearchValue
                             };
-                        } ) ;
+                        } );
                         personImport.PersonSearchKeys.Add( newPersonSearchKeyImport );
                     }
 
@@ -1957,7 +1988,8 @@ namespace Rock.Slingshot
                             continue;
                         }
 
-                        var newPersonPhone = BulkImporter.ConvertModelWithLogging<Model.PhoneNumberImport>( slingshotPersonPhone, () => {
+                        var newPersonPhone = BulkImporter.ConvertModelWithLogging<Model.PhoneNumberImport>( slingshotPersonPhone, () =>
+                        {
                             return new Model.PhoneNumberImport()
                             {
                                 NumberTypeValueId = this.PhoneNumberTypeValues[slingshotPersonPhone.PhoneType].Id,
@@ -1992,13 +2024,14 @@ namespace Rock.Slingshot
                                 break;
 
                             case SlingshotCore.Model.AddressType.Other:
-                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid()].Id;
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid()].Id;
                                 break;
                         }
 
                         if ( groupLocationTypeValueId.HasValue )
                         {
-                            var newPersonAddress = BulkImporter.ConvertModelWithLogging<Model.PersonAddressImport>( slingshotPersonAddress, () => {
+                            var newPersonAddress = BulkImporter.ConvertModelWithLogging<Model.PersonAddressImport>( slingshotPersonAddress, () =>
+                            {
                                 return new Model.PersonAddressImport()
                                 {
                                     GroupLocationTypeValueId = groupLocationTypeValueId.Value,
@@ -2026,8 +2059,11 @@ namespace Rock.Slingshot
                     // Attribute Values
                     foreach ( var slingshotPersonAttributeValue in slingshotPerson.Attributes )
                     {
-                        int attributeId = this.PersonAttributeKeyLookup[slingshotPersonAttributeValue.AttributeKey].Id;
-                        personImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotPersonAttributeValue.AttributeValue ) );
+                        if ( this.PersonAttributeKeyLookup.ContainsKey( slingshotPersonAttributeValue.AttributeKey ) )
+                        {
+                            int attributeId = this.PersonAttributeKeyLookup[slingshotPersonAttributeValue.AttributeKey].Id;
+                            personImport.AttributeValues.Add( CreateAttributeValueImport( attributeId, slingshotPersonAttributeValue.AttributeValue ) );
+                        }
                     }
 
                     return personImport;
@@ -2065,7 +2101,8 @@ namespace Rock.Slingshot
 
             foreach ( var importCampus in importCampuses.Where( a => !CampusCache.All().Any( c => c.ForeignId == a.CampusId && c.ForeignKey == this.ForeignSystemKey ) ) )
             {
-                var newCampus = BulkImporter.ConvertModelWithLogging<Campus>( importCampus, () => {
+                var newCampus = BulkImporter.ConvertModelWithLogging<Campus>( importCampus, () =>
+                {
                     var campusToAdd = new Campus()
                     {
                         ForeignId = importCampus.CampusId,
@@ -2082,7 +2119,7 @@ namespace Rock.Slingshot
 
                     return campusToAdd;
                 } );
- 
+
                 usedCampusNames.Add( newCampus.Name );
                 campusService.Add( newCampus );
                 rockContext.SaveChanges();
@@ -2102,7 +2139,8 @@ namespace Rock.Slingshot
 
             foreach ( var importGroupType in this.SlingshotGroupTypeList.Where( a => !this.GroupTypeLookupByForeignId.ContainsKey( a.Id ) ) )
             {
-                var newGroupType = BulkImporter.ConvertModelWithLogging<GroupType>( importGroupType, () => {
+                var newGroupType = BulkImporter.ConvertModelWithLogging<GroupType>( importGroupType, () =>
+                {
                     return new GroupType()
                     {
                         ForeignId = importGroupType.Id,
@@ -2114,7 +2152,7 @@ namespace Rock.Slingshot
                         GroupTerm = "Group",
                         GroupMemberTerm = "Member"
                     };
-                } ) ;
+                } );
 
                 groupTypeService.Add( newGroupType );
             }
@@ -2181,7 +2219,8 @@ namespace Rock.Slingshot
 
                 if ( !this.PersonAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotPersonAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
                 {
-                    var newPersonAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotPersonAttribute, () => {
+                    var newPersonAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotPersonAttribute, () =>
+                    {
                         var rockPersonAttribute = new Rock.Model.Attribute()
                         {
                             Key = slingshotPersonAttribute.Key,
@@ -2232,7 +2271,8 @@ namespace Rock.Slingshot
 
                 if ( !this.PersonAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotBusinessAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
                 {
-                    var newBusinessAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotBusinessAttribute, () => {
+                    var newBusinessAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotBusinessAttribute, () =>
+                    {
                         var rockBusinessAttribute = new Rock.Model.Attribute()
                         {
                             Key = slingshotBusinessAttribute.Key,
@@ -2254,7 +2294,7 @@ namespace Rock.Slingshot
                         }
 
                         return rockBusinessAttribute;
-                    } ) ;
+                    } );
 
                     attributeService.Add( newBusinessAttribute );
                 }
@@ -2284,7 +2324,8 @@ namespace Rock.Slingshot
 
                 if ( !this.FamilyAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotFamilyAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
                 {
-                    var newFamilyAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotFamilyAttribute, () => {
+                    var newFamilyAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotFamilyAttribute, () =>
+                    {
                         var rockFamilyAttribute = new Rock.Model.Attribute()
                         {
                             Key = slingshotFamilyAttribute.Key,
@@ -2306,7 +2347,7 @@ namespace Rock.Slingshot
                         }
 
                         return rockFamilyAttribute;
-                    } ) ;
+                    } );
 
                     attributeService.Add( newFamilyAttribute );
                 }
@@ -2334,7 +2375,8 @@ namespace Rock.Slingshot
 
                 if ( !this.GroupAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotGroupAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
                 {
-                    var newGroupAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotGroupAttribute, () => {
+                    var newGroupAttribute = BulkImporter.ConvertModelWithLogging<Rock.Model.Attribute>( slingshotGroupAttribute, () =>
+                    {
                         // the group attribute category targets the grouptype
                         var rockGroupAttribute = new Rock.Model.Attribute()
                         {
@@ -2357,7 +2399,7 @@ namespace Rock.Slingshot
                         }
 
                         return rockGroupAttribute;
-                    } ) ;
+                    } );
 
                     attributeService.Add( newGroupAttribute );
                 }
@@ -2518,6 +2560,11 @@ namespace Rock.Slingshot
             var slingshotFinancialTransactionLookup = this.SlingshotFinancialTransactionList.ToDictionary( k => k.Id, v => v );
             foreach ( var slingshotFinancialTransactionDetail in slingshotFinancialTransactionDetailList )
             {
+                if ( !slingshotFinancialTransactionLookup.ContainsKey( slingshotFinancialTransactionDetail.TransactionId ) )
+                {
+                    throw new Exception( $"Transaction import error:  Unable to import orphaned transaction details with transaction id {slingshotFinancialTransactionDetail.TransactionId}." );
+                }
+
                 slingshotFinancialTransactionLookup[slingshotFinancialTransactionDetail.TransactionId].FinancialTransactionDetails.Add( slingshotFinancialTransactionDetail );
             }
 
@@ -2880,7 +2927,6 @@ namespace Rock.Slingshot
                 Description = description
             };
         }
-
     }
 
     #region Dictionary Extensions Helper Class

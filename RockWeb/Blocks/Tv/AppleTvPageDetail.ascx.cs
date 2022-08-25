@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Tv
     #region Block Attributes
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "23CA8858-6D02-48A8-92C4-CE415DAB41B6" )]
     public partial class AppleTvPageDetail : Rock.Web.UI.RockBlock
     {
 
@@ -58,7 +59,7 @@ namespace RockWeb.Blocks.Tv
         private static class PageParameterKey
         {
             public const string SiteId = "SiteId";
-            public const string SitePageId = "SitePageId";
+            public const string PageId = "PageId";
         }
 
         #endregion PageParameterKeys
@@ -111,10 +112,16 @@ namespace RockWeb.Blocks.Tv
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? pageId = PageParameter( pageReference, PageParameterKey.SitePageId ).AsIntegerOrNull();
+            int? pageId = PageParameter( pageReference, PageParameterKey.PageId ).AsIntegerOrNull();
 
             if ( pageId != null )
             {
+                var detailBreadCrumb = pageReference.BreadCrumbs.FirstOrDefault( x => x.Name == "Application Screen Detail" );
+                if ( detailBreadCrumb != null )
+                {
+                    pageReference.BreadCrumbs.Remove( detailBreadCrumb );
+                }
+
                 var page = PageCache.Get( pageId.Value );
 
                 if ( page != null )
@@ -196,7 +203,7 @@ namespace RockWeb.Blocks.Tv
         private void SavePage()
         {
             var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
-            var pageId = PageParameter( PageParameterKey.SitePageId ).AsInteger();
+            var pageId = PageParameter( PageParameterKey.PageId ).AsInteger();
 
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
@@ -205,7 +212,7 @@ namespace RockWeb.Blocks.Tv
             var site = SiteCache.Get( applicationId );
 
             // Site is new so create one
-            if ( page.IsNull() )
+            if ( page == null )
             {
                 page = new Rock.Model.Page();
                 pageService.Add( page );
@@ -246,13 +253,13 @@ namespace RockWeb.Blocks.Tv
         private void ShowEdit()
         {
             var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
-            var pageId = PageParameter( PageParameterKey.SitePageId ).AsInteger();
+            var pageId = PageParameter( PageParameterKey.PageId ).AsInteger();
 
             if ( pageId != 0 )
             {
                 var page = new PageService( new RockContext() ).Get( pageId );
 
-                if ( page.IsNotNull() )
+                if ( page != null )
                 {
                     tbDescription.Text = page.Description;
 

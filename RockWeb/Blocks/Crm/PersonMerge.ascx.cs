@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.Crm
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "9B274A75-1D9B-4533-9849-7892F10A7672" )]
     public partial class PersonMerge : Rock.Web.UI.RockBlock
     {
         #region Security Actions

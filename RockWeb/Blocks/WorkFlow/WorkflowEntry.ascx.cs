@@ -97,17 +97,18 @@ namespace RockWeb.Blocks.WorkFlow
     [BooleanField(
         "Log Interaction when Form is Viewed",
         Key = AttributeKey.LogInteractionOnView,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 6 )]
 
     [BooleanField(
         "Log Interaction when Form is Completed",
         Key = AttributeKey.LogInteractionOnCompletion,
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 7 )]
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY )]
     public partial class WorkflowEntry : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Attribute Keys
@@ -146,7 +147,10 @@ namespace RockWeb.Blocks.WorkFlow
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
-            public const string CampusId = "CampusId";
+
+            // NOTE that the actual parameter for CampusId and CampusGuid is just 'Campus', but making them different internally to make it clearer
+            public const string CampusId = "Campus";
+            public const string CampusGuid = "Campus";
         }
 
         #endregion PageParameter Keys
@@ -359,12 +363,36 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
-            using ( var personEntryRockContext = new RockContext() )
+            /* 
+                05/18/2022 MDP
+
+                Update on the 04/27/2022 note. After discussing with Product team,
+                the intended behavior is that *none* of the form values should save
+                if the button doesn't do validation.  It was sort of a bug that it used to do that.
+
+                04/27/2022 CWR
+
+                The only Form Action that should not get PersonEntry values is "Cancel",
+                but to avoid a string comparison, we will check the Action's "Causes Validation".
+                "Cancel" should be the only Form Action that does not cause validation.
+                If the Form Action exists, complete the Form Action, regardless of the Form Action validation.
+            
+            */
+            var formUserActions = WorkflowActionFormUserAction.FromUriEncodedString( _actionType.WorkflowForm.Actions );
+            var formUserAction = formUserActions.FirstOrDefault( x => x.ActionName == eventArgument );
+
+            if ( formUserAction != null && formUserAction.CausesValidation )
             {
-                GetWorkflowFormPersonEntryValues( personEntryRockContext );
+                // Only save the User Form values to the database if the form is getting validated. In other words,
+                // if the intent is to cancel, don't keep any of the form person values or any other form values.
+                using ( var personEntryRockContext = new RockContext() )
+                {
+                    GetWorkflowFormPersonEntryValues( personEntryRockContext );
+                }
+
+                SetWorkflowFormAttributeValues();
             }
 
-            SetWorkflowFormAttributeValues();
             CompleteFormAction( eventArgument );
         }
 
@@ -747,7 +775,7 @@ namespace RockWeb.Blocks.WorkFlow
                     WorkflowTypeDeterminedByBlockAttribute = true;
                 }
 
-                if ( _workflowType.IsNull() )
+                if ( _workflowType == null )
                 {
                     // If an attribute value was not provided, check for query parameter or route value.
                     WorkflowTypeDeterminedByBlockAttribute = false;
@@ -761,7 +789,7 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
 
-                    if ( _workflowType.IsNull() )
+                    if ( _workflowType == null )
                     {
                         // If the workflowType is still not set, try to find a WorkflowTypeGuid from either the query or route, via the PageParameter.
                         var workflowTypeGuidFromURL = PageParameter( PageParameterKey.WorkflowTypeGuid ).AsGuid();
@@ -775,10 +803,10 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             // If the ViewState WorkflowTypeGuid is still empty
-            if ( WorkflowTypeGuid.IsNull() )
+            if ( WorkflowTypeGuid == null )
             {
                 // If the workflowType is not set, set the ViewState WorkflowTypeGuid to empty, otherwise set it to the Guid of the workflowType.
-                WorkflowTypeGuid = _workflowType.IsNull() ? string.Empty : _workflowType.Guid.ToString();
+                WorkflowTypeGuid = _workflowType == null ? string.Empty : _workflowType.Guid.ToString();
             }
             else
             {
@@ -1542,17 +1570,17 @@ namespace RockWeb.Blocks.WorkFlow
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 
                     /* 2020-11-16 MDP
-                     *  It is possible that the Spouse label could be something other than spouse. So, we won't prevent them 
+                     *  It is possible that the Spouse label could be something other than spouse. So, we won't prevent them
                      *  from changing the Marital status on the two people. However, this should be considered a mis-use of this feature.
-                     *  Unexpected things could happen. 
-                     *  
+                     *  Unexpected things could happen.
+                     *
                      *  Example of what would happen if 'Daughter' was the label for 'Spouse':
                      *  Ted Decker is Person1, and Cindy Decker gets auto-filled as Person2. but since the label is 'Daughter', he changes
                      *  Cindy's information to Alex Decker's information, then sets Marital status to Single.
-                     *  
+                     *
                      *  This would result in Ted Decker no longer having Cindy as his spouse (and vice-versa). This was discussed on 2020-11-13
                      *  and it was decided we shouldn't do anything to prevent this type of problem.
-                     
+
                      */
                     personEntryPersonSpouse.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
                     personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
@@ -2009,6 +2037,10 @@ namespace RockWeb.Blocks.WorkFlow
 
             var responseText = responseTextTemplate.ResolveMergeFields( mergeFields );
 
+            /* 05/18/2022
+             * As of Version 14.0, Form Builder doesn't have a Cancel button. But if it does eventually
+             * get one, we'll need to review this logic to make sure it doesn't the right thing
+            */
             var workflowCampusSetFrom = workflowType?.FormBuilderSettings?.CampusSetFrom;
             switch ( workflowCampusSetFrom )
             {
@@ -2016,30 +2048,40 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         _workflow.CampusId = this.CurrentPerson?.PrimaryCampusId;
                     }
+
                     break;
                 case CampusSetFrom.WorkflowPerson:
                     {
                         Person personEntryPerson;
                         Person personEntrySpouse;
                         _action.GetPersonEntryPeople( new RockContext(), CurrentPersonId, out personEntryPerson, out personEntrySpouse );
-                        if (personEntryPerson != null)
+                        if ( personEntryPerson != null )
                         {
                             _workflow.CampusId = personEntryPerson.PrimaryCampusId;
                         }
                     }
-                    break;
-                case CampusSetFrom.QueryString:
-                    {
-                        _workflow.CampusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
-                    }
+
                     break;
                 default:
+                    {
+                        var campusIdFromUrl = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+                        var campusGuidFromUrl = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
+                        if ( campusIdFromUrl.HasValue )
+                        {
+                            _workflow.CampusId = campusIdFromUrl;
+                        }
+                        else if ( campusGuidFromUrl.HasValue )
+                        {
+                            _workflow.CampusId = CampusCache.GetId( campusGuidFromUrl.Value );
+                        }
+                    }
+
                     break;
             }
 
             if ( workflowType.IsPersisted == false && workflowType.IsFormBuilder )
             {
-                /* 3/14/2022 MP 
+                /* 3/14/2022 MP
                  If this is a FormBuilder workflow, the WorkflowType probably has _workflowType.IsPersisted == false.
                  This is because we don't want to persist the workflow until they have submitted.
                  So, in the case of FormBuilder, we'll persist when they submit regardless of the _workflowType.IsPersisted setting
@@ -2203,6 +2245,10 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( notificationEmailSettings != null )
                 {
+                    /* 05/18/2022
+                    * As of Version 14.0, Form Builder doesn't have a Cancel button. But if it does eventually
+                    * get one, we'll need to review this logic to make sure it doesn't the right thing
+                    */
                     SendFormBuilderNotificationEmail( notificationEmailSettings );
                 }
 
@@ -2210,7 +2256,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     if ( completionActionSettings.Type == FormCompletionActionType.Redirect )
                     {
-                        // if this is a FormBuilder and has a completion action of Redirect, navigate to thw specified URL
+                        // if this is a FormBuilder and has a completion action of Redirect, navigate to the specified URL
                         Response.Redirect( completionActionSettings.RedirectUrl, false );
                         Context.ApplicationInstance.CompleteRequest();
                     }
@@ -2242,7 +2288,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else if ( formConfirmationEmailDestination == FormConfirmationEmailDestination.Spouse )
             {
-                // If the RecipientType indicates that we should use the Spouse key. We'll get the attribute from the Workflow 
+                // If the RecipientType indicates that we should use the Spouse key. We'll get the attribute from the Workflow
                 recipientWorkflowAttribute = _workflow.Attributes.GetValueOrNull( "Spouse" );
             }
             else
@@ -2337,7 +2383,6 @@ namespace RockWeb.Blocks.WorkFlow
 
                     recipients.Add( RockEmailMessageRecipient.CreateAnonymous( campusTopicEmail, workflowMergeFields ) );
                 }
-
             }
             else
             {
@@ -2536,6 +2581,8 @@ namespace RockWeb.Blocks.WorkFlow
                 var lavaTemplate = signatureDocumentTemplate.LavaTemplate;
                 this.SignatureDocumentHtml = lavaTemplate?.ResolveMergeFields( mergeFields );
                 iframeSignatureDocumentHTML.Attributes["srcdoc"] = this.SignatureDocumentHtml;
+                iframeSignatureDocumentHTML.Attributes.Add( "onload", "resizeIframe(this)" );
+                iframeSignatureDocumentHTML.Attributes.Add( "onresize", "resizeIframe(this)" );
             }
         }
 
@@ -2610,12 +2657,12 @@ namespace RockWeb.Blocks.WorkFlow
             signatureDocument.SignedName = escElectronicSignatureControl.SignedName;
             signatureDocument.SignedByEmail = escElectronicSignatureControl.SignedByEmail;
 
-            // From System.Web            
+            // From System.Web
             signatureDocument.SignedClientIp = this.GetClientIpAddress();
             signatureDocument.SignedClientUserAgent = Request.UserAgent;
 
             // Needed before determing SignatureInformation (Signed Name, metadata)
-            signatureDocument.SignatureVerificationHash = signatureDocument.CalculateSignatureVerificationHash();
+            signatureDocument.SignatureVerificationHash = SignatureDocumentService.CalculateSignatureVerificationHash( signatureDocument );
 
             var signatureInformationHtmlArgs = new GetSignatureInformationHtmlOptions
             {
@@ -2666,7 +2713,6 @@ namespace RockWeb.Blocks.WorkFlow
 
             // reload with new context to get navigation properties to load. This wil be needed to save values back to Workflow Attributes
             signatureDocument = new SignatureDocumentService( new RockContext() ).Get( signatureDocument.Id );
-            var recalcuatedHash = signatureDocument.CalculateSignatureVerificationHash();
 
             // Save to Workflow Attributes
             electronicSignatureWorkflowAction.SaveSignatureDocumentValuesToAttributes( _workflowRockContext, workflowAction, signatureDocument );
@@ -2712,7 +2758,7 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum WorkflowInteractionOperationType
         {
@@ -2744,7 +2790,10 @@ namespace RockWeb.Blocks.WorkFlow
 
             var interactionTransactionInfo = new InteractionTransactionInfo
             {
-                PersonAliasId = this.CurrentPersonAliasId,
+                // NOTE: InteractionTransactionInfo.PersonAliasId will do this same logic if PersonAliasId isn't specified. Doing it here to
+                // make it more obvious.
+                PersonAliasId = this.CurrentPersonAliasId ?? this.CurrentVisitor?.Id,
+
                 InteractionEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.WORKFLOW.AsGuid() ),
                 InteractionDateTime = RockDateTime.Now,
                 InteractionChannelId = workflowLaunchInteractionChannelId ?? 0,

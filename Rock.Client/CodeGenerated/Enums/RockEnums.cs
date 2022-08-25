@@ -28,6 +28,14 @@ namespace Rock.Client.Enums
     #pragma warning disable CS1591
     /// <summary>
     /// </summary>
+    public enum AccountHierarchyDirection
+    {
+        CurrentAccountToParent = 0x0,
+        ParentAccountToLastDescendantAccount = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AddressInvalidReason
     {
         None = 0x0,
@@ -58,6 +66,15 @@ namespace Rock.Client.Enums
     {
         Gratitude = 0x0,
         FollowUp = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AppliesToAgeClassification
+    {
+        All = 0x0,
+        Adults = 0x1,
+        Children = 0x2,
     }
 
     /// <summary>
@@ -312,6 +329,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum DueDateType
+    {
+        Immediate = 0x0,
+        ConfiguredDate = 0x1,
+        GroupAttribute = 0x2,
+        DaysAfterJoining = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum EmailPreference
     {
         EmailAllowed = 0x0,
@@ -349,6 +376,7 @@ namespace Rock.Client.Enums
         AllActiveAdultsInGivingGroup = 0x0,
         PrimaryGiver = 0x1,
         AllActiveFamilyMembersInGivingGroup = 0x2,
+        DoNotSave = 0x3,
     }
 
     /// <summary>
@@ -644,6 +672,14 @@ namespace Rock.Client.Enums
     {
         FromPersonAlias = 0x0,
         ToPersonAlias = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PersonalizationType
+    {
+        Segment = 0x0,
+        RequestFilter = 0x1,
     }
 
     /// <summary>
@@ -963,6 +999,15 @@ namespace Rock.Client.Enums
     {
         CpuUsagePercent = 0x0,
         MemoryUsageMegabytes = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UnitType
+    {
+        Numeric = 0x0,
+        Currency = 0x1,
+        Percentage = 0x2,
     }
 
     /// <summary>

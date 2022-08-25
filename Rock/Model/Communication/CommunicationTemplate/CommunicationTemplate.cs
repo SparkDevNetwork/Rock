@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationTemplate" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_TEMPLATE )]
     public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails, ICampusFilterable
     {
         #region Entity Properties

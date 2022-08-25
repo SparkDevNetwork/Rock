@@ -69,6 +69,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Key = AttributeKey.AreaSelectPage )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "A14D43A7-46EE-493E-9993-F89B86DF1604" )]
     public partial class LiveMetrics : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -663,7 +664,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
 
-                var allowCheckedOut = parentGroupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( true );
+                var allowCheckedOut = parentGroupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean( true );
                 var enablePresence = parentGroupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
                 NavData.AllowCheckout = allowCheckedOut;
                 NavData.EnablePresence = enablePresence;

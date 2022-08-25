@@ -29,11 +29,10 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// 
+    /// Adds a new interaction for the component provided 
     /// </summary>
     [ActionCategory( "Utility" )]
     [Description( "Writes to the interactions table" )]
@@ -42,27 +41,51 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "InteractionChannel Name, Id, or Guid", "Interaction Channel",
         "The interaction channel to use for writing to interactions. If a Name is entered here, the channel will be automatically created if it doesn't exist. <span class='tip tip-lava'></span>",
-        true, "", "", 0, "InteractionChannel", new string[] { "Rock.Field.Types.InteractionChannelFieldType" } )]
+        true, "", "", 0, AttributeKey.InteractionChannel, new string[] { "Rock.Field.Types.InteractionChannelFieldType" } )]
     [WorkflowTextOrAttribute( "Component Name, Id, or Guid", "Component Name",
         "The interaction component Identifier. A value must be included here, or the Component Entity Id must be specified. If a Name is entered here, the component will be automatically created if it doesn't exist. <span class='tip tip-lava'></span>",
-        true, "", "", 1, "ComponentName", new string[] { "Rock.Field.Types.TextFieldType" } )]
+        true, "", "", 1, AttributeKey.ComponentName, new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Component Entity Id", "Component Entity Id",
         "The interaction component entityId. This is optional. If Component EntityId is known, it will be used to determine the component. Otherwise, it can be looked up using Component Name. <span class='tip tip-lava'></span>",
-        false, "", "", 2, "ComponentEntityId", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
-    [WorkflowTextOrAttribute( "Person Alias Id or Guid", "Person Attribute", "The person for the interaction. Use a Person Alias Id for best performance. <span class='tip tip-lava'></span>", 
-        false, "", "", 3, "PersonAttribute", new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [TextField( "Operation", "The name of the operation.", true, "", "", 4, "Operation" )]
+        false, "", "", 2, AttributeKey.ComponentEntityId, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "Person Alias Id or Guid", "Person Attribute", "The person for the interaction. Use a Person Alias Id for best performance. <span class='tip tip-lava'></span>",
+        false, "", "", 3, AttributeKey.PersonAttribute, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [TextField( "Operation", "The name of the operation.", true, "", "", 4, AttributeKey.Operation )]
     [WorkflowTextOrAttribute( "Interaction Summary", "Interaction Summary",
         "The interaction summary. <span class='tip tip-lava'></span>",
-        true, "", "", 5, "InteractionSummary", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, rows: 3 )]
+        true, "", "", 5, AttributeKey.InteractionSummary, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, rows: 3 )]
     [WorkflowTextOrAttribute( "Interaction Data", "Interaction Data",
         "The interaction data. <span class='tip tip-lava'></span>",
-        true, "", "", 6, "InteractionData", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, rows: 3 )]
+        true, "", "", 6, AttributeKey.InteractionData, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, rows: 3 )]
     [WorkflowTextOrAttribute( "Interaction Entity Id", "Interaction Entity Id",
         "The interaction entityId. Optional. The EntityId that the Interaction record should be populated with.<span class='tip tip-lava'></span>",
-        false, "", "", 7, "InteractionEntityId", new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+        false, "", "", 7, AttributeKey.InteractionEntityId, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [WorkflowTextOrAttribute( "Interaction DateTime", "Interaction DateTime",
+        "An optional date time to use when adding the interaction. <span class='tip tip-lava'></span>",
+        false, "", "", 8, AttributeKey.InteractionDateTime, new string[] { "Rock.Field.Types.DateTimeFieldType", "Rock.Field.Types.DateFieldType" } )]
+    [WorkflowAttribute( "Result Interaction Id", "When set, the created Interaction record's Id will be put into this optional text field attribute.",
+        false, "", "", 9, AttributeKey.ResultInteractionId, new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.IntegerFieldType" } )]
+    [Rock.SystemGuid.EntityTypeGuid( "12587805-D8F0-4423-9C4C-3F87D2D4D423")]
     public class InteractionAdd : ActionComponent
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string InteractionChannel = "InteractionChannel";
+            public const string ComponentName = "ComponentName";
+            public const string ComponentEntityId = "ComponentEntityId";
+            public const string PersonAttribute = "PersonAttribute";
+            public const string Operation = "Operation";
+            public const string InteractionSummary = "InteractionSummary";
+            public const string InteractionData = "InteractionData";
+            public const string InteractionEntityId = "InteractionEntityId";
+            public const string InteractionDateTime = "InteractionDateTime";
+            public const string ResultInteractionId = "ResultInteractionId";
+        }
+
+        #endregion Attribute Keys
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -79,7 +102,7 @@ namespace Rock.Workflow.Action
             var mergeFields = GetMergeFields( action );
 
             // Get Interaction Channel
-            string channelValue = GetAttributeValue( action, "InteractionChannel", true ).ResolveMergeFields( mergeFields );
+            string channelValue = GetAttributeValue( action, AttributeKey.InteractionChannel, true ).ResolveMergeFields( mergeFields );
             var interactionChannel = GetChannel( rockContext, channelValue );
             if ( interactionChannel == null )
             {
@@ -88,8 +111,8 @@ namespace Rock.Workflow.Action
             }
 
             // Get Interaction Component
-            var componentEntityId = GetAttributeValue( action, "ComponentEntityId", true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
-            var componentValue = GetAttributeValue( action, "ComponentName", true ).ResolveMergeFields( mergeFields );
+            var componentEntityId = GetAttributeValue( action, AttributeKey.ComponentEntityId, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+            var componentValue = GetAttributeValue( action, AttributeKey.ComponentName, true ).ResolveMergeFields( mergeFields );
             var interactionComponent = GetComponent( rockContext, interactionChannel, componentEntityId, componentValue );
             if ( interactionComponent == null )
             {
@@ -98,25 +121,35 @@ namespace Rock.Workflow.Action
             }
 
             // Get Person
-            int? personAliasId = GetPersonAliasId( rockContext, GetAttributeValue( action, "PersonAttribute", true ).ResolveMergeFields( mergeFields ) );
+            int? personAliasId = GetPersonAliasId( rockContext, GetAttributeValue( action, AttributeKey.PersonAttribute, true ).ResolveMergeFields( mergeFields ) );
 
             // Get Operation
-            var operation = GetAttributeValue( action, "Operation", true ).ResolveMergeFields( mergeFields );
+            var operation = GetAttributeValue( action, AttributeKey.Operation, true ).ResolveMergeFields( mergeFields );
 
             // Get InteractionSummary
-            var interactionSummary = GetAttributeValue( action, "InteractionSummary", true ).ResolveMergeFields( mergeFields );
+            var interactionSummary = GetAttributeValue( action, AttributeKey.InteractionSummary, true ).ResolveMergeFields( mergeFields );
 
             // Get InteractionData
-            var interactionData = GetAttributeValue( action, "InteractionData", true ).ResolveMergeFields( mergeFields );
+            var interactionData = GetAttributeValue( action, AttributeKey.InteractionData, true ).ResolveMergeFields( mergeFields );
 
             // Get InteractionEntityId
-            var interactionEntityId = GetAttributeValue( action, "InteractionEntityId", true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+            var interactionEntityId = GetAttributeValue( action, AttributeKey.InteractionEntityId, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
+
+            // Get InteractionDateTime
+            var interactionDateTime = GetAttributeValue( action, AttributeKey.InteractionDateTime, true ).ResolveMergeFields( mergeFields ).AsDateTime();
 
             // Write the interaction record
             var interaction = new InteractionService( rockContext )
-                .AddInteraction( interactionComponent.Id, interactionEntityId, operation, interactionData, personAliasId, RockDateTime.Now, null, null, null, null, null, null );
+                .AddInteraction( interactionComponent.Id, interactionEntityId, operation, interactionData, personAliasId, interactionDateTime ?? RockDateTime.Now, null, null, null, null, null, null );
             interaction.InteractionSummary = interactionSummary;
             rockContext.SaveChanges();
+
+            var attribute = SetWorkflowAttributeValue( action, AttributeKey.ResultInteractionId, interaction.Id );
+
+            if ( attribute != null )
+            {
+                action.AddLogEntry( string.Format( "Set '{0}' attribute to {1}.", attribute.Name, interaction.Id ) );
+            }
 
             return true;
         }

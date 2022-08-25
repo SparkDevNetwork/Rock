@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -74,6 +74,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_MEMBER_LIST_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "5A6D2ADB-03A7-4B55-8EAA-26A37116BFF1")]
     public class GroupMemberList : RockMobileBlockType
     {
         #region Block Attributes

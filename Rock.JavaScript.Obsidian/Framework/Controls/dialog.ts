@@ -15,8 +15,8 @@
 // </copyright>
 //
 import { computed, defineComponent, nextTick, PropType, ref, watch } from "vue";
-import RockButton from "../Elements/rockButton";
-import { trackModalState } from "../Util/page";
+import RockButton from "./rockButton";
+import { trackModalState } from "@Obsidian/Utility/page";
 
 export default defineComponent({
     name: "Dialog",

@@ -32,12 +32,6 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void ShortcodeBlock_WithChildItems_EmitsCorrectHtml()
         {
-            if ( LavaService.RockLiquidIsEnabled )
-            {
-                Debug.Print( "This test is not implemented for the RockLiquid Lava Engine." );
-                return;
-            }
-
             var shortcodeTemplate = @"
 Parameter 1: {{ parameter1 }}
 Parameter 2: {{ parameter2 }}
@@ -86,6 +80,12 @@ Panel 3 - Panel 3 content.
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
+                // The RockLiquid engine does not support dynamic shortcode definitions.
+                if ( engine.GetType() == typeof( RockLiquidEngine ) )
+                {
+                    return;
+                }
+
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input );
@@ -262,12 +262,6 @@ Parameter 1: Testing 'single' quotes...
         [TestMethod]
         public void ShortcodeBlock_RepeatedShortcodeBlock_ProducesExpectedOutput()
         {
-            if ( LavaService.RockLiquidIsEnabled )
-            {
-                System.Diagnostics.Debug.Print( "This test is not implemented for the RockLiquid Lava Engine." );
-                return;
-            }
-
             var shortcodeTemplate = @"
 Font Name: {{ fontname }}
 Font Size: {{ fontsize }}
@@ -302,6 +296,12 @@ Font Bold: true
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
+                // The RockLiquid engine does not support dynamic shortcode definitions.
+                if ( engine.GetType() == typeof ( RockLiquidEngine ) )
+                {
+                    return;
+                }
+
                 engine.RegisterShortcode( shortcode1.Name, ( shortcodeName ) => { return shortcode1; } );
                 engine.RegisterShortcode( shortcode2.Name, ( shortcodeName ) => { return shortcode2; } );
 
@@ -433,9 +433,18 @@ var options = {
         enabled: true,
         backgroundColor: '#000',
         bodyFontColor: '#fff',
-        titleFontColor: '#fff'
+        titleFontColor: '#fff',
+        callbacks: {
+            label: function(tooltipItem,data) { returnIntl.NumberFormat().format(tooltipItem.yLabel); }
+        }
+    },
+    scales: {
+        yAxes:[ {
+            ticks: {
+                callback: function(label,index,labels) { returnIntl.NumberFormat().format(label); },
+            },
+        } ]
     }
-    
 };
 var data = {
     labels: [``Small Groups``, ``Serving Groups``, ``General Groups``, ``Fundraising Groups``],
@@ -850,7 +859,7 @@ This is a super simple panel.
 ";
 
             var expectedOutput = @"
-<div class=``panel panel-block``>
+<div class=``panel panel-default``>
   
       <div class=``panel-heading``>
         <h3 class=``panel-title``>

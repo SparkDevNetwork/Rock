@@ -56,9 +56,10 @@
                             <asp:Panel ID="pnlResults" runat="server" Visible="false">
 
                                 <Rock:Grid ID="gList" runat="server" AllowSorting="true" PersonIdField="Id" OnRowSelected="gList_RowSelected"
-                                    ExportSource="ColumnOutput" ExportFilename="PledgeAnalytics">
+                                    ExportFilename="PledgeAnalytics">
                                     <Columns>
                                         <Rock:SelectField />
+                                         <Rock:RockBoundField DataField="Id" HeaderText="Person ID" Visible="false" />
                                         <Rock:RockTemplateField HeaderText="Person" SortExpression="LastName,NickName">
                                             <ItemTemplate><%# FormatName( Eval("LastName"), Eval("NickName") ) %></ItemTemplate>
                                         </Rock:RockTemplateField>

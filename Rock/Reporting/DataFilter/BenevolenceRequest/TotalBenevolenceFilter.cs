@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
     [Description("Filter Benevolence Requests based on Total Amount")]
     [Export(typeof(DataFilterComponent))]
     [ExportMetadata("ComponentName", "Benevolence Total Amount")]
+    [Rock.SystemGuid.EntityTypeGuid( "5EFE9EF4-EF64-4A1B-8E3C-E55D2981870F")]
     public class TotalAmountFilter : DataFilterComponent
     {
         #region Properties

@@ -217,12 +217,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to search by.</param>
         /// <param name="personId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c> 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c>
         /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who match the criteria.</returns>
         public IQueryable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false )
         {
-            return GetByGroupId( groupId, includeDeceased ).Where( g => g.PersonId == personId );
+            return GetByGroupId( groupId, includeDeceased ).Where( g => g.PersonId == personId ); 
         }
 
         /// <summary>

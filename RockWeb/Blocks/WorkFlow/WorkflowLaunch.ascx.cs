@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,6 +79,7 @@ namespace RockWeb.Blocks.WorkFlow
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "D7C15C1B-7487-42C3-A485-AD154F46558A" )]
     public partial class WorkflowLaunch : Rock.Web.UI.RockBlock
     {
 

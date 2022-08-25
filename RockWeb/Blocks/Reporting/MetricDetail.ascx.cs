@@ -41,7 +41,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Metric Detail" )]
     [Category( "Reporting" )]
@@ -74,6 +74,12 @@ namespace RockWeb.Blocks.Reporting
         Key = AttributeKey.CombineChartSeries,
         Order = 3 )]
 
+    [LinkedPage( "Data View Page",
+        Key = AttributeKey.DataViewPage,
+        Description = "The page to edit data views",
+        IsRequired = true,
+        Order = 4 )]
+
     [IntegerField(
         "Command Timeout",
         Key = AttributeKey.CommandTimeout,
@@ -81,9 +87,10 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         DefaultIntegerValue = 60 * 5,
         Category = "General",
-        Order = 4 )]
+        Order = 5 )]
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "D77341B9-BA38-4693-884E-E5C1D908CEC4" )]
     public partial class MetricDetail : RockBlock
     {
         #region Attribute Keys
@@ -97,6 +104,7 @@ namespace RockWeb.Blocks.Reporting
             public const string SlidingDateRange = "SlidingDateRange";
             public const string CombineChartSeries = "CombineChartSeries";
             public const string ChartStyle = "ChartStyle";
+            public const string DataViewPage = "DataViewPage";
             public const string CommandTimeout = "CommandTimeout";
         }
 
@@ -370,6 +378,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.IconCssClass = tbIconCssClass.Text;
             metric.SourceValueTypeId = ddlSourceType.SelectedValueAsId();
             metric.YAxisLabel = tbYAxisLabel.Text;
+            metric.UnitType = rblUnitType.SelectedValueAsEnum<Rock.Model.UnitType>();
             metric.IsCumulative = cbIsCumulative.Checked;
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
@@ -438,7 +447,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             if ( !metric.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -503,7 +512,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     rockContext.SaveChanges();
                 }
 
-                // update MetricCategories for Metric            
+                // update MetricCategories for Metric
                 metric.MetricCategories = metric.MetricCategories ?? new List<MetricCategory>();
                 var selectedCategoryIds = cpMetricCategories.SelectedValuesAsInt();
 
@@ -871,6 +880,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
             tbYAxisLabel.Text = metric.YAxisLabel;
+            rblUnitType.SetValue( metric.UnitType.ConvertToInt() );
             cbIsCumulative.Checked = metric.IsCumulative;
             cbEnableAnalytics.Checked = metric.EnableAnalytics;
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
@@ -1248,6 +1258,20 @@ The Lava can include Lava merge fields:";
             }
 
             lblMainDetails.Text = descriptionListMain.Html;
+
+            if ( metric.DataView != null )
+            {
+                hlDataView.Visible = UserCanEdit;
+
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add( "DataViewId", metric.DataViewId.ToString() );
+                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {metric.DataView.Name.Truncate(30, true)}</a>";
+                hlDataView.ToolTip = (metric.DataView.Name.Length > 30) ? metric.DataView.Name : null;
+            }
+            else
+            {
+                hlDataView.Visible = false;
+            }
         }
 
         private void CreateChart( Metric metric )
@@ -1262,11 +1286,25 @@ The Lava can include Lava merge fields:";
             pnlActivityChart.Visible = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
 
             // Add client script to construct the chart.
+            string formatString;
+            if ( metric.UnitType == Rock.Model.UnitType.Currency )
+            {
+                formatString = "currency";
+            }
+            else if( metric.UnitType == Rock.Model.UnitType.Percentage )
+            {
+                formatString = "percentage";
+            }
+            else
+            {
+                formatString = "numeric";
+            }
             var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
             {
                 SizeToFitContainerWidth = true,
                 MaintainAspectRatio = false,
-                LineTension = 0m
+                LineTension = 0m,
+                YValueFormatString = formatString
             } );
 
             string script = string.Format(
@@ -1520,6 +1558,8 @@ The Lava can include Lava merge fields:";
             {
                 ddlMetricPartitionDefinedTypePicker.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
+
+            rblUnitType.BindToEnum<Rock.Model.UnitType>();
         }
 
         /// <summary>
@@ -1857,7 +1897,7 @@ The Lava can include Lava merge fields:";
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum ScheduleSelectionType
         {

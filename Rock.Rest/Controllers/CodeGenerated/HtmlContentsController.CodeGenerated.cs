@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// HtmlContents REST API
     /// </summary>
+    [RestControllerGuid( "FE7E5808-B5A0-46BA-9A42-9E2E020AC822" )]
     public partial class HtmlContentsController : Rock.Rest.ApiController<Rock.Model.HtmlContent>
     {
         /// <summary>

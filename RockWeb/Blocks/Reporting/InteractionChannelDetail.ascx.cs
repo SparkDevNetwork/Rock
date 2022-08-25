@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Reporting
 </div>
 ", "", 0 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "F722A03E-C344-40B1-B87D-EB90E2BCBC47" )]
     public partial class InteractionChannelDetail : Rock.Web.UI.RockBlock
     {
         #region Fields

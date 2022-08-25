@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Communication
         Order = 1,
         Key = AttributeKey.PersonalTemplatesView )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "EACDBBD4-C355-4D38-B604-779BC55D3876" )]
     public partial class TemplateList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

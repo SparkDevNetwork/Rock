@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -889,6 +890,30 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<ContentCollection>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentCollection.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentCollection>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentCollection.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentCollectionSource>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentCollectionSource.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ContentCollectionSource>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ContentCollectionSource.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<DataView>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, DataView.FriendlyTypeName );
@@ -1591,7 +1616,19 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.ManuallyCompletedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.OverriddenByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
                 return false;
@@ -1798,6 +1835,18 @@ namespace Rock.Model
             if ( new Service<InteractionSession>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractionSession.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractionSessionLocation>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractionSessionLocation.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<InteractionSessionLocation>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, InteractionSessionLocation.FriendlyTypeName );
                 return false;
             }
 
@@ -2122,6 +2171,20 @@ namespace Rock.Model
             if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
+                return false;
+            }
+
+            // ignoring PersonAliasPersonalization,PersonAliasId
+
+            if ( new Service<PersonalizationSegment>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalizationSegment.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<PersonalizationSegment>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalizationSegment.FriendlyTypeName );
                 return false;
             }
 
@@ -2548,6 +2611,18 @@ namespace Rock.Model
             if ( new Service<ReportField>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ReportField.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<RequestFilter>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RequestFilter.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<RequestFilter>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RequestFilter.FriendlyTypeName );
                 return false;
             }
 
@@ -3168,10 +3243,12 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this PersonAlias target, PersonAlias source )
         {
             target.Id = source.Id;
+            target.AliasedDateTime = source.AliasedDateTime;
             target.AliasPersonGuid = source.AliasPersonGuid;
             target.AliasPersonId = source.AliasPersonId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.LastVisitDateTime = source.LastVisitDateTime;
             target.Name = source.Name;
             target.PersonId = source.PersonId;
             target.Guid = source.Guid;

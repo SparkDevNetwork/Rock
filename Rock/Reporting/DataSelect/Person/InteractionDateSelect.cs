@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Interaction Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select the first or last Interaction date of a person" )]
+    [Rock.SystemGuid.EntityTypeGuid( "F6F153F3-B901-4796-A0EB-D055B234EED4")]
     public class InteractionDateSelect : DataSelectComponent
     {
         #region Properties

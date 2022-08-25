@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// Attendance View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( Attendance ) )]
-    public partial class AttendanceViewModelHelper : ViewModelHelper<Attendance, Rock.ViewModel.AttendanceViewModel>
+    public partial class AttendanceViewModelHelper : ViewModelHelper<Attendance, AttendanceBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AttendanceViewModel CreateViewModel( Attendance model, Person currentPerson = null, bool loadAttributes = true )
+        public override AttendanceBag CreateViewModel( Attendance model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AttendanceViewModel
+            var viewModel = new AttendanceBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AttendanceCheckInSessionId = model.AttendanceCheckInSessionId,
                 AttendanceCodeId = model.AttendanceCodeId,
                 CampusId = model.CampusId,
@@ -224,7 +224,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AttendanceViewModel ToViewModel( this Attendance model, Person currentPerson = null, bool loadAttributes = false )
+        public static AttendanceBag ToViewModel( this Attendance model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AttendanceViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

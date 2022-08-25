@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,33 +40,218 @@ namespace RockWeb.Blocks.Prayer
     [Description( "Allows prayer requests to be added via visitors on the website." )]
 
     // Category Selection
-    [CategoryField( "Category Selection", "A top level category. This controls which categories the person can choose from when entering their prayer request.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Category Selection", 1, AttributeKey.GroupCategoryId )]
-    [CategoryField( "Default Category", "If categories are not being shown, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "Category Selection", 2, AttributeKey.DefaultCategory )]
+    [CategoryField( "Category Selection",
+        Description = "A top level category. This controls which categories the person can choose from when entering their prayer request.",
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.PrayerRequest",
+        EntityTypeQualifierColumn = "",
+        EntityTypeQualifierValue = "",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "Category Selection",
+        Order = 1,
+        Key = AttributeKey.GroupCategoryId )]
+
+    [CategoryField( "Default Category",
+        Description = "If categories are not being shown, choose a default category to use for all new prayer requests.",
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.PrayerRequest",
+        EntityTypeQualifierColumn = "",
+        EntityTypeQualifierValue = "",
+        IsRequired = false,
+        DefaultValue = "4B2D88F5-6E45-4B4B-8776-11118C8E8269",
+        Category = "Category Selection",
+        Order = 2,
+        Key = AttributeKey.DefaultCategory )]
 
     // Features
-    [BooleanField( "Enable Auto Approve", "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.", true, "Features", 3 )]
-    [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "Features", 4, AttributeKey.ExpireDays )]
-    [BooleanField( "Default Allow Comments Setting", "This is the default setting for the 'Allow Comments' on prayer requests. If you enable the 'Comments Flag' below, the requestor can override this default setting.", true, "Features", 5 )]
-    [BooleanField( "Enable Urgent Flag", "If enabled, requestors will be able to flag prayer requests as urgent.", false, "Features", 6 )]
-    [BooleanField( "Enable Comments Flag", "If enabled, requestors will be able set whether or not they want to allow comments on their requests.", false, "Features", 7 )]
-    [BooleanField( "Enable Public Display Flag", "If enabled, requestors will be able set whether or not they want their request displayed on the public website.", false, "Features", 8 )]
-    [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "Features", 9 )]
-    [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Features", 10 )]
-    [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 11 )]
-    [BooleanField( "Show Campus", "Should the campus field be displayed? If there is only one active campus then the campus field will not show.", true, "Features", 12 )]
-    [BooleanField( "Require Campus", "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.", false, "Features", 13 )]
-    [BooleanField( "Enable Person Matching", "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.", false, "Features", 14 )]
+    [BooleanField( "Enable Auto Approve",
+        Description = "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.",
+        DefaultBooleanValue = true,
+        Category = "Features",
+        Order = 3,
+        Key = AttributeKey.EnableAutoApprove )]
+
+    [IntegerField( "Expires After (Days)",
+        Description = "Number of days until the request will expire (only applies when auto-approved is enabled).",
+        IsRequired = false,
+        DefaultIntegerValue = 14,
+        Category = "Features",
+        Order = 4,
+        Key = AttributeKey.ExpireDays )]
+
+    [BooleanField( "Default Allow Comments Setting",
+        Description = "This is the default setting for the 'Allow Comments' on prayer requests. If you enable the 'Comments Flag' below, the requestor can override this default setting.",
+        DefaultBooleanValue = true,
+        Category = "Features",
+        Order = 5,
+        Key = AttributeKey.DefaultAllowCommentsSetting )]
+
+    [BooleanField( "Enable Urgent Flag",
+        Description = "If enabled, requestors will be able to flag prayer requests as urgent.",
+        DefaultBooleanValue = false,
+        Category = "Features",
+        Order = 6,
+        Key = AttributeKey.EnableUrgentFlag )]
+
+    [BooleanField( "Enable Comments Flag",
+        Description = "If enabled, requestors will be able set whether or not they want to allow comments on their requests.",
+        DefaultBooleanValue = false,
+        Category = "Features",
+        Order = 7,
+        Key = AttributeKey.EnableCommentsFlag )]
+
+    [BooleanField( "Enable Public Display Flag",
+        Description = "If enabled, requestors will be able set whether or not they want their request displayed on the public website.",
+        DefaultBooleanValue = false,
+        Category = "Features",
+        Order = 8,
+        Key = AttributeKey.EnablePublicDisplayFlag )]
+
+    [BooleanField( "Default To Public",
+        Description = "If enabled, all prayers will be set to public by default",
+        DefaultBooleanValue = false,
+        Category = "Features",
+        Order = 9,
+        Key = AttributeKey.DefaultToPublic )]
+
+    [IntegerField( "Character Limit",
+        Description = "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.",
+        IsRequired = false,
+        DefaultIntegerValue = 250,
+        Category = "Features",
+        Order = 10,
+        Key = AttributeKey.CharacterLimit )]
+
+    [BooleanField( "Require Last Name",
+        Description = "Require that a last name be entered",
+        DefaultBooleanValue = true,
+        Category = "Features",
+        Order = 11,
+        Key = AttributeKey.RequireLastName )]
+
+    [BooleanField( "Show Campus",
+        Description = "Should the campus field be displayed? If there is only one active campus then the campus field will not show.",
+        DefaultBooleanValue = true,
+        Category = "Features",
+        Order = 12,
+        Key = AttributeKey.ShowCampus )]
+
+    [BooleanField( "Require Campus",
+        Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
+        DefaultBooleanValue = false,
+        Category = "Features",
+        Order = 13,
+        Key = AttributeKey.RequireCampus )]
+
+    [BooleanField( "Enable Person Matching",
+        Description = "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.",
+        DefaultBooleanValue = false,
+        Category = "Features",
+        Order = 14,
+        Key = AttributeKey.EnablePersonMatching )]
+
+    [BooleanField( "Create Person If No Match Found",
+        Description = "When person matching is enabled this setting determines if a person should be created if a matched record is not found. This setting has no impact if person matching is disabled.",
+        DefaultBooleanValue = true,
+        Category = "Features",
+        Order = 15,
+        Key = AttributeKey.CreatePersonIfNoMatchFound )]
+
+    [DefinedValueField( "Connection Status",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "The connection status to use when creating new person records.",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT,
+        Category = "Features",
+        Order = 16,
+        Key = AttributeKey.ConnectionStatus )]
+
+    [DefinedValueField( "Record Status",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        Description = "The record status to use when creating new person records.",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Category = "Features",
+        Order = 17,
+        Key = AttributeKey.RecordStatus )]
 
     // On Save Behavior
-    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 14 )]
-    [BooleanField( "Refresh Page On Save", "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.", false, "On Save Behavior", 15 )]
+    [BooleanField( "Navigate To Parent On Save",
+        Description = "If enabled, on successful save control will redirect back to the parent page.",
+        DefaultBooleanValue = false,
+        Category = "On Save Behavior",
+        Order = 18,
+        Key = AttributeKey.NavigateToParentOnSave )]
 
-    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 16 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 17 )]
+    [BooleanField( "Refresh Page On Save",
+        Description = "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.",
+        DefaultBooleanValue = false,
+        Category = "On Save Behavior",
+        Order = 19,
+        Key = AttributeKey.RefreshPageOnSave )]
+
+    [CodeEditorField( "Save Success Text",
+        Description = "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = "<p>Thank you for allowing us to pray for you.</p>",
+        Category = "On Save Behavior",
+        Order = 20,
+        Key = AttributeKey.SaveSuccessText )]
+
+    [WorkflowTypeField( "Workflow",
+        Description = "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.",
+        AllowMultiple = false,
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "On Save Behavior",
+        Order = 21,
+        Key = AttributeKey.Workflow )]
 
     [ContextAware(typeof(Rock.Model.Person))]
+    [Rock.SystemGuid.BlockTypeGuid( "4C32F2CD-5A88-4C3A-ADEA-CF94E85D20A6" )]
     public partial class PrayerRequestEntry : RockBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Attribute Key
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string GroupCategoryId = "GroupCategoryId";
+            public const string DefaultCategory = "DefaultCategory";
+
+            public const string EnableAutoApprove = "EnableAutoApprove";
+            public const string ExpireDays = "ExpireDays";
+            public const string DefaultAllowCommentsSetting = "DefaultAllowCommentsSetting";
+            public const string EnableUrgentFlag = "EnableUrgentFlag";
+            public const string EnableCommentsFlag = "EnableCommentsFlag";
+            public const string EnablePublicDisplayFlag = "EnablePublicDisplayFlag";
+            public const string DefaultToPublic = "DefaultToPublic";
+            public const string CharacterLimit = "CharacterLimit";
+            public const string RequireLastName = "RequireLastName";
+            public const string ShowCampus = "ShowCampus";
+            public const string RequireCampus = "RequireCampus";
+            public const string EnablePersonMatching = "EnablePersonMatching";
+            public const string CreatePersonIfNoMatchFound = "CreatePersonIfNoMatchFound";
+            public const string ConnectionStatus = "ConnectionStatus";
+            public const string RecordStatus = "RecordStatus";
+
+            public const string NavigateToParentOnSave = "NavigateToParentOnSave";
+            public const string RefreshPageOnSave = "RefreshPageOnSave";
+
+            public const string SaveSuccessText = "SaveSuccessText";
+            public const string Workflow = "Workflow";
+        }
+
+        #endregion
+
         #region Properties
         public int? PrayerRequestEntityTypeId { get; private set; }
 
@@ -84,28 +269,6 @@ namespace RockWeb.Blocks.Prayer
         {
             public const string GroupGuid = "GroupGuid";
             public const string Request = "Request";
-        }
-
-        private static class AttributeKey
-        {
-            public const string EnableUrgentFlag = "EnableUrgentFlag";
-            public const string EnableCommentsFlag = "EnableCommentsFlag";
-            public const string EnablePublicDisplayFlag = "EnablePublicDisplayFlag";
-            public const string DefaultToPublic = "DefaultToPublic";
-            public const string RequireLastName = "RequireLastName";
-            public const string RequireCampus = "RequireCampus";
-            public const string ShowCampus = "ShowCampus";
-            public const string DefaultAllowCommentsSetting = "DefaultAllowCommentsSetting";
-            public const string EnablePersonMatching = "EnablePersonMatching";
-            public const string GroupCategoryId = "GroupCategoryId";
-            public const string DefaultCategory = "DefaultCategory";
-            public const string EnableAutoApprove = "EnableAutoApprove";
-            public const string CharacterLimit = "CharacterLimit";
-            public const string ExpireDays = "ExpireDays";
-            public const string Workflow = "Workflow";
-            public const string NavigateToParentOnSave = "NavigateToParentOnSave";
-            public const string RefreshPageOnSave = "RefreshPageOnSave";
-            public const string SaveSuccessText = "SaveSuccessText";
         }
 
         #endregion
@@ -260,6 +423,9 @@ namespace RockWeb.Blocks.Prayer
             bool defaultAllowComments = GetAttributeValue( AttributeKey.DefaultAllowCommentsSetting ).AsBoolean();
             bool isPersonMatchingEnabled = GetAttributeValue( AttributeKey.EnablePersonMatching ).AsBoolean();
             Guid? groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+            bool isCreatePersonIfNoMatchFoundEnabled = GetAttributeValue( AttributeKey.CreatePersonIfNoMatchFound ).AsBoolean();
+            var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
+            var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
 
             PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = isAutoApproved, AllowComments = defaultAllowComments };
 
@@ -312,18 +478,19 @@ namespace RockWeb.Blocks.Prayer
                     var personService = new PersonService( new RockContext() );
                     person = personService.FindPerson( new PersonService.PersonMatchQuery( tbFirstName.Text, tbLastName.Text, tbEmail.Text, pnbPhone.Number ), false, true, false );
 
-                    if ( person == null && ( !string.IsNullOrWhiteSpace( tbEmail.Text ) || !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) ) )
+                    bool isPhoneOrEmailProvided =  !string.IsNullOrWhiteSpace( tbEmail.Text ) || !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) ;
+                    if ( person == null && isCreatePersonIfNoMatchFoundEnabled &&  isPhoneOrEmailProvided )
                     {
                         var personRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                        var personStatusPending = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
 
                         person = new Person();
                         person.IsSystem = false;
                         person.RecordTypeValueId = personRecordTypeId;
-                        person.RecordStatusValueId = personStatusPending;
                         person.FirstName = tbFirstName.Text;
                         person.LastName = tbLastName.Text;
                         person.Gender = Gender.Unknown;
+                        person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                        person.RecordStatusValueId = dvcRecordStatus.Id;
 
                         if ( !string.IsNullOrWhiteSpace( tbEmail.Text ) )
                         {

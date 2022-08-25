@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups on whether they exist in a specified group branch" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Branch Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "A1D53B49-EDB6-4644-BA31-93C0F2E22368")]
     public class GroupBranchFilter : DataFilterComponent
     {
         private enum IncludedGroupsSpecifier

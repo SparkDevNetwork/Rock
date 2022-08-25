@@ -2,16 +2,11 @@
 // Tags - component that allows you to tag entities
 // --------------------------------------------------
 
+.tagsInput,
 .tagsinput {
-  float: left;
+  display: flex;
+  align-items: center;
   width: 100%;
-  overflow-y: auto;
-
-  .add-tag {
-    @media @sm {
-      float: left;
-    }
-  }
 
   input {
     display: block;
@@ -51,15 +46,11 @@
 
 
 .taglist {
-  text-align: center;
-
-  @media (min-width: @screen-sm-min) {
-    text-align: left;
-  }
+  display: flex;
 
   .tag {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
     height: 22px;
     padding: 1px 12px 0;
     margin-right: 8px;
@@ -74,19 +65,13 @@
     -moz-transition: margin-right .25s ease-out 1s, padding .25s ease-out 1s;
     transition: margin-right .25s ease-out 1s, padding .25s ease-out 1s;
 
-    @media (min-width: @screen-sm-min) {
-      float: left;
-    }
-
     .tag-icon {
       display: block;
-      float: left;
       margin-right: 4px;
     }
 
     span {
       display: block;
-      float: left;
       max-width: 120px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -97,9 +82,8 @@
     a {
       position: absolute;
       right: 0;
-      padding: 0 3px;
-      font-weight: @font-weight-bold;
-      color: @tag-text-color;
+      padding: 0 5px;
+      color: currentColor;
       text-decoration: none;
       opacity: 0;
       -webkit-transition: opacity .25s ease-out 1s;
@@ -112,7 +96,6 @@
     }
 
     &:hover {
-
       span {
         max-width: 1000px;
       }
@@ -127,9 +110,16 @@
 
   // Transition padding on tags inside a control.
   .tag-wrap .tag:hover {
-    padding-right: 17px;
-    margin-right: 3px;
+    padding-right: 20px;
     transition-delay: 0s;
+  }
+
+  .add-new-tags {
+    float: none !important;
+    color: #9e9ea0 !important;
+    &:hover {
+      color: @text-color !important;
+    }
   }
 }
 

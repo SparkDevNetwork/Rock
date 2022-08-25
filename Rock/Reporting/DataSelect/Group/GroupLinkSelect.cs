@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Reporting.DataSelect.Group
     [ExportMetadata( "ComponentName", "Select Group Name" )]
 
     [BooleanField( "Show As Link", "", true )]
+    [Rock.SystemGuid.EntityTypeGuid( "CACA75F2-29FE-4A52-AD4D-22E7314A35EB")]
     public class GroupLinkSelect : DataSelectComponent
     {
         /// <summary>

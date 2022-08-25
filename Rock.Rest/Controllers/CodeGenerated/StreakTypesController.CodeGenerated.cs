@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// StreakTypes REST API
     /// </summary>
+    [RestControllerGuid( "51733CC8-8FAB-439F-AFA6-FAE51FE4CDB8" )]
     public partial class StreakTypesController : Rock.Rest.ApiController<Rock.Model.StreakType>
     {
         /// <summary>

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** System Metrics */
 export const enum Metric {
     /** Hosting Metric hard connects per second Guid */
     HostingHardConnectsPerSecond = "64D538D0-EE05-4646-91F5-EBE06460BDAB",
@@ -31,4 +32,3 @@ export const enum Metric {
     /** Hosting Metric soft connects per second Guid */
     HostingSoftConnectsPerSecond = "F90F9446-8754-4001-887C-1AB920968C6D",
 }
-

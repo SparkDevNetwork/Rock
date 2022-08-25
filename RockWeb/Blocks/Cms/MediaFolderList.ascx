@@ -16,11 +16,12 @@
                     <Rock:GridFilter ID="gfFilter" runat="server">
                         <Rock:RockTextBox ID="txtFolderName" runat="server" Label="Name" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gFolderList" runat="server" AllowSorting="true" OnRowSelected="gFolderList_RowSelected"  CssClass="js-grid-folders">
+                    <Rock:Grid ID="gFolderList" runat="server" AllowSorting="true" OnRowSelected="gFolderList_RowSelected" OnRowDataBound="gFolderList_RowDataBound" CssClass="js-grid-folders">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-CssClass="js-name-folder" />
-                            <Rock:RockBoundField DataField="ContentChannel.Name" HeaderText="Content Channel Sync" SortExpression="ContentChannel.Name" />
                             <Rock:RockBoundField DataField="Videos" HeaderText="Videos" SortExpression="Videos" />
+                            <Rock:RockBoundField DataField="ContentChannel.Name" HeaderText="Content Channel Sync" SortExpression="ContentChannel.Name" />
+                            <Rock:RockLiteralField ID="lWatchCount" HeaderText="Watch Count" />
                             <Rock:DeleteField OnClick="gFolderList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>

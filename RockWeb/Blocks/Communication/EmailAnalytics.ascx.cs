@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.Communication
         Order = 1 )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "7B506760-93FA-4FBF-9FB5-0D9C3E36DCCD" )]
     public partial class EmailAnalytics : RockBlock
     {
         #region Attribute Keys

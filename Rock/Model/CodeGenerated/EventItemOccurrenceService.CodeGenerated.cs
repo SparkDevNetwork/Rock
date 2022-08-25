@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// EventItemOccurrence View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( EventItemOccurrence ) )]
-    public partial class EventItemOccurrenceViewModelHelper : ViewModelHelper<EventItemOccurrence, Rock.ViewModel.EventItemOccurrenceViewModel>
+    public partial class EventItemOccurrenceViewModelHelper : ViewModelHelper<EventItemOccurrence, EventItemOccurrenceBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.EventItemOccurrenceViewModel CreateViewModel( EventItemOccurrence model, Person currentPerson = null, bool loadAttributes = true )
+        public override EventItemOccurrenceBag CreateViewModel( EventItemOccurrence model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.EventItemOccurrenceViewModel
+            var viewModel = new EventItemOccurrenceBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 CampusId = model.CampusId,
                 ContactEmail = model.ContactEmail,
                 ContactPersonAliasId = model.ContactPersonAliasId,
@@ -186,7 +186,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.EventItemOccurrenceViewModel ToViewModel( this EventItemOccurrence model, Person currentPerson = null, bool loadAttributes = false )
+        public static EventItemOccurrenceBag ToViewModel( this EventItemOccurrence model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new EventItemOccurrenceViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

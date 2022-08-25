@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,7 +27,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "31b2def4-1a6b-4d5f-978e-bdc14ef59bc7" )]
     public partial class WorkflowsController
     {
         /// <summary>
@@ -38,7 +37,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Workflows/WorkflowEntry/{WorkflowTypeId}" )]
-        [RockGuid( "16f650eb-59bb-4bfa-aff1-dd6e90fac8a4" )]
+        [Rock.SystemGuid.RestActionGuid( "16F650EB-59BB-4BFA-AFF1-DD6E90FAC8A4" )]
         public Rock.Model.Workflow WorkflowEntry( int workflowTypeId )
         {
             var rockContext = new Rock.Data.RockContext();

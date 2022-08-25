@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// ReportFields REST API
     /// </summary>
+    [RestControllerGuid( "47970F37-AF2D-4BBF-9600-3DE349F86F12" )]
     public partial class ReportFieldsController : Rock.Rest.ApiController<Rock.Model.ReportField>
     {
         /// <summary>

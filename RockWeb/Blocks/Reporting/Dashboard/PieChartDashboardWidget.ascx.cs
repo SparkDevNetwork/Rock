@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 6 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 7 )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", false, Order = 8 )]
+    [Rock.SystemGuid.BlockTypeGuid( "341AAD88-47E0-4F25-B4F2-0EBCE5A96A1D" )]
     public partial class PieChartDashboardWidget : DashboardWidget
     {
         /// <summary>

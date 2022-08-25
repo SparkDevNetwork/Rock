@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By LastName" )]
     [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [Rock.SystemGuid.EntityTypeGuid( "7B935062-4D3E-40CC-8923-B6C34A52C913")]
     public class FilterGroupsByLastName : CheckInActionComponent
     {
         /// <summary>

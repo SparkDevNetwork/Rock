@@ -43,6 +43,9 @@ namespace Rock.Field.Types
     public partial class BenevolenceRequestFieldType : Rock.Field.FieldType
     {
     }
+    public partial class BenevolenceTypeFieldType : Rock.Field.FieldType
+    {
+    }
     public partial class BinaryFileFieldType : Rock.Field.FieldType
     {
     }
@@ -218,7 +221,7 @@ namespace Rock.Field.Types
             /// The date picker
             /// </summary>
             DatePicker,
-            
+
             /// <summary>
             /// The date parts picker
             /// </summary>
@@ -296,6 +299,9 @@ namespace Rock.Field.Types
     {
     }
     public partial class GroupMemberFieldType : Rock.Field.FieldType
+    {
+    }
+    public partial class GroupMemberRequirementFieldType : Rock.Field.FieldType
     {
     }
     public partial class GroupRoleFieldType : Rock.Field.FieldType

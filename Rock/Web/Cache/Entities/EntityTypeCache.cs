@@ -21,6 +21,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
+using Rock.Cms.ContentCollection;
+using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
 using Rock.Model;
 
@@ -37,6 +39,15 @@ namespace Rock.Web.Cache
         #region Static Fields
 
         private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>( StringComparer.OrdinalIgnoreCase );
+
+        #endregion
+
+        #region Private Fields
+
+        /// <summary>
+        /// The cached type this EntityTypeCache refers to.
+        /// </summary>
+        private Type _entityType = null;
 
         #endregion
 
@@ -189,6 +200,32 @@ namespace Rock.Web.Cache
         public bool IsIndexingEnabled { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this entity type supports content
+        /// collection indexing.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this entity type supports content collection indexing; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        internal bool IsContentCollectionIndexingEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets the type of the indexer used when storing in the content collection index.
+        /// </summary>
+        /// <value>
+        /// The type of the indexer used when storing in the content collection index.
+        /// </value>
+        internal Type ContentCollectionIndexerType { get; private set; }
+
+        /// <summary>
+        /// Gets the type of the document used when storing in the content collection index.
+        /// </summary>
+        /// <value>
+        /// he type of the document used when storing in the content collection index.
+        /// </value>
+        internal Type ContentCollectionDocumentType { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance has achievements enabled.
         /// </summary>
         /// <value>
@@ -223,6 +260,14 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool IsIndexingSupported { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the get index model.
+        /// </summary>
+        /// <value>
+        /// The name of the get index model.
+        /// </value>
+        public Type IndexModelType { get; private set; }
 
         /// <summary>
         /// Determines whether [is analytics supported] [the specified entity type qualifier column].
@@ -330,7 +375,7 @@ namespace Rock.Web.Cache
 
         #region Cache Related Methods
 
-        private static Dictionary<int, Type> _cacheableEntityTypeIds = null;
+        private static Dictionary<string, Type> _cachedEntityTypeByEntityType = null;
         private System.Reflection.MethodInfo _cachedItemGetMethod = null;
         private System.Reflection.MethodInfo _cachedItemFlushItemMethod = null;
         private System.Reflection.MethodInfo _cachedItemClearMethod = null;
@@ -389,18 +434,18 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Type GetEntityCacheType()
         {
-            if ( _cacheableEntityTypeIds == null )
+            if ( _cachedEntityTypeByEntityType == null )
             {
-                _cacheableEntityTypeIds = Reflection.FindTypes( typeof( IEntityCache ) ).Values
+                _cachedEntityTypeByEntityType = Reflection.FindTypes( typeof( IEntityCache ) ).Values
                     .Select( a => new
                     {
                         CacheTypeType = a.BaseType.GenericTypeArguments[0],
                         EntityTypeType = a.BaseType.GenericTypeArguments[1]
                     } )
-                    .ToDictionary( k => EntityTypeCache.Get( k.EntityTypeType ).Id, v => v.CacheTypeType );
+                    .ToDictionary( k => k.EntityTypeType.FullName, v => v.CacheTypeType );
             }
 
-            var entityCacheType = _cacheableEntityTypeIds?.GetValueOrNull( this.Id );
+            var entityCacheType = _cachedEntityTypeByEntityType?.GetValueOrNull( this.Name );
 
             return entityCacheType;
         }
@@ -411,7 +456,21 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Type GetEntityType()
         {
-            return !string.IsNullOrWhiteSpace( AssemblyName ) ? Type.GetType( AssemblyName ) : null;
+            /*
+             * 2022-06-24 - dsh
+             * 
+             * Constructing a type from the AssemblyName is fast, but still
+             * takes 0.0024ms. It can also be called extremely often. On the
+             * stock Rock instance this is called 86 times for the person
+             * profile extended attributes page. Caching it can save 0.2ms
+             * per page load on some pages.
+             */
+            if ( _entityType == null )
+            {
+                _entityType = !string.IsNullOrWhiteSpace( AssemblyName ) ? Type.GetType( AssemblyName ) : null;
+            }
+
+            return _entityType;
         }
 
         /// <summary>
@@ -441,6 +500,28 @@ namespace Rock.Web.Cache
             IndexResultTemplate = entityType.IndexResultTemplate;
             IndexDocumentUrl = entityType.IndexDocumentUrl;
             LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
+
+            IndexModelType = entityType.IndexModelType;
+
+            // Detect support for content collection.
+            var contentIndexableAttribute = GetEntityType()?.GetCustomAttribute<ContentCollectionIndexableAttribute>();
+            if ( contentIndexableAttribute != null )
+            {
+                ContentCollectionIndexerType = contentIndexableAttribute.IndexerType;
+                ContentCollectionDocumentType = contentIndexableAttribute.DocumentType;
+
+                if ( !typeof( IContentCollectionIndexer ).IsAssignableFrom( ContentCollectionIndexerType ) )
+                {
+                    ContentCollectionIndexerType = null;
+                }
+
+                if ( !typeof( Rock.Cms.ContentCollection.IndexDocuments.IndexDocumentBase ).IsAssignableFrom( ContentCollectionDocumentType ) )
+                {
+                    ContentCollectionDocumentType = null;
+                }
+
+                IsContentCollectionIndexingEnabled = ContentCollectionIndexerType != null && ContentCollectionDocumentType != null;
+            }
 
             EntityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
         }
@@ -593,7 +674,7 @@ namespace Rock.Web.Cache
 
             if ( rockContext != null )
             {
-                var entityTypeModel = new EntityTypeService( rockContext ).Get( name, createNew );
+                var entityTypeModel = new EntityTypeService( rockContext ).GetByName( name, createNew );
                 if ( entityTypeModel != null )
                 {
                     entityType = Get( entityTypeModel );
@@ -603,7 +684,7 @@ namespace Rock.Web.Cache
             {
                 using ( var myRockContext = new RockContext() )
                 {
-                    var entityTypeModel = new EntityTypeService( myRockContext ).Get( name, createNew );
+                    var entityTypeModel = new EntityTypeService( myRockContext ).GetByName( name, createNew );
                     if ( entityTypeModel != null )
                     {
                         entityType = Get( entityTypeModel );

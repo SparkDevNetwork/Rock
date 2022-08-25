@@ -15,8 +15,9 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import LoadingIndicator from "../Elements/loadingIndicator";
+import LoadingIndicator from "./loadingIndicator";
 import { ValidationField } from "./gatewayControl";
+import { sleep } from "@Obsidian/Utility/promiseUtils";
 
 type Settings = {
     publicApiKey: string;
@@ -76,10 +77,8 @@ export default defineComponent({
                 script.src = "https://sandbox.gotnpgateway.com/tokenizer/tokenizer.js"; // TODO - this should come from the gateway
                 document.getElementsByTagName("head")[ 0 ].appendChild(script);
 
-                const sleep = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 20));
-
                 while (!window[ <any>globalVarName ]) {
-                    await sleep();
+                    await sleep(20);
                 }
             }
 

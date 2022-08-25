@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeMatrix" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "028228F0-B1D9-4DE5-9E6A-F898C34DDAB8")]
     public partial class AttributeMatrix : Model<AttributeMatrix>
     {
         #region Entity Properties

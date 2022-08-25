@@ -25,4 +25,3 @@ export const enum SignatureDocumentTemplate {
     /** Gets the template guid for the example "Photo Release" Signature Document Template */
     PhotoReleaseSignatureDocumentTemplate = "E982C45E-CDD3-481E-8664-85AD36500F1B",
 }
-

@@ -93,6 +93,8 @@ namespace Rock.WebStartup
         /// </summary>
         internal static void RunApplicationStartup()
         {
+            LogStartupMessage( "Application Starting" );
+
             // Indicate to always log to file during initialization.
             ExceptionLogService.AlwaysLogToFile = true;
 
@@ -106,24 +108,29 @@ namespace Rock.WebStartup
             // In most cases, that'll be when GC is collected. So it won't happen immediately.
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
-            LogStartupMessage( "Application Starting" );
-
+            LogStartupMessage( "Checking for EntityFramework Migrations" );
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
-
             bool hasPendingEFMigrations = runMigrationFileInfo.Exists || HasPendingEFMigrations();
-
             bool ranEFMigrations = MigrateDatabase( hasPendingEFMigrations );
+
+            if ( ranEFMigrations )
+            {
+                LogStartupMessage( "EntityFramework Migrations Were Applied" );
+            }
 
             ShowDebugTimingMessage( "EF Migrations" );
 
+            // Register Entity SaveHooks.
+            LogStartupMessage( "Configuring Entity SaveHooks" );
             ConfigureEntitySaveHooks();
 
             ShowDebugTimingMessage( "Configure Entity SaveHooks" );
 
             // Now that EF Migrations have gotten the Schema in sync with our Models,
-            // get the RockContext initialized (which can take several seconds)
-            // This will help reduce the chances of multiple instances RockWeb causing problems,
-            // like creating duplicate attributes, or running the same migration in parallel
+            // get the RockContext initialized (which can take several seconds).
+            // This will help reduce the chances of multiple RockWeb instances causing problems,
+            // like creating duplicate attributes, or running the same migration in parallel.
+            LogStartupMessage( "Initializing RockContext" );
             using ( var rockContext = new RockContext() )
             {
                 new AttributeService( rockContext ).Get( 0 );
@@ -132,6 +139,7 @@ namespace Rock.WebStartup
 
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
+            LogStartupMessage( "Configuring Date Settings" );
             RockDateTime.FirstDayOfWeek = new AttributeService( new RockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
             InitializeRockGraduationDate();
 
@@ -142,27 +150,37 @@ namespace Rock.WebStartup
                 // fileInfo.Delete() won't do anything if the file doesn't exist (it doesn't throw an exception if it is not there )
                 // but do the fileInfo.Exists to make this logic more readable
                 runMigrationFileInfo.Delete();
+                LogStartupMessage( "Removed Run.Migration File" );
             }
 
             // Run any plugin migrations
+            LogStartupMessage( "Applying Plugin Migrations" );
             bool anyPluginMigrations = MigratePlugins();
+
+            if ( anyPluginMigrations )
+            {
+                LogStartupMessage( "Plugin Migrations Were Applied" );
+            }
 
             ShowDebugTimingMessage( "Plugin Migrations" );
 
             /* 2020-05-20 MDP
                Plugins use Direct SQL to update data,
-               or other things could have done data updates
-               So, just in case, clear the cache (which could be Redis) since anything that is in there could be stale
+               or other things could have done data updates.
+               So, just in case, clear the cache since anything that is in there could be stale
             */
 
+            LogStartupMessage( "Reloading Cache" );
             RockCache.ClearAllCachedItems( false );
 
             using ( var rockContext = new RockContext() )
             {
+                LogStartupMessage( "Loading Cache From Database" );
                 LoadCacheObjects( rockContext );
 
                 ShowDebugTimingMessage( "Load Cache Objects" );
 
+                LogStartupMessage( "Updatating Attributes From Web.Config Settings" );
                 UpdateAttributesFromRockConfig( rockContext );
             }
 
@@ -174,6 +192,7 @@ namespace Rock.WebStartup
             }
 
             // Start the message bus
+            LogStartupMessage( "Starting the Message Bus" );
             RockMessageBus.StartAsync().Wait();
             var busTransportName = RockMessageBus.GetTransportName();
 
@@ -187,13 +206,16 @@ namespace Rock.WebStartup
             }
 
             // Start stage 1 of the web farm
+            LogStartupMessage( "Starting the Web Farm (Stage 1)" );
             RockWebFarm.StartStage1();
             ShowDebugTimingMessage( "Web Farm (stage 1)" );
 
+            LogStartupMessage( "Registering HTTP Modules" );
             RegisterHttpModules();
             ShowDebugTimingMessage( "Register HTTP Modules" );
 
             // Initialize the Lava engine.
+            LogStartupMessage( "Initializing Lava Engine" );
             InitializeLava();
             ShowDebugTimingMessage( $"Initialize Lava Engine ({LavaService.CurrentEngineName})" );
 
@@ -201,11 +223,13 @@ namespace Rock.WebStartup
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
             {
-                StartJobScheduler();
-                ShowDebugTimingMessage( "Start Job Scheduler" );
+                LogStartupMessage( "Initializing Job Scheduler" );
+                InitializeJobScheduler();
+                ShowDebugTimingMessage( "Job Scheduler Initialized" );
             }
 
             // Start stage 2 of the web farm
+            LogStartupMessage( "Starting the Web Farm (Stage 2)" );
             RockWebFarm.StartStage2();
             ShowDebugTimingMessage( "Web Farm (stage 2)" );
         }
@@ -343,6 +367,11 @@ namespace Rock.WebStartup
         private static void UpdateAttributesFromRockConfig( RockContext rockContext )
         {
             var rockConfig = RockConfig.Config;
+            if ( rockConfig?.AttributeValues == null )
+            {
+                return;
+            }
+
             if ( rockConfig.AttributeValues.Count > 0 )
             {
                 foreach ( AttributeValueConfig attributeValueConfig in rockConfig.AttributeValues )
@@ -476,8 +505,6 @@ namespace Rock.WebStartup
             // double check if there are migrations to run
             if ( pendingMigrations.Any() )
             {
-                LogStartupMessage( "Migrating Database..." );
-
                 var lastMigration = pendingMigrations.Last();
 
                 // create a logger, and enable the migration output to go to a file
@@ -596,7 +623,7 @@ namespace Rock.WebStartup
                         // Check to make sure no another migration has same number
                         if ( migrationTypesByNumber.ContainsKey( migrationNumberAttr.Number ) )
                         {
-                            throw new RockStartupException( $"The '{pluginAssemblyName}' plugin assembly contains duplicate migration numbers ({ migrationNumberAttr.Number})." );
+                            throw new RockStartupException( $"The '{pluginAssemblyName}' plugin assembly contains duplicate migration numbers ({migrationNumberAttr.Number})." );
                         }
 
                         migrationTypesByNumber.Add( migrationNumberAttr.Number, migrationType );
@@ -677,7 +704,7 @@ namespace Rock.WebStartup
                                     sqlTxn.Rollback();
                                 }
 
-                                throw new RockStartupException( $"##Plugin Migration error occurred in { migrationNumber}, {migrationType.Name}##", ex );
+                                throw new RockStartupException( $"##Plugin Migration error occurred in {migrationNumber}, {migrationType.Name}##", ex );
                             }
                         }
                     }
@@ -819,6 +846,7 @@ namespace Rock.WebStartup
             // Register the set of filters that are compatible with RockLiquid.
             Template.RegisterFilter( typeof( Rock.Lava.Filters.TemplateFilters ) );
             Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+            Template.DefaultIsThreadSafe = true;
 
             // Initialize the RockLiquid file system.
             Template.FileSystem = new LavaFileSystem();
@@ -997,9 +1025,9 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// Starts the job scheduler.
+        /// Initialize the job scheduler.
         /// </summary>
-        private static void StartJobScheduler()
+        private static void InitializeJobScheduler()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1017,6 +1045,11 @@ namespace Rock.WebStartup
                     try
                     {
                         IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                        if ( jobDetail == null )
+                        {
+                            continue;
+                        }
+
                         ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
                         // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
@@ -1072,7 +1105,7 @@ namespace Rock.WebStartup
                 QuartzScheduler.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<JobKey>.AllTriggers() );
 
                 // start the scheduler
-                QuartzScheduler.Start();
+                // Note, wait to start until Rock is fully started.
             }
         }
 

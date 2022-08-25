@@ -32,7 +32,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.NG.csproj" />
-    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.NG.csproj" />
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.NG.csproj" />
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.NG.csproj" />
     <ProjectReference Include="..\Rock\Rock.NG.csproj" />
   </ItemGroup>
 

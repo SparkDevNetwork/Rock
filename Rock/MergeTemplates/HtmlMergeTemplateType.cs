@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.MergeTemplates
     [System.ComponentModel.Description( "An HTML Document merge template" )]
     [Export( typeof( MergeTemplateType ) )]
     [ExportMetadata( "ComponentName", "HTML Document" )]
+    [Rock.SystemGuid.EntityTypeGuid( "5FBFF041-9EDC-41A3-8A92-D7AC4FF88221")]
     public class HtmlMergeTemplateType : MergeTemplateType
     {
         /// <summary>

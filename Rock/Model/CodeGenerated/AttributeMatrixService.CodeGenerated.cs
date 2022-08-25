@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -68,7 +69,7 @@ namespace Rock.Model
     /// AttributeMatrix View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( AttributeMatrix ) )]
-    public partial class AttributeMatrixViewModelHelper : ViewModelHelper<AttributeMatrix, Rock.ViewModel.AttributeMatrixViewModel>
+    public partial class AttributeMatrixViewModelHelper : ViewModelHelper<AttributeMatrix, AttributeMatrixBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,17 +78,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.AttributeMatrixViewModel CreateViewModel( AttributeMatrix model, Person currentPerson = null, bool loadAttributes = true )
+        public override AttributeMatrixBag CreateViewModel( AttributeMatrix model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.AttributeMatrixViewModel
+            var viewModel = new AttributeMatrixBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AttributeMatrixTemplateId = model.AttributeMatrixTemplateId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -176,7 +176,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.AttributeMatrixViewModel ToViewModel( this AttributeMatrix model, Person currentPerson = null, bool loadAttributes = false )
+        public static AttributeMatrixBag ToViewModel( this AttributeMatrix model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AttributeMatrixViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

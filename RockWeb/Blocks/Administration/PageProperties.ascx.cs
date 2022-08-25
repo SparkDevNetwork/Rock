@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Services.NuGet;
+using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -60,6 +61,7 @@ namespace RockWeb.Blocks.Administration
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "C7988C3E-822D-4E73-882E-9B7684398BAA" )]
     public partial class PageProperties : RockBlock
     {
         #region Keys
@@ -1050,9 +1052,13 @@ namespace RockWeb.Blocks.Administration
 
                 if ( cbDeleteInteractions.Checked )
                 {
-                    var interactionComponentService = new InteractionComponentService( rockContext );
-                    var componentQuery = interactionComponentService.QueryByPage( page );
-                    interactionComponentService.DeleteRange( componentQuery );
+                    var deleteInteractionsMsg = new DeleteInteractions.Message
+                    {
+                        PageId = page.Id,
+                        SiteId = page.SiteId
+                    };
+
+                    deleteInteractionsMsg.Send();
                 }
 
                 rockContext.SaveChanges();

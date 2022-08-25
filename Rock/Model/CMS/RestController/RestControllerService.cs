@@ -18,6 +18,7 @@
 using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -35,11 +36,11 @@ namespace Rock.Model
         /// <param name="httpMethod">The HTTP method.</param>
         /// <param name="controllerName">Name of the controller.</param>
         /// <returns></returns>
-        [RockObsolete("1.14")]
-        [Obsolete("Use the method with the 'rockGuid' property instead.")]
+        [RockObsolete( "1.14" )]
+        [Obsolete( "Use the method with the 'rockGuid' property instead." )]
         public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName )
         {
-            return GetApiId( methodInfo, httpMethod, controllerName, out RockGuidAttribute rockGuid );
+            return GetApiId( methodInfo, httpMethod, controllerName, out _ );
         }
 
         /// <summary>
@@ -48,11 +49,13 @@ namespace Rock.Model
         /// <param name="methodInfo">The method information.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <param name="controllerName">Name of the controller.</param>
-        /// <param name="rockGuid">Returns the <see cref="RockGuidAttribute"/> associated with this API.</param>
+        /// <param name="restActionGuid">If this RestAction has a well-known guid, returns the Guid associated with this API.</param>
         /// <returns></returns>
-        public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName, out RockGuidAttribute rockGuid )
+        public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName, out Guid? restActionGuid )
         {
-            rockGuid = methodInfo.GetCustomAttribute<RockGuidAttribute>();
+            // If the Method has a RestActionGuidAttribute, output what it is.
+            // Note that inherited methods won't have a RockGuid since that Method applies to multiple controllers
+            restActionGuid = methodInfo.GetCustomAttribute<Rock.SystemGuid.RestActionGuidAttribute>( inherit: false )?.Guid;
 
             var strippedClassname = Regex.Replace( methodInfo.ToString(), @"((?:(?:\w+)?\.(?<name>[a-z_A-Z]\w+))+)", "${name}" );
             return $"{httpMethod}{controllerName}^{strippedClassname}";

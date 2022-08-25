@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,6 +41,7 @@ namespace Rockweb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "View the results of a DISC assessment. (Obsolete)" )]
     [RockObsolete( "1.9" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0549519D-4048-4B28-89CC-94493B29BBD4" )]
     public partial class DiscResult : Rock.Web.UI.RockBlock
     {
         #region Fields

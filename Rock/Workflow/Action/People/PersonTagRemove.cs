@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to remove from the tag.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [TextField( "Organization Tag", "The organization tag to remove the person from. <span class='tip tip-lava'></span>" )]
+    [Rock.SystemGuid.EntityTypeGuid( "BD876B64-8A93-4E31-B562-B8519FC622C6")]
     public class PersonTagRemove : ActionComponent
     {
         /// <summary>

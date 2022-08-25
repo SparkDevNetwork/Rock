@@ -8,9 +8,9 @@
 --                 01-03-2021 COREYH - Add this script description. 
 --                                     Also added the script requirements.
 -- Requirement:
---                 Paramater [@groupTypeNHRegionGuid] must be set to a valid Group GUID.
---                 Paramater [@groupTypeNHAreaGuid] must be set to a valid Group GUID.
---                 Paramater [@groupTypeNHGroupGuid] must be set to a valid Group GUID.
+--                 Parameter [@groupTypeNHRegionGuid] must be set to a valid GroupType GUID.
+--                 Parameter [@groupTypeNHAreaGuid] must be set to a valid GroupType GUID.
+--                 Parameter [@groupTypeNHGroupGuid] must be set to a valid GroupType GUID.
 -- ======================================================================================================
 SET NOCOUNT ON
 DECLARE
@@ -31,7 +31,7 @@ DECLARE
   @groupCounter int = 0,
   @childGroupCounter int = 0,
   @maxGroupsPerArea int = 25,
-  @maxGroupsPerGroup int = 3000,
+  @maxGroupsPerGroup int = 500,
   @groupTypeNHRegionGuid nvarchar(36) = 'B31676B5-A004-4A72-AE0D-4D5E1C6BF5DB',
   @groupTypeNHAreaGuid nvarchar(36) = '30F8F34A-5E18-461E-BEFE-5563AA372574',
   @groupTypeNHGroupGuid nvarchar(36) = '4043A5D6-6C2F-49DB-92DD-BD6ED1937DA8'
@@ -46,7 +46,7 @@ delete from [GroupType] where [Id] in (select id from GroupType where Guid in (@
 SELECT 'adding ' + CAST(@maxRegions AS VARCHAR(10)) + ' group regions';
 SELECT 'adding ' + CAST(@maxRegions*@maxAreasPerRegion AS VARCHAR(10)) + ' group areas';
 SELECT 'adding ' + CAST(@maxRegions*@maxAreasPerRegion*@maxGroupsPerArea AS VARCHAR(10)) + ' groups';
-/*
+
 INSERT INTO [dbo].[GroupType]
            ([IsSystem]
            ,[Name]
@@ -172,7 +172,25 @@ insert into [dbo].[GroupTypeAssociation]
 values
     (@regionGroupTypeId, @areaGroupTypeId),
     (@areaGroupTypeId, @groupTypeId)
-*/
+
+
+IF NOT EXISTS ( SELECT * FROM [GroupType] WHERE [Guid] = @groupTypeNHRegionGuid )
+BEGIN
+   RAISERROR(N'Unable to continue without GroupType @groupTypeNHRegionGuid with GUID %s', 16, 1, @groupTypeNHRegionGuid);
+   RETURN;
+END
+
+IF NOT EXISTS ( SELECT * FROM [GroupType] WHERE [Guid] = @groupTypeNHAreaGuid )
+BEGIN
+   RAISERROR(N'Unable to continue without GroupType @groupTypeNHAreaGuid with GUID %s', 16, 1, @groupTypeNHAreaGuid);
+   RETURN;
+END
+
+IF NOT EXISTS ( SELECT * FROM [GroupType] WHERE [Guid] = @groupTypeNHGroupGuid )
+BEGIN
+   RAISERROR(N'Unable to continue without GroupType @groupTypeNHGroupGuid with GUID %s', 16, 1, @groupTypeNHGroupGuid);
+   RETURN;
+END
 
 SELECT @regionGroupTypeId = (SELECT TOP 1 [Id] FROM GroupType WHERE [Guid] = @groupTypeNHRegionGuid);
 SELECT @areaGroupTypeId =   (SELECT TOP 1 [Id] FROM GroupType WHERE [Guid] = @groupTypeNHAreaGuid);

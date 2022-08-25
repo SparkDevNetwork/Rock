@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplateFeeItem" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "CC1DB3FF-A145-49CE-ADC0-B8960EBF37D4")]
     public partial class RegistrationTemplateFeeItem : Model<RegistrationTemplateFeeItem>, IOrdered
     {
         #region Entity Properties

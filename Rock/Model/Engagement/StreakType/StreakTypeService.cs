@@ -1862,6 +1862,37 @@ namespace Rock.Model
         /// <param name="interactionId">The interaction identifier.</param>
         public static void HandleInteractionRecord( int interactionId )
         {
+            try
+            {
+                HandleInteractionRecordInternal( interactionId );
+            }
+#if REVIEW_NET5_0_OR_GREATER
+            catch ( DbUpdateException )
+#else
+            catch ( System.Data.Entity.Infrastructure.DbUpdateException )
+#endif
+            {
+                /*
+                    5/10/2022 - DSH
+
+                    A DbUpdateException almost certainly means we had a race condition
+                    between two calls to this method. Both tried to create a new Streak
+                    object. We are in the latter call which triggered a unique key
+                    constraint violation.
+
+                    Try it one more time, this time without catching the exception.
+                 */
+                HandleInteractionRecordInternal( interactionId );
+            }
+        }
+
+        /// <summary>
+        /// Handles the interaction record for streaks. Use this method with the ID instead of the whole object if there is
+        /// a chance the context for the interaction could be disposed. e.g. if this method is being run in a new Task.
+        /// </summary>
+        /// <param name="interactionId">The interaction identifier.</param>
+        private static void HandleInteractionRecordInternal( int interactionId )
+        {
             var rockContext = new RockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var safeInteraction = new InteractionService( rockContext ).Get( interactionId );
@@ -2020,7 +2051,6 @@ namespace Rock.Model
             var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
 
             // Get the account identifier(s) for this transaction
-            var accountService = new FinancialAccountService( rockContext );
             var transactionAccountIds = transaction.TransactionDetails.Where( a => a.Amount > 0.00M ).Select( t => t.AccountId ).ToList();
             var accountAncestorIds = FinancialAccountCache.GetByIds( transactionAccountIds ).SelectMany( s => s.GetAncestorFinancialAccountIds() ).Distinct().ToList();
 
@@ -2350,8 +2380,7 @@ namespace Rock.Model
                         .FirstOrDefault( ic => ic.Id == structureEntityId.Value );
                     return $"{interactionComponent?.InteractionChannel?.Name} / {interactionComponent?.Name}";
                 case StreakStructureType.FinancialTransaction:
-                    var accountService = new FinancialAccountService( rockContext );
-                    return accountService.GetSelect( structureEntityId.Value, a => a.Name );
+                    return FinancialAccountCache.Get( structureEntityId.Value )?.Name;
                 default:
                     throw new NotImplementedException( string.Format( "Getting structure name for the StreakStructureType '{0}' is not implemented", structureType ) );
             }

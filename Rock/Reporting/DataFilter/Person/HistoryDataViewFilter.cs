@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Select people that are represented in the History entries returned by a specified Data View" )]
     [Export( typeof(DataFilterComponent) )]
     [ExportMetadata( "ComponentName", "History Data View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "EE2E4C8E-0A0C-4270-9DD0-00BB061820F2")]
     public class HistoryDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.History>
     {
         #region Overrides

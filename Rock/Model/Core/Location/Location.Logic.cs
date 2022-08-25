@@ -384,11 +384,13 @@ namespace Rock.Model
         /// <param name="latitude">The latitude.</param>
         /// <param name="longitude">The longitude.</param>
         /// <returns></returns>
-        public static DbGeography GetGeoPoint( double latitude, double longitude )
-        {
 #if REVIEW_NET5_0_OR_GREATER
+        public static NetTopologySuite.Geometries.Point GetGeoPoint( double latitude, double longitude )
+        {
             return new NetTopologySuite.Geometries.Point( longitude, latitude );
 #else
+        public static DbGeography GetGeoPoint( double latitude, double longitude )
+        {
             return DbGeography.FromText( $"POINT({longitude} {latitude})" );
 #endif
         }

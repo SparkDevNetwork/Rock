@@ -1,15 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.TestData
 {
     public static class TestDataHelper
     {
+        #region Person Data
+
+        /// <summary>
+        /// Get a test person record.
+        /// </summary>
+        /// <param name="personGuid">A Guid string, select from the set of values defined in TestGuids.TestPeople.</param>
+        /// <returns></returns>
+        public static Person GetTestPerson( string personGuid )
+        {
+            var rockContext = new RockContext();
+
+            var guid = new Guid( personGuid );
+
+            var person = new PersonService( rockContext ).Queryable()
+                .FirstOrDefault( x => x.Guid == guid );
+
+            Assert.That.IsNotNull( person, "Test person not found in current database." );
+
+            return person;
+        }
+
         private static List<PersonIdPersonAliasId> _PersonIdToAliasIdMap = null;
 
         /// <summary>
@@ -47,6 +69,8 @@ namespace Rock.Tests.Integration.TestData
             public int PersonId { get; set; }
             public int PersonAliasId { get; set; }
         }
+
+        #endregion
 
         private static Random randomGenerator = new Random();
         public static DateTime GetRandomDateInRange( DateTime minDate, DateTime maxDate )

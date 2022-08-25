@@ -56,12 +56,29 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>Properties\AssemblySharedInfo.cs</Link>
+    </Compile>
+    <Compile Include="Cms\ContentCollectionDetail.cs" />
+    <Compile Include="Cms\ContentCollectionView.cs" />
+    <Compile Include="Cms\MediaAccountDetail.cs" />
+    <Compile Include="Cms\MediaFolderDetail.cs" />
+    <Compile Include="Cms\PersistedDatasetDetail.cs" />
+    <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
     <Compile Include="Core\Attributes.cs" />
+    <Compile Include="Core\CampusDetail.cs" />
+    <Compile Include="Crm\AssessmentTypeDetail.cs" />
+    <Compile Include="Crm\PersonDetail\Badges.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
+    <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
+    <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
+    <Compile Include="IHasCustomActions.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RockObsidianDetailBlockType.cs" />
+    <Compile Include="Engagement\Steps\StepFlow.cs" />
     <Compile Include="WorkFlow\FormBuilder\ExtensionMethods.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
@@ -76,6 +93,10 @@
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
       <Name>Rock.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
+      <Name>Rock.Enums</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820CD93-70EE-496D-B17B-0C4C68DD4957}</Project>
       <Name>Rock.Lava.Shared</Name>
@@ -84,9 +105,9 @@
       <Project>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</Project>
       <Name>Rock.Rest</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
       <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
-      <Name>Rock.ViewModel</Name>
+      <Name>Rock.ViewModels</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
@@ -98,11 +119,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Crm\" />
     <Folder Include="Finance\" />
     <Folder Include="Groups\" />
     <Folder Include="Security\" />
     <Folder Include="Utility\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DefaultTvApplication.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -175,6 +175,7 @@ namespace Rock.Workflow.Action
 
     #endregion Attributes
 
+    [Rock.SystemGuid.EntityTypeGuid( "E76463C5-C8CD-40AB-AD5A-0758937CA407")]
     public class PrayerRequestAdd : ActionComponent
     {
         #region Keys

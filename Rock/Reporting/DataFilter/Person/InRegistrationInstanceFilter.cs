@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Filter people on whether they registered (registrar) or were registered (registrant) in the designated registration instance." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Registration Instance Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1F51DA3B-22FE-4093-9DAA-5492B5FB17DA")]
     public class InRegistrationInstanceFilter : DataFilterComponent
     {
         #region Properties

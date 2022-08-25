@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Interaction count of a person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select the Interaction count of a person" )]
+    [Rock.SystemGuid.EntityTypeGuid( "78A6FDE9-5D88-45D8-9081-01A97290186B")]
     public class InteractionCountSelect : DataSelectComponent
     {
         #region Properties

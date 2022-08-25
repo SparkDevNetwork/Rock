@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "7a278b6f-ad6f-4e00-94f0-ce6d0d3ce769" )]
     public partial class FinancialBatchesController
     {
         /// <summary>
@@ -36,7 +35,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/FinancialBatches/GetControlTotals" )]
-        [RockGuid( "76da430f-1470-4bdc-8466-28bdd47894be" )]
+        [Rock.SystemGuid.RestActionGuid( "76DA430F-1470-4BDC-8466-28BDD47894BE" )]
         public IEnumerable<ControlTotalResult> GetControlTotals( System.Web.Http.OData.Query.ODataQueryOptions<FinancialBatch> queryOptions = null )
         {
             var financialBatchQuery = new FinancialBatchService( this.Service.Context as Rock.Data.RockContext ).Queryable();

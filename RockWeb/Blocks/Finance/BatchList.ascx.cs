@@ -64,6 +64,7 @@ namespace RockWeb.Blocks.Finance
         </div>
 " )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25" )]
     public partial class BatchList : RockBlock, IPostBackEventHandler, ICustomGridColumns
     {
         #region Constants
@@ -76,9 +77,7 @@ namespace RockWeb.Blocks.Finance
 
         private RockDropDownList ddlAction;
         public List<AttributeCache> AvailableAttributes { get; set; }
-
-        // Dictionaries to cache values for performance
-        private static Dictionary<int, FinancialAccount> _financialAccountLookup;
+        
 
         #endregion
 
@@ -754,7 +753,6 @@ namespace RockWeb.Blocks.Finance
             try
             {
                 var rockContext = new RockContext();
-                _financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
 
                 var financialBatchQry = GetQuery( rockContext ).AsNoTracking();
 
@@ -964,7 +962,7 @@ namespace RockWeb.Blocks.Finance
             {
                 get
                 {
-                    return _financialAccountLookup[this.AccountId].Order;
+                    return FinancialAccountCache.Get(this.AccountId).Order;
                 }
             }
 
@@ -972,7 +970,7 @@ namespace RockWeb.Blocks.Finance
             {
                 get
                 {
-                    return _financialAccountLookup[this.AccountId].Name;
+                    return FinancialAccountCache.Get( this.AccountId ).Name;
                 }
             }
 

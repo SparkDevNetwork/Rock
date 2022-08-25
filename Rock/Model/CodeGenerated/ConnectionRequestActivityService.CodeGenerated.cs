@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// ConnectionRequestActivity View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ConnectionRequestActivity ) )]
-    public partial class ConnectionRequestActivityViewModelHelper : ViewModelHelper<ConnectionRequestActivity, Rock.ViewModel.ConnectionRequestActivityViewModel>
+    public partial class ConnectionRequestActivityViewModelHelper : ViewModelHelper<ConnectionRequestActivity, ConnectionRequestActivityBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ConnectionRequestActivityViewModel CreateViewModel( ConnectionRequestActivity model, Person currentPerson = null, bool loadAttributes = true )
+        public override ConnectionRequestActivityBag CreateViewModel( ConnectionRequestActivity model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ConnectionRequestActivityViewModel
+            var viewModel = new ConnectionRequestActivityBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ConnectionActivityTypeId = model.ConnectionActivityTypeId,
                 ConnectionOpportunityId = model.ConnectionOpportunityId,
                 ConnectionRequestId = model.ConnectionRequestId,
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ConnectionRequestActivityViewModel ToViewModel( this ConnectionRequestActivity model, Person currentPerson = null, bool loadAttributes = false )
+        public static ConnectionRequestActivityBag ToViewModel( this ConnectionRequestActivity model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ConnectionRequestActivityViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

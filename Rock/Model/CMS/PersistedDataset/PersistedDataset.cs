@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [Table( "PersistedDataset" )]
     [DataContract]
     [HideFromReporting]
+    [Rock.SystemGuid.EntityTypeGuid( "9C3064C0-CF9C-4549-9A80-022514B7FF83")]
     public partial class PersistedDataset : Entity<PersistedDataset>, ICacheable
     {
         #region Entity Properties

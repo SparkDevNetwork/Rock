@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -38,7 +39,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Blocks REST API
     /// </summary>
-    [RockGuid( "60138ac3-59ee-405a-ae0b-a785695dd417" )]
     public partial class BlocksController
     {
         /// <summary>
@@ -46,7 +46,6 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="id">The identifier.</param>
         [Authenticate, Secured]
-        [RockGuid( "7a67a9b4-aabd-4fd6-99e0-de04f994c7c3" )]
         public override void Delete( int id )
         {
             SetProxyCreation( true );
@@ -77,7 +76,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPut]
         [System.Web.Http.Route( "api/blocks/move/{id}" )]
-        [RockGuid( "74a94f70-73f0-41fd-ab4a-6104c971cec2" )]
+        [Rock.SystemGuid.RestActionGuid( "74A94F70-73F0-41FD-AB4A-6104C971CEC2" )]
         public void Move( int id, Block block )
         {
             var person = GetPerson();
@@ -121,10 +120,10 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/blocks/action/{blockGuid}/{actionName}" )]
         [RockObsolete( "1.13" )]
         [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead.")]
-        [RockGuid( "e025b9b5-060a-4853-ac78-0d5b850771f8" )]
-        public IHttpActionResult BlockAction( Guid blockGuid, string actionName )
+        [Rock.SystemGuid.RestActionGuid( "E025B9B5-060A-4853-AC78-0D5B850771F8" )]
+        public async Task<IHttpActionResult> BlockAction( Guid blockGuid, string actionName )
         {
-            return v2.BlockActionsController.ProcessAction( this, null, blockGuid, actionName, null );
+            return await v2.BlockActionsController.ProcessAction( this, null, blockGuid, actionName, null );
         }
 
         /// <summary>
@@ -139,12 +138,12 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/blocks/action/{blockGuid}/{actionName}" )]
         [RockObsolete( "1.13" )]
         [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead." )]
-        [RockGuid( "227011dc-2242-4dba-a931-526dc52951ea" )]
-        public IHttpActionResult BlockActionAsPost( string blockGuid, string actionName, [NakedBody] string parameters )
+        [Rock.SystemGuid.RestActionGuid( "227011DC-2242-4DBA-A931-526DC52951EA" )]
+        public async Task<IHttpActionResult> BlockActionAsPost( string blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )
             {
-                return v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, null );
+                return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, null );
             }
 
             //
@@ -160,7 +159,7 @@ namespace Rock.Rest.Controllers
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, parameterToken );
+                    return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, parameterToken );
                 }
             }
         }
@@ -175,10 +174,10 @@ namespace Rock.Rest.Controllers
         [Authenticate]
         [HttpGet]
         [System.Web.Http.Route( "api/blocks/action/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        [RockGuid( "31ea4036-31e1-4a0b-9354-44bec3c228eb" )]
-        public IHttpActionResult BlockAction( string pageGuid, string blockGuid, string actionName )
+        [Rock.SystemGuid.RestActionGuid( "31EA4036-31E1-4A0B-9354-44BEC3C228EB" )]
+        public async Task<IHttpActionResult> BlockAction( string pageGuid, string blockGuid, string actionName )
         {
-            return v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null );
+            return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null );
         }
 
         /// <summary>
@@ -191,12 +190,12 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate]
         [System.Web.Http.Route( "api/blocks/action/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
-        [RockGuid( "dcd0bb91-f857-4627-a420-8caa1acf99d3" )]
-        public IHttpActionResult BlockAction( string pageGuid, string blockGuid, string actionName, [NakedBody] string parameters )
+        [Rock.SystemGuid.RestActionGuid( "DCD0BB91-F857-4627-A420-8CAA1ACF99D3" )]
+        public async Task<IHttpActionResult> BlockAction( string pageGuid, string blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )
             {
-                return v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null );
+                return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, null );
             }
 
             //
@@ -212,7 +211,7 @@ namespace Rock.Rest.Controllers
                 {
                     var parameterToken = JToken.ReadFrom( jsonReader );
 
-                    return v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, parameterToken );
+                    return await v2.BlockActionsController.ProcessAction( this, pageGuid.AsGuidOrNull(), blockGuid.AsGuidOrNull(), actionName, parameterToken );
                 }
             }
         }
@@ -228,9 +227,9 @@ namespace Rock.Rest.Controllers
         [RockObsolete( "1.11" )]
         [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead." )]
         [Authenticate]
-        public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
+        public async Task<IHttpActionResult> BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
         {
-            return v2.BlockActionsController.ProcessAction( this, pageIdentifier.AsGuidOrNull(), blockIdentifier.AsGuidOrNull(), actionName, parameters );
+            return await v2.BlockActionsController.ProcessAction( this, pageIdentifier.AsGuidOrNull(), blockIdentifier.AsGuidOrNull(), actionName, parameters );
         }
     }
 }

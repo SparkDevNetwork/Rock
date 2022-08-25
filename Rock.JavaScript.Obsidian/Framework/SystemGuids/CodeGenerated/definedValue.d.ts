@@ -21,7 +21,18 @@
 // </copyright>
 //
 
+/** Static Guids used by the Rock application */
 export const enum DefinedValue {
+    /** The block template for the mobile group schedule preference landing page. */
+    BlockTemplateMobileGroupScheduleSignupLandingPage = "7F89AE4D-BD8B-49ED-B8EC-F883D43505F2",
+    /** The block template for the mobile group schedule preference landing page. */
+    BlockTemplateMobileGroupSchedulePreferenceLandingPage = "D39CCB65-2444-48E4-9DE1-7A01AB20CB61",
+    /** The block template for mobile group schedule unavailability block.  */
+    BlockTemplateMobileGroupScheduleUnavailability = "48EE4803-66BE-43A0-A7CF-E2D669DB2D21",
+    /** The block template for mobile group schedule toolbox block. */
+    BlockTemplateMobileGroupScheduleToolbox = "7E11BEF1-F6F7-49E3-8804-90AC1CB9AD25",
+    /** The block template for mobile group schedule toolbox decline modal. */
+    BlockTemplateMobileGroupScheduleToolboxDeclineModal = "68ACFE34-C1D9-40C6-9AB1-9E6F4DA846EE",
     /** The block template for mobile answer to prayer block. */
     BlockTemplateMobileAnswerToPrayer = "D13256E3-D9ED-45C2-8EF7-C4AABCF4B2B7",
     /** The block template for the event template on the mobile calendar event list. */
@@ -38,7 +49,7 @@ export const enum DefinedValue {
     BlockTemplateMobileConnectionConnectionRequestList = "4A45926C-5571-414C-8C69-8203FDBF4AE7",
     /** The block template for the Mobile &gt; Connection &gt; Connection Request Detail block. */
     BlockTemplateMobileConnectionConnectionRequestDetail = "44538702-5157-489A-B256-217F5D1F53F4",
-    /** The block template for  block. */
+    /** The block template for Rock.Blocks.Types.Mobile.Core.Search block. */
     BlockTemplateMobileCoreSearch = "CFEB7FA6-0F19-496B-8DCC-4D200AEEE866",
     /** The block template mobile daily challenge entry */
     BlockTemplateMobileDailyChallengeEntry = "30ECA4B6-0869-4656-A4CD-B8729CB29E76",
@@ -150,8 +161,10 @@ export const enum DefinedValue {
     TransactionTypeContribution = "2D607262-52D6-4724-910D-5C6E8FB89ACC",
     /** An Event Registration Transaction */
     TransactionTypeEventRegistration = "33CB96DD-8752-4BEE-A142-88DB7DE538F0",
-    /** A Transaction Type of Receipt
-NOTE: This is not a core transaction type. It'll get created if needed when importing transactions from Slingshot */
+    /**
+     * A Transaction Type of Receipt
+     * NOTE: This is not a core transaction type. It'll get created if needed when importing transactions from Slingshot
+     */
     TransactionTypeReceipt = "F57AAF36-F208-4A85-A078-E2B1F91798EB",
     /** The financial source of bank check */
     FinancialSourceTypeBankCheck = "61E46A46-7399-4817-A6EC-3D8495E2316E",
@@ -173,8 +186,10 @@ NOTE: This is not a core transaction type. It'll get created if needed when impo
     GroupLocationTypePrevious = "853D98F1-6E08-4321-861B-520B4106CFE0",
     /** Meeting Location Type */
     GroupLocationTypeMeetingLocation = "96D540F5-071D-4BBD-9906-28F0A64D39C4",
-    /** Some other type of Group Location
-NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slingshot. */
+    /**
+     * Some other type of Group Location
+     * NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slingshot.
+     */
     GroupLocationTypeOther = "D49965C7-5254-4D2D-BC77-F390375F0C44",
     /** Group Type Purpose of Check-in Template (Weekly Service Check-in, etc) */
     GrouptypePurposeCheckinTemplate = "4A406CB0-495B-4795-B788-52BDFDE00B01",
@@ -471,4 +486,3 @@ NOTE: This is not a core group location type. It'll get created if needed when i
     /** Translation Languages - Spanish */
     LanguageSpanish = "C93CB430-8554-E599-4F49-D7F3CED2B2C7",
 }
-

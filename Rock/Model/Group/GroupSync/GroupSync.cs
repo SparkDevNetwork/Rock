@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupSync" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "1C011499-1122-4429-9AFA-6578798E18A9")]
     public partial class GroupSync : Model<GroupSync>
     {
         #region Entity Properties

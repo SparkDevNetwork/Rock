@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Extension;
 using Rock.Web.Cache;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -85,7 +86,7 @@ namespace Rock.Web.UI.Controls
                 return null;
             }
 
-            var resolvedContainerType = Type.GetType( ContainerType );
+            var resolvedContainerType = Container.ResolveContainer( ContainerType );
 
             if ( resolvedContainerType == null )
             {

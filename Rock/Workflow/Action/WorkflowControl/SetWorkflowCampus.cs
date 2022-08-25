@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,7 @@ namespace Rock.Workflow.Action.WorkflowControl
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( "6C59E23A-EF4D-4392-8B06-7FC21278DD9F")]
     public class SetWorkflowCampus : ActionComponent
     {
         #region Attribute Keys

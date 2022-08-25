@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// EventCalendarItem View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( EventCalendarItem ) )]
-    public partial class EventCalendarItemViewModelHelper : ViewModelHelper<EventCalendarItem, Rock.ViewModel.EventCalendarItemViewModel>
+    public partial class EventCalendarItemViewModelHelper : ViewModelHelper<EventCalendarItem, EventCalendarItemBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.EventCalendarItemViewModel CreateViewModel( EventCalendarItem model, Person currentPerson = null, bool loadAttributes = true )
+        public override EventCalendarItemBag CreateViewModel( EventCalendarItem model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.EventCalendarItemViewModel
+            var viewModel = new EventCalendarItemBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 EventCalendarId = model.EventCalendarId,
                 EventItemId = model.EventItemId,
                 CreatedDateTime = model.CreatedDateTime,
@@ -172,7 +172,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.EventCalendarItemViewModel ToViewModel( this EventCalendarItem model, Person currentPerson = null, bool loadAttributes = false )
+        public static EventCalendarItemBag ToViewModel( this EventCalendarItem model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new EventCalendarItemViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

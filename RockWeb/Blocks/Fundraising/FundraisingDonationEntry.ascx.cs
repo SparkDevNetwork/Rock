@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Fundraising
     [BooleanField( "Allow Automatic Selection", "If enabled and there is only one participant and registrations are not enabled then that participant will automatically be selected and this page will get bypassed.", defaultValue: false, order: 3 )]
     [GroupField( "Root Group", "Select the group that will be used as the base of the list.", required: false, order: 4 )]
    
+    [Rock.SystemGuid.BlockTypeGuid( "A24D68F2-C58B-4322-AED8-6556DBED1B76" )]
     public partial class FundraisingDonationEntry : RockBlock
     {
         #region Base Control Methods

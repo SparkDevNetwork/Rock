@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -47,6 +47,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Content Channel Item Attribute", "An optional content channel item attribute to store the item that is created.", false, "", "", 6, null,
         new string[] { "Rock.Field.Types.ContentChannelItemFieldType" } )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "B61F6FF1-7376-4150-B8A1-8DB246613834")]
     public class AddContentChannelItem : ActionComponent
     {
         /// <summary>

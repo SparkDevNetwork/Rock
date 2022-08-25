@@ -152,7 +152,7 @@ namespace Rock.Jobs
                                     eraEndAttributeValue.AttributeId = eraEndAttribute.Id;
                                     attributeValueService.Add( eraEndAttributeValue );
                                 }
-                                eraEndAttributeValue.Value = RockDateTime.Now.ToString();
+                                eraEndAttributeValue.Value = RockDateTime.Now.ToISO8601DateString();
 
                                 // add a history record
                                 if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
@@ -226,7 +226,7 @@ namespace Rock.Jobs
                                 eraStartAttributeValue.AttributeId = eraStartAttribute.Id;
                                 attributeValueService.Add( eraStartAttributeValue );
                             }
-                            eraStartAttributeValue.Value = RockDateTime.Now.ToString();
+                            eraStartAttributeValue.Value = RockDateTime.Now.ToISO8601DateString();
 
                             // delete end date if it exists
                             var eraEndAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraEndAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();

@@ -67,7 +67,7 @@ namespace Rock.Model
             var qry = Queryable();
 
             if ( options.ConnectionOpportunityGuids != null && options.ConnectionOpportunityGuids.Any() )
-            { 
+            {
                 qry = qry.Where( r => options.ConnectionOpportunityGuids.Contains( r.ConnectionOpportunity.Guid ) );
             }
 
@@ -272,9 +272,9 @@ namespace Rock.Model
                 {
                     requestsOfStatusQuery = requestsOfStatusQuery.Take( maxRequestsPerStatus.Value );
                 }
-                
+
                 statusViewModel.Requests = requestsOfStatusQuery.ToList();
-               
+
                 if ( statusViewModel.HighlightColor.IsNullOrWhiteSpace() )
                 {
                     statusViewModel.HighlightColor = ConnectionStatus.DefaultHighlightColor;
@@ -485,7 +485,17 @@ namespace Rock.Model
 
             var rockContext = Context as RockContext;
             var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-            var connectionOpportunity = connectionOpportunityService.Get( connectionOpportunityId );
+
+            /*
+             * 13-May-2022 DMV
+             *
+             * When using the ConnectionOpportunityService, if the connection type
+             * is not included, there are cases were the ParentAuthority will
+             * no be set correctly. See https://github.com/SparkDevNetwork/Rock/issues/5009
+             *
+             */
+            var connectionOpportunity = connectionOpportunityService.GetInclude( connectionOpportunityId, co => co.ConnectionType );
+
             var connectionType = connectionOpportunity == null ?
                 null :
                 ConnectionTypeCache.Get( connectionOpportunity.ConnectionTypeId );

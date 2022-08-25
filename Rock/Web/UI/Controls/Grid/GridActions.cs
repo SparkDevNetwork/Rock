@@ -659,16 +659,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAdd control.
+        /// Handles the Click event of the lbCommunicate control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void lbCommunicate_Click( object sender, EventArgs e )
         {
-            if ( CommunicateClick != null )
-            {
-                CommunicateClick( sender, e );
-            }
+            CommunicateClick?.Invoke( sender, e );
         }
 
         /// <summary>
@@ -740,6 +737,16 @@ namespace Rock.Web.UI.Controls
         {
             _customActionConfigEvents.Add( customConfig );
             RecreateChildControls();
+        }
+
+        /// <summary>
+        /// Allows a grid action to invoke the same EventHandler as the Communicate click.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void InvokeCommunicateClick( object sender, EventArgs e )
+        {
+            CommunicateClick?.Invoke( sender, e );
         }
 
         #endregion

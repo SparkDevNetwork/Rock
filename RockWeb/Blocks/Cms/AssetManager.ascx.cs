@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Asset Manager" )]
     [Category( "CMS" )]
     [Description( "Manage files stored on a remote server or 3rd party cloud storage" )]
+    [Rock.SystemGuid.BlockTypeGuid( "13165D92-9CCD-4071-8484-3956169CB640" )]
     public partial class AssetManager : RockBlock, IPickerBlock
     {
         private const string NullSelectedId = "-1";
@@ -298,6 +299,7 @@ upnlFiles.ClientID // {2}
         {
             AssetStorageProvider assetStorageProvider = GetAssetStorageProvider();
             var component = assetStorageProvider.GetAssetStorageComponent();
+            var rootFolder = component.GetRootFolder( assetStorageProvider );
 
             foreach ( RepeaterItem file in rptFiles.Items )
             {
@@ -306,6 +308,11 @@ upnlFiles.ClientID // {2}
                 {
                     var keyControl = file.FindControl( "lbKey" ) as Label;
                     string key = keyControl.Text;
+                    if ( !key.StartsWith( rootFolder ) )
+                    {
+                        throw new Exception( "Invalid File Path" );
+                    }
+
                     Asset asset = component.GetObject( assetStorageProvider, new Asset { Key = key, Type = AssetType.File }, false );
 
                     byte[] bytes = asset.AssetStream.ReadBytesToEnd();

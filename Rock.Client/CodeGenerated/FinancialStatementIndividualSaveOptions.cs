@@ -47,7 +47,12 @@ namespace Rock.Client
         public int? DocumentTypeId { get; set; }
 
         /// <summary />
-        public bool OverwriteDocumentsOfThisTypeCreatedOnSameDate { get; set; } = true;
+        // Made Obsolete in Rock "1.13"
+        [Obsolete( "Use OverwriteDocumentsOfThisTypeWithSamePurposeKey instead.", false )]
+        public bool OverwriteDocumentsOfThisTypeCreatedOnSameDate { get; set; }
+
+        /// <summary />
+        public bool OverwriteDocumentsOfThisTypeWithSamePurposeKey { get; set; } = true;
 
         /// <summary />
         public bool SaveStatementsForIndividuals { get; set; }
@@ -63,7 +68,10 @@ namespace Rock.Client
             this.DocumentPurposeKey = source.DocumentPurposeKey;
             this.DocumentSaveFor = source.DocumentSaveFor;
             this.DocumentTypeId = source.DocumentTypeId;
+            #pragma warning disable 612, 618
             this.OverwriteDocumentsOfThisTypeCreatedOnSameDate = source.OverwriteDocumentsOfThisTypeCreatedOnSameDate;
+            #pragma warning restore 612, 618
+            this.OverwriteDocumentsOfThisTypeWithSamePurposeKey = source.OverwriteDocumentsOfThisTypeWithSamePurposeKey;
             this.SaveStatementsForIndividuals = source.SaveStatementsForIndividuals;
 
         }

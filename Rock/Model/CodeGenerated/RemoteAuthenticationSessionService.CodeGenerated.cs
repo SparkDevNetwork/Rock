@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// RemoteAuthenticationSession View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( RemoteAuthenticationSession ) )]
-    public partial class RemoteAuthenticationSessionViewModelHelper : ViewModelHelper<RemoteAuthenticationSession, Rock.ViewModel.RemoteAuthenticationSessionViewModel>
+    public partial class RemoteAuthenticationSessionViewModelHelper : ViewModelHelper<RemoteAuthenticationSession, RemoteAuthenticationSessionBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.RemoteAuthenticationSessionViewModel CreateViewModel( RemoteAuthenticationSession model, Person currentPerson = null, bool loadAttributes = true )
+        public override RemoteAuthenticationSessionBag CreateViewModel( RemoteAuthenticationSession model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.RemoteAuthenticationSessionViewModel
+            var viewModel = new RemoteAuthenticationSessionBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 AuthenticationIpAddress = model.AuthenticationIpAddress,
                 AuthorizedPersonAliasId = model.AuthorizedPersonAliasId,
                 ClientIpAddress = model.ClientIpAddress,
@@ -186,7 +186,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.RemoteAuthenticationSessionViewModel ToViewModel( this RemoteAuthenticationSession model, Person currentPerson = null, bool loadAttributes = false )
+        public static RemoteAuthenticationSessionBag ToViewModel( this RemoteAuthenticationSession model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new RemoteAuthenticationSessionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

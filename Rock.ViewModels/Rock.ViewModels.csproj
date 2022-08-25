@@ -1,0 +1,431 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{05BAAF85-9C53-4CCD-A535-036427B0DF72}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rock.ViewModels</RootNamespace>
+    <AssemblyName>Rock.ViewModels</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Rock.ViewModels.xml</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Rock.ViewModels.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Blocks\BlockBox.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionDetail\AttributeFilterBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionDetail\AvailableContentSourceBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionDetail\ContentCollectionBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionDetail\ContentCollectionDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionDetail\ContentSourceBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionDetail\FilterSettingsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\ContentCollectionInitializationBox.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\ContentCollectionListItemBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\CustomSettingsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\CustomSettingsOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\FilterOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\SearchFilterBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\SearchQueryBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\SearchResultBag.cs" />
+    <Compile Include="Blocks\Cms\ContentCollectionView\SearchResultSourceBag.cs" />
+    <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountBag.cs" />
+    <Compile Include="Blocks\Cms\MediaAccountDetail\MediaAccountDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderDetail\MediaFolderBag.cs" />
+    <Compile Include="Blocks\Cms\MediaFolderDetail\MediaFolderDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetBag.cs" />
+    <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\CampusDetail\CampusBag.cs" />
+    <Compile Include="Blocks\Core\CampusDetail\CampusDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\CampusDetail\CampusScheduleBag.cs" />
+    <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeBag.cs" />
+    <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\PersonDetail\Badges\BadgesConfigurationBox.cs" />
+    <Compile Include="Blocks\CustomSettingsBox.cs" />
+    <Compile Include="Blocks\DetailBlockBox.cs" />
+    <Compile Include="Blocks\Engagement\StepFlowBox.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSuccessViewModel.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockViewModel.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResult.cs" />
+    <Compile Include="Blocks\Groups\GroupSchedulePreference\AssignmentScheduleAndLocationBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleSignup\PersonScheduleSignupDataBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleSignup\PersonScheduleSignupBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleToolbox\ConfirmDeclineBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleToolbox\ContentBag.cs" />
+    <Compile Include="Blocks\Groups\GroupScheduleUnavailability\ContentBag.cs" />
+    <Compile Include="Blocks\Groups\LandingPageContentBag.cs" />
+    <Compile Include="Blocks\Groups\GroupSchedulePreference\PreferencePageContentBag.cs" />
+    <Compile Include="Blocks\IValidPropertiesBox.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\CampusSetFrom.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormBuilderDetailViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionType.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormCompletionActionViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormConfirmationEmailViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormEmailSourceType.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormEmailSourceViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldTypeViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldVisibility.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormGeneralViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormNotificationEmailDestination.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormNotificationEmailViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormOtherAttributeViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormPersonEntryViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormSectionViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormSettingsViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateDetail\FormTemplateDetailConfiguration.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateDetail\TemplateDetailViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateDetail\TemplateEditDetailViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateDetail\ValueSourcesViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateListItemViewModel.cs" />
+    <Compile Include="Blocks\WorkFlow\FormBuilder\FormValueSourcesViewModel.cs" />
+    <Compile Include="Blocks\Engagement\FlowNodeDiagramBag.cs" />
+    <Compile Include="Cms\ContentCollectionSourceAdditionalSettingsBag.cs" />
+    <Compile Include="Cms\ContentCollectionAttributeFilterSettingsBag.cs" />
+    <Compile Include="Cms\ContentCollectionFilterSettingsBag.cs" />
+    <Compile Include="Cms\ObsidianBlockConfigBag.cs" />
+    <Compile Include="Cms\BlockCustomActionBag.cs" />
+    <Compile Include="Controls\SlidingDateRangeBox.cs" />
+    <Compile Include="Controls\ElectronicSignatureValueViewModel.cs" />
+    <Compile Include="Controls\FieldTypeEditorGetAvailableFieldTypesOptionsBag.cs" />
+    <Compile Include="Crm\RenderedBadgeBag.cs" />
+    <Compile Include="Entities\AchievementAttemptBag.cs" />
+    <Compile Include="Entities\AchievementTypeBag.cs" />
+    <Compile Include="Entities\AchievementTypePrerequisiteBag.cs" />
+    <Compile Include="Entities\AssessmentBag.cs" />
+    <Compile Include="Entities\AssessmentTypeBag.cs" />
+    <Compile Include="Entities\AssetStorageProviderBag.cs" />
+    <Compile Include="Entities\AttendanceBag.cs" />
+    <Compile Include="Entities\AttendanceOccurrenceBag.cs" />
+    <Compile Include="Entities\AttributeBag.cs" />
+    <Compile Include="Entities\AttributeMatrixBag.cs" />
+    <Compile Include="Entities\AttributeMatrixItemBag.cs" />
+    <Compile Include="Entities\AttributeMatrixTemplateBag.cs" />
+    <Compile Include="Entities\AttributeValueBag.cs" />
+    <Compile Include="Entities\AttributeValueHistoricalBag.cs" />
+    <Compile Include="Entities\AuthBag.cs" />
+    <Compile Include="Entities\AuthClaimBag.cs" />
+    <Compile Include="Entities\AuthClientBag.cs" />
+    <Compile Include="Entities\AuthScopeBag.cs" />
+    <Compile Include="Entities\BackgroundCheckBag.cs" />
+    <Compile Include="Entities\BadgeBag.cs" />
+    <Compile Include="Entities\BenevolenceRequestBag.cs" />
+    <Compile Include="Entities\BenevolenceRequestDocumentBag.cs" />
+    <Compile Include="Entities\BenevolenceResultBag.cs" />
+    <Compile Include="Entities\BenevolenceTypeBag.cs" />
+    <Compile Include="Entities\BenevolenceWorkflowBag.cs" />
+    <Compile Include="Entities\BinaryFileBag.cs" />
+    <Compile Include="Entities\BinaryFileDataBag.cs" />
+    <Compile Include="Entities\BinaryFileTypeBag.cs" />
+    <Compile Include="Entities\BlockBag.cs" />
+    <Compile Include="Entities\BlockTypeBag.cs" />
+    <Compile Include="Entities\CampusBag.cs" />
+    <Compile Include="Entities\CampusScheduleBag.cs" />
+    <Compile Include="Entities\CampusTopicBag.cs" />
+    <Compile Include="Entities\CategoryBag.cs" />
+    <Compile Include="Entities\CommunicationAttachmentBag.cs" />
+    <Compile Include="Entities\CommunicationBag.cs" />
+    <Compile Include="Entities\CommunicationRecipientBag.cs" />
+    <Compile Include="Entities\CommunicationResponseAttachmentBag.cs" />
+    <Compile Include="Entities\CommunicationResponseBag.cs" />
+    <Compile Include="Entities\CommunicationTemplateAttachmentBag.cs" />
+    <Compile Include="Entities\CommunicationTemplateBag.cs" />
+    <Compile Include="Entities\ConnectionActivityTypeBag.cs" />
+    <Compile Include="Entities\ConnectionOpportunityBag.cs" />
+    <Compile Include="Entities\ConnectionOpportunityCampusBag.cs" />
+    <Compile Include="Entities\ConnectionOpportunityConnectorGroupBag.cs" />
+    <Compile Include="Entities\ConnectionOpportunityGroupBag.cs" />
+    <Compile Include="Entities\ConnectionOpportunityGroupConfigBag.cs" />
+    <Compile Include="Entities\ConnectionRequestActivityBag.cs" />
+    <Compile Include="Entities\ConnectionRequestBag.cs" />
+    <Compile Include="Entities\ConnectionRequestWorkflowBag.cs" />
+    <Compile Include="Entities\ConnectionStatusAutomationBag.cs" />
+    <Compile Include="Entities\ConnectionStatusBag.cs" />
+    <Compile Include="Entities\ConnectionTypeBag.cs" />
+    <Compile Include="Entities\ConnectionWorkflowBag.cs" />
+    <Compile Include="Entities\ContentChannelBag.cs" />
+    <Compile Include="Entities\ContentChannelItemAssociationBag.cs" />
+    <Compile Include="Entities\ContentChannelItemBag.cs" />
+    <Compile Include="Entities\ContentChannelItemSlugBag.cs" />
+    <Compile Include="Entities\ContentChannelTypeBag.cs" />
+    <Compile Include="Entities\ContentCollectionBag.cs" />
+    <Compile Include="Entities\ContentCollectionSourceBag.cs" />
+    <Compile Include="Entities\DataViewBag.cs" />
+    <Compile Include="Entities\DataViewFilterBag.cs" />
+    <Compile Include="Entities\DefinedTypeBag.cs" />
+    <Compile Include="Entities\DefinedValueBag.cs" />
+    <Compile Include="Entities\DeviceBag.cs" />
+    <Compile Include="Entities\DocumentBag.cs" />
+    <Compile Include="Entities\DocumentTypeBag.cs" />
+    <Compile Include="Entities\EntityCampusFilterBag.cs" />
+    <Compile Include="Entities\EntitySetBag.cs" />
+    <Compile Include="Entities\EntitySetItemBag.cs" />
+    <Compile Include="Entities\EventCalendarBag.cs" />
+    <Compile Include="Entities\EventCalendarContentChannelBag.cs" />
+    <Compile Include="Entities\EventCalendarItemBag.cs" />
+    <Compile Include="Entities\EventItemAudienceBag.cs" />
+    <Compile Include="Entities\EventItemBag.cs" />
+    <Compile Include="Entities\EventItemOccurrenceBag.cs" />
+    <Compile Include="Entities\EventItemOccurrenceChannelItemBag.cs" />
+    <Compile Include="Entities\EventItemOccurrenceGroupMapBag.cs" />
+    <Compile Include="Entities\ExceptionLogBag.cs" />
+    <Compile Include="Entities\FieldTypeBag.cs" />
+    <Compile Include="Entities\FinancialAccountBag.cs" />
+    <Compile Include="Entities\FinancialBatchBag.cs" />
+    <Compile Include="Entities\FinancialGatewayBag.cs" />
+    <Compile Include="Entities\FinancialPaymentDetailBag.cs" />
+    <Compile Include="Entities\FinancialPersonBankAccountBag.cs" />
+    <Compile Include="Entities\FinancialPersonSavedAccountBag.cs" />
+    <Compile Include="Entities\FinancialPledgeBag.cs" />
+    <Compile Include="Entities\FinancialScheduledTransactionBag.cs" />
+    <Compile Include="Entities\FinancialScheduledTransactionDetailBag.cs" />
+    <Compile Include="Entities\FinancialStatementTemplateBag.cs" />
+    <Compile Include="Entities\FinancialTransactionAlertBag.cs" />
+    <Compile Include="Entities\FinancialTransactionAlertTypeBag.cs" />
+    <Compile Include="Entities\FinancialTransactionBag.cs" />
+    <Compile Include="Entities\FinancialTransactionDetailBag.cs" />
+    <Compile Include="Entities\FinancialTransactionImageBag.cs" />
+    <Compile Include="Entities\FinancialTransactionRefundBag.cs" />
+    <Compile Include="Entities\FollowingBag.cs" />
+    <Compile Include="Entities\FollowingEventNotificationBag.cs" />
+    <Compile Include="Entities\FollowingEventSubscriptionBag.cs" />
+    <Compile Include="Entities\FollowingEventTypeBag.cs" />
+    <Compile Include="Entities\FollowingSuggestedBag.cs" />
+    <Compile Include="Entities\FollowingSuggestionTypeBag.cs" />
+    <Compile Include="Entities\GroupBag.cs" />
+    <Compile Include="Entities\GroupDemographicTypeBag.cs" />
+    <Compile Include="Entities\GroupDemographicValueBag.cs" />
+    <Compile Include="Entities\GroupHistoricalBag.cs" />
+    <Compile Include="Entities\GroupLocationBag.cs" />
+    <Compile Include="Entities\GroupLocationHistoricalBag.cs" />
+    <Compile Include="Entities\GroupMemberAssignmentBag.cs" />
+    <Compile Include="Entities\GroupMemberBag.cs" />
+    <Compile Include="Entities\GroupMemberHistoricalBag.cs" />
+    <Compile Include="Entities\GroupMemberRequirementBag.cs" />
+    <Compile Include="Entities\GroupMemberScheduleTemplateBag.cs" />
+    <Compile Include="Entities\GroupRequirementBag.cs" />
+    <Compile Include="Entities\GroupRequirementTypeBag.cs" />
+    <Compile Include="Entities\GroupScheduleExclusionBag.cs" />
+    <Compile Include="Entities\GroupSyncBag.cs" />
+    <Compile Include="Entities\GroupTypeBag.cs" />
+    <Compile Include="Entities\GroupTypeRoleBag.cs" />
+    <Compile Include="Entities\HistoryBag.cs" />
+    <Compile Include="Entities\HtmlContentBag.cs" />
+    <Compile Include="Entities\IdentityVerificationBag.cs" />
+    <Compile Include="Entities\IdentityVerificationCodeBag.cs" />
+    <Compile Include="Entities\InteractionBag.cs" />
+    <Compile Include="Entities\InteractionChannelBag.cs" />
+    <Compile Include="Entities\InteractionComponentBag.cs" />
+    <Compile Include="Entities\InteractionDeviceTypeBag.cs" />
+    <Compile Include="Entities\InteractionSessionBag.cs" />
+    <Compile Include="Entities\InteractionSessionLocationBag.cs" />
+    <Compile Include="Entities\LavaShortcodeBag.cs" />
+    <Compile Include="Entities\LayoutBag.cs" />
+    <Compile Include="Entities\LocationBag.cs" />
+    <Compile Include="Entities\MediaAccountBag.cs" />
+    <Compile Include="Entities\MediaElementBag.cs" />
+    <Compile Include="Entities\MediaFolderBag.cs" />
+    <Compile Include="Entities\MergeTemplateBag.cs" />
+    <Compile Include="Entities\MetricBag.cs" />
+    <Compile Include="Entities\MetricPartitionBag.cs" />
+    <Compile Include="Entities\MetricValueBag.cs" />
+    <Compile Include="Entities\MetricValuePartitionBag.cs" />
+    <Compile Include="Entities\NcoaHistoryBag.cs" />
+    <Compile Include="Entities\NoteAttachmentBag.cs" />
+    <Compile Include="Entities\NoteBag.cs" />
+    <Compile Include="Entities\NoteTypeBag.cs" />
+    <Compile Include="Entities\NoteWatchBag.cs" />
+    <Compile Include="Entities\NotificationBag.cs" />
+    <Compile Include="Entities\NotificationRecipientBag.cs" />
+    <Compile Include="Entities\PageBag.cs" />
+    <Compile Include="Entities\PageContextBag.cs" />
+    <Compile Include="Entities\PageRouteBag.cs" />
+    <Compile Include="Entities\PageShortLinkBag.cs" />
+    <Compile Include="Entities\PersonalDeviceBag.cs" />
+    <Compile Include="Entities\PersonalizationSegmentBag.cs" />
+    <Compile Include="Entities\PersonalLinkBag.cs" />
+    <Compile Include="Entities\PersonalLinkSectionBag.cs" />
+    <Compile Include="Entities\PersonalLinkSectionOrderBag.cs" />
+    <Compile Include="Entities\PersonBag.cs" />
+    <Compile Include="Entities\PersonDuplicateBag.cs" />
+    <Compile Include="Entities\PersonPreviousNameBag.cs" />
+    <Compile Include="Entities\PersonScheduleExclusionBag.cs" />
+    <Compile Include="Entities\PersonSearchKeyBag.cs" />
+    <Compile Include="Entities\PersonSignalBag.cs" />
+    <Compile Include="Entities\PhoneNumberBag.cs" />
+    <Compile Include="Entities\PluginMigrationBag.cs" />
+    <Compile Include="Entities\PrayerRequestBag.cs" />
+    <Compile Include="Entities\RegistrationBag.cs" />
+    <Compile Include="Entities\RegistrationInstanceBag.cs" />
+    <Compile Include="Entities\RegistrationRegistrantBag.cs" />
+    <Compile Include="Entities\RegistrationRegistrantFeeBag.cs" />
+    <Compile Include="Entities\RegistrationSessionBag.cs" />
+    <Compile Include="Entities\RegistrationTemplateBag.cs" />
+    <Compile Include="Entities\RegistrationTemplateDiscountBag.cs" />
+    <Compile Include="Entities\RegistrationTemplateFeeBag.cs" />
+    <Compile Include="Entities\RegistrationTemplateFeeItemBag.cs" />
+    <Compile Include="Entities\RegistrationTemplateFormBag.cs" />
+    <Compile Include="Entities\RegistrationTemplateFormFieldBag.cs" />
+    <Compile Include="Entities\RegistrationTemplatePlacementBag.cs" />
+    <Compile Include="Entities\RelatedEntityBag.cs" />
+    <Compile Include="Entities\RemoteAuthenticationSessionBag.cs" />
+    <Compile Include="Entities\ReportBag.cs" />
+    <Compile Include="Entities\ReportFieldBag.cs" />
+    <Compile Include="Entities\RequestFilterBag.cs" />
+    <Compile Include="Entities\RestActionBag.cs" />
+    <Compile Include="Entities\RestControllerBag.cs" />
+    <Compile Include="Entities\ScheduleBag.cs" />
+    <Compile Include="Entities\ScheduleCategoryExclusionBag.cs" />
+    <Compile Include="Entities\SegmentBag.cs" />
+    <Compile Include="Entities\ServiceJobBag.cs" />
+    <Compile Include="Entities\ServiceJobHistoryBag.cs" />
+    <Compile Include="Entities\ServiceLogBag.cs" />
+    <Compile Include="Entities\SignalTypeBag.cs" />
+    <Compile Include="Entities\SignatureDocumentBag.cs" />
+    <Compile Include="Entities\SignatureDocumentTemplateBag.cs" />
+    <Compile Include="Entities\SiteBag.cs" />
+    <Compile Include="Entities\SiteDomainBag.cs" />
+    <Compile Include="Entities\SmsActionBag.cs" />
+    <Compile Include="Entities\SmsPipelineBag.cs" />
+    <Compile Include="Entities\StepBag.cs" />
+    <Compile Include="Entities\StepProgramBag.cs" />
+    <Compile Include="Entities\StepProgramCompletionBag.cs" />
+    <Compile Include="Entities\StepStatusBag.cs" />
+    <Compile Include="Entities\StepTypeBag.cs" />
+    <Compile Include="Entities\StepTypePrerequisiteBag.cs" />
+    <Compile Include="Entities\StepWorkflowBag.cs" />
+    <Compile Include="Entities\StepWorkflowTriggerBag.cs" />
+    <Compile Include="Entities\StreakBag.cs" />
+    <Compile Include="Entities\StreakTypeBag.cs" />
+    <Compile Include="Entities\StreakTypeExclusionBag.cs" />
+    <Compile Include="Entities\SystemCommunicationBag.cs" />
+    <Compile Include="Entities\SystemEmailBag.cs" />
+    <Compile Include="Entities\TagBag.cs" />
+    <Compile Include="Entities\TaggedItemBag.cs" />
+    <Compile Include="Entities\UserLoginBag.cs" />
+    <Compile Include="Entities\WebFarmNodeBag.cs" />
+    <Compile Include="Entities\WebFarmNodeLogBag.cs" />
+    <Compile Include="Entities\WebFarmNodeMetricBag.cs" />
+    <Compile Include="Entities\WorkflowActionBag.cs" />
+    <Compile Include="Entities\WorkflowActionFormAttributeBag.cs" />
+    <Compile Include="Entities\WorkflowActionFormBag.cs" />
+    <Compile Include="Entities\WorkflowActionFormSectionBag.cs" />
+    <Compile Include="Entities\WorkflowActionTypeBag.cs" />
+    <Compile Include="Entities\WorkflowActivityBag.cs" />
+    <Compile Include="Entities\WorkflowActivityTypeBag.cs" />
+    <Compile Include="Entities\WorkflowBag.cs" />
+    <Compile Include="Entities\WorkflowFormBuilderTemplateBag.cs" />
+    <Compile Include="Entities\WorkflowTypeBag.cs" />
+    <Compile Include="Reporting\FieldFilterGroupBag.cs" />
+    <Compile Include="Reporting\FieldFilterRuleBag.cs" />
+    <Compile Include="Connection\ConnectionRequestCountsBag.cs" />
+    <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationOptionsBag.cs" />
+    <Compile Include="Controls\FieldTypeEditorUpdateAttributeConfigurationResultBag.cs" />
+    <Compile Include="Reporting\FieldFilterSourceBag.cs" />
+    <Compile Include="Rest\Controls\BadgePickerGetBadgesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ConnectionRequestPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\FinancialGatewayPickerGetFinancialGatewaysOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EventItemPickerGetEventItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupPickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PagePickerGetPageRoutesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PageRouteValueBag.cs" />
+    <Compile Include="Rest\Controls\PagePickerGetPageNameOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PagePickerGetSelectedPageHierarchyOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PagePickerGetChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\StepTypePickerGetStepTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\StepStatusPickerGetStepStatusesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\InteractionComponentPickerGetInteractionComponentsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupMemberPickerGetGroupMembersOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GradePickerGetGradePickerOptionsBag.cs" />
+    <Compile Include="Rest\Controls\WorkflowTypesPickerGetWorkflowTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DataViewPickerGetDataViewsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ComponentPickerGetComponentsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BinaryFilePickerGetBinaryFileOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BinaryFileTypePickerGetBinaryFileTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AssetStorageProviderPickerGetAssetStorageProviderOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AuditDetailGetAuditDetailsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\AchievementTypePickerGetAchievementTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BadgeComponentPickerGetBadgeComponentsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\BadgeListGetBadgesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\CategoryPickerChildTreeItemsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\DefinedValuePickerGetDefinedValuesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListAddEntityTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListCreatePersonalTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListGetAvailableTagsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListGetEntityTagsOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListRemoveEntityTagOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTagListTagBag.cs" />
+    <Compile Include="Rest\Controls\AssessmentTypePickerGetAssessmentTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\EntityTypePickerGetEntityTypesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\FollowingGetFollowingOptionsBag.cs" />
+    <Compile Include="Rest\Controls\FollowingGetFollowingResponseBag.cs" />
+    <Compile Include="Rest\Controls\FollowingSetFollowingOptionsBag.cs" />
+    <Compile Include="Rest\Controls\LocationPickerGetActiveChildrenOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PersonPickerSearchOptionsBag.cs" />
+    <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountOptionsBag.cs" />
+    <Compile Include="Rest\Controls\SaveFinancialAccountFormSaveAccountResultBag.cs" />
+    <Compile Include="Utility\EntityAuditBag.cs" />
+    <Compile Include="Utility\PublicAttributeCategoryBag.cs" />
+    <Compile Include="Utility\PublicComparisonValueBag.cs" />
+    <Compile Include="Utility\PublicAttributeBag.cs" />
+    <Compile Include="Controls\BirthdayPickerBag.cs" />
+    <Compile Include="Controls\AddressControlBag.cs" />
+    <Compile Include="Controls\GatewayControlBag.cs" />
+    <Compile Include="Utility\IViewModel.cs" />
+    <Compile Include="Utility\IViewModelWithAttributes.cs" />
+    <Compile Include="Utility\PublicEditableAttributeBag.cs" />
+    <Compile Include="Utility\ListItemBag.cs" />
+    <Compile Include="Finance\SavedFinancialAccountListItemBag.cs" />
+    <Compile Include="Utility\TreeItemBag.cs" />
+    <Compile Include="Entities.Partials\AttributeValueBag.partial.cs" />
+    <Compile Include="Entities.Partials\AttributeBag.partial.cs" />
+    <Compile Include="Entities.Partials\PersonBag.partial.cs" />
+    <Compile Include="Entities.Partials\RegistrationTemplateBag.partial.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\TypeScriptTypeAttribute.cs" />
+    <Compile Include="Utility\EntityBagBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
+      <Project>{61DECE2B-0434-435E-8D65-49A4FDF98365}</Project>
+      <Name>Rock.Enums</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

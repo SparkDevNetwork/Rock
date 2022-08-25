@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataFilter.FinancialPledge
 {
@@ -31,6 +32,7 @@ namespace Rock.Reporting.DataFilter.FinancialPledge
     [Description( "Pledge by Account" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Account Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "1559B401-BF31-4E58-BAC0-53C2DB7DE49F")]
     public class AccountFilter : BaseAccountFilter<Rock.Model.FinancialPledge>
     {
         /// <summary>
@@ -47,7 +49,7 @@ namespace Rock.Reporting.DataFilter.FinancialPledge
             if ( selectionValues.Length >= 1 )
             {
                 var accountGuids = selectionValues[0].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                var accountIds = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
+                var accountIds = FinancialAccountCache.GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
 
                 var qry = new FinancialPledgeService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => p.AccountId.HasValue && accountIds.Contains( p.AccountId.Value ) );

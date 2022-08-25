@@ -23,6 +23,7 @@ using System.Data.Entity;
 #endif
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -67,30 +68,74 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// If changing the <see cref="ConnectionStatus"/> while looping thru all of its <see cref="ConnectionStatus.ConnectionStatusAutomations"/>, use this
+        /// to set the status to indicate that the loop in PostSaveChanges doesn't also need to run.
+        /// </summary>
+        /// <param name="connectionStatusAutomation">The connection status automation.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        internal bool SetConnectionStatusFromAutomationLoop( ConnectionStatusAutomation connectionStatusAutomation )
+        {
+            if ( !_runAutomationsInPostSaveChanges )
+            {
+                return false;
+            }
+
+            _runAutomationsInPostSaveChanges = false;
+
+            bool alreadyProcessed = this.processedConnectionStatusAutomations.Contains( connectionStatusAutomation.Id );
+
+            if ( alreadyProcessed )
+            {
+                // to avoid recursion
+                return false;
+            }
+
+            this.processedConnectionStatusAutomations.Add( connectionStatusAutomation.Id );
+
+            if ( this.ConnectionStatusId == connectionStatusAutomation.DestinationStatusId )
+            {
+                // already set to this status
+                return false;
+            }
+
+            this.ConnectionStatusId = connectionStatusAutomation.DestinationStatusId;
+
+            return true;
+        }
+
+        /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            var connectionOpportunity = this.ConnectionOpportunity;
-            if ( connectionOpportunity == null && this.ConnectionOpportunityId > 0 )
-            {
-                connectionOpportunity = new ConnectionOpportunityService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( g => g.Id == this.ConnectionOpportunityId );
-            }
+            var connectionTypeId = ConnectionTypeId;
 
-            if ( connectionOpportunity != null )
+            // If this instance hasn't been saved yet, it might not have this
+            // auto generated value set yet.
+            if ( connectionTypeId == 0 )
             {
-                var connectionType = connectionOpportunity.ConnectionType;
-
-                if ( connectionType != null )
+                if ( ConnectionOpportunity == null )
                 {
-                    return connectionType.GetInheritedAttributesForQualifier( rockContext, TypeId, "ConnectionTypeId" );
+                    connectionTypeId = new ConnectionOpportunityService( rockContext ).Queryable()
+                        .Where( co => co.Id == ConnectionOpportunityId )
+                        .Select( co => co.ConnectionTypeId )
+                        .FirstOrDefault();
+                }
+                else
+                {
+                    connectionTypeId = ConnectionOpportunity.ConnectionTypeId;
                 }
             }
 
-            return null;
+            if ( connectionTypeId == 0 )
+            {
+                return null;
+            }
+
+            var connectionTypeCache = ConnectionTypeCache.Get( connectionTypeId );
+
+            return connectionTypeCache?.GetInheritedAttributesForQualifier( TypeId, "ConnectionTypeId" );
         }
 
         #endregion

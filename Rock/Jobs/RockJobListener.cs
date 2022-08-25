@@ -79,6 +79,8 @@ namespace Rock.Jobs
                 job.LastStatusMessage = "Started at " + RockDateTime.Now.ToString();
                 rockContext.SaveChanges();
             }
+
+            context.JobDetail.JobDataMap.LoadFromJobAttributeValues( job );
         }
 
         /// <summary>

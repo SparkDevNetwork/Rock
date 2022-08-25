@@ -34,7 +34,8 @@ using Rock.Field;
 using Rock.Model;
 using Rock.Lava;
 using Rock.Security;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Web.Cache
@@ -47,6 +48,12 @@ namespace Rock.Web.Cache
     [JsonConverter( typeof( Utility.AttributeCacheJsonConverter ) )]
     public class AttributeCache : ModelCache<AttributeCache, Model.Attribute>
     {
+        #region Fields
+
+        private const string AttributePropertyDependenciesCacheKey = "AttributeCache_AttributePropertyDependencyCacheKey";
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -156,6 +163,50 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string DefaultValue { get; private set; }
+
+        /// <summary>
+        /// Gets the persisted text value.
+        /// </summary>
+        /// <value>The persisted text value.</value>
+        [DataMember]
+        public string DefaultPersistedTextValue { get; private set; }
+
+        /// <summary>
+        /// Gets the persisted HTML value.
+        /// </summary>
+        /// <value>The persisted HTML value.</value>
+        [DataMember]
+        public string DefaultPersistedHtmlValue { get; private set; }
+
+        /// <summary>
+        /// Gets the persisted condensed text value.
+        /// </summary>
+        /// <value>The persisted condensed text value.</value>
+        [DataMember]
+        public string DefaultPersistedCondensedTextValue { get; private set; }
+
+        /// <summary>
+        /// Gets the persisted condensed HTML value.
+        /// </summary>
+        /// <value>The persisted condensed HTML value.</value>
+        [DataMember]
+        public string DefaultPersistedCondensedHtmlValue { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the persisted values are
+        /// considered dirty. If the values are dirty then it should be assumed
+        /// that they are not in sync with the <see cref="DefaultValue"/> property.
+        /// </summary>
+        /// <value><c>true</c> if the persisted values are considered dirty; otherwise, <c>false</c>.</value>
+        [DataMember]
+        public bool IsDefaultPersistedValueDirty { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this attribute supports persisted values.
+        /// </summary>
+        /// <value><c>true</c> if this attribute supports persisted values; otherwise, <c>false</c>.</value>
+        [DataMember]
+        public bool IsPersistedValueSupported { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is multi value.
@@ -292,6 +343,12 @@ namespace Rock.Web.Cache
         /// The type of the field.
         /// </value>
         public FieldTypeCache FieldType => FieldTypeCache.Get( FieldTypeId );
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="FieldType"/> is a referenced entity field type.
+        /// </summary>
+        /// <value><c>true</c> if this the <see cref="FieldType"/> is a referenced entity field type; otherwise, <c>false</c>.</value>
+        public bool IsReferencedEntityFieldType { get; private set; }
 
         /// <summary>
         /// Gets the categories.
@@ -465,6 +522,11 @@ namespace Rock.Web.Cache
             IconCssClass = attribute.IconCssClass;
             IsGridColumn = attribute.IsGridColumn;
             DefaultValue = attribute.DefaultValue;
+            DefaultPersistedTextValue = attribute.DefaultPersistedTextValue;
+            DefaultPersistedHtmlValue = attribute.DefaultPersistedHtmlValue;
+            DefaultPersistedCondensedTextValue = attribute.DefaultPersistedCondensedTextValue;
+            DefaultPersistedCondensedHtmlValue = attribute.DefaultPersistedCondensedHtmlValue;
+            IsDefaultPersistedValueDirty = attribute.IsDefaultPersistedValueDirty;
             IsMultiValue = attribute.IsMultiValue;
             IsRequired = attribute.IsRequired;
             AllowSearch = attribute.AllowSearch;
@@ -488,6 +550,9 @@ namespace Rock.Web.Cache
             }
 
             CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
+
+            IsPersistedValueSupported = FieldType.Field?.IsPersistedValueSupported( ConfigurationValues ) == true;
+            IsReferencedEntityFieldType = FieldType?.Field is IEntityReferenceFieldType;
         }
 
         /// <summary>
@@ -496,7 +561,7 @@ namespace Rock.Web.Cache
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public AttributeViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
+        public AttributeBag ToViewModel( Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new AttributeCacheViewModelHelper();
             var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
@@ -765,9 +830,91 @@ namespace Rock.Web.Cache
             value.SetFromEntity( entity, qualifiers );
 
             RockCacheManager<AttributeCache>.Instance.AddOrUpdate( QualifiedKey( entity.Id.ToString() ), value );
-            RockCacheManager<int?>.Instance.AddOrUpdate( QualifiedKey( value.Guid.ToString() ), value.Id );
 
             return value;
+        }
+
+        /// <summary>
+        /// Clears the referenced entity dependency cache. This should be called
+        /// anytime an Attribute is created, modified or deleted.
+        /// </summary>
+        internal static void ClearReferencedEntityDependencies()
+        {
+            RockCache.Remove( AttributePropertyDependenciesCacheKey );
+        }
+
+        /// <summary>
+        /// Gets the dependencies that all attributes have on entity types
+        /// whose properties get modified.
+        /// </summary>
+        /// <returns>
+        /// A dictionary whose key is the entity type identifier and value
+        /// is another dictionary whose key is the property name and value
+        /// is the list of attribute identifiers.
+        /// </returns>
+        private static Dictionary<int, Dictionary<string, List<int>>> GetAttributePropertyDependencies()
+        {
+            var dependencies = new Dictionary<int, Dictionary<string, List<int>>>();
+            var attributes = All().Where( a => a.FieldType.Field is IEntityReferenceFieldType );
+
+            foreach ( var attribute in attributes )
+            {
+                var referencedProperties = ( ( IEntityReferenceFieldType ) attribute.FieldType.Field ).GetReferencedProperties( attribute.ConfigurationValues );
+
+                foreach ( var referencedProperty in referencedProperties )
+                {
+                    if ( !dependencies.TryGetValue( referencedProperty.EntityTypeId, out var entityTypeDependencies ) )
+                    {
+                        entityTypeDependencies = new Dictionary<string, List<int>>();
+                        dependencies.Add( referencedProperty.EntityTypeId, entityTypeDependencies );
+                    }
+
+                    if ( !entityTypeDependencies.TryGetValue( referencedProperty.PropertyName, out var attributeIds ) )
+                    {
+                        attributeIds = new List<int>();
+                        entityTypeDependencies.Add( referencedProperty.PropertyName, attributeIds );
+                    }
+
+                    attributeIds.Add( attribute.Id );
+                }
+            }
+
+            return dependencies;
+        }
+
+        /// <summary>
+        /// Gets the dirty attribute identifiers for an entity of a given
+        /// type whose properties were modified.
+        /// </summary>
+        /// <remarks>
+        /// Determining the modified propery names can be a relatively expensive
+        /// operation. Since most entity types won't be monitored for changes
+        /// like this we use a factory so that we don't need to run that
+        /// operation unless we absolutely need to.
+        /// </remarks>
+        /// <param name="entityTypeId">The entity type identifier of the entity that was modified.</param>
+        /// <param name="modifiedPropertyNamesFactory">A factory method that returns the property names that were modified.</param>
+        /// <returns>A list of attribute identifiers that might need their values updated.</returns>
+        internal static List<int> GetDirtyAttributeIdsForPropertyChange( int entityTypeId, Func<IReadOnlyList<string>> modifiedPropertyNamesFactory )
+        {
+            var cache = ( Dictionary<int, Dictionary<string, List<int>>> ) RockCache.GetOrAddExisting( AttributePropertyDependenciesCacheKey, GetAttributePropertyDependencies );
+
+            if ( !cache.TryGetValue(entityTypeId, out var entityDependencyCache ) )
+            {
+                return new List<int>();
+            }
+
+            var attributeIds = new List<int>();
+
+            foreach ( var propertyName in modifiedPropertyNamesFactory() )
+            {
+                if ( entityDependencyCache.TryGetValue( propertyName, out var dependentAttributeIds ) )
+                {
+                    attributeIds.AddRange( dependentAttributeIds );
+                }
+            }
+
+            return attributeIds.Distinct().ToList();
         }
 
         #endregion
@@ -842,6 +989,28 @@ namespace Rock.Web.Cache
 #if REVIEW_WEBFORMS
             EntityAttributesCache.Remove();
 #endif
+        }
+
+        /// <summary>
+        /// Gets the person attributes of given list of field types class names. If no Field types are specified, all the person attributes are retrieved.
+        /// </summary>
+        /// <returns>A queryable of the personAttributes</returns>
+        public static IEnumerable<AttributeCache> GetPersonAttributes( ICollection<string> desiredFieldTypeClassNames = null )
+        {
+            int entityTypeIdPerson = EntityTypeCache.GetId<Person>().Value;
+            bool shouldReturnAllPersonAttributes = desiredFieldTypeClassNames == null || desiredFieldTypeClassNames.Count == 0;
+            if ( shouldReturnAllPersonAttributes )
+            {
+                return GetByEntityType( entityTypeIdPerson );
+            }
+
+            List<FieldTypeCache> fieldTypes = FieldTypeCache.All();
+
+            return GetByEntityType( entityTypeIdPerson )
+                .Join( fieldTypes, personAttribute => personAttribute.FieldTypeId, fieldType => fieldType.Id,
+                    ( personAtrribute, fieldType ) => new { PersonAttribute = personAtrribute, FieldTypeClassName = fieldType.Class } )
+                .Where( a => desiredFieldTypeClassNames.Contains( a.FieldTypeClassName ) )
+                .Select( a => a.PersonAttribute );
         }
 
         #endregion
@@ -936,7 +1105,7 @@ namespace Rock.Web.Cache
     /// <summary>
     /// AttributeValueCache View Model Helper
     /// </summary>
-    public partial class AttributeCacheViewModelHelper : ViewModelHelper<AttributeCache, AttributeViewModel>
+    public partial class AttributeCacheViewModelHelper : ViewModelHelper<AttributeCache, AttributeBag>
     {
         /// <summary>
         /// Converts to viewmodel.
@@ -945,17 +1114,16 @@ namespace Rock.Web.Cache
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override AttributeViewModel CreateViewModel( AttributeCache model, Person currentPerson = null, bool loadAttributes = true )
+        public override AttributeBag CreateViewModel( AttributeCache model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new AttributeViewModel
+            var viewModel = new AttributeBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.Id != 0 ? Utility.IdHasher.Instance.GetHash( model.Id ) : string.Empty,
                 AbbreviatedName = model.AbbreviatedName,
                 AllowSearch = model.AllowSearch,
                 ConfigurationValues = model.ConfigurationValues,
@@ -997,18 +1165,13 @@ namespace Rock.Web.Cache
         /// <param name="viewModel">The view model.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeCache model, AttributeViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeCache model, AttributeBag viewModel, Person currentPerson = null, bool loadAttributes = true )
         {
             viewModel.FieldTypeGuid = FieldTypeCache.Get( model.FieldTypeId ).Guid;
-            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToArray();
+            viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToList();
             viewModel.QualifierValues = model.QualifierValues.ToDictionary(
                 kvp => kvp.Key,
-                kvp => new ViewModel.NonEntities.AttributeConfigurationValue
-                {
-                    Name = kvp.Value.Name,
-                    Value = kvp.Value.Value,
-                    Description = kvp.Value.Description
-                } );
+                kvp => kvp.Value.Value );
         }
     }
 }

@@ -448,6 +448,52 @@ namespace Rock.Net
             return Headers[header];
         }
 
+        /// <summary>
+        /// Gets the personalization segment ids associated with the request.
+        /// </summary>
+        /// <remarks>
+        /// <strong>Do not use</strong> this method without approval from DSD or PO.
+        /// This was build as a quick fix for the content collection view block but
+        /// really is a bad way to go about it since it won't work in .NET Core.
+        /// </remarks>
+        /// <returns>An enumeration of personalziation segment identifiers.</returns>
+        internal IEnumerable<int> GetPersonalizationSegmentIds()
+        {
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
+            if ( HttpContext.Current?.Handler is Rock.Web.UI.RockPage rockPage )
+            {
+                return rockPage.PersonalizationSegmentIds ?? Array.Empty<int>();
+            }
+
+            return Array.Empty<int>();
+#endif
+        }
+
+        /// <summary>
+        /// Gets the personalization request filter ids associated with the request.
+        /// </summary>
+        /// <remarks>
+        /// <strong>Do not use</strong> this method without approval from DSD or PO.
+        /// This was build as a quick fix for the content collection view block but
+        /// really is a bad way to go about it since it won't work in .NET Core.
+        /// </remarks>
+        /// <returns>An enumeration of personalziation request filter identifiers.</returns>
+        internal IEnumerable<int> GetPersonalizationRequestFilterIds()
+        {
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
+            if ( HttpContext.Current?.Handler is Rock.Web.UI.RockPage rockPage )
+            {
+                return rockPage.PersonalizationRequestFilterIds ?? Array.Empty<int>();
+            }
+
+            return Array.Empty<int>();
+#endif
+        }
+
         #endregion
     }
 }

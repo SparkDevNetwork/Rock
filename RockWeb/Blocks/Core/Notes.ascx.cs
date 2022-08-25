@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [ContextAware]
 
     [TextField( "Heading",
-        Description = "The text to display as the heading.  If left blank, the Note Type name will be used.",
+        Description = "The text to display as the heading.",
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.Heading )]
@@ -46,7 +46,6 @@ namespace RockWeb.Blocks.Core
     [TextField( "Heading Icon CSS Class",
         Description = "The css class name to use for the heading icon. ",
         IsRequired = false,
-        DefaultValue = "fa fa-sticky-note-o",
         Order = 2,
         Key = AttributeKey.HeadingIcon )]
 
@@ -138,6 +137,7 @@ namespace RockWeb.Blocks.Core
         Order = 15,
         Key = AttributeKey.NoteViewLavaTemplate )]
 
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.NOTES )]
     public partial class Notes : RockBlock, ISecondaryBlock
     {
         public static class AttributeKey

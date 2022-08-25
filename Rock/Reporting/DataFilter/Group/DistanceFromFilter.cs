@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter group within a specified distance from a location" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Distance From Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "C3D102D5-2678-468F-8A6C-2118D94F43E8")]
     public class DistanceFromFilter : DataFilterComponent
     {
         #region Properties

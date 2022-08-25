@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
     [Description("Filter benevolence requests that are associated with a specific campus.")]
     [Export(typeof(DataFilterComponent))]
     [ExportMetadata("ComponentName", "Benevolence Request Campus Filter")]
+    [Rock.SystemGuid.EntityTypeGuid( "567E2CE5-002A-4DD1-86BF-B21269E81A63")]
     public class CampusFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
     {
         #region Properties

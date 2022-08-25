@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,8 +26,8 @@ using Rock.ClientService.Core.DefinedValue;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModel.Blocks.WorkFlow.FormBuilder.FormTemplateDetail;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormTemplateDetail;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Workflow.FormBuilder
 {
@@ -45,6 +45,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_FORM_TEMPLATE_DETAIL_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "A522F0A4-39D4-4047-A012-EF42F7D2759D")]
     public class FormTemplateDetail : RockObsidianBlockType
     {
         private static class PageParameterKey
@@ -150,7 +152,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             // perform any security checking since we are only showing the name.
             var usedBy = new WorkflowTypeService( rockContext ).Queryable()
                 .Where( t => t.FormBuilderTemplateId.HasValue && t.FormBuilderTemplateId == template.Id )
-                .Select( t => new ListItemViewModel
+                .Select( t => new ListItemBag
                 {
                     Value = t.Guid.ToString(),
                     Text = t.Name
@@ -159,7 +161,6 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             return new TemplateDetailViewModel
             {
-                AuditDetails = template.GetAuditDetailViewModel(),
                 Description = template.Description,
                 IsActive = template.IsActive,
                 Name = template.Name,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
     [Description( "Retrieve the prayer requests involving a set of people in a Data View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Contains People" )]
+    [Rock.SystemGuid.EntityTypeGuid( "6112DD4D-335F-4EAA-AE0E-84FF935CA11D")]
     public class ContainsPeopleFilter : RelatedDataViewFilterBase<Rock.Model.PrayerRequest, Rock.Model.Person>
     {
         /// <summary>

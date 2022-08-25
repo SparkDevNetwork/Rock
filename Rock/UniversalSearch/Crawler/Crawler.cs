@@ -116,7 +116,7 @@ namespace Rock.UniversalSearch.Crawler
 
                 var request = new RestRequest( Method.POST );
                 request.RequestFormat = DataFormat.Json;
-                request.AddBody( loginParam );
+                request.AddJsonBody( loginParam );
 
                 var response = restClient.Execute( request );
             }

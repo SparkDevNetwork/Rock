@@ -393,7 +393,7 @@ namespace Rock.Tests.Integration.Lava
 {% calendarevents calendarid:'Internal' startdate:'2021-1-1' maxoccurrences:2 %}
     {% for item in EventScheduledInstances %}
         Name={{ item.Name }}<br>
-        Date={{item.Date }}<br>
+        Date={{ item.Date | Date:'yyyy-MM-dd' }}<br>
         Time={{ item.Time }}<br>
         DateTime={{ item.DateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}
         <hr>
@@ -403,8 +403,8 @@ namespace Rock.Tests.Integration.Lava
             var rockTimeOffset = LavaDateTime.ConvertToRockDateTime( new DateTime( 2021, 1, 1, 0, 0, 0, DateTimeKind.Unspecified ) ).ToString( "zzz" );
 
             var expectedOutput = @"
-Name=Rock Solid Finances Class<br>Date=2/01/2021<br>Time=4:30 PM<br>DateTime=2021-01-02T16:30:00<offset><hr>
-Name=Rock Solid Finances Class<br>Date=3/01/2021<br>Time=12:00 PM<br>DateTime=2021-01-03T12:00:00<offset><hr>
+Name=Rock Solid Finances Class<br>Date=2021-01-02<br>Time=4:30 PM<br>DateTime=2021-01-02T16:30:00<offset><hr>
+Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2021-01-03T12:00:00<offset><hr>
 ";
             expectedOutput = expectedOutput.Replace( "<offset>", rockTimeOffset );
 

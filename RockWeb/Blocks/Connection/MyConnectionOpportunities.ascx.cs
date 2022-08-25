@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -108,6 +108,7 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
         Order = 7 )]
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "3F69E04F-F966-4CAE-B89D-F97DFEF6407A" )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
         #region Attribute Keys
@@ -625,7 +626,7 @@ namespace RockWeb.Blocks.Connection
                         }
                         else
                         {
-                            mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
+                            mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
                         }
 
                         mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", opportunitySummary.DaysUntilRequestIdle ) );

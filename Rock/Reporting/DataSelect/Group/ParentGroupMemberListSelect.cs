@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select a comma-delimited list of members of the group's parent group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Parent Group Member List" )]
+    [Rock.SystemGuid.EntityTypeGuid( "3909997E-E096-4B17-A864-E0D0953FE576")]
     public class ParentGroupMemberListSelect : DataSelectComponent
     {
         #region Properties

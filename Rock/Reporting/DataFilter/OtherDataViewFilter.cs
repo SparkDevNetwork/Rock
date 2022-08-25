@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Filter entities using another dataview" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Other Data View Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "068C1177-68E5-4D08-8386-96EE3C9880F1")]
     public class OtherDataViewFilter : DataFilterComponent, IDataFilterWithOverrides, IRelatedChildDataView
     {
         #region Properties

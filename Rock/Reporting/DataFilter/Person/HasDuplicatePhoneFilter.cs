@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on duplicate phone numbers" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Duplicate Phone Numbers" )]
+    [Rock.SystemGuid.EntityTypeGuid( "32EA43CC-8744-4180-9BC7-9915F467E54B")]
     public class HasDuplicatePhoneFilter : DataFilterComponent
     {
         #region Properties

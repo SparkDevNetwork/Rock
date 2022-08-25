@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile;
+using Rock.Common.Mobile.Enums;
+using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -29,7 +31,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
     /// Allows the user to edit their account on a mobile application.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
-
     [DisplayName( "Profile Details" )]
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to edit their account on a mobile application." )]
@@ -147,9 +148,20 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Category = "custommobile",
         Order = 9 )]
 
+    [EnumField( "Gender",
+        Description = "Determines if the Gender field should be hidden, optional or required.",
+        EnumSourceType = typeof( VisibilityTriState ),
+        IsRequired = true,
+        DefaultEnumValue = ( int ) VisibilityTriState.Required,
+        Category = "custommobile",
+        Key = AttributeKeys.Gender,
+        Order = 10 )]
+
     #endregion
 
-    public class ProfileDetails: RockMobileBlockType
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_PROFILE_DETAILS_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "66B2B513-1C71-4E6B-B4BE-C4EF90E1899C")]
+    public class ProfileDetails : RockMobileBlockType
     {
         /// <summary>
         /// The block setting attribute keys for the MobileProfileDetails block.
@@ -215,7 +227,24 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The address required key
             /// </summary>
             public const string AddressRequired = "AddressRequired";
+
+            /// <summary>
+            /// The gender key.
+            /// </summary>
+            public const string Gender = "Gender";
         }
+
+        #region Block Attributes
+
+        /// <summary>
+        /// Gets the gender visibility.
+        /// </summary>
+        /// <value>
+        /// The gender visibility.
+        /// </value>
+        public VisibilityTriState GenderVisibility => GetAttributeValue( AttributeKeys.Gender ).ConvertToEnum<VisibilityTriState>();
+
+        #endregion
 
         #region IRockMobileBlockType Implementation
 
@@ -277,7 +306,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
             person.NickName = person.NickName == person.FirstName ? profile.FirstName : person.NickName;
             person.FirstName = profile.FirstName;
             person.LastName = profile.LastName;
-            person.Gender = ( Gender ) profile.Gender;
+
+            var gender = ( Model.Gender ) profile.Gender;
+
+            if ( GenderVisibility != VisibilityTriState.Hidden )
+            {
+                person.Gender = gender;
+            }
 
             if ( GetAttributeValue( AttributeKeys.BirthDateShow ).AsBoolean() )
             {
@@ -370,12 +405,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         }
 
                         // TODO: ???
-                        //familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
-                        //familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
-
+                        // familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
+                        // familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
                         familyAddress.Location = new LocationService( rockContext ).Get(
                             profile.HomeAddress.Street1,
-                            "",
+                            string.Empty,
                             profile.HomeAddress.City,
                             profile.HomeAddress.State,
                             profile.HomeAddress.PostalCode,
@@ -402,10 +436,20 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             rockContext.SaveChanges();
 
-            var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
-            mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+            /*
+             * BC 7/26/2022
+             * We have to provide a new RockContext, since EF Core has a caching mechanism that will return the old person with
+             * the wrong primary campus.
+             */
+            using ( var rockContext2 = new RockContext() )
+            {
+                person = new PersonService( rockContext2 ).Get( person.Id );
 
-            return ActionOk( mobilePerson );
+                var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+
+                return ActionOk( mobilePerson );
+            }
         }
 
         #endregion

@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// ContentChannelItemSlug View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( ContentChannelItemSlug ) )]
-    public partial class ContentChannelItemSlugViewModelHelper : ViewModelHelper<ContentChannelItemSlug, Rock.ViewModel.ContentChannelItemSlugViewModel>
+    public partial class ContentChannelItemSlugViewModelHelper : ViewModelHelper<ContentChannelItemSlug, ContentChannelItemSlugBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ContentChannelItemSlugViewModel CreateViewModel( ContentChannelItemSlug model, Person currentPerson = null, bool loadAttributes = true )
+        public override ContentChannelItemSlugBag CreateViewModel( ContentChannelItemSlug model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ContentChannelItemSlugViewModel
+            var viewModel = new ContentChannelItemSlugBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 ContentChannelItemId = model.ContentChannelItemId,
                 IsPrimary = model.IsPrimary,
                 Slug = model.Slug,
@@ -174,7 +174,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ContentChannelItemSlugViewModel ToViewModel( this ContentChannelItemSlug model, Person currentPerson = null, bool loadAttributes = false )
+        public static ContentChannelItemSlugBag ToViewModel( this ContentChannelItemSlug model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new ContentChannelItemSlugViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

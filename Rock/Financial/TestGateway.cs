@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -72,7 +72,7 @@ namespace Rock.Financial
 
     [EnumsField(
         "Gateway Mode",
-        Description = "Selected the gateway mode",
+        Description = "Select the gateway mode",
         Key = AttributeKey.GatewayMode,
         EnumSourceType = typeof( HostedGatewayMode ),
         DefaultValue = "Unhosted",
@@ -94,6 +94,7 @@ namespace Rock.Financial
         DefaultValue = null,
         Order = 7 )]
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY )]
 #if REVIEW_NET5_0_OR_GREATER
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IFeeCoverageGatewayComponent
 #else

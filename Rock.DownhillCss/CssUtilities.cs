@@ -160,6 +160,14 @@ namespace Rock.DownhillCss
             cssStyles = cssStyles.Replace( "?color-heading", settings.HeadingColor );
             cssStyles = cssStyles.Replace( "?color-background", settings.BackgroundColor );
 
+            foreach ( var extraCss in settings.AdditionalCssToParse )
+            {
+                var key = extraCss.Key;
+                var value = extraCss.Value;
+
+                cssStyles = cssStyles.Replace( key, value );
+            }
+
             // Note for future... Xamarin Forms doesn't like minified CSS (at least that that's created with the minified method below)
             return cssStyles;
         }
@@ -585,8 +593,8 @@ Resets
     background-color: transparent;
 }
 
-NavigationPage {
-    -rock-status-bar-text: dark;
+^Page {
+    -rock-status-bar-text: light;
 }
 
 ^contentpage {
@@ -881,6 +889,11 @@ icon {
     -----------------------------------------------------------
 */
 /* MobileInsertMark - Used by Mobile Shell to insert it's own standard control CSS */
+
+/* Cover Sheet Styling */
+.android.cover-sheet {
+    -xf-bar-background-color: ?color-bar-background;
+}
 
 /* Flyout Styling */
 
@@ -1913,6 +1926,38 @@ formfield .required-indicator {
 
 .search-layout .show-more-button {
     margin: 0, 12, 0, 0;
+}
+
+/*** Group Schedule Toolbox Block ***/
+
+.schedule-toolbox-container .detail-title
+{
+    font-size: ?shell-font-scale(18);
+    font-style: bold;
+}
+
+.schedule-toolbox-confirmations-container .confirmed-text {
+    color: green;
+}
+
+.schedule-toolbox-confirmations-container .declined-text {
+    color: red;
+}
+
+.schedule-preference-container .preferences-container {
+    padding: 16;
+}
+
+.schedule-preference-container .assignments-container {
+    padding: 16;
+}
+
+.schedule-signup .field-container {
+    padding: 16;
+}
+
+.schedule-signup .signups-container {
+    padding: 12;
 }
 ";
         #endregion

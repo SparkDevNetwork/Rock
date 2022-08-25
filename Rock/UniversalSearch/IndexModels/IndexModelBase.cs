@@ -63,7 +63,7 @@ namespace Rock.UniversalSearch.IndexModels
         public Int64 Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the source index model.
+        /// Gets or sets the source index model (Rock.Model.Person, Rock.Model.Group, etc)
         /// </summary>
         /// <value>
         /// The source index model.
@@ -81,35 +81,34 @@ namespace Rock.UniversalSearch.IndexModels
         [RockIndexField]
         public string ModelConfiguration { get; set; }
 
+
+        /* 04/04/2022
+
+        IndexModelType and IndexModelAssembly are stored as the original type
+        of this (PersonIndex, GroupIndex, etc).  When it comes back from the Index
+        Server, the original type information will be lost and just say "IndexBase"
+        so we'll need to store IndexModelType and IndexModelAssembly in the Index Server
+        (ElasticSearch, Lucene)
+
+        */
+
         /// <summary>
-        /// Gets the type of the index model.
+        /// Gets the Type name of the IndexModel that this was when it was stored to the Index server.
         /// </summary>
         /// <value>
         /// The type of the index model.
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
-        public string IndexModelType
-        {
-            get
-            {
-                return InstanceType.ToString();
-            }
-        }
+        public string IndexModelType { get; private set; }
 
         /// <summary>
-        /// Gets the index model assembly.
+        /// Gets the IndexModelAssembly name of the IndexModel that this was when it was stored to the Index server.
         /// </summary>
         /// <value>
         /// The index model assembly.
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
-        public string IndexModelAssembly
-        {
-            get
-            {
-                return InstanceType.Assembly.FullName;
-            }
-        }
+        public string IndexModelAssembly { get; private set; }
 
         /// <summary>
         /// Formats the search result.
@@ -180,6 +179,10 @@ namespace Rock.UniversalSearch.IndexModels
         {
             Instance = this;
             InstanceType = this.GetType();
+
+
+            this.IndexModelType = InstanceType.ToString();
+            this.IndexModelAssembly = InstanceType.Assembly.FullName;
         }
 
         /// <summary>
@@ -334,8 +337,16 @@ namespace Rock.UniversalSearch.IndexModels
                 var mi = miArray[0];
                 if ( mi.MemberType == MemberTypes.Property )
                 {
-                    result = ( ( PropertyInfo ) mi ).GetValue( instance, null );
-                    return true;
+                    var propertyInfo = ( PropertyInfo ) mi;
+
+                    // To avoid a TargetParameterCountException, make sure this is a property that doesn't take parameters (for example the this[string] property)
+                    // See remarks at https://docs.microsoft.com/en-us/dotnet/api/system.reflection.propertyinfo.getvalue?view=netframework-4.7.2&f1url=%3FappId%3DDev16IDEF1%26l%3DEN-US%26k%3Dk(System.Reflection.PropertyInfo.GetValue);k(TargetFrameworkMoniker-.NETFramework,Version%253Dv4.7.2);k(DevLang-csharp)%26rd%3Dtrue
+                    var hasParameters = propertyInfo.GetIndexParameters().Length > 0;
+                    if ( !hasParameters )
+                    {
+                        result = propertyInfo.GetValue( instance, null );
+                        return true;
+                    }
                 }
             }
 
@@ -399,23 +410,21 @@ namespace Rock.UniversalSearch.IndexModels
         {
             get
             {
-                try
+                // try to get from properties collection first
+                if ( _members.ContainsKey( key ) )
                 {
-                    // try to get from properties collection first
                     return _members[key];
                 }
-                catch ( KeyNotFoundException )
-                {
-                    // try reflection on instanceType
-                    object result = null;
-                    if ( GetProperty( Instance, key, out result ) )
-                    {
-                        return result;
-                    }
 
-                    // nope doesn't exist
-                    return null;
+                // try reflection on instanceType
+                object result = null;
+                if ( GetProperty( Instance, key, out result ) )
+                {
+                    return result;
                 }
+
+                // nope doesn't exist
+                return null;
             }
 
             set

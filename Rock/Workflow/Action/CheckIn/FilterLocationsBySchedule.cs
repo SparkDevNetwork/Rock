@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Filter Locations By Schedule" )]
     [BooleanField( "Remove", "Select 'Yes' if schedules should be removed. Select 'No' if they should just be marked as excluded.", true )]
+    [Rock.SystemGuid.EntityTypeGuid( "DC86310C-44CF-44F5-804E-5085A29F5AAE")]
     public class FilterLocationsBySchedule : CheckInActionComponent
     {
         /// <summary>

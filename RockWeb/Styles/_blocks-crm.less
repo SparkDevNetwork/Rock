@@ -246,11 +246,67 @@
 
 // 3. Badge Bar
 // -------------------------
+.rockbadge {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin: 0 .133333em;
+  font-size: 45px;
+  font-size: var(--badge-size, 45px);
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: default;
+  background-color: inherit;
+
+  &:empty {
+    display: none;
+  }
+
+  .badge-content {
+    display: block;
+  }
+
+  .alert-text {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 1.5em;
+    padding: .25em .125em;
+    font-size: .26666em;
+    color: @white;
+    background: @brand-danger;
+    border-radius: 999px;
+  }
+
+  .tooltip-inner {
+    max-width: 300px;
+    padding: 12px;
+  }
+
+  .fa-stack {
+    width: 1em;
+    height: 1em;
+    line-height: 1em;
+  }
+
+  .fa-stack-1x {
+    font-size: .5em;
+  }
+
+  .fa-stack-2x {
+    font-size: 1em;
+  }
+}
+
 @badge-icon-height: 45px;
 @badge-count-width: 18px;
 
 .personprofilebar-badge {
-  min-height: 64px;
   padding-top: 0;
   padding-bottom: 0;
   font-size: 0; // Fixes Inconsistent Spacing
@@ -258,26 +314,9 @@
   background-color: @persondetails-badge-bg;
   border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
 
-  --badge-size: @badge-icon-height;
-
-  .badge-group {
+  .rockbadge-container {
     margin: @spacing-sm-px 0;
     text-align: center;
-
-    .badge {
-      display: inline-block; // fixes issue in default browser on Android
-      padding: 3px 6px 0;
-      background-color: inherit;
-
-      &:empty {
-        display: none;
-      }
-
-      .tooltip-inner {
-        max-width: 300px;
-        padding: 12px;
-      }
-    }
 
     .badge-debug {
       position: absolute;
@@ -287,46 +326,30 @@
       text-align: left;
     }
 
-    .badge-grid {
+    .rockbadge-grid {
       margin: -5px 0;
     }
   }
 }
 
-.badge-grid {
+.rockbadge-grid {
+  flex-direction: column;
   font-size: 0;
 
-  .badge {
+  .rockbadge {
     width: 1em;
     height: 1em;
-    padding: 0 !important;
-    margin: 0 .08333em .08333em;
-    font-size: 24px;
-    font-size: ~"calc(var(--badge-size, 45px) * 0.533)";
-    line-height: 1;
-
-    .fa-stack {
-      width: 1em;
-      line-height: 1em;
-    }
-
-    .fa-stack-1x {
-      font-size: .5em;
-      color: #fff;
-    }
-
-    .fa-stack-2x {
-      font-size: 1em;
-    }
+    margin: 0 .09523em .09523em;
+    font-size: ~"calc(var(--badge-size, 45px) * 0.46667)";
   }
 
-  .badge-row:last-child .badge {
-    padding-bottom: 0;
+  .badge-row:last-child .rockbadge {
+    margin-bottom: 0;
   }
 }
 
 // Used to provide background in :before
-.badge-background {
+.rockbadge-background {
   display: block;
   width: 1em;
   height: 1em;
@@ -335,28 +358,113 @@
   border-radius: .1em;
 }
 
-.badge-step {
-  position: relative;
-  padding: 0 !important;
-  margin: 0 4px;
-  font-size: 45px;
-  font-size: var(--badge-size, 45px);
+.rockbadge-standard {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  color: #fff;
+  background: fade(#939393, 20%);
+  border-radius: 999px;
 
-  &::before {
-    &:extend(.badge-background);
+  .metric-value {
+    font-size: .4em;
+    font-weight: 700;
+    line-height: .9em;
   }
 
+  .metric-unit {
+    font-size: .2442em;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  &.duration-new {
+    background: @badge-attending-new-color;
+  }
+
+  &.duration-months {
+    background: @badge-attending-months-color;
+  }
+
+  &.duration-years {
+    background: @badge-attending-years-color;
+  }
+
+  &.rockbadge-era {
+    background: @brand-success;
+  }
+
+  &.era-loss {
+    background: @badge-era-loss-color;
+  }
+}
+
+.rockbadge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  background: currentColor;
+  border-radius: .1em;
+
   .badge-icon {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    font-size: .5777em;
-    line-height: 1.85em;
+    font-size: .65em;
     color: #fff;
   }
 
-  .badge-count {
+  &.rockbadge-circle {
+    border-radius: 999px;
+  }
+
+  &.rockbadge-icon-nobg {
+    background: transparent;
+  }
+
+  &.rockbadge-disabled {
+    color: @badge-disabled-color;
+    opacity: .2;
+  }
+}
+
+.rockbadge-fraction {
+  color: #686576;
+
+  &::before {
+    &:extend(.rockbadge-background);
+    background-color: @brand-warning;
+  }
+
+  .metric-value {
+    position: absolute;
+    top: .388em;
+    left: .2em;
+    display: block;
+    width: 1em;
+    font-size: .45em;
+    font-weight: @font-weight-bold;
+    text-align: center;
+    letter-spacing: -.1em;
+  }
+
+  .metric-unit {
+    position: absolute;
+    right: .363em;
+    bottom: .9em;
+    font-size: .275em; // 11px
+    font-weight: @font-weight-semibold;
+  }
+}
+
+.rockbadge-label {
+  font-size: @font-size-base;
+}
+
+.rockbadge-step {
+  .metric-value {
     position: absolute;
     top: -(@badge-count-width/3);
     right: -(@badge-count-width/3);
@@ -371,42 +479,276 @@
   }
 }
 
-.badge-baptism {
+.rockbadge-slash {
+  &::before {
+    position: absolute;
+    display: block;
+    font-family: @fa-font-face;
+    font-size: .6em;
+    font-weight: 600;
+    color: @brand-danger;
+    content: @fa-var-slash;
+  }
+
+  &.rockbadge-disabled {
+    &::before {
+      color: #fff;
+      text-shadow: -.074em .074em @badge-disabled-color;
+    }
+  }
+}
+
+.rockbadge-baptism {
   color: @badge-baptism-color;
 }
 
-.badge-era {
-  position: relative;
-  font-size: 45px;
-  font-size: var(--badge-size, 45px);
-  color: @brand-success;
+.rockbadge-disc {
+  .rockbadge-disc-chart {
+    display: table;
+    width: 1em;
+    height: .888em;
+    margin: 0 auto;
+    //http://codepen.io/Victa/pen/xDqbf
+    table-layout: fixed;
 
-  &::before {
-    &:extend(.badge-background);
-    border-radius: 50%;
+    li {
+      position: relative;
+      display: table-cell;
+      width: 3px;
+      height: 100%;
+      vertical-align: bottom;
+
+      span {
+        display: block;
+        width: .2222em;
+        min-height: 2px;
+        background: lighten(@badge-disc-primary-color, 20%);
+
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+          // needed for chrome but kills ie
+          position: absolute;
+          bottom: 0;
+        }
+      }
+
+      &.rockbadge-disc-primary {
+        span {
+          background: @badge-disc-primary-color;
+        }
+      }
+
+      &.rockbadge-disc-disabled {
+        span {
+          background-color: @badge-disc-disabled-color;
+          opacity: .2;
+        }
+      }
+    }
   }
 
-  &.era-loss {
-    color: @badge-era-loss-color;
-  }
-
-  span {
+  .requested {
     position: absolute;
-    top: 1.0625em;
-    right: 0;
-    left: 0;
-    font-size: .3555em; // 16px
-    color: #fff;
+    padding: .041em .25em;
+    font-size: .5em;
+    background-color: @badge-disc-requested-color;
+    border-radius: 99px;
+    opacity: .8;
+  }
+
+  &.animate {
+    ul.rockbadge-disc-chart li span {
+      -webkit-animation: bar-grow 1s ease-in-out;
+      -moz-animation: bar-grow 1s ease-in-out;
+      animation: bar-grow 1s ease-in-out;
+    }
   }
 }
 
-.badge-icon {
-  font-size: @badge-icon-height;
-  font-size: var(--badge-size, 45px);
+.badge-content {
+  &.fa-layers {
+    width: 50px;
+    height: 43px;
+    font-size: 4em;
+  }
+}
 
-  &.badge-disabled {
-    color: @badge-disabled-color;
-    opacity: .2;
+.rockbadge-overlay {
+  width: 1em;
+  height: 1em;
+
+  .badge-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    font-size: inherit;
+    line-height: 1.15em;
+    text-align: center;
+  }
+
+  &-invert {
+    .metric-value {
+      color: #fff;
+    }
+  }
+
+  .metric-value {
+    position: absolute;
+    top: .5em; // 8px
+    right: .3em;
+    bottom: .95em;
+    left: .3em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .4em; // 16px
+    font-weight: @font-weight-bold;
+    text-align: center;
+  }
+
+  .badge-content {
+    font-size: .888em;
+    color: @badge-lastvisitonsite-color;
+
+    &.today {
+      .metric-value {
+        font-size: .275em;
+      }
+    }
+
+    &.recent {
+      opacity: .8;
+    }
+
+    &.moderate {
+      opacity: .6;
+    }
+
+    &.not-recent {
+      opacity: .4;
+    }
+
+    &.old {
+      opacity: .2;
+    }
+  }
+}
+
+.rockbadge-personaldevice {
+  width: .6em;
+  .badge-content .metric-value {
+    top: .7142em;
+  }
+}
+
+.rockbadge-assessment {
+  a {
+    display: inline-flex;
+    color: inherit;
+  }
+
+  .fa-stack-1x {
+    color: #fff;
+  }
+
+  .fa-stack-2x {
+    color: currentColor;
+  }
+
+  // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
+  &.not-requested {
+    color: fade(@badge-disabled-color, 20%) !important;
+  }
+
+  &.requested {
+    color: @persondetails-badge-color !important;
+  }
+}
+
+.assessment-tooltip-item {
+  display: flex;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.assessment-tooltip-value {
+  margin: 2px 0 0 6px;
+
+  .assessment-name {
+    display: block;
+    font-weight: @font-weight-bold;
+  }
+
+  .assessment-summary {
+    display: block;
+    font-size: @font-size-xs;
+    color: fade(@tooltip-color, 60%);
+  }
+}
+
+.rockbadge-container {
+  --badge-size: @badge-icon-height;
+}
+
+.rockbadge-container-xs {
+  --badge-size: 24px;
+
+  .rockbadge-grid {
+    flex-direction: row;
+
+    .rockbadge {
+      font-size: var(--badge-size);
+    }
+  }
+
+  .rockbadge-fraction {
+    .metric-value {
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      font-size: .7em;
+    }
+  }
+
+  .rockbadge-fraction,
+  .rockbadge-standard {
+    .metric-unit {
+      display: none;
+    }
+  }
+}
+
+.rockbadge-container-sm {
+  --badge-size: 32px;
+}
+
+
+@-webkit-keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@-moz-keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes bar-grow {
+  0% {
+    height: 0;
+    opacity: 0;
   }
 }
 
@@ -435,7 +777,7 @@
     }
   }
 
-  .badge-attendance & {
+  .rockbadge-attendance & {
     width: 220px;
     height: 40px;
     height: var(--badge-size, 40px);
@@ -468,7 +810,7 @@
       min-height: 1px;
       max-height: 100%;
       background: @persondetails-badge-color;
-      border-radius: 2px 2px 0 0;
+      // border-radius: 2px 2px 0 0;
 
       .animate & {
         animation: bar-grow 1s ease-in-out;
@@ -513,304 +855,6 @@
         position: absolute;
         bottom: 0;
       }
-    }
-  }
-}
-
-.badge-disc {
-  position: relative;
-
-  .badge-disc-chart {
-    display: table;
-    width: 1em;
-    height: .888em;
-    margin: 0 auto;
-    //http://codepen.io/Victa/pen/xDqbf
-    font-size: 45px;
-    font-size: var(--badge-size, 45px);
-    table-layout: fixed;
-
-    li {
-      position: relative;
-      display: table-cell;
-      width: 3px;
-      height: 100%;
-      vertical-align: bottom;
-
-      span {
-        display: block;
-        width: .2222em;
-        min-height: 2px;
-        background: lighten(@badge-disc-primary-color, 20%);
-
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-          // needed for chrome but kills ie
-          position: absolute;
-          bottom: 0;
-        }
-      }
-
-      &.badge-disc-primary {
-        span {
-          background: @badge-disc-primary-color;
-        }
-      }
-
-      &.badge-disc-disabled {
-        span {
-          background-color: @badge-disc-disabled-color;
-          opacity: .2;
-        }
-      }
-    }
-  }
-
-  .requested {
-    position: absolute;
-    top: 14px;
-    left: 12px;
-    padding: 1px 5px;
-    font-size: 24px;
-    background-color: @badge-disc-requested-color;
-    border-radius: 99px;
-    opacity: .8;
-  }
-
-  &.animate {
-    ul.badge-disc-chart li span {
-      -webkit-animation: bar-grow 1s ease-in-out;
-      -moz-animation: bar-grow 1s ease-in-out;
-      animation: bar-grow 1s ease-in-out;
-    }
-  }
-}
-
-.badge-attendingduration {
-  font-size: 45px;
-  font-size: var(--badge-size, 45px);
-
-  .duration-metric {
-    position: relative;
-    color: @badge-attending-weeks-color;  // Default (.duration-weeks)
-    &::before {
-      &:extend(.badge-background);
-      border-radius: 50%;
-    }
-
-    &.duration-new {
-      color: @badge-attending-new-color;
-    }
-
-    &.duration-months {
-      color: @badge-attending-months-color;
-    }
-
-    &.duration-years {
-      color: @badge-attending-years-color;
-    }
-
-    .metric-value {
-      position: absolute;
-      top: .6em; // 14px
-      right: 0;
-      left: 0;
-      font-size: .444em; // 20px
-      font-weight: @font-weight-bold;
-      line-height: .6em; //12px
-      color: #fff;
-      text-align: center;
-    }
-
-    .metric-unit {
-      display: block;
-      font-size: .55em;
-      font-weight: @font-weight-normal;
-    }
-
-    &.duration-new .metric-value {
-      top: 0; //18px
-      font-size: .3111em; //14px
-      font-weight: @font-weight-semibold;
-      line-height: 3.2142em;
-    }
-  }
-}
-
-.badge-weeksattendanceduration {
-  .weeks-metric {
-    position: relative;
-    font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
-    color: #686576;
-
-    &::before {
-      &:extend(.badge-background);
-      background-color: @brand-warning;
-    }
-
-    .weeks-attended {
-      position: absolute;
-      top: .388em; // 7px
-      left: .2em; // 4px
-      display: block;
-      width: 1em; // 18px
-      font-size: .45em; //20px
-      font-weight: @font-weight-bold;
-      text-align: center;
-      letter-spacing: -2px;
-    }
-
-    .week-duration {
-      position: absolute;
-      right: .363em;
-      bottom: .9em;
-      font-size: .275em; // 11px
-      font-weight: @font-weight-semibold;
-    }
-  }
-}
-
-.badge-content {
-  &.fa-layers {
-    width: 50px;
-    height: 43px;
-    font-size: 4em;
-  }
-}
-
-.badge-lastvisitonsite {
-  .badge-content {
-    position: relative;
-    font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
-    color: @badge-lastvisitonsite-color;
-
-    .badge-icon {
-      font-size: inherit;
-    }
-
-    &.today {
-      .duration {
-        top: 1em;
-        font-size: .275em;
-      }
-    }
-
-    &.recent {
-      opacity: .8;
-    }
-
-    &.moderate {
-      opacity: .6;
-    }
-
-    &.not-recent {
-      opacity: .4;
-    }
-
-    &.old {
-      opacity: .2;
-    }
-
-    .duration {
-      position: absolute;
-      top: .5em; // 8px
-      right: .3em;
-      left: .3em;
-      font-size: .4em; // 16px
-      font-weight: @font-weight-bold;
-      text-align: center;
-    }
-  }
-}
-
-.badge-signal {
-  .badge-content {
-    position: relative;
-    font-size: 45px;
-    font-size: var(--badge-size, 45px);
-
-    .badge-icon {
-      font-size: inherit;
-    }
-
-    .signal {
-      position: absolute;
-      top: .875em; //10px
-      right: 0;
-      left: 0;
-      padding-left: .5em;
-      font-size: .355em; //16px
-      font-weight: @font-weight-bold;
-      color: @persondetails-badge-bg;
-      text-align: center;
-    }
-  }
-}
-
-.badge-assessment {
-  a {
-    color: inherit;
-  }
-
-  // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
-  &.not-requested {
-    color: fade(@badge-disabled-color, 20%) !important;
-  }
-
-  &.requested {
-    color: @persondetails-badge-color !important;
-  }
-
-  .fa-stack-1x {
-    color: #fff;
-  }
-
-  .fa-stack-2x {
-    color: currentColor;
-  }
-}
-
-@-webkit-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-}
-
-@-moz-keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-}
-
-@keyframes bar-grow {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-}
-
-.badge-personaldevice {
-  .badge-content {
-    position: relative;
-    font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
-    color: @badge-personaldevice-color;
-
-    .badge-icon {
-      font-size: inherit;
-    }
-
-    .deviceCount {
-      position: absolute;
-      top: .7142em;
-      right: 0;
-      left: 0;
-      font-size: .35em; // 14px
-      font-weight: @font-weight-bold;
-      text-align: center;
     }
   }
 }
@@ -1264,7 +1308,7 @@ span.field-value {
   }
 
   .personprofilebar-badge {
-    .badge-group {
+    .rockbadge-container {
       text-align: left;
 
       &:last-child {
@@ -1348,11 +1392,16 @@ tr.inactive {
     }
   }
 
+  .form-group.bulk-item-selected,
+  .bulk-item-selected .form-group,
+  .form-group.bulk-item-visible {
+    opacity: 1;
+  }
+
   .form-group.bulk-item-selected {
     padding: 12px;
     background-color: @gray-lighter;
     border-radius: @border-radius-base;
-    opacity: 1;
   }
 }
 

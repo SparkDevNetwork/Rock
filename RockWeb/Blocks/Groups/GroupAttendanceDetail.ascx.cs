@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -130,6 +130,7 @@ namespace RockWeb.Blocks.Groups
         Order = 15,
         Key = AttributeKey.AttendanceTypeLabel )]
     #endregion
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUP_ATTENDANCE_DETAIL )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Keys
@@ -1049,7 +1050,7 @@ namespace RockWeb.Blocks.Groups
             }}
         }});
 
-        $('.js-add-member').on('click', function ( e ) {{
+        $('.js-add-member').off('click').on('click', function ( e ) {{
             e.preventDefault();
             var $a = $(this);
             var memberName = $(this).parent().find('span').html();

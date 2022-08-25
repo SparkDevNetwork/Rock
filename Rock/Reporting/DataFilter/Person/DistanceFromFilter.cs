@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on home address within a specified distance from a location" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Distance From Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "0B08B4E8-5C3D-479A-A53A-0889189413AC")]
     public class DistanceFromFilter : DataFilterComponent
     {
         #region Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PageContext" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "5C56B915-8A8B-4747-9D84-EBAF0BACC9A1")]
     public partial class PageContext : Model<PageContext>, ICacheable
     {
         #region Entity Properties

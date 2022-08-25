@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 
@@ -31,6 +32,7 @@ namespace Rock.Field.Types
     /// watched recorded.
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_WATCH )]
     public class MediaWatchFieldType : FieldType
     {
         #region Configuration
@@ -246,12 +248,29 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( value.IsNotNullOrWhiteSpace() )
-            {
-                return $"{value}%{(condensed ? string.Empty : " watched")}";
-            }
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
-            return value;
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNotNullOrWhiteSpace() )
+            {
+                return $"{privateValue}% watched";
+            }
+            return privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNotNullOrWhiteSpace() )
+            {
+                return $"{privateValue}%";
+            }
+            return privateValue;
         }
 
         /// <summary>
@@ -264,12 +283,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            if ( value.IsNotNullOrWhiteSpace() )
-            {
-                return $"{value}%{(condensed ? string.Empty : " watched")}";
-            }
-
-            return value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
 
         #endregion

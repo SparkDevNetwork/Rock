@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFileType" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "62AF597F-F193-412B-94EA-291CF713327D")]
     public partial class BinaryFileType : Model<BinaryFileType>, ICacheable
     {
         #region Entity Properties
@@ -181,6 +182,13 @@ namespace Rock.Model
                 _cacheControlHeaderSettings = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the maximum file size bytes.
+        /// </summary>
+        /// <value>The maximum file size bytes.</value>
+        [DataMember]
+        public int? MaxFileSizeBytes { get; set; }
 
         private RockCacheability _cacheControlHeader;
        

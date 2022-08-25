@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Filter entities on any of its property or attribute values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Property Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "03F0D6AC-D181-48B6-B4BC-1F2652B55323")]
     public class PropertyFilter : EntityFieldFilter
     {
         #region Properties

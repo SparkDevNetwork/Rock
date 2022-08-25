@@ -55,7 +55,7 @@ namespace Rock.Model
 #if REVIEW_NET5_0_OR_GREATER
             .Where( e => e.StartDate >= date.Date && e.EndDate <= date.Date )
 #else
-            .Where( e => e.StartDate >= DbFunctions.TruncateTime( date ) && e.EndDate <= DbFunctions.TruncateTime( date ) )
+            .Where( e => e.StartDate <= DbFunctions.TruncateTime( date ) && e.EndDate >= DbFunctions.TruncateTime( date )  )
 #endif
             .Select( e => e.Id )
             .ToList();

@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Finance
     [ContextAware( typeof( Person ) )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the transaction summary.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}", "", 1 )]
     [AccountsField( "Accounts", "Limit the results to transactions that match the selected accounts.", false, "", "", 2 )]
+    [Rock.SystemGuid.BlockTypeGuid( "535307C8-77D1-44F8-AD4D-1577572B6D26" )]
     public partial class TransactionYearlySummaryLava : RockBlock, ISecondaryBlock
     {
         #region Base Control Methods
@@ -139,7 +140,6 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                var financialAccounts = new FinancialAccountService( rockContext ).Queryable().Select( a => new { a.Id, a.Name } ).ToDictionary( k => k.Id, v => v.Name );
 
                 var yearsMergeObjects = new List<Dictionary<string, object>>();
                 foreach ( var item in summaryList.GroupBy( a => a.Year ) )
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Finance
                     foreach ( var a in item )
                     {
                         var accountDictionary = new Dictionary<string, object>();
-                        accountDictionary.Add( "Account", financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty );
+                        accountDictionary.Add( "Account", FinancialAccountCache.Get( a.AccountId )?.Name ?? string.Empty );
                         accountDictionary.Add( "TotalAmount", a.TotalAmount );
                         accountsList.Add( accountDictionary );
                     }

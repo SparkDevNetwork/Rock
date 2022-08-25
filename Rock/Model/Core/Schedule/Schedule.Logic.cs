@@ -28,6 +28,7 @@ using Ical.Net;
 using Ical.Net.DataTypes;
 using Rock.Lava;
 using Rock.Web.Cache;
+using Ical.Net.CalendarComponents;
 
 namespace Rock.Model
 {
@@ -166,11 +167,7 @@ namespace Rock.Model
 
                 var calEvent = GetICalEvent();
 
-#if REVIEW_NET5_0_OR_GREATER
                 RecurrencePattern rrule = null;
-#else
-                Ical.Net.Interfaces.DataTypes.IRecurrencePattern rrule = null;
-#endif
 
                 if ( calEvent != null )
                 {
@@ -493,13 +490,9 @@ namespace Rock.Model
         /// Gets the Schedule's iCalender Event.
         /// </summary>
         /// <value>
-        /// A <see cref="Ical.Net.Event"/> representing the iCalendar event for this Schedule.
+        /// A <see cref="Ical.Net.CalendarComponents.CalendarEvent"/> representing the iCalendar event for this Schedule.
         /// </value>
-#if REVIEW_NET5_0_OR_GREATER
         public virtual CalendarEvent GetICalEvent()
-#else
-        public virtual Ical.Net.Event GetICalEvent()
-#endif
         {
             if ( _getICalEvent == null )
             {
@@ -509,11 +502,7 @@ namespace Rock.Model
             return _getICalEvent;
         }
 
-#if REVIEW_NET5_0_OR_GREATER
         private CalendarEvent _getICalEvent = null;
-#else
-        private Ical.Net.Event _getICalEvent = null;
-#endif
 
 #if REVIEW_WEBFORMS
         /// <summary>

@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// SiteDomains REST API
     /// </summary>
+    [RestControllerGuid( "DAFCD1DF-0A45-457E-9E23-F3709A7FE55F" )]
     public partial class SiteDomainsController : Rock.Rest.ApiController<Rock.Model.SiteDomain>
     {
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -71,6 +71,7 @@ namespace Rock.Workflow.Action
         IsRequired = true,
         Order = 4,
         Key = AttributeKey.EmptyValueHandling )]
+    [Rock.SystemGuid.EntityTypeGuid( "2B3502EA-5531-4345-AA01-23AE273F0B6F")]
     public class SetEntityProperty : ActionComponent
     {
 

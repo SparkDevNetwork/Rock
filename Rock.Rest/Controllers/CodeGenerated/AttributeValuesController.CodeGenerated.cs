@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// AttributeValues REST API
     /// </summary>
+    [RestControllerGuid( "97CED05C-6E18-42D7-B80B-8D1C1F5A5171" )]
     public partial class AttributeValuesController : Rock.Rest.ApiController<Rock.Model.AttributeValue>
     {
         /// <summary>

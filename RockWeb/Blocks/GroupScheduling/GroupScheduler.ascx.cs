@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.GroupScheduling
         DefaultIntegerValue = 6,
         Order = 0,
         Key = AttributeKey.FutureWeeksToShow )]
+    [Rock.SystemGuid.BlockTypeGuid( "37D43C21-1A4D-4B13-9555-EF0B7304EB8A" )]
     public partial class GroupScheduler : RockBlock
     {
         /// <summary>
@@ -230,7 +231,6 @@ btnCopyToClipboard.ClientID );
             {
                 _listedEndOfWeekDates.Add( endOfWeekDate );
                 endOfWeekDate = endOfWeekDate.AddDays( 7 );
-                i++;
             }
 
             rptWeekSelector.DataSource = _listedEndOfWeekDates;
@@ -547,8 +547,8 @@ btnCopyToClipboard.ClientID );
             }
 
             // NOTE: if PageParameters or UserPreferences specify an invalid combination of ResourceSourceType and GroupId,
-            // For example, an AlternateGroupId but when a Group has GroupRequirements, 
-            // ApplyFilter() will correct for it 
+            // For example, an AlternateGroupId but when a Group has GroupRequirements,
+            // ApplyFilter() will correct for it
             SetResourceListSourceType( resourceListSourceType, groupMemberFilterType );
 
             gpResourceListAlternateGroup.SetValue( this.GetUrlSettingOrBlockUserPreference( PageParameterKey.AlternateGroupId, UserPreferenceKey.AlternateGroupId ).AsIntegerOrNull() );
@@ -696,7 +696,7 @@ btnCopyToClipboard.ClientID );
             var resourceListSourceType = ( GroupSchedulerResourceListSourceType ) hfSchedulerResourceListSourceType.Value.AsInteger();
             var groupMemberFilterType = ( SchedulerResourceGroupMemberFilterType ) hfResourceGroupMemberFilterType.Value.AsInteger();
 
-            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = Enum.GetValues( typeof( GroupSchedulerResourceListSourceType ) ).OfType<GroupSchedulerResourceListSourceType>().ToList();
+            List<GroupSchedulerResourceListSourceType> schedulerResourceListSourceTypes = typeof( GroupSchedulerResourceListSourceType ).GetOrderedValues<GroupSchedulerResourceListSourceType>().ToList();
 
             if ( selectedGroup != null && selectedGroup.SchedulingMustMeetRequirements )
             {
@@ -1276,6 +1276,7 @@ btnCopyToClipboard.ClientID );
                 .Where( a => a.Attendees.Any( x => x.RequestedToAttend == true || x.ScheduledToAttend == true ) )
                 .Select( a => new AttendanceOccurrenceRowItem
                 {
+                    OccurrenceDisplayMode = occurrenceDisplayMode,
                     LocationName = "No Location Preference",
                     GroupLocationOrder = 0,
                     LocationId = null,
@@ -1696,11 +1697,16 @@ btnCopyToClipboard.ClientID );
 
             var pnlMultiGroupModePanelHeading = e.Item.FindControl( "pnlMultiGroupModePanelHeading" ) as Panel;
             var lMultiGroupModeLocationTitle = e.Item.FindControl( "lMultiGroupModeLocationTitle" ) as Literal;
-            lMultiGroupModeLocationTitle.Text = attendanceOccurrenceRowItem.LocationName;
+            lMultiGroupModeLocationTitle.Text = $"<span class=\"location\">{attendanceOccurrenceRowItem.LocationName}</span>";
             if ( attendanceOccurrenceRowItem.ScheduledDateTime.HasValue )
             {
                 var lMultiGroupModeOccurrenceScheduledDate = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledDate" ) as Literal;
                 var lMultiGroupModeOccurrenceScheduledTime = e.Item.FindControl( "lMultiGroupModeOccurrenceScheduledTime" ) as Literal;
+
+                if ( !attendanceOccurrenceRowItem.LocationId.HasValue )
+                {
+                    lMultiGroupModeLocationTitle.Text = $"<span class=\"location resource-no-location-preference\">{attendanceOccurrenceRowItem.LocationName}</span>";
+                }
 
                 // show date in 'Sunday, June 15' format
                 lMultiGroupModeOccurrenceScheduledDate.Text = attendanceOccurrenceRowItem.ScheduledDateTime.Value.ToString( "dddd, MMMM dd" );
@@ -2253,9 +2259,9 @@ btnCopyToClipboard.ClientID );
             var group = groupMemberPerson.Group;
 
             /* 2020-07-23 MDP
-             *  Note that an Attendance record is for a Person, not a GroupMemberId, so GroupMemberId would be whatever GroupMember record was found for this 
+             *  Note that an Attendance record is for a Person, not a GroupMemberId, so GroupMemberId would be whatever GroupMember record was found for this
              *  Person in the Occurrence group.
-             *  So, if the person is in the group multiple times, the groupMember record would be first group member record for that person, sorted by GroupTypeRole.Order. 
+             *  So, if the person is in the group multiple times, the groupMember record would be first group member record for that person, sorted by GroupTypeRole.Order.
              *  But, they could have preferences for multiple group members records, so lookup by personId instead of GroupMemberId
              */
             var preferencesForGroup = groupMemberAssignmentQuery
@@ -2304,7 +2310,7 @@ btnCopyToClipboard.ClientID );
                 nbGroupScheduleAssignmentUpdatePreferenceInformation.Text = string.Empty;
             }
 
-            mdGroupScheduleAssignmentPreference.SubTitle = string.Format( "{0}, {1} - {2} ", groupMemberPerson.Person, attendanceOccurrence.Schedule.Name, attendanceOccurrence.Location.Name );
+            mdGroupScheduleAssignmentPreference.SubTitle = string.Format( "{0}, {1} - {2} ", groupMemberPerson.Person, attendanceOccurrence.Schedule?.Name ?? "No Schedule", attendanceOccurrence.Location?.Name ?? "No Location Preference" );
 
             nbGroupScheduleAssignmentUpdatePreferenceInformation.Visible = rblGroupScheduleAssignmentUpdateOption.SelectedValue == "UpdatePreference";
 
@@ -2429,9 +2435,9 @@ btnCopyToClipboard.ClientID );
             var groupMemberAssignmentQuery = groupMemberAssignmentService.Queryable();
 
             /* 2020-07-23 MDP
-             *  Note that an Attendance record is for a Person, not a GroupMemberId, so GroupMemberId would be whatever GroupMember record was found for this 
+             *  Note that an Attendance record is for a Person, not a GroupMemberId, so GroupMemberId would be whatever GroupMember record was found for this
              *  Person in the Occurrence group.
-             *  So, f the person is in the group multiple times, the groupMember record would be first group member record for that person, sorted by GroupTypeRole.Order. 
+             *  So, f the person is in the group multiple times, the groupMember record would be first group member record for that person, sorted by GroupTypeRole.Order.
              *  But, they could have preferences for multiple group members records, so lookup by personId instead of GroupMemberId
              */
             int groupMemberPersonId = groupMember.PersonId;
@@ -2455,7 +2461,7 @@ btnCopyToClipboard.ClientID );
             groupMember.ScheduleTemplateId = ddlGroupMemberScheduleTemplate.SelectedValueAsId();
 
             /* 2020-07-23 MDP
-                 - 'Update Preference' means that the selected Schedule/Location is now their *only* preference for this Group. 
+                 - 'Update Preference' means that the selected Schedule/Location is now their *only* preference for this Group.
                     So, if they have preferences for other schedules for this group, delete them
                     see https://app.asana.com/0/0/1185765604320009/f
 

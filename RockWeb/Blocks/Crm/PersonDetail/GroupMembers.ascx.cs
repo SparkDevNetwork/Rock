@@ -97,9 +97,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "7BFD4000-ED0E-41B8-8DD5-C36973C36E1F" )]
     public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
         #region Attribute Keys
+
         private static class AttributeKey
         {
             public const string GroupType = "GroupType";
@@ -110,6 +112,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string GroupHeaderLava = "GroupHeaderLava";
             public const string GroupFooterLava = "GroupFooterLava";
         }
+
         #endregion Attribute Keys
 
         #region Fields
@@ -123,7 +126,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private RockContext _bindGroupsRockContext = null;
         private bool _showReorderIcon;
 
-        #endregion
+        #endregion Fields
 
         #region Base Control Methods
 
@@ -146,8 +149,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             _showCounty = GetAttributeValue( AttributeKey.ShowCounty ).AsBoolean();
-
-            RegisterScripts();
         }
 
         /// <summary>
@@ -180,7 +181,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -204,9 +205,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     var memberService = new GroupMemberService( _bindGroupsRockContext );
                     var groupMemberGroups = memberService.Queryable( true )
-                        .Where( m =>
-                            m.PersonId == Person.Id &&
-                            m.Group.GroupTypeId == _groupType.Id )
+                        .Where( m => m.PersonId == Person.Id && m.Group.GroupTypeId == _groupType.Id )
                         .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
                         .ToList();
 
@@ -229,153 +228,105 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptrGroups_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            if ( e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem )
             {
-                var group = e.Item.DataItem as Group;
-                if ( group != null )
+                return;
+            }
+
+            if ( !( e.Item.DataItem is Group group ) )
+            {
+                return;
+            }
+
+            if ( e.Item.FindControl( "hlEditGroup" ) is HyperLink hlEditGroup )
+            {
+                hlEditGroup.Visible = _allowEdit;
+                var pageParams = new Dictionary<string, string>();
+                pageParams.Add( "PersonId", Person.Id.ToString() );
+                pageParams.Add( "GroupId", group.Id.ToString() );
+                hlEditGroup.NavigateUrl = LinkedPageUrl( AttributeKey.GroupEditPage, pageParams );
+            }
+
+            var lReorderIcon = e.Item.FindControl( "lReorderIcon" ) as Control;
+            lReorderIcon.Visible = _showReorderIcon;
+
+            if ( e.Item.FindControl( "rptrMembers" ) is Repeater rptrMembers )
+            {
+                // use the _bindGroupsRockContext that is created/disposed in BindFamilies()
+                var members = new GroupMemberService( _bindGroupsRockContext )
+                    .Queryable( "GroupRole,Person", true )
+                    .Where( m => m.GroupId == group.Id && m.PersonId != Person.Id )
+                    .OrderBy( m => m.GroupRole.Order )
+                    .ToList();
+
+                var groupHeaderLava = GetAttributeValue( AttributeKey.GroupHeaderLava );
+                var groupFooterLava = GetAttributeValue( AttributeKey.GroupFooterLava );
+
+                if ( groupHeaderLava.IsNotNullOrWhiteSpace() || groupFooterLava.IsNotNullOrWhiteSpace() )
                 {
-                    HyperLink hlEditGroup = e.Item.FindControl( "hlEditGroup" ) as HyperLink;
-                    if ( hlEditGroup != null )
-                    {
-                        hlEditGroup.Visible = _allowEdit;
-                        var pageParams = new Dictionary<string, string>();
-                        pageParams.Add( "PersonId", Person.Id.ToString() );
-                        pageParams.Add( "GroupId", group.Id.ToString() );
-                        hlEditGroup.NavigateUrl = LinkedPageUrl( AttributeKey.GroupEditPage, pageParams );
-                    }
+                    // add header and footer information
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    mergeFields.Add( "Group", group );
+                    mergeFields.Add( "GroupMembers", members );
 
-                    var lReorderIcon = e.Item.FindControl( "lReorderIcon" ) as Control;
-                    lReorderIcon.Visible = _showReorderIcon;
+                    Literal lGroupHeader = e.Item.FindControl( "lGroupHeader" ) as Literal;
+                    Literal lGroupFooter = e.Item.FindControl( "lGroupFooter" ) as Literal;
 
-                    Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
-                    if ( rptrMembers != null )
-                    {
-                        // use the _bindGroupsRockContext that is created/disposed in BindFamilies()
-                        var members = new GroupMemberService( _bindGroupsRockContext ).Queryable( "GroupRole,Person", true )
-                            .Where( m =>
-                                m.GroupId == group.Id &&
-                                m.PersonId != Person.Id )
-                            .OrderBy( m => m.GroupRole.Order )
-                            .ToList();
+                    lGroupHeader.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
+                    lGroupFooter.Text = groupFooterLava.ResolveMergeFields( mergeFields );
+                }
 
-                        var groupHeaderLava = GetAttributeValue( AttributeKey.GroupHeaderLava );
-                        var groupFooterLava = GetAttributeValue( AttributeKey.GroupFooterLava );
+                var orderedMembers = new List<GroupMember>();
 
-                        if ( groupHeaderLava.IsNotNullOrWhiteSpace() || groupFooterLava.IsNotNullOrWhiteSpace() )
-                        {
-                            // add header and footer information
-                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                            mergeFields.Add( "Group", group );
-                            mergeFields.Add( "GroupMembers", members );
+                if ( _IsFamilyGroupType )
+                {
+                    // Add adult males
+                    orderedMembers.AddRange( members
+                        .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) && m.Person.Gender == Gender.Male )
+                        .OrderByDescending( m => m.Person.Age ) );
 
-                            Literal lGroupHeader = e.Item.FindControl( "lGroupHeader" ) as Literal;
-                            Literal lGroupFooter = e.Item.FindControl( "lGroupFooter" ) as Literal;
+                    // Add adult females
+                    orderedMembers.AddRange( members
+                        .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) && m.Person.Gender != Gender.Male )
+                        .OrderByDescending( m => m.Person.Age ) );
 
-                            lGroupHeader.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
-                            lGroupFooter.Text = groupFooterLava.ResolveMergeFields( mergeFields );
-                        }
+                    // Add non-adults
+                    orderedMembers.AddRange( members
+                        .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                        .OrderByDescending( m => m.Person.Age ) );
+                }
+                else
+                {
+                    orderedMembers = members
+                        .OrderBy( m => m.GroupRole.Order )
+                        .ThenBy( m => m.Person.LastName )
+                        .ThenBy( m => m.Person.NickName )
+                        .ToList();
+                }
 
-                        var orderedMembers = new List<GroupMember>();
+                rptrMembers.DataSource = orderedMembers;
+                rptrMembers.DataBind();
+            }
 
-                        if ( _IsFamilyGroupType )
-                        {
-                            // Add adult males
-                            orderedMembers.AddRange( members
-                                .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
-                                    m.Person.Gender == Gender.Male )
-                                .OrderByDescending( m => m.Person.Age ) );
-
-                            // Add adult females
-                            orderedMembers.AddRange( members
-                                .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
-                                    m.Person.Gender != Gender.Male )
-                                .OrderByDescending( m => m.Person.Age ) );
-
-                            // Add non-adults
-                            orderedMembers.AddRange( members
-                                .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
-                                .OrderByDescending( m => m.Person.Age ) );
-                        }
-                        else
-                        {
-                            orderedMembers = members
-                                .OrderBy( m => m.GroupRole.Order )
-                                .ThenBy( m => m.Person.LastName )
-                                .ThenBy( m => m.Person.NickName )
-                                .ToList();
-                        }
-                        rptrMembers.ItemDataBound += rptrMembers_ItemDataBound;
-                        rptrMembers.DataSource = orderedMembers;
-                        rptrMembers.DataBind();
-                    }
-
-                    Repeater rptrAddresses = e.Item.FindControl( "rptrAddresses" ) as Repeater;
-                    if ( rptrAddresses != null )
-                    {
-                        rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
-                        rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
-                        rptrAddresses.DataSource = new GroupLocationService( _bindGroupsRockContext ).Queryable( "Location,GroupLocationTypeValue" )
-                            .Where( l => l.GroupId == group.Id )
-                            .OrderBy( l => l.GroupLocationTypeValue.Order )
-                            .ToList();
-                        rptrAddresses.DataBind();
-                    }
-
-                    Panel pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
-                    HyperLink hlShowMoreAttributes = e.Item.FindControl( "hlShowMoreAttributes" ) as HyperLink;
-                    PlaceHolder phGroupAttributes = e.Item.FindControl( "phGroupAttributes" ) as PlaceHolder;
-                    PlaceHolder phMoreGroupAttributes = e.Item.FindControl( "phMoreGroupAttributes" ) as PlaceHolder;
-
-                    if ( pnlGroupAttributes != null && hlShowMoreAttributes != null && phGroupAttributes != null && phMoreGroupAttributes != null )
-                    {
-                        hlShowMoreAttributes.Visible = false;
-                        phGroupAttributes.Controls.Clear();
-                        phMoreGroupAttributes.Controls.Clear();
-
-                        group.LoadAttributes();
-                        var attributes = group.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson )
-                            .Select( a => a.Value )
-                            .OrderBy( a => a.Order )
-                            .ToList();
-
-                        foreach ( var attribute in attributes )
-                        {
-                            if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                            {
-                                string value = attribute.DefaultValue;
-                                if ( group.AttributeValues.ContainsKey( attribute.Key ) && group.AttributeValues[attribute.Key] != null )
-                                {
-                                    value = group.AttributeValues[attribute.Key].ValueFormatted;
-                                }
-
-                                if ( !string.IsNullOrWhiteSpace( value ) )
-                                {
-                                    var literalControl = new RockLiteral();
-                                    literalControl.ID = string.Format( "familyAttribute_{0}", attribute.Id );
-                                    literalControl.Label = attribute.Name;
-                                    literalControl.Text = value;
-
-                                    var div = new HtmlGenericControl( "div" );
-                                    div.AddCssClass( "col-md-3 col-sm-6" );
-                                    div.Controls.Add( literalControl );
-
-                                    if ( attribute.IsGridColumn )
-                                    {
-                                        phGroupAttributes.Controls.Add( div );
-                                    }
-                                    else
-                                    {
-                                        hlShowMoreAttributes.Visible = true;
-                                        phMoreGroupAttributes.Controls.Add( div );
-                                    }
-                                }
-                            }
-                        }
-
-                        pnlGroupAttributes.Visible = phGroupAttributes.Controls.Count > 0 || phMoreGroupAttributes.Controls.Count > 0;
-                    }
+            if ( e.Item.FindControl( "rptrAddresses" ) is Repeater rptrAddresses )
+            {
+                rptrAddresses.DataSource = new GroupLocationService( _bindGroupsRockContext )
+                    .Queryable( "Location,GroupLocationTypeValue" )
+                    .Where( l => l.GroupId == group.Id )
+                    .OrderBy( l => l.GroupLocationTypeValue.Order )
+                    .ToList();
+                // if datasource has no items, then don't bind
+                if ( rptrAddresses.DataSource is List<GroupLocation> groupLocations && groupLocations.Any() )
+                {
+                    rptrAddresses.DataBind();
+                }
+                else
+                {
+                    rptrAddresses.Visible = false;
                 }
             }
+
+            ShowGroupAttributes( group, e );
         }
 
         /// <summary>
@@ -385,22 +336,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptrMembers_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            if ( e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem )
             {
-                var groupMember = e.Item.DataItem as GroupMember;
-                if ( groupMember != null && groupMember.Person != null )
-                {
-                    Person fm = groupMember.Person;
+                return;
+            }
 
-                    // very similar code in EditFamily.ascx.cs
-                    HtmlControl divPersonImage = e.Item.FindControl( "divPersonImage" ) as HtmlControl;
-                    if ( divPersonImage != null )
-                    {
-                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPersonPhotoUrl( fm ) + "&width=65" ) );
-                        divPersonImage.Style.Add( "background-size", "cover" );
-                        divPersonImage.Style.Add( "background-position", "50%" );
-                    }
-                }
+            if ( !( e.Item.DataItem is GroupMember groupMember ) || groupMember.Person == null )
+            {
+                return;
+            }
+
+            var personLink = FormatPersonLink( groupMember.Person.Id.ToString() );
+
+            if ( e.Item.FindControl( "litGroupMemberInfo" ) is Literal litGroupMemberInfo )
+            {
+                litGroupMemberInfo.Text = $@"
+                    <div class=""{FormatPersonCssClass( groupMember.Person.IsDeceased ) }"">
+                        <a href=""{personLink}"" class=""photo-link"">
+                            <img src=""{Person.GetPersonPhotoUrl( groupMember.Person, 156 )}"" alt class=""img-cover inset-0"">
+                            <div class=""photo-shadow inset-0""></div>
+                        </a>
+                        <a href=""{personLink}"" class=""name-link"">
+                            <span class=""name"">{FormatPersonName( groupMember.Person.NickName, groupMember.Person.LastName )}</span>
+                            <span class=""person-age"">{groupMember.Person.Age}</span>
+                        </a>
+                    </div>";
             }
         }
 
@@ -411,55 +371,62 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptrAddresses_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            if ( e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem )
             {
-                var groupLocation = e.Item.DataItem as GroupLocation;
-                if ( groupLocation != null && groupLocation.Location != null )
+                return;
+            }
+
+            var groupLocation = e.Item.DataItem as GroupLocation;
+            if ( groupLocation == null && groupLocation.Location == null )
+            {
+                return;
+            }
+
+            if( e.Item.FindControl( "litAddress" ) is Literal litAddress )
+            {
+                groupLocation.GroupLocationTypeValue.LoadAttributes();
+                var iconCssClass = groupLocation.GroupLocationTypeValue.GetAttributeValue( "IconCSSClass" ) ?? "fa fa-map-marker";
+
+                litAddress.Text = $@"
+                    <div class=""profile-row group-hover"">
+                        <span class=""profile-row-icon"">
+                            <a href=""{groupLocation.Location.GoogleMapLink( Person.FullName )}"" title=""Map This Address"" class=""map"" target=""_blank"">
+                                <i class=""{iconCssClass}""></i>
+                            </a>
+                        </span>
+                        <dl class=""m-0"">
+                            <dt>{FormatAddressType( groupLocation.GroupLocationTypeValue.Value )}</dt>
+                            <dd>{FormatAddress( groupLocation.Location )}</dd>
+                        </dl>";
+            }
+
+            if ( e.Item.FindControl( "lbVerify" ) is LinkButton lbVerify )
+            {
+                if ( Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
                 {
-                    Location loc = groupLocation.Location;
+                    lbVerify.Visible = true;
+                    lbVerify.CommandArgument = groupLocation.Location.Id.ToString();
+                }
+                else
+                {
+                    lbVerify.Visible = false;
+                }
+            }
 
-                    HtmlAnchor aMap = e.Item.FindControl( "aMap" ) as HtmlAnchor;
-                    if ( aMap != null )
-                    {
-                        aMap.HRef = loc.GoogleMapLink( Person.FullName );
-                    }
-
-                    LinkButton lbVerify = e.Item.FindControl( "lbVerify" ) as LinkButton;
-                    if ( lbVerify != null )
-                    {
-                        if ( Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
-                        {
-                            lbVerify.Visible = true;
-                            lbVerify.CommandArgument = loc.Id.ToString();
-                        }
-                        else
-                        {
-                            lbVerify.Visible = false;
-                        }
-                    }
-
-                    LinkButton lbLocationSettings = e.Item.FindControl( "lbLocationSettings" ) as LinkButton;
-                    if ( lbLocationSettings != null )
-                    {
-                        if ( UserCanEdit )
-                        {
-                            lbLocationSettings.Visible = true;
-                            lbLocationSettings.CommandArgument = loc.Id.ToString();
-                        }
-                        else
-                        {
-                            lbLocationSettings.Visible = false;
-                        }
-                    }
+            if ( e.Item.FindControl( "lbLocationSettings" ) is LinkButton lbLocationSettings )
+            {
+                if ( UserCanEdit )
+                {
+                    lbLocationSettings.Visible = true;
+                    lbLocationSettings.CommandArgument = groupLocation.Location.Id.ToString();
+                }
+                else
+                {
+                    lbLocationSettings.Visible = false;
                 }
             }
         }
 
-        /// <summary>
-        /// Handles the ItemCommand event of the rptrAddresses control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptrAddresses_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             int locationId = int.MinValue;
@@ -475,17 +442,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         switch ( e.CommandName )
                         {
                             case "verify":
-                                {
-                                    service.Verify( location, true );
-                                    rockContext.SaveChanges();
-                                    break;
-                                }
+                                service.Verify( location, true );
+                                rockContext.SaveChanges();
+                                break;
+
                             case "settings":
-                                {
-                                    NavigateToLinkedPage( AttributeKey.LocationDetailPage,
-                                        new Dictionary<string, string> { { "LocationId", location.Id.ToString() }, { "PersonId", Person.Id.ToString() } } );
-                                    break;
-                                }
+                                NavigateToLinkedPage( AttributeKey.LocationDetailPage,
+                                    new Dictionary<string, string> { { "LocationId", location.Id.ToString() }, { "PersonId", Person.Id.ToString() } } );
+                                break;
                         }
                     }
                 }
@@ -494,7 +458,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             BindGroups();
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -531,7 +495,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            // Gind the Groups repeater which will show the Groups with a list of GroupMembers
+            // Bind the Groups repeater which will show the Groups with a list of GroupMembers
             using ( _bindGroupsRockContext = new RockContext() )
             {
                 var memberService = new GroupMemberService( _bindGroupsRockContext );
@@ -590,8 +554,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <returns></returns>
         protected string FormatAddress( object locationObject )
         {
-            var location = locationObject as Location;
-            if ( location == null )
+            if ( !( locationObject is Location location ) )
             {
                 return string.Empty;
             }
@@ -601,14 +564,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 return location.FormattedHtmlAddress;
             }
 
-            return string.Format(
-                "{0}<br/>{1}<br/>{2}{3}, {4} {5}",
-                location.Street1,
-                location.Street2,
-                location.City,
-                location.County.IsNotNullOrWhiteSpace() ? ", " + location.County : "",
-                location.State,
-                location.PostalCode )
+            return $"{location.Street1}<br/>{location.Street2}<br/>{location.City}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County : "" )}, {location.State} {location.PostalCode}"
                 .ReplaceWhileExists( "  ", " " )
                 .ReplaceWhileExists( "<br/><br/>", "<br/>" );
         }
@@ -664,7 +620,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <returns></returns>
         protected string FormatPersonCssClass( bool isDeceased )
         {
-            return isDeceased ? "member deceased" : "member";
+            return isDeceased ? "family-member family-member-deceased" : "family-member";
         }
 
         /// <summary>
@@ -681,6 +637,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     ( gm.Person.FormatAge( true ) ) :
                     gm.GroupRole.Name;
             }
+
             return string.Empty;
         }
 
@@ -694,24 +651,51 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             return str.FormatAsHtmlTitle();
         }
 
-        private void RegisterScripts()
+        protected void ShowGroupAttributes( Group group, RepeaterItemEventArgs e )
         {
-            string script = @"
-    $('.js-show-more-family-attributes').on('click', function (e) {
-        var $pnl = $(this).closest('.js-persondetails-group');
-        var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
-        if ( $moreAttributes.is(':visible') ) {
-            $moreAttributes.slideUp();
-            $(this).html('<i class=""fa fa-chevron-down""></i>');
-        } else {
-            $moreAttributes.slideDown();
-            $(this).html('<i class=""fa fa-chevron-up""></i>');
-        }
-    });";
-            ScriptManager.RegisterStartupScript( upGroupMembers, upGroupMembers.GetType(), "showmore", script, true );
+            var pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
+            var litGroupAttributes = e.Item.FindControl( "litGroupAttributes" ) as Literal;
+            var litMoreGroupAttributes = e.Item.FindControl( "litMoreGroupAttributes" ) as Literal;
 
+            if ( pnlGroupAttributes == null || litGroupAttributes == null || litMoreGroupAttributes == null )
+            {
+                return;
+            }
+
+            litGroupAttributes.Text = string.Empty;
+            litMoreGroupAttributes.Text = string.Empty;
+            pnlGroupAttributes.Visible = false;
+
+            group.LoadAttributes();
+            var authorizedAttributes = group.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson ).Select( a => a.Value ).OrderBy( a => a.Order ).ToList();
+
+            foreach ( var attribute in authorizedAttributes )
+            {
+                string value = attribute.DefaultValue;
+                if ( group.AttributeValues.ContainsKey( attribute.Key ) && group.AttributeValues[attribute.Key] != null )
+                {
+                    value = group.AttributeValues[attribute.Key].ValueFormatted;
+                }
+
+                if ( !string.IsNullOrWhiteSpace( value ) )
+                {
+                    var attributeHtml = $@"
+                        <dt>{attribute.Name}</dt>
+                        <dd>{value}</dd>";
+
+                    if ( attribute.IsGridColumn )
+                    {
+                        pnlGroupAttributes.Visible = true;
+                        litGroupAttributes.Text += attributeHtml;
+                    }
+                    else
+                    {
+                        litMoreGroupAttributes.Text += attributeHtml;
+                    }
+                }
+            }
         }
 
-        #endregion
+        #endregion Methods
     }
 }

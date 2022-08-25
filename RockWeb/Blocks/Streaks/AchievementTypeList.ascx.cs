@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Streaks
         name: "Detail Page",
         key: AttributeKey.DetailPage )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D2F918CF-F63C-4643-A02A-FD3DE7C5CFFD" )]
     public partial class AchievementTypeList : RockBlock, ICustomGridColumns
     {
         #region Keys

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         Order = 3 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "E431DBDF-5C65-45DC-ADC5-157A02045CCD" )]
     public partial class ReportDetail : RockBlock
     {
         #region Attribute Keys
@@ -612,7 +613,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !report.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -746,7 +747,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class FieldTypeSelection
         {
@@ -1300,17 +1301,16 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.DataView != null )
             {
-                lbDataView.Visible = UserCanEdit;
+                hlDataView.Visible = UserCanEdit;
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", report.DataViewId.ToString() );
-                lbDataView.NavigateUrl = LinkedPageUrl( AttributeKey.DataViewPage, queryParams );
-
-                lbDataView.ToolTip = report.DataView.Name;
+                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {report.DataView.Name.Truncate(30, true)}</a>";
+                hlDataView.ToolTip = (report.DataView.Name.Length > 30) ? report.DataView.Name : null;
             }
             else
             {
-                lbDataView.Visible = false;
+                hlDataView.Visible = false;
             }
 
             BindGrid( report, false );
@@ -1675,7 +1675,7 @@ namespace RockWeb.Blocks.Reporting
         #region ReportFieldInfo Class
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [Serializable]
         protected class ReportFieldInfo
@@ -1699,7 +1699,7 @@ namespace RockWeb.Blocks.Reporting
             public ReportFieldType ReportFieldType { get; set; }
 
             /// <summary>
-            /// Gets or sets the field selection. 
+            /// Gets or sets the field selection.
             /// </summary>
             /// <value>
             /// The selection.

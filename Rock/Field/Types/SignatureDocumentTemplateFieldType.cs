@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
@@ -21,6 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -28,7 +30,8 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a <see cref="SignatureDocumentTemplate" />. Stored as the SignatureDocumentTemplate's Guid.
     /// </summary>
-    public class SignatureDocumentTemplateFieldType : FieldType, IEntityFieldType
+    [Rock.SystemGuid.FieldTypeGuid( "258A4AEF-F555-4AF5-8D5D-2D581A982D1C")]
+    public class SignatureDocumentTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         private const string SHOW_TEMPLATES_WITH_EXTERNAL_PROVIDERS = "SHOW_TEMPLATES_WITH_EXTERNAL_PROVIDERS";
 
@@ -44,9 +47,17 @@ namespace Rock.Field.Types
         /// <returns>System.String.</returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
 
-            System.Guid? guid = value.AsGuidOrNull();
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string formattedValue = privateValue;
+
+            System.Guid? guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -59,7 +70,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return formattedValue;
         }
 
         #endregion Formatting
@@ -193,6 +204,47 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var signatureDocumentTemplateId = new SignatureDocumentTemplateService( rockContext ).GetId( guid.Value );
+
+                if ( !signatureDocumentTemplateId.HasValue )
+                {
+                    return null;
+                }
+
+                return new List<ReferencedEntity>
+                {
+                    new ReferencedEntity( EntityTypeCache.GetId<SignatureDocumentTemplate>().Value, signatureDocumentTemplateId.Value )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Name property of a Signature Document Template and
+            // should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<SignatureDocumentTemplate>().Value, nameof( SignatureDocumentTemplate.Name ) )
+            };
         }
 
         #endregion

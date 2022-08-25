@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people that are associated with a specific campus." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Campus Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "D976C41F-226F-4051-9CA3-C661C938B064")]
     public class CampusFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
     {
         #region Properties

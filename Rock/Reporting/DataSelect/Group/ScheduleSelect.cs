@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description("Select the Schedule of the Group")]
     [Export(typeof(DataSelectComponent))]
     [ExportMetadata("ComponentName", "Select Group's Schedule")]
+    [Rock.SystemGuid.EntityTypeGuid( "FB5548AC-6953-495B-82EF-BC2A60F35767")]
     public class ScheduleSelect : DataSelectComponent
     {
         #region Properties

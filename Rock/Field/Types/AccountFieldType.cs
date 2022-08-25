@@ -16,12 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -30,12 +32,15 @@ namespace Rock.Field.Types
     /// Account Field Type.  Stored as FinancialAccount's Guid
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    public class AccountFieldType : FieldType, IEntityFieldType
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_ACCOUNT )]
+    public class AccountFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
-
         #region Configuration
 
         private const string DISPLAY_PUBLIC_NAME = "displaypublicname";
+        private const string DISPLAY_CHILD_ITEM_COUNTS = "displaychilditemcounts";
+        private const string DISPLAY_ACTIVE_ONLY = "displayactiveitemsonly";
+        private const string ENHANCED_FOR_LONG_LISTS = "enhancedforlonglists";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -45,6 +50,10 @@ namespace Rock.Field.Types
         {
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( DISPLAY_PUBLIC_NAME );
+            configKeys.Add( DISPLAY_CHILD_ITEM_COUNTS );
+            configKeys.Add( DISPLAY_ACTIVE_ONLY );
+            configKeys.Add( ENHANCED_FOR_LONG_LISTS );
+
             return configKeys;
         }
 
@@ -56,7 +65,7 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            // Add checkbox for deciding if the textbox is used for storing a password
+            // Add a check box for deciding if the text box is used for storing a password
             var cbPublicName = new RockCheckBox();
             controls.Add( cbPublicName );
             cbPublicName.AutoPostBack = true;
@@ -65,6 +74,37 @@ namespace Rock.Field.Types
             cbPublicName.Label = "Display Public Name";
             cbPublicName.Text = "Yes";
             cbPublicName.Help = "When set, public name will be displayed.";
+
+            // Add a check box for deciding to display the child items count on a parent node
+            var cbDisplayChildItemCounts = new RockCheckBox();
+            controls.Add( cbDisplayChildItemCounts );
+            cbDisplayChildItemCounts.AutoPostBack = true;
+            cbDisplayChildItemCounts.CheckedChanged += OnQualifierUpdated;
+            cbDisplayChildItemCounts.Checked = false;
+            cbDisplayChildItemCounts.Label = "Display Child Item Counts";
+            cbDisplayChildItemCounts.Text = "Yes";
+            cbDisplayChildItemCounts.Help = "When set, child item counts will be displayed.";
+
+            // Add a check box for deciding if only active items are displayed
+            var cbActiveOnly = new RockCheckBox();
+            controls.Add( cbActiveOnly );
+            cbActiveOnly.AutoPostBack = true;
+            cbActiveOnly.CheckedChanged += OnQualifierUpdated;
+            cbActiveOnly.Checked = false;
+            cbActiveOnly.Label = "Display Active Items Only";
+            cbActiveOnly.Text = "Yes";
+            cbActiveOnly.Help = "When set, only active item will be displayed.";
+
+            // Add a check box for deciding to allow searching long lists via a REST call
+            var cbEnhancedForLongLists = new RockCheckBox();
+            controls.Add( cbEnhancedForLongLists );
+            cbEnhancedForLongLists.AutoPostBack = true;
+            cbEnhancedForLongLists.CheckedChanged += OnQualifierUpdated;
+            cbEnhancedForLongLists.Checked = true;
+            cbEnhancedForLongLists.Label = "Enhanced For Long Lists";
+            cbEnhancedForLongLists.Text = "Yes";
+            cbEnhancedForLongLists.Help = "When set, allows a searching for items.";
+
             return controls;
         }
 
@@ -77,10 +117,36 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.ConfigurationValues( controls );
             configurationValues.Add( DISPLAY_PUBLIC_NAME, new ConfigurationValue( "Display Public Name", "When set, public name will be displayed.", "True" ) );
+            configurationValues.Add( DISPLAY_CHILD_ITEM_COUNTS, new ConfigurationValue( "Display Child Item Counts", "When set, child item counts will be displayed.", "False" ) );
+            configurationValues.Add( DISPLAY_ACTIVE_ONLY, new ConfigurationValue( "Display Active Items Only", "When set, only active item will be displayed.", "False" ) );
+            configurationValues.Add( ENHANCED_FOR_LONG_LISTS, new ConfigurationValue( "Enhanced For Long Lists", "When set, allows a searching for items.", "True" ) );
 
-            if ( controls != null && controls.Count > 0 && controls[0] != null && controls[0] is CheckBox )
+            if ( controls != null && controls.Count >= 4 )
             {
-                configurationValues[DISPLAY_PUBLIC_NAME].Value = ( ( CheckBox ) controls[0] ).Checked.ToString();
+
+                // DISPLAY_PUBLIC_NAME
+                if ( controls[0] != null && controls[0] is CheckBox cbDisplayPublicName )
+                {
+                    configurationValues[DISPLAY_PUBLIC_NAME].Value = cbDisplayPublicName.Checked.ToString();
+                }
+
+                // DISPLAY_CHILD_ITEM_COUNTS
+                if ( controls?[1] is CheckBox cbDisplayChildItemCounts )
+                {
+                    configurationValues[DISPLAY_CHILD_ITEM_COUNTS].Value = cbDisplayChildItemCounts.Checked.ToString();
+                }
+
+                // DISPLAY_ACTIVE_ONLY
+                if ( controls?[2] is CheckBox cbDisplayActiveOnly )
+                {
+                    configurationValues[DISPLAY_ACTIVE_ONLY].Value = cbDisplayActiveOnly.Checked.ToString();
+                }
+
+                // ENHANCED_FOR_LONG_LISTS
+                if ( controls?[3] is CheckBox cbEnhancedForLongLists )
+                {
+                    configurationValues[ENHANCED_FOR_LONG_LISTS].Value = cbEnhancedForLongLists.Checked.ToString();
+                }
             }
 
             return configurationValues;
@@ -93,18 +159,77 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count > 0 && configurationValues != null )
+            if ( controls != null && controls.Count >= 4 && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is CheckBox && configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                // DISPLAY_PUBLIC_NAME
+                if ( controls[0] is CheckBox cbDisplayPublicName && configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
                 {
-                    ( ( CheckBox ) controls[0] ).Checked = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+                    cbDisplayPublicName.Checked = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+                }
+
+                // DISPLAY_CHILD_ITEM_COUNTS
+                if ( controls?[1] is CheckBox cbDisplayChildItemCounts && configurationValues.ContainsKey( DISPLAY_CHILD_ITEM_COUNTS ) )
+                {
+                    cbDisplayChildItemCounts.Checked = configurationValues[DISPLAY_CHILD_ITEM_COUNTS].Value.AsBoolean();
+                }
+
+                // DISPLAY_ACTIVE_ONLY
+                if ( controls?[2] is CheckBox cbDisplayActiveOnly && configurationValues.ContainsKey( DISPLAY_ACTIVE_ONLY ) )
+                {
+                    cbDisplayActiveOnly.Checked = configurationValues[DISPLAY_ACTIVE_ONLY].Value.AsBoolean();
+                }
+
+                // ENHANCED_FOR_LONG_LISTS
+                if ( controls?[3] is CheckBox cbEnhancedForLongLists && configurationValues.ContainsKey( ENHANCED_FOR_LONG_LISTS ) )
+                {
+                    cbEnhancedForLongLists.Checked = configurationValues[ENHANCED_FOR_LONG_LISTS].Value.AsBoolean();
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDisplayPublicName = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
+            var newDisplayPublicName = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_PUBLIC_NAME ) ?? string.Empty;
+
+            return oldDisplayPublicName != newDisplayPublicName;
         }
 
         #endregion
 
         #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="privateValue"></param>
+        /// <param name="privateConfigurationValues"></param>
+        /// <returns></returns>
+        /// <inheritdoc />
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                var displayPublicName = true;
+
+                if ( privateConfigurationValues != null &&
+                     privateConfigurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    displayPublicName = privateConfigurationValues[DISPLAY_PUBLIC_NAME].AsBoolean();
+                }
+
+                var account = FinancialAccountCache.Get( guid.Value );
+
+                if ( account != null )
+                {
+                    return displayPublicName ? account.PublicName : account.Name;
+                }
+            }
+
+            return privateValue;
+        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -116,33 +241,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                bool displayPublicName = true;
-
-                if ( configurationValues != null &&
-                     configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
-                {
-                    displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
-                }
-
-                using ( var rockContext = new RockContext() )
-                {
-                    var service = new FinancialAccountService( rockContext );
-                    var account = service.GetNoTracking( guid.Value );
-
-                    if ( account != null )
-                    {
-                        formattedValue = displayPublicName ? account.PublicName : account.Name;
-
-                    }
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         #endregion
@@ -160,14 +261,39 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             bool displayPublicName = true;
-
-            if ( configurationValues != null &&
-                 configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+            bool displayChildItemCounts = false;
+            bool displayActiveOnly = false;
+            bool enhancedForLongLists = true;
+            if ( configurationValues != null )
             {
-                displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
-            }
+                if ( configurationValues.ContainsKey( DISPLAY_PUBLIC_NAME ) )
+                {
+                    displayPublicName = configurationValues[DISPLAY_PUBLIC_NAME].Value.AsBoolean();
+                }
 
-            return new AccountPicker { ID = id, DisplayPublicName = displayPublicName };
+                if ( configurationValues.ContainsKey( DISPLAY_CHILD_ITEM_COUNTS ) )
+                {
+                    displayChildItemCounts = configurationValues[DISPLAY_CHILD_ITEM_COUNTS].Value.AsBoolean();
+                }
+
+                if ( configurationValues.ContainsKey( DISPLAY_ACTIVE_ONLY ) )
+                {
+                    displayActiveOnly = configurationValues[DISPLAY_ACTIVE_ONLY].Value.AsBoolean();
+                }
+
+                if ( configurationValues.ContainsKey( ENHANCED_FOR_LONG_LISTS ) )
+                {
+                    enhancedForLongLists = configurationValues[ENHANCED_FOR_LONG_LISTS].Value.AsBoolean();
+                }
+            }
+            return new AccountPicker
+            {
+                ID = id,
+                DisplayPublicName = displayPublicName,
+                DisplayChildItemCountLabel = displayChildItemCounts,
+                DisplayActiveOnly = displayActiveOnly,
+                EnhanceForLongLists = enhancedForLongLists
+            };
         }
 
         /// <summary>
@@ -186,14 +312,11 @@ namespace Rock.Field.Types
                 int? id = picker.ItemId.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var account = new FinancialAccountService( rockContext ).GetNoTracking( id.Value );
+                    var account = FinancialAccountCache.Get( id.Value );
 
-                        if ( account != null )
-                        {
-                            return account.Guid.ToString();
-                        }
+                    if ( account != null )
+                    {
+                        return account.Guid.ToString();
                     }
                 }
                 else
@@ -221,8 +344,8 @@ namespace Rock.Field.Types
                 Guid guid = value.AsGuid();
 
                 // get the item (or null) and set it
-                var account = new FinancialAccountService( new RockContext() ).Get( guid );
-                picker.SetValue( account );
+                var account = FinancialAccountCache.Get( guid );
+                picker.SetValueFromCache( account );
             }
         }
 
@@ -239,7 +362,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new FinancialAccountService( new RockContext() ).Get( guid );
+            var item = FinancialAccountCache.Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -251,7 +374,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new FinancialAccountService( new RockContext() ).Get( id ?? 0 );
+            var item = FinancialAccountCache.Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }
@@ -286,5 +409,42 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return null;
+            }
+
+            var accountId = FinancialAccountCache.GetId( guid.Value );
+
+            if ( !accountId.HasValue )
+            {
+                return null;
+            }
+
+            return new List<ReferencedEntity>
+            {
+                new ReferencedEntity( EntityTypeCache.GetId<FinancialAccount>().Value, accountId.Value )
+            };
+
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.PublicName ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.Name ) )
+            };
+        }
+
+        #endregion
     }
 }

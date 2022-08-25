@@ -29,7 +29,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -40,6 +40,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Attribute" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ATTRIBUTE )]
     public partial class Attribute : Model<Attribute>, IOrdered, ICacheable
     {
         /// <summary>
@@ -160,6 +161,43 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted text value.
+        /// </summary>
+        /// <value>The persisted text value.</value>
+        [DataMember]
+        public string DefaultPersistedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted HTML value.
+        /// </summary>
+        /// <value>The persisted HTML value.</value>
+        [DataMember]
+        public string DefaultPersistedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted condensed text value.
+        /// </summary>
+        /// <value>The persisted condensed text value.</value>
+        [DataMember]
+        public string DefaultPersistedCondensedTextValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default persisted condensed HTML value.
+        /// </summary>
+        /// <value>The persisted condensed HTML value.</value>
+        [DataMember]
+        public string DefaultPersistedCondensedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the persisted values are
+        /// considered dirty. If the values are dirty then it should be assumed
+        /// that they are not in sync with the <see cref="DefaultValue"/> property.
+        /// </summary>
+        /// <value><c>true</c> if the persisted values are considered dirty; otherwise, <c>false</c>.</value>
+        [DataMember]
+        public bool IsDefaultPersistedValueDirty { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if the Attribute supports multiple values.

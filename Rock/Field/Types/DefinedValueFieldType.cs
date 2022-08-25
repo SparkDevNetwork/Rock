@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModel.NonEntities;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -38,7 +38,8 @@ namespace Rock.Field.Types
     [Serializable]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M14.12,10.62V2.31A1.31,1.31,0,0,0,12.81,1H4.06A2.19,2.19,0,0,0,1.88,3.19v9.62A2.19,2.19,0,0,0,4.06,15h9.41a.66.66,0,0,0,0-1.31h-.22V11.86A1.32,1.32,0,0,0,14.12,10.62Zm-2.18,3.07H4.06a.88.88,0,0,1,0-1.75h7.88Zm.87-3.07H4.06a2.13,2.13,0,0,0-.87.19V3.19a.87.87,0,0,1,.87-.88h8.75Z""/></svg>" )]
-    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE )]
+    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
@@ -51,6 +52,7 @@ namespace Rock.Field.Types
         private const string REPEAT_COLUMNS_KEY = "RepeatColumns";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValuesId";
         private const string VALUES_PUBLIC_KEY = "values";
+        private const string SELECTABLE_VALUES_PUBLIC_KEY = "selectableValues";
 
         private const string DEFINED_TYPES_PROPERTY_KEY = "definedTypes";
         private const string DEFINED_VALUES_PROPERTY_KEY = "definedValues";
@@ -88,7 +90,7 @@ namespace Rock.Field.Types
             // Get the defined types that are available to be selected.
             var definedTypes = DefinedTypeCache.All()
                 .OrderBy( t => t.Name )
-                .Select( t => new ListItemViewModel
+                .Select( t => new ListItemBag
                 {
                     Value = t.Guid.ToString(),
                     Text = t.Name
@@ -113,7 +115,7 @@ namespace Rock.Field.Types
                     .DefinedValues
                     .Where( v => v.IsActive || includeInactive )
                     .OrderBy( v => v.Order )
-                    .Select( v => new ListItemViewModel
+                    .Select( v => new ListItemBag
                     {
                         Value = v.Guid.ToString(),
                         Text = displayDescription ? v.Description : v.Value
@@ -140,12 +142,9 @@ namespace Rock.Field.Types
                 publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
             }
 
-            // Convert the selectable values from integer identifiers to unique
-            // identifiers that are safe for public use.
+            // This will be converted later if needed.
             if ( publicConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
             {
-                var selectableValues = ConvertDelimitedIdsToGuids( publicConfigurationValues[SELECTABLE_VALUES_KEY], id => DefinedValueCache.Get( id )?.Guid );
-                publicConfigurationValues[VALUES_PUBLIC_KEY] = selectableValues;
                 publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
             }
 
@@ -158,6 +157,17 @@ namespace Rock.Field.Types
                 }
 
                 publicConfigurationValues[DEFINED_TYPE_KEY] = definedType?.Guid.ToString();
+            }
+
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                // If in configure mode, get the selectable value options that
+                // have been set.
+                if ( privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
+                {
+                    var selectableValues = ConvertDelimitedIdsToGuids( privateConfigurationValues[SELECTABLE_VALUES_KEY], id => DefinedValueCache.Get( id )?.Guid );
+                    publicConfigurationValues[SELECTABLE_VALUES_PUBLIC_KEY] = selectableValues;
+                }
             }
 
             // Get the list of values that can be selected.
@@ -199,16 +209,10 @@ namespace Rock.Field.Types
 
             // Convert the selectable values from unique identifiers into
             // integer identifiers that can be stored in the database.
-            var selectableValues = publicConfigurationValues.GetValueOrDefault( VALUES_PUBLIC_KEY, string.Empty )
-                .SplitDelimitedValues()
-                .AsGuidList()
-                .Select( v => DefinedValueCache.Get( v ) )
-                .Where( v => v != null )
-                .Select( v => v.Id.ToString() )
-                .ToList();
+            var selectableValues = publicConfigurationValues.GetValueOrDefault( SELECTABLE_VALUES_PUBLIC_KEY, string.Empty );
+            selectableValues = ConvertDelimitedGuidsToIds( selectableValues, v => DefinedValueCache.Get( v )?.Id );
 
-            privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectableValues.JoinStrings( "," );
-            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+            privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectableValues;
 
             // Convert the defined type value from a guid to an integer.
             var definedTypeGuid = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();
@@ -601,8 +605,8 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             return !condensed
-                ? GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) )
-                : GetCondensedTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
+                ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
+                : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
 
         /// <summary>
@@ -1283,6 +1287,59 @@ namespace Rock.Field.Types
 
             return definedValues;
         }
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            var oldDisplayDescription = oldPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
+            var newDisplayDescription = newPrivateConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ) ?? string.Empty;
+
+            if ( oldDisplayDescription != newDisplayDescription )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region IEntityReferenceFieldType
+
+        /// <inheritdoc/>
+        List<ReferencedEntity> IEntityReferenceFieldType.GetReferencedEntities( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var definedValueEntityTypeId = EntityTypeCache.GetId<DefinedValue>().Value;
+
+            return privateValue
+                .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                .AsGuidList()
+                .Select( g => DefinedValueCache.Get( g ) )
+                .Where( dv => dv != null )
+                .Select( dv => new ReferencedEntity( definedValueEntityTypeId, dv.Id ) )
+                .ToList();
+        }
+
+        /// <inheritdoc/>
+        List<ReferencedProperty> IEntityReferenceFieldType.GetReferencedProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            // This field type references the Value and Description properties of
+            // a DefinedValue and should have its persisted values updated when changed.
+            return new List<ReferencedProperty>
+            {
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Value ) ),
+                new ReferencedProperty( EntityTypeCache.GetId<DefinedValue>().Value, nameof( DefinedValue.Description ) )
+            };
+        }
+
         #endregion
 
         private class PublicValue

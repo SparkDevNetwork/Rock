@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Write To Log" )]
     [MemoField( "Message", "The message to write to the log. <span class='tip tip-lava'></span>", true, "" )]
+    [Rock.SystemGuid.EntityTypeGuid( "B442940A-0C8B-4F44-8359-1E0AF3AAAB4C")]
     public class WriteToLog : ActionComponent
     {
         /// <summary>

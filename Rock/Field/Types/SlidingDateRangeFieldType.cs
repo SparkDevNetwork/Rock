@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// Field used to save a sliding date range. Last X (Hours, Days, etc)
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SLIDING_DATE_RANGE )]
     public class SlidingDateRangeFieldType : FieldType
     {
         #region Configuration
@@ -172,7 +173,13 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return SlidingDateRangePicker.FormatDelimitedValues( value );
+            return GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
+        }
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return SlidingDateRangePicker.FormatDelimitedValues( privateValue );
         }
 
         #endregion

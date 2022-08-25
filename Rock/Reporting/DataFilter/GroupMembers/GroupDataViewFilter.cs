@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
     [Description( "Select Group Members according to their membership of Groups from a Group Data View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Data View" )]
+    [Rock.SystemGuid.EntityTypeGuid( "FE44A344-DED1-4E93-8C74-1820E6313322")]
     public class GroupDataViewFilter : DataFilterComponent, IRelatedChildDataView
     {
         #region Properties

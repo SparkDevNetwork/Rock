@@ -93,6 +93,7 @@ namespace RockWeb.Blocks.CheckIn
 
     #endregion Attribute Keys
 
+    [Rock.SystemGuid.BlockTypeGuid( "92DCF018-F551-4890-8BA1-511D97BF6B8A" )]
     public partial class MultiPersonSelect : CheckInBlock
     {
         /* 2021-05/07 ETD
@@ -247,16 +248,24 @@ namespace RockWeb.Blocks.CheckIn
                             Rock.Workflow.Action.CheckIn.SetAvailableSchedules.ProcessForFamily( rockContext, family );
                             Rock.Workflow.Action.CheckIn.FilterByPreviousCheckin.ProcessForFamily( rockContext, family, preventDuplicate );
                         }
+                    }
 
+                    foreach ( var person in family.People )
+                    {
                         // Check to see if person has option pre-selected and if not, select first item.
-                        foreach ( var person in family.People )
+                        if ( _autoCheckin && !person.GroupTypes.Any( t => t.PreSelected ) )
                         {
-                            if ( !person.GroupTypes.Any( t => t.PreSelected ) )
-                            {
-                                SelectFirstOption( person );
-                            }
+                            SelectFirstOption( person );
+                        }
+
+                        // JS uses this to keep track of the selected items, so make sure to start it out with the preselected persons.
+                        if ( person.PreSelected )
+                        {
+                            hfPeople.Value += $"{person.Person.Id},";
                         }
                     }
+
+                    hfPeople.Value = hfPeople.Value.TrimEnd( new char[] { ',' } );
 
                     BindData();
                 }

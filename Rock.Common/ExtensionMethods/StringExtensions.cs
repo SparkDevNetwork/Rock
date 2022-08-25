@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -144,14 +145,39 @@ namespace Rock
             // Characters used by DOM Objects; javascript, document, window and URLs
             char[] badCharacters = new char[] { '<', '>', ':', '*' };
 
-            if ( encodedString.IndexOfAny( badCharacters ) >= 0 )
+            var decodedString = encodedString.GetFullyUrlDecodedValue();
+
+            if ( decodedString.IndexOfAny( badCharacters ) >= 0 )
             {
                 return "%2f";
             }
-            else
+
+            return encodedString;
+        }
+
+        /// <summary>
+        /// Gets a fully URL-decoded string (or returns string.Empty if it cannot be decoded within 10 attempts).
+        /// </summary>
+        /// <param name="encodedString"></param>
+        /// <returns></returns>
+        public static string GetFullyUrlDecodedValue( this string encodedString )
+        {
+            int loopCount = 0;
+            var decodedString = encodedString;
+            var testString = WebUtility.UrlDecode( encodedString );
+            while ( testString != decodedString )
             {
-                return encodedString;
+                loopCount++;
+                if ( loopCount >= 10 )
+                {
+                    return string.Empty;
+                }
+
+                decodedString = testString;
+                testString = WebUtility.UrlDecode( testString );
             }
+
+            return decodedString;
         }
 
         /// <summary>
@@ -815,7 +841,7 @@ namespace Rock
         public static string ReplaceFirstOccurrence( this string source, string find, string replace )
         {
             var regex = new Regex( Regex.Escape( find ) );
-            return regex.Replace( source, replace, 1);
+            return regex.Replace( source, replace, 1 );
         }
 
         /// <summary>
@@ -1406,3 +1432,4 @@ namespace Rock
         #endregion String Extensions
     }
 }
+

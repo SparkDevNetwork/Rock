@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// PersonSearchKey View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( PersonSearchKey ) )]
-    public partial class PersonSearchKeyViewModelHelper : ViewModelHelper<PersonSearchKey, Rock.ViewModel.PersonSearchKeyViewModel>
+    public partial class PersonSearchKeyViewModelHelper : ViewModelHelper<PersonSearchKey, PersonSearchKeyBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.PersonSearchKeyViewModel CreateViewModel( PersonSearchKey model, Person currentPerson = null, bool loadAttributes = true )
+        public override PersonSearchKeyBag CreateViewModel( PersonSearchKey model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.PersonSearchKeyViewModel
+            var viewModel = new PersonSearchKeyBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 IsValuePrivate = model.IsValuePrivate,
                 PersonAliasId = model.PersonAliasId,
                 SearchTypeValueId = model.SearchTypeValueId,
@@ -176,7 +176,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.PersonSearchKeyViewModel ToViewModel( this PersonSearchKey model, Person currentPerson = null, bool loadAttributes = false )
+        public static PersonSearchKeyBag ToViewModel( this PersonSearchKey model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new PersonSearchKeyViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

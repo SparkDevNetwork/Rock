@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeMatrixTemplate" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "20B90F35-70C1-4ADC-A908-A4254C15373D")]
     public partial class AttributeMatrixTemplate : Model<AttributeMatrixTemplate>
     {
         #region Entity Properties

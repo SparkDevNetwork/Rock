@@ -33,7 +33,7 @@ using Rock.MyWell.Controls;
 using Rock.Web.Cache;
 
 // Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer.
-using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
+using RestRequest = RestSharp.Serializers.Newtonsoft.Json.RestRequest;
 
 namespace Rock.MyWell
 {
@@ -93,6 +93,7 @@ namespace Rock.MyWell
         Order = 6 )]
 
     #endregion Component Attributes
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MYWELL_FINANCIAL_GATEWAY )]
     public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent/*, IObsidianFinancialGateway*/
     {
         #region Attribute Keys
@@ -239,7 +240,7 @@ namespace Rock.MyWell
 
             // ClientSecret is the 'Signature' from the WebHook at https://app.gotnpgateway.com/merchant/settings/webhooks/search
             string clientSecret = GetCardSyncSignature( financialGateway );
-            if (clientSecret.IsNullOrWhiteSpace())
+            if ( clientSecret.IsNullOrWhiteSpace() )
             {
                 // no CardSyncSignature specified, so don't do signature validation
                 return true;
@@ -1336,7 +1337,7 @@ namespace Rock.MyWell
             if ( response.IsSuccessStatus() )
             {
                 var transaction = new FinancialTransaction();
-                transaction.TransactionCode = transactionId;
+                transaction.TransactionCode = response.Data.Id;
                 errorMessage = string.Empty;
                 return transaction;
             }
@@ -1697,7 +1698,16 @@ namespace Rock.MyWell
                 var subscriptionInfo = subscriptionResult.Data;
                 if ( subscriptionInfo != null )
                 {
-                    scheduledTransaction.NextPaymentDate = subscriptionInfo.NextBillDateUTC?.Date;
+                    var gatewayNextBillDate = subscriptionInfo.NextBillDateUTC?.Date;
+                    if ( gatewayNextBillDate.HasValue )
+                    {
+                        // Rock DateTimes don't keep any TimeZone or offset, so make sure the date is DateTimeKind.Unspecified instead of UTC.
+                        // Note that the DateTime stored to the database will get the DateTimeKind stripped off, so this is only issue for DateTime data
+                        // that isn't saved to the database yet.
+                        gatewayNextBillDate = DateTime.SpecifyKind( gatewayNextBillDate.Value, DateTimeKind.Unspecified );
+                    }
+
+                    scheduledTransaction.NextPaymentDate = gatewayNextBillDate;
                     scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = subscriptionInfo.Customer?.Id;
                     scheduledTransaction.StatusMessage = subscriptionInfo.SubscriptionStatusRaw;
                     scheduledTransaction.Status = GetFinancialScheduledTransactionStatus( subscriptionInfo.SubscriptionStatus );
@@ -1735,7 +1745,24 @@ namespace Rock.MyWell
         {
             QueryTransactionStatusRequest queryTransactionStatusRequest = new QueryTransactionStatusRequest
             {
-                DateTimeRangeUTC = new QueryDateTimeRange( startDateTime, endDateTime )
+                DateTimeRangeUTC = new QueryDateTimeRange( startDateTime, endDateTime ),
+
+                /*
+                 04/13/2022 MDP
+
+                We only care about 'Sale' transaction. Here is why
+                - Scheduled Transactions would normally be 'sale' transactions. Rock wouldn't have recorded these yet since the Gateway does the transaction according to the schedule. If the Gateway
+                   ends up doing a 'sale' transaction due the scheduled transaction, then we want to know about it. If it was a scheduled transaction that is somehow a 'credit/refund/void', then we don't want it.
+
+                - 'Sale' transactions could also be one time transactions (not scheduled). We already have those recorded, but we want to know if the settle status has changed. Or if somehow ended up rejected.
+
+                - Any Refunds/Voids/Credits that were initialized by Rock would already be recorded as a FinancialTransaction in Rock. Since we know about those already, we don't need to get those from a Gateway. We also don't want
+                them because Rock might not know what do with them and would record it as a new transactions. Resulting in duplicates.
+
+                */
+
+                // Only search for transactions that were a 'sale' (see above engineering note)
+                TransactionTypeSearch = new QuerySearchTransactionType( TransactionType.sale )
             };
 
             var searchResult = this.SearchTransactions( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), queryTransactionStatusRequest );
@@ -1759,6 +1786,13 @@ namespace Rock.MyWell
 
             foreach ( var transaction in searchResult.Data )
             {
+                if ( !transaction.TransactionType.HasValue || ( transaction.TransactionType != TransactionType.sale ) )
+                {
+                    // We limited our search request to 'sale' transaction, but if we somehow got a transaction that wasn't a 'sale',
+                    // skip it (see above engineering note)
+                    continue;
+                }
+
                 var gatewayScheduleId = transaction.SubscriptionId;
                 var payment = new Payment
                 {

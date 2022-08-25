@@ -62,13 +62,35 @@
   }
 }
 
+.section-header-hr {
+  margin-top: 16px;
+}
+
+.rock-header {
+  .title {
+    margin: 0;
+  }
+
+  .description {
+    margin: 0;
+    font-size: @font-size-small;
+    color: @text-muted;
+  }
+
+  hr {
+    &:extend(.section-header-hr);
+  }
+}
+
 .panel-section {
   border-color: @panel-section-border;
   box-shadow: none !important;
 
   > .panel-heading {
     position: relative;
+    padding: 18px;
     background: @panel-section-heading-bg;
+    border-radius: @panel-border-radius @panel-border-radius 0 0;
     &::after {
       position: absolute;
       right: (@panel-body-padding - 4px);
@@ -77,12 +99,23 @@
       content: "";
       border-bottom: 1px solid @input-border;
     }
+
+    .panel-title {
+      margin-bottom: 12px;
+    }
+
+    .description {
+      margin: 0;
+      color: @text-muted;
+    }
   }
 
   > .panel-body {
     background: @panel-section-body-bg;
+    border-radius: 0 0 @panel-border-radius @panel-border-radius;
   }
 }
+
 
 // Fancy Scrollbars
 
@@ -130,33 +163,27 @@
 
 .tag-flair {
   position: relative;
-  display: inline-block;
-  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
   font-size: @font-size-xs;
   line-height: 1;
   text-transform: capitalize;
   vertical-align: top;
 
   .tag-color {
-    position: absolute;
     display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin: 2px 5px 0 1px;
+    width: @font-size-xs;
+    height: @font-size-xs;
+    margin: 0 6px 0 1px;
     background-color: #999;
     border-radius: 50%;
   }
 
   .tag-label {
-    position: relative;
     font-size: @font-size-xs;
-    line-height: 12px;
+    line-height: 1;
     color: @text-muted;
     white-space: nowrap;
-  }
-
-  .tag-color + .tag-label {
-    margin-left: 14px;
   }
 }
 
@@ -229,36 +256,55 @@
 }
 
 .meta {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: start;
-  -ms-flex-align: start;
-  align-items: flex-start;
+  align-items: center;
+
+  .dropdown {
+    align-self: flex-start;
+    margin-left: auto;
+  }
+
+  .btn-overflow {
+    height: @font-size-base;
+    padding: 0;
+    line-height: @font-size-base;
+    color: @gray-light;
+    &:hover,
+    &:focus {
+      color: @gray;
+    }
+  }
 
   p {
     margin-bottom: 0;
     line-height: 1.3;
   }
 
+  .note-caption {
+    font-weight: 600;
+  }
+
+  .note-details {
+    display: flex;
+    align-items: center;
+    font-size: @font-size-xs;
+    line-height: 1.5;
+  }
+
   .timestamp {
     display: inline-block;
-    font-size: @font-size-xs;
-    line-height: 1.3;
     color: @text-muted;
-    vertical-align: top;
   }
 
   .meta-figure {
-    -ms-flex-negative: 0;
     flex-shrink: 0;
     margin-right: 12px;
   }
 
   .meta-body {
-    -webkit-box-flex: 1;
-    -ms-flex: 1;
+    display: flex;
     flex: 1;
+    flex-direction: column;
     min-width: 0;
 
     .flex {
@@ -278,17 +324,6 @@
       right: 0;
       left: auto;
     }
-
-    .btn-overflow {
-      height: @font-size-base;
-      padding: 0;
-      line-height: @font-size-base;
-      color: @gray-light;
-      &:hover,
-      &:focus {
-        color: @gray;
-      }
-    }
   }
 }
 
@@ -304,18 +339,19 @@
 
 .note {
   + .note {
-    border-top: 1px solid @panel-border;
+    border-top: 1px solid #dee2e6;
   }
 
   .flag {
-    padding: 6px 8px;
-    margin: -12px -12px 8px;
+    padding: 4px 8px 6px;
+    margin: -16px -24px 12px;
+    font-size: 12px;
     color: @brand-danger;
     background: @state-danger-bg;
-    border-left: 5px solid @brand-danger;
+    border-top: 2px solid @brand-danger;
     @media @sm {
-      padding: 6px 23px;
-      margin: -12px -16px 12px;
+      padding: 4px 23px 6px;
+      font-size: 14px;
     }
 
     &.warning {
@@ -326,17 +362,15 @@
   }
 
   article {
-    padding: 12px 12px 2px;
-    @media @sm {
-      padding: 12px 16px 20px;
-    }
-    &.is-alert {
-      box-shadow: inset 5px 0 0 0 @brand-danger;
-    }
+    padding: 16px 24px;
 
-    &.is-personal {
-      box-shadow: inset 5px 0 0 0 @brand-info;
-    }
+    // &.is-alert {
+    //   box-shadow: inset 5px 0 0 0 @brand-danger;
+    // }
+
+    // &.is-personal {
+    //   box-shadow: inset 5px 0 0 0 @brand-info;
+    // }
   }
 
   .note-comments {
@@ -352,10 +386,6 @@
   }
 
   .note-content {
-    @media @sm {
-      margin: 0 0 24px 60px;
-    }
-
     p {
       margin: 0;
     }
@@ -373,15 +403,9 @@
   }
 
   .note-footer {
-    display: -webkit-box;
-    display: -ms-flexbox;
     display: flex;
-    -ms-flex-direction: row;
     flex-direction: row;
-    margin: 0 0 0 60px;
     font-size: @font-size-xs;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
 
     &-actions-list {
       -ms-flex-order: 0;
@@ -444,12 +468,13 @@
 
 .note-editor {
   .meta-body {
+    background: @input-bg;
     border: 1px solid @input-border;
+    border-radius: @input-border-radius;
   }
 
   .settings {
     padding: 3px 12px 6px;
-    background: @input-bg;
 
     .createDate {
       float: left;
@@ -530,10 +555,9 @@
 
   // Disable primary note field border and focus states
   .noteentry-control .form-control {
+    background: transparent;
     border: 0;
-    &:focus {
-      box-shadow: none;
-    }
+    box-shadow: none;
   }
 }
 
@@ -553,7 +577,7 @@
 
 // Fixes note-editor name conflict with Summernote and Timeline note
 .notes .note-editor {
-  margin: 8px 16px;
+  margin: 16px 24px;
 }
 
 .noteentry-control {
@@ -930,10 +954,47 @@
 
 // 4. Electronic Signatures
 
+.icon-property {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    color: @text-muted;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+  }
+
+  .property {
+    display: flex;
+    flex-direction: column;
+    margin-left: 8px;
+  }
+}
+
+.registrant-signature-document{
+  margin-top: 32px;
+}
+
 .signaturedocument-container {
   width: 100%;
   height: 450px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid @panel-border;
+  border-radius: @border-radius-base;
+}
+
+.signaturedocument-iframe {
+  width: 100%;
+  min-height: 450px;
 }
 
 .signature-entry-agreement {

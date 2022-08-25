@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// BenevolenceResults REST API
     /// </summary>
+    [RestControllerGuid( "23B8ABFD-8251-4989-B560-1982463DED9F" )]
     public partial class BenevolenceResultsController : Rock.Rest.ApiController<Rock.Model.BenevolenceResult>
     {
         /// <summary>

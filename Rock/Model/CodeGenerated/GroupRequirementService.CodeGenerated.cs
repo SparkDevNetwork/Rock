@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// GroupRequirement View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( GroupRequirement ) )]
-    public partial class GroupRequirementViewModelHelper : ViewModelHelper<GroupRequirement, Rock.ViewModel.GroupRequirementViewModel>
+    public partial class GroupRequirementViewModelHelper : ViewModelHelper<GroupRequirement, GroupRequirementBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,21 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.GroupRequirementViewModel CreateViewModel( GroupRequirement model, Person currentPerson = null, bool loadAttributes = true )
+        public override GroupRequirementBag CreateViewModel( GroupRequirement model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.GroupRequirementViewModel
+            var viewModel = new GroupRequirementBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
+                AllowLeadersToOverride = model.AllowLeadersToOverride,
+                AppliesToAgeClassification = ( int ) model.AppliesToAgeClassification,
+                AppliesToDataViewId = model.AppliesToDataViewId,
+                DueDateAttributeId = model.DueDateAttributeId,
+                DueDateStaticDate = model.DueDateStaticDate,
                 GroupId = model.GroupId,
                 GroupRequirementTypeId = model.GroupRequirementTypeId,
                 GroupRoleId = model.GroupRoleId,
@@ -156,6 +161,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupRequirement target, GroupRequirement source )
         {
             target.Id = source.Id;
+            target.AllowLeadersToOverride = source.AllowLeadersToOverride;
+            target.AppliesToAgeClassification = source.AppliesToAgeClassification;
+            target.AppliesToDataViewId = source.AppliesToDataViewId;
+            target.DueDateAttributeId = source.DueDateAttributeId;
+            target.DueDateStaticDate = source.DueDateStaticDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
@@ -178,7 +188,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.GroupRequirementViewModel ToViewModel( this GroupRequirement model, Person currentPerson = null, bool loadAttributes = false )
+        public static GroupRequirementBag ToViewModel( this GroupRequirement model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new GroupRequirementViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

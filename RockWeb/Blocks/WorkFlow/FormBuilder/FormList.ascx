@@ -4,17 +4,17 @@
         pointer-events: auto;
     }
 </style>
-<div class="panel panel-block panel-analytics">
+<div class="panel panel-block panel-analytics styled-scroll">
     <div class="panel-heading">
         <h1 class="panel-title"><i class="fa-solid fa-align-left"></i>Form Builder</h1>
     </div>
     <div class="panel-body">
         <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
-        <div class="row row-eq-height-md">
-            <asp:UpdatePanel ID="upnlCategory" Class="col-md-3 col-lg-2 filter-options" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
+        <div class="row row-eq-height-md d-flex flex-column h-100 flex-md-row">
+            <asp:UpdatePanel ID="upnlCategory" Class="filter-options" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
                 <ContentTemplate>
                     <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" />
-                    <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="category-header d-flex align-items-center justify-content-between mb-2">
                         <strong class="d-block text-sm m-0">Form Categories</strong>
                         <div runat="server" id="divTreeviewActions" class="btn-group pull-right">
                             <button type="button" class="btn btn-link text-color btn-xs btn-square dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
@@ -152,27 +152,27 @@
                     </script>
                 </ContentTemplate>
             </asp:UpdatePanel>
-            <asp:UpdatePanel ID="upnlForms" class="col-md-9 col-lg-10" runat="server">
+            <asp:UpdatePanel ID="upnlForms" class="form-category-display flex-fill" runat="server">
                 <ContentTemplate>
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbValidationError" runat="server" Title="There is a problem with one or more of the values you entered" NotificationBoxType="Danger" Visible="false" />
                     <asp:HiddenField ID="hfSelectedCategory" runat="server" />
                     <div class="container-in-block">
-                        <div class="my-3">
-                            <h3 class="mt-0 mb-2">
+                        <div class="rock-header">
+                            <h3 class="title mb-2">
                                 <asp:Literal ID="lTitle" runat="server" /></h3>
                             <div class="d-flex flex-wrap justify-content-between">
-                                <div class="text-sm text-muted">
+                                <div class="description">
                                     <asp:Literal ID="lDescription" runat="server" />
                                 </div>
                                 <div id="divFormListTopPanel" runat="server" class="ml-auto">
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-xs btn-square btn-security" />
                                     <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnDeleteCategory" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnDeleteCategory" data-toggle="tooltip" data-trigger="hover" data-delay="250" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
                                 </div>
                             </div>
-                            <hr class="mt-2 mb-0" />
+                            <hr class="section-header-hr" />
                         </div>
                         <asp:Panel ID="pnlFormList" runat="server" Visible="false">
                             <div class="d-flex flex-wrap align-items-start justify-content-end">
@@ -183,29 +183,29 @@
                             </div>
                             <asp:Repeater ID="rForms" runat="server" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
-                                    <div class="card card-sm group-hover">
+                                    <div class="card card-sm group-hover mb-3">
                                         <div class="card-body d-flex">
                                             <div class="flex-fill">
                                                 <h3 class="m-0"><%# Eval("Name") %></h3>
                                                 <div class="position-relative">
-                                                    <span class="text-muted text-sm group-hover-item group-hover-hide"><%# Eval("Description") %></span>
-                                                    <div class="d-flex justify-content-between align-items-center position-absolute inset-0 group-hover-item group-hover-show">
+                                                    <span class="position-absolute inset-0 d-inline-flex align-items-center text-muted text-sm group-hover-item group-hover-hide"><%# Eval("Description") %></span>
+                                                    <div class="d-flex justify-content-between align-items-center group-hover-item group-hover-show">
                                                         <div class="text-muted">
-                                                            <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-sm p-0" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm p-0" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-sm p-0" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-sm p-0" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm p-0" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
+                                                            <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
 
                                                         </div>
-                                                        <div>
-                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-sm btn-square btn-link text-color" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-sm btn-square btn-link text-color" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
+                                                        <div class="text-nowrap">
+                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-sm py-0 btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Delete form and all submissions." OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-sm py-0 btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Copy" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center justify-content-end ml-2 group-hover-hide" runat="server">
+                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center ml-2 group-hover-hide" runat="server">
                                                 <span class='badge badge-info'><%# Eval("SubmissionCount") %></span>
                                             </asp:Panel>
                                         </div>
@@ -215,7 +215,7 @@
                         </asp:Panel>
                         <asp:Panel ID="pnlAddForm" runat="server" Visible="false">
                             <div class="row">
-                                <div class="col-xs-12 col-md-6">
+                                <div class="col-xs-12 col-md-9 col-lg-8">
                                     <Rock:DataTextBox ID="tbFormName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" Help="The internal name of the form you are creating. This name will not be displayed when the form is not being shown." />
                                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" Help="An internal description of what the form will be used for." />
                                     <Rock:RockDropDownList ID="ddlTemplate" Label="Template" runat="server" Help="An optional template to use that provides pre-configured settings." />
@@ -244,7 +244,7 @@
                                 </div>
                             </fieldset>
 
-                            <div class="actions">
+                            <div class="form-actions">
                                 <asp:LinkButton ID="btnCategorySave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnCategorySave_Click" />
                                 <asp:LinkButton ID="btnCategoryCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                             </div>

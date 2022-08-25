@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// FinancialGateways REST API
     /// </summary>
+    [RestControllerGuid( "AADBD4CA-1534-4CE6-BCA9-97B6ECE275A9" )]
     public partial class FinancialGatewaysController : Rock.Rest.ApiController<Rock.Model.FinancialGateway>
     {
         /// <summary>

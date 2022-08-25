@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -90,6 +90,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.SCHEDULED_TRANSACTION,
         Order = 7 )]
+    [Rock.SystemGuid.BlockTypeGuid( "486E470A-DBD8-48D6-9A97-5B1B490A401E" )]
     public partial class GivingConfiguration : Rock.Web.UI.PersonBlock, ISecondaryBlock
     {
         #region Attribute Keys
@@ -173,7 +174,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             lPledgeAccountName.Text = financialPledge.Account?.Name;
             lPledgeTotalAmount.Text = financialPledge.TotalAmount.FormatAsCurrency();
-            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue.IsNotNull() ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ) : string.Empty;
+            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue != null ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ) : string.Empty;
             btnPledgeEdit.CommandArgument = financialPledge.Guid.ToString();
             btnPledgeDelete.CommandArgument = financialPledge.Guid.ToString();
 
@@ -742,8 +743,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var rockContext = new RockContext();
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
             var savedAccountList = financialPersonSavedAccountService
-                .Queryable()
-                .Where( a => a.PersonAliasId == this.Person.PrimaryAliasId.Value && a.FinancialPaymentDetail != null )
+                .GetByPersonId( this.Person.Id )
+                .Where( a => a.FinancialPaymentDetail != null )
                 .ToList();
 
             rptSavedAccounts.DataSource = savedAccountList;

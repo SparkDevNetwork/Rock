@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people whether they have created notes" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Created Note Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "47D8B19F-CA20-4C4E-9E9A-ECE5702648F2")]
     public class CreatedNotesFilter : DataFilterComponent
     {
         #region Properties

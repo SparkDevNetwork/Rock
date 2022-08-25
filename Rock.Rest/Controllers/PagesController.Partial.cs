@@ -27,7 +27,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "260fe253-8264-47cd-865d-577b7ba6c750" )]
     public partial class PagesController
     {
         /// <summary>
@@ -40,7 +39,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Pages/GetChildren/{id}" )]
-        [RockGuid( "8e291629-c998-49ea-ab9a-59e810688171" )]
+        [Rock.SystemGuid.RestActionGuid( "8E291629-C998-49EA-AB9A-59E810688171" )]
         public IQueryable<TreeViewItem> GetChildren( int id,
             string hidePageIds = null,
             int? siteType = null,

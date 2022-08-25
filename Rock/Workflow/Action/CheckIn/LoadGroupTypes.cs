@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Loads the group types allowed for each person in a family" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Group Types" )]
+    [Rock.SystemGuid.EntityTypeGuid( "50D5D915-074A-41FB-9EA7-0DBE52141398")]
     public class LoadGroupTypes : CheckInActionComponent
     {
         /// <summary>

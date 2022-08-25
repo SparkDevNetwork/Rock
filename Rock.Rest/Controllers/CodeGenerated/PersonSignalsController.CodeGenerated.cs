@@ -22,12 +22,14 @@
 //
 
 using Rock.Model;
+using Rock.SystemGuid;
 
 namespace Rock.Rest.Controllers
 {
     /// <summary>
     /// PersonSignals REST API
     /// </summary>
+    [RestControllerGuid( "0606777C-5743-47DC-85A8-3B8B52FFC852" )]
     public partial class PersonSignalsController : Rock.Rest.ApiController<Rock.Model.PersonSignal>
     {
         /// <summary>

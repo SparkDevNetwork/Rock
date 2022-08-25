@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,7 @@ namespace Rock.Security.BackgroundCheck
     [EncryptedTextField( "Password", "Protect My Ministry Password", true, "", "", 1, null, true )]
     [UrlLinkField( "Request URL", "The Protect My Ministry URL to send requests to.", true, "https://services.priorityresearch.com/webservice/default.cfm", "", 3 )]
     [UrlLinkField( "Return URL", "The Web Hook URL for Protect My Ministry to send results to (e.g. 'http://www.mysite.com/Webhooks/ProtectMyMinistry.ashx').", true, "", "", 4 )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER )]
     public class ProtectMyMinistry : BackgroundCheckComponent
     {
         private HttpStatusCode _httpStatusCode;

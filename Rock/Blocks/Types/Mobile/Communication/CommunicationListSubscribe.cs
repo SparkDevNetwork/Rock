@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -61,6 +61,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_COMMUNICATION_LIST_SUBSCRIBE_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "D0C51784-71ED-46F3-86AB-972148B78BE8")]
     public class CommunicationListSubscribe : RockMobileBlockType
     {
         #region Block Attributes
@@ -149,7 +151,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
             if ( ShowDescription )
             {
-                descriptionLabel = $"<Label StyleClass=\"communicationlist-item-description\"><![CDATA[{subscription.CommunicationList.Description.EncodeXml()}]]></Label>";
+                descriptionLabel = $"<Label StyleClass=\"communicationlist-item-description\"><![CDATA[{subscription.CommunicationList.Description}]]></Label>";
             }
 
             return $@"

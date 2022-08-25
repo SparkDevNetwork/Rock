@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -98,6 +98,8 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     #endregion
 
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_EVENTS_CALENDARVIEW_BLOCK_TYPE )]
+    [Rock.SystemGuid.BlockTypeGuid( "14B447B3-6117-4142-92E7-E3F289106140")]
     public class CalendarView : RockMobileBlockType
     {
         #region Block Attributes

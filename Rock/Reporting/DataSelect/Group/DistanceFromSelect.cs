@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Shows the distance of the Group's location from a location" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Distance" )]
+    [Rock.SystemGuid.EntityTypeGuid( "90E58F48-E133-49CB-AC16-29C53E7044F1")]
     public class DistanceFromSelect : DataSelectComponent
     {
         #region Properties

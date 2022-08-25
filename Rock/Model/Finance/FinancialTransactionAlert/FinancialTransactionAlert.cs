@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionAlert" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "0E60F95E-70B5-4A06-9BEE-80ED9F12F25A")]
     public class FinancialTransactionAlert : Model<FinancialTransactionAlert>
     {
         #region Entity Properties
@@ -254,7 +255,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionAlertConfiguration()
         {
-            this.HasOptional( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.TransactionId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.TransactionId ).WillCascadeOnDelete( true );
             this.HasRequired( t => t.PersonAlias ).WithMany().HasForeignKey( t => t.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.FinancialTransactionAlertType ).WithMany( t => t.FinancialTransactionAlerts ).HasForeignKey( t => t.AlertTypeId ).WillCascadeOnDelete( true );
         }

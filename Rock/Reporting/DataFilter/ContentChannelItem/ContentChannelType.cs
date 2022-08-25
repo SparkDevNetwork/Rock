@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
     [Description( "Filter Content Channel Items by Content Channel Type" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Content Channel Type Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "6FF3488F-9AAE-484E-A4CC-D3B3D3A2C4A6")]
     public class ContentChannelType : DataFilterComponent
     {
         #region Properties

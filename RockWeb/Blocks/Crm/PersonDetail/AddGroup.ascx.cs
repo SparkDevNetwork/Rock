@@ -318,6 +318,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #endregion Block Attributes
 
+    [Rock.SystemGuid.BlockTypeGuid( "DE156975-597A-4C55-A649-FE46712F91C3" )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -567,6 +568,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 ScriptManager.RegisterStartupScript( btnNext, btnNext.GetType(), "confirm-marital-status", script, true );
             }
+
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -1211,12 +1214,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     newPersonCol.ID = string.Format( "newPersonCol_{0}", groupMemberGuidString );
                     dupRow.Controls.Add( newPersonCol );
 
-                    newPersonCol.Controls.Add( PersonHtmlPanel(
+                    var newPersonColPanel = PersonHtmlPanel(
                         groupMemberGuidString,
                         groupMember.Person,
                         groupMember.GroupRole,
                         location,
-                        rockContext ) );
+                        rockContext );
+
+                    if( newPersonColPanel != null )
+                    {
+                        newPersonCol.Controls.Add( newPersonColPanel );
+                    }
 
                     LinkButton lbRemoveMember = new LinkButton();
                     lbRemoveMember.ID = string.Format( "lbRemoveMember_{0}", groupMemberGuidString );
@@ -1249,7 +1257,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 s.Person,
                                 GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid.Equals( _locationType.Guid ) ).Select( a => a.Location ).FirstOrDefault()
                             } )
-                            .AsNoTracking().FirstOrDefault();
+                            .AsNoTracking()
+                            .FirstOrDefault();
 
                         if ( dupGroupMember != null )
                         {
@@ -1258,12 +1267,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             duplicatePerson = dupGroupMember.Person;
                         }
 
-                        dupPersonCol.Controls.Add( PersonHtmlPanel(
+                        var dupPersonColPanel = PersonHtmlPanel(
                             groupMemberGuidString,
                             duplicatePerson,
                             groupTypeRole,
                             duplocation,
-                            rockContext ) );
+                            rockContext );
+
+                        if ( dupPersonColPanel != null )
+                        {
+                            dupPersonCol.Controls.Add( dupPersonColPanel );
+                        }
                     }
                 }
             }
@@ -1360,6 +1374,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Location location,
             RockContext rockContext )
         {
+            if ( person == null )
+            {
+                return null;
+            }
+
             var personInfoHtml = new StringBuilder();
 
             Guid? recordTypeValueGuid = null;
@@ -1934,6 +1953,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 nbMessages.NotificationBoxType = NotificationBoxType.Success;
                 nbMessages.Text = "No more duplicates remain. Select Finish to complete the addition of these individuals.";
             }
+        }
+
+        // Handlers called by the controls on your block.
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            nfciContactInfo.ShowCellPhoneFirst = GetAttributeValue( AttributeKey.ShowCellPhoneNumberFirst ).AsBoolean();
+            nfciContactInfo.IsMessagingVisible = string.IsNullOrWhiteSpace( _smsOption ) || _smsOption != "None";
         }
 
         #endregion

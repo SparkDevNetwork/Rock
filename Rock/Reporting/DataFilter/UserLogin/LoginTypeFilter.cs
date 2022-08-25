@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataFilter.UserLogin
     [Description( "Filter User that are associated with a specific Login Type." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Login Type Filter" )]
+    [Rock.SystemGuid.EntityTypeGuid( "3EFAC902-0375-4F7E-9B3A-AC27F2B316D2")]
     public class LoginTypeFilter : DataFilterComponent
     {
         #region Properties

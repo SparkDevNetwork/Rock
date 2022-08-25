@@ -73,7 +73,7 @@
                 // HtmlEditor.cs will initialize this with keepEditorContent = true and set the codeEditor content instead of the summernoteNote editor content
                 // this will prevent bad html or scripts from trying to render when startInCodeEditor mode is enabled
                 if (!keepEditorContent) {
-                    var content = context.code();
+                    let content = context.code();
                     var editor = ace.edit($codeEditor.attr('id'));
                     editor.setValue(content);
                     editor.resize();

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,16 +29,15 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
-    [RockGuid( "62e6fe0f-de9a-4b3f-9647-e8f18088373d" )]
     public partial class AttendanceOccurrencesController
     {
         /// <summary>
-        /// Gets all the occurrences for a group for the selected dates, location and schedule.
+        /// Gets all the occurrences for a group for the selected dates, location and schedule, sorted by occurrence data in ascending order.
         /// </summary>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/AttendanceOccurrences/GetFutureGroupOccurrences" )]
-        [RockGuid( "d5b342d0-cdff-4895-9716-b1eeef19c38c" )]
+        [Rock.SystemGuid.RestActionGuid( "D5B342D0-CDFF-4895-9716-B1EEEF19C38C" )]
         public List<GroupOccurrenceResponse> GetFutureGroupOccurrences( int groupId, DateTime? toDateTime = null, string locationIds = null, string scheduleIds = null )
         {
             using ( var rockContext = new RockContext() )
@@ -64,7 +63,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/AttendanceOccurrences/CreateGroupOccurrence" )]
-        [RockGuid( "07ae6b44-790d-42c5-aa02-bbefa63e97ed" )]
+        [Rock.SystemGuid.RestActionGuid( "07AE6B44-790D-42C5-AA02-BBEFA63E97ED" )]
         public AttendanceOccurrence CreateGroupOccurrence( int groupId, DateTime occurrenceDate, int? scheduleId = null, int? locationId = null )
         {
             return new AttendanceOccurrenceService( new RockContext() ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );

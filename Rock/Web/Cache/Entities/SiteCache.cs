@@ -450,144 +450,83 @@ namespace Rock.Web.Cache
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [requires encryption].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="Site.RequiresEncryption" />
         [DataMember]
         public bool RequiresEncryption { get; private set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this site should be available to be used for shortlinks (the shortlink can still reference url of other sites).
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [enabled for shortening]; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="Site.EnabledForShortening" />
         [DataMember]
         public bool EnabledForShortening { get; private set; } = true;
 
-        /// <summary>
-        /// Gets or sets the favicon binary file identifier.
-        /// </summary>
-        /// <value>
-        /// The favicon binary file identifier.
-        /// </value>
+        /// <inheritdoc cref="Site.FavIconBinaryFileId" />
         [DataMember]
         public int? FavIconBinaryFileId { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the site logo binary file identifier.
-        /// </summary>
-        /// <value>
-        /// The favicon binary file identifier.
-        /// </value>
+        /// <inheritdoc cref="Site.SiteLogoBinaryFileId" />
         [DataMember]
         public int? SiteLogoBinaryFileId { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the default domain URI.
-        /// </summary>
-        /// <value>
-        /// The default domain URI.
-        /// </value>
+        /// <inheritdoc cref="Site.DefaultDomainUri" />
         [DataMember]
         public Uri DefaultDomainUri { get; private set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is active.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="Site.IsActive" />
         [DataMember]
         public bool IsActive { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the additional settings.
-        /// </summary>
-        /// <value>
-        /// The additional settings.
-        /// </value>
+        /// <inheritdoc cref="Site.AdditionalSettings" />
         [DataMember]
         public string AdditionalSettings { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the type of the site.
-        /// </summary>
-        /// <value>
-        /// The type of the site.
-        /// </value>
+        /// <inheritdoc cref="Site.SiteType" />
         [DataMember]
         public SiteType SiteType { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the configuration mobile phone file identifier.
-        /// </summary>
-        /// <value>
-        /// The configuration mobile phone file identifier.
-        /// </value>
+        /// <inheritdoc cref="Site.ConfigurationMobilePhoneBinaryFileId" />
         [DataMember]
         public int? ConfigurationMobilePhoneBinaryFileId { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the configuration tablet binary file identifier.
-        /// </summary>
-        /// <value>
-        /// The configuration tablet binary file identifier.
-        /// </value>
+        /// <inheritdoc cref="Site.ConfigurationMobileTabletBinaryFileId" />
         [DataMember]
         public int? ConfigurationMobileTabletBinaryFileId { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the thumbnail file identifier.
-        /// </summary>
-        /// <value>
-        /// The thumbnail file identifier.
-        /// </value>
+        /// <inheritdoc cref="Site.ThumbnailBinaryFileId" />
         [DataMember]
         public int? ThumbnailBinaryFileId { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the latest version date time.
-        /// </summary>
-        /// <value>
-        /// The latest version date time.
-        /// </value>
+        /// <inheritdoc cref="Site.LatestVersionDateTime" />
         public DateTime? LatestVersionDateTime { get; private set; }
 
-        /// <summary>
-        /// Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [enable exclusive routes]; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="Site.EnableExclusiveRoutes" />
         [DataMember]
         public bool EnableExclusiveRoutes { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the configuration mobile file path.
-        /// </summary>
-        /// <value>
-        /// The configuration mobile file path.
-        /// </value>
+        /// <inheritdoc cref="Site.EnablePageViewGeoTracking" />
+        [DataMember]
+        public bool EnablePageViewGeoTracking { get; private set; }
+
+        /// <inheritdoc cref="Site.DisablePredictableIds" />
+        [DataMember]
+        public bool DisablePredictableIds { get; private set; }
+
+        /// <inheritdoc cref="Site.EnableVisitorTracking" />
+        [DataMember]
+        public bool EnableVisitorTracking { get; private set; }
+
+        /// <inheritdoc cref="Site.EnablePersonalization" />
+        [DataMember]
+        public bool EnablePersonalization { get; private set; }
+
+        /// <inheritdoc cref="Site.ConfigurationMobilePhoneFileUrl" />
+        [DataMember]
         public string ConfigurationMobilePhoneFileUrl { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the configuration tablet file path.
-        /// </summary>
-        /// <value>
-        /// The configuration tablet file path.
-        /// </value>
+        /// <inheritdoc cref="Site.ConfigurationTabletFileUrl" />
+        [DataMember]
         public string ConfigurationMobileTabletFileUrl { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the thumbnail file URL.
-        /// </summary>
-        /// <value>
-        /// The thumbnail file URL.
-        /// </value>
+        /// <inheritdoc cref="Site.ThumbnailFileUrl" />
+        [DataMember]
         public string ThumbnailFileUrl { get; private set; }
 
         #endregion
@@ -603,7 +542,10 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var site = entity as Site;
-            if ( site == null ) return;
+            if ( site == null )
+            {
+                return;
+            }
 
             IsSystem = site.IsSystem;
             Name = site.Name;
@@ -637,6 +579,7 @@ namespace Rock.Web.Cache
             EnabledForShortening = site.EnabledForShortening;
             FavIconBinaryFileId = site.FavIconBinaryFileId;
             SiteLogoBinaryFileId = site.SiteLogoBinaryFileId;
+            IsActive = site.IsActive;
             DefaultDomainUri = site.DefaultDomainUri;
             SiteType = site.SiteType;
             AdditionalSettings = site.AdditionalSettings;
@@ -648,6 +591,10 @@ namespace Rock.Web.Cache
             ThumbnailFileUrl = site.ThumbnailFileUrl;
             LatestVersionDateTime = site.LatestVersionDateTime;
             EnableExclusiveRoutes = site.EnableExclusiveRoutes;
+            EnablePageViewGeoTracking = site.EnablePageViewGeoTracking;
+            DisablePredictableIds = site.DisablePredictableIds;
+            EnableVisitorTracking = site.EnableVisitorTracking;
+            EnablePersonalization = site.EnablePersonalization;
 
             foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
             {
@@ -828,6 +775,16 @@ namespace Rock.Web.Cache
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns an iterator over all the active sites in the site cache.
+        /// The iterator may be further acted upon and collected to any collections as required by the caller.
+        /// </summary>
+        public static IEnumerable<SiteCache> GetAllActiveSites()
+        {
+            return All()
+                .Where( site => site.IsActive );
         }
 
         #endregion

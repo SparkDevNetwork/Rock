@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Campaign Configuration" )]
     [Category( "Connection" )]
     [Description( "Block used for Campaign Connection configuration which is also used by job." )]
+    [Rock.SystemGuid.BlockTypeGuid( "9E6C4174-5F2B-4A78-9781-55D7DD209B6C" )]
     public partial class CampaignConfiguration : Rock.Web.UI.RockBlock
     {
         #region PageParameterKeys

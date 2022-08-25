@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Text",
         Order = 5 )]
 
+    [Rock.SystemGuid.BlockTypeGuid( "D2348D51-B13A-4069-97AD-369D9615A711" )]
     public partial class TimeSelect : CheckInBlock
     {
         /* 2021-05/07 ETD

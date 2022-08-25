@@ -25,7 +25,8 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.ViewModels;
+using Rock.ViewModels.Entities;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -62,7 +63,7 @@ namespace Rock.Model
     /// SmsPipeline View Model Helper
     /// </summary>
     [DefaultViewModelHelper( typeof( SmsPipeline ) )]
-    public partial class SmsPipelineViewModelHelper : ViewModelHelper<SmsPipeline, Rock.ViewModel.SmsPipelineViewModel>
+    public partial class SmsPipelineViewModelHelper : ViewModelHelper<SmsPipeline, SmsPipelineBag>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -71,17 +72,16 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.SmsPipelineViewModel CreateViewModel( SmsPipeline model, Person currentPerson = null, bool loadAttributes = true )
+        public override SmsPipelineBag CreateViewModel( SmsPipeline model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.SmsPipelineViewModel
+            var viewModel = new SmsPipelineBag
             {
-                Id = model.Id,
-                Guid = model.Guid,
+                IdKey = model.IdKey,
                 Description = model.Description,
                 IsActive = model.IsActive,
                 Name = model.Name,
@@ -174,7 +174,7 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.SmsPipelineViewModel ToViewModel( this SmsPipeline model, Person currentPerson = null, bool loadAttributes = false )
+        public static SmsPipelineBag ToViewModel( this SmsPipeline model, Person currentPerson = null, bool loadAttributes = false )
         {
             var helper = new SmsPipelineViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );

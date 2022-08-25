@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, PropType, reactive, ref, watch } from "vue";
-import { FormError, FormState, provideFormState } from "../Util/form";
-import { updateRefValue } from "../Util/util";
+import { defineComponent, PropType, reactive, ref, watch } from "vue";
+import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
+import { updateRefValue } from "@Obsidian/Utility/component";
 import RockValidation from "./rockValidation";
 
 export default defineComponent({
@@ -27,19 +27,31 @@ export default defineComponent({
     },
 
     props: {
+        /** True if the form should attempt to submit. */
         submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** True if the validation errors should not be displayed. */
+        hideErrors: {
             type: Boolean as PropType<boolean>,
             default: false
         }
     },
 
-    emits: [
-        "submit",
-        "validationChanged",
-        "update:submit"
-    ],
+    emits: {
+        "submit": () => true,
+        // This contains all active errors even if the UI is not in sync.
+        "validationChanged": (_errors: FormError[]) => true,
+        // This contains just the errors that should be currently displayed in the UI.
+        "visibleValidationChanged": (_errors: FormError[]) => true,
+        "update:submit": (_value: boolean) => true
+    },
 
     setup(props, { emit }) {
+        const visibleErrors = ref<FormError[]>([]);
+        const errorValues = ref<FormError[]>([]);
         const errors = ref<Record<string, FormError>>({});
         const submit = ref(props.submit);
 
@@ -47,6 +59,7 @@ export default defineComponent({
             submit.value = true;
         };
 
+        // Construct the form state.
         const formState = reactive<FormState>({
             submitCount: 0,
             setError: (id: string, name: string, error: string): void => {
@@ -54,6 +67,8 @@ export default defineComponent({
                     ...errors.value
                 };
 
+                // If this identifier has an error, then set the error.
+                // Otherwise clear the error.
                 if (error) {
                     newErrors[id] = {
                         name,
@@ -68,19 +83,23 @@ export default defineComponent({
             }
         });
 
-        const submitCount = computed((): number => formState.submitCount);
-
         provideFormState(formState);
 
+        // Watch for requests to submit from the parent component.
         watch(() => props.submit, () => {
             if (submit.value !== props.submit) {
                 submit.value = props.submit;
             }
         });
 
+        // Watch for any submit actions and check the validation.
         watch(submit, () => {
             if (submit.value) {
                 formState.submitCount++;
+
+                // Update the visible errors.
+                visibleErrors.value = errorValues.value;
+                emit("visibleValidationChanged", visibleErrors.value);
 
                 if (Object.keys(errors.value).length === 0) {
                     emit("submit");
@@ -92,26 +111,28 @@ export default defineComponent({
             emit("update:submit", submit.value);
         });
 
+        // If any errors change then update the list of errors.
         watch(errors, () => {
-            const errorValues: FormError[] = [];
+            const values: FormError[] = [];
 
             for (const key in errors.value) {
-                errorValues.push(errors.value[key]);
+                values.push(errors.value[key]);
             }
 
-            emit("validationChanged", errorValues);
+            errorValues.value = values;
+            emit("validationChanged", errorValues.value);
         });
 
         return {
-            onInternalSubmit,
-            submitCount,
-            errors
+            errors,
+            visibleErrors,
+            onInternalSubmit
         };
     },
 
     template: `
 <form @submit.prevent.stop="onInternalSubmit()">
-    <RockValidation :submitCount="submitCount" :errors="errors" />
+    <RockValidation v-if="!hideErrors" :errors="visibleErrors" />
     <slot />
 </form>
 `

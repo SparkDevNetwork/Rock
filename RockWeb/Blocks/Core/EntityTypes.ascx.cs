@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Entity Types" )]
     [Category( "Core" )]
     [Description( "Administer the IEntity entity types." )]
+    [Rock.SystemGuid.BlockTypeGuid( "8098DF5D-4B87-4FAF-BA65-E017C5A93353" )]
     public partial class EntityTypes : RockBlock
     {
         #region Control Methods

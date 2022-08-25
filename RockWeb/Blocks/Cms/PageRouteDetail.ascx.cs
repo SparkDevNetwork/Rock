@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Route Detail")]
     [Category("CMS")]
     [Description("Displays the details of a page route.")]
+    [Rock.SystemGuid.BlockTypeGuid( "E6E7333A-C4A6-4DE7-9A37-CC2641320C98" )]
     public partial class PageRouteDetail : RockBlock
     {
         #region Control Methods

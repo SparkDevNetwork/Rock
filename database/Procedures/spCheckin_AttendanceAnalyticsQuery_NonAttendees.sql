@@ -102,6 +102,7 @@ BEGIN
             P.[GivingId],
             P.[BirthDate],
             P.[ConnectionStatusValueId],
+			P.[DeceasedDate],
 			P.[GraduationYear]
         FROM @PersonIdTbl M
         INNER JOIN [Person] P ON P.[Id] = M.[Id]
@@ -126,6 +127,7 @@ BEGIN
                 C.[GivingId],
                 C.[BirthDate],
                 C.[ConnectionStatusValueId],
+				C.[DeceasedDate],
 				C.[GraduationYear],
                 A.[Id] AS [ParentId],
                 A.[NickName] AS [ParentNickName],
@@ -133,6 +135,7 @@ BEGIN
                 A.[Email] AS [ParentEmail],
                 A.[GivingId] as [ParentGivingId],
                 A.[BirthDate] AS [ParentBirthDate],
+				A.[DeceasedDate] AS [ParentDeceasedDate],
 				A.[Gender] AS [ParentGender]
             FROM @PersonIdTbl M
             INNER JOIN [Person] C 
@@ -161,6 +164,7 @@ BEGIN
                 A.[GivingId] as [GivingId],
                 A.[BirthDate],
                 A.[ConnectionStatusValueId],
+				A.[DeceasedDate],
                 C.[Id] AS [ChildId],
                 C.[NickName] AS [ChildNickName],
                 C.[LastName] AS [ChildLastName],
@@ -168,7 +172,8 @@ BEGIN
                 C.[GivingId] as [ChildGivingId],
                 C.[BirthDate] AS [ChildBirthDate],
 				C.[Gender] as [ChildGender],
-				C.[GraduationYear] as [ChildGraduationYear]
+				C.[GraduationYear] as [ChildGraduationYear],
+				C.[DeceasedDate] AS [ChildDeceasedDate]
             FROM @PersonIdTbl M
             INNER JOIN [Person] A 
                 ON A.[Id] = M.[Id]

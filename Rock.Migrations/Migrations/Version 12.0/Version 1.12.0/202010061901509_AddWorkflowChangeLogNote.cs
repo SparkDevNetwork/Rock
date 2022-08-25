@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateNoteType( "Workflow Type Change Log",
+            RockMigrationHelper.AddOrUpdateNoteTypeByMatchingNameAndEntityType( "Workflow Type Change Log",
                 "Rock.Model.WorkflowType",
                 true,
                 Rock.SystemGuid.NoteType.WORKFLOW_CHANGE_LOG_NOTE,

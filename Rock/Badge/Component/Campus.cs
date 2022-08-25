@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Badge.Component
 {
@@ -31,7 +31,8 @@ namespace Rock.Badge.Component
     [Description( "Campus Badge" )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Campus" )]
-    public class Campus : HighlightLabelBadge
+    [Rock.SystemGuid.EntityTypeGuid( "D4B2BA9B-4F2C-47CB-A5BB-F3FF53A68F39")]
+    public class Campus : BadgeComponent
     {
         /// <summary>
         /// Determines of this badge component applies to the given type
@@ -43,38 +44,34 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
-        /// <summary>
-        /// Gets the Entity's Campus badge label even if the campus is inactive.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
-        public override HighlightLabel GetLabel( IEntity entity )
+        /// <inheritdoc/>
+        public override void Render( BadgeCache badge, IEntity entity, TextWriter writer )
         {
-            // This badge is only setup to work with a person
-            var person = entity as Person;
-
-            // If the entity is not a person or there is only one campus, then don't display a badge
-            if ( person == null || CampusCache.All().Count <= 1 )
+            // This badge is only setup to work with a person.
+            if ( !( entity is Person person ) )
             {
-                return null;
+                return;
+            }
+
+            // If there is only one campus, then don't display a badge.
+            if ( CampusCache.All().Count <= 1 )
+            {
+                return;
             }
 
             var campusNames = person.GetCampusIds()
                 .Select( id => CampusCache.Get( id )?.Name )
                 .Where( name => !name.IsNullOrWhiteSpace() )
                 .OrderBy( name => name )
+                .Select( name => name.EncodeHtml() )
                 .ToList();
 
             if ( !campusNames.Any() )
             {
-                return null;
+                return;
             }
 
-            return new HighlightLabel
-            {
-                LabelType = LabelType.Campus,
-                Text = campusNames.AsDelimited( ", " )
-            };
+            writer.Write( $"<div class=\"rockbadge rockbadge-label\" title=\"Campus\"><span class=\"label label-campus\">{campusNames.AsDelimited( "," )}</span></div>" );
         }
     }
 }

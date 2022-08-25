@@ -36,6 +36,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Last Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Last Contribution" )]
+    [Rock.SystemGuid.EntityTypeGuid( "2F7330D9-04FF-4F8B-9B7D-1479F9027C5D")]
     public class LastContributionSelect : FirstLastContributionSelect
     {
         /// <summary>
@@ -56,6 +57,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects First Contribution Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person First Contribution" )]
+    [Rock.SystemGuid.EntityTypeGuid( "6C7C6C7A-3355-4FBF-9D39-AEB50E46A7C1")]
     public class FirstContributionSelect : FirstLastContributionSelect
     {
         /// <summary>
@@ -230,7 +232,7 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 // accountIds
                 var selectedAccountGuidList = accountIds.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
-                var selectedAccountIdList = new FinancialAccountService( context ).GetByGuids( selectedAccountGuidList ).Select( a => a.Id ).ToList();
+                var selectedAccountIdList = FinancialAccountCache.GetByGuids( selectedAccountGuidList ).Select( a => a.Id ).ToList();
 
                 if ( selectedAccountIdList.Count() > 0 )
                 {
@@ -321,7 +323,7 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( accountPicker != null )
                 {
                     var accountIds = accountPicker.SelectedValues.AsIntegerList(); 
-                    var accountGuids = new FinancialAccountService( new RockContext() ).GetByIds( accountIds ).Select( a => a.Guid );
+                    var accountGuids = FinancialAccountCache.GetByIds( accountIds ).Select( a => a.Guid );
                     delimitedAccountGuids = accountGuids.Select( a => a.ToString() ).ToList().AsDelimited( "," );
                 }
 
@@ -358,17 +360,17 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( accountPicker != null )
                 {
                     string[] selectionAccountGuidValues = selections[0].Split( ',' );
-                    var accountList = new List<FinancialAccount>();
+                    var accountList = new List<FinancialAccountCache>();
                     foreach ( string accountGuid in selectionAccountGuidValues )
                     {
-                        var account = new FinancialAccountService( new RockContext() ).Get( accountGuid.AsGuid() );
+                        var account = FinancialAccountCache.Get( accountGuid.AsGuid() );
                         if ( account != null )
                         {
                             accountList.Add( account );
                         }
                     }
 
-                    accountPicker.SetValues( accountList );
+                    accountPicker.SetValuesFromCache( accountList );
                 }
             }
 

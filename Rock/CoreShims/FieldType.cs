@@ -230,6 +230,37 @@ namespace Rock.Field
         {
             throw new NotImplementedException();
         }
+
+        public bool IsPersistedValueSupported( Dictionary<string, string> privateConfigurationValues )
+        {
+            return true;
+        }
+
+        public bool IsPersistedValueVolatile( Dictionary<string, string> privateConfigurationValues )
+        {
+            return false;
+        }
+
+        public string GetPersistedValuePlaceholder( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "Not supported";
+        }
+
+        public bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
+        {
+            return false;
+        }
+
+        public PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return new PersistedValues
+            {
+                TextValue = GetTextValue( privateValue, privateConfigurationValues ),
+                HtmlValue = GetHtmlValue( privateValue, privateConfigurationValues ),
+                CondensedTextValue = GetCondensedTextValue( privateValue, privateConfigurationValues ),
+                CondensedHtmlValue = GetCondensedHtmlValue( privateValue, privateConfigurationValues )
+            };
+        }
     }
 }
 

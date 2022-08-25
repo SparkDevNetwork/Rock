@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,7 +32,6 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Documents REST API
     /// </summary>
-    [RockGuid( "353819d5-19c7-4253-9f84-185a64e15057" )]
     public partial class DocumentsController
     {
         /// <summary>
@@ -45,7 +44,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Documents/UploadDocument" )]
-        [RockGuid( "00c8a318-b8e5-4039-a8e2-488d7f64a2e6" )]
+        [Rock.SystemGuid.RestActionGuid( "00C8A318-B8E5-4039-A8E2-488D7F64A2E6" )]
         public HttpResponseMessage UploadDocument( int documentTypeId, int entityId, string documentName = null )
         {
             try
@@ -146,7 +145,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/Documents/UploadDocumentForForeignPersonId" )]
-        [RockGuid( "e48105c8-a6c4-4693-adea-273439eb13cb" )]
+        [Rock.SystemGuid.RestActionGuid( "E48105C8-A6C4-4693-ADEA-273439EB13CB" )]
         public HttpResponseMessage UploadDocumentForForeignPersonId( int documentTypeId, int foreignPersonId, string documentName = null )
         {
             try

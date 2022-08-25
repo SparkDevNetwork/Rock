@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,13 +37,14 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Displays the details of a given Prayer Request for viewing or editing." )]
 
-    [IntegerField( "Expires After (Days)", "Default number of days until the request will expire.", false, 14, "", 0, AttributeKey.ExpireDays )]
+    [IntegerField( "Expires After (days)", "Default number of days until the request will expire.", false, 14, "", 0, AttributeKey.ExpireDays )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, AttributeKey.DefaultCategory )]
     [BooleanField( "Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situations.", false, order: 2 )]
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "", 3 )]
     [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "", 4)]
     [BooleanField( "Default Allow Comments Checked", "If true, the Allow Comments checkbox will be pre-checked for all new requests by default.", true, order: 5 )]
     [BooleanField("Require Campus", "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.", false, "", 6 )]
+    [Rock.SystemGuid.BlockTypeGuid( "F791046A-333F-4B2A-9815-73B60326162D" )]
     public partial class PrayerRequestDetail : RockBlock
     {
         #region Properties

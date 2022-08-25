@@ -15,12 +15,12 @@
 // </copyright>
 //
 import { defineComponent, PropType } from "vue";
-import RockFormField from "../Elements/rockFormField";
-import DropDownList from "../Elements/dropDownList";
-import RockLabel from "../Elements/rockLabel";
-import TextBox from "../Elements/textBox";
-import { newGuid } from "../Util/guid";
-import { ListItem } from "../ViewModels";
+import RockFormField from "./rockFormField";
+import DropDownList from "./dropDownList";
+import RockLabel from "./rockLabel";
+import TextBox from "./textBox";
+import { newGuid } from "@Obsidian/Utility/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type AddressControlValue = {
     street1?: string;
@@ -38,7 +38,7 @@ export function getDefaultAddressControlModel(): AddressControlValue {
     };
 }
 
-const stateOptions: ListItem[] = [
+const stateOptions: ListItemBag[] = [
     "AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM",
     "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
     "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV",
@@ -90,7 +90,7 @@ export const AddressControlBase = defineComponent({
             <TextBox placeholder="City" :rules="rules" v-model="modelValue.city" validationTitle="City" />
         </div>
         <div class="form-group col-sm-3">
-            <DropDownList :showBlankItem="false" v-model="modelValue.state" :options="stateOptions" />
+            <DropDownList :showBlankItem="false" v-model="modelValue.state" :items="stateOptions" />
         </div>
         <div class="form-group col-sm-3">
             <TextBox placeholder="Zip" :rules="rules" v-model="modelValue.postalCode" validationTitle="Zip" />

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Communication.VideoEmbed
     [Export( typeof( VideoEmbedComponent ) )]
     [ExportMetadata( "ComponentName", "YouTube" )]
     [Description( "Generates YouTube video thumbnails for email." )]
+    [Rock.SystemGuid.EntityTypeGuid( "DB27E1AD-46B2-40B1-89DB-896F70EA574D")]
     public class YoutubeEmbed : VideoEmbedComponent
     {
         /// <summary>

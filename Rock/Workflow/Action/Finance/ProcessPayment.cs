@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,7 @@ namespace Rock.Workflow.Action
     [BooleanField( "Continue On Error", "Should processing continue even if processing errors occur?", false, "", 5 )]
     [WorkflowAttribute( "Result Attribute", "An optional attribute to set to the result transaction ID.", false, "", "", 6, null, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
+    [Rock.SystemGuid.EntityTypeGuid( "F1C91339-54E1-4CA8-A067-6727954DC6A9")]
     public class ProcessPayment : ActionComponent
     {
         /// <summary>

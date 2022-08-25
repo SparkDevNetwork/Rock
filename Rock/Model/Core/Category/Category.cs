@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Category" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( "1D68154E-EC76-44C8-9813-7736B27AECF9")]
     public partial class Category : Model<Category>, IOrdered, ICacheable
     {
         #region Entity Properties
@@ -220,6 +221,8 @@ namespace Rock.Model
             set { _contentChannels = value; }
         }
         private ICollection<ContentChannel> _contentChannels;
+
+        public virtual ICollection<LavaShortcode> LavaShortcodes { get; set; } = new Collection<LavaShortcode>();
 #endif
 
         #endregion

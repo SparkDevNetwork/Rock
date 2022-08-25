@@ -301,6 +301,9 @@ internal class SendGridResponseAsync : IAsyncResult
                     break;
 
                 case "spamreport":
+                    Rock.Communication.Email.ProcessSpamComplaint( payload.Email, timeStamp, true );
+                    break;
+
                 case "unsubscribe":
                 case "group_unsubscribe":
                 case "group_resubscribe":

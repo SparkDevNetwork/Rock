@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "MetricCategory" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.METRICCATEGORY )]
     public partial class MetricCategory : Entity<MetricCategory>, IOrdered, ICategorized
     {
         #region Entity Properties

@@ -595,7 +595,7 @@ namespace Rock
         {
             try
             {
-                if ( !content.HasMergeFields() )
+                if ( !content.IsLavaTemplate() )
                 {
                     return content ?? string.Empty;
                 }

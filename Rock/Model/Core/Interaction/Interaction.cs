@@ -33,6 +33,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "Interaction" )]
     [DataContract]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.INTERACTION )]
     public partial class Interaction : Model<Interaction>
     {
         /* Custom Indexes:
@@ -68,7 +69,7 @@ namespace Rock.Model
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the operation. For example: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'
+        /// Gets or sets the operation. For example: 'View', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed', 'Complete', 'Incomplete', 'Watch', 'Present'.
         /// </summary>
         /// <value>
         /// The operation.

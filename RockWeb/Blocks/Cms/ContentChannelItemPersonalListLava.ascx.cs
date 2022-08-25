@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -71,6 +71,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.LavaTemplate )]
 
     #endregion Block Attributes
+    [Rock.SystemGuid.BlockTypeGuid( "13E4D4B5-0929-4ED6-9E59-05A6D511FA06" )]
     public partial class ContentChannelItemPersonalListLava : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
