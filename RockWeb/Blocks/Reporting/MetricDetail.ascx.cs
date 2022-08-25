@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -1265,8 +1263,8 @@ The Lava can include Lava merge fields:";
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", metric.DataViewId.ToString() );
-                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {metric.DataView.Name.Truncate(30, true)}</a>";
-                hlDataView.ToolTip = (metric.DataView.Name.Length > 30) ? metric.DataView.Name : null;
+                hlDataView.Text = $"<a href='{LinkedPageUrl( AttributeKey.DataViewPage, queryParams )}'>Data View: {metric.DataView.Name.Truncate( 30, true )}</a>";
+                hlDataView.ToolTip = ( metric.DataView.Name.Length > 30 ) ? metric.DataView.Name : null;
             }
             else
             {
@@ -1291,7 +1289,7 @@ The Lava can include Lava merge fields:";
             {
                 formatString = "currency";
             }
-            else if( metric.UnitType == Rock.Model.UnitType.Percentage )
+            else if ( metric.UnitType == Rock.Model.UnitType.Percentage )
             {
                 formatString = "percentage";
             }
@@ -1337,25 +1335,28 @@ The Lava can include Lava merge fields:";
             List<MetricValue> metricValues = GetMetricValues( metric, startDate, endDate );
 
             // Initialize a new Chart Factory.
-            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
-
-            factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Auto;
+            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>
+            {
+                TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Auto
+            };
             var dataPoints = metricValues
-               .Where( a => a.YValue.HasValue )
-               .GroupBy( x => new
-               {
-                   DateKey = x.MetricValueDateKey.Value,
-                   MetricValuePartitionEntityIds = x.MetricValuePartitionEntityIds
-               } )
-               .Select( x => new
-               {
-                   x.Key,
-                   Value = x.Select( a => a.YValue.Value )
-               } )
-               .ToList()
+                .Where( a => a.YValue.HasValue )
+                .GroupBy( x => new
+                {
+                    DateKey = x.MetricValueDateKey.Value,
+                    x.MetricValueType,
+                    x.MetricValuePartitionEntityIds
+                } )
+                .Select( x => new
+                {
+                    x.Key,
+                    Value = x.Select( a => a.YValue.Value )
+                } )
+                .ToList()
                .Select( x => new ChartDatasetInfo
                {
                    MetricValuePartitionEntityIds = x.Key.MetricValuePartitionEntityIds,
+                   MetricValueType = x.Key.MetricValueType,
                    DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
                    Value = x.Value.Sum()
                } );
@@ -1367,19 +1368,25 @@ The Lava can include Lava merge fields:";
                 .Distinct();
 
             var combineValues = GetAttributeValue( AttributeKey.CombineChartSeries ).AsBooleanOrNull() ?? false;
+            var datapointsByMetricTypeValue = dataPoints
+                                .GroupBy( d => d.MetricValueType );
             if ( combineValues )
             {
-                var dataset = new ChartJsTimeSeriesDataset();
+                foreach ( var datapoint in datapointsByMetricTypeValue )
+                {
+                    var metricValueType = datapoint.Key;
+                    var dataset = new ChartJsTimeSeriesDataset
+                    {
+                        Name = $"{metric.YAxisLabel ?? "value"} {metricValueType}",
+                        DataPoints = datapoint
+                            .GroupBy( a => a.DateTime )
+                            .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.Key, Value = x.Select( a => a.Value ).Sum() } )
+                            .Cast<IChartJsTimeSeriesDataPoint>()
+                            .ToList()
+                    };
+                    factory.Datasets.Add( dataset );
+                }
 
-                dataset.Name = metric.YAxisLabel ?? "value";
-
-                dataset.DataPoints = dataPoints
-                    .GroupBy( a => a.DateTime )
-                    .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.Key, Value = x.Select( a => a.Value ).Sum() } )
-                    .Cast<IChartJsTimeSeriesDataPoint>()
-                    .ToList();
-
-                factory.Datasets.Add( dataset );
             }
             else
             {
@@ -1392,16 +1399,20 @@ The Lava can include Lava merge fields:";
 
                 foreach ( var dataseriesName in seriesNameKeyValue.Keys )
                 {
-                    var dataset = new ChartJsTimeSeriesDataset();
-                    var datasetName = seriesNameKeyValue[dataseriesName] ?? metric.YAxisLabel ?? "value";
-                    dataset.Name = datasetName;
-                    dataset.DataPoints = dataPoints
-                                            .Where( x => x.MetricValuePartitionEntityIds == dataseriesName )
-                                            .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
-                                            .Cast<IChartJsTimeSeriesDataPoint>()
-                                            .ToList();
-
-                    factory.Datasets.Add( dataset );
+                    foreach ( var datapoint in datapointsByMetricTypeValue )
+                    {
+                        var metricValueType = datapoint.Key;
+                        var dataset = new ChartJsTimeSeriesDataset
+                        {
+                            Name = $"{seriesNameKeyValue[dataseriesName] ?? metric.YAxisLabel ?? "value"} {metricValueType}",
+                            DataPoints = datapoint
+                                .Where( x => x.MetricValuePartitionEntityIds == dataseriesName )
+                                .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
+                                .Cast<IChartJsTimeSeriesDataPoint>()
+                                .ToList()
+                        };
+                        factory.Datasets.Add( dataset );
+                    }
                 }
             }
 
@@ -1894,6 +1905,8 @@ The Lava can include Lava merge fields:";
             public DateTime DateTime { get; set; }
 
             public decimal Value { get; set; }
+
+            public MetricValueType MetricValueType { get; internal set; }
         }
 
         /// <summary>
