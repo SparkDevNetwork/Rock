@@ -826,6 +826,7 @@
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
+    <Compile Include="Jobs\PostV14DataMigrationsCreateFKIndexes.cs" />
     <Compile Include="Jobs\UpdatePersistedAttributeValues.cs" />
     <Compile Include="Model\CMS\Site\Site.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentCollectionSource\ContentCollectionSource.cs" />
@@ -1405,6 +1406,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
     <Compile Include="Plugin\HotFixes\155_BackgroundCheckPersonEmailValidFix.cs" />
+    <Compile Include="Plugin\HotFixes\158_CorrectWorkfflowLogIsSecured.cs" />
     <Compile Include="Plugin\HotFixes\157_MigrationRollupsFor13_7_0.cs" />
     <Compile Include="Plugin\HotFixes\156_CorrectBlockCategories.cs" />
     <Compile Include="Plugin\HotFixes\147_MigrationRolupsFor13_1.cs" />

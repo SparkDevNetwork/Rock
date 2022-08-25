@@ -510,6 +510,24 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
+                bool hasValidAmount;
+                if ( UseSimpleAccountMode )
+                {
+                    var accountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M;
+                    var accountAmountFeeCoverageAmount = tbSingleAccountFeeCoverageAmount.Value;
+                    hasValidAmount = accountAmountMinusFeeCoverageAmount != 0.0M || ( accountAmountFeeCoverageAmount.HasValue && accountAmountFeeCoverageAmount.Value != 0.0M );
+                }
+                else
+                {
+                    hasValidAmount = TransactionDetailsState.Any( d => d.Amount != 0.0M || ( d.FeeCoverageAmount.HasValue && d.FeeCoverageAmount.Value != 0.0M ) );
+                }
+
+                if ( !hasValidAmount )
+                {
+                    nbTransactionDetailValidationMessage.Visible = true;
+                    return;
+                }
+
                 rockContext.WrapTransaction( () =>
                 {
                     // Save the transaction
@@ -975,6 +993,13 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 BindAccounts();
+
+                if ( nbTransactionDetailValidationMessage.Visible )
+                {
+                    // If a message about no amounts is showing, hide it now that they have added one.
+                    // It'll get re-checked when saved.
+                    nbTransactionDetailValidationMessage.Visible = false;
+                }
             }
 
             HideDialog();

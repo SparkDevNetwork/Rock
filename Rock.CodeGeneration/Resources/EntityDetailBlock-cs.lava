@@ -178,7 +178,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         }
 
         /// <summary>
-        /// Gets the bag for viewing the specied entity.
+        /// Gets the bag for viewing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
         /// <returns>A <see cref="{{ EntityName }}Bag"/> that represents the entity.</returns>
@@ -197,7 +197,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         }
 
         /// <summary>
-        /// Gets the bag for editing the specied entity.
+        /// Gets the bag for editing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="{{ EntityName }}Bag"/> that represents the entity.</returns>

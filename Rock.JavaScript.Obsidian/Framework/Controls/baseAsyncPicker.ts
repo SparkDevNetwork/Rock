@@ -29,7 +29,7 @@ import { PickerDisplayStyle } from "@Obsidian/Types/Controls/pickerDisplayStyle"
  * Convert a model value to the internal value. Basically, this extracts the
  * value from a ListItemBag and also ensures correct array/non-array state
  * depending on the isMultiple value.
- * 
+ *
  * @param value The modelValue from the parent component.
  * @param isMultiple True if the output value should be an array; otherwise false.
  *

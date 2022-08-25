@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Tv
         private static class PageParameterKey
         {
             public const string SiteId = "SiteId";
-            public const string SitePageId = "SitePageId";
+            public const string PageId = "PageId";
         }
 
         #endregion PageParameterKeys
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Tv
             NavigateToLinkedPage( AttributeKey.PageDetail, new Dictionary<string, string>
             {
                 { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
-                { PageParameterKey.SitePageId, "0" }
+                { PageParameterKey.PageId, "0" }
             } );
         }
 
@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Tv
             NavigateToLinkedPage( AttributeKey.PageDetail, new Dictionary<string, string>
             {
                 { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
-                { PageParameterKey.SitePageId, e.RowKeyId.ToString() }
+                { PageParameterKey.PageId, e.RowKeyId.ToString() }
             } );
         }
 
@@ -218,25 +218,27 @@ namespace RockWeb.Blocks.Tv
             var pageInfo = ( PageRowInfo ) e.Row.DataItem;
             var lCacheSettings = e.Row.FindControl( "lCacheSettings" ) as Literal;
 
-            var cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( pageInfo.CacheControlHeaderSettings );
-
-            var cacheDescription = new StringBuilder();
-            cacheDescription.Append( $"{cacheControlHeader.RockCacheablityType} " );
-
-            if ( cacheControlHeader.MaxAge != null || cacheControlHeader.SharedMaxAge != null )
+            if ( pageInfo.CacheControlHeaderSettings != null )
             {
-                if ( cacheControlHeader.MaxAge != null )
-                {
-                    cacheDescription.Append( $"<span class=\"label label-default\">Max Age: {cacheControlHeader.MaxAge.ToSeconds() / 60}m</span> " );
-                }
+                var cacheControlHeader = pageInfo.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>() ?? new RockCacheability();
 
-                if ( cacheControlHeader.SharedMaxAge != null )
+                var cacheDescription = new StringBuilder();
+                cacheDescription.Append( $"{cacheControlHeader.RockCacheablityType} " );
+
+                if ( cacheControlHeader.MaxAge != null || cacheControlHeader.SharedMaxAge != null )
                 {
-                    cacheDescription.Append( $" <span class=\"label label-default\">Max Shared Age: {cacheControlHeader.SharedMaxAge.ToSeconds() / 60}m</span>" );
+                    if ( cacheControlHeader.MaxAge != null )
+                    {
+                        cacheDescription.Append( $"<span class=\"label label-default\">Max Age: {cacheControlHeader.MaxAge.ToSeconds() / 60}m</span> " );
+                    }
+
+                    if ( cacheControlHeader.SharedMaxAge != null )
+                    {
+                        cacheDescription.Append( $" <span class=\"label label-default\">Max Shared Age: {cacheControlHeader.SharedMaxAge.ToSeconds() / 60}m</span>" );
+                    }
                 }
+                lCacheSettings.Text = cacheDescription.ToString();
             }
-            lCacheSettings.Text = cacheDescription.ToString();
-
 
             // Hide the delete button if this page is the application's default page
             var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();

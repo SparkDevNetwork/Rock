@@ -36,6 +36,7 @@ using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 using Rock.Utility;
 
 namespace Rock.Rest.v2
@@ -487,6 +488,146 @@ namespace Rock.Rest.v2
             var componentsList = GetComponentListItems( options.ContainerType );
 
             return Ok( componentsList );
+        }
+
+        #endregion
+
+        #region Connection Request Picker
+
+        /// <summary>
+        /// Gets the data views and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which data views to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of data views.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ConnectionRequestPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "5316914b-cf47-4dac-9e10-71767fdf1eb9" )]
+        public IHttpActionResult ConnectionRequestPickerGetChildren( [FromBody] ConnectionRequestPickerGetChildrenOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            using ( var rockContext = new RockContext() )
+            {
+                string service = null;
+
+                /*
+                 * Determine what type of resource the GUID we received is so we know what types of 
+                 * children to query for.
+                 */
+                if (options.ParentGuid == null)
+                {
+                    // Get the root Connection Types
+                    service = "type";
+                }
+                else
+                {
+                    var conOpp = new ConnectionOpportunityService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( op => op.Guid == options.ParentGuid )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    if (conOpp.Any())
+                    {
+                        // Get the Connection Requests
+                        service = "request";
+                    }
+                    else
+                    {
+                        var conType = new ConnectionTypeService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( t => t.Guid == options.ParentGuid )
+                            .ToList()
+                            .Where( t => t.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( t, Authorization.VIEW ) == true );
+
+                        if (conType.Any() )
+                        {
+                            // Get the Connection Opportunities
+                            service = "opportunity";
+                        }
+                    }
+                }
+
+                /*
+                 * Fetch the children
+                 */
+                var list = new List<TreeItemBag>();
+
+                if (service == "type")
+                {
+                    // Get the Connection Types
+                    var connectionTypes = new ConnectionTypeService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .OrderBy( ct => ct.Name )
+                        .ToList()
+                        .Where( ct => ct.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( ct, Authorization.VIEW ) == true );
+
+                    foreach ( var connectionType in connectionTypes)
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = connectionType.Guid.ToString();
+                        item.Text = connectionType.Name;
+                        item.HasChildren = connectionType.ConnectionOpportunities.Any();
+                        item.IconCssClass = connectionType.IconCssClass;
+                        list.Add( item );
+                    }
+                }
+                else if (service == "opportunity")
+                {
+                    // Get the Connection Opportunities
+                    var opportunities = new ConnectionOpportunityService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( op => op.ConnectionType.Guid == options.ParentGuid )
+                        .OrderBy( op => op.Name )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    foreach ( var opportunity in opportunities )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = opportunity.Guid.ToString();
+                        item.Text = opportunity.Name;
+                        item.HasChildren = opportunity.ConnectionRequests
+                            .Any( r =>
+                                r.ConnectionState == ConnectionState.Active ||
+                                r.ConnectionState == ConnectionState.FutureFollowUp );
+                        item.IconCssClass = opportunity.IconCssClass;
+                        list.Add( item );
+                    }
+                }
+                else if ( service == "request" )
+                {
+                    var requests = new ConnectionRequestService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( r =>
+                            r.ConnectionOpportunity.Guid == options.ParentGuid &&
+                            r.PersonAlias != null &&
+                            r.PersonAlias.Person != null )
+                        .OrderBy( r => r.PersonAlias.Person.LastName )
+                        .ThenBy( r => r.PersonAlias.Person.NickName )
+                        .ToList()
+                        .Where( op => op.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( op, Authorization.VIEW ) == true );
+
+                    foreach ( var request in requests )
+                    {
+                        var item = new TreeItemBag();
+                        item.Value = request.Guid.ToString();
+                        item.Text = request.PersonAlias.Person.FullName;
+                        item.HasChildren = false;
+                        item.IconCssClass = "fa fa-user";
+                        list.Add( item );
+                    }
+                }
+                else
+                {
+                    // service type wasn't set, so we don't know where to look
+                    return NotFound();
+                }
+
+                return Ok( list );
+            }
         }
 
         #endregion
@@ -1295,7 +1436,7 @@ namespace Rock.Rest.v2
                     listItem.Text = schoolGrade.Description;
                 }
 
-                listItem.Value = options.UseGradeOffsetAsValue ? schoolGrade.Value : schoolGrade.Guid.ToString();
+                listItem.Value = options.UseGuidAsValue ? schoolGrade.Guid.ToString() : schoolGrade.Value;
 
                 list.Add( listItem );
             }
@@ -1345,6 +1486,189 @@ namespace Rock.Rest.v2
             }
 
             return Ok( list );
+        }
+
+        #endregion
+
+        #region Group Picker
+
+        /// <summary>
+        /// Gets the groups that can be displayed in the group picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the groups.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "GroupPickerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "c4f5432a-eb1e-4235-a5cd-bde37cc324f7" )]
+        public IHttpActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var groupService = new GroupService(rockContext);
+
+                List<int> includedGroupTypeIds = options.IncludedGroupTypeGuids
+                    .Select( ( guid ) =>
+                    {
+                        var gt = GroupTypeCache.Get( guid );
+
+                        if (gt != null)
+                        {
+                            return gt.Id;
+                        }
+
+                        return 0;
+                    } )
+                    .ToList();
+
+                // if specific group types are specified, show the groups regardless of ShowInNavigation
+                bool limitToShowInNavigation = !includedGroupTypeIds.Any();
+
+                Rock.Model.Group parentGroup = groupService.GetByGuid( options.Guid ?? Guid.Empty );
+                int id = parentGroup == null ? 0 : parentGroup.Id;
+
+                Rock.Model.Group rootGroup = groupService.GetByGuid( options.RootGroupGuid ?? Guid.Empty );
+                int rootGroupId = rootGroup == null ? 0 : rootGroup.Id;
+
+                var qry = groupService
+                    .GetChildren( id, rootGroupId, false, includedGroupTypeIds, new List<int>(), options.IncludeInactiveGroups, limitToShowInNavigation, 0, false, false )
+                    .AsNoTracking();
+
+                List<Rock.Model.Group> groupList = new List<Rock.Model.Group>();
+                List<TreeItemBag> groupNameList = new List<TreeItemBag>();
+
+                var person = GetPerson();
+
+                if (parentGroup == null)
+                {
+                    parentGroup = rootGroup;
+                }
+
+                List<int> groupIdsWithSchedulingEnabledWithAncestors = null;
+                List<int> groupIdsWithRSVPEnabledWithAncestors = null;
+
+                var listOfChildGroups = qry.ToList().OrderBy( g => g.Order ).ThenBy( g => g.Name ).ToList();
+                if ( listOfChildGroups.Any() )
+                {
+                    if ( options.LimitToSchedulingEnabled )
+                    {
+                        groupIdsWithSchedulingEnabledWithAncestors = groupService.GetGroupIdsWithSchedulingEnabledWithAncestors();
+                    }
+
+                    if ( options.LimitToRSVPEnabled )
+                    {
+                        groupIdsWithRSVPEnabledWithAncestors = groupService.GetGroupIdsWithRSVPEnabledWithAncestors();
+                    }
+                }
+
+                foreach ( var group in listOfChildGroups )
+                {
+                    // we already have the ParentGroup record, so lets set it for each group to avoid a database round-trip during Auth
+                    group.ParentGroup = parentGroup;
+
+                    var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+                    //// Before checking Auth, filter based on the limitToSchedulingEnabled and limitToRSVPEnabled option.
+                    //// Auth takes longer to check, so if we can rule the group out sooner, that will save a bunch of time
+
+                    if ( options.LimitToSchedulingEnabled )
+                    {
+                        var includeGroup = false;
+                        if ( groupType?.IsSchedulingEnabled == true )
+                        {
+                            // if this group's group type has scheduling enabled, we will include this group
+                            includeGroup = true;
+                        }
+                        else
+                        {
+                            // if this group's group type does not have scheduling enabled, we will need to include it if any of its children
+                            // have scheduling enabled
+
+                            if ( groupIdsWithSchedulingEnabledWithAncestors != null )
+                            {
+                                bool hasChildScheduledEnabledGroups = groupIdsWithSchedulingEnabledWithAncestors.Contains( group.Id );
+                                if ( hasChildScheduledEnabledGroups )
+                                {
+                                    includeGroup = true;
+                                }
+                            }
+                        }
+
+                        if ( !includeGroup )
+                        {
+                            continue;
+                        }
+                    }
+
+                    if ( options.LimitToRSVPEnabled )
+                    {
+                        var includeGroup = false;
+                        if ( groupType?.EnableRSVP == true )
+                        {
+                            // if this group's group type has RSVP enabled, we will include this group
+                            includeGroup = true;
+                        }
+                        else
+                        {
+                            if ( groupIdsWithRSVPEnabledWithAncestors != null )
+                            {
+                                bool hasChildRSVPEnabledGroups = groupIdsWithRSVPEnabledWithAncestors.Contains( group.Id );
+                                if ( hasChildRSVPEnabledGroups )
+                                {
+                                    includeGroup = true;
+                                }
+                            }
+                        }
+
+                        if ( !includeGroup )
+                        {
+                            continue;
+                        }
+                    }
+
+                    bool groupIsAuthorized = group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+                    if ( !groupIsAuthorized )
+                    {
+                        continue;
+                    }
+
+                    groupList.Add( group );
+                    var treeViewItem = new TreeItemBag();
+                    treeViewItem.Value = group.Guid.ToString();
+                    treeViewItem.Text = group.Name;
+                    treeViewItem.IsActive = group.IsActive;
+
+                    // if there a IconCssClass is assigned, use that as the Icon.
+                    treeViewItem.IconCssClass = groupType?.IconCssClass;
+
+                    groupNameList.Add( treeViewItem );
+                }
+
+                // try to quickly figure out which items have Children
+                List<int> resultIds = groupList.Select( a => a.Id ).ToList();
+                var qryHasChildren = groupService.Queryable().AsNoTracking()
+                    .Where( g =>
+                        g.ParentGroupId.HasValue &&
+                        resultIds.Contains( g.ParentGroupId.Value ) );
+
+                if ( includedGroupTypeIds.Any() )
+                {
+                    qryHasChildren = qryHasChildren.Where( a => includedGroupTypeIds.Contains( a.GroupTypeId ) );
+                }
+
+                var qryHasChildrenList = qryHasChildren
+                    .Select( g => g.ParentGroup.Guid )
+                    .Distinct()
+                    .ToList();
+
+                foreach ( var g in groupNameList )
+                {
+                    Guid groupGuid = g.Value.AsGuid();
+                    g.HasChildren = qryHasChildrenList.Any( a => a == groupGuid );
+                }
+
+                return Ok( groupNameList );
+            }
         }
 
         #endregion
@@ -1540,6 +1864,185 @@ namespace Rock.Rest.v2
 
                 return Ok( locationNameList );
             }
+        }
+
+        #endregion
+
+        #region Page Picker
+
+        /// <summary>
+        /// Gets the tree list of pages
+        /// </summary>
+        /// <param name="options">The options that describe which pages to retrieve.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the pages.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PagePickerGetChildren" )]
+        [Rock.SystemGuid.RestActionGuid( "EE9AB2EA-EE01-4D0F-B626-02D1C8D1ABF4" )]
+        public IHttpActionResult PagePickerGetChildren( [FromBody] PagePickerGetChildrenOptionsBag options )
+        {
+            var service = new Service<Page>( new RockContext() ).Queryable().AsNoTracking();
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            IQueryable<Page> qry;
+
+            if ( options.Guid.IsEmpty() )
+            {
+                qry = service.Where( a => a.ParentPage.Guid == options.RootPageGuid );
+            }
+            else
+            {
+                qry = service.Where( a => a.ParentPage.Guid == options.Guid );
+            }
+
+            if ( options.SiteType != null )
+            {
+                qry = qry.Where( p => ( int ) p.Layout.Site.SiteType == options.SiteType.Value );
+            }
+
+            var hidePageGuids = options.HidePageGuids ?? new List<Guid>();
+
+            List<Page> pageList = qry
+                .Where( p => !hidePageGuids.Contains( p.Guid ))
+                .OrderBy( p => p.Order )
+                .ThenBy( p => p.InternalName )
+                .ToList()
+                .Where( p => p.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( p, Authorization.VIEW ) == true )
+                .ToList();
+            List<TreeItemBag> pageItemList = new List<TreeItemBag>();
+            foreach ( var page in pageList )
+            {
+                var pageItem = new TreeItemBag();
+                pageItem.Value = page.Guid.ToString();
+                pageItem.Text = page.InternalName;
+
+                pageItemList.Add( pageItem );
+            }
+
+            // try to quickly figure out which items have Children
+            List<int> resultIds = pageList.Select( a => a.Id ).ToList();
+
+            var qryHasChildren = service
+                .Where( p =>
+                    p.ParentPageId.HasValue &&
+                    resultIds.Contains( p.ParentPageId.Value ) )
+                .Select( p => p.ParentPage.Guid )
+                .Distinct()
+                .ToList();
+
+            foreach ( var g in pageItemList )
+            {
+                var hasChildren = qryHasChildren.Any( a => a.ToString() == g.Value );
+                g.HasChildren = hasChildren;
+                g.IsFolder = hasChildren;
+                g.IconCssClass = "fa fa-file-o";
+            }
+
+            return Ok(pageItemList.AsQueryable());
+        }
+
+        /// <summary>
+        /// Gets the list of pages in the hierarchy going from the root to the given page
+        /// </summary>
+        /// <param name="options">The options that describe which pages to retrieve.</param>
+        /// <returns>A collection of <see cref="Guid"/> that represent the pages.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PagePickerGetSelectedPageHierarchy" )]
+        [Rock.SystemGuid.RestActionGuid( "e74611a0-1711-4a0b-b3bd-df242d344679" )]
+        public IHttpActionResult PagePickerGetSelectedPageHierarchy( [FromBody] PagePickerGetSelectedPageHierarchyOptionsBag options )
+        {
+            var parentPageGuids = new List<string>();
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            foreach ( Guid pageGuid in options.SelectedPageGuids )
+            {
+                var page = PageCache.Get( pageGuid );
+
+                if (page == null)
+                {
+                    continue;
+                }
+
+                var parentPage = page.ParentPage;
+
+                while ( parentPage != null )
+                {
+                    if ( !parentPageGuids.Contains( parentPage.Guid.ToString() ) && ( parentPage.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || ( grant?.IsAccessGranted( parentPage, Authorization.VIEW ) == true )) )
+                    {
+                        parentPageGuids.Insert( 0, parentPage.Guid.ToString() );
+                    }
+                    else
+                    {
+                        // infinite recursion
+                        break;
+                    }
+
+                    parentPage = parentPage.ParentPage;
+                }
+            }
+
+            return Ok( parentPageGuids );
+        }
+
+        /// <summary>
+        /// Gets the internal name of the page with the given Guid
+        /// </summary>
+        /// <param name="options">The options that contains the Guid of the page</param>
+        /// <returns>A string internal name of the page with the given Guid.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PagePickerGetPageName" )]
+        [Rock.SystemGuid.RestActionGuid( "20d219bd-3635-4cbc-b79f-250972ae6b97" )]
+        public IHttpActionResult PagePickerGetPageName( [FromBody] PagePickerGetPageNameOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var page = PageCache.Get( options.PageGuid );
+
+            if (page == null)
+            {
+                return NotFound();
+            }
+
+            var isAuthorized = page.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( page, Authorization.VIEW ) == true;
+
+            if ( !isAuthorized )
+            {
+                return Unauthorized();
+            }
+
+            return Ok( page.InternalName );
+        }
+
+        /// <summary>
+        /// Gets the list of routes to the given page
+        /// </summary>
+        /// <param name="options">The options that describe which routes to retrieve.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> that represent the routes.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PagePickerGetPageRoutes" )]
+        [Rock.SystemGuid.RestActionGuid( "858209a4-7715-43e6-aff5-00b82773f241" )]
+        public IHttpActionResult PagePickerGetPageRoutes( [FromBody] PagePickerGetPageRoutesOptionsBag options )
+        {
+            var page = PageCache.Get( options.PageGuid );
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            var isAuthorized = page.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( page, Authorization.VIEW ) == true;
+
+            if ( !isAuthorized )
+            {
+                return Unauthorized();
+            }
+
+            var routes = page.PageRoutes
+                .Select( r => new ListItemBag
+                {
+                    Text = r.Route,
+                    Value = r.Guid.ToString()
+                } )
+                .ToList();
+
+            return Ok( routes );
         }
 
         #endregion

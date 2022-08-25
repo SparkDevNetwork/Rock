@@ -2408,6 +2408,21 @@ namespace RockWeb.Blocks.Event
                 return null;
             }
 
+            if ( RegistrationInstanceState != null )
+            {
+                if ( RegistrationInstanceState.EndDateTime < RockDateTime.Now )
+                {
+                    ShowWarning( "Sorry", string.Format( "{0} closed on {1}.", RegistrationInstanceState.Name, RegistrationInstanceState.EndDateTime.ToString() ) );
+                    return null;
+                }
+
+                if ( !RegistrationInstanceState.IsActive )
+                {
+                    ShowWarning( "Sorry", string.Format( "{0} is no longer active.", RegistrationInstanceState.Name ) );
+                    return null;
+                }
+            }
+
             Registration registration = null;
 
             if ( RegistrationState != null && RegistrationState.Registrants.Any() && RegistrationTemplate != null )

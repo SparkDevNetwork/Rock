@@ -3853,6 +3853,8 @@ CREATE TABLE #businessTypeName (
         SET @groupId = SCOPE_IDENTITY()
 		UPDATE Person SET GivingGroupId = @groupId WHERE Id = @personId;
 
+        DECLARE @groupTypeId INT = (SELECT [GroupTypeId] FROM [Group] WHERE Id = @groupId);
+
         INSERT INTO [GroupMember] (
             IsSystem
             ,GroupId
@@ -3861,6 +3863,7 @@ CREATE TABLE #businessTypeName (
             ,[Guid]
             ,GroupMemberStatus
 			,DateTimeAdded
+            ,GroupTypeId
             )
         VALUES (
             0
@@ -3870,6 +3873,7 @@ CREATE TABLE #businessTypeName (
             ,newid()
             ,0
 			,SYSDATETIME()
+            ,@groupTypeId
             )
 
 		SET @zipCode = ROUND(rand() * 9999, 0) + 70000;

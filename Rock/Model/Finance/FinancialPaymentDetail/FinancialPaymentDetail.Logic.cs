@@ -154,6 +154,11 @@ namespace Rock.Model
             CurrencyTypeValueId = null;
             CreditCardTypeValueId = null;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            ExpirationMonthEncrypted = null;
+            ExpirationYearEncrypted = null;
+#pragma warning restore CS0618 // Type or member is obsolete
+
             NameOnCard = null;
             ExpirationMonth = null;
             ExpirationYear = null;

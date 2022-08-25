@@ -34,6 +34,9 @@ namespace Rock.Migrations
             UpdateAppleTvBlockFileName();
             AddAdminChecklistItemForRedis();
             ShowFormBuilderPages();
+            SetWorkflowLogIsSecured();
+            AddCreateFKIndexesPostUpdateJob();
+            TVPageRoutes();
             CleanupMigrationHistory();
         }
         
@@ -182,6 +185,60 @@ namespace Rock.Migrations
         UPDATE [dbo].[__MigrationHistory]
         SET [Model] = 0x
         WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
+        }
+
+        /// <summary>
+        /// KA: Migration to Set IsSecured column of WorkflowLog to false.
+        /// </summary>
+        private void SetWorkflowLogIsSecured()
+        {
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.WorkflowLog", Rock.SystemGuid.EntityType.WORKFLOW_LOG, true, false );
+        }
+
+        /// <summary>
+        /// Adds the create fk indexes post update job.
+        /// </summary>
+        private void AddCreateFKIndexesPostUpdateJob()
+        {
+            // add ServiceJob: Rock Update Helper v14.0 - Add FK indexes
+            // Code Generated using Rock\Dev Tools\Sql\CodeGen_ServiceJobWithAttributes_ForAJob.sql
+            Sql($@"IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = 'Rock.Jobs.PostV14DataMigrationsCreateFKIndexes' AND [Guid] = 'D96BD1F7-6A4A-4DC0-B10D-40031F709573' )
+            BEGIN
+               INSERT INTO [ServiceJob] (
+                  [IsSystem]
+                  ,[IsActive]
+                  ,[Name]
+                  ,[Description]
+                  ,[Class]
+                  ,[CronExpression]
+                  ,[NotificationStatus]
+                  ,[Guid] )
+               VALUES ( 
+                  0
+                  ,1
+                  ,'Rock Update Helper v14.0 - Add FK indexes'
+                  ,'This job will add FK indexes on RegistrationRegistrant.RegistrationTemplateId, GroupMember.GroupTypeId, and ConnectionRequest.ConnectionTypeId.'
+                  ,'Rock.Jobs.PostV14DataMigrationsCreateFKIndexes'
+                  ,'0 0 21 1/1 * ? *'
+                  ,1
+                  ,'{Rock.SystemGuid.ServiceJob.DATA_MIGRATIONS_140_CREATE_FK_INDEXES}'
+                  );
+            END" );
+
+            // Attribute: Rock.Jobs.PostV14DataMigrationsCreateFKIndexes: Command Timeout
+            RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Model.ServiceJob", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Class", "Rock.Jobs.PostV14DataMigrationsCreateFKIndexes", "Command Timeout", "Command Timeout", @"Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.", 0, @"14400", "9DCBBA2E-39DE-4507-9D53-093A67056C9C", "CommandTimeout" );
+            RockMigrationHelper.AddAttributeValue( "9DCBBA2E-39DE-4507-9D53-093A67056C9C", 86, @"14400", "9DCBBA2E-39DE-4507-9D53-093A67056C9C" ); // Rock Update Helper v14.0 - Add FK indexes: Command Timeout
+        }
+
+        /// <summary>
+        /// v14.0 Add Data Migration for TV Page Routes
+        /// </summary>
+        private void TVPageRoutes()
+        {
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPS, "admin/cms/appletv-applications" );
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPLICATION_DETAIL, "admin/cms/appletv-applications/{SiteId}" );
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.APPLE_TV_APPLICATION_SCREEN_DETAIL, "admin/cms/appletv-applications/{SiteId}/{PageId}" );
+            RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.MOBILE_SITE_PAGES, "admin/cms/mobile-applications/{SiteId}/{Page}" );
         }
     }
 }

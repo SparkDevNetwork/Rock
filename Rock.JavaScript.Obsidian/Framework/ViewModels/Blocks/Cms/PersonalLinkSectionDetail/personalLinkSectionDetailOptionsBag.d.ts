@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Class PersonalLinkSectionDetailOptionsBag. */
 export type PersonalLinkSectionDetailOptionsBag = {
 };

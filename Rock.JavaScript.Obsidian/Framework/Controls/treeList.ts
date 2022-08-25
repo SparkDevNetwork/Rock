@@ -45,6 +45,14 @@ const treeItem = defineComponent({
         disableFolderSelection: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * Automatically open to show children if a selected value is a child of this item
+         */
+        autoExpand: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
 
@@ -61,7 +69,7 @@ const treeItem = defineComponent({
         const hasChildren = computed((): boolean => children.value.length > 0);
 
         /** Determines if this item is a folder that can contain children. */
-        const isFolder = computed((): boolean => props.item.isFolder && props.item.hasChildren);
+        const isFolder = computed((): boolean => props.item.isFolder || props.item.hasChildren);
 
         /** The display name of the current item. */
         const itemName = computed((): string => props.item.text ?? "");
@@ -101,6 +109,46 @@ const treeItem = defineComponent({
             return classes.join(" ");
         });
 
+        // Automatically expand to show selected value deep in the tree
+        watch(() => [props.item, props.modelValue], () => {
+            if (!props.autoExpand || hasChildren.value == false) {
+                return;
+            }
+
+            if (hasSelectedChild(props.item, props.modelValue)) {
+                showChildren.value = true;
+            }
+            else if (children.value.length == 0) {
+                showChildren.value = false;
+            }
+        }, { immediate: true });
+
+        /**
+         * Determine if a child item is a selected value
+         *
+         * @param item The item potentially with children that are selected
+         * @param values The selected values
+         *
+         * @return Whether or not a child is selected
+         */
+        function hasSelectedChild(item: TreeItemBag, values: string[]): boolean {
+            const children = item.children;
+
+            if (children && children.length > 0) {
+                for (const child of children) {
+                    if (values.includes(child.value ?? "")) {
+                        return true;
+                    }
+
+                    if (child.children && child.children.length > 0 && hasSelectedChild(child, values)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         /**
          * Event handler for when the folder arrow is clicked.
          */
@@ -111,6 +159,16 @@ const treeItem = defineComponent({
                 emit("treeitem-expanded", props.item);
             }
         };
+
+        /**
+         * If something changes to make existing children no longer exist in the list,
+         * unexpand this item
+         */
+        watch(hasChildren, () => {
+            if (!hasChildren.value && showChildren.value) {
+                onExpand();
+            }
+        });
 
         /**
          * Event handler for when a child item is expanded.
@@ -181,7 +239,7 @@ const treeItem = defineComponent({
         {{ itemName }}
     </span>
     <ul v-if="hasChildren" v-show="showChildren" class="rocktree-children" v-for="child in children">
-        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" />
+        <TreeList.Item :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
     </ul>
 </li>
 `
@@ -215,6 +273,14 @@ export default defineComponent({
         },
 
         disableFolderSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Automatically expand parents who have (sub)children that are selected
+         */
+        autoExpand: {
             type: Boolean as PropType<boolean>,
             default: false
         }
@@ -313,7 +379,7 @@ export default defineComponent({
     template: `
 <div>
     <ul class="rocktree">
-        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" />
+        <TreeItem v-for="child in internalItems" :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" />
     </ul>
 </div>
 `
