@@ -15,9 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Text;
 using System.Web.UI;
+
+using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace RockWeb.Blocks.Utility
@@ -93,6 +99,12 @@ namespace RockWeb.Blocks.Utility
             // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+            gPluginsReport.GridRebind += GPluginsReport_GridRebind;
+        }
+
+        private void GPluginsReport_GridRebind( object sender, Rock.Web.UI.Controls.GridRebindEventArgs e )
+        {
+            BindPluginDllsReport();
         }
 
         /// <summary>
@@ -133,8 +145,72 @@ namespace RockWeb.Blocks.Utility
 
         #region Methods
 
-        // helper functional methods (like BindGrid(), etc.)
+        private void BindPluginDllsReport()
+        {
+            var pluginDlls = Reflection.GetPluginAssemblies().Where( a => !a.GetName().Name.StartsWith( "Rock." ) && !a.GetName().Name.StartsWith( "App_Code" ) );
+
+            List<PluginInfo> pluginInfoList = new List<PluginInfo>();
+
+            foreach ( System.Reflection.Assembly pluginDll in pluginDlls.OrderBy( a => a.FullName ) )
+            {
+                var rockReference = pluginDll.GetReferencedAssemblies().Where( a => a.Name == "Rock" ).FirstOrDefault();
+                var quartzJobTypes = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) )
+                    .Select( a => a.Value )
+                    .Where( a => a.Assembly == pluginDll )
+                    .OrderBy( a => a.Name ).ToList();
+
+                var rockEntityTypes = Rock.Reflection.FindTypes( typeof( IRockEntity ) )
+                    .Select( a => a.Value )
+                    .Where( a => a.Assembly == pluginDll )
+                    .OrderBy( a => a.Name ).ToList();
+
+                var restEndPoints = Rock.Reflection.FindTypes( typeof( Rock.Rest.ApiControllerBase ) )
+                    .Select( a => a.Value )
+                    .Where( a => a.Assembly == pluginDll )
+                    .OrderBy( a => a.Name ).ToList();
+
+                var pluginInfo = new PluginInfo
+                {
+                    Name = pluginDll.GetName().Name,
+                    PluginVersion = pluginDll.GetName().Version,
+                    RockVersion = rockReference?.Version,
+                    QuartzJobTypes = quartzJobTypes.AsDelimited( "<br >" ),
+                    IRockEntities = rockEntityTypes.AsDelimited( "<br >" ),
+                    RestEndPointTypes = restEndPoints.AsDelimited( "<br >" ),
+                };
+
+                pluginInfoList.Add( pluginInfo );
+            }
+
+            var sort = gPluginsReport.SortProperty ?? new Rock.Web.UI.Controls.SortProperty { Direction = System.Web.UI.WebControls.SortDirection.Ascending, Property = "Name" };
+            pluginInfoList = pluginInfoList.AsQueryable().Sort( sort ).ToList();
+
+            gPluginsReport.DataSource = pluginInfoList;
+            gPluginsReport.DataBind();
+        }
 
         #endregion
+
+        protected void btnGetReport_Click( object sender, EventArgs e )
+        {
+            BindPluginDllsReport();
+        }
+
+        private class PluginInfo
+        {
+            public string Name { get; set; }
+
+            public Version PluginVersion { get; set; }
+
+            public Version RockVersion { get; set; }
+
+            public string QuartzJobTypes { get; set; }
+
+            public string IRockEntities { get; set; }
+            public string RestEndPointTypes { get; internal set; }
+
+            public string Migrations { get; set; }
+
+        }
     }
 }
