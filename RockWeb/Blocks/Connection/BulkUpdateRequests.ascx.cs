@@ -567,7 +567,6 @@ namespace RockWeb.Blocks.Connection
         {
             if ( connectionCampusCountViewModels.Count > 0 )
             {
-                rcwBulkUpdateCampuses.Visible = true;
                 rblBulkUpdateCampuses.Items.Clear();
 
                 for ( int i = 0; i < connectionCampusCountViewModels.Count; i++ )
@@ -576,6 +575,11 @@ namespace RockWeb.Blocks.Connection
                     var listItem = new ListItem( $"{campusCountItem.Campus} ({campusCountItem.Count})", campusCountItem.CampusId.ToString() ) { Selected = i == 0 };
                     rblBulkUpdateCampuses.Items.Add( listItem );
                 }
+            }
+
+            if ( connectionCampusCountViewModels.Count > 1 )
+            {
+                rcwBulkUpdateCampuses.Visible = true;
             }
         }
 

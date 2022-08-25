@@ -56,7 +56,7 @@ export function toNumber(str?: string | number | null): number {
  * @param str
  */
 export function toNumberOrNull(str?: string | number | null): number | null {
-    if (str === null || str === undefined || str == "") {
+    if (str === null || str === undefined || str === "") {
         return null;
     }
 
