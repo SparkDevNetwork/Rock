@@ -171,12 +171,15 @@
                     </div>
                 </asp:Panel>
                 <%-- Preferences Add/Edit GroupScheduleAssignment modal --%>
-                <Rock:ModalDialog ID="mdGroupScheduleAssignment" runat="server" OnSaveClick="mdGroupScheduleAssignment_SaveClick" Title="Add/Edit Assignment" >
+                <Rock:ModalDialog ID="mdGroupScheduleAssignment" runat="server" OnSaveClick="mdGroupScheduleAssignment_SaveClick"
+                    Title="Add/Edit Assignment" ValidationGroup="GroupScheduleAssignment">
                     <Content>
                         <asp:HiddenField ID="hfGroupScheduleAssignmentGroupId" runat="server" />
                         <asp:HiddenField ID="hfGroupScheduleAssignmentId" runat="server" />
-                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentSchedule" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged" Label="Schedule" Required="true" />
-                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentLocation" runat="server" Label="Location" />
+                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentSchedule" runat="server" Label="Schedule"
+                            AutoPostBack="true" OnSelectedIndexChanged="ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged"
+                            Required="true" ValidationGroup="GroupScheduleAssignment" />
+                        <Rock:RockDropDownList ID="ddlGroupScheduleAssignmentLocation" runat="server" Label="Location" ValidationGroup="GroupScheduleAssignment" />
                     </Content>
                 </Rock:ModalDialog>
             </div>
