@@ -26,6 +26,7 @@ using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Extension;
 using Rock.Financial;
 using Rock.Model;
@@ -1863,6 +1864,63 @@ namespace Rock.Rest.v2
                 }
 
                 return Ok( locationNameList );
+            }
+        }
+
+        #endregion
+
+        #region Merge Template Picker
+
+        /// <summary>
+        /// Gets the merge templates and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which merge templates to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of merge templates.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MergeTemplatePickerGetMergeTemplates" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2e486da8-927f-4474-8ba8-00a68d261403" )]
+        public IHttpActionResult MergeTemplatePickerGetMergeTemplates( [FromBody] MergeTemplatePickerGetMergeTemplatesOptionsBag options )
+        {
+            List<Guid> include = null;
+            List<Guid> exclude = null;
+
+            if (options.MergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Global)
+            {
+                exclude = new List<Guid>();
+                exclude.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
+            }
+            else if ( options.MergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Personal )
+            {
+                include = new List<Guid>();
+                include.Add( Rock.SystemGuid.Category.PERSONAL_MERGE_TEMPLATE.AsGuid() );
+            }
+
+            //MergeTemplateOwnership
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var queryOptions = new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.ParentGuid.HasValue,
+                    EntityTypeGuid = EntityTypeCache.Get<MergeTemplate>().Guid,
+                    IncludeUnnamedEntityItems = false,
+                    IncludeCategoriesWithoutChildren = false,
+                    IncludeCategoryGuids = include,
+                    ExcludeCategoryGuids = exclude,
+                    DefaultIconCssClass = options.DefaultIconCssClass,
+                    ItemFilterPropertyName = null,
+                    ItemFilterPropertyValue = "",
+                    LazyLoad = true,
+                    SecurityGrant = grant
+                };
+
+                var items = clientService.GetCategorizedTreeItems( queryOptions );
+
+                return Ok( items );
             }
         }
 
