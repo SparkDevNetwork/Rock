@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -57,9 +57,32 @@ namespace Rock.Migrations
             string newParticipantReference;
 
             // This is for the Participant Lava.
-            oldAssignParticipantReference = "{% assign groupMember = TransactionEntity %}";
+            oldAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
+{% assign fundraisingGoal = groupMember | Attribute:''IndividualFundraisingGoal'',''RawValue'' %}
+{% if fundraisingGoal == '''' %}
+  {% assign fundraisingGoal = groupMember.Group | Attribute:''IndividualFundraisingGoal'',''RawValue'' %}
+{% endif %}
+
+{% comment %}
+-- convert fundraisingGoal to a numeric by using Plus
+{% endcomment %}
+
+{% assign fundraisingGoal = fundraisingGoal | Plus:0.00 %}
+
+{% assign amountRemaining = fundraisingGoal | Minus:TransactionEntityTransactionsTotal %}";
+
             newAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
-{% assign participationType = PageParameter[''ParticipationMode''] %}";
+{% assign fundraisingGoal = FundraisingGoal %}
+{% assign amountRaised = AmountRaised %}
+{% assign participationType = PageParameter[''ParticipationMode''] %}
+
+{% comment %}
+-- convert fundraisingGoal to a numeric by using Plus
+{% endcomment %}
+
+{% assign fundraisingGoal = fundraisingGoal | Plus:0.00 %}
+
+{% assign amountRemaining = fundraisingGoal | Minus:AmountRaised %}";
 
             Sql( $@"
                     UPDATE [AttributeValue]
@@ -115,9 +138,33 @@ namespace Rock.Migrations
             string newParticipantReference;
 
             // Reverse the changes that were made.
-            oldAssignParticipantReference = "{% assign groupMember = TransactionEntity %}";
+            oldAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
+{% assign fundraisingGoal = groupMember | Attribute:''IndividualFundraisingGoal'',''RawValue'' %}
+{% if fundraisingGoal == '''' %}
+  {% assign fundraisingGoal = groupMember.Group | Attribute:''IndividualFundraisingGoal'',''RawValue'' %}
+{% endif %}
+
+{% comment %}
+-- convert fundraisingGoal to a numeric by using Plus
+{% endcomment %}
+
+{% assign fundraisingGoal = fundraisingGoal | Plus:0.00 %}
+
+{% assign amountRemaining = fundraisingGoal | Minus:TransactionEntityTransactionsTotal %}";
+
             newAssignParticipantReference = @"{% assign groupMember = TransactionEntity %}
-{% assign participationType = PageParameter[''ParticipationMode''] %}";
+{% assign fundraisingGoal = FundraisingGoal %}
+{% assign amountRaised = AmountRaised %}
+{% assign participationType = PageParameter[''ParticipationMode''] %}
+
+{% comment %}
+-- convert fundraisingGoal to a numeric by using Plus
+{% endcomment %}
+
+{% assign fundraisingGoal = fundraisingGoal | Plus:0.00 %}
+
+{% assign amountRemaining = fundraisingGoal | Minus:AmountRaised %}";
+
 
             Sql( $@"
                     UPDATE [AttributeValue]

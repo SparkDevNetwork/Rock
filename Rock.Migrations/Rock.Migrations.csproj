@@ -76,10 +76,6 @@
     <Compile Include="Migrations\202208242005262_GroupRequirementChangesForFundraisingOpportunities.designer.cs">
       <DependentUpon>202208242005262_GroupRequirementChangesForFundraisingOpportunities.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202208242039511_GroupRequirementChangesForFundraisingOpportunities1.cs" />
-    <Compile Include="Migrations\202208242039511_GroupRequirementChangesForFundraisingOpportunities1.designer.cs">
-      <DependentUpon>202208242039511_GroupRequirementChangesForFundraisingOpportunities1.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202206092326573_Rollup_0609.cs" />
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202206092326573_Rollup_0609.designer.cs">
       <DependentUpon>202206092326573_Rollup_0609.cs</DependentUpon>
@@ -1318,9 +1314,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202208242005262_GroupRequirementChangesForFundraisingOpportunities.resx">
       <DependentUpon>202208242005262_GroupRequirementChangesForFundraisingOpportunities.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202208242039511_GroupRequirementChangesForFundraisingOpportunities1.resx">
-      <DependentUpon>202208242039511_GroupRequirementChangesForFundraisingOpportunities1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202206092326573_Rollup_0609.resx">
       <DependentUpon>202206092326573_Rollup_0609.cs</DependentUpon>
