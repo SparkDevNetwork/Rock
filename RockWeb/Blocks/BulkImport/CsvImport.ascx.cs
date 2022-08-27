@@ -131,10 +131,10 @@ namespace RockWeb.Blocks.BulkImport
             if ( !Page.IsPostBack )
             {
                 // delete all the csv files in the root directory on start up to ensure that no residual files are present before the upload
-                string direcotryPath = Request.MapPath( fupCSVFile.RootFolder );
-                if ( Directory.Exists( direcotryPath ) )
+                string directoryPath = Request.MapPath( fupCSVFile.RootFolder );
+                if ( Directory.Exists( directoryPath ) )
                 {
-                    Directory.EnumerateFiles( direcotryPath, "*.csv" ).ToList()
+                    Directory.EnumerateFiles( directoryPath, "*.csv" ).ToList()
                         .ForEach( f => File.Delete( f ) );
                 }
             }
@@ -213,6 +213,13 @@ namespace RockWeb.Blocks.BulkImport
 
         protected void btnStart_Click( object sender, EventArgs e )
         {
+            if ( hfCSVFileName.Value.IsNullOrWhiteSpace() )
+            {
+                nbDuplicateHeadersInFile.Text = $"A CSV file must be selected first.";
+                nbDuplicateHeadersInFile.Visible = true;
+                return;
+            }
+
             string csvFileName = this.Request.MapPath( hfCSVFileName.Value );
 
             this.propertiesDropDownList = CreateListItemsDropDown();
@@ -232,7 +239,7 @@ namespace RockWeb.Blocks.BulkImport
                 bool headerContainsDuplicate = !string.IsNullOrEmpty( duplicateHeadersList );
                 if ( headerContainsDuplicate )
                 {
-                    nbDuplicateHeadersInFile.Text = $"The File has the duplicated headers: {duplicateHeadersList}. Please fix it and upload again.";
+                    nbDuplicateHeadersInFile.Text = $"The file has duplicated headers: {duplicateHeadersList}. Please fix it and upload again.";
                     nbDuplicateHeadersInFile.Visible = true;
                     return;
                 }

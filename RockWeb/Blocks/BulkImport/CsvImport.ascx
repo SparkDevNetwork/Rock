@@ -19,7 +19,6 @@
                     $('#<%=lImportDataMessage.ClientID %>').html(message);
                     $("#import-data-message-container").show();
 
-
                     // Motive: As of the writing there was no easy way to get the totalCount and the CompletedCount from
                     // the server to display the progress bar. Thus, we decided to parse the message string to get the values
 
@@ -92,101 +91,83 @@
                 <%-- The very first page which accepts the csv file as the input ---%>
                 <asp:Panel ID="pnlLandingPage" runat="server" Visible="true">
 
-                    <div class="rock-header">
-                        <h3 class="title">Comma Separated File Import</h3>
-                        <span class="description">The first step is to upload your comma delimited file. We'll then allow you to map the columns to fields in Rock. The first
-                            row of your file must contain headers for each column.
-                        </span>
-                        <hr class="section-header-hr">
-                    </div>
-
                     <div class="row">
-                        <div class="col-md-8">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:RockDropDownList
-                                        ID="ddlDataType"
-                                        runat="server"
-                                        Label="Data Type" />
-                                </div>
+                        <div class="col-md-7">
+
+                             <div class="rock-header">
+                                <h3 class="title">Comma Separated File Import</h3>
+                                <span class="description">The first step is to upload your comma delimited file. We'll then allow you to map the columns to fields in Rock. The first
+                                    row of your file must contain headers for each column.
+                                </span>
+                                <hr class="section-header-hr">
                             </div>
 
-                            <br />
+                            <Rock:RockDropDownList
+                                ID="ddlDataType"
+                                runat="server"
+                                Label="Data Type" />
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:RockRadioButtonList
-                                        ID="rblpreviousSourceDescription"
-                                        runat="server"
-                                        Label="Previous Source Descriptions"
-                                        RepeatDirection="Horizontal"
-                                        Required="true"
-                                        Help="If you are importing data from a source that has already been run once, select the matching description below. Otherwise, if this is a different source than those shown, chose to add a new source description." />
-                                    <asp:LinkButton ID="lbAddSourceDescription"
-                                        runat="server"
-                                        Text="Add Additional Source Description"
-                                        OnClick="lbAddSourceDescription_Click"
-                                        CausesValidation="false" />
-                                    <Rock:RockTextBox
-                                        ID="tbpreviousSourceDescription"
-                                        runat="server"
-                                        Label="Source Description"
-                                        Help="Describe where this data came from. We'll store what you type as a setting so if you import data from this system again we'll be able to match people you've already imported. (e.g.: 'former-chms', 'mailchimp', etc.)"
-                                        Visible="false" />
-                                    <asp:LinkButton ID="lbChooseSourceDescription"
-                                        runat="server"
-                                        Text="Choose Previous Source Description"
-                                        OnClick="lbChooseSourceDescription_Click"
-                                        Visible="false"
-                                        CausesValidation="false" />
-                                </div>
-                            </div>
+                            <Rock:RockRadioButtonList
+                                ID="rblpreviousSourceDescription"
+                                runat="server"
+                                Label="Previous Source Descriptions"
+                                RepeatDirection="Horizontal"
+                                Required="true"
+                                Help="If you are importing data from a source that has already been run once, select the matching description below. Otherwise, if this is a different source than those shown, chose to add a new source description." />
 
-                            <br />
+                            <asp:LinkButton ID="lbAddSourceDescription"
+                                runat="server"
+                                CssClass="mb-4"
+                                Text="<small>Add Additional Source Description</small>"
+                                OnClick="lbAddSourceDescription_Click"
+                                CausesValidation="false" />
 
-                            <div class="row">
-                                <Rock:NotificationBox ID="nbDuplicateHeadersInFile"
-                                    runat="server"
-                                    NotificationBoxType="Danger"
-                                    Visible="false" />
-                                <div class="col-md-3">
-                                    <Rock:FileUploader
-                                        ID="fupCSVFile"
-                                        runat="server"
-                                        OnFileUploaded="fupCSVFile_FileUploaded"
-                                        OnFileRemoved="fupCSVFile_FileRemoved"
-                                        RootFolder="~/App_Data/SlingshotFiles"
-                                        IsBinaryFile="false"
-                                        Label="CSV File" />
-                                </div>
-                            </div>
+                            <Rock:RockTextBox
+                                ID="tbpreviousSourceDescription"
+                                runat="server"
+                                Label="Source Description"
+                                Help="Describe where this data came from. We'll store what you type as a setting so if you import data from this system again we'll be able to match people you've already imported. (e.g.: 'former-chms', 'mailchimp', etc.)"
+                                Visible="false" />
 
-                            <br />
+                            <asp:LinkButton ID="lbChooseSourceDescription"
+                                runat="server"
+                                CssClass="mb-4"
+                                Text="<small>Choose Previous Source Description</small>"
+                                OnClick="lbChooseSourceDescription_Click"
+                                Visible="false"
+                                CausesValidation="false" />
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <asp:HiddenField ID="hfCSVFileName" runat="server" />
+                            <Rock:NotificationBox ID="nbDuplicateHeadersInFile"
+                                runat="server"
+                                CssClass="mt-4"
+                                NotificationBoxType="Danger"
+                                Visible="false" />
 
-                                    <Rock:RockCheckBox
-                                        ID="cbAllowUpdatingExisting"
-                                        runat="server"
-                                        Label="Allow Updating Existing Matched Records"
-                                        Checked="true"
-                                        Help="When checked, existing records that exist in the database that match date being imported (first name, last name and email match) will be updated. Otherwise only new records will be added to the database." />
-                                </div>
-                            </div>
+                            <Rock:FileUploader
+                                ID="fupCSVFile"
+                                runat="server"
+                                FormGroupCssClass="mt-4"
+                                OnFileUploaded="fupCSVFile_FileUploaded"
+                                OnFileRemoved="fupCSVFile_FileRemoved"
+                                RootFolder="~/App_Data/SlingshotFiles"
+                                IsBinaryFile="false"
+                                Label="CSV File" />
 
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <Rock:BootstrapButton ID="btnStart" runat="server" CssClass="btn btn-primary" Text="Start" OnClick="btnStart_Click" />
-                                </div>
-                            </div>
-                            <br />
-                            <br />
+                            <asp:HiddenField ID="hfCSVFileName" runat="server" />
+
+                            <Rock:RockCheckBox
+                                ID="cbAllowUpdatingExisting"
+                                runat="server"
+                                FormGroupCssClass="mt-4"
+                                Label="Allow Updating Existing Matched Records"
+                                Checked="true"
+                                Help="When checked, existing records that exist in the database that match date being imported (first name, last name and email match) will be updated. Otherwise only new records will be added to the database." />
+
+                            <Rock:BootstrapButton ID="btnStart" runat="server" CssClass="btn btn-primary mt-3" Text="Start" OnClick="btnStart_Click" />
                         </div>
 
                         <%-- The description text on the right side of the page --%>
-                        <div class="col-md-4">
+                        <div class="col-md-5">
                             <div class="well">
                                 <h4 class="mt-0 mb-1">Required Fields </h4>
                                 When uploading data about people you'll need to include the following information. These should be separate columns on your CSV
