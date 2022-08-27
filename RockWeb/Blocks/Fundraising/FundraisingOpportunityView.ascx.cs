@@ -241,11 +241,13 @@ namespace RockWeb.Blocks.Fundraising
             //// Participant Actions 
             // only show if the current person is a group member
             var groupMember = group.Members.FirstOrDefault( a => a.PersonId == this.CurrentPersonId );
+
             var participationMode = group.GetAttributeValue( "ParticipationType" ).ConvertToEnumOrNull<ParticipationType>() ?? ParticipationType.Individual;
             if ( groupMember != null )
             {
                 hfGroupMemberId.Value = groupMember.Id.ToString();
                 pnlParticipantActions.Visible = true;
+                groupMember.LoadAttributes( rockContext );
             }
             else
             {
@@ -291,7 +293,7 @@ namespace RockWeb.Blocks.Fundraising
                         familyMemberMergeFields.Add( "FullName", member.Person.FullName );
                         familyMemberMergeFields.Add( "PhotoUrl", member.Person.PhotoUrl );
                         familyMemberGroupMembers.Add( familyMemberMergeFields );
-
+                        member.LoadAttributes( rockContext );
                         var memberFundraisingGoal = member.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
                         if ( memberFundraisingGoal.HasValue )
                         {

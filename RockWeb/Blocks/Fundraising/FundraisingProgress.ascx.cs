@@ -152,57 +152,54 @@ namespace RockWeb.Blocks.Fundraising
 
             if ( participationMode == ParticipationType.Family )
             {
-                var groupMembersByFamily = groupMembersQuery.Select( g => g.Person.PrimaryFamily ).Distinct().ToList().Select( g =>
-                {
-                    var familyGroup = g;
-                    var groupMembersList = groupMembersQuery.Where( m => m.Person.PrimaryFamilyId == familyGroup.Id );
-                    var familyGroupMemberIds = groupMembersList.Select( m => m.Id ).ToList();
+                var groupMembersByFamily = groupMembersQuery.Select( g => g.Person.PrimaryFamily ).Distinct().OrderBy( g => g.Name ).ToList().Select( g =>
+                   {
+                       var familyGroup = g;
+                       var groupService = new GroupService( rockContext );
+                       var familyMemberGroupMembersInCurrentGroup = groupService.GroupMembersInAnotherGroup( familyGroup, group );
+                       var contributionTotal = new FinancialTransactionDetailService( rockContext )
+                       .GetContributionsForGroupMemberList( entityTypeIdGroupMember, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
 
-                    var contributionTotal = new FinancialTransactionDetailService( rockContext ).GetContributionsForGroupMemberList( entityTypeIdGroupMember, familyGroupMemberIds );
+                       decimal groupFundraisingGoal = 0;
+                       foreach ( var member in familyMemberGroupMembersInCurrentGroup )
+                       {
+                           member.LoadAttributes( rockContext );
+                           groupFundraisingGoal += member.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? 0;
+                       }
 
-                    var fundraisingGoal = familyGroupMemberIds.Count * group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                       decimal percentageAchieved = 0;
 
-                    decimal percentageAchieved = 0;
-                    if ( fundraisingGoal != null )
-                    {
-                        percentageAchieved = fundraisingGoal == 0 ? 100 : contributionTotal / ( 0.01M * fundraisingGoal.Value );
-                    }
+                       percentageAchieved = groupFundraisingGoal == 0 ? 100 : contributionTotal / ( 0.01M * groupFundraisingGoal );
 
-                    var progressBarWidth = percentageAchieved;
+                       var progressBarWidth = percentageAchieved;
 
-                    if ( percentageAchieved >= 100 )
-                    {
-                        progressBarWidth = 100;
-                    }
+                       if ( percentageAchieved >= 100 )
+                       {
+                           progressBarWidth = 100;
+                       }
 
-                    if ( !fundraisingGoal.HasValue )
-                    {
-                        fundraisingGoal = 0;
-                    }
+                       var familyMembers = familyGroup.Members.Select( m => m.PersonId ).ToList();
+                       var sortedFamilyMembers = familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender );
 
-                    var familyMembers = familyGroup.Members.Select( m => m.PersonId ).ToList();
-                    var familyMemberGroupMembersInCurrentGroup = group.Members.Where( m => familyMembers.Contains( m.PersonId ) );
-                    var sortedFamilyMembers = familyMemberGroupMembersInCurrentGroup.OrderBy( m => m.Person.AgeClassification ).ThenBy( m => m.Person.Gender );
+                       // If there is only one person in the fundraising group from the current family, just use that person's full name...
+                       string progressTitle = sortedFamilyMembers.Count() == 1 ? sortedFamilyMembers.First().Person.FullName :
 
-                    // If there is only one person in the fundraising group from the current family, just use that person's full name...
-                    string progressTitle = sortedFamilyMembers.Count() == 1 ? sortedFamilyMembers.First().Person.FullName :
+                       // Otherwise, use all the family members in the group to generate a list of their names.
+                       string.Format(
+                           "{0} ({1})",
+                           familyGroup.Name,
+                           sortedFamilyMembers.Select( m => m.Person.NickName ).JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
 
-                    // Otherwise, use all the family members in the group to generate a list of their names.
-                    string.Format(
-                        "{0} ({1})",
-                        familyGroup.Name,
-                        sortedFamilyMembers.Select( m => m.Person.NickName ).JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " & ", 36 ) );
-
-                    return new
-                    {
-                        ProgressTitle = progressTitle,
-                        FundraisingGoal = ( fundraisingGoal ?? 0.00M ).ToString( "0.##" ),
-                        ContributionTotal = contributionTotal.ToString( "0.##" ),
-                        Percentage = percentageAchieved.ToString( "0.##" ),
-                        CssClass = GetProgressCssClass( percentageAchieved ),
-                        ProgressBarWidth = progressBarWidth
-                    };
-                } ).ToList();
+                       return new
+                       {
+                           ProgressTitle = progressTitle,
+                           FundraisingGoal = groupFundraisingGoal.ToString( "0.##" ),
+                           ContributionTotal = contributionTotal.ToString( "0.##" ),
+                           Percentage = percentageAchieved.ToString( "0.##" ),
+                           CssClass = GetProgressCssClass( percentageAchieved ),
+                           ProgressBarWidth = progressBarWidth
+                       };
+                   } ).ToList();
 
                 this.GroupIndividualFundraisingGoal = groupMembersByFamily.Sum( a => decimal.Parse( a.FundraisingGoal ) );
                 this.GroupContributionTotal = groupMembersByFamily.Sum( a => decimal.Parse( a.ContributionTotal ) );
