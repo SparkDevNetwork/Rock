@@ -43,8 +43,8 @@ export const enum EntityType {
     Badge = "99300129-6F4C-45B2-B486-71123F046289",
     /** The benevolence request */
     BenevolenceRequest = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2",
-    /** The benevolence type */
-    BenevolenceType = "A612BF6F-EF9C-4625-AF68-3C6BC4AE7C46",
+    /** The guid for the Rock.Model.BenevolenceType entity. */
+    BenevolenceType = "9DB5D35A-F2DF-4AFF-AB9F-06C2EB587C0D",
     /** The Block entity type */
     Block = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65",
     /** The campus */
@@ -71,8 +71,8 @@ export const enum EntityType {
     ConnectionOpportunityCampus = "E656E8B3-12AB-476E-AA63-5F9B76F64A08",
     /** The guid for the Rock.Model.ConnectionOpportunityGroup entity */
     ConnectionOpportunityGroup = "CD3F425C-9B36-4433-9C38-D58DE42C9F65",
-    /** The guid for the Rock.Model.ConnectionOpportunityConnectorGroup entity */
-    ConnectionOpportunityConnectorGroup = "4CB430B1-0F32-482F-9C95-164A09332CC1",
+    /** The EntityType Guid for Rock.Model.ConnectionOpportunityConnectorGroup  */
+    ConnectionOpportunityConnectorGroup = "2ADBE499-C9EC-479B-B33B-6E92BDE09FD1",
     /** The guid for the Rock.Model.ConnectionRequest entity */
     ConnectionRequest = "36B0D0C7-8125-48FA-9DA2-729AAA65F718",
     /** The guid for the Rock.Model.ConnectionRequestActivity entity */
@@ -125,8 +125,8 @@ export const enum EntityType {
     LavaShortcodeCategory = "6CFE20AD-F883-4F53-A678-0D048406299D",
     /** The EntityType Guid for Rock.Model.Layout */
     Layout = "9DACC861-FED4-47FC-946D-D6A120FF6D56",
-    /** The guid for the Rock.Model.MediaAccount entity */
-    MediaAccount = "3723425F-6BB3-4F5C-8BD6-0B0B9D22EF70",
+    /** The EntityType Guid for Rock.Model.MediaAccount  */
+    MediaAccount = "CD35F034-AC18-40D5-B703-6BF16D79C51C",
     /** The guid for the Rock.Model.MetricCategory entity */
     Metriccategory = "3D35C859-DF37-433F-A20A-0FFD0FCB9862",
     /** The guid for the Rock.Model.MergeTemplate entity */

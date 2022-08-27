@@ -1465,6 +1465,10 @@ namespace Rock.MyWell
     /// <seealso cref="Rock.MyWell.TransactionResponseData" />
     public class TransactionVoidRefundResponseData : TransactionResponseData
     {
+        /// <summary>
+        /// Gets or sets the referenced transaction identifier.
+        /// </summary>
+        /// <value>The referenced transaction identifier.</value>
         [JsonProperty( "referenced_transaction_id" )]
         public string ReferencedTransactionId { get; set; }
     }

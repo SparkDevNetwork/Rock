@@ -43,6 +43,12 @@ export const enum Page {
      * ParentPage: Administration
      */
     Accounts = "2B630A3B-E081-4204-A3E4-17BB3A5F063D",
+    /** The apple tv application detail */
+    AppleTvApplicationDetail = "ED4341EB-3846-48B4-96D3-444D3ABBF389",
+    /** The apple tv application screen detail */
+    AppleTvApplicationScreenDetail = "6CC8D008-8D30-416D-8A36-7D01B72A2518",
+    /** The apple tv apps */
+    AppleTvApps = "C8B81EBE-E98F-43EF-9E39-0491685145E2",
     /**
      * The financial account search guid
      * ParentPage: Internal Homepage &gt; Finance &gt; Administration
@@ -664,6 +670,8 @@ export const enum Page {
      * ParentPage: Communications
      */
     MassPushNotifications = "3D97725E-5E17-411F-856C-F4B79B9BFF15",
+    /** The mobile site pages */
+    MobileSitePages = "37E21200-DF91-4426-89CC-7D067237A037",
     /**
      * Gets the Email Preference page guid
      * ParentPage: Support Pages
