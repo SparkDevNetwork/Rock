@@ -572,9 +572,10 @@ namespace RockWeb.Blocks.Fundraising
                 // Set the requirements values only if there are requirements for this group / group type.
                 if ( group.GroupRequirements.Any() || group.GroupType.GroupRequirements.Any() )
                 {
-                    gmrcRequirements.GroupMemberId = groupMember.Id;
+                    gmrcRequirements.GroupMemberId = groupMemberId;
                     gmrcRequirements.WorkflowEntryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
                     gmrcRequirements.Visible = true;
+                    gmrcRequirements.DataBind();
                     var participantLavaTemplate = this.GetAttributeValue( AttributeKey.RequirementsHeaderLavaTemplate );
                     lParticipantHtml.Text = participantLavaTemplate.ResolveMergeFields( mergeFields );
                 }
@@ -582,6 +583,7 @@ namespace RockWeb.Blocks.Fundraising
             else
             {
                 nbProfileWarning.Visible = false;
+                gmrcRequirements.Visible = false;
             }
 
             btnEditProfile.Visible = groupMember.PersonId == this.CurrentPersonId;
