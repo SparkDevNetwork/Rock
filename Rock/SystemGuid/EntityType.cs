@@ -769,5 +769,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.WorkflowLog"/>
         /// </summary>
         public const string WORKFLOW_LOG = "332CFF36-D637-414D-B732-370B330B8D73";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PageRoute"/>
+        /// </summary>
+        public const string PAGE_ROUTE = "42C14361-67B2-472C-95BE-EA8A9C511837";
     }
 }

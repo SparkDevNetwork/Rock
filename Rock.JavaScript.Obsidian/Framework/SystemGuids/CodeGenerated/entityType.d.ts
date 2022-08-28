@@ -321,4 +321,6 @@ export const enum EntityType {
     PersonalLinkSection = "42411FC0-7ACD-42E9-A8A1-BCEA78AF0AAF",
     /** The EntityType Guid for Rock.Model.WorkflowLog */
     WorkflowLog = "332CFF36-D637-414D-B732-370B330B8D73",
+    /** The EntityType Guid for Rock.Model.PageRoute */
+    PageRoute = "42C14361-67B2-472C-95BE-EA8A9C511837",
 }

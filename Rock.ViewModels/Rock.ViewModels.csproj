@@ -68,6 +68,8 @@
     <Compile Include="Blocks\Cms\MediaFolderDetail\MediaFolderDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\PageShortLinkBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\PageShortLinkDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PageRouteDetail\PageRouteBag.cs" />
+    <Compile Include="Blocks\Cms\PageRouteDetail\PageRouteDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetBag.cs" />
     <Compile Include="Blocks\Cms\PersistedDatasetDetail\PersistedDatasetDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionDetail\PersonalLinkSectionBag.cs" />
