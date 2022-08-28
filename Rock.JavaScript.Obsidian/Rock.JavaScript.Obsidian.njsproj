@@ -104,6 +104,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\" />
@@ -456,6 +457,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\noteTypeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\NoteTypeDetail\noteTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />

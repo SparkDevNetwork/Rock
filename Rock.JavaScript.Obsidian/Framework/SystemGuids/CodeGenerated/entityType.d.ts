@@ -323,4 +323,6 @@ export const enum EntityType {
     WorkflowLog = "332CFF36-D637-414D-B732-370B330B8D73",
     /** The EntityType Guid for Rock.Model.PageRoute */
     PageRoute = "42C14361-67B2-472C-95BE-EA8A9C511837",
+    /** The EntityType Guid for Rock.Model.NoteType */
+    NoteType = "337EED57-D4AB-4EED-BBDB-0CB3A467DBCC",
 }

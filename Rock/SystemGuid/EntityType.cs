@@ -774,5 +774,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.PageRoute"/>
         /// </summary>
         public const string PAGE_ROUTE = "42C14361-67B2-472C-95BE-EA8A9C511837";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.NoteType"/>
+        /// </summary>
+        public const string NOTE_TYPE = "337EED57-D4AB-4EED-BBDB-0CB3A467DBCC";
     }
 }
