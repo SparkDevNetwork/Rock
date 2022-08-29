@@ -64,16 +64,20 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs" />
-    <Compile Include="Migrations\202208221727058_GivingAlertFinancialTransactionCascadeDelete.designer.cs">
+    <Compile Include="Migrations\202208281854246_AddInteractiveExperience.cs" />
+    <Compile Include="Migrations\202208281854246_AddInteractiveExperience.designer.cs">
+      <DependentUpon>202208281854246_AddInteractiveExperience.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208221727058_GivingAlertFinancialTransactionCascadeDelete.designer.cs">
       <DependentUpon>202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202208232313070_CodeGenerated_20220823.cs" />
-    <Compile Include="Migrations\202208232313070_CodeGenerated_20220823.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208232313070_CodeGenerated_20220823.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208232313070_CodeGenerated_20220823.designer.cs">
       <DependentUpon>202208232313070_CodeGenerated_20220823.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202208242200400_PersonPagesNotesBlockUpdate.cs" />
-    <Compile Include="Migrations\202208242200400_PersonPagesNotesBlockUpdate.designer.cs">
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208242200400_PersonPagesNotesBlockUpdate.cs" />
+    <Compile Include="Migrations\Version 14.0\Version 1.14.0\202208242200400_PersonPagesNotesBlockUpdate.designer.cs">
       <DependentUpon>202208242200400_PersonPagesNotesBlockUpdate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 14.0\Version 1.14.0\202206092326573_Rollup_0609.cs" />
@@ -1306,13 +1310,16 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202208221727058_GivingAlertFinancialTransactionCascadeDelete.resx">
+    <EmbeddedResource Include="Migrations\202208281854246_AddInteractiveExperience.resx">
+      <DependentUpon>202208281854246_AddInteractiveExperience.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202208221727058_GivingAlertFinancialTransactionCascadeDelete.resx">
       <DependentUpon>202208221727058_GivingAlertFinancialTransactionCascadeDelete.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202208232313070_CodeGenerated_20220823.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202208232313070_CodeGenerated_20220823.resx">
       <DependentUpon>202208232313070_CodeGenerated_20220823.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202208242200400_PersonPagesNotesBlockUpdate.resx">
+    <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202208242200400_PersonPagesNotesBlockUpdate.resx">
       <DependentUpon>202208242200400_PersonPagesNotesBlockUpdate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 14.0\Version 1.14.0\202206092326573_Rollup_0609.resx">

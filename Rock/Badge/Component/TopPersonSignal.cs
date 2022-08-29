@@ -58,7 +58,7 @@ namespace Rock.Badge.Component
             if ( !string.IsNullOrWhiteSpace( person.TopSignalColor ) && signalCount > 0 )
             {
                 writer.Write( string.Format( @"
-<div class='rockbadge rockbadge-overlay rockbadge-overlay-invert rockbadge-id-{0}' data-toggle='tooltip' title='{3} has the following {4}: {5}' style='color: {1};'>
+<div class='rockbadge rockbadge-overlay rockbadge-overlay-invert rockbadge-signal rockbadge-id-{0}' data-toggle='tooltip' title='{3} has the following {4}: {5}' style='color: {1};'>
         <i class='badge-icon fa fa-flag'></i>
         <span class='metric-value'>{2}</span>
 </div>",

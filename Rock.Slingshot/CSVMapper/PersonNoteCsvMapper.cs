@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
+using Rock.Web.Cache;
+
 // Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
 using SlingshotCore = global::Slingshot.Core;
 
@@ -28,7 +30,8 @@ namespace Rock.Slingshot
     {
         public static SlingshotCore.Model.PersonNote Map( IDictionary<string, object> csvEntry, Dictionary<string, string> headerMapper, ref HashSet<string> parserErrors )
         {
-            string noteType = "PERSON_TIMELINE_NOTE";
+            var noteType = NoteTypeCache.Get( SystemGuid.NoteType.PERSON_TIMELINE_NOTE ).Name;
+
             string csvColumnNote = headerMapper.GetValueOrNull( CSVHeaders.Note );
             if ( csvColumnNote == null )
             {

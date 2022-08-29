@@ -69,7 +69,7 @@ namespace Rock.Personalization
                 return true;
             }
 
-            TimeSpan maxCacheLifetime = TimeSpan.FromHours( 12 );
+            TimeSpan maxCacheLifetime = TimeSpan.FromMinutes( 5 );
             if ( currentDateTime - LastUpdateDateTime > maxCacheLifetime )
             {
                 return true;
