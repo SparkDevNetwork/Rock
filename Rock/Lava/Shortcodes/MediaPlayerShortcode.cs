@@ -111,6 +111,12 @@ namespace Rock.Lava.Shortcodes
             public const string HideControls = "hidecontrols";
 
             /// <summary>
+            /// When enabled the on screen controls will automatically hide
+            /// until the media has started playing.
+            /// </summary>
+            public const string HideControlsStopped = "hidecontrolsstopped";
+
+            /// <summary>
             /// Specifies either the id or the guid of the media element to
             /// load from. This will automatically set the video URL. If a
             /// thumbnail URL has not been provided it will be set as well.
@@ -262,6 +268,7 @@ so you can customize this to be exactly what you want.</p>
     <li><strong>controls</strong> (play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen) - The user interface controls to make available to the user during playback. This is a comma separated string of control identifiers. Use a blank string if you don't want any controls to show up.</li>
     <li><strong>debug</strong> (false) - Enables developer level logging information to the JavaScript console during operation.</li>
     <li><strong>hidecontrols</strong> (true) - When enabled the on screen controls will automatically hide after 2 seconds without user activity.</li>
+    <li><strong>hidecontrolsstopped</strong> (false) - When enabled the on screen controls will automatically hide until the media has started playing.</li>
     <li><strong>media</strong> - Specifies either the id or the guid of the media element to load from. This will automatically set the video URL. If a thumbnail URL has not been provided it will be set as well.</li>
     <li><strong>muted</strong> (false) - If enabled then the media player will initially be muted.</li>
     <li><strong>primarycolor</strong> - The primary color to use for player elements, such as the play button. This can be any valid CSS color. Default is to use the primary brand color of the theme.</li>
@@ -444,7 +451,14 @@ so you can customize this to be exactly what you want.</p>
 }})();
 </script>";
 
-            result.WriteLine( $"<div id=\"{elementId}\" style=\"{style}\"></div>" );
+            var classAttribute = string.Empty;
+
+            if ( parms[ParameterKeys.HideControlsStopped].AsBoolean( false ) )
+            {
+                classAttribute = " class=\"mediaplayer-hidecontrolswhenstopped\"";
+            }
+
+            result.WriteLine( $"<div id=\"{elementId}\" style=\"{style}\"${classAttribute}></div>" );
             result.WriteLine( script );
 
             // If we have a RockPage related to the current request then
@@ -489,6 +503,7 @@ so you can customize this to be exactly what you want.</p>
                 { ParameterKeys.Controls, "play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen" },
                 { ParameterKeys.Debug, "false" },
                 { ParameterKeys.HideControls, "true" },
+                { ParameterKeys.HideControlsStopped, "false" },
                 { ParameterKeys.Media, "" },
                 { ParameterKeys.Muted, "false" },
                 { ParameterKeys.PrimaryColor, "var(--brand-primary)" },

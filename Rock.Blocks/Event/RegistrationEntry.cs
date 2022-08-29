@@ -850,7 +850,7 @@ namespace Rock.Blocks.Event
             if ( campusId.HasValue )
             {
                 context.Registration.CampusId = campusId;
-                History.EvaluateChange( registrationChanges, "Campus", string.Empty, linkage.Campus.Name );
+                History.EvaluateChange( registrationChanges, "Campus", string.Empty, CampusCache.Get( (int) campusId ).Name );
             }
 
             // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done

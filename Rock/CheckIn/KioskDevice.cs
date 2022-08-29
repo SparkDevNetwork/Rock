@@ -14,16 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using DotLiquid;
+using Rock.Data;
+using Rock.Lava;
+using Rock.Model;
+using Rock.Web.Cache;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -31,7 +31,7 @@ namespace Rock.CheckIn
     /// The status of a check-in device.  
     /// </summary>
     [DataContract]
-    public class KioskDevice : ItemCache<KioskDevice>
+    public class KioskDevice : ItemCache<KioskDevice>, ILavaDataDictionary, Lava.ILiquidizable
     {
         #region Constructors
 
@@ -427,9 +427,93 @@ namespace Rock.CheckIn
                 }
             }
         }
+        #endregion
+
+        #region Lava
+
+        /// <summary>
+        /// Gets a list of the keys defined by this data object.
+        /// </summary>
+        public List<string> AvailableKeys { get; } = new List<string> { "CampusId", "Device", "KioskGroupTypes" };
+
+        /// <summary>
+        /// Returns the data value associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object GetValue( string key )
+        {
+            switch ( key )
+            {
+                case "CampusId":
+                    return CampusId;
+                case "Device":
+                    return Device;
+                case "KioskGroupTypes":
+                    return KioskGroupTypes;
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns a flag indicating if this data object contains a value associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public bool ContainsKey( string key )
+        {
+            return AvailableKeys.Contains( key );
+        }
 
         #endregion
 
+        #region ILiquidizable
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object this[object key]
+        {
+            get => GetValue( key.ToStringSafe() );
+        }
+
+        /// <summary>
+        /// Converts to liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>()
+            {
+              { "CampusId", CampusId },
+              { "Device", Device },
+              { "KioskGroupTypes", KioskGroupTypes },
+            };
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified key contains key; otherwise, <c>false</c>.
+        /// </returns>
+        public bool ContainsKey(object key)
+        {
+            return AvailableKeys.Contains( key.ToStringSafe() );
+        }
+
+        #endregion
     }
 }
 
